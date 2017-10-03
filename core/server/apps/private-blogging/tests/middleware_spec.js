@@ -2,24 +2,19 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     crypto = require('crypto'),
-    Promise = require('bluebird'),
-    api = require('../../../api'),
+    settingsCache = require('../../../settings/cache'),
     fs = require('fs'),
-
     privateBlogging = require('../lib/middleware'),
-
     sandbox = sinon.sandbox.create();
 
 function hash(password, salt) {
     var hasher = crypto.createHash('sha256');
-
     hasher.update(password + salt, 'utf8');
-
     return hasher.digest('hex');
 }
 
 describe('Private Blogging', function () {
-    var apiSettingsStub;
+    var settingsStub;
 
     afterEach(function () {
         sandbox.restore();
@@ -31,39 +26,23 @@ describe('Private Blogging', function () {
         beforeEach(function () {
             req = {};
             res = {};
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            settingsStub = sandbox.stub(settingsCache, 'get');
             next = sandbox.spy();
         });
 
-        it('checkIsPrivate should call next if not private', function (done) {
-            apiSettingsStub.withArgs(sinon.match.has('key', 'is_private')).returns(Promise.resolve({
-                settings: [{
-                    key: 'is_private',
-                    value: 'false'
-                }]
-            }));
+        it('checkIsPrivate should call next if not private', function () {
+            settingsStub.withArgs('is_private').returns(false);
 
-            privateBlogging.checkIsPrivate(req, res, next).then(function () {
-                next.called.should.be.true();
-                res.isPrivateBlog.should.be.false();
-
-                done();
-            }).catch(done);
+            privateBlogging.checkIsPrivate(req, res, next);
+            next.called.should.be.true();
+            res.isPrivateBlog.should.be.false();
         });
 
-        it('checkIsPrivate should load session if private', function (done) {
-            apiSettingsStub.withArgs(sinon.match.has('key', 'is_private')).returns(Promise.resolve({
-                settings: [{
-                    key: 'is_private',
-                    value: 'true'
-                }]
-            }));
+        it('checkIsPrivate should load session if private', function () {
+            settingsStub.withArgs('is_private').returns(true);
 
-            privateBlogging.checkIsPrivate(req, res, next).then(function () {
-                res.isPrivateBlog.should.be.true();
-
-                done();
-            }).catch(done);
+            privateBlogging.checkIsPrivate(req, res, next);
+            res.isPrivateBlog.should.be.true();
         });
 
         describe('not private', function () {
@@ -118,56 +97,44 @@ describe('Private Blogging', function () {
             it('filterPrivateRoutes: sitemap redirects to /private', function () {
                 req.path = req.url = '/sitemap.xml';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes: sitemap with params redirects to /private', function () {
                 req.url = '/sitemap.xml?weird=param';
                 req.path = '/sitemap.xml';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes: rss redirects to /private', function () {
                 req.path = req.url = '/rss/';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes: author rss redirects to /private', function () {
                 req.path = req.url = '/author/halfdan/rss/';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes: tag rss redirects to /private', function () {
                 req.path = req.url = '/tag/slimer/rss/';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes: rss plus something redirects to /private', function () {
                 req.path = req.url = '/rss/sometag';
 
-                return privateBlogging.filterPrivateRoutes(req, res, next)
-                    .then(function () {
-                        res.redirect.calledOnce.should.be.true();
-                    });
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                res.redirect.calledOnce.should.be.true();
             });
 
             it('filterPrivateRoutes should render custom robots.txt', function () {
@@ -190,15 +157,10 @@ describe('Private Blogging', function () {
 
             describe('with hash verification', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs(sinon.match.has('key', 'password')).returns(Promise.resolve({
-                        settings: [{
-                            key: 'password',
-                            value: 'rightpassword'
-                        }]
-                    }));
+                    settingsStub.withArgs('password').returns('rightpassword');
                 });
 
-                it('authenticatePrivateSession should return next if hash is verified', function (done) {
+                it('authenticatePrivateSession should return next if hash is verified', function () {
                     var salt = Date.now().toString();
 
                     req.session = {
@@ -206,14 +168,11 @@ describe('Private Blogging', function () {
                         salt: salt
                     };
 
-                    privateBlogging.authenticatePrivateSession(req, res, next).then(function () {
-                        next.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.authenticatePrivateSession(req, res, next);
+                    next.called.should.be.true();
                 });
 
-                it('authenticatePrivateSession should redirect if hash is not verified', function (done) {
+                it('authenticatePrivateSession should redirect if hash is not verified', function () {
                     req.url = '/welcome';
                     req.session = {
                         token: 'wrongpassword',
@@ -221,14 +180,11 @@ describe('Private Blogging', function () {
                     };
                     res.redirect = sandbox.spy();
 
-                    privateBlogging.authenticatePrivateSession(req, res, next).then(function () {
-                        res.redirect.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.authenticatePrivateSession(req, res, next);
+                    res.redirect.called.should.be.true();
                 });
 
-                it('isPrivateSessionAuth should redirect if hash is verified', function (done) {
+                it('isPrivateSessionAuth should redirect if hash is verified', function () {
                     var salt = Date.now().toString();
 
                     req.session = {
@@ -237,47 +193,35 @@ describe('Private Blogging', function () {
                     };
                     res.redirect = sandbox.spy();
 
-                    privateBlogging.isPrivateSessionAuth(req, res, next).then(function () {
-                        res.redirect.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.isPrivateSessionAuth(req, res, next);
+                    res.redirect.called.should.be.true();
                 });
 
-                it('isPrivateSessionAuth should return next if hash is not verified', function (done) {
+                it('isPrivateSessionAuth should return next if hash is not verified', function () {
                     req.session = {
                         token: 'wrongpassword',
                         salt: Date.now().toString()
                     };
 
-                    privateBlogging.isPrivateSessionAuth(req, res, next).then(function () {
-                        next.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.isPrivateSessionAuth(req, res, next);
+                    next.called.should.be.true();
                 });
 
-                it('authenticateProtection should return next if password is incorrect', function (done) {
+                it('authenticateProtection should return next if password is incorrect', function () {
                     req.body = {password: 'wrongpassword'};
 
-                    privateBlogging.authenticateProtection(req, res, next).then(function () {
-                        res.error.should.not.be.empty();
-                        next.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.authenticateProtection(req, res, next);
+                    res.error.should.not.be.empty();
+                    next.called.should.be.true();
                 });
 
-                it('authenticateProtection should redirect if password is correct', function (done) {
+                it('authenticateProtection should redirect if password is correct', function () {
                     req.body = {password: 'rightpassword'};
                     req.session = {};
                     res.redirect = sandbox.spy();
 
-                    privateBlogging.authenticateProtection(req, res, next).then(function () {
-                        res.redirect.called.should.be.true();
-
-                        done();
-                    }).catch(done);
+                    privateBlogging.authenticateProtection(req, res, next);
+                    res.redirect.called.should.be.true();
                 });
             });
         });
