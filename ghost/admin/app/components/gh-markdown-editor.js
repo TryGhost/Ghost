@@ -62,7 +62,7 @@ export default Component.extend(ShortcutsMixin, {
     _editorFocused: false,
     _isFullScreen: false,
     _isSplitScreen: false,
-    _isHemmingwayMode: false,
+    _isHemingwayMode: false,
     _isUploading: false,
     _showUnsplash: false,
     _statusbar: null,
@@ -98,7 +98,8 @@ export default Component.extend(ShortcutsMixin, {
                         this._togglePreview();
                     },
                     className: 'fa fa-eye no-disable',
-                    title: 'Toggle Preview'
+                    title: 'Render Preview (Ctrl-Alt-R)',
+                    useCtrlOnMac: true
                 },
                 {
                     name: 'side-by-side',
@@ -106,7 +107,8 @@ export default Component.extend(ShortcutsMixin, {
                         this.send('toggleSplitScreen');
                     },
                     className: 'fa fa-columns no-disable no-mobile',
-                    title: 'Toggle Side-by-side Preview'
+                    title: 'Side-by-side Preview (Ctrl-Alt-P)',
+                    useCtrlOnMac: true
                 },
                 '|',
                 {
@@ -115,15 +117,17 @@ export default Component.extend(ShortcutsMixin, {
                         this._toggleSpellcheck();
                     },
                     className: 'fa fa-check',
-                    title: 'Toggle Spellcheck'
+                    title: 'Spellcheck (Ctrl-Alt-S)',
+                    useCtrlOnMac: true
                 },
                 {
-                    name: 'hemmingway',
+                    name: 'hemingway',
                     action: () => {
-                        this._toggleHemmingway();
+                        this._toggleHemingway();
                     },
                     className: 'fa fa-h-square',
-                    title: 'Toggle Hemmingway Mode'
+                    title: 'Hemingway Mode (Ctrl-Alt-H)',
+                    useCtrlOnMac: true
                 },
                 {
                     name: 'guide',
@@ -173,7 +177,10 @@ export default Component.extend(ShortcutsMixin, {
         let shortcuts = this.get('shortcuts');
 
         shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'openImageFileDialog'};
-        shortcuts['ctrl+alt+h'] = {action: 'toggleHemmingway'};
+        shortcuts['ctrl+alt+r'] = {action: 'togglePreview'};
+        shortcuts['ctrl+alt+p'] = {action: 'toggleSplitScreen'};
+        shortcuts['ctrl+alt+s'] = {action: 'toggleSpellcheck'};
+        shortcuts['ctrl+alt+h'] = {action: 'toggleHemingway'};
     },
 
     // extract markdown content from single markdown card
@@ -275,7 +282,7 @@ export default Component.extend(ShortcutsMixin, {
         if (this._editor) {
             let sideBySideButton = this._editor.toolbarElements['side-by-side'];
             let spellcheckButton = this._editor.toolbarElements.spellcheck;
-            let hemmingwayButton = this._editor.toolbarElements.hemmingway;
+            let hemingwayButton = this._editor.toolbarElements.hemingway;
 
             if (sideBySideButton) {
                 if (this.get('_isSplitScreen')) {
@@ -293,11 +300,11 @@ export default Component.extend(ShortcutsMixin, {
                 }
             }
 
-            if (hemmingwayButton) {
-                if (this._isHemmingwayMode) {
-                    hemmingwayButton.classList.add('active');
+            if (hemingwayButton) {
+                if (this._isHemingwayMode) {
+                    hemingwayButton.classList.add('active');
                 } else {
-                    hemmingwayButton.classList.remove('active');
+                    hemingwayButton.classList.remove('active');
                 }
             }
         }
@@ -403,14 +410,14 @@ export default Component.extend(ShortcutsMixin, {
         this._updateButtonState();
     },
 
-    _toggleHemmingway() {
+    _toggleHemingway() {
         let cm = this._editor.codemirror;
         let extraKeys = cm.getOption('extraKeys');
         let notificationText = '';
 
-        this._isHemmingwayMode = !this._isHemmingwayMode;
+        this._isHemingwayMode = !this._isHemingwayMode;
 
-        if (this._isHemmingwayMode) {
+        if (this._isHemingwayMode) {
             notificationText = '<span class="gh-notification-title">Hemingway Mode On:</span> Write now; edit later. Backspace disabled.';
             extraKeys.Backspace = function () {};
         } else {
@@ -425,7 +432,7 @@ export default Component.extend(ShortcutsMixin, {
 
         this.get('notifications').showNotification(
             htmlSafe(notificationText),
-            {key: 'editor.hemmingwaymode'}
+            {key: 'editor.hemingwaymode'}
         );
     },
 
@@ -536,6 +543,10 @@ export default Component.extend(ShortcutsMixin, {
             this._insertImages([image]);
         },
 
+        togglePreview() {
+            this._togglePreview();
+        },
+
         toggleFullScreen() {
             let isFullScreen = !this.get('_isFullScreen');
 
@@ -588,8 +599,12 @@ export default Component.extend(ShortcutsMixin, {
             this.send('toggleFullScreen');
         },
 
-        toggleHemmingway() {
-            this._toggleHemmingway();
+        toggleSpellcheck() {
+            this._toggleSpellcheck();
+        },
+
+        toggleHemingway() {
+            this._toggleHemingway();
         },
 
         // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
