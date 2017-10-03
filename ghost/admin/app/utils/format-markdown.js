@@ -40,7 +40,6 @@ let markdownitNamedHeaders = function markdownitNamedHeaders(md) {
     };
 };
 
-// eslint-disable-next-line new-cap
 let md = markdownit({
     html: true,
     breaks: true,
@@ -50,6 +49,11 @@ let md = markdownit({
     .use(markdownitLazyHeaders)
     .use(markdownitMark)
     .use(markdownitNamedHeaders);
+
+// configure linkify-it
+md.linkify.set({
+    fuzzyLink: false
+});
 
 export default function formatMarkdown(_markdown, replaceJS = true) {
     let markdown = _markdown || '';
