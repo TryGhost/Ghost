@@ -11,14 +11,14 @@ var _ = require('lodash'),
     init,
     canThis,
     CanThisResult,
-    exported;
+    actionsMap = {};
 
 function hasActionsMap() {
     // Just need to find one key in the actionsMap
 
-    return _.some(exported.actionsMap, function (val, key) {
+    return _.some(actionsMap, function (val, key) {
         /*jslint unparam:true*/
-        return Object.hasOwnProperty.call(exported.actionsMap, key);
+        return Object.hasOwnProperty.call(actionsMap, key);
     });
 }
 
@@ -160,7 +160,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     });
 
     // Iterate through the actions and their related object types
-    _.each(exported.actionsMap, function (objTypes, actType) {
+    _.each(actionsMap, function (objTypes, actType) {
         // Build up the object type handlers;
         // the '.post()' parts in canThis(user).edit.post()
         var objTypeHandlers = self.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
@@ -192,7 +192,7 @@ init = function (options) {
     return models.Permission.findAll(options).then(function (perms) {
         var seenActions = {};
 
-        exported.actionsMap = {};
+        actionsMap = {};
 
         // Build a hash map of the actions on objects, i.e
         /*
@@ -206,7 +206,7 @@ init = function (options) {
             var actionType = perm.get('action_type'),
                 objectType = perm.get('object_type');
 
-            exported.actionsMap[actionType] = exported.actionsMap[actionType] || [];
+            actionsMap[actionType] = actionsMap[actionType] || [];
             seenActions[actionType] = seenActions[actionType] || {};
 
             // Check if we've already seen this action -> object combo
@@ -214,19 +214,18 @@ init = function (options) {
                 return;
             }
 
-            exported.actionsMap[actionType].push(objectType);
+            actionsMap[actionType].push(objectType);
             seenActions[actionType][objectType] = true;
         });
 
-        return exported.actionsMap;
+        return actionsMap;
     });
 };
 
-module.exports = exported = {
+module.exports = {
     init: init,
     canThis: canThis,
     // @TODO: Make it so that we don't need to export these
     parseContext: parseContext,
-    applyPublicRules: require('./public'),
-    actionsMap: {}
+    applyPublicRules: require('./public')
 };

@@ -87,8 +87,6 @@ describe('Permissions', function () {
                 actionsMap.add.should.eql(['post', 'user', 'page']);
                 actionsMap.destroy.should.eql(['post', 'user']);
 
-                actionsMap.should.equal(permissions.actionsMap);
-
                 done();
             }).catch(done);
         });
@@ -105,8 +103,6 @@ describe('Permissions', function () {
                 actionsMap.edit.should.eql(['post', 'tag', 'user', 'page']);
                 actionsMap.add.should.eql(['post', 'user', 'page']);
                 actionsMap.destroy.should.eql(['post', 'user']);
-
-                actionsMap.should.equal(permissions.actionsMap);
 
                 done();
             }).catch(done);
