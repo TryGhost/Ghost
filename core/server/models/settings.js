@@ -7,7 +7,6 @@ var Settings,
     errors         = require('../errors'),
     events         = require('../events'),
     i18n           = require('../i18n'),
-    globalUtils    = require('../utils'),
     validation     = require('../data/validation'),
 
     internalContext = {context: {internal: true}},
