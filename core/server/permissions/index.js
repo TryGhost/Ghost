@@ -11,12 +11,7 @@ var _ = require('lodash'),
     init,
     canThis,
     CanThisResult,
-    actionsMap = {};
-
-function hasActionsMap() {
-    // There is at least one key in the actionsMap
-    return _.size(actionsMap) > 0;
-}
+    actionsMap = require('./actions-map-cache');
 
 // Base class for canThis call results
 CanThisResult = function () {
@@ -127,7 +122,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     // Get context.user and context.app
     context = parseContext(context);
 
-    if (!hasActionsMap()) {
+    if (actionsMap.empty()) {
         throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
@@ -156,7 +151,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     });
 
     // Iterate through the actions and their related object types
-    _.each(actionsMap, function (objTypes, actType) {
+    _.each(actionsMap.getAll(), function (objTypes, actType) {
         // Build up the object type handlers;
         // the '.post()' parts in canThis(user).edit.post()
         var objTypeHandlers = self.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
@@ -185,37 +180,10 @@ init = function (options) {
     options = options || {};
 
     // Load all the permissions
-    return models.Permission.findAll(options).then(function (perms) {
-        var seenActions = {};
-
-        actionsMap = {};
-
-        // Build a hash map of the actions on objects, i.e
-        /*
-        {
-            'edit': ['post', 'tag', 'user', 'page'],
-            'delete': ['post', 'user'],
-            'create': ['post', 'user', 'page']
-        }
-        */
-        _.each(perms.models, function (perm) {
-            var actionType = perm.get('action_type'),
-                objectType = perm.get('object_type');
-
-            actionsMap[actionType] = actionsMap[actionType] || [];
-            seenActions[actionType] = seenActions[actionType] || {};
-
-            // Check if we've already seen this action -> object combo
-            if (seenActions[actionType][objectType]) {
-                return;
-            }
-
-            actionsMap[actionType].push(objectType);
-            seenActions[actionType][objectType] = true;
+    return models.Permission.findAll(options)
+        .then(function (permissionsCollection) {
+            return actionsMap.init(permissionsCollection);
         });
-
-        return actionsMap;
-    });
 };
 
 module.exports = {
