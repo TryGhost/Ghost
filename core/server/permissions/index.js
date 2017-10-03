@@ -14,12 +14,8 @@ var _ = require('lodash'),
     actionsMap = {};
 
 function hasActionsMap() {
-    // Just need to find one key in the actionsMap
-
-    return _.some(actionsMap, function (val, key) {
-        /*jslint unparam:true*/
-        return Object.hasOwnProperty.call(actionsMap, key);
-    });
+    // There is at least one key in the actionsMap
+    return _.size(actionsMap) > 0;
 }
 
 // Base class for canThis call results
