@@ -134,6 +134,45 @@ export default Controller.extend({
             }
         },
 
+        toggleLeaveSettingsModal(transition) {
+            let leaveTransition = this.get('leaveSettingsTransition');
+
+            if (!transition && this.get('showLeaveSettingsModal')) {
+                this.set('leaveSettingsTransition', null);
+                this.set('showLeaveSettingsModal', false);
+                return;
+            }
+
+            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+                this.set('leaveSettingsTransition', transition);
+
+                // if a save is running, wait for it to finish then transition
+                if (this.get('save.isRunning')) {
+                    return this.get('save.last').then(() => {
+                        transition.retry();
+                    });
+                }
+
+                // we genuinely have unsaved data, show the modal
+                this.set('showLeaveSettingsModal', true);
+            }
+        },
+
+        leaveSettings() {
+            let transition = this.get('leaveSettingsTransition');
+            let model = this.get('model');
+
+            if (!transition) {
+                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                return;
+            }
+
+            // roll back changes on model props
+            model.rollbackAttributes();
+
+            return transition.retry();
+        },
+
         validateFacebookUrl() {
             let newUrl = this.get('_scratchFacebook');
             let oldUrl = this.get('model.facebook');
@@ -180,17 +219,13 @@ export default Controller.extend({
                 }
 
                 newUrl = `https://www.facebook.com/${username}`;
-                this.set('model.facebook', newUrl);
 
                 this.get('model.errors').remove('facebook');
                 this.get('model.hasValidated').pushObject('facebook');
 
-                // User input is validated
-                return this.get('save').perform().then(() => {
-                    this.set('model.facebook', '');
-                    run.schedule('afterRender', this, function () {
-                        this.set('model.facebook', newUrl);
-                    });
+                this.set('model.facebook', '');
+                run.schedule('afterRender', this, function () {
+                    this.set('model.facebook', newUrl);
                 });
             } else {
                 errMessage = 'The URL must be in a format like '
@@ -243,17 +278,13 @@ export default Controller.extend({
                 }
 
                 newUrl = `https://twitter.com/${username}`;
-                this.set('model.twitter', newUrl);
 
                 this.get('model.errors').remove('twitter');
                 this.get('model.hasValidated').pushObject('twitter');
 
-                // User input is validated
-                return this.get('save').perform().then(() => {
-                    this.set('model.twitter', '');
-                    run.schedule('afterRender', this, function () {
-                        this.set('model.twitter', newUrl);
-                    });
+                this.set('model.twitter', '');
+                run.schedule('afterRender', this, function () {
+                    this.set('model.twitter', newUrl);
                 });
             } else {
                 errMessage = 'The URL must be in a format like '
