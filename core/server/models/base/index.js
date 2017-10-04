@@ -217,13 +217,21 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *   - knex wraps the UTC value into a local JS Date
      */
     fixDatesWhenFetch: function fixDates(attrs) {
-        var self = this;
+        var self = this, dateMoment;
 
         _.each(attrs, function each(value, key) {
             if (value !== null
                 && schema.tables[self.tableName].hasOwnProperty(key)
                 && schema.tables[self.tableName][key].type === 'dateTime') {
-                attrs[key] = moment(value).startOf('seconds').toDate();
+                dateMoment = moment(value);
+
+                // CASE: You are somehow able to store e.g. 0000-00-00 00:00:00
+                // Protect the code base and return the current date time.
+                if (dateMoment.isValid()) {
+                    attrs[key] = dateMoment.startOf('seconds').toDate();
+                } else {
+                    attrs[key] = moment().startOf('seconds').toDate();
+                }
             }
         });
 
@@ -398,7 +406,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * proper strings, see `format`.
      */
     sanitizeData: function sanitizeData(data) {
-        var tableName = _.result(this.prototype, 'tableName');
+        var tableName = _.result(this.prototype, 'tableName'), dateMoment;
 
         _.each(data, function (value, key) {
             if (value !== null
@@ -406,7 +414,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 && schema.tables[tableName][key].type === 'dateTime'
                 && typeof value === 'string'
             ) {
-                data[key] = moment(value).toDate();
+                dateMoment = moment(value);
+
+                // CASE: client sends `0000-00-00 00:00:00`
+                if (!dateMoment.isValid()) {
+                    throw new errors.ValidationError({
+                        message: i18n.t('errors.models.base.invalidDate', {key: key})
+                    });
+                }
+
+                data[key] = dateMoment.toDate();
             }
         });
 

@@ -120,7 +120,9 @@ function getAmperizeHTML(html, post) {
         return;
     }
 
-    var Amperize = require('amperize');
+    var Amperize = require('amperize'),
+        startedAtMoment = moment();
+
     amperize = amperize || new Amperize();
 
     // make relative URLs abolute
@@ -129,11 +131,14 @@ function getAmperizeHTML(html, post) {
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise(function (resolve) {
             amperize.parse(html, function (err, res) {
+                logging.info('amp.parse', post.url, moment().diff(startedAtMoment, 'ms') + 'ms');
+
                 if (err) {
                     if (err.src) {
                         logging.error(new errors.GhostError({
+                            message: 'AMP HTML couldn\'t get parsed: ' + err.src,
                             err: err,
-                            context: 'AMP HTML couldn\'t get parsed: ' + err.src,
+                            context: post.url,
                             help: i18n.t('errors.apps.appWillNotBeLoaded.help')
                         }));
                     } else {

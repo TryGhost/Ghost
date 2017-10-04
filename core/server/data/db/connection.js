@@ -1,5 +1,7 @@
 var knex = require('knex'),
     config = require('../../config'),
+    logging = require('../../logging'),
+    errors = require('../../errors'),
     knexInstance;
 
 // @TODO:
@@ -16,6 +18,13 @@ function configure(dbConfig) {
     if (client === 'mysql') {
         dbConfig.connection.timezone = 'UTC';
         dbConfig.connection.charset = 'utf8mb4';
+
+        dbConfig.connection.loggingHook = function loggingHook(err) {
+            logging.error(new errors.InternalServerError({
+                code: 'MYSQL_LOGGING_HOOK',
+                err: err
+            }));
+        };
     }
 
     return dbConfig;
