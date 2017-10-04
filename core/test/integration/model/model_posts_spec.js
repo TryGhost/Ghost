@@ -963,6 +963,54 @@ describe('Post Model', function () {
                     done();
                 }).catch(done);
             });
+
+            it('send invalid published_at date', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel
+                    .findOne({
+                        id: postId
+                    })
+                    .then(function (results) {
+                        var post;
+                        should.exist(results);
+                        post = results.toJSON();
+                        post.id.should.equal(postId);
+
+                        return PostModel.edit({published_at: '0000-00-00 00:00:00'}, _.extend({}, context, {id: postId}));
+                    })
+                    .then(function () {
+                        done(new Error('This test should fail.'));
+                    })
+                    .catch(function (err) {
+                        err.statusCode.should.eql(422);
+                        done();
+                    });
+            });
+
+            it('send empty date', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                PostModel
+                    .findOne({
+                        id: postId
+                    })
+                    .then(function (results) {
+                        var post;
+                        should.exist(results);
+                        post = results.toJSON();
+                        post.id.should.equal(postId);
+
+                        return PostModel.edit({created_at: ''}, _.extend({}, context, {id: postId}));
+                    })
+                    .then(function () {
+                        done(new Error('This test should fail.'));
+                    })
+                    .catch(function (err) {
+                        err.statusCode.should.eql(422);
+                        done();
+                    });
+            });
         });
 
         describe('add', function () {
