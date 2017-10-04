@@ -257,7 +257,8 @@
                 "token": {
                     "noUserFound": "No user found",
                     "tokenNotFound": "Token not found"
-                }
+                },
+                "invalidDate": "Date format for `{key}` is invalid."
             },
             "plugins": {
                 "filter": {
