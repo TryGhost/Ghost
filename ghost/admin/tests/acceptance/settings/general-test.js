@@ -472,5 +472,48 @@ describe('Acceptance: Settings - General', function () {
             expect(find('[data-test-twitter-error]').text().trim(), 'inline validation response')
                 .to.equal('');
         });
+
+        it('warns when leaving without saving', async function () {
+            await visit('/settings/general');
+
+            expect(
+                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
+                'date permalinks checkbox'
+            ).to.be.false;
+
+            await click('[data-test-toggle-pub-info]');
+            await fillIn('[data-test-title-input]', 'New Blog Title');
+
+            await click('[data-test-dated-permalinks-checkbox]');
+
+            expect(
+                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
+                'dated permalink checkbox'
+            ).to.be.true;
+
+            await visit('/settings/team');
+
+            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+            // Leave without saving
+            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/team');
+
+            await visit('/settings/general');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/general');
+
+            // settings were not saved
+            expect(
+                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
+                'date permalinks checkbox'
+            ).to.be.false;
+
+            expect(
+                find('[data-test-title-input]').text().trim(),
+                'Blog title'
+            ).to.equal('');
+        });
     });
 });
