@@ -9,10 +9,12 @@ var serveStatic = require('express').static,
     fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
+    moment = require('moment'),
     config = require('../../config'),
     errors = require('../../errors'),
     i18n = require('../../i18n'),
     utils = require('../../utils'),
+    logging = require('../../logging'),
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
@@ -81,7 +83,18 @@ class LocalFileStore extends StorageBase {
         var self = this;
 
         return function serveStaticContent(req, res, next) {
-            return serveStatic(self.storagePath, {maxAge: utils.ONE_YEAR_MS, fallthrough: false})(req, res, function (err) {
+            var startedAtMoment = moment();
+
+            return serveStatic(
+                self.storagePath,
+                {
+                    maxAge: utils.ONE_YEAR_MS,
+                    fallthrough: false,
+                    onEnd: function onEnd() {
+                        logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
+                    }
+                }
+            )(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new errors.NotFoundError({
