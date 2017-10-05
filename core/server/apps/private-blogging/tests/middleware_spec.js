@@ -2,8 +2,9 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     crypto = require('crypto'),
-    settingsCache = require('../../../settings/cache'),
     fs = require('fs'),
+    errors = require('../../../errors'),
+    settingsCache = require('../../../settings/cache'),
     privateBlogging = require('../lib/middleware'),
     sandbox = sinon.sandbox.create();
 
@@ -221,6 +222,114 @@ describe('Private Blogging', function () {
                     res.redirect = sandbox.spy();
 
                     privateBlogging.authenticateProtection(req, res, next);
+                    res.redirect.called.should.be.true();
+                });
+
+                it('filterPrivateRoutes should 404 for /rss/ requests', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/rss/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                });
+
+                it('filterPrivateRoutes should 404 for /rss requests', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/rss';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                });
+
+                it('filterPrivateRoutes should 404 for tag rss requests', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/tag/welcome/rss/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                });
+
+                it('filterPrivateRoutes: allow private /rss/ feed', function () {
+                    settingsStub.withArgs('public_hash').returns('777aaa');
+
+                    req.url = req.originalUrl = req.path = '/777aaa/rss/';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    req.url.should.eql('/rss/');
+                });
+
+                it('filterPrivateRoutes: allow private /rss feed', function () {
+                    settingsStub.withArgs('public_hash').returns('777aaa');
+
+                    req.url = req.originalUrl = req.path = '/777aaa/rss';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    req.url.should.eql('/rss');
+                });
+
+                it('filterPrivateRoutes: allow private rss feed e.g. tags', function () {
+                    settingsStub.withArgs('public_hash').returns('777aaa');
+
+                    req.url = req.originalUrl = req.path = '/tag/getting-started/777aaa/rss/';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    req.url.should.eql('/tag/getting-started/rss/');
+                });
+
+                it('[failure] filterPrivateRoutes: allow private rss feed e.g. tags', function () {
+                    settingsStub.withArgs('public_hash').returns('777aaa');
+
+                    req.url = req.originalUrl = req.path = '/tag/getting-started/rss/';
+                    req.params = {};
+
+                    res.isPrivateBlog = true;
+                    res.locals = {};
+
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
                     res.redirect.called.should.be.true();
                 });
             });

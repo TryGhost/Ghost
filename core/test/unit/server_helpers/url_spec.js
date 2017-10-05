@@ -94,6 +94,19 @@ describe('{{url}} helper', function () {
         rendered.string.should.equal('/tag/the-tag/');
     });
 
+    it('should return the slug with a prefixed /author/ if the context is author', function () {
+        rendered = helpers.url.call({
+            bio: null,
+            website: null,
+            profile_image: null,
+            location: null,
+            slug: 'some-author'
+        });
+
+        should.exist(rendered);
+        rendered.string.should.equal('/author/some-author/');
+    });
+
     it('should return / if not a post or tag', function () {
         rendered = helpers.url.call({mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug'});
         should.exist(rendered);
