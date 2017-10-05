@@ -203,15 +203,26 @@
         <div class="gh-setting">
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Make this site private</div>
-                <div class="gh-setting-desc">Enable protection with simple shared password, All search engine optimization and social features will be disabled.</div>
-                {{#if model.isPrivate}}
-                <div class="gh-setting-content-extended">
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
-                        {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password)) data-test-password-input=true}}
-                        {{gh-error-message errors=model.errors property="password" data-test-password-error=true}}
-                        <p>Set the password for this site</p>
-                    {{/gh-form-group}}
+                <div class="gh-setting-desc">
+                    Enable protection with simple shared password, All search engine optimization and social features will be disabled.
+
+                    {{#if model.isPrivate}}
+                        <span class="avoid-break-out">
+                            <br><br>
+                            A private RSS feed is available at
+                            <a href="{{privateRSSUrl}}" target="_blank" rel="noopener">{{privateRSSUrl}}</a>
+                        </span>
+                    {{/if}}
                 </div>
+
+                {{#if model.isPrivate}}
+                    <div class="gh-setting-content-extended">
+                        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
+                            {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password)) data-test-password-input=true}}
+                            {{gh-error-message errors=model.errors property="password" data-test-password-error=true}}
+                            <p>Set the password for this site</p>
+                        {{/gh-form-group}}
+                    </div>
                 {{/if}}
             </div>
             <div class="gh-setting-action">
