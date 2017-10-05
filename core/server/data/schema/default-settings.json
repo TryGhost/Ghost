@@ -104,6 +104,9 @@
         },
         "password": {
             "defaultValue": ""
+        },
+        "public_hash": {
+            "defaultValue": null
         }
     }
 }
