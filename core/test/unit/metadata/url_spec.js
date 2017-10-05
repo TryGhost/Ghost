@@ -77,7 +77,7 @@ describe('getUrl', function () {
             name: 'Author Name',
             bio: 'I am fun bio!',
             website: 'http://myoksite.com',
-            status: 'active',
+            profile_image: null,
             location: 'London',
             slug: 'author-name'
         });
@@ -89,7 +89,7 @@ describe('getUrl', function () {
             name: 'Author Name',
             bio: 'I am fun bio!',
             website: 'http://myoksite.com',
-            status: 'active',
+            profile_image: null,
             location: 'London',
             slug: 'author-name',
             secure: true
