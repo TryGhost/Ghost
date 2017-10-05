@@ -59,8 +59,8 @@ privateBlogging = {
         }
 
         // CASE: Allow private RSS feed urls.
-        if (req.path.indexOf(settingsCache.get('global_hash') + '/rss') !== -1) {
-            req.url = req.url.replace(settingsCache.get('global_hash') + '/', '');
+        if (req.path.indexOf(settingsCache.get('public_hash') + '/rss') !== -1) {
+            req.url = req.url.replace(settingsCache.get('public_hash') + '/', '');
             return next();
         }
 

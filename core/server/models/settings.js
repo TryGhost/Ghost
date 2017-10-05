@@ -21,7 +21,7 @@ function parseDefaultSettings() {
         defaultSettingsFlattened = {},
         dynamicDefault = {
             db_hash: uuid.v4(),
-            global_hash: crypto.randomBytes(20).toString('hex')
+            public_hash: crypto.randomBytes(15).toString('hex')
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {

@@ -3,9 +3,6 @@
         "db_hash": {
             "defaultValue": null
         },
-        "global_hash": {
-            "defaultValue": null
-        },
         "next_update_check": {
             "defaultValue": null
         },
@@ -107,6 +104,9 @@
         },
         "password": {
             "defaultValue": ""
+        },
+        "public_hash": {
+            "defaultValue": null
         }
     }
 }

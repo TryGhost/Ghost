@@ -260,7 +260,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes: allow private rss feed', function () {
-                    settingsStub.withArgs('global_hash').returns('777aaa');
+                    settingsStub.withArgs('public_hash').returns('777aaa');
 
                     req.url = req.originalUrl = req.path = '/777aaa/rss/';
                     req.params = {};
@@ -274,7 +274,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes: allow private rss feed e.g. tags', function () {
-                    settingsStub.withArgs('global_hash').returns('777aaa');
+                    settingsStub.withArgs('public_hash').returns('777aaa');
 
                     req.url = req.originalUrl = req.path = '/tag/getting-started/777aaa/rss/';
                     req.params = {};
@@ -288,7 +288,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('[failure] filterPrivateRoutes: allow private rss feed e.g. tags', function () {
-                    settingsStub.withArgs('global_hash').returns('777aaa');
+                    settingsStub.withArgs('public_hash').returns('777aaa');
 
                     req.url = req.originalUrl = req.path = '/tag/getting-started/rss/';
                     req.params = {};
