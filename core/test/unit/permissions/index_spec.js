@@ -51,7 +51,7 @@ describe('Permissions', function () {
     function loadFakePermissions(options) {
         options = options || {};
 
-        var fixturePermissions = testUtils.DataGenerator.Content.permissions,
+        var fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions),
             extraPerm = {
                 name: 'test',
                 action_type: 'edit',

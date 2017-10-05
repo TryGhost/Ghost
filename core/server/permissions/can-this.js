@@ -3,7 +3,7 @@ var _ = require('lodash'),
     models = require('../models'),
     errors = require('../errors'),
     i18n = require('../i18n'),
-    effectivePerms = require('./effective'),
+    providers = require('./providers'),
     parseContext = require('./parse-context'),
     actionsMap = require('./actions-map-cache'),
     canThis,
@@ -122,17 +122,17 @@ CanThisResult.prototype.beginCheck = function (context) {
         throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
-    // Kick off loading of effective user permissions if necessary
+    // Kick off loading of user permissions if necessary
     if (context.user) {
-        userPermissionLoad = effectivePerms.user(context.user);
+        userPermissionLoad = providers.user(context.user);
     } else {
         // Resolve null if no context.user to prevent db call
         userPermissionLoad = Promise.resolve(null);
     }
 
-    // Kick off loading of effective app permissions if necessary
+    // Kick off loading of app permissions if necessary
     if (context.app) {
-        appPermissionLoad = effectivePerms.app(context.app);
+        appPermissionLoad = providers.app(context.app);
     } else {
         // Resolve null if no context.app
         appPermissionLoad = Promise.resolve(null);
