@@ -49,7 +49,7 @@ describe('getCanonicalUrl', function () {
             name: 'Test User',
             bio: 'This is all about testing',
             website: 'http://my-testing-site.com',
-            status: 'testing',
+            profile_image: null,
             location: 'Wounderland',
             slug: 'test-user',
             secure: true
