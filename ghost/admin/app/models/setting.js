@@ -22,6 +22,7 @@ export default Model.extend(ValidationEngine, {
     labs: attr('string'),
     navigation: attr('navigation-settings'),
     isPrivate: attr('boolean'),
+    publicHash: attr('string'),
     password: attr('string'),
     slack: attr('slack-settings'),
     amp: attr('boolean'),

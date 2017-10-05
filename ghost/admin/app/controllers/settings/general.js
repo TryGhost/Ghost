@@ -48,6 +48,13 @@ export default Controller.extend({
         }
     }),
 
+    privateRSSUrl: computed('config.blogUrl', 'model.publicHash', function () {
+        let blogUrl = this.get('config.blogUrl');
+        let publicHash = this.get('model.publicHash');
+
+        return `${blogUrl}/${publicHash}/rss`;
+    }),
+
     _deleteTheme() {
         let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
 
