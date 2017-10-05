@@ -55,9 +55,16 @@ module.exports = function (Bookshelf) {
 
                 if (Object.keys(changed).length) {
                     if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
+                        // @TODO: Remove later. We want to figure out how many people experience the error in which context.
                         return Promise.reject(new errors.UpdateCollisionError({
                             message: 'Saving failed! Someone else is editing this post.',
-                            code: 'UPDATE_COLLISION'
+                            code: 'UPDATE_COLLISION',
+                            level: 'critical',
+                            context: JSON.stringify({
+                                clientUpdatedAt: self.clientData.updated_at,
+                                serverUpdatedAt: self.serverData.updated_at,
+                                changed: changed
+                            })
                         }));
                     }
                 }
