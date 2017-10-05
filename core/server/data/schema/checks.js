@@ -10,7 +10,7 @@ function isTag(jsonData) {
 
 function isUser(jsonData) {
     return jsonData.hasOwnProperty('bio') && jsonData.hasOwnProperty('website') &&
-        jsonData.hasOwnProperty('status') && jsonData.hasOwnProperty('location');
+        jsonData.hasOwnProperty('profile_image') && jsonData.hasOwnProperty('location');
 }
 
 function isNav(jsonData) {
