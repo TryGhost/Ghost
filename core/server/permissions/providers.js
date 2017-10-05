@@ -2,10 +2,9 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     models = require('../models'),
     errors = require('../errors'),
-    i18n = require('../i18n'),
-    effective;
+    i18n = require('../i18n');
 
-effective = {
+module.exports = {
     user: function (id) {
         return models.User.findOne({id: id, status: 'all'}, {include: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
@@ -55,5 +54,3 @@ effective = {
             });
     }
 };
-
-module.exports = effective;

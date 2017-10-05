@@ -3,11 +3,11 @@ var should = require('should'),
     testUtils = require('../../utils'),
     Promise = require('bluebird'),
     models = require('../../../server/models'),
-    effective = require('../../../server/permissions/effective'),
+    providers = require('../../../server/permissions/providers'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Effective Permissions', function () {
+describe('Permission Providers', function () {
     before(function () {
         models.init();
     });
@@ -22,7 +22,7 @@ describe('Effective Permissions', function () {
                 return Promise.resolve();
             });
 
-            effective.user(1)
+            providers.user(1)
                 .then(function () {
                     done(new Error('Should have thrown a user not found error'));
                 })
@@ -54,8 +54,8 @@ describe('Effective Permissions', function () {
                 return Promise.resolve(fakeUser);
             });
 
-            // Get effective permissions for the user
-            effective.user(1)
+            // Get permissions for the user
+            providers.user(1)
                 .then(function (res) {
                     findUserSpy.callCount.should.eql(1);
 
@@ -101,8 +101,8 @@ describe('Effective Permissions', function () {
                 return Promise.resolve(fakeUser);
             });
 
-            // Get effective permissions for the user
-            effective.user(1)
+            // Get permissions for the user
+            providers.user(1)
                 .then(function (res) {
                     findUserSpy.callCount.should.eql(1);
 
@@ -149,8 +149,8 @@ describe('Effective Permissions', function () {
                 return Promise.resolve(fakeUser);
             });
 
-            // Get effective permissions for the user
-            effective.user(1)
+            // Get permissions for the user
+            providers.user(1)
                 .then(function (res) {
                     findUserSpy.callCount.should.eql(1);
 
@@ -182,7 +182,7 @@ describe('Effective Permissions', function () {
                 return Promise.resolve();
             });
 
-            effective.app('test')
+            providers.app('test')
                 .then(function (res) {
                     findAppSpy.callCount.should.eql(1);
                     res.should.be.an.Array().with.lengthOf(0);
@@ -206,8 +206,8 @@ describe('Effective Permissions', function () {
                 return Promise.resolve(fakeApp);
             });
 
-            // Get effective permissions for the app
-            effective.app('kudos')
+            // Get permissions for the app
+            providers.app('kudos')
                 .then(function (res) {
                     findAppSpy.callCount.should.eql(1);
 
