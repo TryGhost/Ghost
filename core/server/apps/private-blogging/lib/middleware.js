@@ -59,7 +59,9 @@ privateBlogging = {
         }
 
         // CASE: Allow private RSS feed urls.
-        if (req.path.indexOf(settingsCache.get('public_hash') + '/rss') !== -1) {
+        // Any url which contains the hash and the postfix /rss is allowed to access a private rss feed without
+        // a session. As soon as a path matches, we rewrite the url. Even Express uses rewriting when using `app.use()`.
+        if (req.url.indexOf(settingsCache.get('public_hash') + '/rss') !== -1) {
             req.url = req.url.replace(settingsCache.get('public_hash') + '/', '');
             return next();
         }
