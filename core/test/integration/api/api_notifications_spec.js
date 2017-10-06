@@ -4,8 +4,7 @@ var testUtils        = require('../../utils'),
     uuid             = require('uuid'),
 
     // Stuff we are testing
-    NotificationsAPI = require('../../../server/api/notifications'),
-    SettingsAPI      = require('../../../server/api/settings');
+    NotificationsAPI = require('../../../server/api/notifications');
 
 describe('Notifications API', function () {
     // Keep the DB clean
@@ -72,12 +71,38 @@ describe('Notifications API', function () {
 
             notification = result.notifications[0];
             notification.id.should.be.a.Number();
-            notification.id.should.not.equal(99);
+            notification.id.should.equal(99);
             should.exist(notification.status);
             notification.status.should.equal('alert');
 
             done();
         }).catch(done);
+    });
+
+    it('duplicates', function (done) {
+        var customNotification1 = {
+            status: 'alert',
+            type: 'info',
+            location: 'test.to-be-deleted1',
+            custom: true,
+            id: uuid.v1(),
+            dismissible: true,
+            message: 'Hello, this is dog number 1'
+        };
+
+        NotificationsAPI
+            .add({notifications: [customNotification1]}, testUtils.context.internal)
+            .then(function () {
+                return NotificationsAPI.add({notifications: [customNotification1]}, testUtils.context.internal);
+            })
+            .then(function () {
+                return NotificationsAPI.browse(testUtils.context.internal);
+            })
+            .then(function (response) {
+                response.notifications.length.should.eql(1);
+                done();
+            })
+            .catch(done);
     });
 
     it('can browse (internal)', function (done) {
@@ -112,6 +137,40 @@ describe('Notifications API', function () {
         });
     });
 
+    it('receive correct order', function (done) {
+        var customNotification1 = {
+            status: 'alert',
+            type: 'info',
+            custom: true,
+            id: uuid.v1(),
+            dismissible: true,
+            message: '1'
+        }, customNotification2 = {
+            status: 'alert',
+            type: 'info',
+            custom: true,
+            id: uuid.v1(),
+            dismissible: true,
+            message: '2'
+        };
+
+        NotificationsAPI
+            .add({notifications: [customNotification1]}, testUtils.context.internal)
+            .then(function () {
+                return NotificationsAPI.add({notifications: [customNotification2]}, testUtils.context.internal);
+            })
+            .then(function () {
+                return NotificationsAPI.browse(testUtils.context.internal);
+            })
+            .then(function (response) {
+                response.notifications.length.should.eql(2);
+                response.notifications[0].message.should.eql('2');
+                response.notifications[1].message.should.eql('1');
+                done();
+            })
+            .catch(done);
+    });
+
     it('can destroy (internal)', function (done) {
         var msg = {
             type: 'error',
@@ -121,13 +180,13 @@ describe('Notifications API', function () {
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification = result.notifications[0];
 
-            NotificationsAPI.destroy(
-                _.extend({}, testUtils.context.internal, {id: notification.id})
-            ).then(function (result) {
-                should.not.exist(result);
-
-                done();
-            }).catch(done);
+            NotificationsAPI
+                .destroy(_.extend({}, testUtils.context.internal, {id: notification.id}))
+                .then(function (result) {
+                    should.not.exist(result);
+                    done();
+                })
+                .catch(done);
         });
     });
 
@@ -140,23 +199,23 @@ describe('Notifications API', function () {
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification = result.notifications[0];
 
-            NotificationsAPI.destroy(
-                _.extend({}, testUtils.context.owner, {id: notification.id})
-            ).then(function (result) {
-                should.not.exist(result);
-
-                done();
-            }).catch(done);
+            NotificationsAPI
+                .destroy(_.extend({}, testUtils.context.owner, {id: notification.id}))
+                .then(function (result) {
+                    should.not.exist(result);
+                    done();
+                })
+                .catch(done);
         });
     });
 
-    it('can destroy a custom notification and add its uuid to seenNotifications (owner)', function (done) {
+    it('ensure notification get\'s removed', function (done) {
         var customNotification = {
             status: 'alert',
             type: 'info',
             location: 'test.to-be-deleted',
             custom: true,
-            uuid: uuid.v4(),
+            id: uuid.v1(),
             dismissible: true,
             message: 'Hello, this is dog number 4'
         };
@@ -164,16 +223,68 @@ describe('Notifications API', function () {
         NotificationsAPI.add({notifications: [customNotification]}, testUtils.context.internal).then(function (result) {
             var notification = result.notifications[0];
 
-            NotificationsAPI.destroy(
-            _.extend({}, testUtils.context.internal, {id: notification.id})
-            ).then(function () {
-                return SettingsAPI.read(_.extend({key: 'seenNotifications'}, testUtils.context.internal));
-            }).then(function (response) {
-                should.exist(response);
-                response.settings[0].value.should.containEql(customNotification.uuid);
-
-                done();
-            }).catch(done);
+            return NotificationsAPI.browse(testUtils.context.internal)
+                .then(function (response) {
+                    response.notifications.length.should.eql(1);
+                    return NotificationsAPI.destroy(_.extend({}, testUtils.context.internal, {id: notification.id}));
+                })
+                .then(function () {
+                    return NotificationsAPI.browse(testUtils.context.internal);
+                })
+                .then(function (response) {
+                    response.notifications.length.should.eql(0);
+                    done();
+                })
+                .catch(done);
         });
+    });
+
+    it('destroy unknown id', function (done) {
+        NotificationsAPI
+            .destroy(_.extend({}, testUtils.context.internal, {id: 1}))
+            .then(function () {
+                done(new Error('Expected notification error.'));
+            })
+            .catch(function (err) {
+                err.statusCode.should.eql(404);
+                done();
+            });
+    });
+
+    it('destroy all', function (done) {
+        var customNotification1 = {
+            status: 'alert',
+            type: 'info',
+            location: 'test.to-be-deleted1',
+            custom: true,
+            id: uuid.v1(),
+            dismissible: true,
+            message: 'Hello, this is dog number 1'
+        }, customNotification2 = {
+            status: 'alert',
+            type: 'info',
+            location: 'test.to-be-deleted2',
+            custom: true,
+            id: uuid.v1(),
+            dismissible: true,
+            message: 'Hello, this is dog number 2'
+        };
+
+        NotificationsAPI
+            .add({notifications: [customNotification1]}, testUtils.context.internal)
+            .then(function () {
+                return NotificationsAPI.add({notifications: [customNotification2]}, testUtils.context.internal);
+            })
+            .then(function () {
+                return NotificationsAPI.destroyAll(testUtils.context.internal);
+            })
+            .then(function () {
+                return NotificationsAPI.browse(testUtils.context.internal);
+            })
+            .then(function (response) {
+                response.notifications.length.should.eql(0);
+                done();
+            })
+            .catch(done);
     });
 });
