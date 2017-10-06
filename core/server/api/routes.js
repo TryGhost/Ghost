@@ -99,7 +99,6 @@ module.exports = function apiRoutes() {
 
     // ## Themes
     apiRouter.get('/themes/', mw.authenticatePrivate, api.http(api.themes.browse));
-    apiRouter.get('/themes/:name', mw.authenticatePrivate, api.http(api.themes.browse));
 
     apiRouter.get('/themes/:name/download',
         mw.authenticatePrivate,

@@ -26,16 +26,7 @@ themes = {
             .handlePermissions('themes', 'browse')(options)
             // Main action
             .then(function makeApiResult() {
-                if (options.name) {
-                    if (!themeList.get(options.name)) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.themes.themeDoesNotExist')
-                        });
-                    }
-
-                    return themeUtils.toJSON(options.name);
-                }
-
+                // Return JSON result
                 return themeUtils.toJSON();
             });
     },

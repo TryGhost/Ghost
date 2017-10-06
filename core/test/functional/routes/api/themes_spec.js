@@ -157,68 +157,6 @@ describe('Themes API (Forked)', function () {
                 });
         });
 
-        it('get active theme by name', function (done) {
-            request
-                .get(testUtils.API.getApiQuery('themes/casper/'))
-                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    var jsonResponse = res.body;
-                    should.exist(jsonResponse.themes);
-                    testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.eql(1);
-
-                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme', 'templates');
-                    jsonResponse.themes[0].name.should.eql('casper');
-                    jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
-                    jsonResponse.themes[0].active.should.be.true();
-
-                    done();
-                });
-        });
-
-        it('get non active theme by name', function (done) {
-            request
-                .get(testUtils.API.getApiQuery('themes/test-theme/'))
-                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    var jsonResponse = res.body;
-                    should.exist(jsonResponse.themes);
-                    testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.eql(1);
-
-                    testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
-                    jsonResponse.themes[0].name.should.eql('test-theme');
-                    jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
-                    jsonResponse.themes[0].active.should.be.false();
-
-                    done();
-                });
-        });
-
-        it('[failure] get theme by name', function (done) {
-            request
-                .get(testUtils.API.getApiQuery('themes/other/'))
-                .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
-                .expect(404)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
         it('download theme', function (done) {
             request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
