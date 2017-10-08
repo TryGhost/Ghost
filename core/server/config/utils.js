@@ -25,7 +25,8 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
  * @TODO: re-write this function a little bit so we don't have to add the parent path - that is hard to understand
  *
  * Path must be string.
- * Path must match minimum one / or \
+ * Path must be valid based on character match. REGEX for valid path match came
+ *   from here: (https://github.com/jonschlinkert/is-invalid-path), MIT Licensed
  * Path can be a "." to re-present current folder
  */
 exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
@@ -36,7 +37,7 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
             makePathsAbsolute.bind(self)(configValue, parent + ':' + pathsKey);
         } else if (
             _.isString(configValue) &&
-            (configValue.match(/\/+|\\+/) || configValue === '.') &&
+            (!/['\"!#$%&+^<=>`]/.test(configValue) || configValue === '.') &&
             !path.isAbsolute(configValue)
         ) {
             self.set(parent + ':' + pathsKey, path.normalize(path.join(__dirname, '../../..', configValue)));

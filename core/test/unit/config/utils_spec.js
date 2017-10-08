@@ -77,5 +77,25 @@ describe('UNIT: Config utils', function () {
             changedKey[0][0].should.eql('database:filename');
             changedKey[0][1].should.not.eql('content\\data\\ghost.db');
         });
+
+        it('ensure it skips certificates', function () {
+            var changedKey = [],
+                obj = {
+                    database: {
+                        ssl: {
+                            ca: '-----BEGIN CERTIFICATE-----\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n-----END CERTIFICATE-----',
+                            key: '-----BEGIN RSA PRIVATE KEY-----\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n-----END RSA PRIVATE KEY-----',
+                            cert: '-----BEGIN CERTIFICATE-----\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n-----END CERTIFICATE-----'
+                        }
+                    }
+                };
+
+            this.set = function (key, value) {
+                changedKey.push([key, value]);
+            };
+
+            configUtils.makePathsAbsolute.bind(this)(obj.database, 'database');
+            changedKey.length.should.eql(0);
+        });
     });
 });
