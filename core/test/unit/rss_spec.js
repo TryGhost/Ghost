@@ -349,6 +349,33 @@ describe('RSS', function () {
                 }).should.be.true();
                 apiTagStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
+                xmlData.should.match(/<atom:link href="http:\/\/my-ghost-blog.com\/tag\/magic\/rss\/" rel="self" type="application\/rss\+xml"\/>/);
+                done();
+            };
+
+            rss(req, res, failTest(done));
+        });
+
+        it('should process the data correctly for a paginated tag feed', function (done) {
+            // setup
+            req.originalUrl = '/tag/magic/rss/2/';
+            req.params.slug = 'magic';
+            req.params.page = '2';
+            res.locals.channel = channelConfig.get('tag');
+            res.locals.channel.isRSS = true;
+
+            // test
+            res.send = function send(xmlData) {
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({
+                    page: '2',
+                    filter: 'tags:\'magic\'+tags.visibility:\'public\'',
+                    include: 'author,tags'
+                }).should.be.true();
+
+                apiTagStub.calledOnce.should.be.true();
+                xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
+                xmlData.should.match(/<atom:link href="http:\/\/my-ghost-blog.com\/tag\/magic\/rss\/" rel="self" type="application\/rss\+xml"\/>/);
                 done();
             };
 
@@ -367,6 +394,27 @@ describe('RSS', function () {
                 apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags'}).should.be.true();
                 apiUserStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
+                xmlData.should.match(/<atom:link href="http:\/\/my-ghost-blog.com\/author\/joe\/rss\/" rel="self" type="application\/rss\+xml"\/>/);
+                done();
+            };
+
+            rss(req, res, failTest(done));
+        });
+
+        it('should process the data correctly for a paginated author feed', function (done) {
+            req.originalUrl = '/author/joe/rss/2/';
+            req.params.slug = 'joe';
+            req.params.page = '2';
+            res.locals.channel = channelConfig.get('author');
+            res.locals.channel.isRSS = true;
+
+            // test
+            res.send = function send(xmlData) {
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: '2', filter: 'author:\'joe\'', include: 'author,tags'}).should.be.true();
+                apiUserStub.calledOnce.should.be.true();
+                xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
+                xmlData.should.match(/<atom:link href="http:\/\/my-ghost-blog.com\/author\/joe\/rss\/" rel="self" type="application\/rss\+xml"\/>/);
                 done();
             };
 

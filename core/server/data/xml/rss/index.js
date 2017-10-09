@@ -1,7 +1,7 @@
 var crypto      = require('crypto'),
     downsize    = require('downsize'),
     RSS         = require('rss'),
-    config      = require('../../../config'),
+    url         = require('url'),
     utils       = require('../../../utils'),
     errors      = require('../../../errors'),
     i18n        = require('../../../i18n'),
@@ -17,14 +17,6 @@ var crypto      = require('crypto'),
     generateTags,
     getFeedXml,
     feedCache = {};
-
-function isTag(req) {
-    return req.originalUrl.indexOf(utils.url.urlJoin('/', config.get('routeKeywords').tag, '/')) !== -1;
-}
-
-function isAuthor(req) {
-    return req.originalUrl.indexOf(utils.url.urlJoin('/', config.get('routeKeywords').author, '/')) !== -1;
-}
 
 function handleError(next) {
     return function handleError(err) {
@@ -51,20 +43,6 @@ function getData(channelOpts, slugParam) {
 
         return response;
     });
-}
-
-function getBaseUrl(req, slugParam) {
-    var baseUrl = utils.url.getSubdir();
-
-    if (isTag(req)) {
-        baseUrl = utils.url.urlJoin(baseUrl, config.get('routeKeywords').tag, slugParam, 'rss/');
-    } else if (isAuthor(req)) {
-        baseUrl = utils.url.urlJoin(baseUrl, config.get('routeKeywords').author, slugParam, 'rss/');
-    } else {
-        baseUrl = utils.url.urlJoin(baseUrl, 'rss/');
-    }
-
-    return baseUrl;
 }
 
 getFeedXml = function getFeedXml(path, data) {
@@ -161,7 +139,8 @@ generate = function generate(req, res, next) {
     // Initialize RSS
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug,
-        baseUrl   = getBaseUrl(req, slugParam),
+        // Base URL needs to be the URL for the feed without pagination:
+        baseUrl = url.parse(req.originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/'),
         channelConfig = res.locals.channel;
 
     // Ensure we at least have an empty object for postOptions
@@ -184,7 +163,7 @@ generate = function generate(req, res, next) {
         data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
-        return getFeedXml(req.originalUrl, data).then(function then(feedXml) {
+        return getFeedXml(baseUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
         });
