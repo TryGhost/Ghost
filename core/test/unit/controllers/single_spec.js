@@ -3,15 +3,20 @@ var should = require('should'),
     moment = require('moment'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    api = require('../../../../server/api'),
-    frontend = require('../../../../server/controllers/frontend'),
-    configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../server/themes'),
-    settingsCache = require('../../../../server/settings/cache'),
-    markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc,
+
+    // Test utils
+    configUtils = require('../../utils/configUtils'),
+    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
+
+    // Server requires
+    api = require('../../../server/api'),
+    controllers = require('../../../server/controllers'),
+    themes = require('../../../server/themes'),
+    settingsCache = require('../../../server/settings/cache'),
+
     sandbox = sinon.sandbox.create();
 
-describe('Frontend Controller', function () {
+describe('Controllers', function () {
     var adminEditPagePath = '/ghost/editor/',
         localSettingsCache = {},
         hasTemplateStub;
@@ -145,7 +150,7 @@ describe('Frontend Controller', function () {
                     };
                     mockPosts[2].posts[0].url = req.path;
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('it will use page.hbs if it exists and no page-slug template is present', function (done) {
@@ -160,7 +165,7 @@ describe('Frontend Controller', function () {
                     };
                     mockPosts[2].posts[0].url = req.path;
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('defaults to post.hbs without a page.hbs or page-slug template', function (done) {
@@ -176,7 +181,7 @@ describe('Frontend Controller', function () {
                     };
                     mockPosts[2].posts[0].url = req.path;
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
             });
 
@@ -190,13 +195,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render static page via /YYY/MM/DD/:slug', function (done) {
                     req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -205,7 +210,7 @@ describe('Frontend Controller', function () {
                 it('will NOT render static page via /:author/:slug', function (done) {
                     req.path = '/' + ['test', mockPosts[0].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -219,13 +224,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -235,7 +240,7 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect static page to admin edit page via /:author/:slug/edit', function (done) {
                     req.path = '/' + ['test', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -257,14 +262,14 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render static page via /YYYY/MM/DD/:slug', function (done) {
                     req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
                     res.render = sinon.spy();
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -279,7 +284,7 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
@@ -287,7 +292,7 @@ describe('Frontend Controller', function () {
                     res.render = sinon.spy();
                     res.redirect = sinon.spy();
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -312,13 +317,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
                     req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -327,7 +332,7 @@ describe('Frontend Controller', function () {
                 it('will NOT render post via /:author/:slug', function (done) {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -342,13 +347,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -358,7 +363,7 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect post to admin edit page via /:author/:slug/edit', function (done) {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -368,7 +373,7 @@ describe('Frontend Controller', function () {
                 it('should call next if post is not found', function (done) {
                     req.path = '/unknown/';
 
-                    frontend.single(req, res, function (err) {
+                    controllers.single(req, res, function (err) {
                         if (err) {
                             return done(err);
                         }
@@ -401,13 +406,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render post via /:slug/', function (done) {
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -416,7 +421,7 @@ describe('Frontend Controller', function () {
                 it('will NOT render post via /:author/:slug/', function (done) {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -433,13 +438,13 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect post to admin edit page via /:slug/edit/', function (done) {
                     req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -449,7 +454,7 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect post to admin edit page via /:author/:slug/edit/', function (done) {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -475,14 +480,14 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -491,7 +496,7 @@ describe('Frontend Controller', function () {
                 it('will NOT render post via /:author/:slug/ when author does not match post author', function (done) {
                     req.path = '/' + ['test-2', mockPosts[1].posts[0].slug].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -500,7 +505,7 @@ describe('Frontend Controller', function () {
                 it('will NOT render post via /:slug/', function (done) {
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -516,14 +521,14 @@ describe('Frontend Controller', function () {
                         done();
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     req.path = '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -533,7 +538,7 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect post to admin edit page /:slug/edit/', function (done) {
                     req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -565,7 +570,7 @@ describe('Frontend Controller', function () {
                         }
                     };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug/', function (done) {
@@ -578,7 +583,7 @@ describe('Frontend Controller', function () {
                             render: sinon.spy()
                         };
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -594,7 +599,7 @@ describe('Frontend Controller', function () {
                             render: sinon.spy()
                         };
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -609,7 +614,7 @@ describe('Frontend Controller', function () {
                             render: sinon.spy()
                         };
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         done();
                     });
@@ -631,7 +636,7 @@ describe('Frontend Controller', function () {
                             }
                         };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
 
                 it('will NOT redirect post to admin edit page /:slug/edit/', function (done) {
@@ -644,7 +649,7 @@ describe('Frontend Controller', function () {
                             redirect: sinon.spy()
                         };
 
-                    frontend.single(req, res, function () {
+                    controllers.single(req, res, function () {
                         res.render.called.should.be.false();
                         res.redirect.called.should.be.false();
                         done();
@@ -676,151 +681,8 @@ describe('Frontend Controller', function () {
                             }
                         };
 
-                    frontend.single(req, res, failTest(done));
+                    controllers.single(req, res, failTest(done));
                 });
-            });
-        });
-    });
-
-    describe('preview', function () {
-        var req, res, mockPosts = [{
-            posts: [{
-                status: 'draft',
-                uuid: 'abc-1234-01',
-                id: 1,
-                title: 'Test static page',
-                slug: 'test-static-page',
-                mobiledoc: markdownToMobiledoc('Test static page content'),
-                page: 1,
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                },
-                url: '/test-static-page/'
-            }]
-        }, {
-            posts: [{
-                status: 'draft',
-                uuid: 'abc-1234-02',
-                id: 2,
-                title: 'Test normal post',
-                slug: 'test-normal-post',
-                mobiledoc: markdownToMobiledoc('The test normal post content'),
-                page: 0,
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                }
-            }]
-        }, {
-            posts: [{
-                status: 'published',
-                uuid: 'abc-1234-03',
-                id: 3,
-                title: 'Getting started',
-                slug: 'about',
-                mobiledoc: markdownToMobiledoc('This is a blog post'),
-                page: 0,
-                published_at: new Date('2014/1/30').getTime(),
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                },
-                url: '/getting-started/'
-            }]
-        }];
-
-        beforeEach(function () {
-            sandbox.stub(api.posts, 'read', function (args) {
-                var post = _.find(mockPosts, function (mock) {
-                    return mock.posts[0].uuid === args.uuid;
-                });
-                return Promise.resolve(post || {posts: []});
-            });
-
-            req = {
-                path: '/', params: {}, route: {}
-            };
-
-            res = {
-                locals: {},
-                render: sinon.spy(),
-                redirect: sinon.spy()
-            };
-        });
-
-        it('should render draft post', function (done) {
-            req.params = {uuid: 'abc-1234-02'};
-            res.render = function (view, context) {
-                view.should.equal('post');
-                should.exist(context.post);
-                context.post.should.equal(mockPosts[1].posts[0]);
-                done();
-            };
-
-            frontend.preview(req, res, failTest(done));
-        });
-
-        it('should render draft page', function (done) {
-            req.params = {uuid: 'abc-1234-01'};
-            res.render = function (view, context) {
-                view.should.equal('page');
-                should.exist(context.post);
-                context.post.should.equal(mockPosts[0].posts[0]);
-                done();
-            };
-
-            frontend.preview(req, res, failTest(done));
-        });
-
-        it('should call next if post is not found', function (done) {
-            req.params = {uuid: 'abc-1234-04'};
-
-            frontend.preview(req, res, function (err) {
-                should.not.exist(err);
-                res.render.called.should.be.false();
-                res.redirect.called.should.be.false();
-                done();
-            });
-        });
-
-        it('should call redirect if post is published', function (done) {
-            req.params = {uuid: 'abc-1234-03'};
-            res.redirect = function (status, url) {
-                res.render.called.should.be.false();
-                status.should.eql(301);
-                url.should.eql('/getting-started/');
-                done();
-            };
-
-            frontend.preview(req, res, failTest(done));
-        });
-
-        it('should call redirect if /edit/ (options param) is detected', function (done) {
-            req.params = {uuid: 'abc-1234-01', options: 'edit'};
-            res.redirect = function (url) {
-                res.render.called.should.be.false();
-                url.should.eql('/ghost/editor/1/');
-                done();
-            };
-
-            frontend.preview(req, res, failTest(done));
-        });
-
-        it('should call next for unknown options param detected', function (done) {
-            req.params = {uuid: 'abc-1234-01', options: 'asdsad'};
-
-            frontend.preview(req, res, function (err) {
-                should.not.exist(err);
-                res.render.called.should.be.false();
-                res.redirect.called.should.be.false();
-                done();
             });
         });
     });
