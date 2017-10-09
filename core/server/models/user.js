@@ -488,6 +488,10 @@ User = ghostBookshelf.Model.extend({
             origArgs = _.toArray(arguments).slice(1);
             // Get the actual user model
             return this.findOne({id: userModelOrId, status: 'all'}, {include: ['roles']}).then(function then(foundUserModel) {
+                if (!foundUserModel) {
+                    return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.user.userNotFound')));
+                }
+
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundUserModel].concat(origArgs);
 
