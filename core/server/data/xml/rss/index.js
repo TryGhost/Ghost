@@ -1,6 +1,7 @@
 var crypto      = require('crypto'),
     downsize    = require('downsize'),
     RSS         = require('rss'),
+    url         = require('url'),
     utils       = require('../../../utils'),
     errors      = require('../../../errors'),
     i18n        = require('../../../i18n'),
@@ -139,7 +140,7 @@ generate = function generate(req, res, next) {
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug,
         // Base URL needs to be the URL for the feed without pagination:
-        baseUrl = req.originalUrl.replace(new RegExp('/' + pageParam + '/$'), '/'),
+        baseUrl = url.parse(req.originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/'),
         channelConfig = res.locals.channel;
 
     // Ensure we at least have an empty object for postOptions
