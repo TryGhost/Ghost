@@ -1,7 +1,7 @@
 var express = require('express'),
     path = require('path'),
     config = require('../config'),
-    frontend = require('../controllers/frontend'),
+    controllers = require('../controllers'),
     channels = require('../controllers/frontend/channels'),
     utils = require('../utils');
 
@@ -23,7 +23,7 @@ module.exports = function frontendRoutes() {
     });
 
     // Post Live Preview
-    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), frontend.preview);
+    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), controllers.preview);
 
     // Channels
     router.use(channels.router());
@@ -38,7 +38,7 @@ module.exports = function frontendRoutes() {
     });
 
     // Default
-    router.get('*', frontend.single);
+    router.get('*', controllers.single);
 
     return router;
 };
