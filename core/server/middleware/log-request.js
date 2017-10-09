@@ -7,7 +7,7 @@ var uuid = require('uuid'),
  */
 module.exports = function logRequest(req, res, next) {
     var startTime = Date.now(),
-        requestId = uuid.v1();
+        requestId = req.get('X-Request-ID') || uuid.v1();
 
     function logResponse() {
         res.responseTime = (Date.now() - startTime) + 'ms';
