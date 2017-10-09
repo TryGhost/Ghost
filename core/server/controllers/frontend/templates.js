@@ -66,8 +66,8 @@ function getChannelTemplateHierarchy(channelOpts) {
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'post' is the default / fallback
- * For posts: [custom-*, post-:slug, post]
- * For pages: [custom-*, page-:slug, page, post]
+ * For posts: [post-:slug, custom-*, post]
+ * For pages: [page-:slug, custom-*, page, post]
  *
  * @param {Object} postObject
  * @returns {String[]}
@@ -81,13 +81,11 @@ function getSingleTemplateHierarchy(postObject) {
         slugTemplate = 'page-' + postObject.slug;
     }
 
-    templateList.unshift(slugTemplate);
-
     if (postObject.custom_template) {
-        if (themes.getActive() && !themes.getActive().hasTemplate(slugTemplate)) {
-            templateList.unshift(postObject.custom_template);
-        }
+        templateList.unshift(postObject.custom_template);
     }
+
+    templateList.unshift(slugTemplate);
 
     return templateList;
 }
