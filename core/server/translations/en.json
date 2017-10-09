@@ -127,6 +127,15 @@
                     "context": "Theme name: {name}",
                     "help": "Valid package.json will be required in future. Please see {url}"
                 }
+            },
+            "request": {
+                "message": "URL empty or invalid: {url}"
+            },
+            "imageSize": {
+                "imageSizeDimensions": "Could not read image dimensions. Message: {message}",
+                "requestTimedOut": "Request timed out: {url}",
+                "imageNotFound": "Image not found: {url}",
+                "unknownRequestError": "Unknown request error: {url}"
             }
         },
         "config": {

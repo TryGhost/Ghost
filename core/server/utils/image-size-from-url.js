@@ -1,5 +1,5 @@
 // Supported formats of https://github.com/image-size/image-size:
-// BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG
+// BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG, ICO
 // ***
 // Takes the url of the image and an optional timeout
 // getImageSizeFromUrl returns an Object like this
@@ -14,15 +14,14 @@
 // we add the protocol to the incomplete one and use urlFor() to get the absolute URL.
 // If the request fails or image-size is not able to read the file, we reject with error.
 
-var sizeOf       = require('image-size'),
-    url          = require('url'),
-    Promise      = require('bluebird'),
-    http         = require('http'),
-    https        = require('https'),
-    config       = require('../config'),
-    dimensions,
-    request,
-    requestHandler;
+var sizeOf = require('image-size'),
+    Promise = require('bluebird'),
+    url = require('url'),
+    request = require('../utils/request'),
+    config = require('../config'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    _ = require('lodash');
 
 /**
  * @description read image dimensions from URL
@@ -30,85 +29,86 @@ var sizeOf       = require('image-size'),
  * @returns {Promise<Object>} imageObject or error
  */
 module.exports.getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
-    return new Promise(function imageSizeRequest(resolve, reject) {
-        var imageObject = {},
-            options,
-            timeout = config.times.getImageSizeTimeoutInMS || 10000;
+    var imageObject = {},
+        dimensions,
+        parsedUrl,
+        requestOptions,
+        timeout = config.times.getImageSizeTimeoutInMS || 10000;
 
+    // CASE: relative assets path for image, e. g. `/assets/img/`
+    if (imagePath.match(/^\/assets/)) {
+        imagePath = config.urlJoin(config.urlFor('home', true), '/', imagePath);
+    }
+
+    // CASE: when imagePath can't be resolved it returns undefined. Save absolute imagePath only, when resolved
+    // successfully.
+    imagePath = config.urlFor('image', {image: imagePath}, true) ? config.urlFor('image', {image: imagePath}, true) : imagePath;
+
+    parsedUrl = url.parse(imagePath);
+
+    // check if we got an url without any protocol
+    if (!parsedUrl.protocol) {
+        // save the original URL, as this is used for structured data
         imageObject.url = imagePath;
+        // CASE: our gravatar URLs start with '//' and we need to add 'http:'
+        // to make the request work
+        imagePath = 'http:' + imagePath;
+    }
 
-        // check if we got an url without any protocol
-        if (imagePath.indexOf('http') === -1) {
-            // our gravatar urls start with '//' in that case add 'http:'
-            if (imagePath.indexOf('//') === 0) {
-                // it's a gravatar url
-                imagePath = 'http:' + imagePath;
-            } else {
-                // get absolute url for image
-                imagePath = config.urlFor('image', {image: imagePath}, true);
-            }
+    requestOptions = {
+        headers: {
+            'User-Agent': 'Mozilla/5.0'
+        },
+        timeout: timeout,
+        encoding: null
+    };
+
+    return request(
+        imagePath,
+        requestOptions
+    ).then(function (response) {
+        if (!imageObject.url) {
+            imageObject.url = imagePath;
         }
 
-        options = url.parse(imagePath);
+        try {
+            // Using the Buffer rather than an URL requires to use sizeOf synchronously.
+            // See https://github.com/image-size/image-size#asynchronous
+            dimensions = sizeOf(response.body);
 
-        requestHandler = imagePath.indexOf('https') === 0 ? https : http;
-        options.headers = {'User-Agent': 'Mozilla/5.0'};
-
-        request = requestHandler.get(options, function (res) {
-            var chunks = [];
-
-            res.on('data', function (chunk) {
-                chunks.push(chunk);
-            });
-
-            res.on('end', function () {
-                if (res.statusCode === 200) {
-                    try {
-                        dimensions = sizeOf(Buffer.concat(chunks));
-
-                        imageObject.width = dimensions.width;
-                        imageObject.height = dimensions.height;
-
-                        return resolve(imageObject);
-                    } catch (err) {
-                        err.context = imagePath;
-
-                        return reject(err);
-                    }
-                } else {
-                    var err = new Error();
-
-                    if (res.statusCode === 404) {
-                        err.message = 'Image not found.';
-                    } else {
-                        err.message = 'Unknown Request error.';
-                    }
-
-                    err.context = imagePath;
-                    err.statusCode = res.statusCode;
-
-                    return reject(err);
-                }
-            });
-        }).on('socket', function (socket) {
-            if (timeout) {
-                socket.setTimeout(timeout);
-
-                /**
-                 * https://nodejs.org/api/http.html
-                 * "...if a callback is assigned to the Server's 'timeout' event, timeouts must be handled explicitly"
-                 *
-                 * socket.destroy will jump to the error listener
-                 */
-                socket.on('timeout', function () {
-                    request.abort();
-                    socket.destroy(new Error('Request timed out.'));
-                });
+            // CASE: `.ico` files might have multiple images and therefore multiple sizes.
+            // We return the largest size found (image-size default is the first size found)
+            if (dimensions.images) {
+                dimensions.width = _.maxBy(dimensions.images, function (w) {return w.width;}).width;
+                dimensions.height = _.maxBy(dimensions.images, function (h) {return h.height;}).height;
             }
-        }).on('error', function (err) {
-            err.context = imagePath;
 
-            return reject(err);
-        });
+            imageObject.width = dimensions.width;
+            imageObject.height = dimensions.height;
+
+            return Promise.resolve(imageObject);
+        } catch (err) {
+            return Promise.reject(new errors.InternalServerError(
+                i18n.t('errors.utils.imageSize.imageSizeDimensions', {message: err})
+            ));
+        }
+    }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
+        // CASE: request util returns correct error already, just pass it through.
+        return Promise.reject(err);
+    }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
+        return Promise.reject(new errors.InternalServerError(
+            i18n.t('errors.utils.imageSize.requestTimedOut', {url: err.url || imagePath})
+        ));
+    }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
+        return Promise.reject(new errors.NotFoundError(
+            i18n.t('errors.utils.imageSize.imageNotFound', {url: err.url || imagePath})
+        ));
+    }).catch(function (err) {
+        if (err instanceof errors.NotFoundError || err instanceof errors.InternalServerError) {
+            return Promise.reject(err);
+        }
+        return Promise.reject(new errors.InternalServerError(
+            i18n.t('errors.utils.imageSize.unknownRequestError', {url: err.url || imagePath})
+        ));
     });
 };
