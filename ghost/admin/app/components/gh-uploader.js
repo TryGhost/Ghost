@@ -18,6 +18,8 @@ import {run} from '@ember/runloop';
 // "allowMultiple" attribute so that single-image uploads don't allow multiple
 // simultaneous uploads
 
+const MAX_SIMULTANEOUS_UPLOADS = 2;
+
 /**
  * Result from a file upload
  * @typedef {Object} UploadResult
@@ -166,7 +168,11 @@ export default Component.extend({
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
         for (let i = 0; i < files.length; i++) {
-            uploads.push(this.get('_uploadFile').perform(files[i], i));
+            let file = files[i];
+            let tracker = new UploadTracker({file});
+
+            this.get('_uploadTrackers').pushObject(tracker);
+            uploads.push(this.get('_uploadFile').perform(tracker, file, i));
         }
 
         // populates this.errors and this.uploadUrls
@@ -179,13 +185,10 @@ export default Component.extend({
         this.onComplete(this.get('uploadUrls'));
     }).drop(),
 
-    _uploadFile: task(function* (file, index) {
+    _uploadFile: task(function* (tracker, file, index) {
         let ajax = this.get('ajax');
         let formData = this._getFormData(file);
         let url = `${ghostPaths().apiRoot}${this.get('uploadUrl')}`;
-
-        let tracker = new UploadTracker({file});
-        this.get('_uploadTrackers').pushObject(tracker);
 
         try {
             let response = yield ajax.post(url, {
@@ -242,7 +245,7 @@ export default Component.extend({
             this.get('errors').pushObject(result);
             this.onUploadFailure(result);
         }
-    }),
+    }).maxConcurrency(MAX_SIMULTANEOUS_UPLOADS).enqueue(),
 
     // NOTE: this is necessary because the API doesn't accept direct file uploads
     _getFormData(file) {
