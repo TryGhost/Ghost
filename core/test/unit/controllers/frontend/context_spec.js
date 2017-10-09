@@ -273,6 +273,23 @@ describe('Contexts', function () {
                 res.locals.context[0].should.eql('featured');
             });
 
+            it('will use a custom context for a custom channel', function () {
+                var channel = _.clone(featuredChannel);
+                channel.context = ['custom-context', 'test'];
+
+                // Setup test
+                setupContext('/featured/', channel);
+
+                // Execute test
+                setResponseContext(req, res, data);
+
+                // Check context
+                should.exist(res.locals.context);
+                res.locals.context.should.be.an.Array().with.lengthOf(2);
+                res.locals.context[0].should.eql('custom-context');
+                res.locals.context[1].should.eql('test');
+            });
+
             it('will not identify /page/2/ as paged without page param', function () {
                 // Setup test
                 setupContext('/featured/page/2/', featuredChannel);
