@@ -54,7 +54,11 @@ function setResponseContext(req, res, data) {
 
     // Each page can only have at most one of these
     if (res.locals.channel) {
-        res.locals.context.push(res.locals.channel.name);
+        if (res.locals.channel.context) {
+            res.locals.context = res.locals.context.concat(res.locals.channel.context);
+        } else {
+            res.locals.context.push(res.locals.channel.name);
+        }
     } else if (privatePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('private');
     } else if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
