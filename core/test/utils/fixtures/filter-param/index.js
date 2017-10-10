@@ -59,10 +59,11 @@ data.tags = [
     },
     {
         id: ObjectId.generate(),
-        name: 'Audio',
-        slug: 'audio',
+        name: '#Audio',
+        slug: 'hash-audio',
         feature_image: 'some/image/path.jpg',
         description: 'Audio posts',
+        visibility: 'internal',
         created_by: data.users[0].id
     },
     {
@@ -308,7 +309,7 @@ function createUsers(knex, DataGenerator) {
 
 function createTags(knex, DataGenerator) {
     data.tags = _.map(data.tags, function (tag) {
-        return DataGenerator.forKnex.createBasic(tag);
+        return DataGenerator.forKnex.createTag(tag);
     });
 
     // Next, insert it into the database & return the correctly indexed data

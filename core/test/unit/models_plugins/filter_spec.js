@@ -167,7 +167,8 @@ describe('Filter', function () {
                 fetchSpy = sandbox.stub(ghostBookshelf.Model.prototype, 'fetchAndCombineFilters');
                 filterGQL.knexify = sandbox.stub();
                 filterGQL.json = {
-                    printStatements: sandbox.stub()
+                    printStatements: sandbox.stub(),
+                    replaceStatements: sandbox.stub().returnsArg(0)
                 };
 
                 restoreGQL = filter.__set__('gql', filterGQL);
@@ -226,8 +227,12 @@ describe('Filter', function () {
             });
         });
 
+        describe('Pre Process Filters', function () {
+            it('should not have tests yet, as this needs to be removed');
+        });
+
         describe('Post Process Filters', function () {
-            it('should not have tests yet, as this is about to be removed');
+            it('should not have tests yet, as this needs to be removed');
         });
     });
 
