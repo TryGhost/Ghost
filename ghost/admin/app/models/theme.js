@@ -1,12 +1,31 @@
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
+import {computed} from '@ember/object';
+import {isBlank} from '@ember/utils';
 
 export default Model.extend({
+    active: attr('boolean'),
+    errors: attr('raw'),
     name: attr('string'),
     package: attr('raw'),
-    active: attr('boolean'),
+    templates: attr('raw', {defaultValue: () => []}),
     warnings: attr('raw'),
-    errors: attr('raw'),
+
+    customTemplates: computed('templates.[]', function () {
+        let templates = this.get('templates') || [];
+
+        return templates.filter(function (template) {
+            return isBlank(template.slug);
+        });
+    }),
+
+    slugTemplates: computed('templates.[]', function () {
+        let templates = this.get('templates') || [];
+
+        return templates.filter(function (template) {
+            return !isBlank(template.slug);
+        });
+    }),
 
     activate() {
         let adapter = this.store.adapterFor(this.constructor.modelName);

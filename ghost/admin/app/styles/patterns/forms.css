@@ -332,6 +332,15 @@ textarea {
     text-shadow: 0 0 0 #000;
 }
 
+.gh-select.disabled select {
+    color: color(var(--midgrey) l(+18%));
+    cursor: default;
+}
+
+.gh-select.disabled svg path {
+    stroke: color(var(--midgrey) l(+30%));
+}
+
 
 /* File Uploads
 /* ---------------------------------------------------------- */
