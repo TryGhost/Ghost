@@ -16,8 +16,7 @@
  * No properties marked with an _ should be used directly.
  *
  */
-var _ = require('lodash'),
-    join = require('path').join,
+var join = require('path').join,
     themeConfig = require('./config'),
     config = require('../config'),
     engine = require('./engine'),
@@ -42,14 +41,11 @@ class ActiveTheme {
         this._packageInfo = loadedTheme['package.json'];
         this._partials =  checkedTheme.partials;
 
-        // @TODO: get gscan to return a template collection for us
-        this._templates = _.reduce(checkedTheme.files, function (templates, entry) {
-            var tplMatch = entry.file.match(/(^[^\/]+).hbs$/);
-            if (tplMatch) {
-                templates.push(tplMatch[1]);
-            }
-            return templates;
-        }, []);
+        // all custom .hbs templates (e.g. custom-about)
+        this._customTemplates = checkedTheme.templates.custom;
+
+        // all .hbs templates
+        this._templates = checkedTheme.templates.all;
 
         // Create a theme config object
         this._config = themeConfig.create(this._packageInfo);
@@ -57,6 +53,10 @@ class ActiveTheme {
 
     get name() {
         return this._name;
+    }
+
+    get customTemplates() {
+        return this._customTemplates;
     }
 
     get path() {

@@ -482,7 +482,8 @@
                     "role": "all",
                     "client": "all",
                     "subscriber": ["add"],
-                    "invite": "all"
+                    "invite": "all",
+                    "theme": ["browse"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -492,7 +493,8 @@
                     "user": ["browse", "read"],
                     "role": ["browse"],
                     "client": "all",
-                    "subscriber": ["add"]
+                    "subscriber": ["add"],
+                    "theme": ["browse"]
                 }
             }
         },

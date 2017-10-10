@@ -1,10 +1,16 @@
 var _ = require('lodash'),
     themeList = require('./list'),
+    active = require('./active'),
     packages = require('../utils/packages'),
     settingsCache = require('../settings/cache');
 
 /**
- * Provides a JSON object which can be returned via the API
+ *
+ * Provides a JSON object which can be returned via the API.
+ * You can either request all themes or a specific theme if you pass the `name` argument.
+ * Furthermore, you can pass a gscan result to filter warnings/errors.
+ *
+ * @TODO: settingsCache.get('active_theme') vs. active.get().name
  *
  * @param {string} [name] - the theme to output
  * @param {object} [checkedTheme] - a theme result from gscan
@@ -15,10 +21,8 @@ module.exports = function toJSON(name, checkedTheme) {
 
     if (!name) {
         toFilter = themeList.getAll();
-        // Default to returning the full list
         themeResult = packages.filterPackages(toFilter, settingsCache.get('active_theme'));
     } else {
-        // If we pass in a gscan result, convert this instead
         toFilter = {
             [name]: themeList.get(name)
         };
@@ -32,6 +36,11 @@ module.exports = function toJSON(name, checkedTheme) {
         if (checkedTheme && checkedTheme.results.error.length > 0) {
             themeResult[0].errors = _.cloneDeep(checkedTheme.results.error);
         }
+    }
+
+    // CASE: if you want a JSON response for a single theme, which is not active.
+    if (_.find(themeResult, {active: true}) && active.get()) {
+        _.find(themeResult, {active: true}).templates = active.get().customTemplates;
     }
 
     return {themes: themeResult};

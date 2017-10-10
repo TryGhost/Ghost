@@ -20,6 +20,12 @@ var debug = require('ghost-ignition').debug('api:themes'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 themes = {
+    /**
+     * Every role can browse all themes. The response contains a list of all available themes in your content folder.
+     * The active theme get's marked as `active:true` and contains an extra object `templates`, which
+     * contains the custom templates of the active theme. These custom templates are used to show a dropdown
+     * in the PSM to be able to choose a custom post template.
+     */
     browse: function browse(options) {
         return apiUtils
             // Permissions

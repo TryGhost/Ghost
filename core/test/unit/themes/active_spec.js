@@ -32,7 +32,12 @@ describe('Themes', function () {
                     name: 'casper',
                     path: 'my/fake/theme/path'
                 };
-                fakeCheckedTheme = {};
+                fakeCheckedTheme = {
+                    templates: {
+                        all: ['post', 'about', 'post-hey', 'custom-test'],
+                        custom: ['custom-test', 'post-hey']
+                    }
+                };
             });
 
             it('should mount active theme with partials', function () {
