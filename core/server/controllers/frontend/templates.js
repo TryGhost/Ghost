@@ -66,22 +66,26 @@ function getChannelTemplateHierarchy(channelOpts) {
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'post' is the default / fallback
- * For posts: [post-:slug, post]
- * For pages: [page-:slug, page, post]
+ * For posts: [post-:slug, custom-*, post]
+ * For pages: [page-:slug, custom-*, page, post]
  *
- * @param {Object} single
+ * @param {Object} postObject
  * @returns {String[]}
  */
-function getSingleTemplateHierarchy(single) {
+function getSingleTemplateHierarchy(postObject) {
     var templateList = ['post'],
-        type = 'post';
+        slugTemplate = 'post-' + postObject.slug;
 
-    if (single.page) {
+    if (postObject.page) {
         templateList.unshift('page');
-        type = 'page';
+        slugTemplate = 'page-' + postObject.slug;
     }
 
-    templateList.unshift(type + '-' + single.slug);
+    if (postObject.custom_template) {
+        templateList.unshift(postObject.custom_template);
+    }
+
+    templateList.unshift(slugTemplate);
 
     return templateList;
 }
@@ -117,8 +121,8 @@ function pickTemplate(templateList, fallback) {
     return template;
 }
 
-function getTemplateForSingle(single) {
-    var templateList = getSingleTemplateHierarchy(single),
+function getTemplateForSingle(postObject) {
+    var templateList = getSingleTemplateHierarchy(postObject),
         fallback = templateList[templateList.length - 1];
     return pickTemplate(templateList, fallback);
 }

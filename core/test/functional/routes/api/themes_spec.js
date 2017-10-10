@@ -94,6 +94,20 @@ describe('Themes API (Forked)', function () {
             })
             .then(function (token) {
                 scope.editorAccessToken = token;
+
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+author@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[2]
+                });
+            })
+            .then(function (user) {
+                scope.author = user;
+
+                request.user = scope.author;
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                scope.authorAccessToken = token;
                 done();
             })
             .catch(done);
@@ -128,10 +142,11 @@ describe('Themes API (Forked)', function () {
                     jsonResponse.themes[0].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[0].active.should.be.false();
 
-                    testUtils.API.checkResponse(jsonResponse.themes[1], 'theme');
+                    testUtils.API.checkResponse(jsonResponse.themes[1], 'theme', 'templates');
                     jsonResponse.themes[1].name.should.eql('casper');
                     jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[1].active.should.be.true();
+                    jsonResponse.themes[1].templates.should.eql([]);
 
                     testUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
                     jsonResponse.themes[2].name.should.eql('test-theme');
@@ -218,7 +233,7 @@ describe('Themes API (Forked)', function () {
                                     // Casper should be present and still active
                                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                                     should.exist(casperTheme);
-                                    testUtils.API.checkResponse(casperTheme, 'theme');
+                                    testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                                     casperTheme.active.should.be.true();
 
                                     // The added theme should be here
@@ -276,7 +291,7 @@ describe('Themes API (Forked)', function () {
                             // Casper should be present and still active
                             casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                             should.exist(casperTheme);
-                            testUtils.API.checkResponse(casperTheme, 'theme');
+                            testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                             casperTheme.active.should.be.true();
 
                             // The deleted theme should not be here
@@ -340,7 +355,7 @@ describe('Themes API (Forked)', function () {
 
                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                     should.exist(casperTheme);
-                    testUtils.API.checkResponse(casperTheme, 'theme');
+                    testUtils.API.checkResponse(casperTheme, 'theme', 'templates');
                     casperTheme.active.should.be.true();
 
                     testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
@@ -368,7 +383,7 @@ describe('Themes API (Forked)', function () {
 
                             testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                             should.exist(testTheme);
-                            testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
+                            testUtils.API.checkResponse(testTheme, 'theme', ['warnings', 'templates']);
                             testTheme.active.should.be.true();
                             testTheme.warnings.should.be.an.Array();
 
@@ -492,7 +507,7 @@ describe('Themes API (Forked)', function () {
 
                     testTheme = _.find(jsonResponse.themes, {name: 'test-theme'});
                     should.exist(testTheme);
-                    testUtils.API.checkResponse(testTheme, 'theme', ['warnings']);
+                    testUtils.API.checkResponse(testTheme, 'theme', ['warnings', 'templates']);
                     testTheme.active.should.be.true();
                     testTheme.warnings.should.be.an.Array();
 
@@ -546,6 +561,19 @@ describe('Themes API (Forked)', function () {
         });
 
         describe('As Editor', function () {
+            it('can browse themes', function (done) {
+                request.get(testUtils.API.getApiQuery('themes/'))
+                    .set('Authorization', 'Bearer ' + scope.editorAccessToken)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+
             it('no permissions to upload theme', function (done) {
                 scope.uploadTheme({
                     themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
@@ -587,6 +615,77 @@ describe('Themes API (Forked)', function () {
             it('no permissions to download theme', function (done) {
                 request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
+                    .expect(403)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.exist(res.body.errors);
+                        res.body.errors.should.be.an.Array().with.lengthOf(1);
+                        res.body.errors[0].errorType.should.eql('NoPermissionError');
+                        res.body.errors[0].message.should.eql('You do not have permission to read themes');
+
+                        done();
+                    });
+            });
+        });
+
+        describe('As Author', function () {
+            it('can browse themes', function (done) {
+                request.get(testUtils.API.getApiQuery('themes/'))
+                    .set('Authorization', 'Bearer ' + scope.authorAccessToken)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+
+            it('no permissions to upload theme', function (done) {
+                scope.uploadTheme({
+                    themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
+                    accessToken: scope.authorAccessToken
+                }).end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    res.statusCode.should.eql(403);
+
+                    should.exist(res.body.errors);
+                    res.body.errors.should.be.an.Array().with.lengthOf(1);
+                    res.body.errors[0].errorType.should.eql('NoPermissionError');
+                    res.body.errors[0].message.should.eql('You do not have permission to add themes');
+
+                    done();
+                });
+            });
+
+            it('no permissions to delete theme', function (done) {
+                request.del(testUtils.API.getApiQuery('themes/test'))
+                    .set('Authorization', 'Bearer ' + scope.authorAccessToken)
+                    .expect(403)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.exist(res.body.errors);
+                        res.body.errors.should.be.an.Array().with.lengthOf(1);
+                        res.body.errors[0].errorType.should.eql('NoPermissionError');
+                        res.body.errors[0].message.should.eql('You do not have permission to destroy themes');
+
+                        done();
+                    });
+            });
+
+            it('no permissions to download theme', function (done) {
+                request.get(testUtils.API.getApiQuery('themes/casper/download/'))
+                    .set('Authorization', 'Bearer ' + scope.authorAccessToken)
                     .expect(403)
                     .end(function (err, res) {
                         if (err) {
