@@ -1745,9 +1745,9 @@ getsetdeep@~2.0.0:
   dependencies:
     typechecker "~2.0.1"
 
-ghost-gql@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.6.tgz#be811bc95f8f72671009c33100fc85d2d02758ee"
+ghost-gql@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.8.tgz#630410cf1f71ccffbdab3d9d01419981c794b0ce"
   dependencies:
     lodash "^4.17.4"
 
@@ -2160,9 +2160,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.1.7.tgz#27244687af130851b7d04cd035f4dae8d96bedec"
+gscan@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.2.0.tgz#c2a75f31cebd6b110d1bf8ef3412f3a44bf2a965"
   dependencies:
     bluebird "3.4.6"
     chalk "1.1.1"
