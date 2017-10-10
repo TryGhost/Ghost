@@ -92,7 +92,7 @@ describe('Database Migration (special functions)', function () {
 
             // Themes
             permissions[21].name.should.eql('Browse themes');
-            permissions[21].should.be.AssignedToRoles(['Administrator']);
+            permissions[21].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
             permissions[22].name.should.eql('Edit themes');
             permissions[22].should.be.AssignedToRoles(['Administrator']);
             permissions[23].name.should.eql('Activate themes');

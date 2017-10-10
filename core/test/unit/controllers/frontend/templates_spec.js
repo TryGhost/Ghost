@@ -126,7 +126,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('post').returns(true);
             });
 
-            it('will return correct template for a post WITHOUT custom template', function () {
+            it('post without custom slug template', function () {
                 var view = templates.single({
                     page: 0,
                     slug: 'test-post'
@@ -135,17 +135,17 @@ describe('templates', function () {
                 view.should.eql('post');
             });
 
-            it('will return correct template for a post WITH custom template', function () {
+            it('post with custom slug template', function () {
                 hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
                 var view = templates.single({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
                 should.exist(view);
-                view.should.eql('post-welcome-to-ghost', 'post');
+                view.should.eql('post-welcome-to-ghost');
             });
 
-            it('will return correct template for a page WITHOUT custom template', function () {
+            it('page without custom slug template', function () {
                 var view = templates.single({
                     page: 1,
                     slug: 'contact'
@@ -154,13 +154,83 @@ describe('templates', function () {
                 view.should.eql('page');
             });
 
-            it('will return correct template for a page WITH custom template', function () {
+            it('page with custom slug template', function () {
                 var view = templates.single({
                     page: 1,
                     slug: 'about'
                 });
                 should.exist(view);
                 view.should.eql('page-about');
+            });
+
+            it('post with custom template', function () {
+                hasTemplateStub.withArgs('custom-about').returns(true);
+
+                var view = templates.single({
+                    page: 0,
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('custom-about');
+            });
+
+            it('page with custom template', function () {
+                hasTemplateStub.withArgs('custom-about').returns(true);
+
+                var view = templates.single({
+                    page: 1,
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('custom-about');
+            });
+
+            it('post with custom template configured, but the template is missing', function () {
+                hasTemplateStub.withArgs('custom-about').returns(false);
+
+                var view = templates.single({
+                    page: 0,
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('post');
+            });
+
+            it('page with custom template configured, but the template is missing', function () {
+                hasTemplateStub.withArgs('custom-about').returns(false);
+
+                var view = templates.single({
+                    page: 1,
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('page');
+            });
+
+            it('post with custom template configured, but slug template exists', function () {
+                hasTemplateStub.withArgs('custom-about').returns(true);
+                hasTemplateStub.withArgs('post-about').returns(true);
+
+                var view = templates.single({
+                    page: 0,
+                    slug: 'about',
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('post-about');
+            });
+
+            it('post with custom template configured, but slug template exists, but can\'t be found', function () {
+                hasTemplateStub.withArgs('custom-about').returns(false);
+                hasTemplateStub.withArgs('post-about').returns(false);
+
+                var view = templates.single({
+                    page: 0,
+                    slug: 'about',
+                    custom_template: 'custom-about'
+                });
+                should.exist(view);
+                view.should.eql('post');
             });
         });
 
