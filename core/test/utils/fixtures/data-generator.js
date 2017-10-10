@@ -358,6 +358,19 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createTag(overrides) {
+        var newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            visibility: 'public',
+            created_by: DataGenerator.Content.users[0].id,
+            created_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id,
+            updated_at: new Date()
+        });
+    }
+
     function createPost(overrides) {
         var newObj = _.cloneDeep(overrides),
             mobiledoc = JSON.parse(overrides.mobiledoc || '{}');
@@ -521,11 +534,11 @@ DataGenerator.forKnex = (function () {
     ];
 
     tags = [
-        createBasic(DataGenerator.Content.tags[0]),
-        createBasic(DataGenerator.Content.tags[1]),
-        createBasic(DataGenerator.Content.tags[2]),
-        createBasic(DataGenerator.Content.tags[3]),
-        createBasic(DataGenerator.Content.tags[4])
+        createTag(DataGenerator.Content.tags[0]),
+        createTag(DataGenerator.Content.tags[1]),
+        createTag(DataGenerator.Content.tags[2]),
+        createTag(DataGenerator.Content.tags[3]),
+        createTag(DataGenerator.Content.tags[4])
     ];
 
     roles = [
@@ -616,7 +629,7 @@ DataGenerator.forKnex = (function () {
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
-        createTag: createBasic,
+        createTag: createTag,
         createUser: createUser,
         createClient: createClient,
         createGenericUser: createGenericUser,
