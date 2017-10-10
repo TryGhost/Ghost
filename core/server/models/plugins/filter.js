@@ -1,7 +1,7 @@
-var _      = require('lodash'),
+var _ = require('lodash'),
     errors = require('../../errors'),
-    gql    = require('ghost-gql'),
-    i18n   = require('../../i18n'),
+    gql = require('ghost-gql'),
+    i18n = require('../../i18n'),
     filter,
     filterUtils;
 
@@ -83,6 +83,17 @@ filter = function filter(Bookshelf) {
         enforcedFilters: function enforcedFilters() {},
         defaultFilters: function defaultFilters() {},
 
+        preProcessFilters: function preProcessFilters() {
+            this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
+                statement.prop = 'tags.slug';
+                return {group: [
+                    statement,
+                    {prop: 'posts_tags.sort_order', op: '=', value: 0},
+                    {prop: 'tags.visibility', op: '=', value: 'public'}
+                ]};
+            });
+        },
+
         /**
          * ## Post process Filters
          * Post Process filters looking for joins etc
@@ -159,6 +170,8 @@ filter = function filter(Bookshelf) {
                 if (this.debug) {
                     gql.json.printStatements(this._filters.statements);
                 }
+
+                this.preProcessFilters(options);
 
                 this.query(function (qb) {
                     gql.knexify(qb, self._filters);
