@@ -147,17 +147,31 @@
 
                 <div class="form-group for-checkbox">
                     <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                        {{one-way-checkbox model.page type="checkbox" name="static-page" id="static-page" class="gh-input post-setting-static-page" update=(action (mut model.page))}}
+                        {{one-way-checkbox model.page
+                            name="static-page"
+                            id="static-page"
+                            class="gh-input post-setting-static-page"
+                            update=(action (mut model.page))
+                        }}
                         <span class="input-toggle-component"></span>
                         <p>Turn this post into a page</p>
                     </label>
 
                     <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                        {{one-way-checkbox model.featured type="checkbox" name="featured" id="featured" class="gh-input post-setting-featured" update=(action (mut model.featured))}}
+                        {{one-way-checkbox model.featured
+                            name="featured"
+                            id="featured"
+                            class="gh-input post-setting-featured"
+                            update=(action (mut model.featured))
+                        }}
                         <span class="input-toggle-component"></span>
                         <p>Feature this post</p>
                     </label>
                 </div>
+
+                {{gh-psm-template-select
+                    post=model
+                    onTemplateSelect=(action (mut model.customTemplate))}}
 
                 {{#unless model.isNew}}
                     <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{inline-svg "trash"}} Delete Post</span></button>

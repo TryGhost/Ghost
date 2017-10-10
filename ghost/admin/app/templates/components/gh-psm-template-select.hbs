@@ -1,0 +1,19 @@
+{{#if customTemplates}}
+    <div class="form-group for-select" data-test-custom-template-form>
+        <label for="author-list">Template</label>
+        <span class="gh-input-icon gh-icon-user">
+            {{inline-svg "file-text-document"}}
+            <span class="gh-select {{if matchedSlugTemplate "disabled"}}">
+                {{one-way-select selectedTemplate
+                    options=customTemplates
+                    optionValuePath="filename"
+                    optionLabelPath="name"
+                    update=(action "selectTemplate")
+                    disabled=matchedSlugTemplate
+                    data-test-select="custom-template"}}
+                {{inline-svg "arrow-down-small"}}
+            </span>
+        </span>
+        <p>Post URL matches {{matchedSlugTemplate.filename}}</p>
+    </div>
+{{/if}}

@@ -84,6 +84,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     codeinjectionFoot: attr('string', {defaultValue: ''}),
     codeinjectionHead: attr('string', {defaultValue: ''}),
+    customTemplate: attr('string'),
     ogImage: attr('string'),
     ogTitle: attr('string'),
     ogDescription: attr('string'),
