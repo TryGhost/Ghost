@@ -33,7 +33,7 @@ module.exports = {
                 // Validate
                 return validate
                     .check(theme)
-                    .then(function resultHandler(checkedTheme) {
+                    .then(function validationSuccess(checkedTheme) {
                         // CASE: inform that the theme has errors, but not fatal (theme still works)
                         if (checkedTheme.results.error.length) {
                             logging.warn(new errors.ThemeValidationError({
@@ -46,7 +46,7 @@ module.exports = {
                         debug('Activating theme (method A on boot)', activeThemeName);
                         self.activate(theme, checkedTheme);
                     })
-                    .catch(function (err) {
+                    .catch(function validationFailure(err) {
                         if (err.errorDetails) {
                             logging.error(new errors.ThemeValidationError({
                                 message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
@@ -56,12 +56,17 @@ module.exports = {
 
                         // CASE: we have to remember to show errors on blog
                         // `err.context` remembers the theme inside this property
-                        active.set(theme, err.context, err);
+                        self.activate(theme, err.context, err);
                     });
             })
-            .catch(function (err) {
+            .catch(errors.NotFoundError, function (err) {
                 // CASE: active theme is missing, we don't want to exit because the admin panel will still work
                 err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
+                logging.error(err);
+            })
+            .catch(function (err) {
+                // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
+                // This is the absolute catch-all, at this point, we do not know what went wrong!
                 logging.error(err);
             });
     },
@@ -77,10 +82,17 @@ module.exports = {
     validate: validate,
     toJSON: require('./to-json'),
     getActive: active.get,
-    activate: function activate(loadedTheme, checkedTheme) {
+    activate: function activate(loadedTheme, checkedTheme, error) {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
-        active.set(loadedTheme, checkedTheme);
+        try {
+            active.set(loadedTheme, checkedTheme, error);
+        } catch (err) {
+            logging.error(new errors.InternalServerError({
+                message: i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),
+                err: err
+            }));
+        }
     },
     middleware: require('./middleware')
 };

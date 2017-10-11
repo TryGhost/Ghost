@@ -107,7 +107,8 @@
             "themehandler": {
                 "missingTheme": "The currently active theme \"{theme}\" is missing.",
                 "invalidTheme": "The currently active theme \"{theme}\" is invalid.",
-                "themeHasErrors": "The currently active theme \"{theme}\" has errors, but will still work."
+                "themeHasErrors": "The currently active theme \"{theme}\" has errors, but will still work.",
+                "activateFailed": "Unable to activate the theme \"{theme}\"."
             },
             "redirects": {
                 "register": "Could not register custom redirects."
