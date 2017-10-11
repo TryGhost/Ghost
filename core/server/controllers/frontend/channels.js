@@ -86,7 +86,7 @@ channelRouter = function router() {
 
         if (channel.editRedirect) {
             channelRouter.get('/edit/', function redirect(req, res) {
-                res.redirect(utils.url.urlJoin(utils.url.getSubdir(), channel.editRedirect.replace(':slug', req.params.slug)));
+                utils.url.redirectToAdmin(302, res, channel.editRedirect.replace(':slug', req.params.slug));
             });
         }
 

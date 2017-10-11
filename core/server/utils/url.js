@@ -354,10 +354,10 @@ function redirect301(res, redirectUrl) {
     return res.redirect(301, redirectUrl);
 }
 
-function redirectToAdmin(res, adminPath, permanent) {
+function redirectToAdmin(status, res, adminPath) {
     var redirectUrl = urlJoin(urlFor('admin'), adminPath, '/');
 
-    if (permanent) {
+    if (status === 301) {
         return redirect301(res, redirectUrl);
     }
     return res.redirect(redirectUrl);

@@ -607,7 +607,7 @@ describe('Url', function () {
                 done();
             };
 
-            utils.url.redirectToAdmin(res, '#/my/awesome/path', true);
+            utils.url.redirectToAdmin(301, res, '#/my/awesome/path');
         });
 
         it('performs an admin 302 redirect correctly', function (done) {
@@ -622,7 +622,7 @@ describe('Url', function () {
                 done();
             };
 
-            utils.url.redirectToAdmin(res, '#/my/awesome/path');
+            utils.url.redirectToAdmin(302, res, '#/my/awesome/path');
         });
     });
 });
