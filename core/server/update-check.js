@@ -167,9 +167,22 @@ function updateCheckRequest() {
                 res.on('end', function onEnd() {
                     try {
                         resData = JSON.parse(resData);
+
+                        if (res.statusCode !== 200 && res.statusCode !== 201) {
+                            // CASE: no notifications available, ignore
+                            if (res.statusCode === 404) {
+                                return resolve({
+                                    next_check: Math.round(Date.now() / 1000 + 24 * 3600),
+                                    notifications: []
+                                });
+                            }
+
+                            return reject(new errors.BadRequestError(res.statusCode + ':' + JSON.stringify(resData)));
+                        }
+
                         resolve(resData);
                     } catch (e) {
-                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
+                        reject(new errors.BadRequestError(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error') + ':' + resData));
                     }
                 });
             });

@@ -420,7 +420,8 @@ describe('Update Check', function () {
                                             cb();
                                             break;
                                     }
-                                }
+                                },
+                                statusCode: 200
                             });
                         }
                     };
@@ -481,7 +482,8 @@ describe('Update Check', function () {
                                             cb();
                                             break;
                                     }
-                                }
+                                },
+                                statusCode: 200
                             });
                         }
                     };
@@ -503,6 +505,111 @@ describe('Update Check', function () {
                     reqObj.method.should.eql('GET');
                     reqObj.path.should.eql('/?ghost_version=0.11.11');
                     writeStub.called.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('received 500 from the service', function (done) {
+            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
+                updateCheckDataSpy = sandbox.stub(),
+                reqObj,
+                writeStub = sandbox.stub();
+
+            updateCheck.__set__('https', {
+                request: function (_reqObj, cb) {
+                    reqObj = _reqObj;
+
+                    return {
+                        on: sandbox.stub(),
+                        write: writeStub,
+                        end: function () {
+                            cb({
+                                on: function (key, cb) {
+                                    switch (key) {
+                                        case 'data': cb('something went wrong'); break;
+                                        default:
+                                            if (key === 'error') {
+                                                return;
+                                            }
+
+                                            cb();
+                                            break;
+                                    }
+                                },
+                                statusCode: 500
+                            });
+                        }
+                    };
+                }
+            });
+
+            updateCheck.__set__('updateCheckData', updateCheckDataSpy);
+
+            updateCheckDataSpy.returns(Promise.resolve({
+                ghost_version: '0.11.11',
+                blog_id: 'something',
+                npm_version: 'something'
+            }));
+
+            updateCheckRequest()
+                .then(function () {
+                    done(new Error('Should fail.'));
+                })
+                .catch(function (err) {
+                    err.message.should.eql('Unable to decode update response:something went wrong');
+                    done();
+                });
+        });
+
+        it('received 404 from the service', function (done) {
+            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
+                updateCheckDataSpy = sandbox.stub(),
+                reqObj,
+                writeStub = sandbox.stub();
+
+            updateCheck.__set__('https', {
+                request: function (_reqObj, cb) {
+                    reqObj = _reqObj;
+
+                    return {
+                        on: sandbox.stub(),
+                        write: writeStub,
+                        end: function () {
+                            cb({
+                                on: function (key, cb) {
+                                    switch (key) {
+                                        case 'data': cb(JSON.stringify({errors: [{detail: 'No Notifications available.'}]})); break;
+                                        default:
+                                            if (key === 'error') {
+                                                return;
+                                            }
+
+                                            cb();
+                                            break;
+                                    }
+                                },
+                                statusCode: 404
+                            });
+                        }
+                    };
+                }
+            });
+
+            updateCheck.__set__('updateCheckData', updateCheckDataSpy);
+
+            updateCheckDataSpy.returns(Promise.resolve({
+                ghost_version: '0.11.11',
+                blog_id: 'something',
+                npm_version: 'something'
+            }));
+
+            updateCheckRequest()
+                .then(function () {
+                    reqObj.hostname.should.eql('updates.ghost.org');
+                    should.not.exist(reqObj.port);
+                    reqObj.method.should.eql('POST');
+                    writeStub.called.should.eql(true);
                     done();
                 })
                 .catch(done);
@@ -538,7 +645,8 @@ describe('Update Check', function () {
                                             cb();
                                             break;
                                     }
-                                }
+                                },
+                                statusCode: 200
                             });
                         }
                     };
