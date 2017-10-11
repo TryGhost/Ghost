@@ -21,7 +21,7 @@ module.exports = function single(req, res, next) {
 
         // CASE: last param is of url is /edit, redirect to admin
         if (lookup.isEditURL) {
-            return utils.url.adminRedirect(res, '#/editor/' + post.id);
+            return utils.url.redirectToAdmin(res, '#/editor/' + post.id);
         }
 
         // CASE: permalink is not valid anymore, we redirect him permanently to the correct one

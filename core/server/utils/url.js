@@ -354,7 +354,7 @@ function redirect301(res, redirectUrl) {
     return res.redirect(301, redirectUrl);
 }
 
-function adminRedirect(res, adminPath, permanent) {
+function redirectToAdmin(res, adminPath, permanent) {
     var redirectUrl = urlJoin(urlFor('admin'), adminPath, '/');
 
     if (permanent) {
@@ -369,7 +369,7 @@ module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.isSSL = isSSL;
 module.exports.urlPathForPost = urlPathForPost;
-module.exports.adminRedirect = adminRedirect;
+module.exports.redirectToAdmin = redirectToAdmin;
 module.exports.redirect301 = redirect301;
 
 /**
