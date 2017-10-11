@@ -115,7 +115,8 @@ describe('Controllers', function () {
             res = {
                 locals: {},
                 render: sinon.spy(),
-                redirect: sinon.spy()
+                redirect: sinon.spy(),
+                set: sinon.spy()
             };
         });
 
@@ -152,6 +153,7 @@ describe('Controllers', function () {
                 should.not.exist(err);
                 res.render.called.should.be.false();
                 res.redirect.called.should.be.false();
+                res.set.called.should.be.false();
 
                 done();
             });
@@ -161,6 +163,7 @@ describe('Controllers', function () {
             req.params = {uuid: 'abc-1234-03'};
             res.redirect = function (status, url) {
                 res.render.called.should.be.false();
+                res.set.called.should.be.true();
                 status.should.eql(301);
                 url.should.eql('/getting-started/');
 
@@ -174,7 +177,8 @@ describe('Controllers', function () {
             req.params = {uuid: 'abc-1234-01', options: 'edit'};
             res.redirect = function (url) {
                 res.render.called.should.be.false();
-                url.should.eql('/ghost/editor/1/');
+                res.set.called.should.be.false();
+                url.should.eql('/ghost/#/editor/1/');
 
                 done();
             };
@@ -189,6 +193,7 @@ describe('Controllers', function () {
                 should.not.exist(err);
                 res.render.called.should.be.false();
                 res.redirect.called.should.be.false();
+                res.set.called.should.be.false();
 
                 done();
             });

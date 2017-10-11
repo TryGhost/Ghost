@@ -10,17 +10,10 @@ module.exports = function frontendRoutes() {
         routeKeywords = config.get('routeKeywords');
 
     // ### Admin routes
-    router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), '#/signout/'));
-    });
-    router.get(/^\/signup\/$/, function redirectToSignup(req, res) {
-        utils.redirect301(res, utils.url.urlJoin(utils.url.urlFor('admin'), '#/signup/'));
-    });
-
+    router.get(/^\/(logout|signout)\/$/, function (req, res) { return utils.url.adminRedirect(res, '#/signout/', true); });
+    router.get(/^\/signup\/$/, function (req, res) { return utils.url.adminRedirect(res, '#/signup/', true); });
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function redirectToAdmin(req, res) {
-        utils.redirect301(res, utils.url.urlFor('admin'));
-    });
+    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function (req, res) { return utils.url.adminRedirect(res, '/', true); });
 
     // Post Live Preview
     router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), controllers.preview);
