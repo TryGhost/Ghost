@@ -4,6 +4,7 @@
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
 
 var proxy = require('./proxy'),
+    _ = require('lodash'),
     Promise = require('bluebird'),
     moment = require('moment'),
 
@@ -54,6 +55,10 @@ module.exports = function prevNext(options) {
             order: 'published_at ' + order,
             limit: 1
         };
+
+    if (_.get(options, 'hash.in') && options.hash.in === 'primary_tag' && _.get(this, 'primary_tag.slug')) {
+        apiOptions.filter += '+primary_tag:' + this.primary_tag.slug;
+    }
 
     if (!options.fn) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: options.name});
