@@ -263,7 +263,7 @@ describe('Frontend Routing', function () {
 
                 it('should redirect to editor', function (done) {
                     request.get('/welcome/edit/')
-                        .expect('Location', /ghost\/editor\/\w+/)
+                        .expect('Location', /ghost\/#\/editor\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(302)
                         .end(doEnd(done));
@@ -412,7 +412,7 @@ describe('Frontend Routing', function () {
 
                 it('should redirect to editor', function (done) {
                     request.get('/static-page-test/edit/')
-                        .expect('Location', /ghost\/editor\/\w+/)
+                        .expect('Location', /ghost\/#\/editor\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(302)
                         .end(doEnd(done));
@@ -473,7 +473,7 @@ describe('Frontend Routing', function () {
                 request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
                     .expect(301)
                     .expect('Location', '/short-and-sweet/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(doEnd(done));
             });
 

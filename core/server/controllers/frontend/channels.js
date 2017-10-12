@@ -19,9 +19,9 @@ function handlePageParam(req, res, next, page) {
     if (page === 1) {
         // Page 1 is an alias, do a permanent 301 redirect
         if (rssRegex.test(req.url)) {
-            return utils.redirect301(res, req.originalUrl.replace(rssRegex, '/rss/'));
+            return utils.url.redirect301(res, req.originalUrl.replace(rssRegex, '/rss/'));
         } else {
-            return utils.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
+            return utils.url.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
         }
     } else if (page < 1 || isNaN(page)) {
         // Nothing less than 1 is a valid page number, go straight to a 404
@@ -47,7 +47,7 @@ rssRouter = function rssRouter(channelConfig) {
     router.get(baseRoute, stack);
     router.get(utils.url.urlJoin(baseRoute, ':page(\\d+)/'), stack);
     router.get('/feed/', function redirectToRSS(req, res) {
-        return utils.redirect301(res, utils.url.urlJoin(utils.url.getSubdir(), req.baseUrl, baseRoute));
+        return utils.url.redirect301(res, utils.url.urlJoin(utils.url.getSubdir(), req.baseUrl, baseRoute));
     });
 
     router.param('page', handlePageParam);
@@ -86,7 +86,7 @@ channelRouter = function router() {
 
         if (channel.editRedirect) {
             channelRouter.get('/edit/', function redirect(req, res) {
-                res.redirect(utils.url.urlJoin(utils.url.getSubdir(), channel.editRedirect.replace(':slug', req.params.slug)));
+                utils.url.redirectToAdmin(302, res, channel.editRedirect.replace(':slug', req.params.slug));
             });
         }
 

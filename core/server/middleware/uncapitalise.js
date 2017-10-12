@@ -39,8 +39,7 @@ uncapitalise = function uncapitalise(req, res, next) {
           utils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
         );
 
-        res.set('Cache-Control', 'public, max-age=' + utils.ONE_YEAR_S);
-        res.redirect(301, redirectPath);
+        return utils.url.redirect301(res, redirectPath);
     } else {
         next();
     }

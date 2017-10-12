@@ -21,14 +21,14 @@ module.exports = function preview(req, res, next) {
 
         if (req.params.options && req.params.options.toLowerCase() === 'edit') {
             // CASE: last param is of url is /edit, redirect to admin
-            return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin'), 'editor', post.id, '/'));
+            return utils.url.redirectToAdmin(302, res, '#/editor/' + post.id);
         } else if (req.params.options) {
             // CASE: unknown options param detected. Ignore and end in 404.
             return next();
         }
 
         if (post.status === 'published') {
-            return res.redirect(301, utils.url.urlFor('post', {post: post}));
+            return utils.url.redirect301(res, utils.url.urlFor('post', {post: post}));
         }
 
         setRequestIsSecure(req, post);
