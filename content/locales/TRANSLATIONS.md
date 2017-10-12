@@ -25,9 +25,9 @@ You need:
 - a translatable theme
 - and a translation file
 
-A theme is translatable when its *.hbs* templates have all their visible English texts wrapped in `{{t}}` translation helpers. Translatable themes also include copies of three overridden core templates, as explained in [*How to Make Any Theme Translatable*](#how-to-make-any-theme-translatable).
+A theme is translatable when its *.hbs* templates have all their visible English texts wrapped in `{{t}}` translation helpers. You can see the section [*How to Make Any Theme Translatable*](#how-to-make-any-theme-translatable) for more details.
  
-The translation file for your target language can be already included, or maybe not yet, by the theme.
+Translatable themes usually include *.json* translation files for one or several languages. The translation file for your target language can be already included, or maybe not yet, by the theme.
 
 For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the **translation file** is:
 
