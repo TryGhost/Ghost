@@ -102,7 +102,7 @@ urlRedirects = function urlRedirects(req, res, next) {
 
     if (redirectUrl) {
         debug('url redirect to: ' + redirectUrl);
-        return res.redirect(301, redirectUrl);
+        return utils.url.redirect301(res, redirectUrl);
     }
 
     debug('no url redirect');

@@ -576,4 +576,53 @@ describe('Url', function () {
             utils.url.urlPathForPost(testData).should.equal(postLink);
         });
     });
+
+    describe('redirects', function () {
+        it('performs 301 redirect correctly', function (done) {
+            var res = {};
+
+            res.set = sinon.spy();
+
+            res.redirect = function (code, path) {
+                code.should.equal(301);
+                path.should.eql('my/awesome/path');
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();
+
+                done();
+            };
+
+            utils.url.redirect301(res, 'my/awesome/path');
+        });
+
+        it('performs an admin 301 redirect correctly', function (done) {
+            var res = {};
+
+            res.set = sinon.spy();
+
+            res.redirect = function (code, path) {
+                code.should.equal(301);
+                path.should.eql('/ghost/#/my/awesome/path/');
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();
+
+                done();
+            };
+
+            utils.url.redirectToAdmin(301, res, '#/my/awesome/path');
+        });
+
+        it('performs an admin 302 redirect correctly', function (done) {
+            var res = {};
+
+            res.set = sinon.spy();
+
+            res.redirect = function (path) {
+                path.should.eql('/ghost/#/my/awesome/path/');
+                res.set.called.should.be.false();
+
+                done();
+            };
+
+            utils.url.redirectToAdmin(302, res, '#/my/awesome/path');
+        });
+    });
 });

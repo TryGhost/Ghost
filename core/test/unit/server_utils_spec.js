@@ -1,5 +1,4 @@
 var should = require('should'), // jshint ignore:line
-    sinon = require('sinon'),
     nock = require('nock'),
     configUtils = require('../utils/configUtils'),
     gravatar = require('../../server/utils/gravatar'),
@@ -143,24 +142,6 @@ describe('Server Utilities', function () {
                 should.not.exist(result);
                 done();
             }).catch(done);
-        });
-    });
-
-    describe('redirect301', function () {
-        it('performs a 301 correctly', function (done) {
-            var res = {};
-
-            res.set = sinon.spy();
-
-            res.redirect = function (code, path) {
-                code.should.equal(301);
-                path.should.eql('my/awesome/path');
-                res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();
-
-                done();
-            };
-
-            utils.redirect301(res, 'my/awesome/path');
         });
     });
 });

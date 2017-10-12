@@ -1,6 +1,5 @@
 var unidecode  = require('unidecode'),
     _          = require('lodash'),
-    config = require('../config'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     utils,
@@ -107,12 +106,6 @@ utils = {
             base64String += '=';
         }
         return base64String;
-    },
-
-    redirect301: function redirect301(res, path) {
-        /*jslint unparam:true*/
-        res.set({'Cache-Control': 'public, max-age=' + config.get('caching:301:maxAge')});
-        res.redirect(301, path);
     },
 
     /**
