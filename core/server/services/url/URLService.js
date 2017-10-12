@@ -32,10 +32,12 @@ class UrlService {
                     _.each(resource.items, function (item) {
                         var url = resource.toUrl(item),
                             data = {
-                                resourceType: resource.name,
-                                identifier: item.id
+                                slug: item.slug,
+                                resource: {
+                                    type: resource.name,
+                                    id: item.id
+                                }
                             };
-
 
                         urlCache.set(url, data);
                     });

@@ -32,7 +32,7 @@ class Resource {
         var data = {
             [this.urlLookup]: resource
         };
-        return urlUtils.urlFor(this.urlLookup, data, true);
+        return urlUtils.urlFor(this.urlLookup, data);
     }
 }
 
