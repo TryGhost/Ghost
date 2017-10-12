@@ -1,0 +1,33 @@
+[
+    {
+        "name": "post",
+        "api" : "posts",
+        "prefetchOptions": {
+            "filter": "visibility:public+status:published+page:false",
+            "include": "author,tags"
+        }
+    },
+    {
+        "name": "page",
+        "api" : "posts",
+        "prefetchOptions": {
+            "filter": "visibility:public+status:published+page:true",
+            "include": "author,tags"
+        },
+        "urlLookup": "post"
+    },
+    {
+        "name": "tag",
+        "api" : "tags",
+        "prefetchOptions": {
+            "filter": "visibility:public"
+        }
+    },
+    {
+        "name": "author",
+        "api" : "users",
+        "prefetchOptions": {
+            "filter": "visibility:public"
+        }
+    }
+]

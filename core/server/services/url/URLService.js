@@ -1,39 +1,39 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('url-service'),
-    resources = require('./config'),
+    // TODO: load this from a routing service, so it is dynamic
+    resourceConfig = require('./config.json'),
+    Resource = require('./Resource'),
     urlCache = require('./url-cache');
-
-function buildList() {
-    var props = {};
-
-    _.each(resources, function buildProps(resource, resourceName) {
-        props[resourceName] = resource.prefetch();
-    });
-
-    return Promise.props(props);
-}
-
 
 class UrlService {
     constructor() {
+        this.resources = [];
 
+        _.each(resourceConfig, (config) => {
+            this.resources.push(new Resource(config));
+        });
+    }
+
+    prefetch () {
+        return Promise.each(this.resources, (resource) => {
+            return resource.prefetch();
+        });
     }
 
     loadAllUrls() {
         debug('load start');
 
-        buildList()
-            .then(function success(response) {
+        this.prefetch()
+            .then(() => {
                 debug('load end, start processing');
 
-                _.each(response, function (items, resourceName) {
-                    var defaults = resources[resourceName];
-                    _.each(items, function (resource) {
-                        var url = defaults.toUrl(resource),
+                _.each(this.resources, (resource) => {
+                    _.each(resource.items, function (item) {
+                        var url = resource.toUrl(item),
                             data = {
-                                resourceType: resourceName,
-                                identifier: resource.id
+                                resourceType: resource.name,
+                                identifier: item.id
                             };
 
 
@@ -44,7 +44,7 @@ class UrlService {
                 debug('processing done, url cache built', _.size(urlCache.getAll()));
                 console.log(require('util').inspect(urlCache.getAll(), false, null));
             })
-            .catch(function error(err) {
+            .catch((err) => {
                 debug('load error', err);
             });
     }
