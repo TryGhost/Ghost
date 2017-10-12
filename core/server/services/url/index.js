@@ -28,3 +28,28 @@ module.exports.init = function init() {
         urlService.loadResourceUrls();
     });
 };
+
+// Page events
+// events.on('page.published', self.addOrUpdateUrl.bind(self));
+// events.on('page.published.edited', self.addOrUpdateUrl.bind(self));
+// // Note: This is called if a published page is deleted
+// events.on('page.unpublished', self.removeUrl.bind(self));
+
+// Post events
+// events.on('post.published', self.addOrUpdateUrl.bind(self));
+// events.on('post.published.edited', self.addOrUpdateUrl.bind(self));
+// // Note: This is called if a published post is deleted
+// events.on('post.unpublished', self.removeUrl.bind(self));
+// PERMALINK CHANGE!
+// events.on('settings.permalinks.edited', ARGH! Do something to reset all posts!);
+
+// Tag events
+// events.on('tag.added', self.addOrUpdateUrl.bind(self));
+// events.on('tag.edited', self.addOrUpdateUrl.bind(self));
+// events.on('tag.deleted', self.removeUrl.bind(self));
+
+// Author events
+// events.on('user.activated', self.addOrUpdateUrl.bind(self));
+// events.on('user.activated.edited', self.addOrUpdateUrl.bind(self));
+// events.on('user.deactivated', self.removeUrl.bind(self));
+
