@@ -38,7 +38,7 @@ For example, for Spanish (language tag "`es`"), and an example theme that we can
 
 Simply verify that the *.json* translation file is in place, and then activate the new language:
 
-**Ghost's Settings > General > Language**
+**Ghost's Settings > General > Language and locale**
 
 Just enter the [language/locale tag &#x27B6;](https://www.w3schools.com/tags/ref_language_codes.asp) of the files to use (e.g.: `es` for Spanish, `fr` for French, `zh` for Chinese, `ja` for Japanese, `en-US` for American English, etc.) and click on the *Save settings* button. That's all folks!
 
@@ -227,7 +227,6 @@ It's advisable to add the HTML `lang` attribute to the `<html>` tag at the start
 
 ```
 <html lang="{{lang}}">
-
 ```
 
 In this way, when setting a language on the admin panel, `{{lang}}` will be automatically replaced on the site with the corresponding language/locale tag (e.g. `en`, `es`, `fr`, `zh`, `ja`, `en-US`, etc.).
