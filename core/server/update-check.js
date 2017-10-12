@@ -39,11 +39,18 @@ var crypto   = require('crypto'),
     allowedCheckEnvironments = ['development', 'production'],
     currentVersion = config.ghostVersion;
 
+function nextCheckTimestamp() {
+    var now = Math.round(new Date().getTime() / 1000);
+    return now + (24 * 3600);
+}
+
 function updateCheckError(error) {
-    api.settings.edit(
-        {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
-        internal
-    );
+    api.settings.edit({
+        settings: [{
+            key: 'nextUpdateCheck',
+            value: nextCheckTimestamp()
+        }]
+    }, internal);
 
     errors.logError(
         error,
@@ -172,7 +179,7 @@ function updateCheckRequest() {
                             // CASE: no notifications available, ignore
                             if (res.statusCode === 404) {
                                 return resolve({
-                                    next_check: Math.round(Date.now() / 1000 + 24 * 3600),
+                                    next_check: nextCheckTimestamp(),
                                     notifications: []
                                 });
                             }

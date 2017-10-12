@@ -3,12 +3,14 @@ var _ = require('lodash'),
     should = require('should'),
     rewire = require('rewire'),
     sinon = require('sinon'),
+    moment = require('moment'),
     uuid = require('uuid'),
     testUtils = require('../utils'),
     configUtils = require('../utils/configUtils'),
 
     // Stuff we are testing
     packageInfo = require('../../../package'),
+    SettingsAPI = require('../../server/api/settings'),
     NotificationsAPI = require('../../server/api/notifications'),
     sandbox = sinon.sandbox.create(),
     updateCheck = rewire('../../server/update-check');
@@ -18,7 +20,83 @@ describe('Update Check', function () {
         updateCheck = rewire('../../server/update-check');
     });
 
-    describe('Reporting to UpdateCheck', function () {
+    afterEach(function () {
+        sandbox.restore();
+        configUtils.restore();
+    });
+
+    describe('fn: updateCheck', function () {
+        var updateCheckRequestSpy,
+            updateCheckResponseSpy,
+            updateCheckErrorSpy;
+
+        beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
+        afterEach(testUtils.teardown);
+
+        beforeEach(function () {
+            updateCheckRequestSpy = sandbox.stub().returns(Promise.resolve());
+            updateCheckResponseSpy = sandbox.stub().returns(Promise.resolve());
+            updateCheckErrorSpy = sandbox.stub();
+
+            updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
+            updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
+            updateCheck.__set__('updateCheckError', updateCheckErrorSpy);
+            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql', 'testing-pg']);
+        });
+
+        it('update check was never executed', function (done) {
+            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+                settings: [{
+                    value: null
+                }]
+            }));
+
+            updateCheck()
+                .then(function () {
+                    updateCheckRequestSpy.calledOnce.should.eql(true);
+                    updateCheckResponseSpy.calledOnce.should.eql(true);
+                    updateCheckErrorSpy.called.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('update check won\'t happen if it\'s too early', function (done) {
+            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+                settings: [{
+                    value: moment().add('10', 'minutes').unix()
+                }]
+            }));
+
+            updateCheck()
+                .then(function () {
+                    updateCheckRequestSpy.calledOnce.should.eql(false);
+                    updateCheckResponseSpy.calledOnce.should.eql(false);
+                    updateCheckErrorSpy.called.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('update check will happen if it\'s time to check', function (done) {
+            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+                settings: [{
+                    value: moment().subtract('10', 'minutes').unix()
+                }]
+            }));
+
+            updateCheck()
+                .then(function () {
+                    updateCheckRequestSpy.calledOnce.should.eql(true);
+                    updateCheckResponseSpy.calledOnce.should.eql(true);
+                    updateCheckErrorSpy.called.should.eql(false);
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
+    describe('fn: updateCheckData', function () {
         var environmentsOrig;
 
         before(function () {
@@ -58,7 +136,7 @@ describe('Update Check', function () {
         });
     });
 
-    describe('Custom Notifications', function () {
+    describe('fn: createCustomNotification', function () {
         var currentVersionOrig;
 
         before(function () {
@@ -173,10 +251,6 @@ describe('Update Check', function () {
     describe('fn: updateCheckResponse', function () {
         beforeEach(testUtils.setup('settings', 'perms:setting', 'perms:init'));
         afterEach(testUtils.teardown);
-        afterEach(function () {
-            sandbox.restore();
-            configUtils.restore();
-        });
 
         /**
          * Receiving a notification without messages means that we shouldn't show anything.
@@ -411,7 +485,9 @@ describe('Update Check', function () {
                             cb({
                                 on: function (key, cb) {
                                     switch (key) {
-                                        case 'data': cb(JSON.stringify({version: 'something'})); break;
+                                        case 'data':
+                                            cb(JSON.stringify({version: 'something'}));
+                                            break;
                                         default:
                                             if (key === 'error') {
                                                 return;
@@ -473,7 +549,9 @@ describe('Update Check', function () {
                             cb({
                                 on: function (key, cb) {
                                     switch (key) {
-                                        case 'data': cb(JSON.stringify({version: 'something'})); break;
+                                        case 'data':
+                                            cb(JSON.stringify({version: 'something'}));
+                                            break;
                                         default:
                                             if (key === 'error') {
                                                 return;
@@ -527,7 +605,9 @@ describe('Update Check', function () {
                             cb({
                                 on: function (key, cb) {
                                     switch (key) {
-                                        case 'data': cb('something went wrong'); break;
+                                        case 'data':
+                                            cb('something went wrong');
+                                            break;
                                         default:
                                             if (key === 'error') {
                                                 return;
@@ -579,7 +659,9 @@ describe('Update Check', function () {
                             cb({
                                 on: function (key, cb) {
                                     switch (key) {
-                                        case 'data': cb(JSON.stringify({errors: [{detail: 'No Notifications available.'}]})); break;
+                                        case 'data':
+                                            cb(JSON.stringify({errors: [{detail: 'No Notifications available.'}]}));
+                                            break;
                                         default:
                                             if (key === 'error') {
                                                 return;
@@ -636,7 +718,9 @@ describe('Update Check', function () {
                             cb({
                                 on: function (key, cb) {
                                     switch (key) {
-                                        case 'data': cb(JSON.stringify({version: 'something'})); break;
+                                        case 'data':
+                                            cb(JSON.stringify({version: 'something'}));
+                                            break;
                                         default:
                                             if (key === 'error') {
                                                 return;
