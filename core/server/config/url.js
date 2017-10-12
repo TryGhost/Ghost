@@ -188,7 +188,6 @@ function urlFor(context, data, absolute) {
             urlPath = data.image;
             imagePathRe = new RegExp('^' + ghostConfig.paths.subdir + '/' + ghostConfig.paths.imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
-            secure = data.image.secure;
 
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
