@@ -4,7 +4,8 @@ var _ = require('lodash'),
     // TODO: load this from a routing service, so it is dynamic
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),
-    urlCache = require('./url-cache');
+    urlCache = require('./url-cache'),
+    urlUtils  = require('../../utils').url;
 
 class UrlService {
     constructor() {
@@ -49,6 +50,13 @@ class UrlService {
             .catch((err) => {
                 debug('load error', err);
             });
+    }
+
+    // @TODO: reconsider naming
+    addStatic(relativeUrl, data) {
+        var url = urlUtils.urlFor({relativeUrl: relativeUrl});
+        data['static'] = true;
+        urlCache.set(url, data);
     }
 }
 
