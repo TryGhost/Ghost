@@ -50,14 +50,6 @@ class UrlService {
                 debug('load error', err);
             });
     }
-
-    // registerAddEvent(eventName) {
-    //     events.on(eventName, addOrUpdateUrlCache);
-    // }
-    //
-    // registerRemoveEvent(eventName) {
-    //
-    // }
 }
 
 module.exports = UrlService;

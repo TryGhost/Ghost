@@ -13,8 +13,4 @@ module.exports.init = function init() {
         debug('URL service, loading all URLS');
         urlService.loadAllUrls();
     });
-
-    // urlService.registerAddEvent('post.published');
-    // urlService.registerAddEvent('post.published.edited');
-    // urlService.registerRemoveEvent('post.unpublished');
 };
