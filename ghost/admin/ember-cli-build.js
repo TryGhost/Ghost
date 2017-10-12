@@ -4,7 +4,7 @@
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 const concat = require('broccoli-concat');
 const mergeTrees = require('broccoli-merge-trees');
-const uglify = require('broccoli-uglify-js');
+const uglify = require('broccoli-uglify-sourcemap');
 const CleanCSS = require('broccoli-clean-css');
 const environment = EmberApp.env();
 const isProduction = environment === 'production';

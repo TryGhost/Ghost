@@ -13,7 +13,7 @@ module.exports = {
         'Firefox'
     ],
     browser_args: {
-        chrome: {
+        Chrome: {
             mode: 'ci',
             args: [
                 '--disable-gpu',

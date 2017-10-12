@@ -8,6 +8,7 @@ node_js:
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
+    - JOBS=1 # See https://git.io/vdao3 for details.
 
 branches:
   except:
