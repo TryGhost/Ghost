@@ -19,6 +19,6 @@ module.exports.init = function init() {
     // Register a listener for server-start to load all the known urls
     events.on('server:start', function loadAllUrls() {
         debug('URL service, loading all URLS');
-        urlService.loadAllUrls();
+        urlService.loadResourceUrls();
     });
 };

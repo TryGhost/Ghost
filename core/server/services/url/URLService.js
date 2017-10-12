@@ -22,7 +22,7 @@ class UrlService {
         });
     }
 
-    loadAllUrls() {
+    loadResourceUrls() {
         debug('load start');
 
         this.prefetch()
