@@ -94,7 +94,8 @@ describe('Public API', function () {
 
         request.get(testUtils.API.getApiQuery('posts?client_id=ghost-test&client_secret=not_available'))
             .set('Origin', 'https://example.com')
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            // 301 Redirects _should_ be cached
+            .expect('Cache-Control', testUtils.cacheRules.year)
             .expect(301)
             .end(function (err, res) {
                 if (err) {
