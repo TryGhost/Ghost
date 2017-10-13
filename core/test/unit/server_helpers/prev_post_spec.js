@@ -87,7 +87,6 @@ describe('{{prev_post}} helper', function () {
                     fn.called.should.be.false();
                     inverse.called.should.be.true();
 
-                    console.log('test', inverse.firstCall.args);
                     inverse.firstCall.args.should.have.lengthOf(2);
                     inverse.firstCall.args[0].should.have.properties('slug', 'title');
                     inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');

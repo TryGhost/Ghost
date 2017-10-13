@@ -39,8 +39,9 @@ buildApiOptions = function buildApiOptions(post, options) {
     return apiOptions;
 };
 
-fetch = function fetch(apiOptions, options, data) {
-    var self = this;
+fetch = function fetch(options, data) {
+    var self = this,
+        apiOptions = buildApiOptions(this, options);
 
     return api.posts
         .browse(apiOptions)
@@ -81,5 +82,5 @@ module.exports = function prevNext(options) {
     }
 
     // With the guards out of the way, attempt to build the apiOptions, and then fetch the data
-    return fetch(buildApiOptions(this, options), options, data);
+    return fetch.call(this, options, data);
 };
