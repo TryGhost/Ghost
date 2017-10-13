@@ -47,7 +47,7 @@ module.exports = function prevNext(options) {
     var data = createFrame(options.data),
         publishedAt = moment(this.published_at).format('YYYY-MM-DD HH:mm:ss'),
         slug = this.slug,
-        op = options.name === 'prev_post' ? '<=' : '>=',
+        op = options.name === 'prev_post' ? '<=' : '>',
         order = options.name === 'prev_post' ? 'desc' : 'asc',
         apiOptions = {
             include: 'author,tags',
