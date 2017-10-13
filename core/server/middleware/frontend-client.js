@@ -4,7 +4,7 @@ var api = require('../api'),
 
 module.exports = function getFrontendClient(req, res, next) {
     if (labs.isSet('publicAPI') !== true) {
-        next();
+        return next();
     }
 
     return api.clients
