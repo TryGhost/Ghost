@@ -14,6 +14,8 @@
                 {{inline-svg "arrow-down-small"}}
             </span>
         </span>
-        <p>Post URL matches {{matchedSlugTemplate.filename}}</p>
+        {{#if matchedSlugTemplate}}
+            <p>Post URL matches {{matchedSlugTemplate.filename}}</p>
+        {{/if}}
     </div>
 {{/if}}
