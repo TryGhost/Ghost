@@ -149,7 +149,7 @@ For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.x have diff
 
 ## How to Make Any Theme Translatable
 
-Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation key can also optionally be used.
+Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system (although back-end translations are not yet enabled for the current versions) and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation key can also optionally be used.
 
 For example, in *.hbs* theme templates:
 
@@ -340,24 +340,6 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 ```
 6 artículos
 ```
-
-### Translation of back-end messages
-
-Server side messages are also optionally translatable.
-
-For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the translation file is:
-
-- In the content folder *content/locales* (common files for Ghost core and all themes):
-  - *es.json* - optional file for back-end server side messages from *.js* files, usually for admins
-
-To add any language, copy the default English file, that you can find in this folder:
-
-- *core/server/translations*
-  - *en.json* - copy optionally, for server side messages
-
-Then, rename the language file, just changing the default `en` language tag to the desired language.
-
-Finally, translate the included sentences, and place the file in the *content/locales* folder.
 
 ### CSS content text override
 

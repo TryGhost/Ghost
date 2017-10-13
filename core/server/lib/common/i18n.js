@@ -158,7 +158,9 @@ I18n = {
         // Switch to enable/disable translations of back-end messages from core .js files.
         // - true: enabled; optional files like content/locales/es.json, etc. are used when available.
         // - false: disabled; only the default English file core/server/translations/en.json is used.
-        backendTranslations = true;
+        // Before enabling back-end message translations, see previous tasks on issue #6526
+        // (error codes or identifiers, error message translation at the point of display...)
+        backendTranslations = false;
 
         currentLocale = settingsCache.get('default_locale') || 'en';
         activeTheme = settingsCache.get('active_theme') || '';
