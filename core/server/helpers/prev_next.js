@@ -4,7 +4,9 @@
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
 
 var proxy = require('./proxy'),
+    _ = require('lodash'),
     Promise = require('bluebird'),
+    moment = require('moment'),
 
     logging = proxy.logging,
     i18n = proxy.i18n,
@@ -13,20 +15,41 @@ var proxy = require('./proxy'),
     api = proxy.api,
     isPost = proxy.checks.isPost,
 
-    fetch;
+    fetch,
+    buildApiOptions;
 
-fetch = function fetch(apiOptions, options, data) {
-    var self = this;
+buildApiOptions = function buildApiOptions(options, post) {
+    var publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss'),
+        slug = post.slug,
+        op = options.name === 'prev_post' ? '<=' : '>',
+        order = options.name === 'prev_post' ? 'desc' : 'asc',
+        apiOptions = {
+            include: 'author,tags',
+            order: 'published_at ' + order,
+            limit: 1,
+            // This line deliberately uses double quotes because GQL cannot handle either double quotes
+            // or escaped singles, see TryGhost/GQL#34
+            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // jscs:ignore
+        };
+
+    if (_.get(options, 'hash.in') && options.hash.in === 'primary_tag' && _.get(post, 'primary_tag.slug')) {
+        apiOptions.filter += '+primary_tag:' + post.primary_tag.slug;
+    }
+
+    return apiOptions;
+};
+
+fetch = function fetch(options, data) {
+    var self = this,
+        apiOptions = buildApiOptions(options, this);
 
     return api.posts
-        .read(apiOptions)
+        .browse(apiOptions)
         .then(function handleSuccess(result) {
             var related = result.posts[0];
 
-            if (related.previous) {
-                return options.fn(related.previous, {data: data});
-            } else if (related.next) {
-                return options.fn(related.next, {data: data});
+            if (related) {
+                return options.fn(related, {data: data});
             } else {
                 return options.inverse(self, {data: data});
             }
@@ -44,21 +67,20 @@ fetch = function fetch(apiOptions, options, data) {
 module.exports = function prevNext(options) {
     options = options || {};
 
-    var data = createFrame(options.data),
-        apiOptions = {
-            include: options.name === 'prev_post' ? 'previous,previous.author,previous.tags' : 'next,next.author,next.tags'
-        };
+    var data = createFrame(options.data);
 
-    if (!options.fn) {
+    // Guard against incorrect usage of the helpers
+    if (!options.fn || !options.inverse) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: options.name});
         logging.warn(data.error);
         return Promise.resolve();
     }
 
-    if (isPost(this) && this.status === 'published') {
-        apiOptions.slug = this.slug;
-        return fetch(apiOptions, options, data);
-    } else {
+    // Guard against trying to execute prev/next on previews, pages, or other resources
+    if (!isPost(this) || this.status !== 'published' || this.page) {
         return Promise.resolve(options.inverse(this, {data: data}));
     }
+
+    // With the guards out of the way, attempt to build the apiOptions, and then fetch the data
+    return fetch.call(this, options, data);
 };

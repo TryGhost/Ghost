@@ -9,8 +9,7 @@ var Promise = require('bluebird'),
     i18n = require('../i18n'),
     docName = 'posts',
     allowedIncludes = [
-        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
-        'next', 'previous', 'next.author', 'next.tags', 'previous.author', 'previous.tags'
+        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'
     ],
     unsafeAttrs = ['author_id'],
     posts;
