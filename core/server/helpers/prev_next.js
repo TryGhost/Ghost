@@ -18,7 +18,7 @@ var proxy = require('./proxy'),
     fetch,
     buildApiOptions;
 
-buildApiOptions = function buildApiOptions(post, options) {
+buildApiOptions = function buildApiOptions(options, post) {
     var publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss'),
         slug = post.slug,
         op = options.name === 'prev_post' ? '<=' : '>',
@@ -41,7 +41,7 @@ buildApiOptions = function buildApiOptions(post, options) {
 
 fetch = function fetch(options, data) {
     var self = this,
-        apiOptions = buildApiOptions(this, options);
+        apiOptions = buildApiOptions(options, this);
 
     return api.posts
         .browse(apiOptions)
