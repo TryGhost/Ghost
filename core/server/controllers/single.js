@@ -21,12 +21,12 @@ module.exports = function single(req, res, next) {
 
         // CASE: last param is of url is /edit, redirect to admin
         if (lookup.isEditURL) {
-            return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin'), 'editor', post.id, '/'));
+            return utils.url.redirectToAdmin(302, res, '#/editor/' + post.id);
         }
 
         // CASE: permalink is not valid anymore, we redirect him permanently to the correct one
         if (post.url !== req.path) {
-            return res.redirect(301, post.url);
+            return utils.url.redirect301(res, post.url);
         }
 
         setRequestIsSecure(req, post);

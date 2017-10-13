@@ -439,32 +439,6 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve next and previous posts', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[2].id + '/?include=next,previous'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['next', 'previous']);
-                        jsonResponse.posts[0].page.should.not.be.ok();
-
-                        jsonResponse.posts[0].next.should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].next, 'post');
-                        jsonResponse.posts[0].previous.should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].previous, 'post');
-                        done();
-                    });
-            });
-
             it('can retrieve a static page', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
