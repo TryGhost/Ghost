@@ -1,9 +1,18 @@
+import {Response} from 'ember-cli-mirage';
 import {paginateModelArray} from '../utils';
 
 export default function mockUsers(server) {
     // /users/me = Always return the user with ID=1
     server.get('/users/me/', function ({users}) {
-        return users.find(1);
+        let user = users.find(1);
+
+        if (user) {
+            return user;
+        } else {
+            return new Response(404, {}, {errors: [
+                {message: 'Not found', errorType: 'NotFoundError'}
+            ]});
+        }
     });
 
     server.get('/users/', function ({users}, {queryParams}) {

@@ -75,11 +75,9 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     validationType: 'post',
 
-    author: belongsTo('user', {async: true}),
     authorId: attr('string'),
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr(),
-    customExcerpt: attr(),
+    customExcerpt: attr('string'),
     featured: attr('boolean', {defaultValue: false}),
     featureImage: attr('string'),
     codeinjectionFoot: attr('string', {defaultValue: ''}),
@@ -99,18 +97,21 @@ export default Model.extend(Comparable, ValidationEngine, {
     page: attr('boolean', {defaultValue: false}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
-    publishedBy: belongsTo('user', {async: true}),
     slug: attr('string'),
     status: attr('string', {defaultValue: 'draft'}),
-    tags: hasMany('tag', {
-        embedded: 'always',
-        async: false
-    }),
     title: attr('string', {defaultValue: ''}),
     updatedAtUTC: attr('moment-utc'),
     updatedBy: attr(),
     url: attr('string'),
     uuid: attr('string'),
+
+    author: belongsTo('user', {async: true}),
+    createdBy: belongsTo('user', {async: true}),
+    publishedBy: belongsTo('user', {async: true}),
+    tags: hasMany('tag', {
+        embedded: 'always',
+        async: false
+    }),
 
     scratch: null,
     titleScratch: null,

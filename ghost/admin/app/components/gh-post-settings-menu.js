@@ -6,6 +6,7 @@ import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
+import {htmlSafe} from '@ember/string';
 import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
 import {task, timeout} from 'ember-concurrency';
@@ -38,13 +39,13 @@ export default Component.extend(SettingsMenuMixin, {
     twitterTitleScratch: alias('model.twitterTitleScratch'),
     slugValue: boundOneWay('model.slug'),
 
-    seoTitle: or('metaTitleScratch', 'model.titleScratch'),
-    twitterImage: or('model.twitterImage', 'model.featureImage'),
-    twitterTitle: or('twitterTitleScratch', 'seoTitle'),
-    twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     facebookImage: or('model.ogImage', 'model.featureImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
-    facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    seoTitle: or('metaTitleScratch', 'model.titleScratch'),
+    twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    twitterImage: or('model.twitterImage', 'model.featureImage'),
+    twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
     _showSettingsMenu: false,
     _showThrobbers: false,
@@ -87,6 +88,16 @@ export default Component.extend(SettingsMenuMixin, {
 
         this._showSettingsMenu = this.get('showSettingsMenu');
     },
+
+    twitterImageStyle: computed('twitterImage', function () {
+        let image = this.get('twitterImage');
+        return htmlSafe(`background-image: url(${image})`);
+    }),
+
+    facebookImageStyle: computed('facebookImage', function () {
+        let image = this.get('facebookImage');
+        return htmlSafe(`background-image: url(${image})`);
+    }),
 
     showThrobbers: task(function* () {
         yield timeout(PSM_ANIMATION_LENGTH);

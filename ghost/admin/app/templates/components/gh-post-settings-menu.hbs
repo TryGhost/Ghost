@@ -282,7 +282,7 @@
                                     <label>Preview</label>
                                     <div class="gh-twitter-preview">
                                         {{#if twitterImage}}
-                                        <div class="gh-twitter-preview-image" style="background-image: url({{twitterImage}});"></div>
+                                        <div class="gh-twitter-preview-image" style={{twitterImageStyle}}></div>
                                         {{/if}}
                                         <div class="gh-twitter-preview-content">
                                             <div class="gh-twitter-preview-title">{{twitterTitle}}</div>
@@ -350,7 +350,7 @@
                                     <label>Preview</label>
                                     <div class="gh-og-preview">
                                         {{#if facebookImage}}
-                                        <div class="gh-og-preview-image" style="background-image: url({{facebookImage}});"></div>
+                                        <div class="gh-og-preview-image" style={{facebookImageStyle}}></div>
                                         {{/if}}
                                         <div class="gh-og-preview-content">
                                             <div class="gh-og-preview-title">{{truncate facebookTitle 88}}</div>

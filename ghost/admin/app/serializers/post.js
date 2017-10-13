@@ -45,6 +45,13 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
 
         // We have a plural root in the API
         let root = pluralize(type.modelName);
+
+        // TODO: this is throwing a warning when saving a new post:
+        // The embedded relationship 'tags' is undefined for 'post' with id 'null'.
+        // Please include it in your original payload.
+        //
+        // This appears to be an issue in Ember Data - needs further investigation
+        // and possibly an issue raised
         let data = this.serialize(record, options);
 
         // Properties that exist on the model but we don't want sent in the payload

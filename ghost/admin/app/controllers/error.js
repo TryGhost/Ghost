@@ -5,15 +5,15 @@ export default Controller.extend({
 
     stack: false,
 
-    code: computed('content.status', function () {
-        return this.get('content.status') > 200 ? this.get('content.status') : 500;
+    code: computed('model.status', function () {
+        return this.get('model.status') > 200 ? this.get('model.status') : 500;
     }),
 
-    message: computed('content.statusText', function () {
+    message: computed('model.statusText', function () {
         if (this.get('code') === 404) {
             return 'Page not found';
         }
 
-        return this.get('content.statusText') !== 'error' ? this.get('content.statusText') : 'Internal Server Error';
+        return this.get('model.statusText') !== 'error' ? this.get('model.statusText') : 'Internal Server Error';
     })
 });
