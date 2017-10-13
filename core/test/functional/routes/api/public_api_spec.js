@@ -1,8 +1,9 @@
 var should = require('should'),
     supertest = require('supertest'),
+    _ = require('lodash'),
+    moment = require('moment'),
     testUtils = require('../../../utils'),
     configUtils = require('../../../utils/configUtils'),
-    _ = require('lodash'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -501,6 +502,72 @@ describe('Public API', function () {
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
+            });
+    });
+
+    it('fetch the most recent post, then the prev, then the next should match the first', function (done) {
+        function createFilter(publishedAt, op) {
+            // This line deliberately uses double quotes because GQL cannot handle either double quotes
+            // or escaped singles, see TryGhost/GQL#34
+            return encodeURIComponent("published_at:" + op + "'" + publishedAt + "'");  // jscs:ignore
+        }
+
+        request.get(testUtils.API.getApiQuery(
+            'posts/?client_id=ghost-admin&client_secret=not_available&limit=1'
+        ))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                should.exist(res.body.posts[0]);
+
+                var post = res.body.posts[0],
+                    publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
+
+                post.title.should.eql('Welcome to Ghost');
+
+                request.get(testUtils.API.getApiQuery(
+                    'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
+                    + createFilter(publishedAt, '<')
+                ))  .set('Origin', testUtils.API.getURL())
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        should.exist(res.body.posts[0]);
+
+                        var post = res.body.posts[0],
+                            publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
+
+                        post.title.should.eql('Using the Ghost editor');
+
+                        request.get(testUtils.API.getApiQuery(
+                            'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
+                            + createFilter(publishedAt, '>')
+                        ))  .set('Origin', testUtils.API.getURL())
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+                                should.exist(res.body.posts[0]);
+
+                                var post = res.body.posts[0];
+
+                                post.title.should.eql('Welcome to Ghost');
+
+                                done();
+                            });
+                    });
             });
     });
 });
