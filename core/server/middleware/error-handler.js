@@ -81,11 +81,13 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
     }
 
     var templateData = {
-        message: err.message,
-        code: err.statusCode,
-        errorDetails: err.errorDetails || []
-    },
-    template = templates.error(err.statusCode);
+            message: err.message,
+            // @deprecated
+            code: err.statusCode,
+            statusCode: err.statusCode,
+            errorDetails: err.errorDetails || []
+        },
+        template = templates.error(err.statusCode);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
