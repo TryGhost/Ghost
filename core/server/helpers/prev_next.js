@@ -77,7 +77,7 @@ module.exports = function prevNext(options) {
     }
 
     // Guard against trying to execute prev/next on previews, pages, or other resources
-    if (!isPost(this) || this.status !== 'published') {
+    if (!isPost(this) || this.status !== 'published' || this.page) {
         return Promise.resolve(options.inverse(this, {data: data}));
     }
 

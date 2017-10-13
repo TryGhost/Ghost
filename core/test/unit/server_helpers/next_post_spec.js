@@ -124,6 +124,41 @@ describe('{{next_post}} helper', function () {
         });
     });
 
+    describe('for page', function () {
+        beforeEach(function () {
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
+                    return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
+                }
+            });
+        });
+
+        it('shows \'else\' template', function (done) {
+            var fn = sinon.spy(),
+                inverse = sinon.spy(),
+                optionsData = {name: 'next_post', fn: fn, inverse: inverse};
+
+            helpers.next_post
+                .call({
+                    html: 'content',
+                    status: 'published',
+                    mobiledoc: markdownToMobiledoc('ff'),
+                    title: 'post2',
+                    slug: 'current',
+                    published_at: new Date(0),
+                    url: '/current/',
+                    page: true
+                }, optionsData)
+                .then(function () {
+                    fn.called.should.be.false();
+                    inverse.called.should.be.true();
+
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
     describe('for unpublished post', function () {
         beforeEach(function () {
             browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
@@ -145,7 +180,7 @@ describe('{{next_post}} helper', function () {
                     mobiledoc: markdownToMobiledoc('ff'),
                     title: 'post2',
                     slug: 'current',
-                    published_at: new Date(0),
+                    created_at: new Date(0),
                     url: '/current/'
                 }, optionsData)
                 .then(function () {
