@@ -80,7 +80,7 @@ module.exports = function ghost_head(options) {
         iconType = blogIconUtils.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
-    return getMetaData(dataRoot._locals, dataRoot)
+    return getMetaData(this, dataRoot._locals)
         .then(function handleMetaData(metaData) {
             debug('end fetch');
 
