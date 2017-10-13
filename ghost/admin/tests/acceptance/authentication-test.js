@@ -27,6 +27,9 @@ describe('Acceptance: Authentication', function () {
 
     describe('setup redirect', function () {
         beforeEach(function () {
+            // ensure the /users/me route doesn't error
+            server.create('user');
+
             server.get('authentication/setup', function () {
                 return {setup: [{status: false}]};
             });
