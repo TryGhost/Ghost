@@ -51,9 +51,11 @@ module.exports = function prevNext(options) {
         order = options.name === 'prev_post' ? 'desc' : 'asc',
         apiOptions = {
             include: 'author,tags',
-            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'",
             order: 'published_at ' + order,
-            limit: 1
+            limit: 1,
+            // This line deliberately uses double quotes because GQL cannot handle either double quotes
+            // or escaped singles, see TryGhost/GQL#34
+            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // jscs:ignore
         };
 
     if (_.get(options, 'hash.in') && options.hash.in === 'primary_tag' && _.get(this, 'primary_tag.slug')) {
