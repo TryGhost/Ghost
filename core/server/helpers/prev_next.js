@@ -15,7 +15,29 @@ var proxy = require('./proxy'),
     api = proxy.api,
     isPost = proxy.checks.isPost,
 
-    fetch;
+    fetch,
+    buildApiOptions;
+
+buildApiOptions = function buildApiOptions(post, options) {
+    var publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss'),
+        slug = post.slug,
+        op = options.name === 'prev_post' ? '<=' : '>',
+        order = options.name === 'prev_post' ? 'desc' : 'asc',
+        apiOptions = {
+            include: 'author,tags',
+            order: 'published_at ' + order,
+            limit: 1,
+            // This line deliberately uses double quotes because GQL cannot handle either double quotes
+            // or escaped singles, see TryGhost/GQL#34
+            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // jscs:ignore
+        };
+
+    if (_.get(options, 'hash.in') && options.hash.in === 'primary_tag' && _.get(post, 'primary_tag.slug')) {
+        apiOptions.filter += '+primary_tag:' + post.primary_tag.slug;
+    }
+
+    return apiOptions;
+};
 
 fetch = function fetch(apiOptions, options, data) {
     var self = this;
@@ -44,34 +66,20 @@ fetch = function fetch(apiOptions, options, data) {
 module.exports = function prevNext(options) {
     options = options || {};
 
-    var data = createFrame(options.data),
-        publishedAt = moment(this.published_at).format('YYYY-MM-DD HH:mm:ss'),
-        slug = this.slug,
-        op = options.name === 'prev_post' ? '<=' : '>',
-        order = options.name === 'prev_post' ? 'desc' : 'asc',
-        apiOptions = {
-            include: 'author,tags',
-            order: 'published_at ' + order,
-            limit: 1,
-            // This line deliberately uses double quotes because GQL cannot handle either double quotes
-            // or escaped singles, see TryGhost/GQL#34
-            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // jscs:ignore
-        };
+    var data = createFrame(options.data);
 
-    if (_.get(options, 'hash.in') && options.hash.in === 'primary_tag' && _.get(this, 'primary_tag.slug')) {
-        apiOptions.filter += '+primary_tag:' + this.primary_tag.slug;
+    // Guard against trying to execute prev/next on previews, pages, or other resources
+    if (!isPost(this) || this.status !== 'published') {
+        return Promise.resolve(options.inverse(this, {data: data}));
     }
 
+    // Guard against incorrect usage of the helpers
     if (!options.fn) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: options.name});
         logging.warn(data.error);
         return Promise.resolve();
     }
 
-    // Guard against trying to execute prev/next on previews
-    if (isPost(this) && this.status === 'published') {
-        return fetch(apiOptions, options, data);
-    } else {
-        return Promise.resolve(options.inverse(this, {data: data}));
-    }
+    // With the guards out of the way, attempt to build the apiOptions, and then fetch the data
+    return fetch(buildApiOptions(this, options), options, data);
 };
