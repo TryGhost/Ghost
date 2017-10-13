@@ -2,6 +2,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
+
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
@@ -10,7 +11,7 @@ var should = require('should'), // jshint ignore:line
     sandbox = sinon.sandbox.create();
 
 describe('{{next_post}} helper', function () {
-    var readPostStub;
+    var browsePostStub;
 
     afterEach(function () {
         sandbox.restore();
@@ -18,10 +19,10 @@ describe('{{next_post}} helper', function () {
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include.indexOf('next') === 0) {
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
-                        posts: [{slug: '/current/', title: 'post 2', next: {slug: '/next/', title: 'post 3'}}]
+                        posts: [{slug: '/next/', title: 'post 3'}]
                     });
                 }
             });
@@ -32,26 +33,26 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post
+            helpers.next_post
                 .call({
                     html: 'content',
                     status: 'published',
                     mobiledoc: markdownToMobiledoc('ff'),
                     title: 'post2',
                     slug: 'current',
-                    created_at: new Date(0),
+                    published_at: new Date(0),
                     url: '/current/'
                 }, optionsData)
                 .then(function () {
                     fn.calledOnce.should.be.true();
                     inverse.calledOnce.should.be.false();
 
-                    console.log(fn.firstCall.args);
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    readPostStub.calledOnce.should.be.true();
-                    readPostStub.firstCall.args[0].include.should.eql('next,next.author,next.tags');
+                    browsePostStub.calledOnce.should.be.true();
+                    browsePostStub.firstCall.args[0].include.should.eql('author,tags');
+
                     done();
                 })
                 .catch(done);
@@ -60,9 +61,9 @@ describe('{{next_post}} helper', function () {
 
     describe('for valid post with no next post', function () {
         beforeEach(function () {
-            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include.indexOf('next') === 0) {
-                    return Promise.resolve({posts: [{slug: '/current/', title: 'post 2'}]});
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
+                    return Promise.resolve({posts: []});
                 }
             });
         });
@@ -72,20 +73,20 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post
+            helpers.next_post
                 .call({
                     html: 'content',
+                    status: 'published',
                     mobiledoc: markdownToMobiledoc('ff'),
                     title: 'post2',
                     slug: 'current',
-                    created_at: new Date(0),
+                    published_at: new Date(0),
                     url: '/current/'
                 }, optionsData)
                 .then(function () {
                     fn.called.should.be.false();
                     inverse.called.should.be.true();
 
-                    console.log(inverse.firstCall.args);
                     inverse.firstCall.args.should.have.lengthOf(2);
                     inverse.firstCall.args[0].should.have.properties('slug', 'title');
                     inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
@@ -98,8 +99,8 @@ describe('{{next_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include.indexOf('next') === 0) {
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({});
                 }
             });
@@ -110,25 +111,24 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post
+            helpers.next_post
                 .call({}, optionsData)
                 .then(function () {
                     fn.called.should.be.false();
                     inverse.called.should.be.true();
-                    readPostStub.called.should.be.false();
+                    browsePostStub.called.should.be.false();
+
                     done();
                 })
                 .catch(done);
         });
     });
 
-    describe('for unpublished post', function () {
+    describe('for page', function () {
         beforeEach(function () {
-            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include.indexOf('next') === 0) {
-                    return Promise.resolve({
-                        posts: [{slug: '/current/', title: 'post 2', next: {slug: '/next/', title: 'post 3'}}]
-                    });
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
+                    return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
             });
         });
@@ -138,7 +138,42 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post
+            helpers.next_post
+                .call({
+                    html: 'content',
+                    status: 'published',
+                    mobiledoc: markdownToMobiledoc('ff'),
+                    title: 'post2',
+                    slug: 'current',
+                    published_at: new Date(0),
+                    url: '/current/',
+                    page: true
+                }, optionsData)
+                .then(function () {
+                    fn.called.should.be.false();
+                    inverse.called.should.be.true();
+
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
+    describe('for unpublished post', function () {
+        beforeEach(function () {
+            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+                if (options.filter.indexOf('published_at:>') > -1) {
+                    return Promise.resolve({posts: [{slug: '/next/', title: 'post 3'}]});
+                }
+            });
+        });
+
+        it('shows \'else\' template', function (done) {
+            var fn = sinon.spy(),
+                inverse = sinon.spy(),
+                optionsData = {name: 'next_post', fn: fn, inverse: inverse};
+
+            helpers.next_post
                 .call({
                     html: 'content',
                     status: 'draft',
@@ -151,6 +186,7 @@ describe('{{next_post}} helper', function () {
                 .then(function () {
                     fn.called.should.be.false();
                     inverse.called.should.be.true();
+
                     done();
                 })
                 .catch(done);
@@ -159,7 +195,7 @@ describe('{{next_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            readPostStub = sandbox.stub(api.posts, 'read', function () {
+            browsePostStub = sandbox.stub(api.posts, 'browse', function () {
                 return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
@@ -169,14 +205,14 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
-            helpers.prev_post
+            helpers.next_post
                 .call({
                     html: 'content',
                     status: 'published',
                     mobiledoc: markdownToMobiledoc('ff'),
                     title: 'post2',
                     slug: 'current',
-                    created_at: new Date(0),
+                    published_at: new Date(0),
                     url: '/current/'
                 }, optionsData)
                 .then(function () {
@@ -197,7 +233,7 @@ describe('{{next_post}} helper', function () {
                 inverse = sinon.spy(),
                 optionsData = {name: 'next_post'};
 
-            helpers.prev_post
+            helpers.next_post
                 .call(
                     {},
                     optionsData
