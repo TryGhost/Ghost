@@ -69,12 +69,12 @@ module.exports = function ghost_head(options) {
 
     var head = [],
         dataRoot = options.data.root,
-        globalCodeinjection = settingsCache.get('ghost_head'),
-        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
         context = dataRoot._locals.context ? dataRoot._locals.context : null,
         client = dataRoot._locals.client,
-        useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         safeVersion = dataRoot._locals.safeVersion,
+        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
+        globalCodeinjection = settingsCache.get('ghost_head'),
+        useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
