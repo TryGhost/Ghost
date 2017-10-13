@@ -512,62 +512,57 @@ describe('Public API', function () {
             return encodeURIComponent("published_at:" + op + "'" + publishedAt + "'");  // jscs:ignore
         }
 
-        request.get(testUtils.API.getApiQuery(
-            'posts/?client_id=ghost-admin&client_secret=not_available&limit=1'
-        ))
+        request
+            .get(testUtils.API.getApiQuery(
+                'posts/?client_id=ghost-admin&client_secret=not_available&limit=1'
+            ))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .then(function (res) {
                 should.exist(res.body.posts[0]);
-
                 var post = res.body.posts[0],
                     publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
 
                 post.title.should.eql('Welcome to Ghost');
 
-                request.get(testUtils.API.getApiQuery(
-                    'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
-                    + createFilter(publishedAt, '<')
-                ))  .set('Origin', testUtils.API.getURL())
+                return request
+                    .get(testUtils.API.getApiQuery(
+                        'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
+                        + createFilter(publishedAt, '<')
+                    ))
+                    .set('Origin', testUtils.API.getURL())
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-                        should.exist(res.body.posts[0]);
+                    .expect(200);
+            })
+            .then(function (res) {
+                should.exist(res.body.posts[0]);
+                var post = res.body.posts[0],
+                    publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-                        var post = res.body.posts[0],
-                            publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
+                post.title.should.eql('Using the Ghost editor');
 
-                        post.title.should.eql('Using the Ghost editor');
+                return request
+                    .get(testUtils.API.getApiQuery(
+                        'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
+                        + createFilter(publishedAt, '>')
+                    ))
+                    .set('Origin', testUtils.API.getURL())
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then(function (res) {
+                should.exist(res.body.posts[0]);
+                var post = res.body.posts[0];
 
-                        request.get(testUtils.API.getApiQuery(
-                            'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
-                            + createFilter(publishedAt, '>')
-                        ))  .set('Origin', testUtils.API.getURL())
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-                                should.exist(res.body.posts[0]);
+                post.title.should.eql('Welcome to Ghost');
 
-                                var post = res.body.posts[0];
-
-                                post.title.should.eql('Welcome to Ghost');
-
-                                done();
-                            });
-                    });
-            });
+                done();
+            })
+            .catch(done);
     });
 });
+
