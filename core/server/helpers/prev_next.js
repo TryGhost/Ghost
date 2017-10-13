@@ -68,16 +68,16 @@ module.exports = function prevNext(options) {
 
     var data = createFrame(options.data);
 
-    // Guard against trying to execute prev/next on previews, pages, or other resources
-    if (!isPost(this) || this.status !== 'published') {
-        return Promise.resolve(options.inverse(this, {data: data}));
-    }
-
     // Guard against incorrect usage of the helpers
-    if (!options.fn) {
+    if (!options.fn || !options.inverse) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: options.name});
         logging.warn(data.error);
         return Promise.resolve();
+    }
+
+    // Guard against trying to execute prev/next on previews, pages, or other resources
+    if (!isPost(this) || this.status !== 'published') {
+        return Promise.resolve(options.inverse(this, {data: data}));
     }
 
     // With the guards out of the way, attempt to build the apiOptions, and then fetch the data
