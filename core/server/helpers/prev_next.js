@@ -37,7 +37,7 @@ buildApiOptions = function buildApiOptions(options, post) {
             apiOptions.filter += '+primary_tag:' + post.primary_tag.slug;
         }
         else if (options.hash.in === 'author' && _.get(post, 'author.slug')) {
-            apiOptions.filter += '+author:' + post.author.slug
+            apiOptions.filter += '+author:' + post.author.slug;
         }
     }
 
