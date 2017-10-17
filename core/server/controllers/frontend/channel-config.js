@@ -1,6 +1,4 @@
 var _ = require('lodash'),
-    config = require('../../config'),
-    utils = require('../../utils'),
     channelConfig;
 
 channelConfig = function channelConfig() {
@@ -12,7 +10,7 @@ channelConfig = function channelConfig() {
         },
         tag: {
             name: 'tag',
-            route: utils.url.urlJoin('/', config.get('routeKeywords').tag, ':slug/'),
+            route: '/:rkw-tag/:slug/',
             postOptions: {
                 filter: 'tags:\'%s\'+tags.visibility:public'
             },
@@ -28,7 +26,7 @@ channelConfig = function channelConfig() {
         },
         author: {
             name: 'author',
-            route: utils.url.urlJoin('/', config.get('routeKeywords').author, ':slug/'),
+            route: '/:rkw-author/:slug/',
             postOptions: {
                 filter: 'author:\'%s\''
             },
