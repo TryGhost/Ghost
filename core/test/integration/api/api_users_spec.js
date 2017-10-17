@@ -1428,12 +1428,12 @@ describe('Users API', function () {
                 }).catch(checkForErrorType('ValidationError', done));
         });
 
-        it('Owner can\'t change editor password without short passwords', function (done) {
+        it('Owner can\'t change editor password with too short passwords', function (done) {
             var payload = {
                 password: [{
                     user_id: userIdFor.editor,
-                    newPassword: 'Sl',
-                    ne2Password: 'Sl'
+                    newPassword: 'only8car',
+                    ne2Password: 'only8car'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
