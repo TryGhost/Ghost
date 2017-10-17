@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -61,7 +61,7 @@
     "intl-messageformat": "1.3.0",
     "jsonpath": "0.2.12",
     "knex": "0.12.9",
-    "knex-migrator": "2.1.6",
+    "knex-migrator": "2.1.7",
     "lodash": "4.17.4",
     "markdown-it": "8.4.0",
     "markdown-it-footnote": "3.0.1",
