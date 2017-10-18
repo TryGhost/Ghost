@@ -228,7 +228,7 @@
                 "missingContext": "missing context",
                 "onlyOneRolePerUserSupported": "Only one role per user is supported at the moment.",
                 "methodDoesNotSupportOwnerRole": "This method does not support assigning the owner role",
-                "passwordDoesNotComplyLength": "Your password must be at least 8 characters long.",
+                "passwordDoesNotComplyLength": "Your password must be at least {minLength} characters long.",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "noUserWithEnteredEmailAddr": "There is no user with that email address.",
                 "userIsInactive": "The user with that email address is inactive.",

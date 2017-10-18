@@ -120,7 +120,7 @@ DataGenerator.Content = {
         }
     ],
 
-    // Password = Sl1m3rson
+    // Password = Sl1m3rson99
     users: [
         {
             // owner (owner is still id 1 because of permissions)
@@ -128,7 +128,7 @@ DataGenerator.Content = {
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // admin
@@ -136,7 +136,7 @@ DataGenerator.Content = {
             name: 'Smith Wellingsworth',
             slug: 'smith-wellingsworth',
             email: 'swellingsworth@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // editor
@@ -144,7 +144,7 @@ DataGenerator.Content = {
             name: 'Jimothy Bogendath',
             slug: 'jimothy-bogendath',
             email: 'jbOgendAth@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // author
@@ -152,7 +152,7 @@ DataGenerator.Content = {
             name: 'Slimer McEctoplasm',
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // editor 2
@@ -160,7 +160,7 @@ DataGenerator.Content = {
             name: 'Ivan Email',
             slug: 'ivan-email',
             email: 'info1@ghost.org',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // author 2
@@ -168,7 +168,7 @@ DataGenerator.Content = {
             name: 'Author2',
             slug: 'a-2',
             email: 'info2@ghost.org',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         },
         {
             // admin 2
@@ -176,7 +176,7 @@ DataGenerator.Content = {
             name: 'admin2',
             slug: 'ad-2',
             email: 'info3@ghost.org',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         }
     ],
 
@@ -419,7 +419,7 @@ DataGenerator.forKnex = (function () {
             name: 'name',
             slug: 'slug_' + Date.now(),
             status: 'active',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date()
         });
@@ -449,7 +449,7 @@ DataGenerator.forKnex = (function () {
             name: 'Joe Bloggs',
             slug: 'joe-blogs',
             email: 'joe_' + uniqueInteger + '@example.com',
-            password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         });
     }
 
@@ -675,7 +675,7 @@ DataGenerator.forModel = (function () {
         user = _.pick(user, 'name', 'email');
 
         return _.defaults({
-            password: 'Sl1m3rson'
+            password: 'Sl1m3rson99'
         }, user);
     });
 

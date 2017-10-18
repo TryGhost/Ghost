@@ -1357,7 +1357,7 @@ describe('Users API', function () {
             var payload = {
                 password: [{
                     user_id: userIdFor.owner,
-                    oldPassword: 'Sl1m3rson',
+                    oldPassword: 'Sl1m3rson99',
                     newPassword: 'newSl1m3rson',
                     ne2Password: 'newSl1m3rson'
                 }]
@@ -1374,8 +1374,8 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.owner,
                     oldPassword: 'wrong',
-                    newPassword: 'Sl1m3rson',
-                    ne2Password: 'Sl1m3rson'
+                    newPassword: 'Sl1m3rson9',
+                    ne2Password: 'Sl1m3rson9'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1389,8 +1389,8 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.owner,
                     oldPassword: '',
-                    newPassword: 'Sl1m3rson1',
-                    ne2Password: 'Sl1m3rson1'
+                    newPassword: 'Sl1m3rson19',
+                    ne2Password: 'Sl1m3rson19'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1403,9 +1403,9 @@ describe('Users API', function () {
             var payload = {
                 password: [{
                     user_id: userIdFor.owner,
-                    oldPassword: 'Sl1m3rson',
-                    newPassword: 'Sl1m3rson1',
-                    ne2Password: 'Sl1m3rson2'
+                    oldPassword: 'Sl1m3rson99',
+                    newPassword: 'Sl1m3rson19',
+                    ne2Password: 'Sl1m3rson29'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1418,8 +1418,8 @@ describe('Users API', function () {
             var payload = {
                 password: [{
                     user_id: userIdFor.editor,
-                    newPassword: 'Sl1m3rson1',
-                    ne2Password: 'Sl1m3rson2'
+                    newPassword: 'Sl1m3rson19',
+                    ne2Password: 'Sl1m3rson29'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1428,12 +1428,12 @@ describe('Users API', function () {
                 }).catch(checkForErrorType('ValidationError', done));
         });
 
-        it('Owner can\'t change editor password without short passwords', function (done) {
+        it('Owner can\'t change editor password with too short passwords', function (done) {
             var payload = {
                 password: [{
                     user_id: userIdFor.editor,
-                    newPassword: 'Sl',
-                    ne2Password: 'Sl'
+                    newPassword: 'only8car',
+                    ne2Password: 'only8car'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
