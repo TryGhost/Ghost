@@ -706,7 +706,7 @@ login = function login(request) {
             .send({
                 grant_type: 'password',
                 username: request.user.email,
-                password: 'Sl1m3rson',
+                password: 'Sl1m3rson99',
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
             }).then(function then(res) {

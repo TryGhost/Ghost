@@ -231,8 +231,8 @@ describe('Authentication API', function () {
                     .send({
                         passwordreset: [{
                             token: token,
-                            newPassword: 'abcdefgh',
-                            ne2Password: 'abcdefgh'
+                            newPassword: 'abcdefghij',
+                            ne2Password: 'abcdefghij'
                         }]
                     })
                     .expect('Content-Type', /json/)
