@@ -27,8 +27,8 @@ export default BaseValidator.extend({
     password(model) {
         let password = model.get('password');
 
-        if (!validator.isLength(password, 8)) {
-            model.get('errors').add('password', 'Password must be at least 8 characters long');
+        if (!validator.isLength(password, 10)) {
+            model.get('errors').add('password', 'Password must be at least 10 characters long');
             this.invalidate();
         }
     }

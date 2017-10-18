@@ -657,8 +657,25 @@ describe('Acceptance: Team', function () {
                     'new password error when blank'
                 ).to.match(/can't be blank/);
 
-                // typing in inputs clears validation
+                // validates too short password (< 10 characters)
                 await fillIn('#user-password-new', 'password');
+                await fillIn('#user-new-password-verification', 'password');
+
+                // enter key triggers action
+                await keyEvent('#user-password-new', 'keyup', 13);
+
+                expect(
+                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    'new password has error class when password too short'
+                ).to.be.true;
+
+                expect(
+                    find('#user-password-new').siblings('.response').text(),
+                    'confirm password error when it it\'s too short'
+                ).to.match(/at least 10 characters long/);
+
+                // typing in inputs clears validation
+                await fillIn('#user-password-new', 'password99');
                 await triggerEvent('#user-password-new', 'input');
 
                 expect(
@@ -680,7 +697,7 @@ describe('Acceptance: Team', function () {
                 ).to.match(/do not match/);
 
                 // submits with correct details
-                await fillIn('#user-new-password-verification', 'password');
+                await fillIn('#user-new-password-verification', 'password99');
                 await click('.button-change-password');
 
                 // hits the endpoint
@@ -692,8 +709,8 @@ describe('Acceptance: Team', function () {
 
                 // eslint-disable-next-line camelcase
                 expect(params.password[0].user_id).to.equal(user.id.toString());
-                expect(params.password[0].newPassword).to.equal('password');
-                expect(params.password[0].ne2Password).to.equal('password');
+                expect(params.password[0].newPassword).to.equal('password99');
+                expect(params.password[0].ne2Password).to.equal('password99');
 
                 // clears the fields
                 expect(
