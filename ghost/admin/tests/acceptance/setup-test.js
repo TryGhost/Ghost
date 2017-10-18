@@ -113,7 +113,7 @@ describe('Acceptance: Setup', function () {
             // enter valid details and submit
             await fillIn('[data-test-email-input]', 'test@example.com');
             await fillIn('[data-test-name-input]', 'Test User');
-            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-password-input]', 'password99');
             await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 
@@ -180,7 +180,7 @@ describe('Acceptance: Setup', function () {
 
             await fillIn('[data-test-email-input]', 'test@example.com');
             await fillIn('[data-test-name-input]', 'Test User');
-            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-password-input]', 'password99');
             await fillIn('[data-test-blog-title-input]', 'Blog Title');
 
             // first post - simulated validation error
@@ -218,7 +218,7 @@ describe('Acceptance: Setup', function () {
             await visit('/setup/two');
             await fillIn('[data-test-email-input]', 'test@example.com');
             await fillIn('[data-test-name-input]', 'Test User');
-            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-password-input]', 'password99');
             await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 
@@ -271,7 +271,7 @@ describe('Acceptance: Setup', function () {
             await visit('/setup/two');
             await fillIn('[data-test-email-input]', 'test@example.com');
             await fillIn('[data-test-name-input]', 'Test User');
-            await fillIn('[data-test-password-input]', 'password');
+            await fillIn('[data-test-password-input]', 'password99');
             await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('.gh-btn-green');
 

@@ -100,7 +100,7 @@ describe('Acceptance: Signup', function() {
         expect(
             find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
             'password field error text'
-        ).to.match(/must be at least 8 characters/);
+        ).to.match(/must be at least 10 characters/);
 
         // entering valid text in Password field clears error
         await fillIn('input[name="password"]', 'ValidPassword');
