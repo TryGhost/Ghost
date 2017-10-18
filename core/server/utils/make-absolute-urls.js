@@ -41,6 +41,10 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl) {
                 return;
             }
 
+            // CASE: don't convert internal links
+            if (attributeValue[0] === '#') {
+                return;
+            }
             // compose an absolute URL
 
             // if the relative URL begins with a '/' use the blog URL (including sub-directory)

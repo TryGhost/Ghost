@@ -263,6 +263,29 @@ describe('{{amp_content}} helper', function () {
             }).catch(done);
         });
 
+        it('does not convert internal anchor links starting with "#"', function (done) {
+            var testData = {
+                    html: '<a href="#jumptosection">Table of Content</a>',
+                    updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
+                    id: 1
+                },
+                ampResult = ampContentHelper.call(testData),
+                sanitizedHTML,
+                ampedHTML;
+
+            ampResult.then(function (rendered) {
+                sanitizedHTML = ampContentHelper.__get__('cleanHTML');
+                ampedHTML = ampContentHelper.__get__('ampHTML');
+                should.exist(rendered);
+                rendered.string.should.equal('<a href="#jumptosection">Table of Content</a>');
+                should.exist(ampedHTML);
+                ampedHTML.should.be.equal('<a href="#jumptosection">Table of Content</a>');
+                should.exist(sanitizedHTML);
+                sanitizedHTML.should.be.equal('<a href="#jumptosection">Table of Content</a>');
+                done();
+            }).catch(done);
+        });
+
         it('sanitizes remaining and not valid tags', function (done) {
             var testData = {
                     html: '<form<input type="text" placeholder="Hi AMP tester"></form>' +
