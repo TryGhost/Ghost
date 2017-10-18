@@ -188,7 +188,7 @@ describe('Spam Prevention API', function () {
                 .send({
                     grant_type: 'password',
                     username: email,
-                    password: 'Sl1m3rson',
+                    password: 'Sl1m3rson99',
                     client_id: 'ghost-admin',
                     client_secret: 'not_available'
                 }).expect('Content-Type', /json/)

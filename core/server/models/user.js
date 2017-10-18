@@ -28,7 +28,7 @@ var _              = require('lodash'),
     Users;
 
 function validatePasswordLength(password) {
-    return validator.isLength(password, 8);
+    return validator.isLength(password, 10);
 }
 
 /**
@@ -151,7 +151,7 @@ User = ghostBookshelf.Model.extend({
             this.set('password', String(this.get('password')));
 
             if (!validatePasswordLength(this.get('password'))) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
             }
 
             // An import with importOptions supplied can prevent re-hashing a user password
@@ -549,7 +549,7 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data);
 
         if (!validatePasswordLength(userData.password)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
         }
 
         options = this.filterOptions(options, 'setup');

@@ -123,7 +123,7 @@ describe('User Model', function run() {
 
             // avoid side-effects!
             userData = _.cloneDeep(userData);
-            userData.password = 12345678;
+            userData.password = 1234567890;
 
             // mocha supports promises
             return UserModel.add(userData, context).then(function (createdUser) {
@@ -549,22 +549,8 @@ describe('User Model', function run() {
         describe('error', function () {
             it('wrong old password', function (done) {
                 UserModel.changePassword({
-                    newPassword: '12345678',
-                    ne2Password: '12345678',
-                    oldPassword: '123456789',
-                    user_id: testUtils.DataGenerator.Content.users[0].id
-                }, testUtils.context.owner).then(function () {
-                    done(new Error('expected error!'));
-                }).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
-                    done();
-                });
-            });
-
-            it('wrong old password', function (done) {
-                UserModel.changePassword({
-                    newPassword: '12345678',
-                    ne2Password: '12345678',
+                    newPassword: '1234567890',
+                    ne2Password: '1234567890',
                     oldPassword: '123456789',
                     user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function () {
@@ -579,12 +565,12 @@ describe('User Model', function run() {
         describe('success', function () {
             it('can change password', function (done) {
                 UserModel.changePassword({
-                    newPassword: '12345678',
-                    ne2Password: '12345678',
-                    oldPassword: 'Sl1m3rson',
+                    newPassword: '1234567890',
+                    ne2Password: '1234567890',
+                    oldPassword: 'Sl1m3rson99',
                     user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function (user) {
-                    user.get('password').should.not.eql('12345678');
+                    user.get('password').should.not.eql('1234567890');
                     done();
                 }).catch(done);
             });
@@ -598,7 +584,7 @@ describe('User Model', function run() {
             var userData = {
                 name: 'Max Mustermann',
                 email: 'test@ghost.org',
-                password: '12345678'
+                password: '1234567890'
             };
 
             UserModel.setup(userData, {id: 1})

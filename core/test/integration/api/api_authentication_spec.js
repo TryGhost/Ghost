@@ -32,8 +32,8 @@ describe('Authentication API', function () {
         testReset = {
             passwordreset: [{
                 token: 'abc',
-                newPassword: 'abcdefgh',
-                ne2Password: 'abcdefgh'
+                newPassword: 'abcdefghij',
+                ne2Password: 'abcdefghij'
             }]
         };
 
@@ -409,7 +409,7 @@ describe('Authentication API', function () {
                 var user = {
                         name: 'uninvited user',
                         email: 'notinvited@example.com',
-                        password: '12345678',
+                        password: '1234567890',
                         status: 'active'
                     },
                     options = {
