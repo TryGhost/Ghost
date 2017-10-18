@@ -223,7 +223,7 @@ describe('RSS', function () {
                 should.exist(xmlData);
 
                 // anchor URL - <a href="#nowhere" title="Anchor URL">
-                xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/not-so-short-bit-complex\/#nowhere" title="Anchor URL">/);
+                xmlData.should.match(/<a href="#nowhere" title="Anchor URL">/);
 
                 // relative URL - <a href="/about#nowhere" title="Relative URL">
                 xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/about#nowhere" title="Relative URL">/);
@@ -258,7 +258,7 @@ describe('RSS', function () {
                 should.exist(xmlData);
 
                 // anchor URL - <a href="#nowhere" title="Anchor URL">
-                xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/blog\/not-so-short-bit-complex\/#nowhere" title="Anchor URL">/);
+                xmlData.should.match(/<a href="#nowhere" title="Anchor URL">/);
 
                 // relative URL - <a href="/about#nowhere" title="Relative URL">
                 xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/blog\/about#nowhere" title="Relative URL">/);
