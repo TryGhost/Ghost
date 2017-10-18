@@ -2,8 +2,7 @@
 
 const debug = require('ghost-ignition').debug('importer:users'),
     _ = require('lodash'),
-    BaseImporter = require('./base'),
-    globalUtils = require('../../../../utils');
+    BaseImporter = require('./base');
 
 class UsersImporter extends BaseImporter {
     constructor(options) {
@@ -43,7 +42,6 @@ class UsersImporter extends BaseImporter {
 
         if (importOptions.importPersistUser !== true) {
             _.each(this.dataToImport, function (model) {
-                model.password = globalUtils.uid(50);
                 if (model.status !== 'inactive') {
                     model.status = 'locked';
                 }

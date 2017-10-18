@@ -150,13 +150,17 @@ User = ghostBookshelf.Model.extend({
         if (self.isNew() || self.hasChanged('password')) {
             this.set('password', String(this.get('password')));
 
-            if (!validatePasswordLength(this.get('password'))) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
-            }
-
-            // An import with importOptions supplied can prevent re-hashing a user password
+            // An import with importOptions supplied can prevent validating and re-hashing a user password
             if (options.importPersistUser) {
                 return;
+            }
+
+            // if password is a bcrypt hash already, there's no need to validate the hash, we just re-hash the hash and store this
+            if (!this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
+                // Only validate non-hashed passwords
+                if (!validatePasswordLength(this.get('password'))) {
+                    return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength')}));
+                }
             }
 
             tasks.hashPassword = (function hashPassword() {
