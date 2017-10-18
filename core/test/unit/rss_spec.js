@@ -344,7 +344,7 @@ describe('RSS', function () {
                 apiBrowseStub.calledOnce.should.be.true();
                 apiBrowseStub.calledWith({
                     page: 1,
-                    filter: 'tags:\'magic\'+tags.visibility:\'public\'',
+                    filter: 'tags:\'magic\'+tags.visibility:public',
                     include: 'author,tags'
                 }).should.be.true();
                 apiTagStub.calledOnce.should.be.true();
@@ -369,7 +369,7 @@ describe('RSS', function () {
                 apiBrowseStub.calledOnce.should.be.true();
                 apiBrowseStub.calledWith({
                     page: '2',
-                    filter: 'tags:\'magic\'+tags.visibility:\'public\'',
+                    filter: 'tags:\'magic\'+tags.visibility:public',
                     include: 'author,tags'
                 }).should.be.true();
 

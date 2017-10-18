@@ -43,7 +43,7 @@ describe('Render Channel', function () {
         it('should return correct tag config', function () {
             renderChannel.__set__('fetchData', function (channelOpts) {
                 channelOpts.name.should.eql('tag');
-                channelOpts.postOptions.filter.should.eql('tags:\'%s\'+tags.visibility:\'public\'');
+                channelOpts.postOptions.filter.should.eql('tags:\'%s\'+tags.visibility:public');
                 channelOpts.data.tag.options.should.eql({slug: '%s', visibility: 'public'});
 
                 return promise;

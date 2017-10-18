@@ -14,7 +14,7 @@ channelConfig = function channelConfig() {
             name: 'tag',
             route: utils.url.urlJoin('/', config.get('routeKeywords').tag, ':slug/'),
             postOptions: {
-                filter: 'tags:\'%s\'+tags.visibility:\'public\''
+                filter: 'tags:\'%s\'+tags.visibility:public'
             },
             data: {
                 tag: {
