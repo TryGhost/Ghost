@@ -146,17 +146,34 @@ User = ghostBookshelf.Model.extend({
          * Important:
          *   - Password hashing happens when we import a database
          *   - we do some pre-validation checks, because onValidate is called AFTER onSaving
+         *   - when importing, we set the password to a random uid and don't validate, just hash it and lock the user
+         *   - when importing with `importPersistUser` we check if the password is a bcrypt hash already and fall back to
+         *     normal behaviour if not (set random password, lock user, and hash password)
+         *   - no validations should run, when importing
          */
         if (self.isNew() || self.hasChanged('password')) {
             this.set('password', String(this.get('password')));
 
-            if (!validatePasswordLength(this.get('password'))) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
+            if (options.importing) {
+                // CASE: import with `importPersistUser` should always be an bcrypt password already,
+                // and won't re-hash or overwrite it.
+                // In case the password is not bcrypt hashed we fall back to the standard behaviour.
+                if (options.importPersistUser && this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
+                    return;
+                }
+
+                // always set password to a random uid when importing
+                this.set('password', utils.uid(50));
+
+                // lock users so they have to follow the password reset flow
+                if (this.get('status') !== 'inactive') {
+                    this.set('status', 'locked');
+                }
             }
 
-            // An import with importOptions supplied can prevent re-hashing a user password
-            if (options.importPersistUser) {
-                return;
+            // don't ever validate passwords when importing
+            if (!options.importing && !validatePasswordLength(this.get('password'))) {
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
             }
 
             tasks.hashPassword = (function hashPassword() {
