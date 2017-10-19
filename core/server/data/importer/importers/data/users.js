@@ -2,8 +2,7 @@
 
 const debug = require('ghost-ignition').debug('importer:users'),
     _ = require('lodash'),
-    BaseImporter = require('./base'),
-    globalUtils = require('../../../../utils');
+    BaseImporter = require('./base');
 
 class UsersImporter extends BaseImporter {
     constructor(options) {
@@ -29,7 +28,7 @@ class UsersImporter extends BaseImporter {
      *
      *   If importOptions object is supplied with a property of importPersistUser then the user status is not locked
      */
-    beforeImport(importOptions) {
+    beforeImport() {
         debug('beforeImport');
 
         let self = this, role, lookup = {};
@@ -40,15 +39,6 @@ class UsersImporter extends BaseImporter {
         });
 
         this.dataToImport = this.dataToImport.map(self.legacyMapper);
-
-        if (importOptions.importPersistUser !== true) {
-            _.each(this.dataToImport, function (model) {
-                model.password = globalUtils.uid(50);
-                if (model.status !== 'inactive') {
-                    model.status = 'locked';
-                }
-            });
-        }
 
         // NOTE: sort out duplicated roles based on incremental id
         _.each(this.roles_users, function (attachedRole) {
