@@ -540,7 +540,7 @@ var overrides      = require('./core/server/overrides'),
         //
         // This also works for folders (although it isn't recursive), E.g.
         //
-        // `grunt test:unit/server_helpers`
+        // `grunt test:unit/helpers`
         //
         // Unit tests are run with [mocha](http://mochajs.org/) using
         // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
