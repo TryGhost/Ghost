@@ -45,6 +45,11 @@ validator.extend('isSlug', function isSlug(str) {
     return validator.matches(str, /^[a-z0-9\-_]+$/);
 });
 
+// Validation against simple password rules
+validatePassword = function validatePassword(password) {
+    return validator.isLength(password, 10);
+};
+
 // Validation against schema attributes
 // values are checked against the validation objects from schema.js
 validateSchema = function validateSchema(tableName, model) {
@@ -174,6 +179,7 @@ validate = function validate(value, key, validations) {
 module.exports = {
     validate: validate,
     validator: validator,
+    validatePassword: validatePassword,
     validateSchema: validateSchema,
     validateSettings: validateSettings
 };

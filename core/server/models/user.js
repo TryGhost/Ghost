@@ -27,10 +27,6 @@ var _              = require('lodash'),
     User,
     Users;
 
-function validatePasswordLength(password) {
-    return validator.isLength(password, 10);
-}
-
 /**
  * generate a random salt and then hash the password with that salt
  */
@@ -172,7 +168,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // don't ever validate passwords when importing
-            if (!options.importing && !validatePasswordLength(this.get('password'))) {
+            if (!options.importing && !validation.validatePassword(this.get('password'))) {
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
             }
 
@@ -565,7 +561,7 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             userData = this.filterData(data);
 
-        if (!validatePasswordLength(userData.password)) {
+        if (!validation.validatePassword(userData.password)) {
             return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
         }
 
