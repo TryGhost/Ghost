@@ -1,12 +1,13 @@
-var _               = require('lodash'),
-    http            = require('http'),
-    xml             = require('xml'),
-    config          = require('../../config'),
-    utils           = require('../../utils'),
-    errors          = require('../../errors'),
-    logging         = require('../../logging'),
-    events          = require('../../events'),
-    i18n            = require('../../i18n'),
+var _ = require('lodash'),
+    http = require('http'),
+    xml = require('xml'),
+    config = require('../../config'),
+    utils = require('../../utils'),
+    errors = require('../../errors'),
+    logging = require('../../logging'),
+    events = require('../../events'),
+    i18n = require('../../i18n'),
+    settingsCache = require('../../settings/cache'),
     pingList;
 
 // ToDo: Make this configurable
@@ -32,7 +33,7 @@ function ping(post) {
             'themes'
         ];
 
-    if (post.page || config.isPrivacyDisabled('useRpcPing')) {
+    if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
     }
 
