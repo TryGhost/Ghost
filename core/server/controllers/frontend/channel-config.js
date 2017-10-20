@@ -1,8 +1,16 @@
 var _ = require('lodash'),
-    channelConfig = require('./config.channels.json');
+    channelConfig;
 
-// @TODO expand this to support loading channels from different places?
 module.exports.list = function list() {
+    // This is a very dirty temporary hack so that we can test out channels with some Beta testers
+    // If you are reading this code, and considering using it, best reach out to us on Slack
+    // Definitely don't be angry at us if the structure of the JSON changes or this goes away.
+    try {
+        channelConfig = require('../../../../config.channels.json');
+    } catch (err) {
+        channelConfig = require('./config.channels.json')
+    }
+
     return channelConfig;
 };
 
