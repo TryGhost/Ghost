@@ -82,6 +82,25 @@ describe('Slack', function () {
         resetSlack();
     });
 
+    it('listener() does not call ping() when importing', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
+            testModel = {
+                toJSON: function () {
+                    return testPost;
+                }
+            },
+            pingStub = sandbox.stub(),
+            resetSlack = slack.__set__('ping', pingStub),
+            listener = slack.__get__('listener');
+
+        listener(testModel, {importing: true});
+
+        pingStub.calledOnce.should.be.false();
+
+        // Reset slack ping method
+        resetSlack();
+    });
+
     it('testPing() calls ping() with default message', function () {
         var pingStub = sandbox.stub(),
             resetSlack = slack.__set__('ping', pingStub),
@@ -293,16 +312,6 @@ describe('Slack', function () {
                 makeRequestSpy.called.should.be.false();
                 done();
             });
-        });
-
-        it('do not ping if content is imported', function (done) {
-            ping({}, {importing: true}).then(function () {
-                isPostStub.called.should.be.false();
-                urlForSpy.called.should.be.false();
-                settingsAPIStub.called.should.be.false();
-                makeRequestSpy.called.should.be.false();
-                done();
-            }).catch(done);
         });
     });
 });

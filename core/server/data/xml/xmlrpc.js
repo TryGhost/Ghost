@@ -90,7 +90,13 @@ function ping(post) {
     });
 }
 
-function listener(model) {
+function listener(model, options) {
+    // CASE: do not rpc ping if we import a database
+    // TODO: refactor post.published events to never fire on importing
+    if (options && options.importing) {
+        return;
+    }
+
     ping(model.toJSON());
 }
 

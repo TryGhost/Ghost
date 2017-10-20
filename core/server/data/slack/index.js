@@ -43,15 +43,8 @@ function makeRequest(reqOptions, reqPayload) {
     req.end();
 }
 
-function ping(post, options) {
-    options = options || {};
-
+function ping(post) {
     var message, reqOptions;
-
-    // CASE: do not ping slack if we import a database
-    if (options.importing) {
-        return Promise.resolve();
-    }
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
@@ -107,7 +100,13 @@ function ping(post, options) {
 }
 
 function listener(model, options) {
-    ping(model.toJSON(), options);
+    // CASE: do not ping slack if we import a database
+    // TODO: refactor post.published events to never fire on importing
+    if (options && options.importing) {
+        return;
+    }
+
+    ping(model.toJSON());
 }
 
 function testPing() {
