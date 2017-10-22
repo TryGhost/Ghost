@@ -3,21 +3,11 @@ var should = require('should'),
     channelConfig = require('../../../../server/controllers/frontend/channel-config');
 
 describe('Channel Config', function () {
-    it('should get the index config', function () {
-        var result = channelConfig.get('index');
-        should.exist(result);
-        result.name.should.eql('index');
-    });
-
-    it('should get the author config', function () {
-        var result = channelConfig.get('author');
-        should.exist(result);
-        result.name.should.eql('author');
-    });
-
-    it('should get the tag config', function () {
-        var result = channelConfig.get('tag');
-        should.exist(result);
-        result.name.should.eql('tag');
+    // This is actually a bullshit test
+    // because you could have a local config.channels.json and it would fail
+    // @TODO fix this test by refactoring code
+    it('should build a list of channels', function () {
+        var channels = channelConfig.list();
+        channels.should.be.an.Object().with.properties(['index', 'tag', 'author']);
     });
 });
