@@ -1,13 +1,27 @@
 /*jshint expr:true*/
 var should = require('should'),
-    channelConfig = require('../../../../server/controllers/frontend/channel-config');
+    _ = require('lodash'),
+    rewire = require('rewire'),
+    channelUtils = require('../../../utils/channelUtils'),
+    channelConfig = rewire('../../../../server/controllers/frontend/channel-config');
 
 describe('Channel Config', function () {
-    // This is actually a bullshit test
-    // because you could have a local config.channels.json and it would fail
-    // @TODO fix this test by refactoring code
+    var channelReset;
+
+    before(function () {
+        channelReset = channelConfig.__set__('loadConfig', function () {
+            return channelUtils.listTestChannels();
+        })
+    });
+
+    after(function () {
+        channelReset();
+    });
+
     it('should build a list of channels', function () {
         var channels = channelConfig.list();
-        channels.should.be.an.Object().with.properties(['index', 'tag', 'author']);
+        channels.should.be.an.Object();
+
+        _.map(channels, 'name').should.eql(['index', 'tag', 'author']);
     });
 });

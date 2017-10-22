@@ -1,7 +1,8 @@
-var _ = require('lodash'),
-    channelConfig;
+var _ = require('lodash');
 
-module.exports.list = function list() {
+function loadConfig() {
+    var channelConfig = {};
+
     // This is a very dirty temporary hack so that we can test out channels with some Beta testers
     // If you are reading this code, and considering using it, best reach out to us on Slack
     // Definitely don't be angry at us if the structure of the JSON changes or this goes away.
@@ -12,4 +13,8 @@ module.exports.list = function list() {
     }
 
     return channelConfig;
+}
+
+module.exports.list = function list() {
+    return loadConfig();
 };

@@ -5,3 +5,7 @@ var defaultChannels = require('../../server/controllers/frontend/config.channels
 module.exports.getTestChannel = function getTestChannel(channelName) {
     return defaultChannels[channelName];
 };
+
+module.exports.listTestChannels = function listTestChannels() {
+    return defaultChannels;
+};
