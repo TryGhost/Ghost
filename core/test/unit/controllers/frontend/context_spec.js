@@ -3,7 +3,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    channelConfig = require('../../../../server/controllers/frontend/channel-config'),
+    channelUtils = require('../../../utils/channelUtils'),
     setResponseContext = require('../../../../server/controllers/frontend/context'),
     labs = require('../../../../server/utils/labs'),
 
@@ -38,7 +38,7 @@ describe('Contexts', function () {
         res.locals.relativeUrl = url;
 
         if (channel && _.isString(channel)) {
-            res.locals.channel = channelConfig.get(channel);
+            res.locals.channel = channelUtils.getTestChannel(channel);
         } else if (channel && _.isNumber(channel)) {
             pageParam = channel;
         } else if (channel) {

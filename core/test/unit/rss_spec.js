@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     testUtils = require('../utils'),
-    channelConfig = require('../../server/controllers/frontend/channel-config'),
+    channelUtils = require('../utils/channelUtils'),
     api = require('../../server/api'),
     settingsCache = require('../../server/settings/cache'),
     rss = rewire('../../server/data/xml/rss'),
@@ -97,7 +97,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -140,7 +140,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -176,7 +176,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -204,7 +204,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -238,7 +238,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -270,7 +270,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -327,7 +327,7 @@ describe('RSS', function () {
                 done();
             };
 
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -336,7 +336,7 @@ describe('RSS', function () {
             // setup
             req.originalUrl = '/tag/magic/rss/';
             req.params.slug = 'magic';
-            res.locals.channel = channelConfig.get('tag');
+            res.locals.channel = channelUtils.getTestChannel('tag');
             res.locals.channel.isRSS = true;
 
             // test
@@ -361,7 +361,7 @@ describe('RSS', function () {
             req.originalUrl = '/tag/magic/rss/2/';
             req.params.slug = 'magic';
             req.params.page = '2';
-            res.locals.channel = channelConfig.get('tag');
+            res.locals.channel = channelUtils.getTestChannel('tag');
             res.locals.channel.isRSS = true;
 
             // test
@@ -385,7 +385,7 @@ describe('RSS', function () {
         it('should process the data correctly for an author feed', function (done) {
             req.originalUrl = '/author/joe/rss/';
             req.params.slug = 'joe';
-            res.locals.channel = channelConfig.get('author');
+            res.locals.channel = channelUtils.getTestChannel('author');
             res.locals.channel.isRSS = true;
 
             // test
@@ -405,7 +405,7 @@ describe('RSS', function () {
             req.originalUrl = '/author/joe/rss/2/';
             req.params.slug = 'joe';
             req.params.page = '2';
-            res.locals.channel = channelConfig.get('author');
+            res.locals.channel = channelUtils.getTestChannel('author');
             res.locals.channel.isRSS = true;
 
             // test
@@ -449,7 +449,7 @@ describe('RSS', function () {
                     results: {posts: [], meta: {pagination: {pages: 1}}}
                 });
             });
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
 
             function secondCall() {
@@ -502,7 +502,7 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
 
             rss(req, res, function (err) {
@@ -519,7 +519,7 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            res.locals.channel = channelConfig.get('index');
+            res.locals.channel = channelUtils.getTestChannel('index');
             res.locals.channel.isRSS = true;
 
             rss(req, res, function (err) {
