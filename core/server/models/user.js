@@ -166,10 +166,8 @@ User = ghostBookshelf.Model.extend({
                 if (this.get('status') !== 'inactive') {
                     this.set('status', 'locked');
                 }
-            }
-
-            // don't ever validate passwords when importing
-            if (!options.importing) {
+            } else {
+                // CASE: we're not importing data, run the validations
                 passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
 
                 if (!passwordValidation.isValid) {
@@ -567,7 +565,7 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data),
             passwordValidation = {};
 
-        passwordValidation = validation.validatePassword(userData.password, userData.email);
+        passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
 
         if (!passwordValidation.isValid) {
             return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));

@@ -53,15 +53,15 @@ validator.extend('isSlug', function isSlug(str) {
 * Returns false when validation fails and true for a valid password
 * @param {String} password The password string to check.
 * @param {String} email The users email address to validate agains password.
+* @param {String} blogTitle Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
 * @return {Object} example for returned validation Object:
 * invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
 * valid password: `validationResult: {isValid: true}`
 */
-validatePassword = function validatePassword(password, email) {
+validatePassword = function validatePassword(password, email, blogTitle) {
     var validationResult = {isValid: true},
         disallowedPasswords = ['password', 'ghost'],
         blogUrl = utils.urlFor('home', true),
-        blogTitle = settingsCache.get('title'),
         badPasswords = [
         '1234567890',
         'qwertyuiop',
@@ -72,6 +72,7 @@ validatePassword = function validatePassword(password, email) {
         '1q2w3e4r5t'
     ];
 
+    blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
     blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
 
     if (!validator.isLength(password, 10)) {
@@ -172,7 +173,7 @@ validateSchema = function validateSchema(tableName, model) {
     return Promise.resolve();
 };
 
-// Validation for
+// Validation for settings
 // settings are checked against the validation objects
 // form default-settings.json
 validateSettings = function validateSettings(defaultSettings, model) {
