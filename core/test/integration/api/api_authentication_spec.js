@@ -273,7 +273,7 @@ describe('Authentication API', function () {
                                     token: invite.get('token'),
                                     email: invite.get('email'),
                                     name: invite.get('email'),
-                                    password: 'eightcharacterslong'
+                                    password: 'tencharacterslong'
                                 }
                             ]
                         });
@@ -313,7 +313,7 @@ describe('Authentication API', function () {
                                     token: invite.get('token'),
                                     email: invite.get('email'),
                                     name: invite.get('email'),
-                                    password: 'eightcharacterslong'
+                                    password: 'tencharacterslong'
                                 }
                             ]
                         });

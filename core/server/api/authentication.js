@@ -321,7 +321,13 @@ authentication = {
                     updatedUser.set('status', 'active');
                     return updatedUser.save(options);
                 })
+                .catch(errors.ValidationError, function (err) {
+                    return Promise.reject(err);
+                })
                 .catch(function (err) {
+                    if (errors.utils.isIgnitionError(err)) {
+                        return Promise.reject(err);
+                    }
                     throw new errors.UnauthorizedError({err: err});
                 });
         }

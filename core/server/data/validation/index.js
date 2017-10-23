@@ -53,10 +53,12 @@ validator.extend('isSlug', function isSlug(str) {
 * Returns false when validation fails and true for a valid password
 * @param {String} password The password string to check.
 * @param {String} email The users email address to validate agains password.
-* @return {Boolean}
+* @return {Object} example for returned validation Object:
+* invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
+* valid password: `validationResult: {isValid: true}`
 */
 validatePassword = function validatePassword(password, email) {
-    var valid = true,
+    var validationResult = {isValid: true},
         disallowedPasswords = ['password', 'ghost'],
         blogUrl = utils.urlFor('home', true),
         blogTitle = settingsCache.get('title'),
@@ -70,35 +72,43 @@ validatePassword = function validatePassword(password, email) {
         '1q2w3e4r5t'
     ];
 
+    blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
+
     if (!validator.isLength(password, 10)) {
-        valid = false;
+        validationResult.isValid = false;
+        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
     }
 
     _.each(badPasswords, function (badPassword) {
         if (badPassword === password) {
-            valid = false;
+            validationResult.isValid = false;
         }
     });
 
     if (email && email.toLowerCase() === password.toLowerCase()) {
-        valid = false;
+        validationResult.isValid = false;
     }
 
     _.each(disallowedPasswords, function (disallowedPassword) {
         if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
-            valid = false;
+            validationResult.isValid = false;
         }
     });
 
     if (blogTitle && blogTitle.toLowerCase() === password.toLowerCase()) {
-        valid = false;
+        validationResult.isValid = false;
     }
 
     if (blogUrl && blogUrl.toLowerCase() === password.toLowerCase()) {
-        valid = false;
+        validationResult.isValid = false;
     }
 
-    return valid;
+    // Generic error message for the rules where no dedicated error massage is set
+    if (!validationResult.isValid && !validationResult.message) {
+        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplySecurity');
+    }
+
+    return validationResult;
 };
 
 // Validation against schema attributes

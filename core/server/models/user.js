@@ -102,7 +102,8 @@ User = ghostBookshelf.Model.extend({
      */
     onSaving: function onSaving(newPage, attr, options) {
         var self = this,
-            tasks = [];
+            tasks = [],
+            passwordValidation = {};
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -168,8 +169,12 @@ User = ghostBookshelf.Model.extend({
             }
 
             // don't ever validate passwords when importing
-            if (!options.importing && !validation.validatePassword(this.get('password'), this.get('email'))) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
+            if (!options.importing) {
+                passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
+
+                if (!passwordValidation.isValid) {
+                    return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
+                }
             }
 
             tasks.hashPassword = (function hashPassword() {
@@ -559,10 +564,13 @@ User = ghostBookshelf.Model.extend({
      */
     setup: function setup(data, options) {
         var self = this,
-            userData = this.filterData(data);
+            userData = this.filterData(data),
+            passwordValidation = {};
 
-        if (!validation.validatePassword(userData.password)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
+        passwordValidation = validation.validatePassword(userData.password, userData.email);
+
+        if (!passwordValidation.isValid) {
+            return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
         }
 
         options = this.filterOptions(options, 'setup');
