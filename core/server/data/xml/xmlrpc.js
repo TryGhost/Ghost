@@ -1,12 +1,13 @@
-var _               = require('lodash'),
-    http            = require('http'),
-    xml             = require('xml'),
-    config          = require('../../config'),
-    utils           = require('../../utils'),
-    errors          = require('../../errors'),
-    logging         = require('../../logging'),
-    events          = require('../../events'),
-    i18n            = require('../../i18n'),
+var _ = require('lodash'),
+    http = require('http'),
+    xml = require('xml'),
+    config = require('../../config'),
+    utils = require('../../utils'),
+    errors = require('../../errors'),
+    logging = require('../../logging'),
+    events = require('../../events'),
+    i18n = require('../../i18n'),
+    settingsCache = require('../../settings/cache'),
     pingList;
 
 // ToDo: Make this configurable
@@ -32,7 +33,7 @@ function ping(post) {
             'themes'
         ];
 
-    if (post.page || config.isPrivacyDisabled('useRpcPing')) {
+    if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
     }
 
@@ -90,7 +91,13 @@ function ping(post) {
     });
 }
 
-function listener(model) {
+function listener(model, options) {
+    // CASE: do not rpc ping if we import a database
+    // TODO: refactor post.published events to never fire on importing
+    if (options && options.importing) {
+        return;
+    }
+
     ping(model.toJSON());
 }
 
