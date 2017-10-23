@@ -52,6 +52,25 @@ describe('XMLRPC', function () {
         resetXmlRpc();
     });
 
+    it('listener() does not call ping() when importing', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
+            testModel = {
+                toJSON: function () {
+                    return testPost;
+                }
+            },
+            pingStub = sandbox.stub(),
+            resetXmlRpc = xmlrpc.__set__('ping', pingStub),
+            listener = xmlrpc.__get__('listener');
+
+        listener(testModel, {importing: true});
+
+        pingStub.calledOnce.should.be.false();
+
+        // Reset xmlrpc ping method
+        resetXmlRpc();
+    });
+
     describe('ping()', function () {
         var ping = xmlrpc.__get__('ping');
 
