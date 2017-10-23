@@ -8,7 +8,7 @@ var express = require('express'),
     channelConfig = require('./channel-config'),
     renderChannel = require('./render-channel'),
     rssRouter,
-    channelRouter;
+    channelsRouter;
 
 function handlePageParam(req, res, next, page) {
     var pageRegex = new RegExp('/' + config.get('routeKeywords').page + '/(.*)?/'),
@@ -33,19 +33,28 @@ function handlePageParam(req, res, next, page) {
     }
 }
 
-rssRouter = function rssRouter(channelConfig) {
-    function rssConfigMiddleware(req, res, next) {
-        res.locals.channel.isRSS = true;
-        next();
-    }
+function rssConfigMiddleware(req, res, next) {
+    res.locals.channel.isRSS = true;
+    next();
+}
 
+function channelConfigMiddleware(channel) {
+    return function doChannelConfig(req, res, next) {
+        res.locals.channel = _.cloneDeep(channel);
+        next();
+    };
+}
+
+rssRouter = function rssRouter(channelMiddleware) {
     // @TODO move this to an RSS module
     var router = express.Router({mergeParams: true}),
-        stack = [channelConfig, rssConfigMiddleware, rss],
-        baseRoute = '/rss/';
+        baseRoute = '/rss/',
+        pageRoute = utils.url.urlJoin(baseRoute, ':page(\\d+)/');
 
-    router.get(baseRoute, stack);
-    router.get(utils.url.urlJoin(baseRoute, ':page(\\d+)/'), stack);
+    // @TODO figure out how to collapse this into a single rule
+    router.get(baseRoute, channelMiddleware, rssConfigMiddleware, rss);
+    router.get(pageRoute, channelMiddleware, rssConfigMiddleware, rss);
+    // Extra redirect rule
     router.get('/feed/', function redirectToRSS(req, res) {
         return utils.url.redirect301(res, utils.url.urlJoin(utils.url.getSubdir(), req.baseUrl, baseRoute));
     });
@@ -54,47 +63,44 @@ rssRouter = function rssRouter(channelConfig) {
     return router;
 };
 
-channelRouter = function router() {
-    function channelConfigMiddleware(channel) {
-        return function doChannelConfig(req, res, next) {
-            res.locals.channel = _.cloneDeep(channel);
-            next();
-        };
+function buildChannelRouter(channel) {
+    var channelRouter = express.Router({mergeParams: true}),
+        baseRoute = '/',
+        pageRoute = utils.url.urlJoin('/', config.get('routeKeywords').page, ':page(\\d+)/'),
+        middleware = [channelConfigMiddleware(channel)];
+
+    // @TODO figure out how to collapse this into a single rule
+    channelRouter.get(baseRoute, middleware, renderChannel);
+
+    // @TODO improve config and add defaults to make this simpler
+    if (channel.paged !== false) {
+        channelRouter.param('page', handlePageParam);
+        channelRouter.get(pageRoute, middleware, renderChannel);
     }
 
-    var channelsRouter = express.Router({mergeParams: true}),
-        baseRoute = '/',
-        pageRoute = utils.url.urlJoin('/', config.get('routeKeywords').page, ':page(\\d+)/');
+    // @TODO improve config and add defaults to make this simpler
+    if (channel.rss !== false) {
+        channelRouter.use(rssRouter(middleware));
+    }
+
+    if (channel.editRedirect) {
+        channelRouter.get('/edit/', function redirect(req, res) {
+            utils.url.redirectToAdmin(302, res, channel.editRedirect.replace(':slug', req.params.slug));
+        });
+    }
+
+    return channelRouter;
+}
+
+channelsRouter = function router() {
+    var channelsRouter = express.Router({mergeParams: true});
 
     _.each(channelConfig.list(), function (channel) {
-        var channelRouter = express.Router({mergeParams: true}),
-            configChannel = channelConfigMiddleware(channel);
-
-        // @TODO figure out how to collapse this into a single rule
-        channelRouter.get(baseRoute, configChannel, renderChannel);
-
-        // @TODO improve config and add defaults to make this simpler
-        if (channel.paged !== false) {
-            channelRouter.param('page', handlePageParam);
-            channelRouter.get(pageRoute, configChannel, renderChannel);
-        }
-
-        // @TODO improve config and add defaults to make this simpler
-        if (channel.rss !== false) {
-            channelRouter.use(rssRouter(configChannel));
-        }
-
-        if (channel.editRedirect) {
-            channelRouter.get('/edit/', function redirect(req, res) {
-                utils.url.redirectToAdmin(302, res, channel.editRedirect.replace(':slug', req.params.slug));
-            });
-        }
-
         // Mount this channel router on the parent channels router
-        channelsRouter.use(channel.route, channelRouter);
+        channelsRouter.use(channel.route, buildChannelRouter(channel));
     });
 
     return channelsRouter;
 };
 
-module.exports.router = channelRouter;
+module.exports.router = channelsRouter;
