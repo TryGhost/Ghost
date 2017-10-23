@@ -1,5 +1,3 @@
-var _ = require('lodash');
-
 function loadConfig() {
     var channelConfig = {};
 
@@ -9,7 +7,7 @@ function loadConfig() {
     try {
         channelConfig = require('../../../../config.channels.json');
     } catch (err) {
-        channelConfig = require('./config.channels.json')
+        channelConfig = require('./config.channels.json');
     }
 
     return channelConfig;

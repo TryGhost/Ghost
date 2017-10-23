@@ -1,5 +1,4 @@
-/*jshint expr:true*/
-var should = require('should'),
+var should = require('should'),  // jshint ignore:line
     _ = require('lodash'),
     rewire = require('rewire'),
     channelUtils = require('../../../utils/channelUtils'),
@@ -11,7 +10,7 @@ describe('Channel Config', function () {
     before(function () {
         channelReset = channelConfig.__set__('loadConfig', function () {
             return channelUtils.listTestChannels();
-        })
+        });
     });
 
     after(function () {
