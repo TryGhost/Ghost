@@ -168,7 +168,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // don't ever validate passwords when importing
-            if (!options.importing && !validation.validatePassword(this.get('password'))) {
+            if (!options.importing && !validation.validatePassword(this.get('password'), this.get('email'))) {
                 return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
             }
 

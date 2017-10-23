@@ -66,7 +66,7 @@ describe('Authentication API', function () {
                     var setupData = {
                         name: 'test user',
                         email: 'test@example.com',
-                        password: 'areallygoodpassword',
+                        password: 'thisissupersafe',
                         blogTitle: 'a test blog'
                     };
 
@@ -103,7 +103,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword',
+                    password: 'thisissupersafe',
                     blogTitle: 'a test blog'
                 };
 
@@ -128,7 +128,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword'
+                    password: 'thisissupersafe'
                 };
 
                 AuthAPI.setup({setup: [setupData]}).then(function (result) {
@@ -223,7 +223,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword',
+                    password: 'thisissupersafe',
                     blogTitle: 'a test blog'
                 };
 
@@ -409,7 +409,7 @@ describe('Authentication API', function () {
                 var user = {
                         name: 'uninvited user',
                         email: 'notinvited@example.com',
-                        password: '1234567890',
+                        password: 'thisissupersafe',
                         status: 'active'
                     },
                     options = {
@@ -507,7 +507,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword',
+                    password: 'thisissupersafe',
                     blogTitle: 'a test blog'
                 };
 
@@ -540,7 +540,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword',
+                    password: 'thisissupersafe',
                     blogTitle: 'a test blog'
                 };
 
@@ -573,7 +573,7 @@ describe('Authentication API', function () {
                 var setupData = {
                     name: 'test user',
                     email: 'test@example.com',
-                    password: 'areallygoodpassword',
+                    password: 'thisissupersafe',
                     blogTitle: 'a test blog'
                 };
 

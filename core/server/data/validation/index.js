@@ -6,7 +6,10 @@ var schema    = require('../schema').tables,
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
     i18n      = require('../../i18n'),
+    settingsCache = require('../../settings/cache'),
+    utils = require('../../utils/url'),
 
+    validatePassword,
     validateSchema,
     validateSettings,
     validate;
@@ -45,9 +48,57 @@ validator.extend('isSlug', function isSlug(str) {
     return validator.matches(str, /^[a-z0-9\-_]+$/);
 });
 
-// Validation against simple password rules
-validatePassword = function validatePassword(password) {
-    return validator.isLength(password, 10);
+/**
+* Validation against simple password rules
+* Returns false when validation fails and true for a valid password
+* @param {String} password The password string to check.
+* @param {String} email The users email address to validate agains password.
+* @return {Boolean}
+*/
+validatePassword = function validatePassword(password, email) {
+    var valid = true,
+        disallowedPasswords = ['password', 'ghost'],
+        blogUrl = utils.urlFor('home', true),
+        blogTitle = settingsCache.get('title'),
+        badPasswords = [
+        '1234567890',
+        'qwertyuiop',
+        'qwertzuiop',
+        'asdfghjkl;',
+        'abcdefghij',
+        '0987654321',
+        '1q2w3e4r5t'
+    ];
+
+    if (!validator.isLength(password, 10)) {
+        valid = false;
+    }
+
+    _.each(badPasswords, function (badPassword) {
+        if (badPassword === password) {
+            valid = false;
+        }
+    });
+
+    if (email && email.toLowerCase() === password.toLowerCase()) {
+        valid = false;
+    }
+
+    _.each(disallowedPasswords, function (disallowedPassword) {
+        if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
+            valid = false;
+        }
+    });
+
+    if (blogTitle && blogTitle.toLowerCase() === password.toLowerCase()) {
+        valid = false;
+    }
+
+    if (blogUrl && blogUrl.toLowerCase() === password.toLowerCase()) {
+        valid = false;
+    }
+
+    return valid;
 };
 
 // Validation against schema attributes
@@ -111,7 +162,7 @@ validateSchema = function validateSchema(tableName, model) {
     return Promise.resolve();
 };
 
-// Validation for settings
+// Validation for
 // settings are checked against the validation objects
 // form default-settings.json
 validateSettings = function validateSettings(defaultSettings, model) {
