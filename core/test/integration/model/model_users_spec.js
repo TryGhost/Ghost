@@ -619,8 +619,8 @@ describe('User Model', function run() {
 
             it('password matches blog URL', function (done) {
                 UserModel.changePassword({
-                    newPassword: '127.0.0.1:2369/',
-                    ne2Password: '127.0.0.1:2369/',
+                    newPassword: '127.0.0.1:2369',
+                    ne2Password: '127.0.0.1:2369',
                     oldPassword: 'Sl1m3rson99',
                     user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function () {

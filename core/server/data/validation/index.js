@@ -100,7 +100,7 @@ validatePassword = function validatePassword(password, email, blogTitle) {
         validationResult.isValid = false;
     }
 
-    if (blogUrl && blogUrl.toLowerCase() === password.toLowerCase()) {
+    if (blogUrl && (blogUrl.toLowerCase() === password.toLowerCase() || blogUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())) {
         validationResult.isValid = false;
     }
 
