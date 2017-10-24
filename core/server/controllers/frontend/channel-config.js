@@ -1,56 +1,27 @@
 var _ = require('lodash'),
-    config = require('../../config'),
-    utils = require('../../utils'),
-    channelConfig;
+    channels = [];
 
-channelConfig = function channelConfig() {
-    var defaults = {
-        index: {
-            name: 'index',
-            route: '/',
-            frontPageTemplate: 'home'
-        },
-        tag: {
-            name: 'tag',
-            route: utils.url.urlJoin('/', config.get('routeKeywords').tag, ':slug/'),
-            postOptions: {
-                filter: 'tags:\'%s\'+tags.visibility:\'public\''
-            },
-            data: {
-                tag: {
-                    type: 'read',
-                    resource: 'tags',
-                    options: {slug: '%s', visibility: 'public'}
-                }
-            },
-            slugTemplate: true,
-            editRedirect: '#/settings/tags/:slug/'
-        },
-        author: {
-            name: 'author',
-            route: utils.url.urlJoin('/', config.get('routeKeywords').author, ':slug/'),
-            postOptions: {
-                filter: 'author:\'%s\''
-            },
-            data: {
-                author: {
-                    type: 'read',
-                    resource: 'users',
-                    options: {slug: '%s'}
-                }
-            },
-            slugTemplate: true,
-            editRedirect: '#/team/:slug/'
-        }
-    };
+function loadConfig() {
+    var channelConfig = {};
 
-    return defaults;
-};
+    // This is a very dirty temporary hack so that we can test out channels with some Beta testers
+    // If you are reading this code, and considering using it, best reach out to us on Slack
+    // Definitely don't be angry at us if the structure of the JSON changes or this goes away.
+    try {
+        channelConfig = require('../../../../config.channels.json');
+    } catch (err) {
+        channelConfig = require('./config.channels.json');
+    }
+
+    return channelConfig;
+}
 
 module.exports.list = function list() {
-    return channelConfig();
-};
+    _.each(loadConfig(), function (channelConfig, channelName) {
+        var channel = _.cloneDeep(channelConfig);
+        channel.name = channelName;
+        channels.push(channel);
+    });
 
-module.exports.get = function get(name) {
-    return _.cloneDeep(channelConfig()[name]);
+    return channels;
 };
