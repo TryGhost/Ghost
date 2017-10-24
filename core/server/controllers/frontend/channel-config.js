@@ -1,3 +1,6 @@
+var _ = require('lodash'),
+    channels = [];
+
 function loadConfig() {
     var channelConfig = {};
 
@@ -14,5 +17,11 @@ function loadConfig() {
 }
 
 module.exports.list = function list() {
-    return loadConfig();
+    _.each(loadConfig(), function (channelConfig, channelName) {
+        var channel = _.cloneDeep(channelConfig);
+        channel.name = channelName;
+        channels.push(channel);
+    });
+
+    return channels;
 };

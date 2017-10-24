@@ -1,11 +1,9 @@
 {
     "index": {
-        "name": "index",
         "route": "/",
         "frontPageTemplate": "home"
     },
     "tag": {
-        "name": "tag",
         "route": "/:rkw-tag/:slug/",
         "postOptions": {
             "filter": "tags:'%s'+tags.visibility:public"
@@ -14,14 +12,16 @@
             "tag": {
                 "type": "read",
                 "resource": "tags",
-                "options": {"slug": "%s", "visibility": "public"}
+                "options": {
+                    "slug": "%s",
+                    "visibility": "public"
+                }
             }
         },
         "slugTemplate": true,
         "editRedirect": "#/settings/tags/:slug/"
     },
     "author": {
-        "name": "author",
         "route": "/:rkw-author/:slug/",
         "postOptions": {
             "filter": "author:'%s'"
@@ -30,7 +30,9 @@
             "author": {
                 "type": "read",
                 "resource": "users",
-                "options": {"slug": "%s"}
+                "options": {
+                    "slug": "%s"
+                }
             }
         },
         "slugTemplate": true,

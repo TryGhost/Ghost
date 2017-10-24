@@ -9,7 +9,7 @@ describe('Channel Config', function () {
 
     before(function () {
         channelReset = channelConfig.__set__('loadConfig', function () {
-            return channelUtils.listTestChannels();
+            return channelUtils.getDefaultChannels();
         });
     });
 
