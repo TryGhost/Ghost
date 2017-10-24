@@ -630,6 +630,34 @@ describe('User Model', function run() {
                     done();
                 });
             });
+
+            it('password contains repeating chars', function (done) {
+                UserModel.changePassword({
+                    newPassword: 'cdcdcdcdcd',
+                    ne2Password: 'cdcdcdcdcd',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password contains repeating numbers', function (done) {
+                UserModel.changePassword({
+                    newPassword: '1231111111',
+                    ne2Password: '1231111111',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
         });
 
         describe('success', function () {

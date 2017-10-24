@@ -18,6 +18,41 @@ function assertString(input) {
     assert(typeof input === 'string', 'Validator js validates strings only');
 }
 
+/**
+* Counts repeated characters if a string. When 50% or more characters are the same,
+* we return false and therefore invalidate the string.
+* @param {String} stringToTest The password string to check.
+* @return {Boolean}
+*/
+function characterOccurance(stringToTest) {
+    var chars = {},
+        allowedOccurancy,
+        valid = true;
+
+    stringToTest = _.toString(stringToTest);
+    allowedOccurancy = stringToTest.length / 2;
+
+    // Loop through string and accumulate character counts
+    _.each(stringToTest, function (char) {
+        if (!chars[char]) {
+            chars[char] = 1;
+        } else {
+            chars[char] += 1;
+        }
+    });
+
+    // check if any of the accumulated chars exceed the allowed occurancy
+    // of 50% of the words' length.
+    _.forIn(chars, function (key) {
+        if (key >= allowedOccurancy) {
+            valid = false;
+            return;
+        }
+    });
+
+    return valid;
+}
+
 // extends has been removed in validator >= 5.0.0, need to monkey-patch it back in
 validator.extend = function (name, fn) {
     validator[name] = function () {
@@ -78,6 +113,7 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     if (!validator.isLength(password, 10)) {
         validationResult.isValid = false;
         validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
+        return validationResult;
     }
 
     _.each(badPasswords, function (badPassword) {
@@ -101,6 +137,10 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     }
 
     if (blogUrl && (blogUrl.toLowerCase() === password.toLowerCase() || blogUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())) {
+        validationResult.isValid = false;
+    }
+
+    if (!characterOccurance(password)) {
         validationResult.isValid = false;
     }
 
