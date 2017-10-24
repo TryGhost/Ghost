@@ -63,7 +63,7 @@ CHANGELOG.md
 /core/test/coverage
 
 # ignore all custom json files for config
-config.*.json
+/config.*.json
 
 # Built asset files
 /core/built
