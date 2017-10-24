@@ -19,7 +19,7 @@ function assertString(input) {
 }
 
 /**
-* Counts repeated characters if a string. When 50% or more characters are the same,
+* Counts repeated characters in a string. When 50% or more characters are the same,
 * we return false and therefore invalidate the string.
 * @param {String} stringToTest The password string to check.
 * @return {Boolean}
@@ -95,7 +95,7 @@ validator.extend('isSlug', function isSlug(str) {
 */
 validatePassword = function validatePassword(password, email, blogTitle) {
     var validationResult = {isValid: true},
-        disallowedPasswords = ['password', 'ghost'],
+        disallowedPasswords = ['password', 'ghost', 'passw0rd'],
         blogUrl = utils.urlFor('home', true),
         badPasswords = [
         '1234567890',
@@ -104,42 +104,51 @@ validatePassword = function validatePassword(password, email, blogTitle) {
         'asdfghjkl;',
         'abcdefghij',
         '0987654321',
-        '1q2w3e4r5t'
+        '1q2w3e4r5t',
+        '12345asdfg'
     ];
 
     blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
     blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
 
+    // password must be longer than 10 characters
     if (!validator.isLength(password, 10)) {
         validationResult.isValid = false;
         validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
+
         return validationResult;
     }
 
+    // dissallow password from badPasswords list (e. g. '1234567890')
     _.each(badPasswords, function (badPassword) {
         if (badPassword === password) {
             validationResult.isValid = false;
         }
     });
 
+    // password must not match with users' email
     if (email && email.toLowerCase() === password.toLowerCase()) {
         validationResult.isValid = false;
     }
 
+    // password must not contain the words 'ghost', 'password', or 'passw0rd'
     _.each(disallowedPasswords, function (disallowedPassword) {
         if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
             validationResult.isValid = false;
         }
     });
 
+    // password must not match with blog title
     if (blogTitle && blogTitle.toLowerCase() === password.toLowerCase()) {
         validationResult.isValid = false;
     }
 
+    // password must not match with blog URL (without protocol, with or without trailing slash)
     if (blogUrl && (blogUrl.toLowerCase() === password.toLowerCase() || blogUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())) {
         validationResult.isValid = false;
     }
 
+    // dissallow passwords where 50% or more of characters are the same
     if (!characterOccurance(password)) {
         validationResult.isValid = false;
     }

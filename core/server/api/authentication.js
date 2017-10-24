@@ -328,7 +328,7 @@ authentication = {
                     if (errors.utils.isIgnitionError(err)) {
                         return Promise.reject(err);
                     }
-                    throw new errors.UnauthorizedError({err: err});
+                    return Promise.reject(new errors.UnauthorizedError({err: err}));
                 });
         }
 
