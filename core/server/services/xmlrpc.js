@@ -1,13 +1,13 @@
 var _ = require('lodash'),
     http = require('http'),
     xml = require('xml'),
-    config = require('../../config'),
-    utils = require('../../utils'),
-    errors = require('../../errors'),
-    logging = require('../../logging'),
-    events = require('../../events'),
-    i18n = require('../../i18n'),
-    settingsCache = require('../../settings/cache'),
+    config = require('../config'),
+    utils = require('../utils'),
+    errors = require('../errors'),
+    logging = require('../logging'),
+    events = require('../events'),
+    i18n = require('../i18n'),
+    settingsCache = require('../settings/cache'),
     pingList;
 
 // ToDo: Make this configurable
