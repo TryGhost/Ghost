@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    channels = require('../../../../server/controllers/frontend/channels'),
+    channels = require('../../../../server/controllers/channels'),
     api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();

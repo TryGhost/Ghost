@@ -2,7 +2,7 @@ var express = require('express'),
     path = require('path'),
     config = require('../config'),
     controllers = require('../controllers'),
-    channels = require('../controllers/frontend/channels'),
+    channels = require('../controllers/channels'),
     utils = require('../utils');
 
 module.exports = function frontendRoutes() {
