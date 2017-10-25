@@ -4,11 +4,11 @@ var should = require('should'), // jshint ignore:line
     nock = require('nock'),
     http = require('http'),
     rewire = require('rewire'),
-    testUtils = require('../utils'),
-    configUtils = require('../utils/configUtils'),
-    xmlrpc = rewire('../../server/data/xml/xmlrpc'),
-    events = require('../../server/events'),
-    logging = require('../../server/logging'),
+    testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
+    xmlrpc = rewire('../../../server/services/xmlrpc'),
+    events = require('../../../server/events'),
+    logging = require('../../../server/logging'),
 
     sandbox = sinon.sandbox.create();
 
