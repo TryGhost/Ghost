@@ -3,8 +3,8 @@ var should = require('should'),  // jshint ignore:line
     _ = require('lodash'),
 
     // Stuff we are testing
-    channelConfig = require('../../../../server/controllers/frontend/channel-config'),
-    channels = require('../../../../server/controllers/frontend/channels'),
+    channelLoader = require('../../../../server/controllers/channels/loader'),
+    channels = require('../../../../server/controllers/channels'),
 
     sandbox = sinon.sandbox.create();
 
@@ -135,7 +135,7 @@ describe('Custom Channels', function () {
     });
 
     it('allows basic custom config', function () {
-        sandbox.stub(channelConfig, 'list').returns({
+        sandbox.stub(channelLoader, 'list').returns({
             home: {
                 name: 'home',
                 route: '/home/'
@@ -182,7 +182,7 @@ describe('Custom Channels', function () {
     });
 
     it('allow multiple channels to be defined', function () {
-        sandbox.stub(channelConfig, 'list').returns({
+        sandbox.stub(channelLoader, 'list').returns({
             home: {
                 name: 'home',
                 route: '/home/'
@@ -247,7 +247,7 @@ describe('Custom Channels', function () {
     });
 
     it('allows rss to be disabled', function () {
-        sandbox.stub(channelConfig, 'list').returns({
+        sandbox.stub(channelLoader, 'list').returns({
             home: {
                 name: 'home',
                 route: '/home/',
@@ -295,7 +295,7 @@ describe('Custom Channels', function () {
     });
 
     it('allows pagination to be disabled', function () {
-        sandbox.stub(channelConfig, 'list').returns({
+        sandbox.stub(channelLoader, 'list').returns({
             home: {
                 name: 'home',
                 route: '/home/',
