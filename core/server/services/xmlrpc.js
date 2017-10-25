@@ -1,37 +1,36 @@
 var _ = require('lodash'),
     http = require('http'),
     xml = require('xml'),
-    config = require('../../config'),
-    utils = require('../../utils'),
-    errors = require('../../errors'),
-    logging = require('../../logging'),
-    events = require('../../events'),
-    i18n = require('../../i18n'),
-    settingsCache = require('../../settings/cache'),
-    pingList;
+    config = require('../config'),
+    utils = require('../utils'),
+    errors = require('../errors'),
+    logging = require('../logging'),
+    events = require('../events'),
+    i18n = require('../i18n'),
+    settingsCache = require('../settings/cache'),
 
-// ToDo: Make this configurable
-pingList = [{
-    host: 'blogsearch.google.com',
-    path: '/ping/RPC2'
-}, {
-    host: 'rpc.pingomatic.com',
-    path: '/'
-}];
+    defaultPostSlugs = [
+        'welcome',
+        'the-editor',
+        'using-tags',
+        'managing-users',
+        'private-sites',
+        'advanced-markdown',
+        'themes'
+    ],
+    // ToDo: Make this configurable
+    pingList = [{
+        host: 'blogsearch.google.com',
+        path: '/ping/RPC2'
+    }, {
+        host: 'rpc.pingomatic.com',
+        path: '/'
+    }];
 
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = utils.url.urlFor('post', {post: post}, true),
-        defaultPostSlugs = [
-            'welcome',
-            'the-editor',
-            'using-tags',
-            'managing-users',
-            'private-sites',
-            'advanced-markdown',
-            'themes'
-        ];
+        url = utils.url.urlFor('post', {post: post}, true);
 
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
@@ -82,8 +81,8 @@ function ping(post) {
             logging.error(new errors.GhostError({
                 err: err,
                 message: err.message,
-                context: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-                help: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://docs.ghost.org'})
+                context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
             }));
         });
 
