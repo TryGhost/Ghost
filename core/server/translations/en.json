@@ -453,13 +453,13 @@
                         "failedToParseImportJson": "Failed to parse the import JSON file."
                     }
                 }
-            },
-            "xml": {
-                "xmlrpc": {
-                    "pingUpdateFailed": {
-                        "error": "Pinging services for updates on your blog failed, your blog will continue to function.",
-                        "help": "If you get this error repeatedly, please seek help on {url}."
-                    }
+            }
+        },
+        "services": {
+            "ping": {
+                "requestFailed": {
+                    "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
+                    "help": "If you get this error repeatedly, please seek help on {url}."
                 }
             }
         },
