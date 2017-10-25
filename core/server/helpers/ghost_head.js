@@ -63,7 +63,7 @@ module.exports = function ghost_head(options) {
     debug('begin');
 
     // if server error page do nothing
-    if (this.statusCode >= 500) {
+    if (options.data.root.statusCode >= 500) {
         return;
     }
 
