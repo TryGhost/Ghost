@@ -1,29 +1,21 @@
 var https = require('https'),
     url = require('url'),
-    Promise = require('bluebird'),
     errors = require('../errors'),
     logging = require('../logging'),
     utils = require('../utils'),
     blogIconUtils = require('../utils/blog-icon'),
     events = require('../events'),
-    api = require('../api/settings'),
+    settingsCache = require('../settings/cache'),
     i18n = require('../i18n'),
     schema = require('../data/schema').checks,
     req,
     slackData = {};
 
 function getSlackSettings() {
-    return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
-        var slackSetting = response.settings[0].value;
-
-        try {
-            slackSetting = JSON.parse(slackSetting);
-        } catch (e) {
-            return Promise.reject(e);
-        }
-
-        return slackSetting[0];
-    });
+    var setting = settingsCache.get('slack');
+    // This might one day have multiple entries, for now its always a array
+    // and we return the first item or an empty object
+    return setting ? setting[0] : {};
 }
 
 function makeRequest(reqOptions, reqPayload) {
@@ -44,7 +36,9 @@ function makeRequest(reqOptions, reqPayload) {
 }
 
 function ping(post) {
-    var message, reqOptions;
+    var message,
+        reqOptions,
+        slackSettings = getSlackSettings();
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
@@ -52,51 +46,48 @@ function ping(post) {
     } else {
         message = post.message;
     }
+    // Quit here if slack integration is not activated
+    var defaultPostSlugs = [
+        'welcome',
+        'the-editor',
+        'using-tags',
+        'managing-users',
+        'private-sites',
+        'advanced-markdown',
+        'themes'
+    ];
 
-    return getSlackSettings().then(function (slackSettings) {
-        // Quit here if slack integration is not activated
-        var defaultPostSlugs = [
-            'welcome',
-            'the-editor',
-            'using-tags',
-            'managing-users',
-            'private-sites',
-            'advanced-markdown',
-            'themes'
-        ];
-
-        if (slackSettings.url && slackSettings.url !== '') {
-            // Only ping when not a page
-            if (post.page) {
-                return;
-            }
-
-            // Don't ping for the default posts.
-            // This also handles the case where during ghost's first run
-            // models.init() inserts this post but permissions.init() hasn't
-            // (can't) run yet.
-            if (defaultPostSlugs.indexOf(post.slug) > -1) {
-                return;
-            }
-
-            slackData = {
-                text: message,
-                unfurl_links: true,
-                icon_url: blogIconUtils.getIconUrl(true),
-                username: 'Ghost'
-            };
-
-            // fill the options for https request
-            reqOptions = url.parse(slackSettings.url);
-            reqOptions.method = 'POST';
-            reqOptions.headers = {'Content-type': 'application/json'};
-
-            // with all the data we have, we're doing the request now
-            makeRequest(reqOptions, slackData);
-        } else {
+    if (slackSettings.url && slackSettings.url !== '') {
+        // Only ping when not a page
+        if (post.page) {
             return;
         }
-    });
+
+        // Don't ping for the default posts.
+        // This also handles the case where during ghost's first run
+        // models.init() inserts this post but permissions.init() hasn't
+        // (can't) run yet.
+        if (defaultPostSlugs.indexOf(post.slug) > -1) {
+            return;
+        }
+
+        slackData = {
+            text: message,
+            unfurl_links: true,
+            icon_url: blogIconUtils.getIconUrl(true),
+            username: 'Ghost'
+        };
+
+        // fill the options for https request
+        reqOptions = url.parse(slackSettings.url);
+        reqOptions.method = 'POST';
+        reqOptions.headers = {'Content-type': 'application/json'};
+
+        // with all the data we have, we're doing the request now
+        makeRequest(reqOptions, slackData);
+    } else {
+        return;
+    }
 }
 
 function listener(model, options) {
