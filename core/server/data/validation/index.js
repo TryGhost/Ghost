@@ -43,8 +43,8 @@ function characterOccurance(stringToTest) {
 
     // check if any of the accumulated chars exceed the allowed occurancy
     // of 50% of the words' length.
-    _.forIn(chars, function (key) {
-        if (key >= allowedOccurancy) {
+    _.forIn(chars, function (charCount) {
+        if (charCount >= allowedOccurancy) {
             valid = false;
             return;
         }
