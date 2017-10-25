@@ -23,7 +23,7 @@ module.exports = function getFrontendClient(req, res, next) {
         })
         .catch(function (err) {
             // Log the error, but carry on as this is non-critical
-            logging.errors(err);
+            logging.error(err);
             next();
         });
 };
