@@ -4,16 +4,16 @@ var should = require('should'), // jshint ignore:line,
     nock = require('nock'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
-    testUtils = require('../utils'),
+    testUtils = require('../../utils'),
     url = require('url'),
 
     // Stuff we test
-    configUtils = require('../utils/configUtils'),
-    slack = rewire('../../server/data/slack'),
-    events = require('../../server/events'),
-    api = require('../../server/api/settings'),
-    utils = require('../../server/utils'),
-    schema = require('../../server/data/schema').checks,
+    configUtils = require('../../utils/configUtils'),
+    slack = rewire('../../../server/services/slack'),
+    events = require('../../../server/events'),
+    api = require('../../../server/api/settings'),
+    utils = require('../../../server/utils'),
+    schema = require('../../../server/data/schema').checks,
 
     sandbox = sinon.sandbox.create(),
 
