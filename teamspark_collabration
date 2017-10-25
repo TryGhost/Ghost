@@ -1,0 +1,41 @@
+
+Project Plans:
+    - Depending upon the syllabus covered in class we will have weekly tasks assigned in between us.
+    - When our work got completed we need to raise a pull request to merge these changes to teamsparkuno repository.
+    - We will have a formal discussion on the pull requests and everyone needs to defend their works.
+    - If we all agree upon the discussion we will merge the change to teamsparkuno repository.
+    - We will meet two times in a week to discuss about the work flow and help each other if we have any doubts.
+    - Everyone will have all access permissions.
+
+Normal work flow steps:
+1. Fork teamsparkuno/Ghost(https://github.com/teamsparkuno/Ghost) repository to your Software Assurance class Git account as you did in your GitHub Primer tutorial.
+
+    Please look into step 6 in the link below to know more information about how to fork a respository.
+    https://robinagandhi.github.io/swa/pages/github.html#step-6-fork-repository
+    
+2. Clone your forked repository to you local computer.
+
+  Please look into step 3 in the link below to know more information about how to clone a repository onto local computer.
+  https://robinagandhi.github.io/swa/pages/github.html#step-3-clone-a-repository
+  
+3. Do your changes in you local computer and push changes to your class git account.
+
+  Please look into step 4 in the link below to know more information about how to push changes from local repository to your remote git repository.
+  https://robinagandhi.github.io/swa/pages/github.html#step-4-push-changes
+
+4. Raise a pull request to teamsparkuno/Ghost repository to merge the changes to teamsparkuno repository.
+
+  Please look into step 7 in the link below to know more information about how to raise a pull request.
+  https://robinagandhi.github.io/swa/pages/github.html#step-7-make-a-pull-request
+  
+  
+  
+Suggestions:
+1. Commit often in you local repository as you finished some work.
+2. Push your work frequently to your class git account.
+2. Sync your fork with the teamsaprkuno repository when you are behind commits. 
+    Please follow below link to get more information about how to sync the fork.
+    https://www.sitepoint.com/quick-tip-sync-your-fork-with-the-original-without-the-cli/
+
+ 
+
