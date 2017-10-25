@@ -81,8 +81,8 @@ function ping(post) {
             logging.error(new errors.GhostError({
                 err: err,
                 message: err.message,
-                context: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-                help: i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://docs.ghost.org'})
+                context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
             }));
         });
 
