@@ -8,30 +8,29 @@ var _ = require('lodash'),
     events = require('../events'),
     i18n = require('../i18n'),
     settingsCache = require('../settings/cache'),
-    pingList;
 
-// ToDo: Make this configurable
-pingList = [{
-    host: 'blogsearch.google.com',
-    path: '/ping/RPC2'
-}, {
-    host: 'rpc.pingomatic.com',
-    path: '/'
-}];
+    defaultPostSlugs = [
+        'welcome',
+        'the-editor',
+        'using-tags',
+        'managing-users',
+        'private-sites',
+        'advanced-markdown',
+        'themes'
+    ],
+    // ToDo: Make this configurable
+    pingList = [{
+        host: 'blogsearch.google.com',
+        path: '/ping/RPC2'
+    }, {
+        host: 'rpc.pingomatic.com',
+        path: '/'
+    }];
 
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = utils.url.urlFor('post', {post: post}, true),
-        defaultPostSlugs = [
-            'welcome',
-            'the-editor',
-            'using-tags',
-            'managing-users',
-            'private-sites',
-            'advanced-markdown',
-            'themes'
-        ];
+        url = utils.url.urlFor('post', {post: post}, true);
 
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;

@@ -8,8 +8,15 @@ var https = require('https'),
     settingsCache = require('../settings/cache'),
     i18n = require('../i18n'),
     schema = require('../data/schema').checks,
-    req,
-    slackData = {};
+    defaultPostSlugs = [
+        'welcome',
+        'the-editor',
+        'using-tags',
+        'managing-users',
+        'private-sites',
+        'advanced-markdown',
+        'themes'
+    ];
 
 function getSlackSettings() {
     var setting = settingsCache.get('slack');
@@ -19,7 +26,7 @@ function getSlackSettings() {
 }
 
 function makeRequest(reqOptions, reqPayload) {
-    req = https.request(reqOptions);
+    var req = https.request(reqOptions);
 
     reqPayload = JSON.stringify(reqPayload);
 
@@ -38,6 +45,7 @@ function makeRequest(reqOptions, reqPayload) {
 function ping(post) {
     var message,
         reqOptions,
+        slackData = {},
         slackSettings = getSlackSettings();
 
     // If this is a post, we want to send the link of the post
@@ -47,16 +55,6 @@ function ping(post) {
         message = post.message;
     }
     // Quit here if slack integration is not activated
-    var defaultPostSlugs = [
-        'welcome',
-        'the-editor',
-        'using-tags',
-        'managing-users',
-        'private-sites',
-        'advanced-markdown',
-        'themes'
-    ];
-
     if (slackSettings.url && slackSettings.url !== '') {
         // Only ping when not a page
         if (post.page) {
