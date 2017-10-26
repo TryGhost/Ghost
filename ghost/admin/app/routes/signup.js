@@ -16,6 +16,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     notifications: injectService(),
     session: injectService(),
     ajax: injectService(),
+    config: injectService(),
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {
@@ -60,6 +61,9 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
                 }
 
                 model.set('invitedBy', response.invitation[0].invitedBy);
+
+                // set blogTitle, so password validation has access to it
+                model.set('blogTitle', this.get('config.blogTitle'));
 
                 resolve(model);
             }).catch(() => {

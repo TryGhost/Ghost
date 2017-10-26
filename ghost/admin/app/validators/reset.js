@@ -1,6 +1,6 @@
-import BaseValidator from './base';
+import PasswordValidator from 'ghost-admin/validators/password';
 
-export default BaseValidator.create({
+export default PasswordValidator.create({
     properties: ['newPassword'],
 
     newPassword(model) {
@@ -10,12 +10,11 @@ export default BaseValidator.create({
         if (validator.empty(p1)) {
             model.get('errors').add('newPassword', 'Please enter a password.');
             this.invalidate();
-        } else if (!validator.isLength(p1, 10)) {
-            model.get('errors').add('newPassword', 'Password must be at least 10 characters long.');
-            this.invalidate();
         } else if (!validator.equals(p1, p2)) {
             model.get('errors').add('ne2Password', 'The two new passwords don\'t match.');
             this.invalidate();
         }
+
+        this.passwordValidation(model, p1, 'newPassword');
     }
 });

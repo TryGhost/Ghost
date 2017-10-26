@@ -16,6 +16,7 @@ export default Controller.extend(ValidationEngine, {
     notifications: injectService(),
     session: injectService(),
     ajax: injectService(),
+    config: injectService(),
 
     email: computed('token', function () {
         // The token base64 encodes the email (and some other stuff),
