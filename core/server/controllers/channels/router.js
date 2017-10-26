@@ -5,8 +5,8 @@ var express = require('express'),
     i18n    = require('../../i18n'),
     rss     = require('../../data/xml/rss'),
     utils   = require('../../utils'),
-    channelConfig = require('./channel-config'),
-    renderChannel = require('./render-channel'),
+    channelLoader = require('./loader'),
+    renderChannel = require('../frontend/render-channel'),
     rssRouter,
     channelsRouter;
 
@@ -95,12 +95,16 @@ function buildChannelRouter(channel) {
 channelsRouter = function router() {
     var channelsRouter = express.Router({mergeParams: true});
 
-    _.each(channelConfig.list(), function (channel) {
+    _.each(channelLoader.list(), function (channel) {
+        var channelRoute = channel.route.replace(/:t_([a-zA-Z]+)/, function (fullMatch, keyword) {
+            return config.get('routeKeywords')[keyword];
+        });
+
         // Mount this channel router on the parent channels router
-        channelsRouter.use(channel.route, buildChannelRouter(channel));
+        channelsRouter.use(channelRoute, buildChannelRouter(channel));
     });
 
     return channelsRouter;
 };
 
-module.exports.router = channelsRouter;
+module.exports = channelsRouter;

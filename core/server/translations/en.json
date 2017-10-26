@@ -229,6 +229,7 @@
                 "onlyOneRolePerUserSupported": "Only one role per user is supported at the moment.",
                 "methodDoesNotSupportOwnerRole": "This method does not support assigning the owner role",
                 "passwordDoesNotComplyLength": "Your password must be at least {minLength} characters long.",
+                "passwordDoesNotComplySecurity": "Sorry, you cannot use an insecure password.",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "noUserWithEnteredEmailAddr": "There is no user with that email address.",
                 "userIsInactive": "The user with that email address is inactive.",
@@ -453,13 +454,13 @@
                         "failedToParseImportJson": "Failed to parse the import JSON file."
                     }
                 }
-            },
-            "xml": {
-                "xmlrpc": {
-                    "pingUpdateFailed": {
-                        "error": "Pinging services for updates on your blog failed, your blog will continue to function.",
-                        "help": "If you get this error repeatedly, please seek help on {url}."
-                    }
+            }
+        },
+        "services": {
+            "ping": {
+                "requestFailed": {
+                    "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
+                    "help": "If you get this error repeatedly, please seek help on {url}."
                 }
             }
         },

@@ -12,6 +12,7 @@ b-cov
 pids
 results
 
+package-lock.json
 npm-debug.log
 node_modules
 bower_components
@@ -63,7 +64,7 @@ CHANGELOG.md
 /core/test/coverage
 
 # ignore all custom json files for config
-config.*.json
+/config.*.json
 
 # Built asset files
 /core/built
