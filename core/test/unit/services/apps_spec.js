@@ -4,15 +4,15 @@ var should = require('should'),
     EventEmitter = require('events').EventEmitter,
     _ = require('lodash'),
     Promise = require('bluebird'),
-    helpers = require('../../server/helpers/register'),
-    filters = require('../../server/filters'),
-    i18n = require('../../server/i18n'),
+    helpers = require('../../../server/helpers/register'),
+    filters = require('../../../server/filters'),
+    i18n = require('../../../server/i18n'),
 
     // Stuff we are testing
-    AppProxy = require('../../server/apps/proxy'),
-    AppSandbox = require('../../server/apps/sandbox'),
-    AppDependencies = require('../../server/apps/dependencies'),
-    AppPermissions = require('../../server/apps/permissions'),
+    AppProxy = require('../../../server/services/apps/proxy'),
+    AppSandbox = require('../../../server/services/apps/sandbox'),
+    AppDependencies = require('../../../server/services/apps/dependencies'),
+    AppPermissions = require('../../../server/services/apps/permissions'),
 
     sandbox = sinon.sandbox.create();
 
@@ -274,9 +274,13 @@ describe('Apps', function () {
     });
 
     describe('Sandbox', function () {
+        function makeAppPath(fileName) {
+            return path.resolve(__dirname, '..', '..', 'utils', 'fixtures', 'app', fileName);
+        }
+
         it('loads apps in a sandbox', function () {
             var appBox = new AppSandbox(),
-                appPath = path.resolve(__dirname, '..', 'utils', 'fixtures', 'app', 'good.js'),
+                appPath = makeAppPath('good.js'),
                 GoodApp,
                 appProxy = new AppProxy({
                     name: 'TestApp',
@@ -300,7 +304,7 @@ describe('Apps', function () {
 
         it('does not allow apps to require blacklisted modules at top level', function () {
             var appBox = new AppSandbox(),
-                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badtop.js'),
+                badAppPath = makeAppPath('badtop.js'),
                 loadApp = function () {
                     appBox.loadApp(badAppPath);
                 };
@@ -310,7 +314,7 @@ describe('Apps', function () {
 
         it('does not allow apps to require blacklisted modules at install', function () {
             var appBox = new AppSandbox(),
-                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badinstall.js'),
+                badAppPath = makeAppPath('badinstall.js'),
                 BadApp,
                 appProxy = new AppProxy({
                     name: 'TestApp',
@@ -330,7 +334,7 @@ describe('Apps', function () {
 
         it('does not allow apps to require blacklisted modules from other requires', function () {
             var appBox = new AppSandbox(),
-                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badrequire.js'),
+                badAppPath = makeAppPath('badrequire.js'),
                 BadApp,
                 loadApp = function () {
                     BadApp = appBox.loadApp(badAppPath);
@@ -341,7 +345,7 @@ describe('Apps', function () {
 
         it('does not allow apps to require modules relatively outside their directory', function () {
             var appBox = new AppSandbox(),
-                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badoutside.js'),
+                badAppPath = makeAppPath('badoutside.js'),
                 BadApp,
                 loadApp = function () {
                     BadApp = appBox.loadApp(badAppPath);
@@ -352,7 +356,7 @@ describe('Apps', function () {
 
         it('does allow INTERNAL apps to require modules relatively outside their directory', function () {
             var appBox = new AppSandbox({internal: true}),
-                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badoutside.js'),
+                badAppPath = makeAppPath('badoutside.js'),
                 InternalApp,
                 loadApp = function () {
                     InternalApp = appBox.loadApp(badAppPath);

@@ -1,12 +1,11 @@
-
-var _           = require('lodash'),
-    Promise     = require('bluebird'),
-    logging     = require('../logging'),
-    errors      = require('../errors'),
-    api         = require('../api'),
-    loader      = require('./loader'),
-    i18n        = require('../i18n'),
-    config      = require('../config'),
+var _ = require('lodash'),
+    Promise = require('bluebird'),
+    logging = require('../../logging'),
+    errors = require('../../errors'),
+    api = require('../../api'),
+    i18n = require('../../i18n'),
+    config = require('../../config'),
+    loader = require('./loader'),
     // Holds the available apps
     availableApps = {};
 
