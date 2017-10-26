@@ -15,10 +15,11 @@ var debug = require('ghost-ignition').debug('blog'),
 
     // Global/shared middleware
     cacheControl = require('../middleware/cache-control'),
-    urlRedirects = require('../middleware/url-redirects'),
     errorHandler = require('../middleware/error-handler'),
+    frontendClient = require('../middleware/frontend-client'),
     maintenance = require('../middleware/maintenance'),
     prettyURLs = require('../middleware/pretty-urls'),
+    urlRedirects = require('../middleware/url-redirects'),
 
     // local middleware
     servePublicFile = require('../middleware/serve-public-file'),
@@ -111,6 +112,9 @@ module.exports = function setupBlogApp() {
     // ### Caching
     // Blog frontend is cacheable
     blogApp.use(cacheControl('public'));
+
+    // Fetch the frontend client into res.locals
+    blogApp.use(frontendClient);
 
     debug('General middleware done');
 
