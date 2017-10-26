@@ -83,15 +83,15 @@ class ActiveTheme {
         return this._config[key];
     }
 
-    mount(blogApp) {
+    mount(siteApp) {
         // reset the asset hash
         // @TODO: set this on the theme instead of globally, or use proper file-based hash
         config.set('assetHash', null);
         // clear the view cache
-        blogApp.cache = {};
+        siteApp.cache = {};
         // Set the views and engine
-        blogApp.set('views', this.path);
-        blogApp.engine('hbs', engine.configure(this.partialsPath));
+        siteApp.set('views', this.path);
+        siteApp.engine('hbs', engine.configure(this.partialsPath));
 
         this._mounted = true;
     }

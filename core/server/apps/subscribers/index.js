@@ -10,8 +10,8 @@ module.exports = {
         registerHelpers(ghost);
     },
 
-    setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('/' + config.get('routeKeywords').subscribe + '/', function labsEnabledRouter(req, res, next) {
+    setupRoutes: function setupRoutes(siteRouter) {
+        siteRouter.use('/' + config.get('routeKeywords').subscribe + '/', function labsEnabledRouter(req, res, next) {
             if (labs.isSet('subscribers') === true) {
                 return router.apply(this, arguments);
             }

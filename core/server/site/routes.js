@@ -5,7 +5,7 @@ var express = require('express'),
     channels = require('../controllers/channels'),
     utils = require('../utils');
 
-module.exports = function frontendRoutes() {
+module.exports = function siteRouter() {
     var router = express.Router(),
         routeKeywords = config.get('routeKeywords');
 
