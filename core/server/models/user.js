@@ -27,10 +27,6 @@ var _              = require('lodash'),
     User,
     Users;
 
-function validatePasswordLength(password) {
-    return validator.isLength(password, 10);
-}
-
 /**
  * generate a random salt and then hash the password with that salt
  */
@@ -106,7 +102,8 @@ User = ghostBookshelf.Model.extend({
      */
     onSaving: function onSaving(newPage, attr, options) {
         var self = this,
-            tasks = [];
+            tasks = [],
+            passwordValidation = {};
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -169,11 +166,13 @@ User = ghostBookshelf.Model.extend({
                 if (this.get('status') !== 'inactive') {
                     this.set('status', 'locked');
                 }
-            }
+            } else {
+                // CASE: we're not importing data, run the validations
+                passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
 
-            // don't ever validate passwords when importing
-            if (!options.importing && !validatePasswordLength(this.get('password'))) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
+                if (!passwordValidation.isValid) {
+                    return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
+                }
             }
 
             tasks.hashPassword = (function hashPassword() {
@@ -563,10 +562,13 @@ User = ghostBookshelf.Model.extend({
      */
     setup: function setup(data, options) {
         var self = this,
-            userData = this.filterData(data);
+            userData = this.filterData(data),
+            passwordValidation = {};
 
-        if (!validatePasswordLength(userData.password)) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10})}));
+        passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
+
+        if (!passwordValidation.isValid) {
+            return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
         }
 
         options = this.filterOptions(options, 'setup');
