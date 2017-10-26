@@ -4,7 +4,7 @@
         "frontPageTemplate": "home"
     },
     "tag": {
-        "route": "/:rkw-tag/:slug/",
+        "route": "/:t_tag/:slug/",
         "postOptions": {
             "filter": "tags:'%s'+tags.visibility:public"
         },
@@ -22,7 +22,7 @@
         "editRedirect": "#/settings/tags/:slug/"
     },
     "author": {
-        "route": "/:rkw-author/:slug/",
+        "route": "/:t_author/:slug/",
         "postOptions": {
             "filter": "author:'%s'"
         },
