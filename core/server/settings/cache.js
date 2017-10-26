@@ -50,7 +50,7 @@ module.exports = {
         // Default behaviour is to try to resolve the value and return that
         try {
             // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
-            if (settingsCache[key].value.match(/^\d+$/)) {
+            if (!isNaN(Number(settingsCache[key].value))) {
                 return settingsCache[key].value;
             }
 
