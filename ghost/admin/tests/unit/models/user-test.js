@@ -9,6 +9,7 @@ describe('Unit: Model: user', function () {
             'serializer:application',
             'serializer:user',
             'service:ajax',
+            'service:config',
             'service:ghostPaths',
             'service:notifications',
             'service:session'

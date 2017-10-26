@@ -9,6 +9,7 @@ describe('Unit: Serializer: user', function() {
         needs: [
             'model:role',
             'service:ajax',
+            'service:config',
             'service:ghostPaths',
             'service:notifications',
             'service:session',

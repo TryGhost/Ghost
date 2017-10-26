@@ -31,7 +31,7 @@ describe('Acceptance: Signup', function() {
             let params = JSON.parse(requestBody);
             expect(params.invitation[0].name).to.equal('Test User');
             expect(params.invitation[0].email).to.equal('kevin+test2@ghost.org');
-            expect(params.invitation[0].password).to.equal('ValidPassword');
+            expect(params.invitation[0].password).to.equal('thisissupersafe');
             expect(params.invitation[0].token).to.equal('MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
             // ensure that `/users/me/` request returns a user
@@ -89,7 +89,9 @@ describe('Acceptance: Signup', function() {
             'name field error is removed after text input'
         ).to.equal('');
 
-        // focus out in Name field triggers inline error
+        // check password validation
+        // focus out in password field triggers inline error
+        // no password
         await triggerEvent('input[name="password"]', 'blur');
 
         expect(
@@ -102,8 +104,44 @@ describe('Acceptance: Signup', function() {
             'password field error text'
         ).to.match(/must be at least 10 characters/);
 
+        // password too short
+        await fillIn('input[name="password"]', 'short');
+        await triggerEvent('input[name="password"]', 'blur');
+
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error text'
+        ).to.match(/must be at least 10 characters/);
+
+        // password must not be a bad password
+        await fillIn('input[name="password"]', '1234567890');
+        await triggerEvent('input[name="password"]', 'blur');
+
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error text'
+        ).to.match(/you cannot use an insecure password/);
+
+        // password must not be a disallowed password
+        await fillIn('input[name="password"]', 'password99');
+        await triggerEvent('input[name="password"]', 'blur');
+
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error text'
+        ).to.match(/you cannot use an insecure password/);
+
+        // password must not have repeating characters
+        await fillIn('input[name="password"]', '2222222222');
+        await triggerEvent('input[name="password"]', 'blur');
+
+        expect(
+            find('input[name="password"]').closest('.form-group').find('.response').text().trim(),
+            'password field error text'
+        ).to.match(/you cannot use an insecure password/);
+
         // entering valid text in Password field clears error
-        await fillIn('input[name="password"]', 'ValidPassword');
+        await fillIn('input[name="password"]', 'thisissupersafe');
         await triggerEvent('input[name="password"]', 'blur');
 
         expect(

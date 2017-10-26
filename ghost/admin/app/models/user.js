@@ -42,6 +42,7 @@ export default Model.extend(ValidationEngine, {
     ajax: injectService(),
     session: injectService(),
     notifications: injectService(),
+    config: injectService(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.

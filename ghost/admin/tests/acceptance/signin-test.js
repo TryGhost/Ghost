@@ -51,7 +51,7 @@ describe('Acceptance: Signin', function() {
                 expect(username, 'username').to.equal('test@example.com');
                 expect(clientId, 'client id').to.equal('ghost-admin');
 
-                if (password === 'testpass') {
+                if (password === 'thisissupersafe') {
                     return {
                         access_token: 'MirageAccessToken',
                         expires_in: 3600,
@@ -109,7 +109,7 @@ describe('Acceptance: Signin', function() {
             expect(currentURL(), 'current url').to.equal('/signin');
 
             await fillIn('[name="identification"]', 'test@example.com');
-            await fillIn('[name="password"]', 'testpass');
+            await fillIn('[name="password"]', 'thisissupersafe');
             await click('.gh-btn-blue');
             expect(currentURL(), 'currentURL').to.equal('/');
         });

@@ -1,7 +1,7 @@
-import BaseValidator from './base';
+import PasswordValidator from 'ghost-admin/validators/password';
 import {isBlank} from '@ember/utils';
 
-export default BaseValidator.create({
+export default PasswordValidator.create({
     properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],
 
     isActive(model) {
@@ -96,10 +96,7 @@ export default BaseValidator.create({
                 this.invalidate();
             }
 
-            if (!validator.isLength(newPassword, 10)) {
-                model.get('errors').add('newPassword', 'Your password must be at least 10 characters long.');
-                this.invalidate();
-            }
+            this.passwordValidation(model, newPassword, 'newPassword');
         }
     },
 

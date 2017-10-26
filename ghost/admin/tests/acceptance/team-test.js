@@ -658,8 +658,8 @@ describe('Acceptance: Team', function () {
                 ).to.match(/can't be blank/);
 
                 // validates too short password (< 10 characters)
-                await fillIn('#user-password-new', 'password');
-                await fillIn('#user-new-password-verification', 'password');
+                await fillIn('#user-password-new', 'notlong');
+                await fillIn('#user-new-password-verification', 'notlong');
 
                 // enter key triggers action
                 await keyEvent('#user-password-new', 'keyup', 13);
@@ -671,11 +671,28 @@ describe('Acceptance: Team', function () {
 
                 expect(
                     find('#user-password-new').siblings('.response').text(),
-                    'confirm password error when it it\'s too short'
+                    'confirm password error when it\'s too short'
                 ).to.match(/at least 10 characters long/);
 
+                // validates unsafe password
+                await fillIn('#user-password-new', 'ghostisawesome');
+                await fillIn('#user-new-password-verification', 'ghostisawesome');
+
+                // enter key triggers action
+                await keyEvent('#user-password-new', 'keyup', 13);
+
+                expect(
+                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    'new password has error class when password is insecure'
+                ).to.be.true;
+
+                expect(
+                    find('#user-password-new').siblings('.response').text(),
+                    'confirm password error when it\'s insecure'
+                ).to.match(/you cannot use an insecure password/);
+
                 // typing in inputs clears validation
-                await fillIn('#user-password-new', 'password99');
+                await fillIn('#user-password-new', 'thisissupersafe');
                 await triggerEvent('#user-password-new', 'input');
 
                 expect(
@@ -697,7 +714,7 @@ describe('Acceptance: Team', function () {
                 ).to.match(/do not match/);
 
                 // submits with correct details
-                await fillIn('#user-new-password-verification', 'password99');
+                await fillIn('#user-new-password-verification', 'thisissupersafe');
                 await click('.button-change-password');
 
                 // hits the endpoint
@@ -709,8 +726,8 @@ describe('Acceptance: Team', function () {
 
                 // eslint-disable-next-line camelcase
                 expect(params.password[0].user_id).to.equal(user.id.toString());
-                expect(params.password[0].newPassword).to.equal('password99');
-                expect(params.password[0].ne2Password).to.equal('password99');
+                expect(params.password[0].newPassword).to.equal('thisissupersafe');
+                expect(params.password[0].ne2Password).to.equal('thisissupersafe');
 
                 // clears the fields
                 expect(
