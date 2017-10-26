@@ -123,7 +123,7 @@ describe('User Model', function run() {
 
             // avoid side-effects!
             userData = _.cloneDeep(userData);
-            userData.password = 1234567890;
+            userData.password = 109674836589;
 
             // mocha supports promises
             return UserModel.add(userData, context).then(function (createdUser) {
@@ -560,17 +560,115 @@ describe('User Model', function run() {
                     done();
                 });
             });
-        });
 
-        describe('success', function () {
-            it('can change password', function (done) {
+            it('too short password', function (done) {
+                UserModel.changePassword({
+                    newPassword: '12345678',
+                    ne2Password: '12345678',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('very bad password', function (done) {
                 UserModel.changePassword({
                     newPassword: '1234567890',
                     ne2Password: '1234567890',
                     oldPassword: 'Sl1m3rson99',
                     user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password matches users email adress', function (done) {
+                UserModel.changePassword({
+                    newPassword: 'jbloggs@example.com',
+                    ne2Password: 'jbloggs@example.com',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password contains words "ghost" or "password"', function (done) {
+                UserModel.changePassword({
+                    newPassword: 'onepassword',
+                    ne2Password: 'onepassword',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password matches blog URL', function (done) {
+                UserModel.changePassword({
+                    newPassword: '127.0.0.1:2369',
+                    ne2Password: '127.0.0.1:2369',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password contains repeating chars', function (done) {
+                UserModel.changePassword({
+                    newPassword: 'cdcdcdcdcd',
+                    ne2Password: 'cdcdcdcdcd',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('password contains repeating numbers', function (done) {
+                UserModel.changePassword({
+                    newPassword: '1231111111',
+                    ne2Password: '1231111111',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
+                }, testUtils.context.owner).then(function () {
+                    done(new Error('expected error!'));
+                }).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+        });
+
+        describe('success', function () {
+            it('can change password', function (done) {
+                UserModel.changePassword({
+                    newPassword: 'thisissupersafe',
+                    ne2Password: 'thisissupersafe',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: testUtils.DataGenerator.Content.users[0].id
                 }, testUtils.context.owner).then(function (user) {
-                    user.get('password').should.not.eql('1234567890');
+                    user.get('password').should.not.eql('thisissupersafe');
                     done();
                 }).catch(done);
             });
@@ -584,7 +682,7 @@ describe('User Model', function run() {
             var userData = {
                 name: 'Max Mustermann',
                 email: 'test@ghost.org',
-                password: '1234567890'
+                password: 'thisissupersafe'
             };
 
             UserModel.setup(userData, {id: 1})

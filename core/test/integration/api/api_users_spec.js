@@ -501,13 +501,13 @@ describe('Users API', function () {
                 {
                     users: [{
                         name: 'newname',
-                        password: 'newpassword'
+                        password: 'thisissupersafe'
                     }]
                 }, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function () {
                 return models.User.findOne({id: userIdFor.author}).then(function (response) {
                     response.get('name').should.eql('newname');
-                    response.get('password').should.not.eql('newpassword');
+                    response.get('password').should.not.eql('thisissupersafe');
                     done();
                 });
             }).catch(done);
