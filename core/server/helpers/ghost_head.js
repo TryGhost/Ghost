@@ -8,7 +8,6 @@
 
 var proxy = require('./proxy'),
     _ = require('lodash'),
-    Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('ghost_head'),
 
     getMetaData = proxy.metaData.get,
@@ -16,32 +15,10 @@ var proxy = require('./proxy'),
     escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
     filters = proxy.filters,
-    labs = proxy.labs,
-    api = proxy.api,
     logging = proxy.logging,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
     blogIconUtils = proxy.blogIcon;
-
-function getClient() {
-    if (labs.isSet('publicAPI') === true) {
-        return api.clients
-            .read({slug: 'ghost-frontend'})
-            .then(function handleClient(client) {
-                client = client.clients[0];
-
-                if (client.status === 'enabled') {
-                    return {
-                        id: client.slug,
-                        secret: client.secret
-                    };
-                }
-
-                return {};
-            });
-    }
-    return Promise.resolve({});
-}
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
@@ -82,27 +59,73 @@ function getAjaxHelper(clientId, clientSecret) {
         '</script>';
 }
 
+/**
+ * **NOTE**
+ * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
+ * But `options.data.root.context` is available next to `root._locals.context`, because
+ * Express creates a `renderOptions` object, see https://github.com/expressjs/express/blob/4.15.4/lib/application.js#L554
+ * and merges all locals to the root of the object. Very confusing, because the data is available in different layers.
+ *
+ * Express forwards the data like this to the hbs engine:
+ * {
+ *   post: {},             - res.render('view', databaseResponse)
+ *   context: ['post'],    - from res.locals
+ *   safeVersion: '1.x',   - from res.locals
+ *   _locals: {
+ *     context: ['post'],
+ *     safeVersion: '1.x'
+ *   }
+ * }
+ *
+ * hbs forwards the data to any hbs helper like this
+ * {
+ *   data: {
+ *     blog: {},
+ *     labs: {},
+ *     config: {},
+ *     root: {
+ *       post: {},
+ *       context: ['post'],
+ *       locals: {...}
+ *     }
+ *  }
+ *
+ * `blog`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
+ *  Also see how the root object get's created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
+ */
 module.exports = function ghost_head(options) {
     debug('begin');
 
     // if server error page do nothing
-    if (this.statusCode >= 500) {
+    if (options.data.root.statusCode >= 500) {
         return;
     }
 
     var head = [],
+        dataRoot = options.data.root,
+        context = dataRoot._locals.context ? dataRoot._locals.context : null,
+        client = dataRoot._locals.client,
+        safeVersion = dataRoot._locals.safeVersion,
+        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
         globalCodeinjection = settingsCache.get('ghost_head'),
-        postCodeInjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_head : null,
-        context = this.context ? this.context : null,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
-        safeVersion = this.safeVersion,
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
-    return Promise
-        .join(getMetaData(this, options.data.root), getClient(), function handleData(metaData, client) {
+
+    /**
+     * @TODO:
+     *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
+     *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
+     *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
+     *   - therefor we get rid of using `getMetaData(this, dataRoot)`
+     *   - dataRoot has access to *ALL* locals, see function description
+     *   - it should not break anything
+     */
+    return getMetaData(dataRoot, dataRoot)
+        .then(function handleMetaData(metaData) {
             debug('end fetch');
 
             if (context) {

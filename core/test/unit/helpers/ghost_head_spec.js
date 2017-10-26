@@ -3,6 +3,7 @@ var should = require('should'), // jshint ignore:line
     _ = require('lodash'),
     Promise = require('bluebird'),
     moment = require('moment'),
+    testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     imageSize = require('../../../server/utils/image-size'),
@@ -53,10 +54,14 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index']},
-                {data: {root: {context: ['paged', 'index']}}}
-            ).then(function (rendered) {
+            // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/page/2/',
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
@@ -71,10 +76,13 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on first index page', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/', context: ['home', 'index']},
-                {data: {root: {context: ['home', 'index']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
@@ -106,35 +114,41 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on static page', function (done) {
-            var post = {
-                meta_description: 'all about our blog',
-                title: 'About',
-                feature_image: '/content/images/test-image-about.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                og_image: '',
-                og_title: '',
-                og_description: '',
-                twitter_image: '',
-                twitter_title: '',
-                twitter_description: '',
-                page: true,
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser',
-                    bio: 'Author bio'
+            var renderObject = {
+                post: {
+                    meta_description: 'all about our blog',
+                    title: 'About',
+                    feature_image: '/content/images/test-image-about.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    og_image: '',
+                    og_title: '',
+                    og_description: '',
+                    twitter_image: '',
+                    twitter_title: '',
+                    twitter_description: '',
+                    page: true,
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser',
+                        bio: 'Author bio'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/about/', context: ['page'], post: post},
-                {data: {root: {context: ['page']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
@@ -172,35 +186,41 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on static page with custom post structured data', function (done) {
-            var post = {
-                meta_description: 'all about our blog',
-                title: 'About',
-                feature_image: '/content/images/test-image-about.png',
-                og_image: '/content/images/test-og-image.png',
-                og_title: 'Custom Facebook title',
-                og_description: 'Custom Facebook description',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                twitter_description: 'Custom Twitter description',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                page: true,
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser',
-                    bio: 'Author bio'
+            var renderObject = {
+                post: {
+                    meta_description: 'all about our blog',
+                    title: 'About',
+                    feature_image: '/content/images/test-image-about.png',
+                    og_image: '/content/images/test-og-image.png',
+                    og_title: 'Custom Facebook title',
+                    og_description: 'Custom Facebook description',
+                    twitter_image: '/content/images/test-twitter-image.png',
+                    twitter_title: 'Custom Twitter title',
+                    twitter_description: 'Custom Twitter description',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    page: true,
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser',
+                        bio: 'Author bio'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/about/', context: ['page'], post: post},
-                {data: {root: {context: ['page']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
@@ -238,17 +258,23 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data and schema first tag page with meta description and meta title', function (done) {
-            var tag = {
-                meta_description: 'tag meta description',
-                name: 'tagtitle',
-                meta_title: 'tag meta title',
-                feature_image: '/content/images/tag-image.png'
+            var renderObject = {
+                tag: {
+                    meta_description: 'tag meta description',
+                    name: 'tagtitle',
+                    meta_title: 'tag meta title',
+                    feature_image: '/content/images/tag-image.png'
+                }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
-                {data: {root: {context: ['tag']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/tag/tagtitle/',
+                    context: ['tag'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
@@ -280,18 +306,24 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('tag first page without meta data if no meta title and meta description, but model description provided', function (done) {
-            var tag = {
-                meta_description: '',
-                description: 'tag description',
-                name: 'tagtitle',
-                meta_title: '',
-                feature_image: '/content/images/tag-image.png'
+            var renderObject = {
+                tag: {
+                    meta_description: '',
+                    description: 'tag description',
+                    name: 'tagtitle',
+                    meta_title: '',
+                    feature_image: '/content/images/tag-image.png'
+                }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
-                {data: {root: {context: ['tag']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/tag/tagtitle/',
+                    context: ['tag'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
@@ -323,17 +355,23 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('tag first page without meta and model description returns no description fields', function (done) {
-            var tag = {
-                meta_description: '',
-                name: 'tagtitle',
-                meta_title: '',
-                feature_image: '/content/images/tag-image.png'
+            var renderObject = {
+                tag: {
+                    meta_description: '',
+                    name: 'tagtitle',
+                    meta_title: '',
+                    feature_image: '/content/images/tag-image.png'
+                }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
-                {data: {root: {context: ['tag']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/tag/tagtitle/',
+                    context: ['tag'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.not.match(/<meta name="description"/);
@@ -346,22 +384,28 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data on paginated tag pages', function (done) {
-            var tag = {
-                meta_description: 'tag meta description',
-                title: 'tagtitle',
-                meta_title: 'tag meta title',
-                feature_image: '/content/images/tag-image.png'
+            var renderObject = {
+                tag: {
+                    meta_description: 'tag meta description',
+                    title: 'tagtitle',
+                    meta_title: 'tag meta title',
+                    feature_image: '/content/images/tag-image.png'
+                }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/page/2/', tag: tag, context: ['paged', 'tag']},
-                {data: {root: {context: ['tag']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/tag/tagtitle/page/2/',
+                    context: ['paged', 'tag'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<meta name="description" content="tag meta description" \/>/);
+                rendered.string.should.not.match(/<meta name="description" content="tag meta description" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
                 rendered.string.should.not.match(/<meta property="og/);
                 rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
@@ -371,21 +415,27 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data and schema on first author page with cover image', function (done) {
-            var author = {
-                name: 'Author name',
-                slug: 'AuthorName',
-                bio: 'Author bio',
-                profile_image: '/content/images/test-author-image.png',
-                cover_image: '/content/images/author-cover-image.png',
-                website: 'http://authorwebsite.com',
-                facebook: 'testuser',
-                twitter: '@testuser'
-            }, authorBk = _.cloneDeep(author);
+            var renderObject = {
+                author: {
+                    name: 'Author name',
+                    slug: 'AuthorName',
+                    bio: 'Author bio',
+                    profile_image: '/content/images/test-author-image.png',
+                    cover_image: '/content/images/author-cover-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            }, authorBk = _.cloneDeep(renderObject.author);
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/author/AuthorName/', author: author, context: ['author']},
-                {data: {root: {context: ['author']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/author/AuthorName/',
+                    context: ['author'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/author\/AuthorName\/" \/>/);
@@ -413,31 +463,32 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.not.match(/"description":/);
 
-                author.should.eql(authorBk);
+                renderObject.author.should.eql(authorBk);
 
                 done();
             }).catch(done);
         });
 
         it('does not return structured data on paginated author pages', function (done) {
-            var author = {
-                name: 'Author name',
-                slug: 'AuthorName',
-                bio: 'Author bio',
-                profile_image: '/content/images/test-author-image.png',
-                cover_image: '/content/images/author-cover-image.png',
-                website: 'http://authorwebsite.com'
+            var renderObject = {
+                author: {
+                    name: 'Author name',
+                    slug: 'AuthorName',
+                    bio: 'Author bio',
+                    profile_image: '/content/images/test-author-image.png',
+                    cover_image: '/content/images/author-cover-image.png',
+                    website: 'http://authorwebsite.com'
+                }
             };
 
-            helpers.ghost_head.call(
-                {
-                    safeVersion: '0.3',
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
                     relativeUrl: '/author/AuthorName/page/2/',
-                    author: author,
-                    context: ['paged', 'author']
-                },
-                {data: {root: {context: ['paged', 'author']}}}
-            ).then(function (rendered) {
+                    context: ['paged', 'author'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/author\/AuthorName\/page\/2\/" \/>/);
@@ -452,10 +503,12 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string even if safeVersion is invalid', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.9', context: []},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    context: [],
+                    safeVersion: '0.9'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.9" \/>/);
@@ -466,40 +519,46 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with author image and post cover image', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                custom_excerpt: '',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_image: '',
-                og_title: 'Custom Facebook title',
-                og_description: 'Custom Facebook description',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: '',
-                twitter_description: '',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    bio: 'Author bio',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    custom_excerpt: '',
+                    title: 'Welcome to Ghost',
+                    feature_image: '/content/images/test-image.png',
+                    og_image: '',
+                    og_title: 'Custom Facebook title',
+                    og_description: 'Custom Facebook description',
+                    twitter_image: '/content/images/test-twitter-image.png',
+                    twitter_title: '',
+                    twitter_description: '',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        bio: 'Author bio',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
-            }, postBk = _.cloneDeep(post);
+            }, postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -546,47 +605,53 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
 
-                post.should.eql(postBk);
+                renderObject.post.should.eql(postBk);
 
                 done();
             }).catch(done);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                custom_excerpt: 'post custom excerpt',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_image: '/content/images/test-facebook-image.png',
-                og_title: '',
-                og_description: '',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                twitter_description: '',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    bio: 'Author bio',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    custom_excerpt: 'post custom excerpt',
+                    title: 'Welcome to Ghost',
+                    feature_image: '/content/images/test-image.png',
+                    og_image: '/content/images/test-facebook-image.png',
+                    og_title: '',
+                    og_description: '',
+                    twitter_image: '/content/images/test-twitter-image.png',
+                    twitter_title: 'Custom Twitter title',
+                    twitter_description: '',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        bio: 'Author bio',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
-            }, postBk = _.cloneDeep(post);
+            }, postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -633,29 +698,35 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
 
-                post.should.eql(postBk);
+                renderObject.post.should.eql(postBk);
 
                 done();
             }).catch(done);
         });
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', function (done) {
-            var post = {
-                meta_description: '',
-                custom_excerpt: '',
-                title: 'Welcome to Ghost',
-                html: '<p>This is a short post</p>',
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author'
+            var renderObject = {
+                post: {
+                    meta_description: '',
+                    custom_excerpt: '',
+                    title: 'Welcome to Ghost',
+                    html: '<p>This is a short post</p>',
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author'
+                    }
                 }
-            }, postBk = _.cloneDeep(post);
+            }, postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
@@ -686,46 +757,52 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
 
-                post.should.eql(postBk);
+                renderObject.post.should.eql(postBk);
 
                 done();
             }).catch(done);
         });
 
         it('returns structured data on AMP post page with author image and post cover image', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_image: '/content/images/test-facebook-image.png',
-                og_title: 'Custom Facebook title',
-                og_description: '',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                twitter_description: '',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http://testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    bio: 'Author bio',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    feature_image: '/content/images/test-image.png',
+                    og_image: '/content/images/test-facebook-image.png',
+                    og_title: 'Custom Facebook title',
+                    og_description: '',
+                    twitter_image: '/content/images/test-twitter-image.png',
+                    twitter_title: 'Custom Twitter title',
+                    twitter_description: '',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http://testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        bio: 'Author bio',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
-            }, postBk = _.cloneDeep(post);
+            }, postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/amp/', safeVersion: '0.3', context: ['amp', 'post'], post: post},
-                {data: {root: {context: ['amp', 'post']}}}
-            ).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: ['amp', 'post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -772,40 +849,46 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
 
-                post.should.eql(postBk);
+                renderObject.post.should.eql(postBk);
 
                 done();
             }).catch(done);
         });
 
         it('returns structured data if metaTitle and metaDescription have double quotes', function (done) {
-            var post = {
-                meta_description: 'blog "test" description',
-                title: 'title',
-                meta_title: 'Welcome to Ghost "test"',
-                feature_image: '/content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog "test" description',
+                    title: 'title',
+                    meta_title: 'Welcome to Ghost "test"',
+                    feature_image: '/content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -859,31 +942,38 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data without tags if there are no tags', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    feature_image: '/content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: '/content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -934,32 +1024,38 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with null author image and post cover image', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: null,
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    profile_image: null,
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    feature_image: null,
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        profile_image: null,
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
-                    re3 = new RegExp('"datePublished": "' + post.published_at),
-                    re4 = new RegExp('"dateModified": "' + post.updated_at);
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                var re1 = new RegExp('<meta property="article:published_time" content="' + renderObject.post.published_at),
+                    re2 = new RegExp('<meta property="article:modified_time" content="' + renderObject.post.updated_at),
+                    re3 = new RegExp('"datePublished": "' + renderObject.post.published_at),
+                    re4 = new RegExp('"dateModified": "' + renderObject.post.updated_at);
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -1010,10 +1106,13 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs structured data but not schema for custom channel', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/featured/', context: ['featured']},
-                {data: {root: {context: ['featured']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/featured/',
+                    context: ['featured'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/featured\/" \/>/);
@@ -1032,18 +1131,24 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns twitter and facebook descriptions even if no meta description available', function (done) {
-            var post = {
-                title: 'Welcome to Ghost',
-                html: '<p>This is a short post</p>',
-                author: {
-                    name: 'Author name'
+            var renderObject = {
+                post: {
+                    title: 'Welcome to Ghost',
+                    html: '<p>This is a short post</p>',
+                    author: {
+                        name: 'Author name'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.not.match(/<meta name="description" /);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -1056,18 +1161,24 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns canonical URL', function (done) {
-            var post = {
-                title: 'Welcome to Ghost',
-                html: '<p>This is a short post</p>',
-                author: {
-                    name: 'Author name'
+            var renderObject = {
+                post: {
+                    title: 'Welcome to Ghost',
+                    html: '<p>This is a short post</p>',
+                    author: {
+                        name: 'Author name'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', relativeUrl: '/about/', context: ['page'], post: post},
-                {data: {root: {context: ['page']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
@@ -1079,15 +1190,16 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for middle page', function (done) {
-            helpers.ghost_head.call(
-                {
-                    safeVersion: '0.3',
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    pagination: {total: 4, page: 3, next: 4, prev: 2}
+                },
+                locals: {
                     relativeUrl: '/page/3/',
                     context: ['paged', 'index'],
-                    pagination: {next: '4', prev: '2'}
-                },
-                {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
-            ).then(function (rendered) {
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/3\/" \/>/);
@@ -1103,15 +1215,16 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for second page', function (done) {
-            helpers.ghost_head.call(
-                {
-                    safeVersion: '0.3',
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    pagination: {total: 3, page: 2, next: 3, prev: 1}
+                },
+                locals: {
                     relativeUrl: '/page/2/',
                     context: ['paged', 'index'],
-                    pagination: {next: '3', prev: '1'}
-                },
-                {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
-            ).then(function (rendered) {
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
@@ -1137,10 +1250,12 @@ describe('{{ghost_head}} helper', function () {
             });
 
             it('returns correct rss url with subdirectory', function (done) {
-                helpers.ghost_head.call(
-                    {safeVersion: '0.3', context: ['paged', 'index']},
-                    {data: {root: {context: []}}}
-                ).then(function (rendered) {
+                helpers.ghost_head(testUtils.createHbsResponse({
+                    locals: {
+                        context: ['paged', 'index'],
+                        safeVersion: '0.3'
+                    }
+                })).then(function (rendered) {
                     should.exist(rendered);
                     rendered.string.should.match(/<link rel="shortcut icon" href="\/blog\/favicon.png" type="image\/png" \/>/);
                     rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/blog\/" \/>/);
@@ -1175,10 +1290,12 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('contains the changed origin', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index']},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/blog\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
@@ -1212,28 +1329,34 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                image: 'content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    image: 'content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    image: 'content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        image: 'content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
 
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
@@ -1269,10 +1392,15 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag plus injected code', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index'], post: false},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: false
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
@@ -1288,10 +1416,17 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs post codeinjection as well', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index']},
-                {data: {root: {context: [], post: {codeinjection_head: 'post-codeinjection'}}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: {
+                        codeinjection_head: 'post-codeinjection'
+                    }
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<style>body {background: red;}<\/style>/);
                 rendered.string.should.match(/post-codeinjection/);
@@ -1301,10 +1436,17 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being empty', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index']},
-                {data: {root: {context: [], post: {codeinjection_head: ''}}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: {
+                        codeinjection_head: ''
+                    }
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<style>body {background: red;}<\/style>/);
                 rendered.string.should.not.match(/post-codeinjection/);
@@ -1314,10 +1456,17 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being null', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index']},
-                {data: {root: {context: [], post: {codeinjection_head: null}}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: {
+                        codeinjection_head: null
+                    }
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<style>body {background: red;}<\/style>/);
                 rendered.string.should.not.match(/post-codeinjection/);
@@ -1327,27 +1476,33 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag without injected code for amp context', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                image: 'content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    image: 'content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    image: 'content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        image: 'content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['amp', 'post'], post: post},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    context: ['amp', 'post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
@@ -1368,10 +1523,16 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders script tag with src', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index'], post: false},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: false
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3',
+                    client: testUtils.DataGenerator.forKnex.createClient()
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<script type="text\/javascript" src="\/public\/ghost-sdk\.js\?v=/);
 
@@ -1380,10 +1541,16 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders script tag with init correctly', function (done) {
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['paged', 'index'], post: false},
-                {data: {root: {context: []}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: false
+                },
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3',
+                    client: testUtils.DataGenerator.forKnex.createClient()
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<script type="text\/javascript">\n/);
                 rendered.string.should.match(/ghost\.init\(\{/);
@@ -1396,27 +1563,33 @@ describe('{{ghost_head}} helper', function () {
             });
         });
         it('does not render script tag with for amp context', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                image: 'content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    image: 'content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    image: 'content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        image: 'content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
-            helpers.ghost_head.call(
-                {safeVersion: '0.3', context: ['amp', 'post'], post: post},
-                {data: {root: {context: ['amp', 'post']}}}
-            ).then(function (rendered) {
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    context: ['amp', 'post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.not.match(/<script type="text\/javascript">\n/);
                 rendered.string.should.not.match(/ghost\.init\(\{/);
@@ -1446,28 +1619,33 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', function (done) {
-            var post = {
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                image: 'content/images/test-image.png',
-                published_at: moment('2008-05-31T19:18:15').toISOString(),
-                updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                author: {
-                    name: 'Author name',
-                    url: 'http//:testauthorurl.com',
-                    slug: 'Author',
-                    image: 'content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
+            var renderObject = {
+                post: {
+                    meta_description: 'blog description',
+                    title: 'Welcome to Ghost',
+                    image: 'content/images/test-image.png',
+                    published_at: moment('2008-05-31T19:18:15').toISOString(),
+                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                    author: {
+                        name: 'Author name',
+                        url: 'http//:testauthorurl.com',
+                        slug: 'Author',
+                        image: 'content/images/test-author-image.png',
+                        website: 'http://authorwebsite.com',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
                 }
             };
-
-            helpers.ghost_head.call(
-                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
-                {data: {root: {context: ['post']}}}
-            ).then(function (rendered) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.not.match(/<link rel="amphtml"/);
                 done();

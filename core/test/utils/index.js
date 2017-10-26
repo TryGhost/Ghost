@@ -879,6 +879,33 @@ module.exports = {
     mockNotExistingModule: mockNotExistingModule,
     unmockNotExistingModule: unmockNotExistingModule,
 
+    /**
+     * renderObject:    res.render(view, dbResponse)
+     * templateOptions: hbs.updateTemplateOptions(...)
+     */
+    createHbsResponse: function createHbsResponse(options) {
+        var renderObject = options.renderObject || {},
+            templateOptions = options.templateOptions,
+            locals = options.locals || {},
+            hbsStructure = {
+                data: {
+                    blog: {},
+                    config: {},
+                    labs: {},
+                    root: {
+                        _locals: {}
+                    }
+                }
+            };
+
+        _.merge(hbsStructure.data, templateOptions);
+        _.merge(hbsStructure.data.root, renderObject);
+        _.merge(hbsStructure.data.root, locals);
+        hbsStructure.data.root._locals = locals;
+
+        return hbsStructure;
+    },
+
     initFixtures: initFixtures,
     initData: initData,
     clearData: clearData,
