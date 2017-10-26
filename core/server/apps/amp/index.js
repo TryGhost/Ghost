@@ -7,7 +7,7 @@ module.exports = {
         registerHelpers(ghost);
     },
 
-    setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('*/' + config.get('routeKeywords').amp + '/', router);
+    setupRoutes: function setupRoutes(siteRouter) {
+        siteRouter.use('*/' + config.get('routeKeywords').amp + '/', router);
     }
 };

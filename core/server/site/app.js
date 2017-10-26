@@ -30,39 +30,39 @@ var debug = require('ghost-ignition').debug('blog'),
     // middleware for themes
     themeMiddleware = require('../themes').middleware;
 
-module.exports = function setupBlogApp() {
-    debug('Blog setup start');
+module.exports = function setupSiteApp() {
+    debug('Site setup start');
 
-    var blogApp = express();
+    var siteApp = express();
 
     // ## App - specific code
     // set the view engine
-    blogApp.set('view engine', 'hbs');
+    siteApp.set('view engine', 'hbs');
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
-    customRedirects.use(blogApp);
+    customRedirects.use(siteApp);
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    blogApp.use(serveFavicon());
+    siteApp.use(serveFavicon());
     // /public/ghost-sdk.js
-    blogApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', utils.ONE_HOUR_S));
-    blogApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', utils.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    blogApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Serve stylesheets for default templates
-    blogApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
-    blogApp.use(servePublicFile('public/ghost.min.css', 'text/css', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', utils.ONE_HOUR_S));
 
     // Serve images for default templates
-    blogApp.use(servePublicFile('public/404-ghost@2x.png', 'png', utils.ONE_HOUR_S));
-    blogApp.use(servePublicFile('public/404-ghost.png', 'png', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost.png', 'png', utils.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
-    blogApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
+    siteApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.
@@ -75,57 +75,57 @@ module.exports = function setupBlogApp() {
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
     // go after staticTheme() as well, however I would really like to simplify this and be certain
-    blogApp.use(themeMiddleware);
+    siteApp.use(themeMiddleware);
     debug('Themes done');
 
     // Theme static assets/files
-    blogApp.use(staticTheme());
+    siteApp.use(staticTheme());
     debug('Static content done');
 
     // Serve robots.txt if not found in theme
-    blogApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
     config.get('apps:internal').forEach(function (appName) {
         var app = require(path.join(config.get('paths').internalAppPath, appName));
         if (app.hasOwnProperty('setupMiddleware')) {
-            app.setupMiddleware(blogApp);
+            app.setupMiddleware(siteApp);
         }
     });
 
     // site map - this should probably be refactored to be an internal app
-    sitemapHandler(blogApp);
+    sitemapHandler(siteApp);
     debug('Internal apps done');
 
     // send 503 error page in case of maintenance
-    blogApp.use(maintenance);
+    siteApp.use(maintenance);
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(urlRedirects);
+    siteApp.use(urlRedirects);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
-    blogApp.use(prettyURLs);
+    siteApp.use(prettyURLs);
 
     // ### Caching
-    // Blog frontend is cacheable
-    blogApp.use(cacheControl('public'));
+    // Site frontend is cacheable
+    siteApp.use(cacheControl('public'));
 
     // Fetch the frontend client into res.locals
-    blogApp.use(frontendClient);
+    siteApp.use(frontendClient);
 
     debug('General middleware done');
 
     // Set up Frontend routes (including private blogging routes)
-    blogApp.use(routes());
+    siteApp.use(routes());
 
     // ### Error handlers
-    blogApp.use(errorHandler.pageNotFound);
-    blogApp.use(errorHandler.handleHTMLResponse);
+    siteApp.use(errorHandler.pageNotFound);
+    siteApp.use(errorHandler.handleHTMLResponse);
 
-    debug('Blog setup end');
+    debug('Site setup end');
 
-    return blogApp;
+    return siteApp;
 };

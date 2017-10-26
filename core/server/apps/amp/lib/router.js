@@ -68,7 +68,7 @@ function checkIfAMPIsEnabled(req, res, next) {
      *
      * If we would call `next()`, express jumps to the frontend controller (server/controllers/frontend/index.js fn single)
      * and tries to lookup the post (again) and checks whether the post url equals the requested url (post.url !== req.path).
-     * This check would fail if the blog is setup on a subdirectory.
+     * This check would fail if the site is setup on a subdirectory.
      */
     return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
 }
