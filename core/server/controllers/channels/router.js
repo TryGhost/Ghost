@@ -96,7 +96,7 @@ channelsRouter = function router() {
     var channelsRouter = express.Router({mergeParams: true});
 
     _.each(channelLoader.list(), function (channel) {
-        var channelRoute = channel.route.replace(/:rkw-([a-zA-Z]+)/, function (fullMatch, keyword) {
+        var channelRoute = channel.route.replace(/:t_([a-zA-Z]+)/, function (fullMatch, keyword) {
             return config.get('routeKeywords')[keyword];
         });
 
