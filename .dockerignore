@@ -1,0 +1,5 @@
+node_modules
+*.tar
+docker-compose.yml
+Dockerfile
+.travis.yml

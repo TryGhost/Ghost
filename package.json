@@ -91,9 +91,6 @@
     "validator": "6.3.0",
     "xml": "1.0.1"
   },
-  "optionalDependencies": {
-    "sqlite3": "3.1.8"
-  },
   "devDependencies": {
     "grunt": "1.0.1",
     "grunt-bg-shell": "2.3.3",
