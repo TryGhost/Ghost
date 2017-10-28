@@ -11,10 +11,6 @@ var knex = require('knex'),
 function configure(dbConfig) {
     var client = dbConfig.client;
 
-    if (client === 'sqlite3') {
-        dbConfig.useNullAsDefault = dbConfig.useNullAsDefault || false;
-    }
-
     if (client === 'mysql') {
         dbConfig.connection.timezone = 'UTC';
         dbConfig.connection.charset = 'utf8mb4';

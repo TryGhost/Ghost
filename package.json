@@ -18,10 +18,12 @@
   "license": "MIT",
   "main": "./core/index",
   "scripts": {
-    "start": "node index",
+    "deploy": "NODE_ENV=production ./node_modules/.bin/knex-migrator init && node index",
+    "start": "NODE_ENV=development ./node_modules/.bin/knex-migrator init && node index",
     "dev": "DEBUG=ghost:* grunt dev",
+    "lint": "grunt lint",
     "test": "grunt validate --verbose",
-    "init": "yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt symlink && grunt init || true"
+    "init": "yarn install && yarn global add knex-migrator ember-cli grunt-cli && grunt symlink && grunt init || true"
   },
   "engines": {
     "node": "^4.5.0 || ^6.9.0 || ^8.8.0"
@@ -92,7 +94,7 @@
     "xml": "1.0.1"
   },
   "devDependencies": {
-    "grunt": "1.0.1",
+    "grunt": "^1.0.1",
     "grunt-bg-shell": "2.3.3",
     "grunt-cli": "1.2.0",
     "grunt-contrib-clean": "1.1.0",

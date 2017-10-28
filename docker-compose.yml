@@ -1,4 +1,40 @@
-version: 3
-
+version: '3.3'
 services:
   app:
+    build: ./
+    image: "ghost:1.0.0"
+    container_name: "app"
+    depends_on:
+      - "db"
+      - "server"
+    ports: 
+      - "2368:2368"
+    environment: 
+      NODE_ENV: "production"
+    networks:
+      - "web"
+    restart: "unless-stopped"
+
+  db:
+    image: mysql:5.6
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: chenyuan123
+      MYSQL_DATABASE: ghost
+    networks:
+      - web
+    ports: 
+      - 3306:3306
+    restart: unless-stopped
+  server:
+    image: nginx:alpine
+    container_name: server
+    networks:
+      - web
+    restart: unless-stopped
+
+networks:
+  web:
+    driver: bridge
+    labels: 
+      - 'bridge for ghost app'
