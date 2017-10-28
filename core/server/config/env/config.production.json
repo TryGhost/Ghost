@@ -2,9 +2,9 @@
     "database": {
         "client": "mysql",
         "connection": {
-            "host"     : "127.0.0.1",
+            "host"     : "db",
             "user"     : "root",
-            "password" : "",
+            "password" : "chenyuan123",
             "database" : "ghost"
         }
     },

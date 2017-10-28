@@ -21,6 +21,12 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 &nbsp;
 
+# How to run the project?
+```bash
+    yarn run init
+```
+to initilize the whole project.
+
 # Hosting a live Ghost site
 
 <a href="https://ghost.org/pricing"><img src="https://cloud.githubusercontent.com/assets/120485/18662071/f30da886-7f18-11e6-90f2-42c0ade79fd1.png" alt="Ghost(Pro)" /></a>
