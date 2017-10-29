@@ -149,16 +149,14 @@ var overrides      = require('./core/server/overrides'),
                 // #### All Unit tests
                 unit: {
                     src: [
-                        'core/test/unit/**/*_spec.js',
-                        'core/server/apps/**/tests/*_spec.js'
+                        'core/test/unit/**/*_spec.js'
                     ]
                 },
 
                 // #### All Integration tests
                 integration: {
                     src: [
-                        'core/test/integration/**/*_spec.js',
-                        'core/test/integration/*_spec.js'
+                        'core/test/integration/**/*_spec.js'
                     ]
                 },
 
@@ -187,8 +185,7 @@ var overrides      = require('./core/server/overrides'),
                 coverage: {
                     // they can also have coverage generated for them & the order doesn't matter
                     src: [
-                        'core/test/unit',
-                        'core/server/apps'
+                        'core/test/unit'
                     ],
                     options: {
                         mask: '**/*_spec.js',
@@ -200,7 +197,6 @@ var overrides      = require('./core/server/overrides'),
                 coverage_all: {
                     src: [
                         'core/test/integration',
-                        'core/server/apps',
                         'core/test/functional',
                         'core/test/unit'
                     ],

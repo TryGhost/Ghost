@@ -4,10 +4,10 @@ var should = require('should'),
     path = require('path'),
     Promise = require('bluebird'),
 
-    ampController = rewire('../lib/router'),
-    errors = require('../../../errors'),
-    configUtils = require('../../../../test/utils/configUtils'),
-    themes = require('../../../themes'),
+    ampController = rewire('../../../../server/apps/amp/lib/router'),
+    errors = require('../../../../server/errors'),
+    configUtils = require('../../../utils/configUtils'),
+    themes = require('../../../../server/themes'),
 
     sandbox = sinon.sandbox.create();
 
