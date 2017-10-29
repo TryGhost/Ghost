@@ -44,12 +44,7 @@ describe('Apps', function () {
                 // This is all a bit weird... but check that internal apps aren't saved as installed apps
                 // @TODO simplify so this is reduced
                 settingsCacheStub.callCount.should.eql(3);
-                // @TODO simplify so this only happens when necessary
-                settingsEditStub.callCount.should.eql(1);
-                should.exist(settingsEditStub.firstCall.args[0].settings);
-                should.exist(settingsEditStub.firstCall.args[0].settings[0]);
-                settingsEditStub.firstCall.args[0].settings[0].key.should.eql('installed_apps');
-                settingsEditStub.firstCall.args[0].settings[0].value.should.eql([]);
+                settingsEditStub.callCount.should.eql(0);
 
                 // Test that activate is called 4 times, and install 0 time
                 loaderActivateStub.callCount.should.eql(4);
@@ -79,7 +74,6 @@ describe('Apps', function () {
                 // This is all a bit weird... but check that internal apps aren't saved as installed apps
                 // @TODO simplify so this is reduced
                 settingsCacheStub.callCount.should.eql(3);
-                // @TODO simplify so this only happens when necessary
                 settingsEditStub.callCount.should.eql(1);
                 should.exist(settingsEditStub.firstCall.args[0].settings);
                 should.exist(settingsEditStub.firstCall.args[0].settings[0]);
