@@ -1,8 +1,8 @@
-var _           = require('lodash'),
-    api         = require('../api'),
-    helpers     = require('../helpers/register'),
-    filters     = require('../filters'),
-    i18n        = require('../i18n'),
+var _ = require('lodash'),
+    api = require('../../api'),
+    helpers = require('../../helpers/register'),
+    filters = require('../../filters'),
+    i18n = require('../../i18n'),
     generateProxyFunctions;
 
 generateProxyFunctions = function (name, permissions, isInternal) {
