@@ -2,7 +2,7 @@ import $ from 'jquery';
 import Component from '@ember/component';
 import request from 'ember-ajax/request';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const ANIMATION_TIMEOUT = 1000;
@@ -32,8 +32,8 @@ export default Component.extend({
     // closure actions
     setImage() {},
 
-    config: injectService(),
-    ghostPaths: injectService(),
+    config: service(),
+    ghostPaths: service(),
 
     placeholderStyle: htmlSafe('background-image: url()'),
     avatarStyle: htmlSafe('display: none'),

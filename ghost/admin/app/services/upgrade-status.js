@@ -1,10 +1,9 @@
-import Service from '@ember/service';
-import {inject as injectService} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 
 export default Service.extend({
     isRequired: false,
 
-    notifications: injectService(),
+    notifications: service(),
 
     maintenanceAlert() {
         this.get('notifications').showAlert(

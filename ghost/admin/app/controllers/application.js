@@ -1,12 +1,12 @@
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    dropdown: injectService(),
-    session: injectService(),
-    settings: injectService(),
-    ui: injectService(),
+    dropdown: service(),
+    session: service(),
+    settings: service(),
+    ui: service(),
 
     showNavMenu: computed('currentPath', 'session.isAuthenticated', 'session.user.isFulfilled', function () {
         // we need to defer showing the navigation menu until the session.user

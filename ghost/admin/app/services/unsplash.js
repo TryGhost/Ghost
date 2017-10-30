@@ -1,6 +1,5 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
-import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {or} from '@ember/object/computed';
 import {reject, resolve} from 'rsvp';
@@ -11,8 +10,8 @@ const API_VERSION = 'v1';
 const DEBOUNCE_MS = 600;
 
 export default Service.extend({
-    config: injectService(),
-    settings: injectService(),
+    config: service(),
+    settings: service(),
 
     columnCount: 3,
     columns: null,

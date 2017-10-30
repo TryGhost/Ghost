@@ -1,8 +1,8 @@
 import Component from '@ember/component';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    ui: injectService(),
+    ui: service(),
 
     tagName: 'h2',
     classNames: ['view-title']

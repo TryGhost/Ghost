@@ -1,8 +1,8 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
-    mediaQueries: injectService(),
+    mediaQueries: service(),
 
     beforeModel() {
         let firstTag = this.modelFor('settings.tags').get('firstObject');

@@ -1,13 +1,13 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - Code injection',
     classNames: ['settings-view-code'],
 
-    settings: injectService(),
+    settings: service(),
 
     beforeModel() {
         this._super(...arguments);

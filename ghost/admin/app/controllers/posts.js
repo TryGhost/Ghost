@@ -1,12 +1,12 @@
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
 
-    session: injectService(),
-    store: injectService(),
+    session: service(),
+    store: service(),
 
     queryParams: ['type', 'author', 'tag', 'order'],
     type: null,

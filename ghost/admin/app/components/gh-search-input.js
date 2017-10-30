@@ -3,9 +3,9 @@
 import Component from '@ember/component';
 import RSVP from 'rsvp';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isBlank, isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export function computedGroup(category) {
     return computed('content', 'currentSearch', function () {
@@ -35,10 +35,10 @@ export default Component.extend({
     users: computedGroup('Users'),
     tags: computedGroup('Tags'),
 
-    _store: injectService('store'),
-    router: injectService('router'),
-    ajax: injectService(),
-    notifications: injectService(),
+    _store: service('store'),
+    router: service('router'),
+    ajax: service(),
+    notifications: service(),
 
     refreshContent() {
         let promises = [];

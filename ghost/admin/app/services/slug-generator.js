@@ -1,12 +1,11 @@
 import RSVP from 'rsvp';
-import Service from '@ember/service';
-import {inject as injectService} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 
 const {resolve} = RSVP;
 
 export default Service.extend({
-    ghostPaths: injectService(),
-    ajax: injectService(),
+    ghostPaths: service(),
+    ajax: service(),
 
     generateSlug(slugType, textToSlugify) {
         let url;

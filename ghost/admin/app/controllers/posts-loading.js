@@ -1,12 +1,11 @@
-import Controller from '@ember/controller';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
+import Controller, {inject as controller} from '@ember/controller';
 import {readOnly} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
 
-    postsController: injectController('posts'),
-    session: injectService(),
+    postsController: controller('posts'),
+    session: service(),
 
     availableTypes: readOnly('postsController.availableTypes'),
     selectedType: readOnly('postsController.selectedType'),

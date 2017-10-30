@@ -1,11 +1,10 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {not, or, reads} from '@ember/object/computed';
 
 export default Service.extend({
-    dropdown: injectService(),
-    mediaQueries: injectService(),
+    dropdown: service(),
+    mediaQueries: service(),
 
     autoNav: false,
     isFullScreen: false,

@@ -2,17 +2,17 @@ import Component from '@ember/component';
 import RSVP from 'rsvp';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';
-import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 const FullScreenModalComponent = Component.extend({
 
     model: null,
     modifier: null,
 
-    dropdown: injectService(),
+    dropdown: service(),
 
     modalPath: computed('modal', function () {
         return `modal-${this.get('modal') || 'unknown'}`;

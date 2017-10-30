@@ -1,8 +1,8 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
@@ -12,8 +12,8 @@ export default ModalComponent.extend({
     newUrl: '',
     _isUploading: false,
 
-    config: injectService(),
-    notifications: injectService(),
+    config: service(),
+    notifications: service(),
 
     image: computed('model.model', 'model.imageProperty', {
         get() {

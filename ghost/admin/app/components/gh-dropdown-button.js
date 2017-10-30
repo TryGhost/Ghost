@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend(DropdownMixin, {
     tagName: 'button',
@@ -10,7 +10,7 @@ export default Component.extend(DropdownMixin, {
     // matches with the dropdown this button toggles
     dropdownName: null,
 
-    dropdown: injectService(),
+    dropdown: service(),
 
     // Notify dropdown service this dropdown should be toggled
     click(event) {

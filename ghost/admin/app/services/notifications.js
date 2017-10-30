@@ -1,15 +1,13 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
-import {get} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {get, set} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {set} from '@ember/object';
 
 // Notification keys take the form of "noun.verb.message", eg:
 //
@@ -24,7 +22,7 @@ export default Service.extend({
     delayedNotifications: emberA(),
     content: emberA(),
 
-    upgradeStatus: injectService(),
+    upgradeStatus: service(),
 
     alerts: filter('content', function (notification) {
         let status = get(notification, 'status');

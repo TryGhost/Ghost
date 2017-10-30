@@ -5,7 +5,7 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {InvokeActionMixin} from 'ember-invoke-action';
 import {assign} from '@ember/polyfills';
 import {bind, once, scheduleOnce} from '@ember/runloop';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focus'],
@@ -21,7 +21,7 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
 
     _editor: null, // reference to CodeMirror editor
 
-    lazyLoader: injectService(),
+    lazyLoader: service(),
 
     didReceiveAttrs() {
         if (this.get('value') === null || undefined) {

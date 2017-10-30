@@ -1,16 +1,16 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {equal, reads} from '@ember/object/computed';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
 
-    mediaQueries: injectService(),
+    mediaQueries: service(),
 
     tags: null,
     selectedTag: null,

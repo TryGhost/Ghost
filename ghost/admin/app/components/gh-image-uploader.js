@@ -8,20 +8,20 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml';
 export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 
 export default Component.extend({
-    ajax: injectService(),
-    config: injectService(),
-    notifications: injectService(),
-    settings: injectService(),
+    ajax: service(),
+    config: service(),
+    notifications: service(),
+    settings: service(),
 
     tagName: 'section',
     classNames: ['gh-image-uploader'],

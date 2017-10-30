@@ -4,7 +4,7 @@ import RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
 import styleBody from 'ghost-admin/mixins/style-body';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 const {Promise} = RSVP;
 const {Errors} = DS;
@@ -12,11 +12,11 @@ const {Errors} = DS;
 export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     classNames: ['ghost-signup'],
 
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    ajax: injectService(),
-    config: injectService(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
+    config: service(),
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {

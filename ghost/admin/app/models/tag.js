@@ -5,8 +5,8 @@ import attr from 'ember-data/attr';
 import {computed} from '@ember/object';
 import {equal} from '@ember/object/computed';
 import {guidFor} from '@ember/object/internals';
-import {inject as injectService} from '@ember/service';
 import {observer} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'tag',
@@ -28,7 +28,7 @@ export default Model.extend(ValidationEngine, {
     isInternal: equal('visibility', 'internal'),
     isPublic: equal('visibility', 'public'),
 
-    feature: injectService(),
+    feature: service(),
 
     // HACK: ugly hack to main compatibility with selectize as used in the
     // PSM tags input

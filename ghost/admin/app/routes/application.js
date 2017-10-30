@@ -8,11 +8,11 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {isUnauthorizedError} from 'ember-ajax/errors';
 import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 function K() {
     return this;
@@ -28,14 +28,14 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     routeAfterAuthentication: 'posts',
 
-    config: injectService(),
-    feature: injectService(),
-    lazyLoader: injectService(),
-    notifications: injectService(),
-    settings: injectService(),
-    upgradeNotification: injectService(),
-    tour: injectService(),
-    ui: injectService(),
+    config: service(),
+    feature: service(),
+    lazyLoader: service(),
+    notifications: service(),
+    settings: service(),
+    upgradeNotification: service(),
+    tour: service(),
+    ui: service(),
 
     beforeModel() {
         return this.get('config').fetch();

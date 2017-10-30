@@ -4,9 +4,9 @@ import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 const {Handlebars} = Ember;
 
@@ -22,9 +22,9 @@ export default Component.extend({
 
     isViewingSubview: false,
 
-    feature: injectService(),
-    config: injectService(),
-    mediaQueries: injectService(),
+    feature: service(),
+    config: service(),
+    mediaQueries: service(),
 
     isMobile: reads('mediaQueries.maxWidth600'),
 

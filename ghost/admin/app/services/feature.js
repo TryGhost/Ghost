@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import RSVP from 'rsvp';
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {set} from '@ember/object';
 
 export function feature(name, user = false) {
@@ -29,11 +28,11 @@ export function feature(name, user = false) {
 }
 
 export default Service.extend({
-    store: injectService(),
-    config: injectService(),
-    session: injectService(),
-    settings: injectService(),
-    notifications: injectService(),
+    store: service(),
+    config: service(),
+    session: service(),
+    settings: service(),
+    notifications: service(),
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),

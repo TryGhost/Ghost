@@ -1,21 +1,20 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import DS from 'ember-data';
 import RSVP from 'rsvp';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';
 import {htmlSafe} from '@ember/string';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
 import {isInvalidError} from 'ember-ajax/errors';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const {Errors} = DS;
 
 export default Controller.extend({
-    notifications: injectService(),
-    two: injectController('setup/two'),
+    notifications: service(),
+    two: controller('setup/two'),
 
     errors: Errors.create(),
     hasValidated: emberA(),

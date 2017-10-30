@@ -1,16 +1,16 @@
 import Component from '@ember/component';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import {bind} from '@ember/runloop';
-import {inject as injectService} from '@ember/service';
 import {or} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 const ONE_COLUMN_WIDTH = 540;
 const TWO_COLUMN_WIDTH = 940;
 
 export default Component.extend(ShortcutsMixin, {
-    resizeDetector: injectService(),
-    unsplash: injectService(),
-    ui: injectService(),
+    resizeDetector: service(),
+    unsplash: service(),
+    ui: service(),
 
     tagName: '',
     zoomedPhoto: null,

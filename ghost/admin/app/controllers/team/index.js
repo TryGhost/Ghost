@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {sort} from '@ember/object/computed';
 
 export default Controller.extend({
@@ -10,7 +10,7 @@ export default Controller.extend({
     suspendedUsers: null,
     invites: null,
 
-    session: injectService(),
+    session: service(),
 
     inviteOrder: ['email'],
     sortedInvites: sort('invites', 'inviteOrder'),

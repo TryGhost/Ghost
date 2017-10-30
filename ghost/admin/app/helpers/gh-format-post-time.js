@@ -1,10 +1,10 @@
 import Helper from '@ember/component/helper';
 import moment from 'moment';
 import {assert} from '@ember/debug';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Helper.extend({
-    settings: injectService(),
+    settings: service(),
 
     compute([timeago], {draft, scheduled, published}) {
         assert(timeago, 'You must pass a time to the gh-format-post-time helper');

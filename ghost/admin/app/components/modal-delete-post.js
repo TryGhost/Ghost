@@ -1,6 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import {alias} from '@ember/object/computed';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
@@ -8,7 +8,7 @@ export default ModalComponent.extend({
     post: alias('model.post'),
     onSuccess: alias('model.onSuccess'),
 
-    notifications: injectService(),
+    notifications: service(),
 
     _deletePost() {
         let post = this.get('post');

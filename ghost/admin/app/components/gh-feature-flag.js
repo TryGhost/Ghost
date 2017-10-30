@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 const FeatureFlagComponent = Component.extend({
     tagName: 'label',
@@ -8,7 +8,7 @@ const FeatureFlagComponent = Component.extend({
     attributeBindings: ['for'],
     _flagValue: null,
 
-    feature: injectService(),
+    feature: service(),
 
     init() {
         this._super(...arguments);

@@ -9,7 +9,7 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {formatMarkdown} from '../../lib/format-markdown';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -21,7 +21,7 @@ export default Component.extend({
     layout,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
     extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
-    ajax: injectService(),
+    ajax: service(),
 
     preview: computed('value', function() {
         return formatMarkdown([this.get('payload').markdown]);

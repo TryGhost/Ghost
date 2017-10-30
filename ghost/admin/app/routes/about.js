@@ -1,14 +1,14 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import styleBody from 'ghost-admin/mixins/style-body';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'About',
 
     classNames: ['view-about'],
 
-    ghostPaths: injectService(),
-    ajax: injectService(),
+    ghostPaths: service(),
+    ajax: service(),
 
     cachedConfig: false,
 

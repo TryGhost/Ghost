@@ -1,9 +1,9 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {mapBy} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
     classNames: ['form-group', 'for-select'],
@@ -11,7 +11,7 @@ export default Component.extend({
     activeTimezone: null,
     availableTimezones: null,
 
-    clock: injectService(),
+    clock: service(),
 
     availableTimezoneNames: mapBy('availableTimezones', 'name'),
 

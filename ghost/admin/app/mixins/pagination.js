@@ -2,7 +2,7 @@ import Mixin from '@ember/object/mixin';
 import RSVP from 'rsvp';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 let defaultPaginationSettings = {
     page: 1,
@@ -10,7 +10,7 @@ let defaultPaginationSettings = {
 };
 
 export default Mixin.create({
-    notifications: injectService(),
+    notifications: service(),
 
     paginationModel: null,
     paginationSettings: null,

@@ -1,7 +1,6 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import {alias} from '@ember/object/computed';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
 
@@ -10,9 +9,9 @@ export default Controller.extend({
     tag: alias('model'),
     isMobile: alias('tagsController.isMobile'),
 
-    applicationController: injectController('application'),
-    tagsController: injectController('settings.tags'),
-    notifications: injectService(),
+    applicationController: controller('application'),
+    tagsController: controller('settings.tags'),
+    notifications: service(),
 
     _saveTagProperty(propKey, newValue) {
         let tag = this.get('tag');

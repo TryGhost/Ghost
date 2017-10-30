@@ -2,7 +2,7 @@ import AjaxServiceSupport from 'ember-ajax/mixins/ajax-support';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
 import RESTAdapter from 'ember-data/adapters/rest';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
     authorizer: 'authorizer:oauth2',
@@ -10,7 +10,7 @@ export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    session: injectService(),
+    session: service(),
 
     shouldBackgroundReloadRecord() {
         return false;

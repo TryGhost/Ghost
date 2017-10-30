@@ -1,9 +1,9 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {reads} from '@ember/object/computed';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 let instancesCounter = 0;
 
@@ -68,8 +68,8 @@ let triangleClassPositions = {
 
 const GhTourItemComponent = Component.extend({
 
-    mediaQueries: injectService(),
-    tour: injectService(),
+    mediaQueries: service(),
+    tour: service(),
 
     tagName: '',
 

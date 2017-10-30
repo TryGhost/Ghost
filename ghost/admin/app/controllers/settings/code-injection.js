@@ -1,9 +1,9 @@
 import Controller from '@ember/controller';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    notifications: injectService(),
+    notifications: service(),
 
     save: task(function* () {
         let notifications = this.get('notifications');

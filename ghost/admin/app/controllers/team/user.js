@@ -5,9 +5,9 @@ import isNumber from 'ghost-admin/utils/isNumber';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task, taskGroup} from 'ember-concurrency';
 
 // ember-cli-shims doesn't export this
@@ -22,13 +22,13 @@ export default Controller.extend({
     _scratchFacebook: null,
     _scratchTwitter: null,
 
-    ajax: injectService(),
-    config: injectService(),
-    dropdown: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    slugGenerator: injectService(),
+    ajax: service(),
+    config: service(),
+    dropdown: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    slugGenerator: service(),
 
     user: alias('model'),
     currentUser: alias('session.user'),

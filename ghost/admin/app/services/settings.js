@@ -1,15 +1,14 @@
 import Ember from 'ember';
 import RSVP from 'rsvp';
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {get} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
 
 export default Service.extend(_ProxyMixin, ValidationEngine, {
-    store: injectService(),
+    store: service(),
 
     // will be set to the single Settings model, it's a reference so any later
     // changes to the settings object in the store will be reflected

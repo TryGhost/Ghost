@@ -1,12 +1,12 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Component.extend({
-    clock: injectService(),
+    clock: service(),
 
     classNames: 'gh-publishmenu',
     post: null,

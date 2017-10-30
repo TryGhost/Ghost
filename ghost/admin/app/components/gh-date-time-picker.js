@@ -1,12 +1,12 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isBlank, isEmpty} from '@ember/utils';
 import {or, reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    settings: injectService(),
+    settings: service(),
 
     tagName: '',
 

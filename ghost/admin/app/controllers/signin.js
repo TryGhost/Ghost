@@ -1,11 +1,10 @@
 import $ from 'jquery';
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
@@ -13,13 +12,13 @@ export default Controller.extend(ValidationEngine, {
     loggingIn: false,
     authProperties: ['identification', 'password'],
 
-    ajax: injectService(),
-    application: injectController(),
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    settings: injectService(),
+    ajax: service(),
+    application: controller(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    settings: service(),
 
     flowErrors: '',
 
