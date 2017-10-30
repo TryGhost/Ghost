@@ -1,8 +1,7 @@
-
-var path    = require('path'),
-    Module  = require('module'),
-    i18n    = require('../i18n'),
-    _       = require('lodash');
+var path = require('path'),
+    Module = require('module'),
+    i18n = require('../../i18n'),
+    _ = require('lodash');
 
 function AppSandbox(opts) {
     this.opts = _.defaults(opts || {}, AppSandbox.defaults);

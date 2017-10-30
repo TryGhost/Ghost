@@ -1,13 +1,14 @@
-
 var path = require('path'),
     _    = require('lodash'),
     Promise = require('bluebird'),
+    config = require('../../config'),
+    i18n = require('../../i18n'),
+
     AppProxy = require('./proxy'),
-    config = require('../config'),
     AppSandbox = require('./sandbox'),
     AppDependencies = require('./dependencies'),
     AppPermissions = require('./permissions'),
-    i18n = require('../i18n'),
+
     loader;
 
 function isInternalApp(name) {
