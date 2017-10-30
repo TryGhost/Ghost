@@ -1,6 +1,7 @@
 // ## Server Loader
 // Passes options through the boot process to get a server instance back
-var server = require('./server');
+var server = require('./server'),
+    config = require('./server/config');
 
 // Set the default environment to be `development`
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -12,3 +13,4 @@ function makeGhost(options) {
 }
 
 module.exports = makeGhost;
+module.exports.config = config;

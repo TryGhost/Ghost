@@ -3,12 +3,19 @@
 var should = require('should'),
     testUtils = require('../../utils'),
     ghost = testUtils.startGhost,
+    core = require('../../../../core'),
     i18n = require('../../../../core/server/i18n');
 
 i18n.init();
 
 describe('Module', function () {
     before(testUtils.teardown);
+
+    it.only('should expose configuration values', function () {
+        should.exist(core.config);
+        should.exist(core.config.get('server'));
+        should.exist(core.config.get('paths'));
+    });
 
     describe('Setup', function () {
         it('should resolve with a ghost-server instance', function (done) {
