@@ -4,13 +4,13 @@ import Ember from 'ember';
 import {alias, equal} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
 const {Handlebars} = Ember;
 
 export default Component.extend({
-    ghostPaths: injectService(),
+    ghostPaths: service(),
 
     tagName: 'li',
     classNames: ['gh-posts-list-item'],

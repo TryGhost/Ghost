@@ -5,17 +5,17 @@ import {
     VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
-    ajax: injectService(),
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    settings: injectService(),
+    ajax: service(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    settings: service(),
 
     // ValidationEngine settings
     validationType: 'signup',

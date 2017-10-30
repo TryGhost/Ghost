@@ -1,10 +1,10 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    clock: injectService(),
+    clock: service(),
 
     post: null,
     saveType: null,

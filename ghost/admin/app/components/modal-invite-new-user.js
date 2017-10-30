@@ -2,8 +2,8 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {A as emberA} from '@ember/array';
-import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 const {Promise} = RSVP;
@@ -17,8 +17,8 @@ export default ModalComponent.extend(ValidationEngine, {
 
     validationType: 'inviteUser',
 
-    notifications: injectService(),
-    store: injectService(),
+    notifications: service(),
+    store: service(),
 
     init() {
         this._super(...arguments);

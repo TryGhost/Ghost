@@ -3,7 +3,7 @@ import Ember from 'ember';
 import moment from 'moment';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 const {Handlebars} = Ember;
 
@@ -12,7 +12,7 @@ export default Component.extend({
 
     user: null,
 
-    ghostPaths: injectService(),
+    ghostPaths: service(),
 
     userDefault: computed('ghostPaths', function () {
         return `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;

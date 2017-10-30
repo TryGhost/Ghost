@@ -1,13 +1,12 @@
 import Evented from '@ember/object/evented';
 import RSVP from 'rsvp';
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 
 export default Service.extend(Evented, {
 
-    ghostPaths: injectService(),
-    session: injectService(),
+    ghostPaths: service(),
+    session: service(),
 
     // this service is responsible for managing tour item visibility and syncing
     // the viewed state with the server

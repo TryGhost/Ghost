@@ -6,16 +6,16 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
 
     availableTimezones: null,
     iconExtensions: ['ico', 'png'],

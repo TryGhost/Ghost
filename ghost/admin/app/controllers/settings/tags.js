@@ -1,11 +1,10 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import {alias, equal, sort} from '@ember/object/computed';
-import {inject as injectController} from '@ember/controller';
 import {run} from '@ember/runloop';
 
 export default Controller.extend({
 
-    tagController: injectController('settings.tags.tag'),
+    tagController: controller('settings.tags.tag'),
 
     selectedTag: alias('tagController.tag'),
 

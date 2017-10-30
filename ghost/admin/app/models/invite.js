@@ -2,7 +2,7 @@
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import {belongsTo} from 'ember-data/relationships';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Model.extend({
     token: attr('string'),
@@ -15,8 +15,8 @@ export default Model.extend({
     status: attr('string'),
     role: belongsTo('role', {async: false}),
 
-    ajax: injectService(),
-    ghostPaths: injectService(),
+    ajax: service(),
+    ghostPaths: service(),
 
     resend() {
         let fullInviteData = this.toJSON();

@@ -9,9 +9,9 @@ import {belongsTo, hasMany} from 'ember-data/relationships';
 import {compare} from '@ember/utils';
 import {computed} from '@ember/object';
 import {equal, filterBy} from '@ember/object/computed';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {observer} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
@@ -68,10 +68,10 @@ function publishedAtCompare(postA, postB) {
 }
 
 export default Model.extend(Comparable, ValidationEngine, {
-    config: injectService(),
-    ghostPaths: injectService(),
-    clock: injectService(),
-    settings: injectService(),
+    config: service(),
+    ghostPaths: service(),
+    clock: service(),
+    settings: service(),
 
     validationType: 'post',
 

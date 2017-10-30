@@ -1,15 +1,14 @@
 import Ember from 'ember';
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
 
 export default Service.extend(_ProxyMixin, {
-    ajax: injectService(),
-    ghostPaths: injectService(),
+    ajax: service(),
+    ghostPaths: service(),
 
     content: {},
 

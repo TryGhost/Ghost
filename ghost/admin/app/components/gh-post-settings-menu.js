@@ -7,8 +7,8 @@ import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const PSM_ANIMATION_LENGTH = 400;
@@ -17,14 +17,14 @@ export default Component.extend(SettingsMenuMixin, {
     selectedAuthor: null,
     authors: [],
 
-    store: injectService(),
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    slugGenerator: injectService(),
-    session: injectService(),
-    settings: injectService(),
-    ui: injectService(),
+    store: service(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    slugGenerator: service(),
+    session: service(),
+    settings: service(),
+    ui: service(),
 
     model: null,
 

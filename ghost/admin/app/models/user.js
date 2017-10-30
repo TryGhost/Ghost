@@ -5,7 +5,7 @@ import attr from 'ember-data/attr';
 import {computed} from '@ember/object';
 import {equal} from '@ember/object/computed';
 import {hasMany} from 'ember-data/relationships';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Model.extend(ValidationEngine, {
@@ -38,11 +38,11 @@ export default Model.extend(ValidationEngine, {
     twitter: attr('twitter-url-user'),
     tour: attr('json-string'),
 
-    ghostPaths: injectService(),
-    ajax: injectService(),
-    session: injectService(),
-    notifications: injectService(),
-    config: injectService(),
+    ghostPaths: service(),
+    ajax: service(),
+    session: service(),
+    notifications: service(),
+    config: service(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.

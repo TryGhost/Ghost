@@ -1,12 +1,11 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import {computed} from '@ember/object';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
 import {match} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    appController: injectController('application'),
-    ghostPaths: injectService(),
+    appController: controller('application'),
+    ghostPaths: service(),
 
     showBackLink: match('appController.currentRouteName', /^setup\.(two|three)$/),
 

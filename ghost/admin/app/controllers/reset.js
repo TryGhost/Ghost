@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
@@ -12,11 +12,11 @@ export default Controller.extend(ValidationEngine, {
 
     validationType: 'reset',
 
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    ajax: injectService(),
-    config: injectService(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
+    config: service(),
 
     email: computed('token', function () {
         // The token base64 encodes the email (and some other stuff),

@@ -1,11 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import RSVP from 'rsvp';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
     titleToken: 'Subscribers',
 
-    feature: injectService(),
+    feature: service(),
 
     // redirect if subscribers is disabled or user isn't owner/admin
     beforeModel() {

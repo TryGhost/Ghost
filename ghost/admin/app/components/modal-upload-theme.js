@@ -6,10 +6,10 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {mapBy, or} from '@ember/object/computed';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
 
@@ -21,8 +21,8 @@ export default ModalComponent.extend({
     theme: false,
     displayOverwriteWarning: false,
 
-    eventBus: injectService(),
-    store: injectService(),
+    eventBus: service(),
+    store: service(),
 
     hideUploader: or('theme', 'displayOverwriteWarning'),
 

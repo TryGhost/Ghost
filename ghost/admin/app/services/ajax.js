@@ -3,9 +3,9 @@ import config from 'ghost-admin/config/environment';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
 const JSONContentType = 'application/json';
 
@@ -113,7 +113,7 @@ export function isThemeValidationError(errorOrStatus, payload) {
 /* end: custom error types */
 
 let ajaxService = AjaxService.extend({
-    session: injectService(),
+    session: service(),
 
     headers: computed('session.isAuthenticated', function () {
         let session = this.get('session');

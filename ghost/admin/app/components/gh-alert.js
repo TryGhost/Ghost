@@ -1,13 +1,13 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
     tagName: 'article',
     classNames: ['gh-alert'],
     classNameBindings: ['typeClass'],
 
-    notifications: injectService(),
+    notifications: service(),
 
     typeClass: computed('message.type', function () {
         let type = this.get('message.type');

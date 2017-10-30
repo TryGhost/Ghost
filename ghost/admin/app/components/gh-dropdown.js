@@ -1,8 +1,8 @@
 import Component from '@ember/component';
 import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export default Component.extend(DropdownMixin, {
     classNames: 'dropdown',
@@ -22,7 +22,7 @@ export default Component.extend(DropdownMixin, {
         return this.get('isOpen') && !this.get('closing');
     }),
 
-    dropdown: injectService(),
+    dropdown: service(),
 
     open() {
         this.set('isOpen', true);

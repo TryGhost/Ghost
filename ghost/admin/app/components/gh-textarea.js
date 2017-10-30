@@ -1,10 +1,10 @@
 import OneWayTextarea from 'ember-one-way-controls/components/one-way-textarea';
 import TextInputMixin from 'ghost-admin/mixins/text-input';
-import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export default OneWayTextarea.extend(TextInputMixin, {
-    resizeDetector: injectService(),
+    resizeDetector: service(),
 
     classNames: 'gh-input',
 

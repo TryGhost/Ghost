@@ -2,16 +2,16 @@ import Authenticator from 'ember-simple-auth/authenticators/oauth2-password-gran
 import RSVP from 'rsvp';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {makeArray as wrap} from '@ember/array';
 
 export default Authenticator.extend({
-    ajax: injectService(),
-    session: injectService(),
-    config: injectService(),
-    ghostPaths: injectService(),
+    ajax: service(),
+    session: service(),
+    config: service(),
+    ghostPaths: service(),
 
     init() {
         this._super(...arguments);

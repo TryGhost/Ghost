@@ -1,9 +1,9 @@
 import BasicDropdown from 'ember-basic-dropdown/components/basic-dropdown';
 import layout from 'ember-basic-dropdown/templates/components/basic-dropdown';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default BasicDropdown.extend({
-    dropdown: injectService(),
+    dropdown: service(),
 
     layout,
 

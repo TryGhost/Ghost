@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 
 /*
     This cute little component has two jobs.
@@ -16,7 +16,7 @@ import {reads} from '@ember/object/computed';
 export default Component.extend({
     classNames: ['gh-menu-toggle'],
 
-    mediaQueries: injectService(),
+    mediaQueries: service(),
     isMobile: reads('mediaQueries.isMobile'),
     maximise: false,
 

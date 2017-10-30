@@ -1,11 +1,11 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    notifications: injectService(),
-    settings: injectService(),
+    notifications: service(),
+    settings: service(),
 
     model: alias('settings.amp'),
 

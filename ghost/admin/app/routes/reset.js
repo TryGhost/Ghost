@@ -1,13 +1,13 @@
 import Route from '@ember/routing/route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
 import styleBody from 'ghost-admin/mixins/style-body';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     classNames: ['ghost-reset'],
 
-    notifications: injectService(),
-    session: injectService(),
+    notifications: service(),
+    session: service(),
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {

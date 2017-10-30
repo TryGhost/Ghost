@@ -1,13 +1,13 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
 
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    store: injectService(),
-    ajax: injectService(),
+    ghostPaths: service(),
+    notifications: service(),
+    store: service(),
+    ajax: service(),
 
     _deleteAll() {
         let deleteUrl = this.get('ghostPaths.url').api('db');

@@ -2,15 +2,15 @@ import Component from '@ember/component';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    config: injectService(),
-    feature: injectService(),
-    ghostPaths: injectService(),
-    router: injectService('router'),
-    session: injectService(),
-    ui: injectService(),
+    config: service(),
+    feature: service(),
+    ghostPaths: service(),
+    router: service('router'),
+    session: service(),
+    ui: service(),
 
     tagName: 'nav',
     classNames: ['gh-nav'],

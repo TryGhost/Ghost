@@ -1,12 +1,12 @@
 import Component from '@ember/component';
 import {alias} from '@ember/object/computed';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
     tagName: 'aside',
     classNames: 'gh-notifications',
 
-    notifications: injectService(),
+    notifications: service(),
 
     messages: alias('notifications.notifications')
 });

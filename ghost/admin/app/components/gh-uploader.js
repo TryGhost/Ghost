@@ -2,10 +2,10 @@ import Component from '@ember/component';
 import EmberObject from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {all, task} from 'ember-concurrency';
-import {inject as injectService} from '@ember/service';
 import {isArray as isEmberArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 // TODO: this is designed to be a more re-usable/composable upload component, it
 // should be able to replace the duplicated upload logic in:
@@ -45,7 +45,7 @@ const UploadTracker = EmberObject.extend({
 export default Component.extend({
     tagName: '',
 
-    ajax: injectService(),
+    ajax: service(),
 
     // Public attributes
     accept: '',

@@ -6,14 +6,14 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {inject as controller} from '@ember/controller';
 import {htmlSafe} from '@ember/string';
-import {inject as injectController} from '@ember/controller';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {mapBy, reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 
 // ember-cli-shims doesn't export Ember.testing
@@ -41,11 +41,11 @@ export default Mixin.create({
     showDeletePostModal: false,
     shouldFocusEditor: true,
 
-    application: injectController(),
-    notifications: injectService(),
-    clock: injectService(),
-    slugGenerator: injectService(),
-    ui: injectService(),
+    application: controller(),
+    notifications: service(),
+    clock: service(),
+    slugGenerator: service(),
+    ui: service(),
 
     wordcount: 0,
     cards: [], // for apps

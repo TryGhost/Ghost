@@ -6,9 +6,9 @@ import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {isEmpty, typeOf} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 const MOBILEDOC_VERSION = '0.3.1';
 
@@ -27,9 +27,9 @@ export const BLANK_DOC = {
 
 export default Component.extend(ShortcutsMixin, {
 
-    config: injectService(),
-    notifications: injectService(),
-    settings: injectService(),
+    config: service(),
+    notifications: service(),
+    settings: service(),
 
     classNames: ['gh-markdown-editor'],
     classNameBindings: [

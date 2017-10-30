@@ -3,17 +3,17 @@ import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import RSVP from 'rsvp';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {notEmpty} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
 
     newNavItem: null,
 

@@ -1,11 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import UnsplashObject from 'ghost-admin/models/unsplash-integration';
 import styleBody from 'ghost-admin/mixins/style-body';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, {
-    config: injectService(),
-    settings: injectService(),
+    config: service(),
+    settings: service(),
 
     titleToken: 'Settings - Apps - Unsplash',
     classNames: ['settings-view-apps-unsplash'],

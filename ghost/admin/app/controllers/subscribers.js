@@ -5,7 +5,7 @@ import Table from 'ember-light-table';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend(PaginationMixin, {
 
@@ -19,7 +19,7 @@ export default Controller.extend(PaginationMixin, {
     table: null,
     subscriberToDelete: null,
 
-    session: injectService(),
+    session: service(),
 
     // paginationSettings is replaced by the pagination mixin so we need a
     // getter/setter CP here so that we don't lose the dynamic order param

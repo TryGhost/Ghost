@@ -1,11 +1,11 @@
 import Mixin from '@ember/object/mixin';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Mixin.create({
 
-    ajax: injectService(),
-    ghostPaths: injectService(),
-    session: injectService(),
+    ajax: service(),
+    ghostPaths: service(),
+    session: service(),
 
     routeIfAlreadyAuthenticated: 'posts',
 

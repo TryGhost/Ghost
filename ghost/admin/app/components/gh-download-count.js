@@ -1,14 +1,14 @@
 import Component from '@ember/component';
 import Ember from 'ember';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const {testing} = Ember;
 const INTERVAL = testing ? 20 : 2000;
 
 export default Component.extend({
-    ajax: injectService(),
-    ghostPaths: injectService(),
+    ajax: service(),
+    ghostPaths: service(),
 
     tagName: '',
     count: '',

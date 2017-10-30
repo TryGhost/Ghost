@@ -7,10 +7,10 @@ import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-import {inject as injectService} from '@ember/service';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const {testing} = Ember;
@@ -27,12 +27,12 @@ export default Controller.extend({
     jsonExtension: ['json'],
     jsonMimeType: ['application/json'],
 
-    ajax: injectService(),
-    config: injectService(),
-    ghostPaths: injectService(),
-    notifications: injectService(),
-    session: injectService(),
-    settings: injectService(),
+    ajax: service(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    settings: service(),
 
     // TODO: convert to ember-concurrency task
     _validate(file) {

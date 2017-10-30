@@ -3,7 +3,7 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {InvokeActionMixin} from 'ember-invoke-action';
 import {formatDate} from 'ghost-admin/utils/date-formatting';
-import {inject as injectService} from '@ember/service';
+import {inject as service} from '@ember/service';
 
 export default Component.extend(InvokeActionMixin, {
     tagName: 'span',
@@ -13,7 +13,7 @@ export default Component.extend(InvokeActionMixin, {
     inputClass: null,
     inputId: null,
     inputName: null,
-    settings: injectService(),
+    settings: service(),
 
     didReceiveAttrs() {
         let datetime = this.get('datetime') || moment.utc();

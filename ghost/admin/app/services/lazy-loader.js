@@ -1,14 +1,13 @@
 import $ from 'jquery';
 import Ember from 'ember';
 import RSVP from 'rsvp';
-import Service from '@ember/service';
-import {inject as injectService} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 
 const {testing} = Ember;
 
 export default Service.extend({
-    ajax: injectService(),
-    ghostPaths: injectService(),
+    ajax: service(),
+    ghostPaths: service(),
 
     // This is needed so we can disable it in unit tests
     testing,

@@ -3,13 +3,13 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {inject as injectService} from '@ember/service';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 const {debounce} = run;
 
 export default Component.extend({
-    ui: injectService(),
+    ui: service(),
 
     classNameBindings: [
         'isDraggedOver:-drag-over',

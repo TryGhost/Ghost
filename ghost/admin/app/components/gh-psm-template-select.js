@@ -1,12 +1,12 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {inject as injectService} from '@ember/service';
 import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Component.extend({
 
-    store: injectService(),
+    store: service(),
 
     // public attributes
     tagName: '',

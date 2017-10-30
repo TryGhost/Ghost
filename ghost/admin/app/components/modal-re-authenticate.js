@@ -3,8 +3,8 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as injectService} from '@ember/service';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend(ValidationEngine, {
@@ -12,9 +12,9 @@ export default ModalComponent.extend(ValidationEngine, {
 
     authenticationError: null,
 
-    config: injectService(),
-    notifications: injectService(),
-    session: injectService(),
+    config: service(),
+    notifications: service(),
+    session: service(),
 
     identification: computed('session.user.email', function () {
         return this.get('session.user.email');
