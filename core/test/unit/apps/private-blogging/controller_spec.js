@@ -1,10 +1,10 @@
 /*globals describe, beforeEach, afterEach, it*/
 var should = require('should'),
     sinon = require('sinon'),
-    configUtils = require('../../../../test/utils/configUtils'),
     path = require('path'),
-    themes = require('../../../themes'),
-    privateController = require('../lib/router').controller,
+    configUtils = require('../../../utils/configUtils'),
+    themes = require('../../../../server/themes'),
+    privateController = require('../../../../server/apps/private-blogging/lib/router').controller,
 
     sandbox = sinon.sandbox.create();
 

@@ -3,9 +3,9 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     crypto = require('crypto'),
     fs = require('fs'),
-    errors = require('../../../errors'),
-    settingsCache = require('../../../settings/cache'),
-    privateBlogging = require('../lib/middleware'),
+    errors = require('../../../../server/errors'),
+    settingsCache = require('../../../../server/settings/cache'),
+    privateBlogging = require('../../../../server/apps/private-blogging/lib/middleware'),
     sandbox = sinon.sandbox.create();
 
 function hash(password, salt) {

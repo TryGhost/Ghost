@@ -1,7 +1,7 @@
 var should = require('should'),
 
 // Stuff we are testing
-    ampComponentsHelper = require('../lib/helpers/amp_components');
+    ampComponentsHelper = require('../../../../server/apps/amp/lib/helpers/amp_components');
 
 describe('{{amp_components}} helper', function () {
     it('adds script tag for a gif', function () {

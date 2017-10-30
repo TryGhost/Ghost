@@ -14,22 +14,23 @@ require('./overrides');
 
 // Module dependencies
 var debug = require('ghost-ignition').debug('boot:init'),
-// Config should be first require, as it triggers the initial load of the config files
     config = require('./config'),
     Promise = require('bluebird'),
     i18n = require('./i18n'),
     models = require('./models'),
     permissions = require('./permissions'),
-    apps = require('./apps'),
     auth = require('./auth'),
     dbHealth = require('./data/db/health'),
-    xmlrpc = require('./services/xmlrpc'),
-    slack = require('./services/slack'),
     GhostServer = require('./ghost-server'),
     scheduling = require('./adapters/scheduling'),
     settings = require('./settings'),
     themes = require('./themes'),
-    utils = require('./utils');
+    utils = require('./utils'),
+
+    // Services that need initialisation
+    apps = require('./services/apps'),
+    xmlrpc = require('./services/xmlrpc'),
+    slack = require('./services/slack');
 
 // ## Initialise Ghost
 function init() {
