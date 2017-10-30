@@ -13,7 +13,6 @@ var debug = require('ghost-ignition').debug('services:apps'),
     // Holds the available apps
     availableApps = {};
 
-
 function recordLoadedApp(name, loadedApp) {
     // After loading the app, add it to our hash of loaded apps
     availableApps[name] = loadedApp;
