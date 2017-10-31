@@ -123,6 +123,7 @@ Settings = ghostBookshelf.Model.extend({
                     if (options.importing) {
                         return setting.save(item, options);
                     } else {
+                        // If we have a value, set it.
                         if (item.hasOwnProperty('value')) {
                             setting.set('value', item.value);
                         }
@@ -131,8 +132,9 @@ Settings = ghostBookshelf.Model.extend({
                             setting.set('type', item.type);
                         }
 
+                        // If anything has changed, save the updated model
                         if (setting.hasChanged()) {
-                            return setting.save(options);
+                            return setting.save(null, options);
                         }
 
                         return setting;
