@@ -32,19 +32,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         });
     },
 
-    deactivate() {
-        let model = this.modelFor('team.user');
-
-        // we want to revert any unsaved changes on exit
-        if (model && model.get('hasDirtyAttributes')) {
-            model.rollbackAttributes();
-        }
-
-        model.get('errors').clear();
-
-        this._super(...arguments);
-    },
-
     actions: {
         didTransition() {
             this.modelFor('team.user').get('errors').clear();
@@ -52,6 +39,19 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
         save() {
             this.get('controller.save').perform();
+        },
+
+        willTransition(transition) {
+            let controller = this.get('controller');
+            let user = controller.get('user');
+            let dirtyAttributes = controller.get('dirtyAttributes');
+            let modelIsDirty = user.get('hasDirtyAttributes');
+
+            if (modelIsDirty || dirtyAttributes) {
+                transition.abort();
+                controller.send('toggleLeaveSettingsModal', transition);
+                return;
+            }
         }
     }
 });

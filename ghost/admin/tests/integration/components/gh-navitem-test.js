@@ -80,7 +80,7 @@ describe('Integration: Component: gh-navitem', function () {
         expect(addActionCallCount).to.equal(1);
     });
 
-    it('triggers update action', function () {
+    it('triggers update url action', function () {
         this.set('navItem', NavItem.create({label: 'Test', url: '/url'}));
 
         let updateActionCallCount = 0;
@@ -90,6 +90,20 @@ describe('Integration: Component: gh-navitem', function () {
 
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl="update"}}`);
         this.$('.gh-blognav-url input').trigger('blur');
+
+        expect(updateActionCallCount).to.equal(1);
+    });
+
+    it('triggers update label action', function () {
+        this.set('navItem', NavItem.create({label: 'Test', url: '/url'}));
+
+        let updateActionCallCount = 0;
+        this.on('update', () => {
+            updateActionCallCount++;
+        });
+
+        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel="update"}}`);
+        this.$('.gh-blognav-label input').trigger('blur');
 
         expect(updateActionCallCount).to.equal(1);
     });

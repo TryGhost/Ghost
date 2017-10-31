@@ -93,5 +93,35 @@ describe('Acceptance: Settings - Apps - AMP', function () {
             expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
             expect(params.settings.findBy('key', 'amp').value).to.equal(true);
         });
+
+        it('warns when leaving without saving', async function () {
+            await visit('/settings/apps/amp');
+
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+
+            // AMP is enabled by default
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+
+            await click('[data-test-amp-checkbox]');
+
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.false;
+
+            await visit('/team');
+
+            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+            // Leave without saving
+            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+            expect(currentURL(), 'currentURL').to.equal('/team');
+
+            await visit('/settings/apps/amp');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+
+            // settings were not saved
+            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+        });
     });
 });

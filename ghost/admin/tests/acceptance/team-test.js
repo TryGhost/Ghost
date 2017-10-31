@@ -465,31 +465,31 @@ describe('Acceptance: Team', function () {
                 await visit('/team/test-1');
 
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
-                expect(find('.user-details-bottom .first-form-group input.user-name').val(), 'current user name').to.equal('Test User');
+                expect(find('[data-test-name-input]').val(), 'current user name').to.equal('Test User');
 
                 expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Save');
 
                 // test empty user name
-                await fillIn('.user-details-bottom .first-form-group input.user-name', '');
-                await triggerEvent('.user-details-bottom .first-form-group input.user-name', 'blur');
+                await fillIn('[data-test-name-input]', '');
+                await triggerEvent('[data-test-name-input]', 'blur');
 
                 expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
 
                 // test too long user name
-                await fillIn('.user-details-bottom .first-form-group input.user-name', new Array(160).join('a'));
-                await triggerEvent('.user-details-bottom .first-form-group input.user-name', 'blur');
+                await fillIn('[data-test-name-input]', new Array(160).join('a'));
+                await triggerEvent('[data-test-name-input]', 'blur');
 
                 expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
 
                 // reset name field
-                await fillIn('.user-details-bottom .first-form-group input.user-name', 'Test User');
+                await fillIn('[data-test-name-input]', 'Test User');
 
-                expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is default').to.equal('test-1');
+                expect(find('[data-test-slug-input]').val(), 'slug value is default').to.equal('test-1');
 
-                await fillIn('.user-details-bottom input[name="user"]', '');
-                await triggerEvent('.user-details-bottom input[name="user"]', 'blur');
+                await fillIn('[data-test-slug-input]', '');
+                await triggerEvent('[data-test-slug-input]', 'blur');
 
-                expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is reset to original upon empty string').to.equal('test-1');
+                expect(find('[data-test-slug-input]').val(), 'slug value is reset to original upon empty string').to.equal('test-1');
 
                 // Save changes
                 await click('[data-test-save-button]');
@@ -497,7 +497,7 @@ describe('Acceptance: Team', function () {
                 expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Saved');
 
                 // CMD-S shortcut works
-                await fillIn('.user-details-bottom input[name="user"]', 'Test User');
+                await fillIn('[data-test-slug-input]', 'Test User');
                 await triggerEvent('.gh-app', 'keydown', {
                     keyCode: 83, // s
                     metaKey: ctrlOrCmd === 'command',
@@ -511,166 +511,166 @@ describe('Acceptance: Team', function () {
 
                 expect(params.users[0].name).to.equal('Test User');
 
-                await fillIn('.user-details-bottom input[name="user"]', 'white space');
-                await triggerEvent('.user-details-bottom input[name="user"]', 'blur');
+                await fillIn('[data-test-slug-input]', 'white space');
+                await triggerEvent('[data-test-slug-input]', 'blur');
 
-                expect(find('.user-details-bottom input[name="user"]').val(), 'slug value is correctly dasherized').to.equal('white-space');
+                expect(find('[data-test-slug-input]').val(), 'slug value is correctly dasherized').to.equal('white-space');
 
-                await fillIn('.user-details-bottom input[name="email"]', 'thisisnotanemail');
-                await triggerEvent('.user-details-bottom input[name="email"]', 'blur');
+                await fillIn('[data-test-email-input]', 'thisisnotanemail');
+                await triggerEvent('[data-test-email-input]', 'blur');
 
                 expect(find('.user-details-bottom .form-group:nth-of-type(3)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
 
-                await fillIn('.user-details-bottom input[name="email"]', 'test@example.com');
-                await fillIn('#user-location', new Array(160).join('a'));
-                await triggerEvent('#user-location', 'blur');
+                await fillIn('[data-test-email-input]', 'test@example.com');
+                await fillIn('[data-test-location-input]', new Array(160).join('a'));
+                await triggerEvent('[data-test-location-input]', 'blur');
 
-                expect(find('#user-location').closest('.form-group').hasClass('error'), 'location input should be in error state').to.be.true;
+                expect(find('[data-test-location-input]').closest('.form-group').hasClass('error'), 'location input should be in error state').to.be.true;
 
-                await fillIn('#user-location', '');
-                await fillIn('#user-website', 'thisisntawebsite');
-                await triggerEvent('#user-website', 'blur');
+                await fillIn('[data-test-location-input]', '');
+                await fillIn('[data-test-website-input]', 'thisisntawebsite');
+                await triggerEvent('[data-test-website-input]', 'blur');
 
-                expect(find('#user-website').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
+                expect(find('[data-test-website-input]').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
 
                 // Testing Facebook input
 
                 // displays initial value
-                expect(find('#user-facebook').val(), 'initial facebook value')
+                expect(find('[data-test-facebook-input]').val(), 'initial facebook value')
                     .to.equal('https://www.facebook.com/test');
 
-                await triggerEvent('#user-facebook', 'focus');
-                await triggerEvent('#user-facebook', 'blur');
+                await triggerEvent('[data-test-facebook-input]', 'focus');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('#user-facebook').val(), 'facebook value after blur with no change')
+                expect(find('[data-test-facebook-input]').val(), 'facebook value after blur with no change')
                     .to.equal('https://www.facebook.com/test');
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', ')(*&%^%)');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', ')(*&%^%)');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'pages/)(*&%^%)');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'pages/)(*&%^%)');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/)(*&%^%)');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/)(*&%^%)');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'testing');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'testing');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testing');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'somewebsite.com/pages/some-facebook-page/857469375913?ref=ts');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'somewebsite.com/pages/some-facebook-page/857469375913?ref=ts');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'test');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'test');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/test');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/test');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'http://twitter.com/testuser');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'http://twitter.com/testuser');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testuser');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testuser');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
-                await fillIn('#user-facebook', '');
-                await fillIn('#user-facebook', 'facebook.com/testing');
-                await triggerEvent('#user-facebook', 'blur');
+                await fillIn('[data-test-facebook-input]', '');
+                await fillIn('[data-test-facebook-input]', 'facebook.com/testing');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
 
-                expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
-                expect(find('#user-facebook').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testing');
+                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
 
                 // Testing Twitter input
 
                 // loads fixtures and performs transform
-                expect(find('#user-twitter').val(), 'initial twitter value')
+                expect(find('[data-test-twitter-input]').val(), 'initial twitter value')
                     .to.equal('https://twitter.com/test');
 
-                await triggerEvent('#user-twitter', 'focus');
-                await triggerEvent('#user-twitter', 'blur');
+                await triggerEvent('[data-test-twitter-input]', 'focus');
+                await triggerEvent('[data-test-twitter-input]', 'blur');
 
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('#user-twitter').val(), 'twitter value after blur with no change')
+                expect(find('[data-test-twitter-input]').val(), 'twitter value after blur with no change')
                     .to.equal('https://twitter.com/test');
 
-                await fillIn('#user-twitter', '');
-                await fillIn('#user-twitter', ')(*&%^%)');
-                await triggerEvent('#user-twitter', 'blur');
+                await fillIn('[data-test-twitter-input]', '');
+                await fillIn('[data-test-twitter-input]', ')(*&%^%)');
+                await triggerEvent('[data-test-twitter-input]', 'blur');
 
-                expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.true;
 
-                await fillIn('#user-twitter', '');
-                await fillIn('#user-twitter', 'name');
-                await triggerEvent('#user-twitter', 'blur');
+                await fillIn('[data-test-twitter-input]', '');
+                await fillIn('[data-test-twitter-input]', 'name');
+                await triggerEvent('[data-test-twitter-input]', 'blur');
 
-                expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/name');
-                expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/name');
+                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
 
-                await fillIn('#user-twitter', '');
-                await fillIn('#user-twitter', 'http://github.com/user');
-                await triggerEvent('#user-twitter', 'blur');
+                await fillIn('[data-test-twitter-input]', '');
+                await fillIn('[data-test-twitter-input]', 'http://github.com/user');
+                await triggerEvent('[data-test-twitter-input]', 'blur');
 
-                expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
-                expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/user');
+                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
 
-                await fillIn('#user-twitter', '');
-                await fillIn('#user-twitter', 'twitter.com/user');
-                await triggerEvent('#user-twitter', 'blur');
+                await fillIn('[data-test-twitter-input]', '');
+                await fillIn('[data-test-twitter-input]', 'twitter.com/user');
+                await triggerEvent('[data-test-twitter-input]', 'blur');
 
-                expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
-                expect(find('#user-twitter').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/user');
+                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
 
-                await fillIn('#user-website', '');
-                await fillIn('#user-bio', new Array(210).join('a'));
-                await triggerEvent('#user-bio', 'blur');
+                await fillIn('[data-test-website-input]', '');
+                await fillIn('[data-test-bio-input]', new Array(210).join('a'));
+                await triggerEvent('[data-test-bio-input]', 'blur');
 
-                expect(find('#user-bio').closest('.form-group').hasClass('error'), 'bio input should be in error state').to.be.true;
+                expect(find('[data-test-bio-input]').closest('.form-group').hasClass('error'), 'bio input should be in error state').to.be.true;
 
                 // password reset ------
 
                 // button triggers validation
-                await click('.button-change-password');
+                await click('[data-test-save-pw-button]');
 
                 expect(
-                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
                     'new password has error class when blank'
                 ).to.be.true;
 
                 expect(
-                    find('#user-password-new').siblings('.response').text(),
+                    find('[data-test-new-pass-input]').siblings('.response').text(),
                     'new password error when blank'
                 ).to.match(/can't be blank/);
 
                 // validates too short password (< 10 characters)
-                await fillIn('#user-password-new', 'notlong');
-                await fillIn('#user-new-password-verification', 'notlong');
+                await fillIn('[data-test-new-pass-input]', 'notlong');
+                await fillIn('[data-test-ne2-pass-input]', 'notlong');
 
                 // enter key triggers action
-                await keyEvent('#user-password-new', 'keyup', 13);
+                await keyEvent('[data-test-new-pass-input]', 'keyup', 13);
 
                 expect(
-                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
                     'new password has error class when password too short'
                 ).to.be.true;
 
                 expect(
-                    find('#user-password-new').siblings('.response').text(),
+                    find('[data-test-new-pass-input]').siblings('.response').text(),
                     'confirm password error when it\'s too short'
                 ).to.match(/at least 10 characters long/);
 
@@ -692,30 +692,30 @@ describe('Acceptance: Team', function () {
                 ).to.match(/you cannot use an insecure password/);
 
                 // typing in inputs clears validation
-                await fillIn('#user-password-new', 'thisissupersafe');
-                await triggerEvent('#user-password-new', 'input');
+                await fillIn('[data-test-new-pass-input]', 'thisissupersafe');
+                await triggerEvent('[data-test-new-pass-input]', 'input');
 
                 expect(
-                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
                     'password validation is visible after typing'
                 ).to.be.false;
 
                 // enter key triggers action
-                await keyEvent('#user-password-new', 'keyup', 13);
+                await keyEvent('[data-test-new-pass-input]', 'keyup', 13);
 
                 expect(
-                    find('#user-new-password-verification').closest('.form-group').hasClass('error'),
+                    find('[data-test-ne2-pass-input]').closest('.form-group').hasClass('error'),
                     'confirm password has error class when it doesn\'t match'
                 ).to.be.true;
 
                 expect(
-                    find('#user-new-password-verification').siblings('.response').text(),
+                    find('[data-test-ne2-pass-input]').siblings('.response').text(),
                     'confirm password error when it doesn\'t match'
                 ).to.match(/do not match/);
 
                 // submits with correct details
-                await fillIn('#user-new-password-verification', 'thisissupersafe');
-                await click('.button-change-password');
+                await fillIn('[data-test-ne2-pass-input]', 'thisissupersafe');
+                await click('[data-test-save-pw-button]');
 
                 // hits the endpoint
                 let [newRequest] = server.pretender.handledRequests.slice(-1);
@@ -731,12 +731,12 @@ describe('Acceptance: Team', function () {
 
                 // clears the fields
                 expect(
-                    find('#user-password-new').val(),
+                    find('[data-test-new-pass-input]').val(),
                     'password field after submit'
                 ).to.be.blank;
 
                 expect(
-                    find('#user-new-password-verification').val(),
+                    find('[data-test-ne2-pass-input]').val(),
                     'password verification field after submit'
                 ).to.be.blank;
 
@@ -746,6 +746,39 @@ describe('Acceptance: Team', function () {
                     'password saved notification is displayed'
                 ).to.equal(1);
             });
+
+            it('warns when leaving without saving', async function () {
+                await visit('/team/test-1');
+
+                expect(currentURL(), 'currentURL').to.equal('/team/test-1');
+
+                await fillIn('[data-test-slug-input]', 'another slug');
+                await triggerEvent('[data-test-slug-input]', 'blur');
+
+                expect(find('[data-test-slug-input]').val()).to.be.equal('another-slug');
+
+                await fillIn('[data-test-facebook-input]', 'testuser');
+                await triggerEvent('[data-test-facebook-input]', 'blur');
+
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testuser');
+
+                await visit('/settings/team');
+
+                expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+                // Leave without saving
+                await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+                expect(currentURL(), 'currentURL').to.equal('/settings/team');
+
+                await visit('/team/test-1');
+
+                expect(currentURL(), 'currentURL').to.equal('/team/test-1');
+
+                // settings were not saved
+                expect(find('[data-test-slug-input]').val()).to.be.equal('test-1');
+                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/test');
+            });
         });
 
         describe('own user', function () {
@@ -753,36 +786,36 @@ describe('Acceptance: Team', function () {
                 await visit(`/team/${admin.slug}`);
 
                 // test the "old password" field is validated
-                await click('.button-change-password');
+                await click('[data-test-save-pw-button]');
 
                 // old password has error
                 expect(
-                    find('#user-password-old').closest('.form-group').hasClass('error'),
+                    find('[data-test-old-pass-input]').closest('.form-group').hasClass('error'),
                     'old password has error class when blank'
                 ).to.be.true;
 
                 expect(
-                    find('#user-password-old').siblings('.response').text(),
+                    find('[data-test-old-pass-input]').siblings('.response').text(),
                     'old password error when blank'
                 ).to.match(/is required/);
 
                 // new password has error
                 expect(
-                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
                     'new password has error class when blank'
                 ).to.be.true;
 
                 expect(
-                    find('#user-password-new').siblings('.response').text(),
+                    find('[data-test-new-pass-input]').siblings('.response').text(),
                     'new password error when blank'
                 ).to.match(/can't be blank/);
 
                 // validation is cleared when typing
-                await fillIn('#user-password-old', 'password');
-                await triggerEvent('#user-password-old', 'input');
+                await fillIn('[data-test-old-pass-input]', 'password');
+                await triggerEvent('[data-test-old-pass-input]', 'input');
 
                 expect(
-                    find('#user-password-old').closest('.form-group').hasClass('error'),
+                    find('[data-test-old-pass-input]').closest('.form-group').hasClass('error'),
                     'old password validation is in error state after typing'
                 ).to.be.false;
             });

@@ -17,6 +17,8 @@ export default Controller.extend({
 
     newNavItem: null,
 
+    dirtyAttributes: false,
+
     themes: null,
     themeToDelete: null,
     showDeleteThemeModal: notEmpty('themeToDelete'),
@@ -48,6 +50,7 @@ export default Controller.extend({
 
         try {
             yield RSVP.all(validationPromises);
+            this.set('dirtyAttributes', false);
             return yield this.get('model').save();
         } catch (error) {
             if (error) {
@@ -63,6 +66,7 @@ export default Controller.extend({
 
         newNavItem.set('isNew', false);
         navItems.pushObject(newNavItem);
+        this.set('dirtyAttributes', true);
         this.set('newNavItem', NavigationItem.create({isNew: true}));
         $('.gh-blognav-line:last input:first').focus();
     },
@@ -110,6 +114,16 @@ export default Controller.extend({
             let navItems = this.get('model.navigation');
 
             navItems.removeObject(item);
+            this.set('dirtyAttributes', true);
+        },
+
+        updateLabel(label, navItem) {
+            if (!navItem) {
+                return;
+            }
+
+            navItem.set('label', label);
+            this.set('dirtyAttributes', true);
         },
 
         updateUrl(url, navItem) {
@@ -118,6 +132,47 @@ export default Controller.extend({
             }
 
             navItem.set('url', url);
+            this.set('dirtyAttributes', true);
+        },
+
+        toggleLeaveSettingsModal(transition) {
+            let leaveTransition = this.get('leaveSettingsTransition');
+
+            if (!transition && this.get('showLeaveSettingsModal')) {
+                this.set('leaveSettingsTransition', null);
+                this.set('showLeaveSettingsModal', false);
+                return;
+            }
+
+            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+                this.set('leaveSettingsTransition', transition);
+
+                // if a save is running, wait for it to finish then transition
+                if (this.get('save.isRunning')) {
+                    return this.get('save.last').then(() => {
+                        transition.retry();
+                    });
+                }
+
+                // we genuinely have unsaved data, show the modal
+                this.set('showLeaveSettingsModal', true);
+            }
+        },
+
+        leaveSettings() {
+            let transition = this.get('leaveSettingsTransition');
+            let model = this.get('model');
+
+            if (!transition) {
+                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                return;
+            }
+
+            // roll back changes on model props
+            model.rollbackAttributes();
+            this.set('dirtyAttributes', false);
+
+            return transition.retry();
         },
 
         activateTheme(theme) {
