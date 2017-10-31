@@ -72,12 +72,12 @@ _private.registerRoutes = function registerRoutes() {
  * - see https://github.com/TryGhost/Ghost/issues/7707 and https://docs.ghost.org/v1/docs/redirects
  * - file loads synchronously, because we need to register the routes before anything else
  */
-exports.use = function use(blogApp) {
+exports.use = function use(siteApp) {
     _private.registerRoutes();
 
     // Recommended approach by express, see https://github.com/expressjs/express/issues/2596#issuecomment-81353034.
     // As soon as the express router get's re-instantiated, the old router instance is not used anymore.
-    blogApp.use(function (req, res, next) {
+    siteApp.use(function (req, res, next) {
         customRedirectsRouter(req, res, next);
     });
 };

@@ -29,12 +29,12 @@ module.exports = {
         registerHelpers(ghost);
     },
 
-    setupMiddleware: function setupMiddleware(blogApp) {
-        blogApp.use(middleware.checkIsPrivate);
-        blogApp.use(middleware.filterPrivateRoutes);
+    setupMiddleware: function setupMiddleware(siteApp) {
+        siteApp.use(middleware.checkIsPrivate);
+        siteApp.use(middleware.filterPrivateRoutes);
     },
 
-    setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('/' + config.get('routeKeywords').private + '/', router);
+    setupRoutes: function setupRoutes(siteRouter) {
+        siteRouter.use('/' + config.get('routeKeywords').private + '/', router);
     }
 };

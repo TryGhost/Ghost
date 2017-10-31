@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     Promise = require('bluebird'),
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     rewire = require('rewire'),
     _ = require('lodash'),
     config = require('../../../../server/config'),
@@ -155,7 +155,7 @@ describe('Models: listeners', function () {
                  * The post should be still scheduled for 8PM UTC time.
                  * So the database UTC string must be 2017-04-19 20:00:00.
                  */
-                scope.timezoneOffset = 180;
+                scope.timezoneOffset = moment.tz.zone('Etc/UTC').offset(now) - moment.tz.zone('Asia/Baghdad').offset(now);
                 scope.oldTimezone = 'Asia/Baghdad';
                 scope.newTimezone = 'Etc/UTC';
 
@@ -212,7 +212,7 @@ describe('Models: listeners', function () {
                  * The post should be still scheduled for 8PM UTC time.
                  * So the database UTC string must be 2017-04-18 11:00:00.
                  */
-                scope.timezoneOffset = -420;
+                scope.timezoneOffset = moment.tz.zone('Asia/Seoul').offset(now) - moment.tz.zone('Europe/Amsterdam').offset(now);
                 scope.oldTimezone = 'Europe/Amsterdam';
                 scope.newTimezone = 'Asia/Seoul';
 
@@ -277,7 +277,7 @@ describe('Models: listeners', function () {
                         });
                 });
 
-                scope.timezoneOffset = -180;
+                scope.timezoneOffset = moment.tz.zone('Asia/Baghdad').offset(now) - moment.tz.zone('Etc/UTC').offset(now);
                 scope.oldTimezone = 'Asia/Baghdad';
                 scope.newTimezone = 'Etc/UTC';
 
