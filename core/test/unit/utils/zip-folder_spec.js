@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     path = require('path'),
     fs = require('fs-extra'),
-    extract = require('extract-zip-fork'),
+    extract = require('extract-zip'),
     utils = require('../../../server/utils');
 
 describe('Utils: zip-folder', function () {

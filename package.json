@@ -47,7 +47,7 @@
     "express": "4.16.2",
     "express-brute": "1.0.1",
     "express-hbs": "1.0.4",
-    "extract-zip-fork": "1.5.1",
+    "extract-zip": "1.6.6",
     "fs-extra": "3.0.1",
     "ghost-gql": "0.0.8",
     "ghost-ignition": "2.8.16",
