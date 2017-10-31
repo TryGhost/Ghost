@@ -6,6 +6,13 @@
         </section>
     </header>
 
+    {{#if showLeaveSettingsModal}}
+        {{gh-fullscreen-modal "leave-settings"
+            confirm=(action "leaveSettings")
+            close=(action "toggleLeaveSettingsModal")
+            modifier="action wide"}}
+    {{/if}}
+
     <section class="view-container">
         <div class="gh-setting-header">Navigation</div>
         <div class="gh-blognav-container">
@@ -13,7 +20,7 @@
                 {{#sortable-objects sortableObjectList=model.navigation useSwap=false}}
                     {{#each model.navigation as |navItem|}}
                         {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
-                            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl"}}
+                            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl" updateLabel="updateLabel"}}
                         {{/draggable-object}}
                     {{/each}}
                 {{/sortable-objects}}

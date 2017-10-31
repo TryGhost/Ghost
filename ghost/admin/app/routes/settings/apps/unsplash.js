@@ -33,6 +33,17 @@ export default AuthenticatedRoute.extend(styleBody, {
     actions: {
         save() {
             this.get('controller').send('save');
+        },
+
+        willTransition(transition) {
+            let controller = this.get('controller');
+            let modelIsDirty = controller.get('dirtyAttributes');
+
+            if (modelIsDirty) {
+                transition.abort();
+                controller.send('toggleLeaveSettingsModal', transition);
+                return;
+            }
         }
     }
 });

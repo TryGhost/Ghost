@@ -10,6 +10,13 @@
         </section>
     </header>
 
+    {{#if showLeaveSettingsModal}}
+        {{gh-fullscreen-modal "leave-settings"
+            confirm=(action "leaveSettings")
+            close=(action "toggleLeaveSettingsModal")
+            modifier="action wide"}}
+    {{/if}}
+
     <section class="view-container">
         <br>
         <section class="app-grid">

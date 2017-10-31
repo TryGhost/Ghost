@@ -25,6 +25,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     setupController(controller, models) {
+        // reset the leave setting transition
+        controller.set('leaveSettingsTransition', null);
         controller.set('model', models.settings);
         controller.set('themes', this.get('store').peekAll('theme'));
         this.get('controller').send('reset');
@@ -39,11 +41,15 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             this.get('controller').send('save');
         },
 
-        willTransition() {
-            // reset the model so that our CPs re-calc and unsaved changes aren't
-            // persisted across transitions
-            this.set('controller.model', null);
-            return this._super(...arguments);
+        willTransition(transition) {
+            let controller = this.get('controller');
+            let modelIsDirty = controller.get('dirtyAttributes');
+
+            if (modelIsDirty) {
+                transition.abort();
+                controller.send('toggleLeaveSettingsModal', transition);
+                return;
+            }
         },
 
         activateTheme(theme) {

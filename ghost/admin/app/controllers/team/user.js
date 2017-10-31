@@ -14,6 +14,8 @@ import {task, taskGroup} from 'ember-concurrency';
 const {Handlebars} = Ember;
 
 export default Controller.extend({
+    leaveSettingsTransition: null,
+    dirtyAttributes: false,
     showDeleteUserModal: false,
     showSuspendUserModal: false,
     showTransferOwnerModal: false,
@@ -110,7 +112,7 @@ export default Controller.extend({
     saveHandlers: taskGroup().enqueue(),
 
     updateSlug: task(function* (newSlug) {
-        let slug = this.get('model.slug');
+        let slug = this.get('user.slug');
 
         newSlug = newSlug || slug;
         newSlug = newSlug.trim();
@@ -151,6 +153,8 @@ export default Controller.extend({
         }
 
         this.set('slugValue', serverSlug);
+        this.set('dirtyAttributes', true);
+
         return true;
     }).group('saveHandlers'),
 
@@ -181,6 +185,7 @@ export default Controller.extend({
                 window.history.replaceState({path: newPath}, '', newPath);
             }
 
+            this.set('dirtyAttributes', false);
             this.get('notifications').closeAlerts('user.update');
 
             return model;
@@ -195,7 +200,8 @@ export default Controller.extend({
 
     actions: {
         changeRole(newRole) {
-            this.set('model.role', newRole);
+            this.get('user').set('role', newRole);
+            this.set('dirtyAttributes', true);
         },
 
         deleteUser() {
@@ -213,7 +219,7 @@ export default Controller.extend({
         },
 
         suspendUser() {
-            this.get('model').set('status', 'inactive');
+            this.get('user').set('status', 'inactive');
             return this.get('save').perform();
         },
 
@@ -224,7 +230,7 @@ export default Controller.extend({
         },
 
         unsuspendUser() {
-            this.get('model').set('status', 'active');
+            this.get('user').set('status', 'active');
             return this.get('save').perform();
         },
 
@@ -286,13 +292,10 @@ export default Controller.extend({
                 this.get('user.errors').remove('facebook');
                 this.get('user.hasValidated').pushObject('facebook');
 
-                // User input is validated
-                this.get('save').perform().then(() => {
-                    // necessary to update the value in the input field
-                    this.set('user.facebook', '');
-                    run.schedule('afterRender', this, function () {
-                        this.set('user.facebook', newUrl);
-                    });
+                // necessary to update the value in the input field
+                this.set('user.facebook', '');
+                run.schedule('afterRender', this, function () {
+                    this.set('user.facebook', newUrl);
                 });
             } else {
                 errMessage = 'The URL must be in a format like '
@@ -351,13 +354,10 @@ export default Controller.extend({
                 this.get('user.errors').remove('twitter');
                 this.get('user.hasValidated').pushObject('twitter');
 
-                // User input is validated
-                this.get('save').perform().then(() => {
-                    // necessary to update the value in the input field
-                    this.set('user.twitter', '');
-                    run.schedule('afterRender', this, function () {
-                        this.set('user.twitter', newUrl);
-                    });
+                // necessary to update the value in the input field
+                this.set('user.twitter', '');
+                run.schedule('afterRender', this, function () {
+                    this.set('user.twitter', newUrl);
                 });
             } else {
                 errMessage = 'The URL must be in a format like '
@@ -396,6 +396,50 @@ export default Controller.extend({
             }).catch((error) => {
                 this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
             });
+        },
+
+        toggleLeaveSettingsModal(transition) {
+            let leaveTransition = this.get('leaveSettingsTransition');
+
+            if (!transition && this.get('showLeaveSettingsModal')) {
+                this.set('leaveSettingsTransition', null);
+                this.set('showLeaveSettingsModal', false);
+                return;
+            }
+
+            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+                this.set('leaveSettingsTransition', transition);
+
+                // if a save is running, wait for it to finish then transition
+                if (this.get('saveHandlers.isRunning')) {
+                    return this.get('saveHandlers.last').then(() => {
+                        transition.retry();
+                    });
+                }
+
+                // we genuinely have unsaved data, show the modal
+                this.set('showLeaveSettingsModal', true);
+            }
+        },
+
+        leaveSettings() {
+            let transition = this.get('leaveSettingsTransition');
+            let user = this.get('user');
+
+            if (!transition) {
+                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                return;
+            }
+
+            // roll back changes on model props
+            user.rollbackAttributes();
+            // roll back the slugValue property
+            if (this.get('dirtyAttributes')) {
+                this.set('slugValue', user.get('slug'));
+                this.set('dirtyAttributes', false);
+            }
+
+            return transition.retry();
         },
 
         toggleTransferOwnerModal() {

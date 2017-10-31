@@ -106,14 +106,24 @@ describe('Acceptance: Settings - Design', function () {
             ).to.equal(1);
         });
 
-        it('clears unsaved settings when navigating away', async function () {
+        it('clears unsaved settings when navigating away but warns with a confirmation dialog', async function () {
             await visit('/settings/design');
             await fillIn('.gh-blognav-label:first input', 'Test');
             await triggerEvent('.gh-blognav-label:first input', 'blur');
 
             expect(find('.gh-blognav-label:first input').val()).to.equal('Test');
+            // this.timeout(0);
+            // return pauseTest();
 
             await visit('/settings/code-injection');
+
+            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+            // Leave without saving
+            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
+
             await visit('/settings/design');
 
             expect(find('.gh-blognav-label:first input').val()).to.equal('Home');

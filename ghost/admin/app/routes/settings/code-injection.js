@@ -23,6 +23,18 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     actions: {
         save() {
             this.get('controller').send('save');
+        },
+
+        willTransition(transition) {
+            let controller = this.get('controller');
+            let settings = this.get('settings');
+            let modelIsDirty = settings.get('hasDirtyAttributes');
+
+            if (modelIsDirty) {
+                transition.abort();
+                controller.send('toggleLeaveSettingsModal', transition);
+                return;
+            }
         }
     }
 });

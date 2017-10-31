@@ -59,7 +59,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             // has correct url
             expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
 
-            await fillIn('#slack-settings input[name="slack[url]"]', 'notacorrecturl');
+            await fillIn('[data-test-slack-url-input]', 'notacorrecturl');
             await click('[data-test-save-button]');
 
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
@@ -81,7 +81,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             expect(find('#slack-settings .error .response').text().trim(), 'inline validation response')
                 .to.equal('');
 
-            await fillIn('#slack-settings input[name="slack[url]"]', 'https://hooks.slack.com/services/1275958430');
+            await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958430');
             await click('[data-test-send-notification-button]');
 
             expect(find('.gh-notification').length, 'number of notifications').to.equal(1);
@@ -106,6 +106,35 @@ describe('Acceptance: Settings - Apps - Slack', function () {
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
             expect(lastRequest.url).to.not.match(/\/slack\/test/);
             expect(find('.gh-notification').length, 'check slack notification after api validation error').to.equal(0);
+        });
+
+        it('warns when leaving without saving', async function () {
+            await visit('/settings/apps/slack');
+
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+
+            await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958430');
+            await triggerEvent('[data-test-slack-url-input]', 'blur');
+
+            await visit('/settings/design');
+
+            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+            // Leave without saving
+            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/design');
+
+            await visit('/settings/apps/slack');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+
+            // settings were not saved
+            expect(
+                find('[data-test-slack-url-input]').text().trim(),
+                'Slack Webhook URL'
+            ).to.equal('');
         });
     });
 });

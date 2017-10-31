@@ -8,7 +8,7 @@ Route.reopen({
                 this.get('upgradeStatus').requireUpgrade();
                 return false;
             } else {
-                this._super(...arguments);
+                return true;
             }
         }
     }

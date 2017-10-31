@@ -10,6 +10,13 @@
             {{/if}}
         </h2>
 
+        {{#if showLeaveSettingsModal}}
+            {{gh-fullscreen-modal "leave-settings"
+                confirm=(action "leaveSettings")
+                close=(action "toggleLeaveSettingsModal")
+                modifier="action wide"}}
+        {{/if}}
+
         <section class="view-actions">
             {{#if userActionsAreVisible}}
                 <span class="dropdown">
@@ -118,7 +125,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
                     <label for="user-name">Full Name</label>
-                    {{gh-input user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user) update=(action (mut user.name))}}
+                    {{gh-input user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user) update=(action (mut user.name)) data-test-name-input=true}}
                     {{#if user.errors.name}}
                         {{gh-error-message errors=user.errors property="name"}}
                     {{else}}
@@ -128,7 +135,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
                     <label for="user-slug">Slug</label>
-                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action (perform updateSlug slugValue)) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue))}}
+                    {{gh-input slugValue class="user-name" id="user-slug" name="user" focusOut=(action (perform updateSlug slugValue)) placeholder="Slug" selectOnClick="true" autocorrect="off" update=(action (mut slugValue)) data-test-slug-input=true}}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
                     {{gh-error-message errors=user.errors property="slug"}}
                 {{/gh-form-group}}
@@ -137,7 +144,7 @@
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
                     {{#if canChangeEmail}}
-                        {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email))}}
+                        {{gh-input user.email type="email" id="user-email" name="email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user) update=(action (mut user.email)) data-test-email-input=true}}
                         {{gh-error-message errors=user.errors property="email"}}
                     {{else}}
                         <span>{{user.email}}</span>
@@ -154,7 +161,7 @@
                                 options=roles
                                 optionValuePath="id"
                                 optionLabelPath="name"
-                                value=model.role
+                                value=user.role
                                 update=(action "changeRole")
                             }}
                         </span>
@@ -164,35 +171,35 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
                     <label for="user-location">Location</label>
-                    {{gh-input user.location type="text" id="user-location" focusOut=(action "validate" "location" target=user) update=(action (mut user.location))}}
+                    {{gh-input user.location type="text" id="user-location" focusOut=(action "validate" "location" target=user) update=(action (mut user.location)) data-test-location-input=true}}
                     {{gh-error-message errors=user.errors property="location"}}
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
                     <label for="user-website">Website</label>
-                    {{gh-input user.website type="url" id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user) update=(action (mut user.website))}}
+                    {{gh-input user.website type="url" id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user) update=(action (mut user.website)) data-test-website-input=true}}
                     {{gh-error-message errors=user.errors property="website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="facebook"}}
                     <label for="user-facebook">Facebook Profile</label>
-                    <input value={{user.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="user-facebook" name="user[facebook]"  placeholder="https://www.facebook.com/username" autocorrect="off" />
+                    <input value={{user.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="user-facebook" name="user[facebook]"  placeholder="https://www.facebook.com/username" autocorrect="off" data-test-facebook-input=true/>
                     {{gh-error-message errors=user.errors property="facebook"}}
                     <p>URL of your personal Facebook Profile</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
                     <label for="user-twitter">Twitter Profile</label>
-                    <input value={{user.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="user-twitter" name="user[twitter]"  placeholder="https://twitter.com/username" autocorrect="off" />
+                    <input value={{user.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="user-twitter" name="user[twitter]"  placeholder="https://twitter.com/username" autocorrect="off" data-test-twitter-input=true/>
                     {{gh-error-message errors=user.errors property="twitter"}}
                     <p>URL of your personal Twitter profile</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
                     <label for="user-bio">Bio</label>
-                    {{gh-textarea user.bio id="user-bio" focusOut=(action "validate" "bio" target=user) update=(action (mut user.bio))}}
+                    {{gh-textarea user.bio id="user-bio" focusOut=(action "validate" "bio" target=user) update=(action (mut user.bio)) data-test-bio-input=true}}
                     {{gh-error-message errors=user.errors property="bio"}}
                     <p>
                         Write about you, in 200 characters or less.
@@ -213,25 +220,25 @@
                     {{#unless isNotOwnProfile}}
                         {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
                             <label for="user-password-old">Old Password</label>
-                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action (perform user.saveNewPassword))}}
+                            {{gh-input value=user.password type="password" id="user-password-old" update=(action 'updatePassword') onenter=(action (perform user.saveNewPassword)) data-test-old-pass-input=true}}
                             {{gh-error-message errors=user.errors property="password"}}
                         {{/gh-form-group}}
                     {{/unless}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
                         <label for="user-password-new">New Password</label>
-                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action (perform user.saveNewPassword))}}
+                        {{gh-input user.newPassword type="password" id="user-password-new" update=(action 'updateNewPassword') onenter=(action (perform user.saveNewPassword)) data-test-new-pass-input=true}}
                         {{gh-error-message errors=user.errors property="newPassword"}}
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
                         <label for="user-new-password-verification">Verify Password</label>
-                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action (perform user.saveNewPassword))}}
+                        {{gh-input user.ne2Password type="password" id="user-new-password-verification" update=(action 'updateNe2Password') onenter=(action (perform user.saveNewPassword)) data-test-ne2-pass-input=true}}
                         {{gh-error-message errors=user.errors property="ne2Password"}}
                     {{/gh-form-group}}
 
                     <div class="form-group">
-                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword}}
+                        {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword data-test-save-pw-button=true}}
                     </div>
                 </fieldset>
             </form> {{! change password form }}

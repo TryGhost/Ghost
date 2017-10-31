@@ -92,5 +92,37 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
             [setting] = server.db.settings.where({key: 'unsplash'});
             expect(setting.value).to.equal('{"isActive":false}');
         });
+
+        it('warns when leaving without saving', async function () {
+            await visit('/settings/apps/unsplash');
+
+            // has correct url
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+
+            expect(
+                find('[data-test-checkbox="unsplash"]').prop('checked'),
+                'checked by default'
+            ).to.be.true;
+
+            await click('[data-test-checkbox="unsplash"]');
+
+            expect(find('[data-test-checkbox="unsplash"]').prop('checked'), 'Unsplash checkbox').to.be.false;
+
+            await visit('/settings/labs');
+
+            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+
+            // Leave without saving
+            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/labs');
+
+            await visit('/settings/apps/unsplash');
+
+            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+
+            // settings were not saved
+            expect(find('[data-test-checkbox="unsplash"]').prop('checked'), 'Unsplash checkbox').to.be.true;
+        });
     });
 });

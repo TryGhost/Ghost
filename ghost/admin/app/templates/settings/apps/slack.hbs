@@ -10,6 +10,13 @@
         </section>
     </header>
 
+    {{#if showLeaveSettingsModal}}
+        {{gh-fullscreen-modal "leave-settings"
+            confirm=(action "leaveSettings")
+            close=(action "toggleLeaveSettingsModal")
+            modifier="action wide"}}
+    {{/if}}
+
     <section class="view-container">
         <br>
         <section class="app-grid">
@@ -30,7 +37,7 @@
                     <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack</div>
                     <div class="gh-setting-content-extended">
                         {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
-                            {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
+                            {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") focusOut=(action "triggerDirtyState") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
                             {{#unless model.errors.url}}
                                 <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                             {{else}}

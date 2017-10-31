@@ -6,6 +6,13 @@
         </section>
     </header>
 
+    {{#if showLeaveSettingsModal}}
+        {{gh-fullscreen-modal "leave-settings"
+            confirm=(action "leaveSettings")
+            close=(action "toggleLeaveSettingsModal")
+            modifier="action wide"}}
+    {{/if}}
+
     <section class="view-continer">
         <form id="settings-code" novalidate="novalidate">
             <fieldset>

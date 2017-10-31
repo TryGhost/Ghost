@@ -42,6 +42,10 @@ export default Component.extend(ValidationState, {
             this.sendAction('updateUrl', value, this.get('navItem'));
         },
 
+        updateLabel(value) {
+            this.sendAction('updateLabel', value, this.get('navItem'));
+        },
+
         clearLabelErrors() {
             this.get('navItem.errors').remove('label');
         },
