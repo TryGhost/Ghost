@@ -112,10 +112,6 @@ export default Controller.extend({
             navItems.removeObject(item);
         },
 
-        reorderItems(navItems) {
-            this.set('model.navigation', navItems);
-        },
-
         updateUrl(url, navItem) {
             if (!navItem) {
                 return;

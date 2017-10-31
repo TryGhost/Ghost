@@ -1,0 +1,56 @@
+{{#sortable-objects tagName="ul"
+    id=(concat "ember-power-select-multiple-options-" select.uniqueId)
+    class="ember-power-select-multiple-options"
+    sortableObjectList=select.selected
+    enableSort=true
+    useSwap=false
+    sortEndAction=(action "reorderItems")
+}}
+    {{#each select.selected as |opt idx|}}
+        {{#component (or extra.tokenComponent draggable-object)
+            tagName="li"
+            class="ember-power-select-multiple-option"
+            select=select
+            option=(readonly opt)
+            idx=idx
+            isSortable=true
+            mouseDown=(action "handleOptionMouseDown")
+            touchStart=(action "handleOptionTouchStart")
+        }}
+            {{#if selectedItemComponent}}
+                {{component selectedItemComponent option=(readonly opt) select=(readonly select)}}
+            {{else}}
+                {{yield opt select}}
+            {{/if}}
+            {{#unless select.disabled}}
+                <span role="button"
+                    aria-label="remove element"
+                    class="ember-power-select-multiple-remove-btn"
+                    data-selected-index={{idx}}>
+                    &times;
+                </span>
+            {{/unless}}
+        {{/component}}
+    {{else}}
+        {{#if (and placeholder (not searchEnabled))}}
+            <span class="ember-power-select-placeholder">{{placeholder}}</span>
+        {{/if}}
+    {{/each}}
+
+    {{#if searchEnabled}}
+        <input type="search" class="ember-power-select-trigger-multiple-input"
+            tabindex="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            id="ember-power-select-trigger-multiple-input-{{select.uniqueId}}"
+            value={{select.searchText}}
+            aria-controls={{listboxId}}
+            style={{triggerMultipleInputStyle}}
+            placeholder={{maybePlaceholder}}
+            disabled={{select.disabled}}
+            oninput={{action "onInput"}}
+            onFocus={{onFocus}}
+            onBlur={{onBlur}}
+            tabindex={{tabindex}}
+            onkeydown={{action "onKeydown"}}>
+    {{/if}}
+{{/sortable-objects}}
+<span class="ember-power-select-status-icon"></span>

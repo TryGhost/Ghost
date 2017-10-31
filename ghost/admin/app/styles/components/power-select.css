@@ -152,3 +152,41 @@
 .ember-power-select-option[aria-current="true"] {
 
 }
+
+
+/* Multiple */
+.ember-power-select-multiple-trigger {
+    background: #fff;
+    padding: 5px;
+    border: rgb(214, 227, 235) 1px solid;
+    border-radius: 3px;
+    outline: none;
+}
+
+.ember-power-select-multiple-option {
+    margin: 2px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 0;
+    background: #3eb0ef;
+    color: white;
+}
+
+.ember-power-select-trigger-multiple-input {
+    height: 24px;
+    margin: 2px;
+}
+
+.ember-power-select-status-icon {
+    right: 10px;
+}
+
+/* Token input */
+.gh-token-input .ember-power-select-options {
+    max-height: 172px; /* 5.5 options */
+}
+
+/* Tag input */
+.tag-token--primary {
+    background: color(#3eb0ef lightness(-20%));
+}

@@ -1,0 +1,54 @@
+{{#gh-token-input/select-multiple
+    afterOptionsComponent=afterOptionsComponent
+    allowClear=allowClear
+    ariaDescribedBy=ariaDescribedBy
+    ariaInvalid=ariaInvalid
+    ariaLabel=ariaLabel
+    ariaLabelledBy=ariaLabelledBy
+    beforeOptionsComponent=beforeOptionsComponent
+    class=(concat "gh-token-input " class)
+    closeOnSelect=closeOnSelect
+    defaultHighlighted=defaultHighlighted
+    destination=destination
+    dir=dir
+    disabled=disabled
+    dropdownClass=dropdownClass
+    extra=extra
+    horizontalPosition=horizontalPosition
+    initiallyOpened=initiallyOpened
+    loadingMessage=loadingMessage
+    matcher=matcher
+    matchTriggerWidth=matchTriggerWidth
+    noMatchesMessage=noMatchesMessage
+    onblur=(action "onblur")
+    onchange=(action selectOrCreate)
+    onclose=onclose
+    onfocus=(action "onfocus")
+    oninput=oninput
+    onkeydown=(action "handleKeydown")
+    onopen=onopen
+    options=optionsWithoutSelected
+    optionsComponent=(or optionsComponent "power-select-vertical-collection-options")
+    placeholder=placeholder
+    registerAPI=registerAPI
+    renderInPlace=renderInPlace
+    search=(action searchAndSuggest)
+    searchEnabled=searchEnabled
+    searchField=searchField
+    searchMessage=searchMessage
+    searchPlaceholder=searchPlaceholder
+    selected=selected
+    selectedItemComponent=selectedItemComponent
+    tabindex=tabindex
+    triggerClass=triggerClass
+    triggerComponent=triggerComponent
+    triggerId=triggerId
+    verticalPosition=verticalPosition
+    as |option term|
+}}
+    {{#if option.__isSuggestion__}}
+        {{gh-token-input/suggested-option option=option term=term}}
+    {{else}}
+        {{get option labelField}}
+    {{/if}}
+{{/gh-token-input/select-multiple}}

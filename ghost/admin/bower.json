@@ -4,14 +4,10 @@
     "devicejs": "0.2.7",
     "Faker": "3.1.0",
     "google-caja": "6005.0.0",
-    "jquery-ui": "1.11.4",
-    "jquery.simulate.drag-sortable": "0.1.0",
-    "jqueryui-touch-punch": "furf/jquery-ui-touch-punch#4bc009145202d9c7483ba85f3a236a8f3470354d",
     "keymaster": "1.6.3",
     "normalize.css": "3.0.3",
     "pretender": "1.1.0",
     "rangyinputs": "1.2.0",
-    "selectize": "~0.12.1",
     "validator-js": "3.39.0"
   }
 }

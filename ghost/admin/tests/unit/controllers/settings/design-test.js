@@ -154,21 +154,6 @@ describe('Unit: Controller: settings/design', function () {
         });
     });
 
-    it('action - reorderItems: updates navigationItems list', function () {
-        let ctrl = this.subject();
-        let navItems = [
-            NavItem.create({label: 'First', url: '/first'}),
-            NavItem.create({label: 'Second', url: '/second', last: true})
-        ];
-
-        run(() => {
-            ctrl.set('model', EmberObject.create({navigation: navItems}));
-            expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
-            ctrl.send('reorderItems', navItems.reverseObjects());
-            expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['Second', 'First']);
-        });
-    });
-
     it('action - updateUrl: updates URL on navigationItem', function () {
         let ctrl = this.subject();
         let navItems = [

@@ -28,7 +28,6 @@
 @import "components/pagination.css";
 @import "components/badges.css";
 @import "components/settings-menu.css";
-@import "components/selectize.css";
 @import "components/power-select.css";
 @import "components/power-calendar.css";
 @import "components/publishmenu.css";
@@ -82,7 +81,6 @@ hr {
 input,
 .gh-input,
 .gh-select,
-.selectize-input,
 .gh-select select {
     color: var(--darkgrey);
     border-color: color(var(--lightgrey));
@@ -186,21 +184,6 @@ input,
 
 .nav-list {
     border-color: var(--lightgrey);
-    background: var(--lightgrey);
-}
-
-.selectize-dropdown,
-.selectize-input,
-.selectize-input input {
-    color: #fff;
-}
-
-.selectize-dropdown .option {
-    color: var(--lightgrey);
-}
-
-.selectize-input,
-.selectize-control.single .selectize-input.input-active {
     background: var(--lightgrey);
 }
 
