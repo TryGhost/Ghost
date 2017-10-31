@@ -26,15 +26,13 @@ module.exports = {
             }
         }
 
+        ghost.routeService.registerRouter('/' + config.get('routeKeywords').private + '/', router);
+
         registerHelpers(ghost);
     },
 
     setupMiddleware: function setupMiddleware(siteApp) {
         siteApp.use(middleware.checkIsPrivate);
         siteApp.use(middleware.filterPrivateRoutes);
-    },
-
-    setupRoutes: function setupRoutes(siteRouter) {
-        siteRouter.use('/' + config.get('routeKeywords').private + '/', router);
     }
 };

@@ -1,8 +1,8 @@
 var express = require('express'),
-    path = require('path'),
     config = require('../config'),
     controllers = require('../controllers'),
     channels = require('../controllers/channels'),
+    apps = require('../services/route').appRouter,
     utils = require('../utils');
 
 module.exports = function siteRouter() {
@@ -21,14 +21,8 @@ module.exports = function siteRouter() {
     // Channels
     router.use(channels.router());
 
-    // setup routes for internal apps
-    // @TODO: refactor this to be a proper app route hook for internal & external apps
-    config.get('apps:internal').forEach(function (appName) {
-        var app = require(path.join(config.get('paths').internalAppPath, appName));
-        if (app.hasOwnProperty('setupRoutes')) {
-            app.setupRoutes(router);
-        }
-    });
+    // setup routes for apps
+    router.use(apps.router);
 
     // Default
     router.get('*', controllers.single);
