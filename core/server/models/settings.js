@@ -118,22 +118,27 @@ Settings = ghostBookshelf.Model.extend({
             item = self.filterData(item);
 
             return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {
-                var saveData = {};
-
                 if (setting) {
-                    if (item.hasOwnProperty('value')) {
-                        saveData.value = item.value;
-                    }
-                    // Internal context can overwrite type (for fixture migrations)
-                    if (options.context && options.context.internal && item.hasOwnProperty('type')) {
-                        saveData.type = item.type;
-                    }
                     // it's allowed to edit all attributes in case of importing/migrating
                     if (options.importing) {
-                        saveData = item;
-                    }
+                        return setting.save(item, options);
+                    } else {
+                        // If we have a value, set it.
+                        if (item.hasOwnProperty('value')) {
+                            setting.set('value', item.value);
+                        }
+                        // Internal context can overwrite type (for fixture migrations)
+                        if (options.context && options.context.internal && item.hasOwnProperty('type')) {
+                            setting.set('type', item.type);
+                        }
 
-                    return setting.save(saveData, options);
+                        // If anything has changed, save the updated model
+                        if (setting.hasChanged()) {
+                            return setting.save(null, options);
+                        }
+
+                        return setting;
+                    }
                 }
 
                 return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
