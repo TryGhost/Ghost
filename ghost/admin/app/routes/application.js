@@ -20,7 +20,7 @@ function K() {
 
 let shortcuts = {};
 
-shortcuts.esc = {action: 'closeMenus', scope: 'all'};
+shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {

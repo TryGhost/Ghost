@@ -1,0 +1,12 @@
+{{gh-token-input
+    extra=(hash
+        tokenComponent="gh-token-input/tag-token"
+    )
+    onchange=(action "updateTags")
+    oncreate=(action "createTag")
+    options=availableTags
+    renderInPlace=true
+    selected=post.tags
+    showCreateWhen=(action "hideCreateOptionOnMatchingTag")
+    triggerId=triggerId
+}}

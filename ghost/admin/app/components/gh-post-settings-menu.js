@@ -5,7 +5,6 @@ import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {guidFor} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -136,13 +135,6 @@ export default Component.extend(SettingsMenuMixin, {
         }
 
         return seoURL;
-    }),
-
-    // live-query of all tags for tag input autocomplete
-    availableTags: computed(function () {
-        return this.get('store').filter('tag', {limit: 'all'}, () => {
-            return true;
-        });
     }),
 
     showError(error) {
@@ -528,56 +520,6 @@ export default Component.extend(SettingsMenuMixin, {
                 this.set('selectedAuthor', author);
                 model.rollbackAttributes();
             });
-        },
-
-        addTag(tagName, index) {
-            let currentTags = this.get('model.tags');
-            let currentTagNames = currentTags.map((tag) => {
-                return tag.get('name').toLowerCase();
-            });
-            let availableTagNames,
-                tagToAdd;
-
-            tagName = tagName.trim();
-
-            // abort if tag is already selected
-            if (currentTagNames.includes(tagName.toLowerCase())) {
-                return;
-            }
-
-            this.get('availableTags').then((availableTags) => {
-                availableTagNames = availableTags.map((tag) => {
-                    return tag.get('name').toLowerCase();
-                });
-
-                // find existing tag or create new
-                if (availableTagNames.includes(tagName.toLowerCase())) {
-                    tagToAdd = availableTags.find((tag) => {
-                        return tag.get('name').toLowerCase() === tagName.toLowerCase();
-                    });
-                } else {
-                    tagToAdd = this.get('store').createRecord('tag', {
-                        name: tagName
-                    });
-
-                    // we need to set a UUID so that selectize has a unique value
-                    // it will be ignored when sent to the server
-                    tagToAdd.set('uuid', guidFor(tagToAdd));
-                }
-
-                // push tag onto post relationship
-                if (tagToAdd) {
-                    this.get('model.tags').insertAt(index, tagToAdd);
-                }
-            });
-        },
-
-        removeTag(tag) {
-            this.get('model.tags').removeObject(tag);
-
-            if (tag.get('isNew')) {
-                tag.destroyRecord();
-            }
         },
 
         deletePost() {

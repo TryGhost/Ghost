@@ -319,12 +319,6 @@ body > .ember-view:not(.default-liquid-destination) {
         transform: translate3d(80vw, 0, 0);
     }
 
-    .gh-nav-search-input .selectize-input,
-    .gh-nav-search-input .selectize-input input,
-    .gh-nav-search-input .selectize-dropdown {
-        font-size: 1.5rem;
-    }
-
     .gh-nav-list {
         font-size: 1.5rem;
     }

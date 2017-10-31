@@ -10,11 +10,13 @@
         <div class="gh-setting-header">Navigation</div>
         <div class="gh-blognav-container">
             <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
-                {{#sortable-group onChange=(action 'reorderItems') as |group|}}
+                {{#sortable-objects sortableObjectList=model.navigation useSwap=false}}
                     {{#each model.navigation as |navItem|}}
-                        {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl" group=group}}
+                        {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
+                            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addNavItem" deleteItem="deleteNavItem" updateUrl="updateUrl"}}
+                        {{/draggable-object}}
                     {{/each}}
-                {{/sortable-group}}
+                {{/sortable-objects}}
                 {{gh-navitem navItem=newNavItem baseUrl=blogUrl addItem="addNavItem" updateUrl="updateUrl"}}
             </form>
         </div>
