@@ -65,7 +65,12 @@
 .cm-fat-cursor div.CodeMirror-cursors {
   z-index: 1;
 }
-
+.cm-fat-cursor-mark {
+  background-color: rgba(20, 255, 20, 0.5);
+  -webkit-animation: blink 1.06s steps(1) infinite;
+  -moz-animation: blink 1.06s steps(1) infinite;
+  animation: blink 1.06s steps(1) infinite;
+}
 .cm-animate-fat-cursor {
   width: auto;
   border: 0;
