@@ -21,7 +21,11 @@ _private.printResult = function printResult(result, message) {
     }
 };
 
-module.exports = function addRedirectsPermissions(options) {
+module.exports.config = {
+    transaction: true
+};
+
+module.exports.up = function addRedirectsPermissions(options) {
     var modelToAdd = _private.getPermissions(),
         relationToAdd = _private.getRelations(),
         localOptions = _.merge({
@@ -36,4 +40,22 @@ module.exports = function addRedirectsPermissions(options) {
     }).then(function () {
         return permissions.init(localOptions);
     });
+};
+
+module.exports.down = function removeRedirectsPermissions(options) {
+    var modelToRemove = _private.getPermissions(),
+        relationToRemove = _private.getRelations(),
+        localOptions = _.merge({
+            context: {internal: true}
+        }, options);
+
+    return utils.removeFixturesForRelation(relationToRemove, localOptions)
+        .then(function (result) {
+            _private.printResult(result, 'Removing permissions_roles fixtures for ' + resource + 's');
+            return utils.removeFixturesForModel(modelToRemove, localOptions)
+        })
+        .then(function (result) {
+            _private.printResult(result, 'Removing permissions fixtures for ' + resource + 's');
+            return permissions.init(localOptions);
+        });
 };

@@ -17,7 +17,11 @@ var _ = require('lodash'),
     findModelFixture,
 
     addFixturesForModel,
+    removeFixturesForModel,
+
     addFixturesForRelation,
+    removeFixturesForRelation,
+
     findModelFixtureEntry,
     findModelFixtures,
     findPermissionRelationsForObject;
@@ -123,6 +127,18 @@ addFixturesForModel = function addFixturesForModel(modelFixture, options) {
     });
 };
 
+removeFixturesForModel = function removeFixturesForModel(modelFixture, options) {
+    return Promise.mapSeries(modelFixture.entries, function (entry) {
+        return models[modelFixture.name].findOne(entry.id ? {id: entry.id} : entry, options).then(function (found) {
+            if (found) {
+                return models[modelFixture.name].destroy(_.extend(options, {id: found.id}));
+            }
+        });
+    }).then(function (results) {
+        return {expected: modelFixture.entries.length, done: results.length};
+    });
+};
+
 /**
  * ## Add Fixtures for Relation
  * Takes a relation fixtures object, with a from, to and some entries and processes these
@@ -166,6 +182,38 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture, option
         return sequence(ops);
     }).then(function (result) {
         return {expected: max, done: _(result).map('length').sum()};
+    });
+};
+
+removeFixturesForRelation = function removeFixturesForRelation(relationFixture, options) {
+    var ops = [], max = 0;
+
+    return fetchRelationData(relationFixture, options).then(function getRelationOps(data) {
+        _.each(relationFixture.entries, function processEntries(entry, key) {
+            var fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
+
+            _.each(entry, function processEntryValues(value, key) {
+                var toItems = data.to.filter(matchFunc(relationFixture.to.match, key, value));
+                max += toItems.length;
+
+                if (toItems && toItems.length > 0) {
+                    ops.push(function removeRelationItems() {
+                        return baseUtils.detach(
+                            models[relationFixture.from.Model || relationFixture.from.model],
+                            fromItem.id,
+                            relationFixture.from.relation,
+                            toItems,
+                            options
+                        );
+                    });
+                }
+            });
+        });
+
+        return sequence(ops);
+    }).then(function (result) {
+        // models were detached, can't count
+        return {expected: max, done: max};
     });
 };
 
@@ -248,6 +296,8 @@ findPermissionRelationsForObject = function findPermissionRelationsForObject(obj
 module.exports = {
     addFixturesForModel: addFixturesForModel,
     addFixturesForRelation: addFixturesForRelation,
+    removeFixturesForModel: removeFixturesForModel,
+    removeFixturesForRelation: removeFixturesForRelation,
     findModelFixtureEntry: findModelFixtureEntry,
     findModelFixtures: findModelFixtures,
     findPermissionRelationsForObject: findPermissionRelationsForObject
