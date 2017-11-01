@@ -1,6 +1,8 @@
-var _ = require('lodash'),
+'use strict';
+
+const _ = require('lodash'),
     api = require('../../api'),
-    urlUtils  = require('../../utils').url,
+    utils = require('../../utils'),
     prefetchDefaults = {
         context: {
             internal: true
@@ -17,8 +19,8 @@ class Resource {
         this.items = {};
     }
 
-    prefetch() {
-        var options = _.defaults(this.prefetchOptions, prefetchDefaults);
+    fetchAll() {
+        const options = _.defaults(this.prefetchOptions, prefetchDefaults);
 
         return api[this.api]
             .browse(options)
@@ -28,11 +30,21 @@ class Resource {
             });
     }
 
-    toUrl(resource) {
-        var data = {
-            [this.urlLookup]: resource
+    toUrl(item) {
+        const data = {
+            [this.urlLookup]: item
         };
-        return urlUtils.urlFor(this.urlLookup, data);
+        return utils.url.urlFor(this.urlLookup, data);
+    }
+
+    toData(item) {
+        return {
+            slug: item.slug,
+            resource: {
+                type: this.name,
+                id: item.id
+            }
+        };
     }
 }
 
