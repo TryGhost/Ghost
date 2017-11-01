@@ -102,6 +102,10 @@ describe('Frontend Routing', function () {
                 request.get('/2016/04/01/welcome/')
                     .expect('Content-Type', /html/)
                     .end(function (err, res) {
+                        if (err)  {
+                            done(err);
+                        }
+
                         res.status.should.eql(301);
                         request.get('/' + date + '/welcome/')
                             .expect(200)
