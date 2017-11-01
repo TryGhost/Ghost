@@ -1,4 +1,5 @@
-var _ = require('lodash');
+var debug = require('ghost-ignition').debug('models:plugin:include-count'),
+    _ = require('lodash');
 
 module.exports = function (Bookshelf) {
     var modelProto = Bookshelf.Model.prototype,
@@ -60,9 +61,7 @@ module.exports = function (Bookshelf) {
         fetch: function () {
             this.addCounts.apply(this, arguments);
 
-            if (this.debug) {
-                console.log('QUERY', this.query().toQuery());
-            }
+            debug('QUERY', this.query().toQuery());
 
             // Call parent fetch
             return modelProto.fetch.apply(this, arguments);
@@ -70,9 +69,7 @@ module.exports = function (Bookshelf) {
         fetchAll: function () {
             this.addCounts.apply(this, arguments);
 
-            if (this.debug) {
-                console.log('QUERY', this.query().toQuery());
-            }
+            debug('QUERY', this.query().toQuery());
 
             // Call parent fetchAll
             return modelProto.fetchAll.apply(this, arguments);

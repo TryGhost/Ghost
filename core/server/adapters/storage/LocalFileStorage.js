@@ -1,5 +1,3 @@
-// jscs:disable requireMultipleVarDecl
-
 'use strict';
 
 // # Local File System Image Storage module
@@ -18,7 +16,6 @@ var serveStatic = require('express').static,
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
-
     constructor() {
         super();
 

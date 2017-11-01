@@ -84,8 +84,8 @@ function getPostSchema(metaData, data) {
             url: metaData.authorUrl,
             sameAs: trimSameAs(data, 'post'),
             description: data.post.author.metaDescription ?
-            escapeExpression(data.post.author.metaDescription) :
-            null
+                escapeExpression(data.post.author.metaDescription) :
+                null
         },
         headline: escapeExpression(metaData.metaTitle),
         url: metaData.url,
@@ -120,8 +120,8 @@ function getHomeSchema(metaData) {
             '@id': metaData.blog.url || null
         },
         description: metaData.metaDescription ?
-        escapeExpression(metaData.metaDescription) :
-        null
+            escapeExpression(metaData.metaDescription) :
+            null
     };
     return trimSchema(schema);
 }
@@ -143,8 +143,8 @@ function getTagSchema(metaData, data) {
             '@id': metaData.blog.url || null
         },
         description: metaData.metaDescription ?
-        escapeExpression(metaData.metaDescription) :
-        null
+            escapeExpression(metaData.metaDescription) :
+            null
     };
 
     return trimSchema(schema);
@@ -163,8 +163,8 @@ function getAuthorSchema(metaData, data) {
             '@id': metaData.blog.url || null
         },
         description: metaData.metaDescription ?
-        escapeExpression(metaData.metaDescription) :
-        null
+            escapeExpression(metaData.metaDescription) :
+            null
     };
 
     return trimSchema(schema);

@@ -83,8 +83,6 @@ function ping(post) {
 
         // with all the data we have, we're doing the request now
         makeRequest(reqOptions, slackData);
-    } else {
-        return;
     }
 }
 

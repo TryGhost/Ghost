@@ -93,7 +93,7 @@ notifications = {
                     id: ObjectId.generate()
                 });
 
-                existingNotification = _.find(notificationsStore, {message:notification.message});
+                existingNotification = _.find(notificationsStore, {message: notification.message});
 
                 if (!existingNotification) {
                     notificationsStore.push(notification);

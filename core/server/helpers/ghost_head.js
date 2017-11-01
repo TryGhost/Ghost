@@ -2,10 +2,6 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-//
-// We use the name ghost_head to match the helper for consistency:
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-
 var proxy = require('./proxy'),
     _ = require('lodash'),
     debug = require('ghost-ignition').debug('ghost_head'),
@@ -93,7 +89,8 @@ function getAjaxHelper(clientId, clientSecret) {
  * `blog`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
  *  Also see how the root object get's created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
-module.exports = function ghost_head(options) {
+// We use the name ghost_head to match the helper for consistency:
+module.exports = function ghost_head(options) { // eslint-disable-line camelcase
     debug('begin');
 
     // if server error page do nothing

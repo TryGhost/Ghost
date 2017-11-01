@@ -29,7 +29,7 @@ buildApiOptions = function buildApiOptions(options, post) {
             limit: 1,
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
             // or escaped singles, see TryGhost/GQL#34
-            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // jscs:ignore
+            filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'" // eslint-disable-line quotes
         };
 
     if (_.get(options, 'hash.in')) {

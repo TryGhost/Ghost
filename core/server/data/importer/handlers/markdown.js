@@ -87,7 +87,6 @@ MarkdownHandler = {
     directories: [],
 
     loadFile: function (files, startDir) {
-        /*jshint unused:false */
         var startDirRegex = startDir ? new RegExp('^' + startDir + '/') : new RegExp(''),
             posts = [],
             ops = [];

@@ -2,15 +2,12 @@
 // Usage: `{{body_class}}`
 //
 // Output classes for the body element
-//
-// We use the name body_class to match the helper for consistency:
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-
 var proxy = require('./proxy'),
     _ = require('lodash'),
     SafeString = proxy.SafeString;
 
-module.exports = function body_class(options) {
+// We use the name body_class to match the helper for consistency:
+module.exports = function body_class(options) { // eslint-disable-line camelcase
     var classes = [],
         context = options.data.root.context,
         post = this.post,

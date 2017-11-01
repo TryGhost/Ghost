@@ -1,8 +1,5 @@
 // # Subscribe Form Helper
 // Usage: `{{subscribe_form}}`
-//
-// We use the name subscribe_form to match the helper for consistency:
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 var _ = require('lodash'),
 
     // (Less) dirty requires
@@ -38,7 +35,8 @@ subscribeScript =
     '})(window,document,\'querySelector\',\'value\');' +
     '</script>';
 
-module.exports = function subscribe_form(options) {
+// We use the name subscribe_form to match the helper for consistency:
+module.exports = function subscribe_form(options) { // eslint-disable-line camelcase
     var root = options.data.root,
         data = _.merge({}, options.hash, _.pick(root, params), {
             action: url.urlJoin('/', url.getSubdir(), config.get('routeKeywords').subscribe, '/'),

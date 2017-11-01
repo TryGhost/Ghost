@@ -53,25 +53,25 @@ globalBlock = function globalBlock() {
         db = require('../../data/db');
 
     store = store || new BruteKnex({
-            tablename: 'brute',
-            createTable: false,
-            knex: db.knex
-        });
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
 
     globalBlockInstance = globalBlockInstance || new ExpressBrute(store,
-            _.extend({
-                attachResetToRequest: false,
-                failCallback: function (req, res, next, nextValidRequestDate) {
-                    return next(new errors.TooManyRequestsError({
-                        message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                        context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
-                            {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
-                        help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
-                    }));
-                },
-                handleStoreError: handleStoreError
-            }, _.pick(spamGlobalBlock, spamConfigKeys))
-        );
+        _.extend({
+            attachResetToRequest: false,
+            failCallback: function (req, res, next, nextValidRequestDate) {
+                return next(new errors.TooManyRequestsError({
+                    message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                        {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
+                    help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, _.pick(spamGlobalBlock, spamConfigKeys))
+    );
 
     return globalBlockInstance;
 };
@@ -82,26 +82,26 @@ globalReset = function globalReset() {
         db = require('../../data/db');
 
     store = store || new BruteKnex({
-            tablename: 'brute',
-            createTable: false,
-            knex: db.knex
-        });
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
 
     globalResetInstance = globalResetInstance || new ExpressBrute(store,
-            _.extend({
-                attachResetToRequest: false,
-                failCallback: function (req, res, next, nextValidRequestDate) {
-                    // TODO use i18n again
-                    return next(new errors.TooManyRequestsError({
-                        message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                        context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
-                            {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
-                        help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
-                    }));
-                },
-                handleStoreError: handleStoreError
-            }, _.pick(spamGlobalReset, spamConfigKeys))
-        );
+        _.extend({
+            attachResetToRequest: false,
+            failCallback: function (req, res, next, nextValidRequestDate) {
+                // TODO use i18n again
+                return next(new errors.TooManyRequestsError({
+                    message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                        {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
+                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, _.pick(spamGlobalReset, spamConfigKeys))
+    );
 
     return globalResetInstance;
 };
@@ -116,25 +116,25 @@ userLogin = function userLogin() {
         db = require('../../data/db');
 
     store = store || new BruteKnex({
-            tablename: 'brute',
-            createTable: false,
-            knex: db.knex
-        });
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
 
     userLoginInstance = userLoginInstance || new ExpressBrute(store,
-            _.extend({
-                attachResetToRequest: true,
-                failCallback: function (req, res, next, nextValidRequestDate) {
-                    return next(new errors.TooManyRequestsError({
-                        message: 'Too many sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                        // TODO add more options to i18n
-                        context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
-                        help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
-                    }));
-                },
-                handleStoreError: handleStoreError
-            }, _.pick(spamUserLogin, spamConfigKeys))
-        );
+        _.extend({
+            attachResetToRequest: true,
+            failCallback: function (req, res, next, nextValidRequestDate) {
+                return next(new errors.TooManyRequestsError({
+                    message: 'Too many sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                    // TODO add more options to i18n
+                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
+                    help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, _.pick(spamUserLogin, spamConfigKeys))
+    );
 
     return userLoginInstance;
 };
@@ -148,25 +148,25 @@ userReset = function userReset() {
         db = require('../../data/db');
 
     store = store || new BruteKnex({
-            tablename: 'brute',
-            createTable: false,
-            knex: db.knex
-        });
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
 
     userResetInstance = userResetInstance || new ExpressBrute(store,
-            _.extend({
-                attachResetToRequest: true,
-                failCallback: function (req, res, next, nextValidRequestDate) {
-                    return next(new errors.TooManyRequestsError({
-                        message: 'Too many password reset attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                        context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
-                            {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
-                        help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
-                    }));
-                },
-                handleStoreError: handleStoreError
-            }, _.pick(spamUserReset, spamConfigKeys))
-        );
+        _.extend({
+            attachResetToRequest: true,
+            failCallback: function (req, res, next, nextValidRequestDate) {
+                return next(new errors.TooManyRequestsError({
+                    message: 'Too many password reset attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
+                        {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
+                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, _.pick(spamUserReset, spamConfigKeys))
+    );
 
     return userResetInstance;
 };
@@ -179,28 +179,28 @@ privateBlog = function privateBlog() {
         db = require('../../data/db');
 
     store = store || new BruteKnex({
-            tablename: 'brute',
-            createTable: false,
-            knex: db.knex
-        });
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
 
     privateBlogInstance = privateBlogInstance || new ExpressBrute(store,
-            _.extend({
-                attachResetToRequest: false,
-                failCallback: function (req, res, next, nextValidRequestDate) {
-                    logging.error(new errors.GhostError({
-                        message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
-                            {rfa: spamPrivateBlog.freeRetries + 1 || 5, rfp: spamPrivateBlog.lifetime || 60 * 60}),
-                        context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
-                    }));
+        _.extend({
+            attachResetToRequest: false,
+            failCallback: function (req, res, next, nextValidRequestDate) {
+                logging.error(new errors.GhostError({
+                    message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
+                        {rfa: spamPrivateBlog.freeRetries + 1 || 5, rfp: spamPrivateBlog.lifetime || 60 * 60}),
+                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                }));
 
-                    return next(new errors.GhostError({
-                        message: 'Too many private sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
-                    }));
-                },
-                handleStoreError: handleStoreError
-            }, _.pick(spamPrivateBlog, spamConfigKeys))
-        );
+                return next(new errors.GhostError({
+                    message: 'Too many private sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, _.pick(spamPrivateBlog, spamConfigKeys))
+    );
 
     return privateBlogInstance;
 };

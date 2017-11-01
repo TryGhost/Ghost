@@ -1,4 +1,4 @@
-var _      = require('lodash'),
+var _ = require('lodash'),
     config = require('../../config'),
     utils = require('../../utils');
 
@@ -30,7 +30,7 @@ function getPaginatedUrl(page, data, absolute) {
     // baseUrl can be undefined, if there was nothing preceding the pagePath (e.g. first page of the index channel)
     newRelativeUrl = baseUrl ? utils.url.urlJoin(baseUrl, newRelativeUrl) : newRelativeUrl;
 
-    return utils.url.urlFor({relativeUrl:  newRelativeUrl, secure: data.secure}, absolute);
+    return utils.url.urlFor({relativeUrl: newRelativeUrl, secure: data.secure}, absolute);
 }
 
 module.exports = getPaginatedUrl;

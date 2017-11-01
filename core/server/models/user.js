@@ -236,8 +236,9 @@ User = ghostBookshelf.Model.extend({
     format: function format(options) {
         if (!_.isEmpty(options.website) &&
             !validator.isURL(options.website, {
-            require_protocol: true,
-            protocols: ['http', 'https']})) {
+                require_protocol: true,
+                protocols: ['http', 'https']
+            })) {
             options.website = 'http://' + options.website;
         }
         return ghostBookshelf.Model.prototype.format.call(this, options);
@@ -575,7 +576,7 @@ User = ghostBookshelf.Model.extend({
         options.withRelated = _.union(options.withRelated, options.include);
 
         userData.slug = null;
-        return self.edit.call(self, userData, options);
+        return self.edit(userData, options);
     },
 
     /**
@@ -792,41 +793,46 @@ User = ghostBookshelf.Model.extend({
         var ownerRole,
             contextUser;
 
-        return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Owner'}),
-                            User.findOne({id: options.context.user}, {include: ['roles']}))
-        .then(function then(results) {
-            ownerRole = results[0];
-            contextUser = results[1];
+        return Promise.join(
+            ghostBookshelf.model('Role').findOne({name: 'Owner'}),
+            User.findOne({id: options.context.user}, {include: ['roles']})
+        )
+            .then(function then(results) {
+                ownerRole = results[0];
+                contextUser = results[1];
 
-            // check if user has the owner role
-            var currentRoles = contextUser.toJSON(options).roles;
-            if (!_.some(currentRoles, {id: ownerRole.id})) {
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')}));
-            }
+                // check if user has the owner role
+                var currentRoles = contextUser.toJSON(options).roles;
+                if (!_.some(currentRoles, {id: ownerRole.id})) {
+                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')}));
+                }
 
-            return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
-                                User.findOne({id: object.id}, {include: ['roles']}));
-        }).then(function then(results) {
-            var adminRole = results[0],
-                user = results[1],
-                currentRoles = user.toJSON(options).roles;
+                return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
+                    User.findOne({id: object.id}, {include: ['roles']}));
+            })
+            .then(function then(results) {
+                var adminRole = results[0],
+                    user = results[1],
+                    currentRoles = user.toJSON(options).roles;
 
-            if (!_.some(currentRoles, {id: adminRole.id})) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')}));
-            }
+                if (!_.some(currentRoles, {id: adminRole.id})) {
+                    return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')}));
+                }
 
-            // convert owner to admin
-            return Promise.join(contextUser.roles().updatePivot({role_id: adminRole.id}),
-                                user.roles().updatePivot({role_id: ownerRole.id}),
-                                user.id);
-        }).then(function then(results) {
-            return Users.forge()
-                .query('whereIn', 'id', [contextUser.id, results[2]])
-                .fetch({withRelated: ['roles']});
-        }).then(function then(users) {
-            options.include = ['roles'];
-            return users.toJSON(options);
-        });
+                // convert owner to admin
+                return Promise.join(contextUser.roles().updatePivot({role_id: adminRole.id}),
+                    user.roles().updatePivot({role_id: ownerRole.id}),
+                    user.id);
+            })
+            .then(function then(results) {
+                return Users.forge()
+                    .query('whereIn', 'id', [contextUser.id, results[2]])
+                    .fetch({withRelated: ['roles']});
+            })
+            .then(function then(users) {
+                options.include = ['roles'];
+                return users.toJSON(options);
+            });
     },
 
     // Get the user by email address, enforces case insensitivity rejects if the user is not found

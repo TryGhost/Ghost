@@ -59,7 +59,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
     next(err);
 };
 
-_private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, /*jshint unused:false */ next) {
+_private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
     // @TODO: jsonapi errors format (http://jsonapi.org/format/#error-objects)
     res.json({
         errors: [{
@@ -115,7 +115,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
     });
 };
 
-_private.BasicErorRenderer = function BasicErrorRenderer(err, req, res, /*jshint unused:false */ next) {
+_private.BasicErorRenderer = function BasicErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
     return res.send(res.statusCode + ' ' + err.message);
 };
 

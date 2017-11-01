@@ -10,19 +10,17 @@ var _ = require('lodash'),
     CanThisResult;
 
 // Base class for canThis call results
-CanThisResult = function () {
-    return;
-};
+CanThisResult = function () {};
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
     var objectTypeModelMap = {
-        post:       models.Post,
-        role:       models.Role,
-        user:       models.User,
+        post: models.Post,
+        role: models.Role,
+        user: models.User,
         permission: models.Permission,
-        setting:    models.Settings,
+        setting: models.Settings,
         subscriber: models.Subscriber,
-        invite:     models.Invite
+        invite: models.Invite
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']

@@ -40,9 +40,8 @@ exports.createAdapter = function (options) {
         // CASE: only throw error if module does exist
         if (err.code !== 'MODULE_NOT_FOUND') {
             return Promise.reject(new errors.IncorrectUsageError({err: err}));
-        }
         // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
-        else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
+        } else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
             return Promise.reject(new errors.IncorrectUsageError({err: err, help: 'Please check the imports are valid in ' + contentPath + activeAdapter}));
         }
     }

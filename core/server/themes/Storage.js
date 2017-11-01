@@ -1,5 +1,3 @@
-// jscs:disable requireMultipleVarDecl
-
 'use strict';
 
 var fs = require('fs-extra'),

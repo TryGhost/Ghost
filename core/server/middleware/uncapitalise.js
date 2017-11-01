@@ -36,13 +36,13 @@ uncapitalise = function uncapitalise(req, res, next) {
      */
     if (/[A-Z]/.test(decodeURIComponent(pathToTest))) {
         redirectPath = (
-          utils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
+            utils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
         );
 
         return utils.url.redirect301(res, redirectPath);
-    } else {
-        next();
     }
+
+    next();
 };
 
 module.exports = uncapitalise;

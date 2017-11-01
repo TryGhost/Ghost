@@ -58,9 +58,7 @@ function serveFavicon() {
                         res.writeHead(200, content.headers);
                         res.end(content.body);
                     })
-                    .catch(function (err) {
-                        next(err);
-                    });
+                    .catch(next);
             } else {
                 originalExtension = path.extname(filePath).toLowerCase();
 
@@ -81,7 +79,7 @@ function serveFavicon() {
                 });
             }
         } else {
-            next();
+            return next();
         }
     };
 }

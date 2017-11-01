@@ -43,7 +43,6 @@ exports.resetToken = {
             email: email
         };
     },
-    /*jslint bitwise:true*/
     compare: function compare(options) {
         options = options || {};
 

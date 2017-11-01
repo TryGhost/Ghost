@@ -29,8 +29,6 @@ function controller(req, res) {
  * For success cases, we don't have to worry, because then the input contained a valid email address.
  */
 function errorHandler(error, req, res, next) {
-    /*jshint unused:false */
-
     req.body.email = '';
 
     if (error.statusCode !== 404) {

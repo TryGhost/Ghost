@@ -1,9 +1,9 @@
-var SimpleDom   = require('simple-dom'),
-    Renderer    = require('mobiledoc-dom-renderer').default,
-    config      = require('../config'),
-    logging     = require('../logging'),
-    errors      = require('../errors'),
-    defaults    = require(config.get('paths').internalAppPath + 'default-cards'),
+var SimpleDom = require('simple-dom'),
+    Renderer = require('mobiledoc-dom-renderer').default,
+    config = require('../config'),
+    logging = require('../logging'),
+    errors = require('../errors'),
+    defaults = require(config.get('paths').internalAppPath + 'default-cards'),
     options = {
         dom: new SimpleDom.Document(),
         cards: defaults.cards,
@@ -38,9 +38,9 @@ var SimpleDom   = require('simple-dom'),
 module.exports = {
     render: function (mobiledoc) {
         var renderer = new Renderer(options),
-        rendered = renderer.render(mobiledoc),
-        serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap),
-        html = serializer.serializeChildren(rendered.result);
+            rendered = renderer.render(mobiledoc),
+            serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap),
+            html = serializer.serializeChildren(rendered.result);
         return html;
     }
 };

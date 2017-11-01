@@ -23,7 +23,7 @@ Basetoken = ghostBookshelf.Model.extend({
     }
 
 }, {
-    destroyAllExpired:  function destroyAllExpired(options) {
+    destroyAllExpired: function destroyAllExpired(options) {
         options = this.filterOptions(options, 'destroyAll');
         return ghostBookshelf.Collection.forge([], {model: this})
             .query('where', 'expires', '<', Date.now())

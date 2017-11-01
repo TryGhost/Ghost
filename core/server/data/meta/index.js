@@ -28,50 +28,50 @@ var Promise = require('bluebird'),
 
 function getMetaData(data, root) {
     var metaData = {
-        url: getUrl(data, true),
-        canonicalUrl: getCanonicalUrl(data),
-        ampUrl: getAmpUrl(data),
-        previousUrl: getPaginatedUrl('prev', data, true),
-        nextUrl: getPaginatedUrl('next', data, true),
-        authorUrl: getAuthorUrl(data, true),
-        rssUrl: getRssUrl(data, true),
-        metaTitle: getTitle(data, root),
-        metaDescription: getDescription(data, root) || null,
-        coverImage: {
-            url: getCoverImage(data, true)
+            url: getUrl(data, true),
+            canonicalUrl: getCanonicalUrl(data),
+            ampUrl: getAmpUrl(data),
+            previousUrl: getPaginatedUrl('prev', data, true),
+            nextUrl: getPaginatedUrl('next', data, true),
+            authorUrl: getAuthorUrl(data, true),
+            rssUrl: getRssUrl(data, true),
+            metaTitle: getTitle(data, root),
+            metaDescription: getDescription(data, root) || null,
+            coverImage: {
+                url: getCoverImage(data, true)
+            },
+            authorImage: {
+                url: getAuthorImage(data, true)
+            },
+            ogImage: {
+                url: getOgImage(data, true)
+            },
+            ogTitle: getTitle(data, root, {property: 'og'}),
+            ogDescription: getDescription(data, root, {property: 'og'}),
+            twitterImage: getTwitterImage(data, true),
+            twitterTitle: getTitle(data, root, {property: 'twitter'}),
+            twitterDescription: getDescription(data, root, {property: 'twitter'}),
+            authorFacebook: getAuthorFacebook(data),
+            creatorTwitter: getCreatorTwitter(data),
+            keywords: getKeywords(data),
+            publishedDate: getPublishedDate(data),
+            modifiedDate: getModifiedDate(data),
+            ogType: getOgType(data),
+            // @TODO: pass into each meta helper - wrap each helper
+            blog: {
+                title: settingsCache.get('title'),
+                description: settingsCache.get('description'),
+                url: utils.url.urlFor('home', true),
+                facebook: settingsCache.get('facebook'),
+                twitter: settingsCache.get('twitter'),
+                timezone: settingsCache.get('active_timezone'),
+                navigation: settingsCache.get('navigation'),
+                icon: settingsCache.get('icon'),
+                cover_image: settingsCache.get('cover_image'),
+                logo: getBlogLogo(),
+                amp: settingsCache.get('amp')
+            }
         },
-        authorImage: {
-            url: getAuthorImage(data, true)
-        },
-        ogImage: {
-            url: getOgImage(data, true)
-        },
-        ogTitle: getTitle(data, root, {property: 'og'}),
-        ogDescription: getDescription(data, root, {property: 'og'}),
-        twitterImage: getTwitterImage(data, true),
-        twitterTitle: getTitle(data, root, {property: 'twitter'}),
-        twitterDescription: getDescription(data, root, {property: 'twitter'}),
-        authorFacebook: getAuthorFacebook(data),
-        creatorTwitter: getCreatorTwitter(data),
-        keywords: getKeywords(data),
-        publishedDate: getPublishedDate(data),
-        modifiedDate: getModifiedDate(data),
-        ogType: getOgType(data),
-        // @TODO: pass into each meta helper - wrap each helper
-        blog: {
-            title: settingsCache.get('title'),
-            description: settingsCache.get('description'),
-            url: utils.url.urlFor('home', true),
-            facebook: settingsCache.get('facebook'),
-            twitter: settingsCache.get('twitter'),
-            timezone: settingsCache.get('active_timezone'),
-            navigation: settingsCache.get('navigation'),
-            icon: settingsCache.get('icon'),
-            cover_image: settingsCache.get('cover_image'),
-            logo: getBlogLogo(),
-            amp: settingsCache.get('amp')
-        }
-    },
         customExcerpt,
         metaDescription,
         fallbackExcerpt;
