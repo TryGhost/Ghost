@@ -19,14 +19,14 @@ function isWhiteListedFile(file) {
 
 function forwardToExpressStatic(req, res, next) {
     if (!themeUtils.getActive()) {
-        next();
-    } else {
-        var configMaxAge = config.get('caching:theme:maxAge');
-
-        express.static(themeUtils.getActive().path,
-            {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS}
-        )(req, res, next);
+        return next();
     }
+
+    var configMaxAge = config.get('caching:theme:maxAge');
+
+    express.static(themeUtils.getActive().path,
+        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS}
+    )(req, res, next);
 }
 
 function staticTheme() {

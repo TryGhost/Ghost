@@ -123,9 +123,9 @@ db = {
             return Promise.each(collections, function then(Collection) {
                 return Collection.invokeThen('destroy', queryOpts);
             }).return({db: []})
-            .catch(function (err) {
-                throw new errors.GhostError({err: err});
-            });
+                .catch(function (err) {
+                    throw new errors.GhostError({err: err});
+                });
         }
 
         tasks = [

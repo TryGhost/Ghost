@@ -11,8 +11,7 @@ JSONHandler = {
     contentTypes: ['application/octet-stream', 'application/json'],
     directories: [],
 
-    loadFile: function (files, startDir) {
-        /*jshint unused:false */
+    loadFile: function (files, startDir) { // eslint-disable-line no-unused-vars
         // @TODO: Handle multiple JSON files
         var filePath = files[0].path;
 
