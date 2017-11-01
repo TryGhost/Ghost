@@ -95,42 +95,31 @@ var overrides      = require('./core/server/overrides'),
                 }
             },
 
-            // ### grunt-contrib-jshint
+            // ### grunt-eslint
             // Linting rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
             // more information.
-            jshint: {
-                options: {
-                    jshintrc: '.jshintrc'
-                },
-
-                server: [
-                    '*.js',
-                    '!config.*.json', // note: i added this, do we want this linted?
-                    'core/*.js',
-                    'core/server/**/*.js',
-                    'core/test/**/*.js',
-                    '!core/test/coverage/**',
-                    '!core/server/public/**/*.js'
-                ]
-            },
-
-            jscs: {
-                options: {
-                    config: true
-                },
-
+            eslint: {
                 server: {
-                    files: {
-                        src: [
-                            '*.js',
-                            '!config.*.json', // note: i added this, do we want this linted?
-                            'core/*.js',
-                            'core/server/**/*.js',
-                            'core/test/**/*.js',
-                            '!core/test/coverage/**',
-                            '!core/server/public/**/*.js'
-                        ]
-                    }
+                    options: {
+                        config: '.eslintrc.json'
+                    },
+                    src: [
+                        '*.js',
+                        'core/*.js',
+                        'core/server/*.js',
+                        'core/server/**/*.js',
+                        '!core/server/public/**/*.js'
+                    ],
+                },
+                test: {
+                    options: {
+                        config: './core/test/.eslintrc.json'
+                    },
+                    src: [
+                        'core/test/*.js',
+                        'core/test/**/*.js',
+                        '!core/test/coverage/**'
+                    ]
                 }
             },
 
@@ -516,9 +505,9 @@ var overrides      = require('./core/server/overrides'),
 
         // ### Lint
         //
-        // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
-        grunt.registerTask('lint', 'Run the code style checks and linter for server',
-            ['jshint', 'jscs']
+        // `grunt lint` will run the linter
+        grunt.registerTask('lint', 'Run the code style checks for server & tests',
+            ['eslint']
         );
 
         // ### test-setup *(utility)(
