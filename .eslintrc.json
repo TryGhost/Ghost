@@ -45,7 +45,7 @@
         ],
         "consistent-return": "off",
         "consistent-this": "off",
-        "curly": "off",
+        "curly": "error",
         "default-case": "error",
         "dot-location": [
             "error",
@@ -223,13 +223,13 @@
         "prefer-spread": "off",
         "prefer-template": "off",
         "quote-props": "off",
-        "quotes": "off",
+        "quotes": ["error", "single"],
         "radix": "off",
         "require-await": "error",
         "require-jsdoc": "off",
         "rest-spread-spacing": "error",
-        "semi": "off",
-        "semi-spacing": "off",
+        "semi": ["error", "always"],
+        "semi-spacing": "error",
         "semi-style": [
             "error",
             "last"
