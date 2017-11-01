@@ -35,12 +35,7 @@
             }
         ],
         "callback-return": "error",
-        "camelcase": [
-            "error",
-            {
-                "properties": "never"
-            }
-        ],
+        "camelcase": "off",
         "capitalized-comments": "off",
         "class-methods-use-this": "off",
         "comma-dangle": "error",
@@ -62,7 +57,7 @@
             "error",
             "property"
         ],
-        "dot-notation": "error",
+        "dot-notation": "off",
         "eol-last": "error",
         "eqeqeq": "error",
         "for-direction": "error",
@@ -79,17 +74,11 @@
         "id-blacklist": "error",
         "id-length": "off",
         "id-match": "error",
-        "indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 1
-            }
-        ],
+        "indent": "off",
         "indent-legacy": "off",
         "init-declarations": "off",
         "jsx-quotes": "error",
-        "key-spacing": "error",
+        "key-spacing": "off",
         "keyword-spacing": "error",
         "line-comment-position": "off",
         "linebreak-style": [
@@ -123,6 +112,7 @@
         "no-caller": "error",
         "no-catch-shadow": "error",
         "no-confusing-arrow": "error",
+        "no-console": "off",
         "no-continue": "error",
         "no-div-regex": "off",
         "no-duplicate-imports": "error",
@@ -173,6 +163,7 @@
         "no-process-exit": "error",
         "no-proto": "error",
         "no-prototype-builtins": "off",
+        "no-regex-spaces": "off",
         "no-restricted-globals": "error",
         "no-restricted-imports": "error",
         "no-restricted-modules": "error",
@@ -197,6 +188,7 @@
         "no-underscore-dangle": "off",
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "off",
+        "no-unused-vars": "off",
         "no-use-before-define": "off",
         "no-useless-call": "error",
         "no-useless-computed-key": "error",
@@ -221,12 +213,7 @@
             "error",
             "never"
         ],
-        "object-property-newline": [
-            "error",
-            {
-                "allowMultiplePropertiesPerLine": true
-            }
-        ],
+        "object-property-newline": "off",
         "object-shorthand": "off",
         "one-var": "off",
         "one-var-declaration-per-line": "off",
@@ -250,7 +237,7 @@
             "error",
             "as-needed"
         ],
-        "quotes": ["error", "single"],
+        "quotes": "off",
         "radix": "off",
         "require-await": "error",
         "require-jsdoc": "off",
@@ -278,7 +265,7 @@
         ],
         "space-infix-ops": "error",
         "space-unary-ops": "error",
-        "spaced-comment": "error",
+        "spaced-comment": "off",
         "strict": "off",
         "switch-colon-spacing": "error",
         "symbol-description": "error",
