@@ -31,7 +31,6 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     onSaving: function onSaving(newTag, attr, options) {
-        /*jshint unused:false*/
         var self = this;
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);

@@ -11,7 +11,6 @@ var debug = require('ghost-ignition').debug('admin:controller'),
 // Path: /ghost/
 // Method: GET
 module.exports = function adminController(req, res) {
-    /*jslint unparam:true*/
     debug('index called');
 
     updateCheck().then(function then() {
@@ -27,7 +26,11 @@ module.exports = function adminController(req, res) {
             location: 'upgrade.new-version-available',
             dismissible: false,
             message: i18n.t('notices.controllers.newVersionAvailable',
-                            {version: updateVersion, link: '<a href="https://docs.ghost.org/docs/upgrade" target="_blank">Click here</a>'})};
+                {
+                    version: updateVersion,
+                    link: '<a href="https://docs.ghost.org/docs/upgrade" target="_blank">Click here</a>'
+                })
+        };
 
         return api.notifications.browse({context: {internal: true}}).then(function then(results) {
             if (!_.some(results.notifications, {message: notification.message})) {

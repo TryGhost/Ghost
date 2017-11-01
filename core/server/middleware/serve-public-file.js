@@ -44,7 +44,7 @@ function servePublicFile(file, type, maxAge) {
                 });
             }
         } else {
-            next();
+            return next();
         }
     };
 }

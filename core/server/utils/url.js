@@ -227,13 +227,13 @@ function urlFor(context, data, absolute) {
         knownObjects = ['post', 'tag', 'author', 'image', 'nav'], baseUrl,
         hostname,
 
-    // this will become really big
-    knownPaths = {
-        home: '/',
-        rss: '/rss/',
-        api: API_PATH,
-        sitemap_xsl: '/sitemap.xsl'
-    };
+        // this will become really big
+        knownPaths = {
+            home: '/',
+            rss: '/rss/',
+            api: API_PATH,
+            sitemap_xsl: '/sitemap.xsl'
+        };
 
     // Make data properly optional
     if (_.isBoolean(data)) {
@@ -278,7 +278,7 @@ function urlFor(context, data, absolute) {
 
             if (urlPath.indexOf(hostname) > -1
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
-                && urlPath.split(hostname)[1].substring(0,1) !== ':') {
+                && urlPath.split(hostname)[1].substring(0, 1) !== ':') {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
                 // do not do so if link is a subdomain of blog url

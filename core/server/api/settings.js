@@ -10,8 +10,9 @@ var Promise = require('bluebird'),
     settingsCache = require('../settings/cache'),
     docName = 'settings',
     settings,
+    settingsFilter,
     settingsResult,
-    canEditAllSettings,
+    canEditAllSettings;
 
 // ## Helpers
 

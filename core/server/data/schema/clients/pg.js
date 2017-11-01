@@ -1,4 +1,4 @@
-var _  = require('lodash'),
+var _ = require('lodash'),
     db = require('../../../data/db'),
 
     // private
@@ -39,7 +39,7 @@ getColumns = function getColumns(table, transaction) {
 };
 
 module.exports = {
-    getTables:  getTables,
+    getTables: getTables,
     getIndexes: getIndexes,
     getColumns: getColumns
 };

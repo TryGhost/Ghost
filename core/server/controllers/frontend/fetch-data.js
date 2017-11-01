@@ -86,7 +86,7 @@ function processQuery(query, slugParam) {
 function fetchData(channelOptions) {
     // @TODO improve this further
     var pageOptions = channelOptions.isRSS ?
-        {options: channelOptions.postOptions} : fetchPostsPerPage(channelOptions.postOptions),
+            {options: channelOptions.postOptions} : fetchPostsPerPage(channelOptions.postOptions),
         postQuery,
         props = {};
 

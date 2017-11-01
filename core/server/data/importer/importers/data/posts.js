@@ -132,8 +132,8 @@ class PostsImporter extends BaseImporter {
                         version: '0.3.1',
                         markups: [],
                         atoms: [],
-                        cards: [['card-markdown',{cardName: 'card-markdown',markdown: mobileDocContent}]],
-                        sections:[[10,0]]
+                        cards: [['card-markdown', {cardName: 'card-markdown', markdown: mobileDocContent}]],
+                        sections: [[10, 0]]
                     });
                 }
             }
