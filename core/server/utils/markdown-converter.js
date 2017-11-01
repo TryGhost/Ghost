@@ -22,7 +22,7 @@ var MarkdownIt = require('markdown-it'),
         // originally from https://github.com/leff/markdown-it-named-headers
         // moved here to avoid pulling in http://stringjs.com dependency
         md.renderer.rules.heading_open = function (tokens, idx, something, somethingelse, self) {
-            var used_headers = {};
+            var usedHeaders = {};
 
             tokens[idx].attrs = tokens[idx].attrs || [];
 
@@ -30,7 +30,7 @@ var MarkdownIt = require('markdown-it'),
                 return acc + t.content;
             }, '');
 
-            var slug = slugify(title, used_headers);
+            var slug = slugify(title, usedHeaders);
             tokens[idx].attrs.push(['id', slug]);
 
             if (originalHeadingOpen) {

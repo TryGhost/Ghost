@@ -29,7 +29,7 @@
         "block-spacing": "off",
         "brace-style": "off",
         "callback-return": "off",
-        "camelcase": "off",
+        "camelcase": ["error", {"properties": "never"}],
         "capitalized-comments": "off",
         "class-methods-use-this": "off",
         "comma-dangle": "off",
