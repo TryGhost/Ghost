@@ -1,3 +1,5 @@
+'use strict';
+
 var expressRouter = require('express').Router;
 
 class Router {

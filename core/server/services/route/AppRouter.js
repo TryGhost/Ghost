@@ -1,3 +1,4 @@
+'use strict';
 /**
  * An instance of router that is provided to Apps, to mount routes into.
  */
