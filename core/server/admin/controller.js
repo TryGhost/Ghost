@@ -11,7 +11,6 @@ var debug = require('ghost-ignition').debug('admin:controller'),
 // Path: /ghost/
 // Method: GET
 module.exports = function adminController(req, res) {
-    /*jslint unparam:true*/
     debug('index called');
 
     updateCheck().then(function then() {

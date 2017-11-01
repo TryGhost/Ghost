@@ -78,8 +78,7 @@ module.exports = function foreach(items, options) {
 
     function iterateCollection(context) {
         // Context is all posts on the blog
-        var count = 1,
-            current = 1;
+        var current = 1;
 
         // For each post, if it is a post number that fits within the from and to
         // send the key to execIteration to set to be added to the page
@@ -92,7 +91,6 @@ module.exports = function foreach(items, options) {
             if (current <= to) {
                 execIteration(key, current - 1, current === to);
             }
-            count += 1;
             current += 1;
         });
     }

@@ -8,8 +8,6 @@ var MarkdownIt = require('markdown-it'),
     .use(require('markdown-it-lazy-headers'))
     .use(require('markdown-it-mark'))
     .use(function namedHeaders(md) {
-        // jscs:disable
-
         // match legacy Showdown IDs
         var slugify = function (inputString, usedHeaders) {
             var slug = inputString.replace(/[^\w]/g, '').toLowerCase();
@@ -41,7 +39,6 @@ var MarkdownIt = require('markdown-it'),
                 return self.renderToken.apply(self, arguments);
             }
         };
-        // jscs:enable
     });
 
 // configure linkify-it

@@ -1,5 +1,3 @@
-// jscs:disable requireMultipleVarDecl
-
 'use strict';
 
 // # Local File System Image Storage module

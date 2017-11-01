@@ -6,9 +6,9 @@
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
 
-// jshint unused: false
-var overrides      = require('./core/server/overrides'),
-    config         = require('./core/server/config'),
+require('./core/server/overrides');
+
+var config         = require('./core/server/config'),
     utils          = require('./core/server/utils'),
     _              = require('lodash'),
     chalk          = require('chalk'),
@@ -392,7 +392,7 @@ var overrides      = require('./core/server/overrides'),
         grunt.registerTask('help',
             'Outputs help information if you type `grunt help` instead of `grunt --help`',
             function () {
-                console.log('Type `grunt --help` to get the details of available grunt tasks.');
+                grunt.log.writeln('Type `grunt --help` to get the details of available grunt tasks.');
             });
 
         // ### Documentation
@@ -619,11 +619,11 @@ var overrides      = require('./core/server/overrides'),
         grunt.registerTask('master-warn',
             'Outputs a warning to runners of grunt prod, that master shouldn\'t be used for live blogs',
             function () {
-                console.log(chalk.red(
+                grunt.log.writeln(chalk.red(
                     'Use the ' + chalk.bold('stable') + ' branch for live blogs. '
                     + chalk.bold.underline('Never') + ' master!'
                 ));
-                console.log('>', 'Always two there are, no more, no less. A master and a ' + chalk.bold('stable') + '.');
+                grunt.log.writeln('>', 'Always two there are, no more, no less. A master and a ' + chalk.bold('stable') + '.');
             });
 
         // ## Building assets

@@ -9,7 +9,6 @@ function GhostError(options) {
     errors.IgnitionError.call(this, options);
 }
 
-// jscs:disable
 var ghostErrors = {
     DataExportError: function DataExportError(options) {
         GhostError.call(this, _.merge({

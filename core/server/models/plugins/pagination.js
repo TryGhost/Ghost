@@ -1,7 +1,8 @@
 // # Pagination
 //
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
-var _          = require('lodash'),
+var _ = require('lodash'),
+    debug = require('ghost-ignition').debug('models:plugin:pagination'),
     defaults,
     paginationUtils,
     pagination;
@@ -126,7 +127,7 @@ pagination = function pagination(bookshelf) {
     // Extend updates the first object passed to it, no need for an assignment
     _.extend(bookshelf.Model.prototype, {
         /**
-         * ### Fetch page
+         * ### Fetch page
          * A `fetch` extension to get a paginated set of items from a collection
          *
          * We trigger two queries:
@@ -148,10 +149,7 @@ pagination = function pagination(bookshelf) {
                     bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
                 );
 
-            // the debug flag doesn't work for the raw knex count query!
-            if (this.debug) {
-                console.log('COUNT', countPromise.toQuery());
-            }
+            debug('COUNT', countPromise.toQuery());
 
             // #### Pre count clauses
             // Add any where or join clauses which need to be included with the aggregate query

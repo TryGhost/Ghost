@@ -10,7 +10,6 @@ var proxy = require('./proxy'),
     pagination;
 
 pagination = function (options) {
-    /*jshint unused:false*/
     if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
         throw new errors.IncorrectUsageError({
             message: i18n.t('warnings.helpers.pagination.invalidData')

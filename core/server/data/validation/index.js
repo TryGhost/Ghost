@@ -201,15 +201,21 @@ validateSchema = function validateSchema(tableName, model) {
             }
 
             // check validations objects
-            if (schema[tableName][columnKey].hasOwnProperty('validations')) {
+            if (schema[tableName][columnKey].hasOwnProperty('validations')) {
                 validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations));
             }
 
             // check type
-            if (schema[tableName][columnKey].hasOwnProperty('type')) {
+            if (schema[tableName][columnKey].hasOwnProperty('type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
-                    message = i18n.t('notices.data.validation.index.valueIsNotInteger', {tableName: tableName, columnKey: columnKey});
-                    validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
+                    message = i18n.t('notices.data.validation.index.valueIsNotInteger', {
+                        tableName: tableName,
+                        columnKey: columnKey
+                    });
+                    validationErrors.push(new errors.ValidationError({
+                        message: message,
+                        context: tableName + '.' + columnKey
+                    }));
                 }
             }
         }
