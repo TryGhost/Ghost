@@ -29,7 +29,7 @@ generateProxyFunctions = function (name, permissions, isInternal) {
             var permValue = getPermissionToMethod(perm, method);
 
             if (!permValue) {
-                throw new Error(i18n.t('errors.apps.accessResourceWithoutPermission.error', {name:name, perm: perm, method: method}));
+                throw new Error(i18n.t('errors.apps.accessResourceWithoutPermission.error', {name: name, perm: perm, method: method}));
             }
 
             return wrappedFunc.apply(context, args);
@@ -41,8 +41,8 @@ generateProxyFunctions = function (name, permissions, isInternal) {
         },
         passThruAppContextToApi = function (perm, apiMethods) {
             var appContext = {
-                    app: name
-                };
+                app: name
+            };
 
             return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
                 memo[methodName] = function () {

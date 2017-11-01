@@ -67,12 +67,12 @@ paginationUtils = {
     formatResponse: function formatResponse(totalItems, options) {
         var calcPages = Math.ceil(totalItems / options.limit) || 0,
             pagination = {
-                page:  options.page || defaults.page,
+                page: options.page || defaults.page,
                 limit: options.limit,
                 pages: calcPages === 0 ? 1 : calcPages,
                 total: totalItems,
-                next:  null,
-                prev:  null
+                next: null,
+                prev: null
             };
 
         if (pagination.pages > 1) {

@@ -59,8 +59,10 @@ exports.publishPost = function publishPost(object, options) {
                             return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.publishInThePast')}));
                         }
 
-                        return postsAPI.edit({
-                            posts: [{status: 'published'}]},
+                        return postsAPI.edit(
+                            {
+                                posts: [{status: 'published'}]
+                            },
                             _.pick(cleanOptions, ['context', 'id', 'transacting', 'forUpdate', 'opts'])
                         );
                     });

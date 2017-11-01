@@ -46,7 +46,6 @@ function characterOccurance(stringToTest) {
     _.forIn(chars, function (charCount) {
         if (charCount >= allowedOccurancy) {
             valid = false;
-            return;
         }
     });
 
@@ -98,15 +97,15 @@ validatePassword = function validatePassword(password, email, blogTitle) {
         disallowedPasswords = ['password', 'ghost', 'passw0rd'],
         blogUrl = utils.urlFor('home', true),
         badPasswords = [
-        '1234567890',
-        'qwertyuiop',
-        'qwertzuiop',
-        'asdfghjkl;',
-        'abcdefghij',
-        '0987654321',
-        '1q2w3e4r5t',
-        '12345asdfg'
-    ];
+            '1234567890',
+            'qwertyuiop',
+            'qwertzuiop',
+            'asdfghjkl;',
+            'abcdefghij',
+            '0987654321',
+            '1q2w3e4r5t',
+            '12345asdfg'
+        ];
 
     blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
     blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
@@ -195,8 +194,15 @@ validateSchema = function validateSchema(tableName, model) {
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
-                                     {tableName: tableName, columnKey: columnKey, maxlength: schema[tableName][columnKey].maxlength});
-                    validationErrors.push(new errors.ValidationError({message: message, context: tableName + '.' + columnKey}));
+                        {
+                            tableName: tableName,
+                            columnKey: columnKey,
+                            maxlength: schema[tableName][columnKey].maxlength
+                        });
+                    validationErrors.push(new errors.ValidationError({
+                        message: message,
+                        context: tableName + '.' + columnKey
+                    }));
                 }
             }
 

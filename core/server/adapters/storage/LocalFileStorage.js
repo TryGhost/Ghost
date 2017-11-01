@@ -16,7 +16,6 @@ var serveStatic = require('express').static,
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
-
     constructor() {
         super();
 

@@ -68,8 +68,8 @@ var config         = require('./core/server/config'),
                     }
                 },
                 express: {
-                    files:  ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json', '!config.testing.json'],
-                    tasks:  ['express:dev'],
+                    files: ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json', '!config.testing.json'],
+                    tasks: ['express:dev'],
                     options: {
                         nospawn: true,
                         livereload: true
@@ -109,7 +109,7 @@ var config         = require('./core/server/config'),
                         'core/server/*.js',
                         'core/server/**/*.js',
                         '!core/server/public/**/*.js'
-                    ],
+                    ]
                 },
                 test: {
                     options: {

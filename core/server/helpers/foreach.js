@@ -71,9 +71,9 @@ module.exports = function foreach(items, options) {
         }
 
         output = output + fn(items[field], {
-                data: data,
-                blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
-            });
+            data: data,
+            blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
+        });
     }
 
     function iterateCollection(context) {

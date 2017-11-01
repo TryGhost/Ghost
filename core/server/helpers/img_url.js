@@ -31,9 +31,8 @@ module.exports = function imgUrl(attr, options) {
 
     if (attr) {
         return url.urlFor('image', {image: attr}, absolute);
-    } else {
-        // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
-        // in this case we don't show a warning
-        return;
     }
+
+    // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
+    // in this case we don't show a warning
 };

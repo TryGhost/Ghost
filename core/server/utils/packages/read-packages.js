@@ -1,7 +1,6 @@
 /**
  * Dependencies
  */
-
 var parsePackageJson = require('./parse-package-json'),
     errors = require('../../errors'),
     Promise = require('bluebird'),

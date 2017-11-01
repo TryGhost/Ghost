@@ -57,13 +57,13 @@ var ghostErrors = {
     DisabledFeatureError: function DisabledFeatureError(options) {
         GhostError.call(this, _.merge({
             statusCode: 409,
-            errorType: 'DisabledFeatureError',
+            errorType: 'DisabledFeatureError'
         }, options));
     },
     UpdateCollisionError: function UpdateCollisionError(options) {
         GhostError.call(this, _.merge({
             statusCode: 409,
-            errorType: 'UpdateCollisionError',
+            errorType: 'UpdateCollisionError'
         }, options));
     }
 };
