@@ -100,13 +100,12 @@ describe('Frontend Routing', function () {
                 var date = moment().format('YYYY/MM/DD');
 
                 request.get('/2016/04/01/welcome/')
-                    .expect('Content-Type', /html/)
-                    .end(function (err, res) {
+                    .expect(301)
+                    .end(function (err) {
                         if (err)  {
-                            done(err);
+                            return done(err);
                         }
 
-                        res.status.should.eql(301);
                         request.get('/' + date + '/welcome/')
                             .expect(200)
                             .expect('Content-Type', /html/)
