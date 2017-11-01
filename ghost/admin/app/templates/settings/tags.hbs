@@ -10,8 +10,8 @@
         <div class="tag-list">
             <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
                 {{#vertical-collection sortedTags
+                    estimateHeight=16
                     minHeight=67
-                    staticHeight=true
                     bufferSize=5
                     containerSelector=".tag-list"
                     as |tag|

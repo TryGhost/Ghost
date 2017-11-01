@@ -26,7 +26,7 @@
     "node": ">= 4"
   },
   "devDependencies": {
-    "@html-next/vertical-collection": "1.0.0-beta.4",
+    "@html-next/vertical-collection": "1.0.0-beta.8",
     "autoprefixer": "7.1.6",
     "blueimp-md5": "2.10.0",
     "bower": "1.8.2",
