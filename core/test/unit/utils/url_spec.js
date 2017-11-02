@@ -543,7 +543,7 @@ describe('Url', function () {
             localSettingsCache.active_timezone = 'America/Los_Angeles';
             localSettingsCache.permalinks = '/:year/:id/:author/';
 
-            var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
                 postLink = '/2015/3/joe-blog/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
@@ -554,8 +554,42 @@ describe('Url', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
             localSettingsCache.permalinks = '/:year/:id/:author/';
 
-            var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
                 postLink = '/2016/3/joe-blog/';
+
+            testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+            utils.url.urlPathForPost(testData).should.equal(postLink);
+        });
+
+        it('permalink is /:primary_tag/:slug/ and there is a primary_tag', function () {
+            localSettingsCache.active_timezone = 'Europe/Berlin';
+            localSettingsCache.permalinks = '/:primary_tag/:slug/';
+
+            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {primary_tag: {slug: 'bitcoin'}}),
+                postLink = '/bitcoin/short-and-sweet/';
+
+            testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+            utils.url.urlPathForPost(testData).should.equal(postLink);
+        });
+
+        it('permalink is /:primary_tag/:slug/ and there is NO primary_tag', function () {
+            localSettingsCache.active_timezone = 'Europe/Berlin';
+            localSettingsCache.permalinks = '/:primary_tag/:slug/';
+
+            var testData = testUtils.DataGenerator.Content.posts[2],
+                postLink = '/all/short-and-sweet/';
+
+            testData.published_at = new Date('2016-01-01T00:00:00.000Z');
+            utils.url.urlPathForPost(testData).should.equal(postLink);
+        });
+
+        it('shows "undefined" for unknown route segments', function () {
+            localSettingsCache.active_timezone = 'Europe/Berlin';
+            localSettingsCache.permalinks = '/:tag/:slug/';
+
+            var testData = testUtils.DataGenerator.Content.posts[2],
+                // @TODO: is this the correct behaviour?
+                postLink = '/undefined/short-and-sweet/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
             utils.url.urlPathForPost(testData).should.equal(postLink);
