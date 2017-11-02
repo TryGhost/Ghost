@@ -434,6 +434,18 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('http://my-ghost-blog.com/blog/ghost/api/v0.1/');
         });
 
+        it('api: relative path is correct', function () {
+            utils.url.urlFor('api').should.eql('/ghost/api/v0.1/');
+        });
+
+        it('api: relative path with subdir is correct', function () {
+            configUtils.set({
+                url: 'http://my-ghost-blog.com/blog'
+            });
+
+            utils.url.urlFor('api').should.eql('/blog/ghost/api/v0.1/');
+        });
+
         it('api: should return http if config.url is http', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
@@ -450,7 +462,7 @@ describe('Url', function () {
             utils.url.urlFor('api', true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('[api url] blog url is http: cors should return no protocol', function () {
+        it('api: with cors, blog url is http: should return no protocol', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com'
             });
@@ -458,7 +470,7 @@ describe('Url', function () {
             utils.url.urlFor('api', {cors: true}, true).should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
         });
 
-        it('[api url] admin url is http: cors should return no protocol', function () {
+        it('api: with cors, admin url is http: cors should return no protocol', function () {
             configUtils.set({
                 url: 'http://my-ghost-blog.com',
                 admin: {
@@ -469,7 +481,7 @@ describe('Url', function () {
             utils.url.urlFor('api', {cors: true}, true).should.eql('//admin.ghost.example/ghost/api/v0.1/');
         });
 
-        it('[api url] admin url is https: should return with protocol', function () {
+        it('api: with cors, admin url is https: should return with protocol', function () {
             configUtils.set({
                 url: 'https://my-ghost-blog.com',
                 admin: {
@@ -480,7 +492,7 @@ describe('Url', function () {
             utils.url.urlFor('api', {cors: true}, true).should.eql('https://admin.ghost.example/ghost/api/v0.1/');
         });
 
-        it('[api url] blog url is https: should return with protocol', function () {
+        it('api: with cors, blog url is https: should return with protocol', function () {
             configUtils.set({
                 url: 'https://my-ghost-blog.com'
             });
