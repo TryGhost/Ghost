@@ -323,7 +323,7 @@ function urlFor(context, data, absolute) {
         }
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
-        urlPath = knownPaths[context] || '/';
+        urlPath = knownPaths[context];
     }
 
     // This url already has a protocol so is likely an external url to be returned
