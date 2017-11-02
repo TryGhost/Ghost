@@ -62,7 +62,7 @@
     "intl-messageformat": "1.3.0",
     "jsonpath": "1.0.0",
     "knex": "0.12.9",
-    "knex-migrator": "https://github.com/kirrg001/knex-migrator/tarball/b105da0d2cac7015ee0a0f45476873b7aac9ffcb",
+    "knex-migrator": "3.0.0",
     "lodash": "4.17.4",
     "markdown-it": "8.4.0",
     "markdown-it-footnote": "3.0.1",

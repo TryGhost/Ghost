@@ -3479,9 +3479,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-"knex-migrator@https://github.com/kirrg001/knex-migrator/tarball/b105da0d2cac7015ee0a0f45476873b7aac9ffcb":
-  version "2.1.9"
-  resolved "https://github.com/kirrg001/knex-migrator/tarball/b105da0d2cac7015ee0a0f45476873b7aac9ffcb#4196678813fa631095de4bad8040b69e80cd316a"
+knex-migrator@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.0.0.tgz#814db9d040fa68cd52f89668371ea9ff679544dc"
   dependencies:
     bluebird "^3.4.6"
     commander "2.9.0"
