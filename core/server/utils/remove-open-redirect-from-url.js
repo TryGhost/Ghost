@@ -19,7 +19,8 @@ function removeOpenRedirectFromUrl(urlString) {
     var parsedUrl = url.parse(urlString);
 
     return (
-        (parsedUrl.protocol ? parsedUrl.protocol + '//' : '') + // http://
+        // http://
+        (parsedUrl.protocol ? parsedUrl.protocol + '//' : '') +
         (parsedUrl.auth || '') +
         (parsedUrl.host || '') +
         removeDoubleCharacters('/', parsedUrl.path) +

@@ -137,8 +137,7 @@ function forkGhost(newConfig) {
                                 resolve(child);
                             }
                         });
-                        socket.on('error', function (err) {
-                            /*jshint unused:false*/
+                        socket.on('error', function () {
                             pingTries = pingTries + 1;
 
                             // continue checking

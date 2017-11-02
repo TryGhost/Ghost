@@ -54,7 +54,7 @@ describe('Import', function () {
         it('removes duplicate posts', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003',{lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -97,7 +97,7 @@ describe('Import', function () {
         it('cares about invalid dates', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003',{lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {

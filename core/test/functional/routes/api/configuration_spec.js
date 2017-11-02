@@ -38,6 +38,10 @@ describe('Configuration API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(function (err, res) {
+                    if (err)  {
+                        done(err);
+                    }
+
                     should.exist(res.body.configuration);
                     done();
                 });

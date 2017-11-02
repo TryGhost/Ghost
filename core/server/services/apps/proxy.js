@@ -3,6 +3,7 @@ var _ = require('lodash'),
     helpers = require('../../helpers/register'),
     filters = require('../../filters'),
     i18n = require('../../i18n'),
+    router = require('../route').appRouter,
     generateProxyFunctions;
 
 generateProxyFunctions = function (name, permissions, isInternal) {
@@ -29,7 +30,7 @@ generateProxyFunctions = function (name, permissions, isInternal) {
             var permValue = getPermissionToMethod(perm, method);
 
             if (!permValue) {
-                throw new Error(i18n.t('errors.apps.accessResourceWithoutPermission.error', {name:name, perm: perm, method: method}));
+                throw new Error(i18n.t('errors.apps.accessResourceWithoutPermission.error', {name: name, perm: perm, method: method}));
             }
 
             return wrappedFunc.apply(context, args);
@@ -41,8 +42,8 @@ generateProxyFunctions = function (name, permissions, isInternal) {
         },
         passThruAppContextToApi = function (perm, apiMethods) {
             var appContext = {
-                    app: name
-                };
+                app: name
+            };
 
             return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
                 memo[methodName] = function () {
@@ -69,6 +70,12 @@ generateProxyFunctions = function (name, permissions, isInternal) {
             register: checkRegisterPermissions('helpers', helpers.registerThemeHelper.bind(helpers)),
             registerAsync: checkRegisterPermissions('helpers', helpers.registerAsyncThemeHelper.bind(helpers))
         },
+        // Expose the route service...
+        routeService: {
+            // This allows for mounting an entirely new Router at a path...
+            registerRouter: checkRegisterPermissions('routes', router.registerRouter.bind(router))
+        },
+        // Mini proxy to the API - needs review
         api: {
             posts: passThruAppContextToApi('posts',
                 _.pick(api.posts, 'browse', 'read', 'edit', 'add', 'destroy')

@@ -8,7 +8,6 @@ function getExcerpt(html, truncateOptions) {
     // Strip other html
     excerpt = excerpt.replace(/<\/?[^>]+>/gi, '');
     excerpt = excerpt.replace(/(\r\n|\n|\r)+/gm, ' ');
-    /*jslint regexp:false */
 
     if (!truncateOptions.words && !truncateOptions.characters) {
         truncateOptions.words = 50;

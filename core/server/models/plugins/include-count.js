@@ -1,4 +1,6 @@
-var _ = require('lodash');
+var _debug = require('ghost-ignition').debug._base,
+    debug = _debug('ghost-query'),
+    _ = require('lodash');
 
 module.exports = function (Bookshelf) {
     var modelProto = Bookshelf.Model.prototype,
@@ -60,8 +62,10 @@ module.exports = function (Bookshelf) {
         fetch: function () {
             this.addCounts.apply(this, arguments);
 
-            if (this.debug) {
-                console.log('QUERY', this.query().toQuery());
+            // Useful when debugging no. database queries, GQL, etc
+            // To output this, use DEBUG=ghost:*,ghost-query
+            if (_debug.enabled('ghost-query')) {
+                debug('QUERY', this.query().toQuery());
             }
 
             // Call parent fetch
@@ -70,8 +74,10 @@ module.exports = function (Bookshelf) {
         fetchAll: function () {
             this.addCounts.apply(this, arguments);
 
-            if (this.debug) {
-                console.log('QUERY', this.query().toQuery());
+            // Useful when debugging no. database queries, GQL, etc
+            // To output this, use DEBUG=ghost:*,ghost-query
+            if (_debug.enabled('ghost-query')) {
+                debug('QUERY', this.query().toQuery());
             }
 
             // Call parent fetchAll

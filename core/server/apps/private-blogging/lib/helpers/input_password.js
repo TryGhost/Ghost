@@ -2,16 +2,14 @@
 // Usage: `{{input_password}}`
 //
 // Password input used on private.hbs for password-protected blogs
-//
-// We use the name input_password to match the helper for consistency:
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
 // (less) dirty requires
 var proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
     templates = proxy.templates;
 
-module.exports = function input_password(options) {
+// We use the name input_password to match the helper for consistency:
+module.exports = function input_password(options) { // eslint-disable-line camelcase
     options = options || {};
     options.hash = options.hash || {};
 

@@ -1,4 +1,4 @@
-var _  = require('lodash'),
+var _ = require('lodash'),
     db = require('../../../data/db'),
 
     // private
@@ -18,7 +18,9 @@ doRawAndFlatten = function doRaw(query, transaction, flattenFn) {
 
 getTables = function getTables(transaction) {
     return doRawAndFlatten('show tables', transaction, function (response) {
-        return _.map(response[0], function (entry) { return _.values(entry); });
+        return _.map(response[0], function (entry) {
+            return _.values(entry);
+        });
     });
 };
 
@@ -50,7 +52,7 @@ checkPostTable = function checkPostTable(transaction) {
 
 module.exports = {
     checkPostTable: checkPostTable,
-    getTables:  getTables,
+    getTables: getTables,
     getIndexes: getIndexes,
     getColumns: getColumns
 };
