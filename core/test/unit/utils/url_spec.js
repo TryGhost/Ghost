@@ -652,6 +652,14 @@ describe.only('Url', function () {
         });
     });
 
+    describe('isSSL', function () {
+       it('detects https protocol correctly', function () {
+           utils.url.isSSL('https://my.blog.com').should.be.true();
+           utils.url.isSSL('http://my.blog.com').should.be.false();
+           utils.url.isSSL('http://my.https.com').should.be.false();
+       });
+    });
+
     describe('redirects', function () {
         it('performs 301 redirect correctly', function (done) {
             var res = {};
