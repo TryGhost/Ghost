@@ -273,6 +273,21 @@ export default Mixin.create({
         return yield this.get('model').save();
     }).group('saveTasks'),
 
+    // used in the PSM so that saves are sequential and don't trigger collision
+    // detection errors
+    savePost: task(function* () {
+        try {
+            return yield this.get('model').save();
+        } catch (error) {
+            if (error) {
+                let status = this.get('model.status');
+                this.showErrorAlert(status, status, error);
+            }
+
+            throw error;
+        }
+    }).group('saveTasks'),
+
     /**
      * By default, a post will not change its publish state.
      * Only with a user-set value (via setSaveType action)

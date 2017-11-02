@@ -178,7 +178,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -193,7 +193,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -221,7 +221,7 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogDate', dateString);
-                return post.save();
+                return this.get('savePost').perform();
             }
         },
 
@@ -234,7 +234,7 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogTime', time);
-                return post.save();
+                return this.get('savePost').perform();
             }
         },
 
@@ -249,7 +249,7 @@ export default Component.extend(SettingsMenuMixin, {
             model.set('customExcerpt', excerpt);
 
             return model.validate({property: 'customExcerpt'}).then(() => {
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -264,7 +264,7 @@ export default Component.extend(SettingsMenuMixin, {
             model.set('codeinjectionHead', code);
 
             return model.validate({property: 'codeinjectionHead'}).then(() => {
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -279,7 +279,7 @@ export default Component.extend(SettingsMenuMixin, {
             model.set('codeinjectionFoot', code);
 
             return model.validate({property: 'codeinjectionFoot'}).then(() => {
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -302,7 +302,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -325,7 +325,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -348,7 +348,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -371,7 +371,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -394,7 +394,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -417,7 +417,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return model.save();
+                return this.get('savePost').perform();
             });
         },
 
@@ -428,7 +428,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -441,7 +441,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -454,7 +454,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -467,7 +467,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -480,7 +480,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -493,7 +493,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('model').save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.get('model').rollbackAttributes();
             });
@@ -515,7 +515,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            model.save().catch((error) => {
+            this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.set('selectedAuthor', author);
                 model.rollbackAttributes();
