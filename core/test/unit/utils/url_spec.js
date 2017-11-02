@@ -11,7 +11,7 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Url', function () {
+describe.only('Url', function () {
     before(function () {
         configUtils.restore();
     });
@@ -157,6 +157,18 @@ describe('Url', function () {
             configUtils.set({url: 'http://my-ghost-blog.com/blog'});
             utils.url.urlFor(testContext).should.equal('/blog/rss/');
             utils.url.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
+        });
+
+        it('should handle weird cases by always returning /', function () {
+            utils.url.urlFor('').should.equal('/');
+            utils.url.urlFor('post', {}).should.equal('/');
+            utils.url.urlFor('post', {post: {}}).should.equal('/');
+            utils.url.urlFor(null).should.equal('/');
+            utils.url.urlFor(undefined).should.equal('/');
+            utils.url.urlFor({}).should.equal('/');
+            utils.url.urlFor({relativeUrl: ''}).should.equal('/');
+            utils.url.urlFor({relativeUrl: null}).should.equal('/');
+            utils.url.urlFor({relativeUrl: undefined}).should.equal('/');
         });
 
         it('should return url for a random path when asked for', function () {
