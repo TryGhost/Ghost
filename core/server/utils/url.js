@@ -1,5 +1,5 @@
-// Contains all path information to be used throughout
-// the codebase.
+// Contains all path information to be used throughout the codebase.
+// Assumes that config.url is set, and is valid
 
 var moment            = require('moment-timezone'),
     _                 = require('lodash'),
@@ -41,16 +41,13 @@ function getBlogUrl(secure) {
  * @return {string} URL a subdirectory if configured.
  */
 function getSubdir() {
-    var localPath, subdir;
-
     // Parse local path location
-    if (config.get('url')) {
-        localPath = url.parse(config.get('url')).path;
+    var localPath = url.parse(config.get('url')).path,
+        subdir;
 
-        // Remove trailing slash
-        if (localPath !== '/') {
-            localPath = localPath.replace(/\/$/, '');
-        }
+    // Remove trailing slash
+    if (localPath !== '/') {
+        localPath = localPath.replace(/\/$/, '');
     }
 
     subdir = localPath === '/' ? '' : localPath;
