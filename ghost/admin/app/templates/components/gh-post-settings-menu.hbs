@@ -142,6 +142,7 @@
                             id="static-page"
                             class="gh-input post-setting-static-page"
                             update=(action (mut model.page))
+                            data-test-checkbox="static-page"
                         }}
                         <span class="input-toggle-component"></span>
                         <p>Turn this post into a page</p>
@@ -153,6 +154,7 @@
                             id="featured"
                             class="gh-input post-setting-featured"
                             update=(action (mut model.featured))
+                            data-test-checkbox="featured"
                         }}
                         <span class="input-toggle-component"></span>
                         <p>Feature this post</p>
