@@ -291,12 +291,6 @@ function urlFor(context, data, absolute) {
     } else if (context === 'home' && absolute) {
         urlPath = getBlogUrl(secure);
 
-        // CASE: with or without protocol?
-        // @TODO: rename cors
-        if (data && data.cors) {
-            urlPath = urlPath.replace(/^.*?:\/\//g, '//');
-        }
-
         // CASE: there are cases where urlFor('home') needs to be returned without trailing
         // slash e. g. the `{{@blog.url}}` helper. See https://github.com/TryGhost/Ghost/issues/8569
         if (data && data.trailingSlash === false) {
