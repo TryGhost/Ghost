@@ -211,8 +211,8 @@ removeFixturesForRelation = function removeFixturesForRelation(relationFixture, 
         });
 
         return sequence(ops);
-    }).then(function (result) {
-        // models were detached, can't count
+    }).then(function () {
+        // @TODO: models were detached, can't count
         return {expected: max, done: max};
     });
 };

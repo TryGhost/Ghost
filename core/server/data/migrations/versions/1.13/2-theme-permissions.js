@@ -54,7 +54,7 @@ module.exports.down = function removeRedirectsPermissions(options) {
         .then(function (result) {
             _private.printResult(result, 'Removing permissions_roles fixtures for ' + resource + 's');
 
-            return utils.removeFixturesForModel(modelToRemove, localOptions)
+            return utils.removeFixturesForModel(modelToRemove, localOptions);
         })
         .then(function (result) {
             _private.printResult(result, 'Removing permissions fixtures for ' + resource + 's');
