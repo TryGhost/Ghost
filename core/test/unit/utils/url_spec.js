@@ -11,7 +11,7 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-describe.only('Url', function () {
+describe('Url', function () {
     before(function () {
         configUtils.restore();
     });
