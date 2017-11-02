@@ -275,10 +275,13 @@ describe('Url', function () {
 
             configUtils.set({url: 'http://my-ghost-blog.com'});
 
+            testData = {nav: {url: 'http://my-ghost-blog.com/'}};
+            utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/');
+
             testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
             utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
 
-            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
+            testData = {nav: {url: 'http://my-ghost-blog.com//short-and-sweet/'}, secure: true};
             utils.url.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
 
             testData = {nav: {url: 'http://my-ghost-blog.com:3000/'}};
@@ -305,13 +308,27 @@ describe('Url', function () {
             testData = {nav: {url: 'http://some-external-page.com/stuff-my-ghost-blog.com-around'}};
             utils.url.urlFor(testContext, testData).should.equal('http://some-external-page.com/stuff-my-ghost-blog.com-around');
 
+            testData = {nav: {url: 'mailto:marshmallow@my-ghost-blog.com'}};
+            utils.url.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
+
             configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            testData = {nav: {url: 'http://my-ghost-blog.com/blog/'}};
+            utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/');
+
             testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
             utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
 
-            configUtils.set({url: 'http://my-ghost-blog.com/'});
-            testData = {nav: {url: 'mailto:marshmallow@my-ghost-blog.com'}};
-            utils.url.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
+            testData = {nav: {url: 'http://my-ghost-blog.com:3000/blog/'}};
+            utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/blog/');
+
+            testData = {nav: {url: 'http://my-ghost-blog.com:3000/blog/short-and-sweet/'}};
+            utils.url.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com:3000/blog/short-and-sweet/');
+
+            testData = {nav: {url: 'http://sub.my-ghost-blog.com/blog/'}};
+            utils.url.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/blog/');
+
+            testData = {nav: {url: '//sub.my-ghost-blog.com/blog/'}};
+            utils.url.urlFor(testContext, testData).should.equal('//sub.my-ghost-blog.com/blog/');
         });
 
         it('sitemap: should return other known paths when requested', function () {

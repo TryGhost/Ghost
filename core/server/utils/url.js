@@ -271,20 +271,17 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             secure = data.nav.secure || secure;
             baseUrl = getBlogUrl(secure);
-            hostname = baseUrl.split('//')[1] + getSubdir();
+            hostname = baseUrl.split('//')[1];
 
+            // If the hostname is present in the url
             if (urlPath.indexOf(hostname) > -1
+                // do no not apply, if there is a subdomain, or a mailto link
                 && !urlPath.split(hostname)[0].match(/\.|mailto:/)
+                // do not apply, if there is a port after the hostname
                 && urlPath.split(hostname)[1].substring(0, 1) !== ':') {
-                // make link relative to account for possible
-                // mismatch in http/https etc, force absolute
-                // do not do so if link is a subdomain of blog url
-                // or if hostname is inside of the slug
-                // or if slug is a port
+                // make link relative to account for possible mismatch in http/https etc, force absolute
                 urlPath = urlPath.split(hostname)[1];
-                if (urlPath.substring(0, 1) !== '/') {
-                    urlPath = '/' + urlPath;
-                }
+                urlPath = urlJoin('/', urlPath);
                 absolute = true;
             }
         }
