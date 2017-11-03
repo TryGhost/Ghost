@@ -8,13 +8,13 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {inject as service} from '@ember/service';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
-
 import {isArray as isEmberArray} from '@ember/array';
 
 import {run} from '@ember/runloop';
+
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
     layout,
@@ -149,8 +149,8 @@ export default Component.extend({
             message = 'The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.';
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The image you uploaded was larger than the maximum file size your server allows.';
-        } else if (error.errors && !isBlank(error.errors[0].message)) {
-            message = error.errors[0].message;
+        } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
+            message = error.payload.errors[0].message;
         } else {
             message = 'Something went wrong :(';
         }

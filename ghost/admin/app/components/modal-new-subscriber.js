@@ -13,7 +13,7 @@ export default ModalComponent.extend({
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
             if (error && isInvalidError(error)) {
-                let [firstError] = error.errors;
+                let [firstError] = error.payload.errors;
                 let {message} = firstError;
 
                 if (message && message.match(/email/i)) {

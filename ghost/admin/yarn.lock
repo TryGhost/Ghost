@@ -2979,11 +2979,11 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-ember-ajax@2.5.6:
-  version "2.5.6"
-  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-2.5.6.tgz#a75f743ccf1b95e979a5cf96013b3dba8fa625e4"
+ember-ajax@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-3.0.0.tgz#8f21e9da0c1d433cf879aa855fce464d517e9ab5"
   dependencies:
-    ember-cli-babel "^5.1.5"
+    ember-cli-babel "^6.0.0"
 
 ember-assign-helper@0.1.2:
   version "0.1.2"

@@ -18,8 +18,8 @@ function isJSONContentType(header) {
 
 /* Version mismatch error */
 
-export function VersionMismatchError(errors) {
-    AjaxError.call(this, errors, 'API server is running a newer version of Ghost, please upgrade.');
+export function VersionMismatchError(payload) {
+    AjaxError.call(this, payload, 'API server is running a newer version of Ghost, please upgrade.');
 }
 
 VersionMismatchError.prototype = Object.create(AjaxError.prototype);
@@ -34,8 +34,8 @@ export function isVersionMismatchError(errorOrStatus, payload) {
 
 /* Request entity too large error */
 
-export function ServerUnreachableError(errors) {
-    AjaxError.call(this, errors, 'Server was unreachable');
+export function ServerUnreachableError(payload) {
+    AjaxError.call(this, payload, 'Server was unreachable');
 }
 
 ServerUnreachableError.prototype = Object.create(AjaxError.prototype);
@@ -48,8 +48,8 @@ export function isServerUnreachableError(error) {
     }
 }
 
-export function RequestEntityTooLargeError(errors) {
-    AjaxError.call(this, errors, 'Request is larger than the maximum file size the server allows');
+export function RequestEntityTooLargeError(payload) {
+    AjaxError.call(this, payload, 'Request is larger than the maximum file size the server allows');
 }
 
 RequestEntityTooLargeError.prototype = Object.create(AjaxError.prototype);
@@ -64,8 +64,8 @@ export function isRequestEntityTooLargeError(errorOrStatus) {
 
 /* Unsupported media type error */
 
-export function UnsupportedMediaTypeError(errors) {
-    AjaxError.call(this, errors, 'Request contains an unknown or unsupported file type.');
+export function UnsupportedMediaTypeError(payload) {
+    AjaxError.call(this, payload, 'Request contains an unknown or unsupported file type.');
 }
 
 UnsupportedMediaTypeError.prototype = Object.create(AjaxError.prototype);
@@ -80,8 +80,8 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
 
 /* Maintenance error */
 
-export function MaintenanceError(errors) {
-    AjaxError.call(this, errors, 'Ghost is currently undergoing maintenance, please wait a moment then retry.');
+export function MaintenanceError(payload) {
+    AjaxError.call(this, payload, 'Ghost is currently undergoing maintenance, please wait a moment then retry.');
 }
 
 MaintenanceError.prototype = Object.create(AjaxError.prototype);
@@ -96,8 +96,8 @@ export function isMaintenanceError(errorOrStatus) {
 
 /* Theme validation error */
 
-export function ThemeValidationError(errors) {
-    AjaxError.call(this, errors, 'Theme is not compatible or contains errors.');
+export function ThemeValidationError(payload) {
+    AjaxError.call(this, payload, 'Theme is not compatible or contains errors.');
 }
 
 ThemeValidationError.prototype = Object.create(AjaxError.prototype);
@@ -171,17 +171,17 @@ let ajaxService = AjaxService.extend({
 
     handleResponse(status, headers, payload) {
         if (this.isVersionMismatchError(status, headers, payload)) {
-            return new VersionMismatchError(payload.errors);
+            return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {
-            return new ServerUnreachableError(payload.errors);
+            return new ServerUnreachableError(payload);
         } else if (this.isRequestEntityTooLargeError(status, headers, payload)) {
-            return new RequestEntityTooLargeError(payload.errors);
+            return new RequestEntityTooLargeError(payload);
         } else if (this.isUnsupportedMediaTypeError(status, headers, payload)) {
-            return new UnsupportedMediaTypeError(payload.errors);
+            return new UnsupportedMediaTypeError(payload);
         } else if (this.isMaintenanceError(status, headers, payload)) {
-            return new MaintenanceError(payload.errors);
+            return new MaintenanceError(payload);
         } else if (this.isThemeValidationError(status, headers, payload)) {
-            return new ThemeValidationError(payload.errors);
+            return new ThemeValidationError(payload);
         }
 
         // TODO: we may want to check that we are hitting our own API before

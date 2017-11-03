@@ -229,7 +229,7 @@ export default Component.extend({
 
         } catch (error) {
             // grab custom error message if present
-            let message = error.errors && error.errors[0].message;
+            let message = error.payload.errors && error.payload.errors[0].message;
 
             // fall back to EmberData/ember-ajax default message for error type
             if (!message) {
@@ -238,7 +238,7 @@ export default Component.extend({
 
             let result = {
                 fileName: file.name,
-                message: error.errors[0].message
+                message: error.payload.errors[0].message
             };
 
             // TODO: check for or expose known error types?

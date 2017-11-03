@@ -65,7 +65,7 @@ export default ModalComponent.extend({
             }
 
             if (file.name.match(/^casper\.zip$/i)) {
-                return {errors: [{message: 'Sorry, the default Casper theme cannot be overwritten.<br>Please rename your zip file and try again.'}]};
+                return {payload: {errors: [{message: 'Sorry, the default Casper theme cannot be overwritten.<br>Please rename your zip file and try again.'}]}};
             }
 
             if (!this._allowOverwrite && currentThemeNames.includes(themeName)) {
@@ -120,7 +120,7 @@ export default ModalComponent.extend({
 
         uploadFailed(error) {
             if (isThemeValidationError(error)) {
-                let errors = error.errors[0].errorDetails;
+                let errors = error.payload.errors[0].errorDetails;
                 let fatalErrors = [];
                 let normalErrors = [];
 

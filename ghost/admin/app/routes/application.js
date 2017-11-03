@@ -8,8 +8,16 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {htmlSafe} from '@ember/string';
+import {
+    isAjaxError,
+    isNotFoundError,
+    isUnauthorizedError
+} from 'ember-ajax/errors';
 import {isArray as isEmberArray} from '@ember/array';
-import {isUnauthorizedError} from 'ember-ajax/errors';
+import {
+    isMaintenanceError,
+    isVersionMismatchError
+} from 'ghost-admin/services/ajax';
 import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -210,46 +218,45 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 return false;
             }
 
-            if (error && isEmberArray(error.errors)) {
-                switch (error.errors[0].errorType) {
-                case 'NotFoundError': {
-                    if (transition) {
-                        transition.abort();
-                    }
-
-                    let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
-                    let router = this.get('router');
-                    let params = [];
-
-                    for (let key of Object.keys(routeInfo.params)) {
-                        params.push(routeInfo.params[key]);
-                    }
-
-                    return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+            if (isNotFoundError(error)) {
+                if (transition) {
+                    transition.abort();
                 }
-                case 'VersionMismatchError': {
-                    if (transition) {
-                        transition.abort();
-                    }
 
-                    this.get('upgradeStatus').requireUpgrade();
+                let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
+                let router = this.get('router');
+                let params = [];
+
+                for (let key of Object.keys(routeInfo.params)) {
+                    params.push(routeInfo.params[key]);
+                }
+
+                return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+            }
+
+            if (isVersionMismatchError(error)) {
+                if (transition) {
+                    transition.abort();
+                }
+
+                this.get('upgradeStatus').requireUpgrade();
+                return false;
+            }
+
+            if (isMaintenanceError(error)) {
+                if (transition) {
+                    transition.abort();
+                }
+
+                this.get('upgradeStatus').maintenanceAlert();
+                return false;
+            }
+
+            if (isAjaxError(error) || error && error.payload && isEmberArray(error.payload.errors)) {
+                this.get('notifications').showAPIError(error);
+                // don't show the 500 page if we weren't navigating
+                if (!transition) {
                     return false;
-                }
-                case 'Maintenance': {
-                    if (transition) {
-                        transition.abort();
-                    }
-
-                    this.get('upgradeStatus').maintenanceAlert();
-                    return false;
-                }
-                default: {
-                    this.get('notifications').showAPIError(error);
-                    // don't show the 500 page if we weren't navigating
-                    if (!transition) {
-                        return false;
-                    }
-                }
                 }
             }
 

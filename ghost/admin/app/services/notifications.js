@@ -94,8 +94,8 @@ export default Service.extend({
         }
 
         // loop over ember-ajax errors object
-        if (resp && isEmberArray(resp.errors)) {
-            return resp.errors.forEach((error) => {
+        if (resp && resp.payload && isEmberArray(resp.payload.errors)) {
+            return resp.payload.errors.forEach((error) => {
                 this._showAPIError(error, options);
             });
         }

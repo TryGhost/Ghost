@@ -40,25 +40,22 @@ export default Controller.extend(ValidationEngine, {
             return authResult;
 
         } catch (error) {
-            if (error && error.errors) {
-                // we don't get back an ember-data/ember-ajax error object
-                // back so we need to pass in a null status in order to
-                // test against the payload
-                if (isVersionMismatchError(error)) {
-                    return this.get('notifications').showAPIError(error);
-                }
+            if (isVersionMismatchError(error)) {
+                return this.get('notifications').showAPIError(error);
+            }
 
-                error.errors.forEach((err) => {
+            if (error && error.payload && error.payload.errors) {
+                error.payload.errors.forEach((err) => {
                     err.message = err.message.htmlSafe();
                 });
 
-                this.set('flowErrors', error.errors[0].message.string);
+                this.set('flowErrors', error.payload.errors[0].message.string);
 
-                if (error.errors[0].message.string.match(/user with that email/)) {
+                if (error.payload.errors[0].message.string.match(/user with that email/)) {
                     this.get('model.errors').add('identification', '');
                 }
 
-                if (error.errors[0].message.string.match(/password is incorrect/)) {
+                if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
                     this.get('model.errors').add('password', '');
                 }
             } else {
@@ -118,8 +115,8 @@ export default Controller.extend(ValidationEngine, {
                 return notifications.showAPIError(error);
             }
 
-            if (error && error.errors && isEmberArray(error.errors)) {
-                let [{message}] = error.errors;
+            if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
+                let [{message}] = error.payload.errors;
 
                 this.set('flowErrors', message);
 

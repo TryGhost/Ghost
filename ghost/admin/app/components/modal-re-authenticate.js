@@ -49,8 +49,8 @@ export default ModalComponent.extend(ValidationEngine, {
                 this.send('closeModal');
                 return true;
             }).catch((error) => {
-                if (error && error.errors) {
-                    error.errors.forEach((err) => {
+                if (error && error.payload && error.payload.errors) {
+                    error.payload.errors.forEach((err) => {
                         if (isVersionMismatchError(err)) {
                             return this.get('notifications').showAPIError(error);
                         }
@@ -59,7 +59,7 @@ export default ModalComponent.extend(ValidationEngine, {
 
                     this.get('errors').add('password', 'Incorrect password');
                     this.get('hasValidated').pushObject('password');
-                    this.set('authenticationError', error.errors[0].message);
+                    this.set('authenticationError', error.payload.errors[0].message);
                 }
             });
         }, () => {

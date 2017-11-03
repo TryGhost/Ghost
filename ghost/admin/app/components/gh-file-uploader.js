@@ -178,8 +178,8 @@ export default Component.extend({
             message = 'The file type you uploaded is not supported.';
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The file you uploaded was larger than the maximum file size your server allows.';
-        } else if (error.errors && !isBlank(error.errors[0].message)) {
-            message = htmlSafe(error.errors[0].message);
+        } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
+            message = htmlSafe(error.payload.errors[0].message);
         } else {
             message = 'Something went wrong :(';
         }
