@@ -17,10 +17,6 @@ class Channel {
         // Define context as name, plus any additional contexts, and don't allow duplicates
         this.context = _.union([this.name], this._origOptions.context);
 
-        // Configuration options
-        this.paged = !!this._origOptions.paged;
-        this.rss = !!this._origOptions.rss;
-
         // DATA options
         // Options for fetching related posts
         this.postOptions = _.defaults({}, defaultPostOptions, this._origOptions.postOptions);
@@ -44,11 +40,11 @@ class Channel {
     }
 
     get isPaged() {
-        return this.paged;
+        return _.has(this._origOptions, 'paged') ? this._origOptions.paged : true;
     }
 
     get hasRSS() {
-        return this.rss;
+        return _.has(this._origOptions, 'rss') ? this._origOptions.rss : true;
     }
 
     translateRoute(route) {

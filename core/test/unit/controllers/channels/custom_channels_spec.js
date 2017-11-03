@@ -5,6 +5,8 @@ var should = require('should'),  // jshint ignore:line
     // Stuff we are testing
     channelLoader = require('../../../../server/controllers/channels/loader'),
     channels = require('../../../../server/controllers/channels'),
+    channelUtils = require('../../../utils/channelUtils'),
+    Channel = channelUtils.Channel,
 
     sandbox = sinon.sandbox.create();
 
@@ -15,6 +17,7 @@ should.Assertion.add('ExpressRouter', function (options) {
     options = options || {};
 
     this.params = {operator: 'to be a valid Express Router'};
+
     this.obj.should.be.a.Function();
     this.obj.name.should.eql('router');
     this.obj.should.have.property('mergeParams', true);
@@ -28,6 +31,7 @@ should.Assertion.add('ExpressRouter', function (options) {
     }
 
     this.obj.stack.should.be.an.Array();
+
     if (options.stackLength) {
         this.obj.stack.should.have.lengthOf(options.stackLength);
     }
@@ -130,17 +134,18 @@ should.Assertion.add('RSSRouter', function () {
  * E.g. setupRSS.calledOnce, rather than router stack!
  */
 describe('Custom Channels', function () {
+    var channelLoaderStub;
+
     afterEach(function () {
         sandbox.restore();
     });
 
+    beforeEach(function () {
+        channelLoaderStub = sandbox.stub(channelLoader, 'list');
+    });
+
     it('allows basic custom config', function () {
-        sandbox.stub(channelLoader, 'list').returns({
-            home: {
-                name: 'home',
-                route: '/home/'
-            }
-        });
+        channelLoaderStub.returns([new Channel('home', {route: '/home/'})]);
 
         var channelsRouter = channels.router(),
             firstChannel,
@@ -182,19 +187,16 @@ describe('Custom Channels', function () {
     });
 
     it('allow multiple channels to be defined', function () {
-        sandbox.stub(channelLoader, 'list').returns({
-            home: {
-                name: 'home',
-                route: '/home/'
-            },
-            featured: {
-                name: 'featured',
-                route: '/featured/',
-                postOptions: {
-                    filter: 'featured:true'
-                }
-            }
-        });
+        channelLoaderStub.returns(
+            [
+                new Channel('home', {route: '/home/'}),
+                new Channel('featured', {
+                    route: '/featured/',
+                    postOptions: {
+                        filter: 'featured:true'
+                    }
+                })
+            ]);
 
         var channelsRouter = channels.router(),
             firstChannel,
@@ -247,13 +249,10 @@ describe('Custom Channels', function () {
     });
 
     it('allows rss to be disabled', function () {
-        sandbox.stub(channelLoader, 'list').returns({
-            home: {
-                name: 'home',
-                route: '/home/',
-                rss: false
-            }
-        });
+        channelLoaderStub.returns([new Channel('home', {
+            route: '/home/',
+            rss: false
+        })]);
 
         var channelsRouter = channels.router(),
             firstChannel,
@@ -295,13 +294,10 @@ describe('Custom Channels', function () {
     });
 
     it('allows pagination to be disabled', function () {
-        sandbox.stub(channelLoader, 'list').returns({
-            home: {
-                name: 'home',
-                route: '/home/',
-                paged: false
-            }
-        });
+        channelLoaderStub.returns([new Channel('home', {
+            route: '/home/',
+            paged: false
+        })]);
 
         var channelsRouter = channels.router(),
             firstChannel,
