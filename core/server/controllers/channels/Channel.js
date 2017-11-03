@@ -8,11 +8,11 @@ class Channel {
         this.name = name;
 
         // Store the originally passed in options
-        this._origOptions = _.cloneDeep(options);
+        this._origOptions = _.cloneDeep(options) || {};
 
         // Setup our route
         // @TODO should a channel have a route as part of the object? Or should this live elsewhere?
-        this.route = this.translateRoute(this._origOptions.route);
+        this.route = this._origOptions.route ? this.translateRoute(this._origOptions.route) : '/';
 
         // Define context as name, plus any additional contexts, and don't allow duplicates
         this.context = _.union([this.name], this._origOptions.context);
@@ -41,6 +41,14 @@ class Channel {
         if (this._origOptions.editRedirect) {
             this.editRedirect = this._origOptions.editRedirect;
         }
+    }
+
+    get isPaged() {
+        return this.paged;
+    }
+
+    get hasRSS() {
+        return this.rss;
     }
 
     translateRoute(route) {
