@@ -44,16 +44,16 @@ export default Controller.extend(ValidationEngine, {
             return authResult;
 
         } catch (error) {
-            if (error && error.errors) {
+            if (error && error.payload && error.payload.errors) {
                 if (isVersionMismatchError(error)) {
                     return this.get('notifications').showAPIError(error);
                 }
 
-                error.errors.forEach((err) => {
+                error.payload.errors.forEach((err) => {
                     err.message = err.message.htmlSafe();
                 });
 
-                this.set('flowErrors', error.errors[0].message.string);
+                this.set('flowErrors', error.payload.errors[0].message.string);
             } else {
                 // Connection errors don't return proper status message, only req.body
                 this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
@@ -142,15 +142,15 @@ export default Controller.extend(ValidationEngine, {
 
     _handleSaveError(resp) {
         if (isInvalidError(resp)) {
-            this.set('flowErrors', resp.errors[0].message);
+            this.set('flowErrors', resp.payload.errors[0].message);
         } else {
             this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
         }
     },
 
     _handleAuthenticationError(error) {
-        if (error && error.errors) {
-            this.set('flowErrors', error.errors[0].message);
+        if (error && error.payload && error.payload.errors) {
+            this.set('flowErrors', error.payload.errors[0].message);
         } else {
             // Connection errors don't return proper status message, only req.body
             this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});

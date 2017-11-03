@@ -150,7 +150,7 @@ describe('Unit: Service: notifications', function () {
 
     it('#showAPIError handles single json response error', function () {
         let notifications = this.subject();
-        let error = new AjaxError([{message: 'Single error'}]);
+        let error = new AjaxError({errors: [{message: 'Single error'}]});
 
         run(() => {
             notifications.showAPIError(error);
@@ -165,10 +165,10 @@ describe('Unit: Service: notifications', function () {
 
     it('#showAPIError handles multiple json response errors', function () {
         let notifications = this.subject();
-        let error = new AjaxError([
+        let error = new AjaxError({errors: [
             {title: 'First error', message: 'First error message'},
             {title: 'Second error', message: 'Second error message'}
-        ]);
+        ]});
 
         run(() => {
             notifications.showAPIError(error);
@@ -234,7 +234,7 @@ describe('Unit: Service: notifications', function () {
         expect(get(notification, 'message')).to.equal('Request was rejected because it was invalid');
         expect(get(notification, 'status')).to.equal('alert');
         expect(get(notification, 'type')).to.equal('error');
-        expect(get(notification, 'key')).to.equal('api-error.ajax-error');
+        expect(get(notification, 'key')).to.equal('api-error');
     });
 
     it('#showAPIError parses custom ember-ajax errors correctly', function () {
@@ -249,7 +249,7 @@ describe('Unit: Service: notifications', function () {
         expect(get(notification, 'message')).to.equal('Server was unreachable');
         expect(get(notification, 'status')).to.equal('alert');
         expect(get(notification, 'type')).to.equal('error');
-        expect(get(notification, 'key')).to.equal('api-error.ajax-error');
+        expect(get(notification, 'key')).to.equal('api-error');
     });
 
     it('#displayDelayed moves delayed notifications into content', function () {

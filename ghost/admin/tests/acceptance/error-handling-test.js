@@ -136,7 +136,7 @@ describe('Acceptance: Error Handling', function() {
             andThen(() => {
                 expect(find('.gh-alert').length).to.equal(1);
                 expect(find('.gh-alert').text()).to.not.match(/html>/);
-                expect(find('.gh-alert').text()).to.match(/There was a problem on the server/);
+                expect(find('.gh-alert').text()).to.match(/Request was rejected due to server error/);
             });
         });
 
@@ -150,7 +150,7 @@ describe('Acceptance: Error Handling', function() {
             andThen(() => {
                 expect(find('.gh-alert').length).to.equal(1);
                 expect(find('.gh-alert').text()).to.not.match(/html>/);
-                expect(find('.gh-alert').text()).to.match(/There was a problem on the server/);
+                expect(find('.gh-alert').text()).to.match(/Request was rejected due to server error/);
             });
         });
     });

@@ -38,7 +38,7 @@ export default Controller.extend(ValidationEngine, {
             return authResult;
 
         } catch (error) {
-            if (error && error.errors) {
+            if (error && error.payload && error.payload.errors) {
                 // we don't get back an ember-data/ember-ajax error object
                 // back so we need to pass in a null status in order to
                 // test against the payload
@@ -47,17 +47,17 @@ export default Controller.extend(ValidationEngine, {
                     return this.get('notifications').showAPIError(versionMismatchError);
                 }
 
-                error.errors.forEach((err) => {
+                error.payload.errors.forEach((err) => {
                     err.message = err.message.htmlSafe();
                 });
 
-                this.set('flowErrors', error.errors[0].message.string);
+                this.set('flowErrors', error.payload.errors[0].message.string);
 
-                if (error.errors[0].message.string.match(/user with that email/)) {
+                if (error.payload.errors[0].message.string.match(/user with that email/)) {
                     this.get('model.errors').add('identification', '');
                 }
 
-                if (error.errors[0].message.string.match(/password is incorrect/)) {
+                if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
                     this.get('model.errors').add('password', '');
                 }
             } else {
@@ -92,11 +92,11 @@ export default Controller.extend(ValidationEngine, {
                 this.set('flowErrors', 'Please fill out the form to complete your sign-up');
             }
 
-            if (error && error.errors && isEmberArray(error.errors)) {
+            if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
                 if (isVersionMismatchError(error)) {
                     notifications.showAPIError(error);
                 }
-                this.set('flowErrors', error.errors[0].message);
+                this.set('flowErrors', error.payload.errors[0].message);
             } else {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }

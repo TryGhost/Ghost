@@ -209,7 +209,7 @@ export default Controller.extend({
             if (invite.success) {
                 successCount++;
             } else if (isInvalidError(invite.error)) {
-                message = `${invite.email} was invalid: ${invite.error.errors[0].message}`;
+                message = `${invite.email} was invalid: ${invite.error.payload.errors[0].message}`;
                 notifications.showAlert(message, {type: 'error', delayed: true, key: `signup.send-invitations.${invite.email}`});
             } else {
                 erroredEmails.push(invite.email);

@@ -162,8 +162,8 @@ export default Component.extend({
             message = `The image type you uploaded is not supported. Please use ${validExtensions}`;
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The image you uploaded was larger than the maximum file size your server allows.';
-        } else if (error.errors && !isBlank(error.errors[0].message)) {
-            message = error.errors[0].message;
+        } else if (error.payload.errors && !isBlank(error.payload.errors[0].message)) {
+            message = error.payload.errors[0].message;
         } else {
             message = 'Something went wrong :(';
         }

@@ -196,7 +196,7 @@ export default Controller.extend({
                 }
             }).catch((error) => {
                 if (isThemeValidationError(error)) {
-                    let errors = error.errors[0].errorDetails;
+                    let errors = error.payload.errors[0].errorDetails;
                     let fatalErrors = [];
                     let normalErrors = [];
 

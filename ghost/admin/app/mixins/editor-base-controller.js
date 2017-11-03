@@ -515,8 +515,8 @@ export default Mixin.create({
             // This is here because validation errors are returned as an array
             // TODO: remove this once validations are fixed
             errorMessage = error[0];
-        } else if (error && error.errors && error.errors[0].message) {
-            errorMessage = error.errors[0].message;
+        } else if (error && error.payload && error.payload.errors && error.payload.errors[0].message) {
+            errorMessage = error.payload.errors[0].message;
         } else {
             errorMessage = 'Unknown Error';
         }

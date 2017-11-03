@@ -41,7 +41,7 @@
     "coveralls": "3.0.0",
     "csscomb": "4.2.0",
     "cssnano": "4.0.0-rc.2",
-    "ember-ajax": "2.5.6",
+    "ember-ajax": "3.0.0",
     "ember-assign-helper": "0.1.2",
     "ember-browserify": "1.2.0",
     "ember-cli": "2.16.2",
