@@ -5,25 +5,6 @@ var should = require('should'),  // jshint ignore:line
     channelLoader = rewire('../../../../server/controllers/channels/loader'),
     Channel = channelUtils.Channel;
 
-
-should.Assertion.add('Channel', function (options) {
-    options = options || {};
-
-    this.params = {operator: 'to be a valid Channel'};
-    this.obj.should.be.an.Object();
-    this.obj.should.be.an.instanceof(Channel);
-
-    this.obj.should.have.properties('name', 'route', 'context', 'postOptions', 'isPaged', 'hasRSS', '_origOptions');
-
-    this.obj.name.should.be.a.String();
-    this.obj.route.should.be.a.String();
-    this.obj.context.should.be.an.Array();
-    this.obj.context.length.should.be.aboveOrEqual(1);
-    this.obj.postOptions.should.be.an.Object();
-    this.obj.isPaged.should.be.a.Boolean();
-    this.obj.hasRSS.should.be.a.Boolean();
-});
-
 describe('Channel Config', function () {
     var channelReset;
 
