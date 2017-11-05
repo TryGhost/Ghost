@@ -8,6 +8,7 @@ var path                = require('path'),
     templates           = require('../../../controllers/frontend/templates'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context'),
+    renderer            = require('../../../controllers/frontend/renderer'),
 
     templateName = 'amp',
     defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs');
@@ -26,10 +27,11 @@ function _renderer(req, res, next) {
     setResponseContext(req, res, data);
 
     // Template
+    // @TODO make a function that can do the different template calls
     res.template = templates.pickTemplate(templateName, defaultTemplate);
 
     // Render Call
-    return res.render(res.template, data);
+    return renderer(req, res, data);
 }
 
 // This here is a controller.
