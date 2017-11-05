@@ -5,15 +5,21 @@ var path                = require('path'),
 
     // Dirty requires
     errors              = require('../../../errors'),
-    templates           = require('../../../controllers/frontend/templates'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context'),
     renderer            = require('../../../controllers/frontend/renderer'),
 
-    templateName = 'amp',
-    defaultTemplate = path.resolve(__dirname, 'views', templateName + '.hbs');
+    templateName = 'amp';
 
 function _renderer(req, res, next) {
+    // Note: this is super similar to the config middleware used in channels
+    // @TODO refactor into to something explicit & DRY this up
+    res._route = {
+        type: 'custom',
+        templateName: templateName,
+        defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
+    };
+
     // Renderer begin
     // Format data
     var data = req.body || {};
@@ -25,10 +31,6 @@ function _renderer(req, res, next) {
 
     // Context
     setResponseContext(req, res, data);
-
-    // Template
-    // @TODO make a function that can do the different template calls
-    res.template = templates.pickTemplate(templateName, defaultTemplate);
 
     // Render Call
     return renderer(req, res, data);
@@ -51,7 +53,8 @@ function getPostData(req, res, next) {
 }
 
 // AMP frontend route
-ampRouter.route('/')
+ampRouter
+    .route('/')
     .get(
         getPostData,
         _renderer

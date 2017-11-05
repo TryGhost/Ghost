@@ -1,8 +1,7 @@
 var debug = require('ghost-ignition').debug('channels:render'),
     formatResponse = require('./format-response'),
     renderer = require('./renderer'),
-    setResponseContext = require('./context'),
-    templates = require('./templates');
+    setResponseContext = require('./context');
 
 module.exports = function renderChannel(req, res) {
     debug('renderChannel called');
@@ -14,10 +13,6 @@ module.exports = function renderChannel(req, res) {
 
         // Context
         setResponseContext(req, res);
-
-        // Template
-        // @TODO make a function that can do the different template calls
-        res.template = templates.channel(res.locals.channel);
 
         // Render Call
         return renderer(req, res, data);

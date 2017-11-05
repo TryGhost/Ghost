@@ -95,13 +95,13 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
     // We don't do context for errors?!
 
     // Template
-    res.template = templates.error(err.statusCode);
+    templates.setTemplate(req, res);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
     // @TODO: split the error handler for assets, admin & theme to refactor this away
     if (_.isEmpty(req.app.engines)) {
-        res.template = 'error';
+        res._template = 'error';
         req.app.engine('hbs', _private.createHbsEngine());
         req.app.set('view engine', 'hbs');
         req.app.set('views', config.get('paths').defaultViews);
@@ -109,7 +109,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
 
     // @TODO use renderer here?!
     // Render Call - featuring an error handler for what happens if rendering fails
-    res.render(res.template, data, function renderResponse(err, html) {
+    res.render(res._template, data, function renderResponse(err, html) {
         if (!err) {
             return res.send(html);
         }
