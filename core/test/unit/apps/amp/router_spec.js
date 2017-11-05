@@ -75,7 +75,7 @@ describe('AMP Controller', function () {
             done();
         };
 
-        ampController.controller(req, res, failTest(done));
+        ampController.renderer(req, res, failTest(done));
     });
 
     it('should render theme amp page when theme has amp template', function (done) {
@@ -87,13 +87,13 @@ describe('AMP Controller', function () {
             done();
         };
 
-        ampController.controller(req, res, failTest(done));
+        ampController.renderer(req, res, failTest(done));
     });
 
     it('throws 404 when req.body has no post', function (done) {
         req.body = {};
 
-        ampController.controller(req, res, function (err) {
+        ampController.renderer(req, res, function (err) {
             should.exist(err);
             should.exist(err.message);
             should.exist(err.statusCode);
@@ -112,7 +112,7 @@ describe('AMP Controller', function () {
             }
         };
 
-        ampController.controller(req, res, function (err) {
+        ampController.renderer(req, res, function (err) {
             should.exist(err);
             should.exist(err.message);
             should.exist(err.statusCode);

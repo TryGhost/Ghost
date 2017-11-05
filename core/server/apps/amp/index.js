@@ -7,14 +7,16 @@ var router           = require('./lib/router'),
 
 module.exports = {
     activate: function activate(ghost) {
-        registerHelpers(ghost);
+        var ampRoute = '*/' + config.get('routeKeywords').amp + '/';
 
-        ghost.routeService.registerRouter('*/' + config.get('routeKeywords').amp + '/', function settingsEnabledRouter(req, res, next) {
+        ghost.routeService.registerRouter(ampRoute, function settingsEnabledRouter(req, res, next) {
             if (settingsCache.get('amp') === true) {
                 return router.apply(this, arguments);
             }
 
             next();
         });
+
+        registerHelpers(ghost);
     }
 };

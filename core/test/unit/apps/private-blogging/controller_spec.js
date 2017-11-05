@@ -4,7 +4,7 @@ var should = require('should'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/themes'),
-    privateController = require('../../../../server/apps/private-blogging/lib/router').controller,
+    privateController = require('../../../../server/apps/private-blogging/lib/router'),
 
     sandbox = sinon.sandbox.create();
 
@@ -60,7 +60,7 @@ describe('Private Controller', function () {
             done();
         };
 
-        privateController(req, res, failTest(done));
+        privateController.renderer(req, res, failTest(done));
     });
 
     it('Should render theme password page when it exists', function (done) {
@@ -72,7 +72,7 @@ describe('Private Controller', function () {
             done();
         };
 
-        privateController(req, res, failTest(done));
+        privateController.renderer(req, res, failTest(done));
     });
 
     it('Should render with error when error is passed in', function (done) {
@@ -84,6 +84,6 @@ describe('Private Controller', function () {
             done();
         };
 
-        privateController(req, res, failTest(done));
+        privateController.renderer(req, res, failTest(done));
     });
 });

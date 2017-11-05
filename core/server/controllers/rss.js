@@ -46,6 +46,9 @@ function getData(channelOpts) {
     });
 }
 
+// This here is a controller.
+// The "route" is handled in controllers/channels/router.js
+// We can only generate RSS for channels, so that sorta makes sense, but the location is rubbish
 // @TODO finish refactoring this - it's now a controller
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
@@ -67,11 +70,17 @@ generate = function generate(req, res, next) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 
+        // Renderer begin
+        // Format data
         data.version = res.locals.safeVersion;
         data.siteUrl = utils.url.urlFor('home', {secure: req.secure}, true);
         data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
+        // No context, no template
+        // @TODO: should we have context? The context file expects it!
+
+        // Render call - to a different renderer
         // @TODO this is effectively a renderer
         return rssCache.getXML(baseUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');

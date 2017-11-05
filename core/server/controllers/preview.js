@@ -5,6 +5,8 @@ var api = require('../api'),
     renderPost = require('./frontend/render-post'),
     setRequestIsSecure = require('./frontend/secure');
 
+// This here is a controller.
+// The "route" is handled in site/routes.js
 module.exports = function previewController(req, res, next) {
     var params = {
         uuid: req.params.uuid,
@@ -13,6 +15,7 @@ module.exports = function previewController(req, res, next) {
     };
 
     api.posts.read(params).then(function then(result) {
+        // Format data 1
         var post = result.posts[0];
 
         if (!post) {
