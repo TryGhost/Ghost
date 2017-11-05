@@ -5,9 +5,12 @@ var utils = require('../utils'),
     renderPost = require('./frontend/render-post'),
     setRequestIsSecure = require('./frontend/secure');
 
+// This here is a controller.
+// The "route" is handled in site/routes.js
 module.exports = function singleController(req, res, next) {
     // Query database to find post
     return postLookup(req.path).then(function then(lookup) {
+        // Format data 1
         var post = lookup ? lookup.post : false;
 
         if (!post) {

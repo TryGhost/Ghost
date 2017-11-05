@@ -9,22 +9,23 @@ module.exports = function siteRouter() {
     var router = express.Router(),
         routeKeywords = config.get('routeKeywords');
 
-    // ### Admin routes
+    // Admin redirects - register redirect as route
+    // TODO: this should be middleware!
     router.get(/^\/(logout|signout)\/$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '#/signout/'); });
     router.get(/^\/signup\/$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '#/signup/'); });
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
     router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '/'); });
 
-    // Post Live Preview
+    // Preview - register controller as route
     router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), controllers.preview);
 
-    // Channels
+    // Channels - register sub-router
     router.use(channels.router());
 
-    // setup routes for apps
+    // Apps - register sub-router
     router.use(apps.router);
 
-    // Default
+    // Default - register single controller as route
     router.get('*', controllers.single);
 
     return router;
