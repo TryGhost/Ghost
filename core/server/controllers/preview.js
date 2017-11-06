@@ -5,7 +5,7 @@ var api = require('../api'),
     renderPost = require('./frontend/render-post'),
     setRequestIsSecure = require('./frontend/secure');
 
-module.exports = function preview(req, res, next) {
+module.exports = function previewController(req, res, next) {
     var params = {
         uuid: req.params.uuid,
         status: 'all',
