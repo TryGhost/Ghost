@@ -28,6 +28,7 @@ coreHelpers.plural = require('./plural');
 coreHelpers.post_class = require('./post_class');
 coreHelpers.prev_post = require('./prev_next');
 coreHelpers.next_post = require('./prev_next');
+coreHelpers.reading_time = require('./reading_time');
 coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
@@ -53,6 +54,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('pagination', coreHelpers.pagination);
     registerThemeHelper('plural', coreHelpers.plural);
     registerThemeHelper('post_class', coreHelpers.post_class);
+    registerThemeHelper('reading_time', coreHelpers.reading_time);
     registerThemeHelper('tags', coreHelpers.tags);
     registerThemeHelper('title', coreHelpers.title);
     registerThemeHelper('twitter_url', coreHelpers.twitter_url);

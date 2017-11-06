@@ -11,7 +11,7 @@ describe('Helpers', function () {
         ghostHelpers = [
             'asset', 'author', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
             'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'meta_description', 'meta_title', 'navigation',
-            'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'tags', 'title', 'twitter_url',
+            'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'reading_time', 'tags', 'title', 'twitter_url',
             'url'
         ],
         expectedHelpers = _.concat(hbsHelpers, ghostHelpers);
