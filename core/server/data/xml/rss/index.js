@@ -91,7 +91,7 @@ generateFeed = function generateFeed(data) {
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,
-                description: post.meta_description || post.custom_excerpt || downsize(htmlContent.html(), {words: 50}),
+                description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
                 guid: post.id,
                 url: itemUrl,
                 date: post.published_at,
