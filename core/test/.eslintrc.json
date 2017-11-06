@@ -6,57 +6,7 @@
     },
     "extends": "eslint:recommended",
     "rules": {
-        "accessor-pairs": "error",
-        "array-bracket-newline": "off",
-        "array-bracket-spacing": [
-            "error",
-            "never"
-        ],
-        "array-callback-return": "off",
-        "array-element-newline": "off",
-        "arrow-body-style": "error",
-        "arrow-parens": [
-            "error",
-            "always"
-        ],
-        "arrow-spacing": [
-            "error",
-            {
-                "after": true,
-                "before": true
-            }
-        ],
-        "block-scoped-var": "error",
-        "brace-style": [
-            "error",
-            "1tbs",
-            {
-                "allowSingleLine": true
-            }
-        ],
-        "callback-return": "error",
         "camelcase": "off",
-        "capitalized-comments": "off",
-        "class-methods-use-this": "off",
-        "comma-dangle": "error",
-        "comma-spacing": "error",
-        "comma-style": [
-            "error",
-            "last"
-        ],
-        "complexity": "off",
-        "computed-property-spacing": [
-            "error",
-            "never"
-        ],
-        "consistent-return": "off",
-        "consistent-this": "off",
-        "curly": "error",
-        "default-case": "error",
-        "dot-location": [
-            "error",
-            "property"
-        ],
         "dot-notation": "off",
         "eol-last": "error",
         "eqeqeq": "error",
@@ -145,7 +95,7 @@
         "no-multi-assign": "off",
         "no-multi-spaces": "off",
         "no-multi-str": "error",
-        "no-multiple-empty-lines": "error",
+        "no-multiple-empty-lines": ["error", {"max": 1}],
         "no-native-reassign": "error",
         "no-negated-condition": "off",
         "no-negated-in-lhs": "error",
