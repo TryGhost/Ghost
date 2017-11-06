@@ -11,10 +11,11 @@ var should = require('should'),  // jshint ignore:line
     sandbox = sinon.sandbox.create();
 
 /**
- * These tests are a bit weird,
- * need to test express private API
- * Would be better to be testing our own internal API
- * E.g. setupRSS.calledOnce, rather than router stack!
+ * These tests are a bit weird, because we are testing the express private API
+ * Would be better to be testing our own internal API E.g. setupRSS.calledOnce, rather than router stack!
+ *
+ * This is partly because router_spec.js is testing a full stack of behaviour, including the loader
+ * And we need to differentiate more between testing the default channels, and channels in general
  */
 describe('Custom Channels', function () {
     var channelLoaderStub;
@@ -52,7 +53,7 @@ describe('Custom Channels', function () {
         routeStack[0].should.be.a.DispatchLayer({
             route: {
                 path: '/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -61,7 +62,7 @@ describe('Custom Channels', function () {
             keys: ['page'],
             route: {
                 path: '/page/:page(\\d+)/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -114,7 +115,7 @@ describe('Custom Channels', function () {
         routeStack[0].should.be.a.DispatchLayer({
             route: {
                 path: '/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -123,7 +124,7 @@ describe('Custom Channels', function () {
             keys: ['page'],
             route: {
                 path: '/page/:page(\\d+)/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -159,7 +160,7 @@ describe('Custom Channels', function () {
         routeStack[0].should.be.a.DispatchLayer({
             route: {
                 path: '/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -168,7 +169,7 @@ describe('Custom Channels', function () {
             keys: ['page'],
             route: {
                 path: '/page/:page(\\d+)/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 
@@ -200,7 +201,7 @@ describe('Custom Channels', function () {
         routeStack[0].should.be.a.DispatchLayer({
             route: {
                 path: '/',
-                stack: ['doChannelConfig', 'renderChannel']
+                stack: ['doChannelConfig', 'channelController']
             }
         });
 

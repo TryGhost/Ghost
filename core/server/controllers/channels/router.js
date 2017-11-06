@@ -6,7 +6,7 @@ var express = require('express'),
     rss     = require('../../data/xml/rss'),
     utils   = require('../../utils'),
     channelLoader = require('./loader'),
-    renderChannel = require('../frontend/render-channel'),
+    channelController = require('../channel'),
     rssRouter,
     channelRouter,
     channelsRouter;
@@ -70,11 +70,11 @@ channelRouter = function channelRouter(channel) {
         pageRoute = utils.url.urlJoin('/', config.get('routeKeywords').page, ':page(\\d+)/'),
         middleware = [channelConfigMiddleware(channel)];
 
-    channelRouter.get(baseRoute, middleware, renderChannel);
+    channelRouter.get(baseRoute, middleware, channelController);
 
     if (channel.isPaged) {
         channelRouter.param('page', handlePageParam);
-        channelRouter.get(pageRoute, middleware, renderChannel);
+        channelRouter.get(pageRoute, middleware, channelController);
     }
 
     if (channel.hasRSS) {
