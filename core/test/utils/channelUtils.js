@@ -16,9 +16,7 @@ module.exports.getDefaultChannels = function getDefaultChannels() {
 // Little shortcut
 module.exports.Channel = Channel;
 
-
 // Custom Channel-Related assertions
-
 should.Assertion.add('Channel', function (options) {
     options = options || {};
 
