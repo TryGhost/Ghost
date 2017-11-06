@@ -21,7 +21,8 @@
     "start": "node index",
     "dev": "DEBUG=ghost:* grunt dev",
     "test": "grunt validate --verbose",
-    "init": "yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt symlink && grunt init || true"
+    "init": "yarn global add knex-migrator ember-cli grunt-cli && yarn install && grunt symlink && grunt init || true",
+    "postinstall": "opencollective postinstall"
   },
   "engines": {
     "node": "^4.5.0 || ^6.9.0 || ^8.9.0"
@@ -76,6 +77,7 @@
     "netjet": "1.1.4",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.10.0",
+    "opencollective": "^1.0.3",
     "passport": "0.4.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
@@ -150,5 +152,10 @@
       "grunt-update-submodules",
       "sinon"
     ]
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/ghost",
+    "logo": "https://opencollective.com/opencollective/logo.txt"
   }
 }
