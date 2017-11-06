@@ -6,7 +6,6 @@ var path                = require('path'),
     // Dirty requires
     errors              = require('../../../errors'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
-    setResponseContext  = require('../../../controllers/frontend/context'),
     renderer            = require('../../../controllers/frontend/renderer'),
 
     templateName = 'amp';
@@ -28,9 +27,6 @@ function _renderer(req, res, next) {
     if (!data.post || data.post.page) {
         return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
     }
-
-    // Context
-    setResponseContext(req, res, data);
 
     // Render Call
     return renderer(req, res, data);

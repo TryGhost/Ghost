@@ -1,7 +1,6 @@
 var debug = require('ghost-ignition').debug('channels:render-post'),
     formatResponse = require('./format-response'),
-    renderer = require('./renderer'),
-    setResponseContext = require('./context');
+    renderer = require('./renderer');
 /*
  * Sets the response context around an entry (post or page)
  * and renders it with the correct template.
@@ -14,9 +13,6 @@ module.exports = function renderEntry(req, res) {
         // Renderer begin
         // Format data 2 - 1 is in preview/entry
         var data = formatResponse.entry(entry);
-
-        // Context
-        setResponseContext(req, res, data);
 
         // Render Call
         return renderer(req, res, data);
