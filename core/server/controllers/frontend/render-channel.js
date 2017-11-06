@@ -1,56 +1,17 @@
 var debug = require('ghost-ignition').debug('channels:render'),
-    _ = require('lodash'),
-    errors = require('../../errors'),
-    i18n = require('../../i18n'),
-    filters = require('../../filters'),
-    safeString = require('../../utils/index').safeString,
-    handleError = require('./error'),
-    fetchData = require('./fetch-data'),
     formatResponse = require('./format-response'),
     setResponseContext = require('./context'),
-    setRequestIsSecure = require('./secure'),
     templates = require('./templates');
 
-function renderChannel(req, res, next) {
+module.exports = function renderChannel(req, res) {
     debug('renderChannel called');
-    // Parse the parameters we need from the URL
-    var channelOpts = res.locals.channel,
-        pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
+    return function renderChannel(result) {
+        var view = templates.channel(res.locals.channel);
 
-    // Ensure we at least have an empty object for postOptions
-    channelOpts.postOptions = channelOpts.postOptions || {};
-    // Set page on postOptions for the query made later
-    channelOpts.postOptions.page = pageParam;
-    channelOpts.slugParam = slugParam;
+        result = formatResponse.channel(result);
 
-    // Call fetchData to get everything we need from the API
-    return fetchData(channelOpts).then(function handleResult(result) {
-        // If page is greater than number of pages we have, go straight to 404
-        if (pageParam > result.meta.pagination.pages) {
-            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
-        }
-
-        // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
-        // correctly for the various objects, but I believe it doesn't work and a different approach is needed.
-        setRequestIsSecure(req, result.posts);
-        _.each(result.data, function (data) {
-            setRequestIsSecure(req, data);
-        });
-
-        // @TODO: properly design these filters
-        filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-            var view = templates.channel(channelOpts);
-
-            // Do final data formatting and then render
-            result.posts = posts;
-            result = formatResponse.channel(result);
-
-            setResponseContext(req, res);
-            debug('Rendering view: ' + view);
-            res.render(view, result);
-        });
-    }).catch(handleError(next));
-}
-
-module.exports = renderChannel;
+        setResponseContext(req, res);
+        debug('Rendering view: ' + view);
+        res.render(view, result);
+    };
+};

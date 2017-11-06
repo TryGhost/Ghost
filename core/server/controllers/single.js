@@ -5,7 +5,7 @@ var utils = require('../utils'),
     renderPost = require('./frontend/render-post'),
     setRequestIsSecure = require('./frontend/secure');
 
-module.exports = function single(req, res, next) {
+module.exports = function singleController(req, res, next) {
     // Query database to find post
     return postLookup(req.path).then(function then(lookup) {
         var post = lookup ? lookup.post : false;

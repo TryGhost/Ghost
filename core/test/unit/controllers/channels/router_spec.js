@@ -9,6 +9,13 @@ var should = require('should'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();
 
+/**
+ * Note: this tests the following all in one go:
+ * - Channel Router controllers/channels/router
+ * - Channel Controller controllers/channel.js
+ * - Channel Renderer controllers/frontend/render-channel.js
+ * This is because the refactor is in progress!
+ */
 describe('Channels', function () {
     var channelRouter, req, res, hasTemplateStub, themeConfigStub;
 
@@ -168,6 +175,7 @@ describe('Channels', function () {
                 this.locals.context.should.containEql('index');
 
                 postAPIStub.calledOnce.should.be.true();
+                postAPIStub.calledWith({page: 1, limit: 5, include: 'author,tags'}).should.be.true();
             }, done);
         });
 
@@ -183,6 +191,7 @@ describe('Channels', function () {
                 this.locals.context.should.containEql('index');
 
                 postAPIStub.calledOnce.should.be.true();
+                postAPIStub.calledWith({page: 1, limit: 5, include: 'author,tags'}).should.be.true();
             }, done);
         });
 
@@ -197,6 +206,7 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('index');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({page: 2, limit: 5, include: 'author,tags'}).should.be.true();
                 }, done);
             });
 
@@ -210,6 +220,7 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('index');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({page: 2, limit: 5, include: 'author,tags'}).should.be.true();
                 }, done);
             });
 
@@ -223,6 +234,7 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('index');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({page: 3, limit: 5, include: 'author,tags'}).should.be.true();
                 }, done);
             });
 
@@ -313,7 +325,9 @@ describe('Channels', function () {
                 this.locals.context.should.containEql('tag');
 
                 postAPIStub.calledOnce.should.be.true();
+                postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 1, limit: 5, include: 'author,tags'}).should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
+                tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
             }, done);
         });
 
@@ -329,7 +343,9 @@ describe('Channels', function () {
                 this.locals.context.should.containEql('tag');
 
                 postAPIStub.calledOnce.should.be.true();
+                postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 1, limit: 5, include: 'author,tags'}).should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
+                tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
             }, done);
         });
 
@@ -346,7 +362,9 @@ describe('Channels', function () {
                 this.locals.context.should.containEql('tag');
 
                 postAPIStub.calledOnce.should.be.true();
+                postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 1, limit: 5, include: 'author,tags'}).should.be.true();
                 tagAPIStub.calledOnce.should.be.true();
+                tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
             }, done);
         });
 
@@ -371,6 +389,9 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('tag');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 2, limit: 5, include: 'author,tags'}).should.be.true();
+                    tagAPIStub.calledOnce.should.be.true();
+                    tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
                 }, done);
             });
 
@@ -387,6 +408,9 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('tag');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 2, limit: 5, include: 'author,tags'}).should.be.true();
+                    tagAPIStub.calledOnce.should.be.true();
+                    tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
                 }, done);
             });
 
@@ -408,6 +432,9 @@ describe('Channels', function () {
                     this.locals.context.should.containEql('tag');
 
                     postAPIStub.calledOnce.should.be.true();
+                    postAPIStub.calledWith({filter: 'tags:\'my-tag\'+tags.visibility:public', page: 3, limit: 5, include: 'author,tags'}).should.be.true();
+                    tagAPIStub.calledOnce.should.be.true();
+                    tagAPIStub.calledWith({slug: 'my-tag', visibility: 'public'}).should.be.true();
                 }, done);
             });
 
