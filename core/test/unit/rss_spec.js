@@ -209,6 +209,31 @@ describe('RSS', function () {
             rss(req, res, failTest(done));
         });
 
+        it('should use excerpt when no meta_description is set', function (done) {
+            rss.__set__('getData', function () {
+                return Promise.resolve({
+                    title: 'Test Title',
+                    description: 'Testing Desc',
+                    permalinks: '/:slug/',
+                    results: {posts: [posts[0]], meta: {pagination: {pages: 1}}}
+                });
+            });
+
+            res.send = function send(xmlData) {
+                should.exist(xmlData);
+
+                // special/optional tags
+                xmlData.should.match(/<title><!\[CDATA\[HTML Ipsum\]\]>/);
+                xmlData.should.match(/<description><!\[CDATA\[This is my custom excerpt!/);
+
+                done();
+            };
+
+            res.locals.channel = channelUtils.getTestChannel('index');
+            res.locals.channel.isRSS = true;
+            rss(req, res, failTest(done));
+        });
+
         it('should process urls correctly', function (done) {
             rss.__set__('getData', function () {
                 return Promise.resolve({
