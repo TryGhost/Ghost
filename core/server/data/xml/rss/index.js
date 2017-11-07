@@ -1,11 +1,12 @@
-var crypto      = require('crypto'),
-    downsize    = require('downsize'),
-    RSS         = require('rss'),
-    url         = require('url'),
-    utils       = require('../../../utils'),
-    errors      = require('../../../errors'),
-    i18n        = require('../../../i18n'),
-    filters     = require('../../../filters'),
+var crypto = require('crypto'),
+    downsize = require('downsize'),
+    RSS = require('rss'),
+    url = require('url'),
+    utils = require('../../../utils'),
+    errors = require('../../../errors'),
+    i18n = require('../../../i18n'),
+    filters = require('../../../filters'),
+    safeString = require('../../../utils/index').safeString,
     processUrls = require('../../../utils/make-absolute-urls'),
     settingsCache = require('../../../settings/cache'),
 
@@ -24,10 +25,10 @@ function handleError(next) {
     };
 }
 
-function getData(channelOpts, slugParam) {
+function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
 
-    return fetchData(channelOpts, slugParam).then(function (result) {
+    return fetchData(channelOpts).then(function (result) {
         var response = {},
             titleStart = '';
 
@@ -136,22 +137,19 @@ generateFeed = function generateFeed(data) {
 };
 
 generate = function generate(req, res, next) {
-    // Initialize RSS
+    // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug,
-        // Base URL needs to be the URL for the feed without pagination:
-        baseUrl = url.parse(req.originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/'),
-        channelConfig = res.locals.channel;
+        slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
-    // Ensure we at least have an empty object for postOptions
-    channelConfig.postOptions = channelConfig.postOptions || {};
+    // @TODO: fix this, we shouldn't change the channel object!
     // Set page on postOptions for the query made later
-    channelConfig.postOptions.page = pageParam;
+    res.locals.channel.postOptions.page = pageParam;
+    res.locals.channel.slugParam = slugParam;
 
-    channelConfig.slugParam = slugParam;
-
-    return getData(channelConfig).then(function then(data) {
-        var maxPage = data.results.meta.pagination.pages;
+    return getData(res.locals.channel).then(function then(data) {
+        // Base URL needs to be the URL for the feed without pagination:
+        var baseUrl = url.parse(req.originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/'),
+            maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
         if (pageParam > maxPage) {
