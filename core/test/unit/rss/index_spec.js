@@ -3,12 +3,12 @@ var should = require('should'),
     rewire = require('rewire'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    testUtils = require('../utils'),
-    channelUtils = require('../utils/channelUtils'),
-    api = require('../../server/api'),
-    settingsCache = require('../../server/settings/cache'),
-    rss = rewire('../../server/data/xml/rss'),
-    configUtils = require('../utils/configUtils'),
+    testUtils = require('../../utils'),
+    channelUtils = require('../../utils/channelUtils'),
+    api = require('../../../server/api'),
+    settingsCache = require('../../../server/settings/cache'),
+    rss = rewire('../../../server/data/xml/rss/controller'),
+    configUtils = require('../../utils/configUtils'),
 
     sandbox = sinon.sandbox.create();
 
@@ -39,7 +39,7 @@ describe('RSS', function () {
 
     afterEach(function () {
         sandbox.restore();
-        rss = rewire('../../server/data/xml/rss');
+        rss = rewire('../../../server/data/xml/rss/controller');
         configUtils.restore();
     });
 
