@@ -1,5 +1,4 @@
-var crypto = require('crypto'),
-    url = require('url'),
+var url = require('url'),
     utils = require('../../../utils'),
     errors = require('../../../errors'),
     i18n = require('../../../i18n'),
@@ -10,10 +9,8 @@ var crypto = require('crypto'),
     fetchData = require('../../../controllers/frontend/fetch-data'),
     handleError = require('../../../controllers/frontend/error'),
 
-    generate,
-    generateFeed = require('./generate-feed'),
-    getFeedXml,
-    feedCache = {};
+    feedCache = require('./cache'),
+    generate;
 
 function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
@@ -35,19 +32,6 @@ function getData(channelOpts) {
         return response;
     });
 }
-
-getFeedXml = function getFeedXml(path, data) {
-    var dataHash = crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
-    if (!feedCache[path] || feedCache[path].hash !== dataHash) {
-        // We need to regenerate
-        feedCache[path] = {
-            hash: dataHash,
-            xml: generateFeed(data)
-        };
-    }
-
-    return feedCache[path].xml;
-};
 
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
@@ -74,7 +58,7 @@ generate = function generate(req, res, next) {
         data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
-        return getFeedXml(baseUrl, data).then(function then(feedXml) {
+        return feedCache.getXML(baseUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
         });
