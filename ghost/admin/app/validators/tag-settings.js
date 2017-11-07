@@ -30,8 +30,8 @@ export default BaseValidator.create({
     description(model) {
         let description = model.get('description');
 
-        if (!validator.isLength(description, 0, 200)) {
-            model.get('errors').add('description', 'Description cannot be longer than 200 characters.');
+        if (!validator.isLength(description, 0, 500)) {
+            model.get('errors').add('description', 'Description cannot be longer than 500 characters.');
             this.invalidate();
         }
     },

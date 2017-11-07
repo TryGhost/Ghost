@@ -273,7 +273,7 @@ describe('Integration: Component: gh-tag-settings-form', function () {
         expect(this.$('.seo-preview-description').text(), 'falls back to tag description without metaDescription').to.equal('Description.');
 
         run(() => {
-            this.set('tag.description', (new Array(200).join('x')));
+            this.set('tag.description', (new Array(500).join('x')));
         });
         let expectedLength = 156 + '…'.length;
         expect(this.$('.seo-preview-description').text().length, 'cuts description to max 156 chars').to.equal(expectedLength);
