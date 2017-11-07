@@ -33,6 +33,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     actions: {
+        willTransition() {
+            this.controller.set('user.password', '');
+            this.controller.set('user.newPassword', '');
+            this.controller.set('user.ne2Password', '');
+        },
         didTransition() {
             this.modelFor('team.user').get('errors').clear();
         },
