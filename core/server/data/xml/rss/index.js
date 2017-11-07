@@ -8,17 +8,12 @@ var crypto = require('crypto'),
 
     // Really ugly temporary hack for location of things
     fetchData = require('../../../controllers/frontend/fetch-data'),
+    handleError = require('../../../controllers/frontend/error'),
 
     generate,
     generateFeed = require('./generate-feed'),
     getFeedXml,
     feedCache = {};
-
-function handleError(next) {
-    return function handleError(err) {
-        return next(err);
-    };
-}
 
 function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
