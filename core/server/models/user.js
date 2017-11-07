@@ -151,14 +151,14 @@ User = ghostBookshelf.Model.extend({
         if (self.isNew() || self.hasChanged('password')) {
             this.set('password', String(this.get('password')));
 
-            if (options.importing) {
-                // CASE: import with `importPersistUser` should always be an bcrypt password already,
-                // and won't re-hash or overwrite it.
-                // In case the password is not bcrypt hashed we fall back to the standard behaviour.
-                if (options.importPersistUser && this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
-                    return;
-                }
+            // CASE: import with `importPersistUser` should always be an bcrypt password already,
+            // and won't re-hash or overwrite it.
+            // In case the password is not bcrypt hashed we fall back to the standard behaviour.
+            if (options.importPersistUser && this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
+                return;
+            }
 
+            if (options.importing) {
                 // always set password to a random uid when importing
                 this.set('password', utils.uid(50));
 
