@@ -256,9 +256,7 @@ describe('Contexts', function () {
         });
 
         describe('Custom', function () {
-            var featuredChannel = {
-                name: 'featured'
-            };
+            var featuredChannel = new channelUtils.Channel('featured');
 
             it('will use the channel name for a custom channel', function () {
                 // Setup test

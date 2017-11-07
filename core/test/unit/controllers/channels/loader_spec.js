@@ -4,23 +4,42 @@ var should = require('should'),  // jshint ignore:line
     channelUtils = require('../../../utils/channelUtils'),
     channelLoader = rewire('../../../../server/controllers/channels/loader');
 
-describe('Channel Config', function () {
-    var channelReset;
+describe('Channels', function () {
+    describe('Loader', function () {
+        // This is a bit of a weird test. because the loader functionality is TEMPORARY
+        // If you have a local config, that gets loaded instead of the default.
+        // This just tests that either way, we get a JSON object.
+        it('should load a JSON object', function () {
+            var loadConfig = channelLoader.__get__('loadConfig'),
+                result = loadConfig();
 
-    before(function () {
-        channelReset = channelLoader.__set__('loadConfig', function () {
-            return channelUtils.getDefaultChannels();
+            result.should.be.an.Object();
         });
     });
 
-    after(function () {
-        channelReset();
-    });
+    describe('Default config', function () {
+        var channelReset;
 
-    it('should build a list of channels', function () {
-        var channels = channelLoader.list();
-        channels.should.be.an.Object();
+        before(function () {
+            // Change the channels we get returned
+            channelReset = channelLoader.__set__('loadConfig', function () {
+                return channelUtils.getDefaultChannels();
+            });
+        });
 
-        _.map(channels, 'name').should.eql(['index', 'tag', 'author']);
+        after(function () {
+            channelReset();
+        });
+
+        it('[default] list() should return a list of channel objects', function () {
+            var channels = channelLoader.list();
+            channels.should.be.an.Array().with.lengthOf(3);
+
+            _.map(channels, 'name').should.eql(['index', 'tag', 'author']);
+
+            _.each(channels, function (channel) {
+                channel.should.be.a.Channel();
+            });
+        });
     });
 });
