@@ -51,12 +51,13 @@ exports.init = function init(options) {
     return _private.loadClient()
         .then(function (_client) {
             client = _client;
-
             return localUtils.createAdapter(config);
         })
         .then(function (_adapter) {
             adapter = _adapter;
-
+            if (!adapter.rescheduleOnBoot) {
+                return [];
+            }
             return _private.loadScheduledPosts();
         })
         .then(function (scheduledPosts) {

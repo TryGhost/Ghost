@@ -17,6 +17,7 @@ function SchedulingDefault(options) {
     this.beforePingInMs = -50;
     this.retryTimeoutInMs = 1000 * 5;
 
+    this.rescheduleOnBoot = true;
     this.allJobs = {};
     this.deletedJobs = {};
     this.isRunning = false;
