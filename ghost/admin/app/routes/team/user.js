@@ -48,9 +48,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             let modelIsDirty = user.get('hasDirtyAttributes');
 
             // always reset the password properties on the user model when leaving
-            user.set('user.password', '');
-            user.set('user.newPassword', '');
-            user.set('user.ne2Password', '');
+            if (user) {
+                user.set('password', '');
+                user.set('newPassword', '');
+                user.set('ne2Password', '');
+            }
 
             if (modelIsDirty || dirtyAttributes) {
                 transition.abort();
