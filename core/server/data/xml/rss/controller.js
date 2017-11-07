@@ -1,4 +1,5 @@
-var url = require('url'),
+var _ = require('lodash'),
+    url = require('url'),
     utils = require('../../../utils'),
     errors = require('../../../errors'),
     i18n = require('../../../i18n'),
@@ -12,17 +13,29 @@ var url = require('url'),
     feedCache = require('./cache'),
     generate;
 
+// @TODO: is this the right logic? Where should this live?!
+function getBaseUrlForRSSReq(originalUrl, pageParam) {
+    return url.parse(originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/');
+}
+
+// @TODO: is this really correct? Should we be using meta data title?
+function getTitle(relatedData) {
+    relatedData = relatedData || {};
+    var titleStart =  _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
+
+    titleStart += titleStart ? ' - ' : '';
+    return  titleStart + settingsCache.get('title');
+}
+
+// @TODO: merge this with the rest of the data processing for RSS
+// @TODO: swap the fetchData call + duplicate code from channels with something DRY
 function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
 
-    return fetchData(channelOpts).then(function (result) {
-        var response = {},
-            titleStart = '';
+    return fetchData(channelOpts).then(function formatResult(result) {
+        var response = {};
 
-        if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
-        if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
-
-        response.title = titleStart + settingsCache.get('title');
+        response.title = getTitle(result.data);
         response.description = settingsCache.get('description');
         response.results = {
             posts: result.posts,
@@ -44,9 +57,9 @@ generate = function generate(req, res, next) {
     res.locals.channel.postOptions.page = pageParam;
     res.locals.channel.slugParam = slugParam;
 
-    return getData(res.locals.channel).then(function then(data) {
+    return getData(res.locals.channel).then(function handleResult(data) {
         // Base URL needs to be the URL for the feed without pagination:
-        var baseUrl = url.parse(req.originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/'),
+        var baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam),
             maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
