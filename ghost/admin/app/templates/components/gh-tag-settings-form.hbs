@@ -33,7 +33,7 @@
                 <label for="tag-description">Description</label>
                 {{gh-textarea scratchDescription id="tag-description" name="description" focusOut=(action 'setProperty' 'description' scratchDescription) update=(action (mut scratchDescription))}}
                 {{gh-error-message errors=tag.errors property="description"}}
-                <p>Maximum: <b>200</b> characters. You’ve used {{gh-count-down-characters scratchDescription 200}}</p>
+                <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
             {{/gh-form-group}}
 
             <ul class="nav-list nav-list-block">

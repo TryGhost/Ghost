@@ -194,11 +194,11 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates description length', function () {
         // shortest invalid description
-        let tag = Tag.create({description: (new Array(202).join('x'))});
+        let tag = Tag.create({description: (new Array(502).join('x'))});
         let passed = false;
         let errors;
 
-        expect(tag.get('description').length, 'description length').to.equal(201);
+        expect(tag.get('description').length, 'description length').to.equal(501);
 
         run(() => {
             tag.validate({property: 'description'}).then(() => {
@@ -208,7 +208,7 @@ describe('Unit: Validator: tag-settings', function () {
 
         errors = tag.get('errors').errorsFor('description')[0];
         expect(errors.attribute, 'errors.description.attribute').to.equal('description');
-        expect(errors.message, 'errors.description.message').to.equal('Description cannot be longer than 200 characters.');
+        expect(errors.message, 'errors.description.message').to.equal('Description cannot be longer than 500 characters.');
 
         // TODO: tag.errors appears to be a singleton and previous errors are
         // not cleared despite creating a new tag object
