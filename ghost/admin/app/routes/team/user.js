@@ -33,11 +33,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     actions: {
-        willTransition() {
-            this.controller.set('user.password', '');
-            this.controller.set('user.newPassword', '');
-            this.controller.set('user.ne2Password', '');
-        },
         didTransition() {
             this.modelFor('team.user').get('errors').clear();
         },
@@ -51,6 +46,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             let user = controller.get('user');
             let dirtyAttributes = controller.get('dirtyAttributes');
             let modelIsDirty = user.get('hasDirtyAttributes');
+
+            // always reset the password properties on the user model when leaving
+            user.set('user.password', '');
+            user.set('user.newPassword', '');
+            user.set('user.ne2Password', '');
 
             if (modelIsDirty || dirtyAttributes) {
                 transition.abort();
