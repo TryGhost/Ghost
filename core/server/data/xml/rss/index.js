@@ -33,6 +33,7 @@ function getData(channelOpts) {
     });
 }
 
+// @TODO finish refactoring this - it's now a controller
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
@@ -58,6 +59,7 @@ generate = function generate(req, res, next) {
         data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
+        // @TODO this is effectively a renderer
         return feedCache.getXML(baseUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
