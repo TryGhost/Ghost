@@ -21,3 +21,6 @@ Any other info e.g. Why do you consider this to be a bug? What did you expect to
 * Node Version:
 * Browser/OS:
 * Database:
+
+<!-- Love ghost? Please consider supporting our collective:
+👉  https://opencollective.com/ghost/donate -->

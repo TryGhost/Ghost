@@ -1,5 +1,5 @@
 <a href="https://github.com/TryGhost/Ghost"><img src="https://cloud.githubusercontent.com/assets/120485/18661790/cf942eda-7f17-11e6-9eb6-9c65bfc2abd8.png" alt="Ghost" /></a>
-<a href="https://travis-ci.org/TryGhost/Ghost"><img align="right" src="https://travis-ci.org/TryGhost/Ghost.svg?branch=master" alt="Build status" /></a>
+<a href="https://travis-ci.org/TryGhost/Ghost"><img align="right" src="https://travis-ci.org/TryGhost/Ghost.svg?branch=master" alt="Build status" /></a><a href="#backers"><img align="right" src="https://opencollective.com/AlgoWiki/backers/badge.svg" alt="Backers on Open Collective" /></a><a href="#sponsors"><img align="right" src="https://opencollective.com/AlgoWiki/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
 
 The project is maintained by a non-profit organisation called the **Ghost Foundation**, along with an amazing group of independent [contributors](https://github.com/TryGhost/Ghost/contributors). We're trying to make publishing software that changes the shape of online journalism.
 
@@ -62,6 +62,36 @@ You can talk to other Ghost users and developers in our [public Slack team](http
 New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
+
+
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
+<a href="graphs/contributors"><img src="https://opencollective.com/ghost/contributors.svg?width=890" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/ghost#backer)]
+
+<a href="https://opencollective.com/ghost#backers" target="_blank"><img src="https://opencollective.com/ghost/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/ghost#sponsor)]
+
+<a href="https://opencollective.com/ghost/sponsor/0/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/1/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/2/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/3/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/4/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/5/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/6/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/7/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/8/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/ghost/sponsor/9/website" target="_blank"><img src="https://opencollective.com/ghost/sponsor/9/avatar.svg"></a>
+
 
 
 # Copyright & License
