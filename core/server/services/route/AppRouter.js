@@ -1,16 +1,13 @@
-'use strict';
-/**
- * An instance of router that is provided to Apps, to mount routes into.
- */
+var debug = require('ghost-ignition').debug('services:routes:AppRouter'),
+    Router = require('./base/Router'),
+    _router = new Router();
 
-var debug = require('ghost-ignition').debug('services:routes:app'),
-    Router = require('./base/Router');
-
-class AppRouter extends Router {
+module.exports = {
     registerRouter(path, router) {
         debug('registerRouter for', path);
-        this.router.use(path, router);
+        _router.use(path, router);
+    },
+    router() {
+        return _router.handle.bind(_router);
     }
-}
-
-module.exports = AppRouter;
+};

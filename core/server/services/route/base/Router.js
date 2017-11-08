@@ -1,11 +1,5 @@
-'use strict';
+var express = require('express');
 
-var expressRouter = require('express').Router;
-
-class Router {
-    constructor() {
-        this.router = expressRouter({mergeParams: true});
-    }
-}
-
-module.exports = Router;
+module.exports = function newRouter() {
+    return express.Router({mergeParams: true});
+};
