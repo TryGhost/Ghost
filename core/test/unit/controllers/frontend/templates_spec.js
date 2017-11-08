@@ -107,7 +107,7 @@ describe('templates', function () {
         });
     });
 
-    describe('single', function () {
+    describe('entry', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -127,7 +127,7 @@ describe('templates', function () {
             });
 
             it('post without custom slug template', function () {
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     slug: 'test-post'
                 });
@@ -137,7 +137,7 @@ describe('templates', function () {
 
             it('post with custom slug template', function () {
                 hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
@@ -146,7 +146,7 @@ describe('templates', function () {
             });
 
             it('page without custom slug template', function () {
-                var view = templates.single({
+                var view = templates.entry({
                     page: 1,
                     slug: 'contact'
                 });
@@ -155,7 +155,7 @@ describe('templates', function () {
             });
 
             it('page with custom slug template', function () {
-                var view = templates.single({
+                var view = templates.entry({
                     page: 1,
                     slug: 'about'
                 });
@@ -166,7 +166,7 @@ describe('templates', function () {
             it('post with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -177,7 +177,7 @@ describe('templates', function () {
             it('page with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -188,7 +188,7 @@ describe('templates', function () {
             it('post with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -199,7 +199,7 @@ describe('templates', function () {
             it('page with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -211,7 +211,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
                 hasTemplateStub.withArgs('post-about').returns(true);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -224,7 +224,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
                 hasTemplateStub.withArgs('post-about').returns(false);
 
-                var view = templates.single({
+                var view = templates.entry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -237,7 +237,7 @@ describe('templates', function () {
         it('will fall back to post even if no index.hbs', function () {
             hasTemplateStub.returns(false);
 
-            var view = templates.single({page: 1});
+            var view = templates.entry({page: 1});
             should.exist(view);
             view.should.eql('post');
         });
