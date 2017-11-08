@@ -7,8 +7,8 @@ var should = require('should'),
     channelUtils = require('../../utils/channelUtils'),
     api = require('../../../server/api'),
     settingsCache = require('../../../server/settings/cache'),
-    rssController = rewire('../../../server/data/xml/rss/controller'),
-    rssCache = require('../../../server/data/xml/rss/cache'),
+    rssController = rewire('../../../server/controllers/rss'),
+    rssCache = require('../../../server/services/rss'),
     configUtils = require('../../utils/configUtils'),
 
     sandbox = sinon.sandbox.create();

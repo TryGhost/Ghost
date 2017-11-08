@@ -1,8 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    configUtils = require('../../utils/configUtils'),
-    rssCache = rewire('../../../server/data/xml/rss/cache'),
+    configUtils = require('../../../utils/configUtils'),
+    rssCache = rewire('../../../../server/services/rss/cache'),
 
     sandbox = sinon.sandbox.create();
 

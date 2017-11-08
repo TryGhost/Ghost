@@ -1,8 +1,8 @@
 var downsize = require('downsize'),
     RSS = require('rss'),
-    utils = require('../../../utils'),
-    filters = require('../../../filters'),
-    processUrls = require('../../../utils/make-absolute-urls'),
+    utils = require('../../utils'),
+    filters = require('../../filters'),
+    processUrls = require('../../utils/make-absolute-urls'),
 
     generateFeed,
     generateTags;
