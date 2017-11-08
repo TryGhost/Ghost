@@ -1,9 +1,9 @@
 var should = require('should'),
     _ = require('lodash'),
-    testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
+    testUtils = require('../../../utils'),
+    configUtils = require('../../../utils/configUtils'),
 
-    generateFeed = require('../../../server/data/xml/rss/generate-feed');
+    generateFeed = require('../../../../server/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
     var data = {},
