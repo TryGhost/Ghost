@@ -26,6 +26,7 @@ var debug = require('ghost-ignition').debug('blog'),
     staticTheme = require('../middleware/static-theme'),
     customRedirects = require('../middleware/custom-redirects'),
     serveFavicon = require('../middleware/serve-favicon'),
+    adminRedirects = require('../middleware/admin-redirects'),
 
     // middleware for themes
     themeMiddleware = require('../themes').middleware;
@@ -42,6 +43,8 @@ module.exports = function setupSiteApp() {
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     customRedirects.use(siteApp);
+    // More redirects
+    siteApp.use(adminRedirects());
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
