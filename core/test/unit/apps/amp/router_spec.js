@@ -24,7 +24,6 @@ describe('AMP Controller', function () {
     var res,
         req,
         defaultPath,
-        setResponseContextStub,
         hasTemplateStub;
 
     beforeEach(function () {
@@ -46,7 +45,12 @@ describe('AMP Controller', function () {
             route: {path: '/'},
             query: {r: ''},
             params: {},
-            amp: {}
+            amp: {},
+            body: {
+                post: {
+                    title: 'test'
+                }
+            }
         };
 
         defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/server/apps/amp/lib/views/amp.hbs');
@@ -65,11 +69,9 @@ describe('AMP Controller', function () {
     });
 
     it('should render default amp page when theme has no amp template', function (done) {
-        setResponseContextStub = sandbox.stub();
-        ampController.__set__('setResponseContext', setResponseContextStub);
-
-        res.render = function (view) {
+        res.render = function (view, data) {
             view.should.eql(defaultPath);
+            data.should.eql({post: {title: 'test'}});
             done();
         };
 
@@ -79,69 +81,52 @@ describe('AMP Controller', function () {
     it('should render theme amp page when theme has amp template', function (done) {
         hasTemplateStub.withArgs('amp').returns(true);
 
-        setResponseContextStub = sandbox.stub();
-        ampController.__set__('setResponseContext', setResponseContextStub);
-
-        res.render = function (view) {
+        res.render = function (view, data) {
             view.should.eql('amp');
+            data.should.eql({post: {title: 'test'}});
             done();
         };
 
         ampController.controller(req, res, failTest(done));
     });
 
-    it('should render with error when error is passed in', function (done) {
-        res.error = 'Test Error';
+    it('throws 404 when req.body has no post', function (done) {
+        req.body = {};
 
-        setResponseContextStub = sandbox.stub();
-        ampController.__set__('setResponseContext', setResponseContextStub);
-
-        res.render = function (view, context) {
-            view.should.eql(defaultPath);
-            context.should.eql({error: 'Test Error'});
+        ampController.controller(req, res, function (err) {
+            should.exist(err);
+            should.exist(err.message);
+            should.exist(err.statusCode);
+            should.exist(err.errorType);
+            err.message.should.be.eql('Page not found');
+            err.statusCode.should.be.eql(404);
+            err.errorType.should.be.eql('NotFoundError');
             done();
+        });
+    });
+
+    it('throws 404 when req.body.post is a page', function (done) {
+        req.body = {
+            post: {
+                page: true
+            }
         };
 
-        ampController.controller(req, res, failTest(done));
-    });
-
-    it('does not render amp page when amp context is missing', function (done) {
-        var renderSpy;
-
-        setResponseContextStub = sandbox.stub();
-        ampController.__set__('setResponseContext', setResponseContextStub);
-
-        res.locals.context = ['post'];
-        res.render = sandbox.spy(function () {
+        ampController.controller(req, res, function (err) {
+            should.exist(err);
+            should.exist(err.message);
+            should.exist(err.statusCode);
+            should.exist(err.errorType);
+            err.message.should.be.eql('Page not found');
+            err.statusCode.should.be.eql(404);
+            err.errorType.should.be.eql('NotFoundError');
             done();
         });
-
-        renderSpy = res.render;
-
-        ampController.controller(req, res, failTest(done));
-        renderSpy.called.should.be.false();
-    });
-
-    it('does not render amp page when context is other than amp and post', function (done) {
-        var renderSpy;
-
-        setResponseContextStub = sandbox.stub();
-        ampController.__set__('setResponseContext', setResponseContextStub);
-
-        res.locals.context = ['amp', 'page'];
-        res.render = sandbox.spy(function () {
-            done();
-        });
-
-        renderSpy = res.render;
-
-        ampController.controller(req, res, failTest(done));
-        renderSpy.called.should.be.false();
     });
 });
 
 describe('AMP getPostData', function () {
-    var res, req, postLookupStub, next;
+    var res, req, postLookupStub, resetPostLookup, next;
 
     beforeEach(function () {
         res = {
@@ -157,22 +142,23 @@ describe('AMP getPostData', function () {
         };
 
         next = function () {};
+
+        postLookupStub = sandbox.stub();
+        resetPostLookup = ampController.__set__('postLookup', postLookupStub);
     });
 
     afterEach(function () {
         sandbox.restore();
+        resetPostLookup();
     });
 
     it('should successfully get the post data from slug', function (done) {
-        postLookupStub = sandbox.stub();
         postLookupStub.returns(new Promise.resolve({
             post: {
                 id: '1',
                 slug: 'welcome'
             }
         }));
-
-        ampController.__set__('postLookup', postLookupStub);
 
         ampController.getPostData(req, res, function () {
             req.body.post.should.be.eql({
@@ -185,10 +171,7 @@ describe('AMP getPostData', function () {
     });
 
     it('should return error if postlookup returns NotFoundError', function (done) {
-        postLookupStub = sandbox.stub();
         postLookupStub.returns(new Promise.reject(new errors.NotFoundError({message: 'not found'})));
-
-        ampController.__set__('postLookup', postLookupStub);
 
         ampController.getPostData(req, res, function (err) {
             should.exist(err);
@@ -202,11 +185,9 @@ describe('AMP getPostData', function () {
             done();
         });
     });
-    it('should return error and if postlookup returns error', function (done) {
-        postLookupStub = sandbox.stub();
-        postLookupStub.returns(new Promise.reject('not found'));
 
-        ampController.__set__('postLookup', postLookupStub);
+    it('should return error and if postlookup returns error', function (done) {
+        postLookupStub.returns(new Promise.reject('not found'));
 
         ampController.getPostData(req, res, function (err) {
             should.exist(err);
