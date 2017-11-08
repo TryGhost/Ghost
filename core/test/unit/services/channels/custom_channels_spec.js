@@ -3,8 +3,8 @@ var should = require('should'),  // jshint ignore:line
     _ = require('lodash'),
 
     // Stuff we are testing
-    channelLoader = require('../../../../server/controllers/channels/loader'),
-    channels = require('../../../../server/controllers/channels'),
+    channelLoader = require('../../../../server/services/channels/loader'),
+    channels = require('../../../../server/services/channels'),
     channelUtils = require('../../../utils/channelUtils'),
     Channel = channelUtils.Channel,
 
