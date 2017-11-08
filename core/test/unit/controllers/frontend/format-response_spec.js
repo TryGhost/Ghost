@@ -4,12 +4,12 @@ var should = require('should'), // jshint ignore:line
     formatResponse = require('../../../../server/controllers/frontend/format-response');
 
 describe('formatResponse', function () {
-    describe('single', function () {
+    describe('entry', function () {
         it('should return the post object wrapped in a post key', function () {
             var formatted,
                 postObject = {slug: 'sluggy-thing'};
 
-            formatted = formatResponse.single(postObject);
+            formatted = formatResponse.entry(postObject);
 
             formatted.should.be.an.Object().with.property('post');
             formatted.post.should.eql(postObject);

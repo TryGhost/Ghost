@@ -2,7 +2,7 @@ var api = require('../api'),
     utils = require('../utils'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
-    renderPost = require('./frontend/render-post'),
+    renderEntry = require('./frontend/render-entry'),
     setRequestIsSecure = require('./frontend/secure');
 
 // This here is a controller.
@@ -37,6 +37,6 @@ module.exports = function previewController(req, res, next) {
         setRequestIsSecure(req, post);
 
         filters.doFilter('prePostsRender', post, res.locals)
-            .then(renderPost(req, res));
+            .then(renderEntry(req, res));
     }).catch(handleError(next));
 };
