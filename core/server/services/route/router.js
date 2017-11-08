@@ -1,9 +1,9 @@
-var siteRouter = require('./SiteRouter'),
-    apps = require('./AppRouter'),
+var siteRouter = require('./site-router'),
+    appRouter = require('./app-router'),
+    channelService = require('../channels'),
 
     // Controllers
     controllers = require('../../controllers'),
-    channelService = require('../channels'),
 
     // Utils for creating paths
     // @TODO: refactor these away
@@ -30,7 +30,7 @@ _private.mountDefaultRoutes = function mountDefaultRoutes() {
 
     // Apps - register sub-router
     // The purpose of having a parentRouter for apps, is it can get reloaded if apps change.
-    siteRouter.mountRouter(apps.router());
+    siteRouter.mountRouter(appRouter.router());
 
     // Default - register entry controller as route
     siteRouter.mountRoute('*', controllers.entry);
