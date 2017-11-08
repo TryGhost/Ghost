@@ -2,12 +2,13 @@ var utils = require('../utils'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
     postLookup = require('./frontend/post-lookup'),
-    renderPost = require('./frontend/render-post'),
+    renderEntry = require('./frontend/render-entry'),
     setRequestIsSecure = require('./frontend/secure');
 
 // This here is a controller.
+// It renders entries = individual posts or pages
 // The "route" is handled in site/routes.js
-module.exports = function singleController(req, res, next) {
+module.exports = function entryController(req, res, next) {
     // Query database to find post
     return postLookup(req.path).then(function then(lookup) {
         // Format data 1
@@ -35,6 +36,6 @@ module.exports = function singleController(req, res, next) {
         setRequestIsSecure(req, post);
 
         filters.doFilter('prePostsRender', post, res.locals)
-            .then(renderPost(req, res));
+            .then(renderEntry(req, res));
     }).catch(handleError(next));
 };

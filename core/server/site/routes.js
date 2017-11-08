@@ -18,8 +18,8 @@ module.exports = function siteRouter() {
     // Apps - register sub-router
     router.use(apps.router);
 
-    // Default - register single controller as route
-    router.get('*', controllers.single);
+    // Default - register entry controller as route
+    router.get('*', controllers.entry);
 
     return router;
 };

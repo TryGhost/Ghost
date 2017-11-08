@@ -62,7 +62,7 @@ function getChannelTemplateHierarchy(channelOpts) {
 }
 
 /**
- * ## Get Single Template Hierarchy
+ * ## Get Entry Template Hierarchy
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'post' is the default / fallback
@@ -72,7 +72,7 @@ function getChannelTemplateHierarchy(channelOpts) {
  * @param {Object} postObject
  * @returns {String[]}
  */
-function getSingleTemplateHierarchy(postObject) {
+function getEntryTemplateHierarchy(postObject) {
     var templateList = ['post'],
         slugTemplate = 'post-' + postObject.slug;
 
@@ -121,8 +121,8 @@ function pickTemplate(templateList, fallback) {
     return template;
 }
 
-function getTemplateForSingle(postObject) {
-    var templateList = getSingleTemplateHierarchy(postObject),
+function getTemplateForEntry(postObject) {
+    var templateList = getEntryTemplateHierarchy(postObject),
         fallback = templateList[templateList.length - 1];
     return pickTemplate(templateList, fallback);
 }
@@ -141,7 +141,7 @@ function getTemplateForError(statusCode) {
 
 module.exports = {
     channel: getTemplateForChannel,
-    single: getTemplateForSingle,
+    entry: getTemplateForEntry,
     error: getTemplateForError,
     pickTemplate: pickTemplate
 };
