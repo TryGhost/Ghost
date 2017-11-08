@@ -4,12 +4,10 @@ var express = require('express'),
     errors = require('../../errors'),
     i18n = require('../../i18n'),
     utils = require('../../utils'),
-    channelLoader = require('./loader'),
-    channelController = require('../channel'),
-    rssController = require('../rss'),
+    channelController = require('../../controllers/channel'),
+    rssController = require('../../controllers/rss'),
     rssRouter,
-    channelRouter,
-    channelsRouter;
+    channelRouter;
 
 function handlePageParam(req, res, next, page) {
     var pageRegex = new RegExp('/' + config.get('routeKeywords').page + '/(.*)?/'),
@@ -90,15 +88,4 @@ channelRouter = function channelRouter(channel) {
     return channelRouter;
 };
 
-channelsRouter = function channelsRouter() {
-    var channelsRouter = express.Router({mergeParams: true});
-
-    _.each(channelLoader.list(), function (channel) {
-        // Mount this channel router on the parent channels router
-        channelsRouter.use(channel.route, channelRouter(channel));
-    });
-
-    return channelsRouter;
-};
-
-module.exports = channelsRouter;
+module.exports = channelRouter;

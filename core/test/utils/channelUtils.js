@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     should = require('should'),
-    defaultChannels = require('../../server/controllers/channels/config.channels.json'),
-    Channel = require('../../server/controllers/channels/Channel');
+    defaultChannels = require('../../server/services/channels/config.channels.json'),
+    Channel = require('../../server/services/channels/Channel');
 
 // This is a function to get a fake or test channel
 // It's currently based on the default config in Ghost itself
