@@ -1,12 +1,12 @@
 var express = require('express'),
-    _       = require('lodash'),
-    config  = require('../../config'),
-    errors  = require('../../errors'),
-    i18n    = require('../../i18n'),
-    rss     = require('../../data/xml/rss'),
-    utils   = require('../../utils'),
+    _ = require('lodash'),
+    config = require('../../config'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
+    utils = require('../../utils'),
     channelLoader = require('./loader'),
     channelController = require('../channel'),
+    rssController = require('../rss'),
     rssRouter,
     channelRouter,
     channelsRouter;
@@ -53,8 +53,8 @@ rssRouter = function rssRouter(channelMiddleware) {
         pageRoute = utils.url.urlJoin(baseRoute, ':page(\\d+)/');
 
     // @TODO figure out how to collapse this into a single rule
-    router.get(baseRoute, channelMiddleware, rssConfigMiddleware, rss);
-    router.get(pageRoute, channelMiddleware, rssConfigMiddleware, rss);
+    router.get(baseRoute, channelMiddleware, rssConfigMiddleware, rssController);
+    router.get(pageRoute, channelMiddleware, rssConfigMiddleware, rssController);
     // Extra redirect rule
     router.get('/feed/', function redirectToRSS(req, res) {
         return utils.url.redirect301(res, utils.url.urlJoin(utils.url.getSubdir(), req.baseUrl, baseRoute));

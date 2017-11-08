@@ -1,16 +1,16 @@
 var _ = require('lodash'),
     url = require('url'),
-    utils = require('../../../utils'),
-    errors = require('../../../errors'),
-    i18n = require('../../../i18n'),
-    safeString = require('../../../utils/index').safeString,
-    settingsCache = require('../../../settings/cache'),
+    utils = require('../utils'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    safeString = require('../utils/index').safeString,
+    settingsCache = require('../settings/cache'),
 
-    // Really ugly temporary hack for location of things
-    fetchData = require('../../../controllers/frontend/fetch-data'),
-    handleError = require('../../../controllers/frontend/error'),
+    // Slightly less ugly temporary hack for location of things
+    fetchData = require('./frontend/fetch-data'),
+    handleError = require('./frontend/error'),
 
-    feedCache = require('./cache'),
+    rssCache = require('../services/rss'),
     generate;
 
 // @TODO: is this the right logic? Where should this live?!
@@ -73,7 +73,7 @@ generate = function generate(req, res, next) {
         data.secure = req.secure;
 
         // @TODO this is effectively a renderer
-        return feedCache.getXML(baseUrl, data).then(function then(feedXml) {
+        return rssCache.getXML(baseUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
         });
