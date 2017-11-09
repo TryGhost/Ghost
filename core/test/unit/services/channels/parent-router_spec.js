@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    channelsParentRouter = require('../../../../server/services/route/channels-router'),
+    channelsParentRouter = require('../../../../server/services/channels'),
     api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();

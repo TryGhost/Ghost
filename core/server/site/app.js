@@ -11,7 +11,7 @@ var debug = require('ghost-ignition').debug('blog'),
     sitemapHandler = require('../data/xml/sitemap/handler'),
 
     // Route Service
-    routeService = require('../services/route'),
+    siteRoutes = require('./routes'),
 
     // Global/shared middleware
     cacheControl = require('../middleware/cache-control'),
@@ -122,7 +122,7 @@ module.exports = function setupSiteApp() {
     debug('General middleware done');
 
     // Set up Frontend routes (including private blogging routes)
-    siteApp.use(routeService.router());
+    siteApp.use(siteRoutes());
 
     // ### Error handlers
     siteApp.use(errorHandler.pageNotFound);

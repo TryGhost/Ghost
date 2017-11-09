@@ -1,4 +1,4 @@
-var Router = require('./base/Router'),
-    appRouter = new Router('apps');
+var ParentRouter = require('./ParentRouter'),
+    appRouter = new ParentRouter('apps');
 
 module.exports = appRouter;

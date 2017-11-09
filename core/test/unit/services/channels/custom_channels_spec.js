@@ -4,7 +4,7 @@ var should = require('should'),  // jshint ignore:line
 
     // Stuff we are testing
     channelLoader = require('../../../../server/services/channels/loader'),
-    channelsParentRouter = require('../../../../server/services/route/channels-router'),
+    channelsParentRouter = require('../../../../server/services/channels'),
     channelUtils = require('../../../utils/channelUtils'),
     Channel = channelUtils.Channel,
 
