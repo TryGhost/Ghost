@@ -38,10 +38,25 @@ should.Assertion.add('Channel', function (options) {
 /**
  * Assertions on the express API
  */
+should.Assertion.add('Stack', function (length) {
+    this.params = {
+        operator: 'to be a valid Express Stack',
+        actual: _.map(this.obj, 'name')
+    };
+
+    this.obj.should.be.an.Array();
+    if (length) {
+        this.obj.length.should.eql(length);
+    }
+});
+
 should.Assertion.add('ExpressRouter', function (options) {
     options = options || {};
 
-    this.params = {operator: 'to be a valid Express Router'};
+    this.params = {
+        operator: 'to be a valid Express Router',
+        actual: require('util').inspect(this.obj, {depth: 1})
+    };
 
     this.obj.should.be.a.Function();
     this.obj.name.should.eql('router');
@@ -55,11 +70,7 @@ should.Assertion.add('ExpressRouter', function (options) {
         this.obj.params[options.params.key][0].name.should.eql(options.params.value);
     }
 
-    this.obj.stack.should.be.an.Array();
-
-    if (options.stackLength) {
-        this.obj.stack.should.have.lengthOf(options.stackLength);
-    }
+    this.obj.stack.should.be.a.Stack(options.stackLength);
 });
 
 should.Assertion.add('Layer', function () {

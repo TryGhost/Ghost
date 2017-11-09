@@ -4,7 +4,7 @@ var should = require('should'),  // jshint ignore:line
 
     // Stuff we are testing
     channelLoader = require('../../../../server/services/channels/loader'),
-    channels = require('../../../../server/services/channels'),
+    channelsParentRouter = require('../../../../server/services/route/channels-router'),
     channelUtils = require('../../../utils/channelUtils'),
     Channel = channelUtils.Channel,
 
@@ -18,7 +18,7 @@ var should = require('should'),  // jshint ignore:line
  * And we need to differentiate more between testing the default channels, and channels in general
  */
 describe('Custom Channels', function () {
-    var channelLoaderStub;
+    var channelLoaderStub, channelsRouter, firstChannel, secondChannel, routeStack;
 
     afterEach(function () {
         sandbox.restore();
@@ -28,12 +28,15 @@ describe('Custom Channels', function () {
         channelLoaderStub = sandbox.stub(channelLoader, 'list');
     });
 
+    function getNewChannelsRouter() {
+        return channelsParentRouter.router();
+    }
+
     it('allows basic custom config', function () {
         channelLoaderStub.returns([new Channel('home', {route: '/home/'})]);
 
-        var channelsRouter = channels.router(),
-            firstChannel,
-            routeStack;
+        // Load the router
+        channelsRouter = getNewChannelsRouter();
 
         channelsRouter.should.be.an.ExpressRouter({stackLength: 1});
         firstChannel = channelsRouter.stack[0];
@@ -82,10 +85,8 @@ describe('Custom Channels', function () {
                 })
             ]);
 
-        var channelsRouter = channels.router(),
-            firstChannel,
-            secondChannel,
-            routeStack;
+        // Load the router
+        channelsRouter = getNewChannelsRouter();
 
         channelsRouter.should.be.an.ExpressRouter({stackLength: 2});
         firstChannel = channelsRouter.stack[0];
@@ -138,9 +139,8 @@ describe('Custom Channels', function () {
             rss: false
         })]);
 
-        var channelsRouter = channels.router(),
-            firstChannel,
-            routeStack;
+        // Load the router
+        channelsRouter = getNewChannelsRouter();
 
         channelsRouter.should.be.an.ExpressRouter({stackLength: 1});
         firstChannel = channelsRouter.stack[0];
@@ -183,9 +183,8 @@ describe('Custom Channels', function () {
             paged: false
         })]);
 
-        var channelsRouter = channels.router(),
-            firstChannel,
-            routeStack;
+        // Load the router
+        channelsRouter = getNewChannelsRouter();
 
         channelsRouter.should.be.an.ExpressRouter({stackLength: 1});
         firstChannel = channelsRouter.stack[0];
