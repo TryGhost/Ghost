@@ -70,9 +70,8 @@ generate = function generate(req, res, next) {
         }
 
         // Renderer begin
-        // Format data
-        data.version = res.locals.safeVersion;
-        data.secure = res.locals.secure;
+        // Format data - this is the same as what Express does
+        _.merge(data, res.locals);
 
         // Render call - to a different renderer
         // @TODO this is effectively a renderer
