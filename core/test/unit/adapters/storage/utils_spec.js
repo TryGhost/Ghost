@@ -34,6 +34,23 @@ describe('storage utils', function () {
             result.should.be.equal('/2017/07/ghost-logo.png');
         });
 
+        // Very unlikely that this is necessary, because Ghost will redirect the request beforehand.
+        // See https://github.com/TryGhost/Ghost/blob/master/core/server/middleware/url-redirects.js#L76
+        // TODO: Change the code to make this test work
+        it.skip('should return local file storage path for https request, when blog setup as http', function () {
+            var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            result = storageUtils.getLocalFileStoragePath(url);
+            should.exist(result);
+            result.should.be.equal('/2017/07/ghost-logo.png');
+        });
+
         it('should return local file storage path for absolute URL with subdirectory', function () {
             var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
                 result;
@@ -88,6 +105,95 @@ describe('storage utils', function () {
             result = storageUtils.getLocalFileStoragePath(url);
             should.exist(result);
             result.should.be.equal('http://example-blog.com/ghost-logo.png');
+        });
+    });
+
+    describe('fn: isLocalImage', function () {
+        it('should return true when absolute URL and local file', function () {
+            var url = 'http://myblog.com/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(true);
+        });
+
+        // Very unlikely that this is necessary, because Ghost will redirect the request beforehand.
+        // See https://github.com/TryGhost/Ghost/blob/master/core/server/middleware/url-redirects.js#L76
+        // TODO: Change the code to make this test work
+        it.skip('should return local file storage path for https request, when blog setup as http', function () {
+            var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(true);
+        });
+
+        it('should return true when absolute URL with subdirectory and local file', function () {
+            var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('/blog');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(true);
+        });
+
+        it('should return true when relative URL and local file', function () {
+            var url = '/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(true);
+        });
+
+        it('should return true when relative URL and local file', function () {
+            var url = '/blog/content/images/2017/07/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('/blog');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(true);
+        });
+
+        it('should return false when no local file', function () {
+            var url = 'http://somewebsite.com/ghost-logo.png',
+                result;
+
+            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub.returns('');
+
+            result = storageUtils.isLocalImage(url);
+            should.exist(result);
+            result.should.be.equal(false);
         });
     });
 });
