@@ -44,6 +44,10 @@ class ParentRouter {
         // return this._router.handle.bind(this._router);
         return this._router;
     }
+
+    static routes() {
+        return routes;
+    }
 }
 
 module.exports = ParentRouter;

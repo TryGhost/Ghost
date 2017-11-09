@@ -1,4 +1,7 @@
-var ParentRouter = require('./ParentRouter'),
+var debug = require('ghost-ignition').debug('services:routes:site-router'),
+
+    // Site Router is the top level
+    ParentRouter = require('./ParentRouter'),
     siteRouter = new ParentRouter('site'),
 
     // Sub Routers
@@ -43,6 +46,8 @@ _private.mountDefaultRoutes = function mountDefaultRoutes() {
 
 module.exports = function router() {
     _private.mountDefaultRoutes();
+
+    debug(ParentRouter.routes());
 
     return siteRouter.router();
 };
