@@ -72,7 +72,7 @@ generate = function generate(req, res, next) {
         // Renderer begin
         // Format data
         data.version = res.locals.safeVersion;
-        data.secure = req.secure;
+        data.secure = res.locals.secure;
 
         // No context, no template
         // @TODO: should we have context? The context file expects it!
