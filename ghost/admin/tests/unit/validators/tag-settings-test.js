@@ -53,10 +53,10 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid name', function () {
         // longest valid name
-        let tag = Tag.create({name: (new Array(151).join('x'))});
+        let tag = Tag.create({name: (new Array(192).join('x'))});
         let passed = false;
 
-        expect(tag.get('name').length, 'name length').to.equal(150);
+        expect(tag.get('name').length, 'name length').to.equal(191);
 
         run(() => {
             tag.validate({property: 'name'}).then(() => {
@@ -116,11 +116,11 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates name length', function () {
         // shortest invalid name
-        let tag = Tag.create({name: (new Array(152).join('x'))});
+        let tag = Tag.create({name: (new Array(193).join('x'))});
         let passed = false;
         let nameErrors;
 
-        expect(tag.get('name').length, 'name length').to.equal(151);
+        expect(tag.get('name').length, 'name length').to.equal(192);
 
         run(() => {
             tag.validate({property: 'name'}).then(() => {
@@ -130,7 +130,7 @@ describe('Unit: Validator: tag-settings', function () {
 
         nameErrors = tag.get('errors').errorsFor('name')[0];
         expect(nameErrors.attribute, 'errors.name.attribute').to.equal('name');
-        expect(nameErrors.message, 'errors.name.message').to.equal('Tag names cannot be longer than 150 characters.');
+        expect(nameErrors.message, 'errors.name.message').to.equal('Tag names cannot be longer than 191 characters.');
 
         expect(passed, 'passed').to.be.false;
         expect(tag.get('hasValidated'), 'hasValidated').to.include('name');
@@ -138,10 +138,10 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid slug', function () {
         // longest valid slug
-        let tag = Tag.create({slug: (new Array(151).join('x'))});
+        let tag = Tag.create({slug: (new Array(192).join('x'))});
         let passed = false;
 
-        expect(tag.get('slug').length, 'slug length').to.equal(150);
+        expect(tag.get('slug').length, 'slug length').to.equal(191);
 
         run(() => {
             tag.validate({property: 'slug'}).then(() => {
@@ -155,11 +155,11 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates slug length', function () {
         // shortest invalid slug
-        let tag = Tag.create({slug: (new Array(152).join('x'))});
+        let tag = Tag.create({slug: (new Array(193).join('x'))});
         let passed = false;
         let slugErrors;
 
-        expect(tag.get('slug').length, 'slug length').to.equal(151);
+        expect(tag.get('slug').length, 'slug length').to.equal(192);
 
         run(() => {
             tag.validate({property: 'slug'}).then(() => {
@@ -169,7 +169,7 @@ describe('Unit: Validator: tag-settings', function () {
 
         slugErrors = tag.get('errors').errorsFor('slug')[0];
         expect(slugErrors.attribute, 'errors.slug.attribute').to.equal('slug');
-        expect(slugErrors.message, 'errors.slug.message').to.equal('URL cannot be longer than 150 characters.');
+        expect(slugErrors.message, 'errors.slug.message').to.equal('URL cannot be longer than 191 characters.');
 
         expect(passed, 'passed').to.be.false;
         expect(tag.get('hasValidated'), 'hasValidated').to.include('slug');
@@ -177,10 +177,10 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with a valid description', function () {
         // longest valid description
-        let tag = Tag.create({description: (new Array(201).join('x'))});
+        let tag = Tag.create({description: (new Array(501).join('x'))});
         let passed = false;
 
-        expect(tag.get('description').length, 'description length').to.equal(200);
+        expect(tag.get('description').length, 'description length').to.equal(500);
 
         run(() => {
             tag.validate({property: 'description'}).then(() => {

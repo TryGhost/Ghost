@@ -12,8 +12,8 @@ export default BaseValidator.create({
         } else if (name.match(/^,/)) {
             model.get('errors').add('name', 'Tag names can\'t start with commas.');
             this.invalidate();
-        } else if (!validator.isLength(name, 0, 150)) {
-            model.get('errors').add('name', 'Tag names cannot be longer than 150 characters.');
+        } else if (!validator.isLength(name, 0, 191)) {
+            model.get('errors').add('name', 'Tag names cannot be longer than 191 characters.');
             this.invalidate();
         }
     },
@@ -21,8 +21,8 @@ export default BaseValidator.create({
     slug(model) {
         let slug = model.get('slug');
 
-        if (!validator.isLength(slug, 0, 150)) {
-            model.get('errors').add('slug', 'URL cannot be longer than 150 characters.');
+        if (!validator.isLength(slug, 0, 191)) {
+            model.get('errors').add('slug', 'URL cannot be longer than 191 characters.');
             this.invalidate();
         }
     },
