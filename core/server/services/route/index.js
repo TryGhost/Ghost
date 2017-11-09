@@ -5,15 +5,9 @@
  * subrouters, or controllers mounted on them. There are not that many routes.
  *
  * The route service is intended to:
- * - handle the mounting of all the routes throughout the bootup sequence
  * - keep track of the registered routes, and what they have mounted on them
  * - provide a way for apps to register routes
- * - keep routes being served in a sane order
- *
- * The route service does not handle:
- * - redirects
- * - assets
- * These both happen prior to the routeService router being mounted
+ * - expose base classes & registry to the rest of Ghost
  */
 
 // This is the main router, that gets extended & mounted /site
