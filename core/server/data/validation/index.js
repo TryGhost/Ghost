@@ -190,12 +190,7 @@ validateSchema = function validateSchema(tableName, model) {
 
         // TODO: check if mandatory values should be enforced
         if (model[columnKey] !== null && model[columnKey] !== undefined) {
-            // check soft limits first, if present (validations: {isLength: {min, max}})
-            if (_.has(schema[tableName][columnKey], 'validations.isLength')) {
-                validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations, tableName));
-            }
-
-            // check hard limits (maxlength)
+            // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
@@ -211,9 +206,9 @@ validateSchema = function validateSchema(tableName, model) {
                 }
             }
 
-            // check any other validations objects
+            // check validations objects
             if (schema[tableName][columnKey].hasOwnProperty('validations')) {
-                validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations));
+                validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations, tableName));
             }
 
             // check type
@@ -259,28 +254,28 @@ validateSettings = function validateSettings(defaultSettings, model) {
 };
 
 /**
-* Validate keys using the validator module.
-* Each validation's key is a method name and its value is an array of options
-* eg:
-*       validations: { isURL: true, isLength: [20, 40] }
-* will validate that a values's length is a URL between 20 and 40 chars.
-*
-* If you pass a boolean as the value, it will specify the "good" result. By default
-* the "good" result is assumed to be true.
-* eg:
-*       validations: { isNull: false } // means the "good" result would
-*                                      // fail the `isNull` check, so
-*                                      // not null.
-*
-* available validators: https://github.com/chriso/validator.js#validators
-* @param {String} value the value to validate.
-* @param {String} key the db column key of the value to validate.
-* @param {Object} validations the validations object as described above.
-* @param {String} tableName (optional) the db table of the value to validate, used for error message.
-* @return {Array} returns an Array including the found validation errors (empty if none found);
-*/
+ * Validate keys using the validator module.
+ * Each validation's key is a method name and its value is an array of options
+ * eg:
+ *       validations: { isURL: true, isLength: [20, 40] }
+ * will validate that a values's length is a URL between 20 and 40 chars.
+ *
+ * If you pass a boolean as the value, it will specify the "good" result. By default
+ * the "good" result is assumed to be true.
+ * eg:
+ *       validations: { isNull: false } // means the "good" result would
+ *                                      // fail the `isNull` check, so
+ *                                      // not null.
+ *
+ * available validators: https://github.com/chriso/validator.js#validators
+ * @param {String} value the value to validate.
+ * @param {String} key the db column key of the value to validate.
+ * @param {Object} validations the validations object as described above.
+ * @param {String} tableName (optional) the db table of the value to validate, used for error message.
+ * @return {Array} returns an Array including the found validation errors (empty if none found);
+ */
 validate = function validate(value, key, validations, tableName) {
-    var validationErrors = [];
+    var validationErrors = [], translation;
     value = _.toString(value);
 
     _.each(validations, function each(validationOptions, validationName) {
@@ -295,23 +290,21 @@ validate = function validate(value, key, validations, tableName) {
 
         validationOptions.unshift(value);
 
-        // send a more userfriendly error message for the `isLength` validation, when soft limit is exceeded
-        if (validationName === 'isLength' && validator[validationName].apply(validator, validationOptions) !== goodResult) {
-            var message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
-                {
-                    tableName: tableName || '',
-                    columnKey: key,
-                    maxlength: validations.isLength.max
-                });
+        // equivalent of validator.isSomething(option1, option2)
+        if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
+            // CASE: You can define specific translations for validators e.g. isLength
+            if (i18n.doesTranslationKeyExist('notices.data.validation.index.validationFailedTypes.' + validationName)) {
+                translation = i18n.t('notices.data.validation.index.validationFailedTypes.' + validationName, _.merge({
+                    validationName: validationName,
+                    key: key,
+                    tableName: tableName
+                }, validationOptions[1]));
+            } else {
+                translation = i18n.t('notices.data.validation.index.validationFailed', {validationName: validationName, key: key});
+            }
 
             validationErrors.push(new errors.ValidationError({
-                message: message,
-                context: tableName ? tableName + '.' + key : key
-            }));
-            // equivalent of validator.isSomething(option1, option2)
-        } else if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
-            validationErrors.push(new errors.ValidationError({
-                message: i18n.t('notices.data.validation.index.validationFailed', {validationName: validationName, key: key})
+                message: translation
             }));
         }
 
