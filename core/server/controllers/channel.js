@@ -8,20 +8,21 @@ var _ = require('lodash'),
     setRequestIsSecure = require('./frontend/secure'),
     renderChannel = require('./frontend/render-channel');
 
+// This here is a controller.
+// The "route" is handled in controllers/channels/router.js
+// There's both a top-level channelS router, and an individual channel one
 module.exports = function channelController(req, res, next) {
     // Parse the parameters we need from the URL
-    var channelOpts = res.locals.channel,
-        pageParam = req.params.page !== undefined ? req.params.page : 1,
+    var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
-    // Ensure we at least have an empty object for postOptions
-    channelOpts.postOptions = channelOpts.postOptions || {};
+    // @TODO: fix this, we shouldn't change the channel object!
     // Set page on postOptions for the query made later
-    channelOpts.postOptions.page = pageParam;
-    channelOpts.slugParam = slugParam;
+    res.locals.channel.postOptions.page = pageParam;
+    res.locals.channel.slugParam = slugParam;
 
     // Call fetchData to get everything we need from the API
-    return fetchData(channelOpts).then(function handleResult(result) {
+    return fetchData(res.locals.channel).then(function handleResult(result) {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > result.meta.pagination.pages) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));

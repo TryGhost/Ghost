@@ -27,7 +27,7 @@ function formatPageResponse(result) {
 }
 
 /**
- * similar to formatPageResponse, but for single post pages
+ * similar to formatPageResponse, but for entries (post or page)
  * @return {Object} containing page variables
  */
 function formatResponse(post) {
@@ -38,5 +38,5 @@ function formatResponse(post) {
 
 module.exports = {
     channel: formatPageResponse,
-    single: formatResponse
+    entry: formatResponse
 };

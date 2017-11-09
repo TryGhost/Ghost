@@ -1,15 +1,13 @@
 var express = require('express'),
-    _       = require('lodash'),
-    config  = require('../../config'),
-    errors  = require('../../errors'),
-    i18n    = require('../../i18n'),
-    rss     = require('../../data/xml/rss'),
-    utils   = require('../../utils'),
-    channelLoader = require('./loader'),
-    channelController = require('../channel'),
+    _ = require('lodash'),
+    config = require('../../config'),
+    errors = require('../../errors'),
+    i18n = require('../../i18n'),
+    utils = require('../../utils'),
+    channelController = require('../../controllers/channel'),
+    rssController = require('../../controllers/rss'),
     rssRouter,
-    channelRouter,
-    channelsRouter;
+    channelRouter;
 
 function handlePageParam(req, res, next, page) {
     var pageRegex = new RegExp('/' + config.get('routeKeywords').page + '/(.*)?/'),
@@ -53,8 +51,8 @@ rssRouter = function rssRouter(channelMiddleware) {
         pageRoute = utils.url.urlJoin(baseRoute, ':page(\\d+)/');
 
     // @TODO figure out how to collapse this into a single rule
-    router.get(baseRoute, channelMiddleware, rssConfigMiddleware, rss);
-    router.get(pageRoute, channelMiddleware, rssConfigMiddleware, rss);
+    router.get(baseRoute, channelMiddleware, rssConfigMiddleware, rssController);
+    router.get(pageRoute, channelMiddleware, rssConfigMiddleware, rssController);
     // Extra redirect rule
     router.get('/feed/', function redirectToRSS(req, res) {
         return utils.url.redirect301(res, utils.url.urlJoin(utils.url.getSubdir(), req.baseUrl, baseRoute));
@@ -90,15 +88,4 @@ channelRouter = function channelRouter(channel) {
     return channelRouter;
 };
 
-channelsRouter = function channelsRouter() {
-    var channelsRouter = express.Router({mergeParams: true});
-
-    _.each(channelLoader.list(), function (channel) {
-        // Mount this channel router on the parent channels router
-        channelsRouter.use(channel.route, channelRouter(channel));
-    });
-
-    return channelsRouter;
-};
-
-module.exports = channelsRouter;
+module.exports = channelRouter;

@@ -4,20 +4,21 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    channels = require('../../../../server/controllers/channels'),
+    channelsParentRouter = require('../../../../server/services/channels'),
     api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();
 
 /**
  * Note: this tests the following all in one go:
- * - Channel Router controllers/channels/router
+ * - ChannelS Router services/route/channels-router.js
+ * - Channel Router services/channel/router.js
  * - Channel Controller controllers/channel.js
  * - Channel Renderer controllers/frontend/render-channel.js
  * This is because the refactor is in progress!
  */
 describe('Channels', function () {
-    var channelRouter, req, res, hasTemplateStub, themeConfigStub;
+    var channelsRouter, req, res, hasTemplateStub, themeConfigStub;
 
     // Initialise 'req' with the bare minimum properties
     function setupRequest() {
@@ -55,7 +56,7 @@ describe('Channels', function () {
 
         _.extend(req, props);
 
-        channelRouter(req, res, failTest(done));
+        channelsRouter(req, res, failTest(done));
     }
 
     // Run a test which should result in a redirect
@@ -81,7 +82,7 @@ describe('Channels', function () {
 
         _.extend(req, props);
 
-        channelRouter(req, res, failTest(done));
+        channelsRouter(req, res, failTest(done));
     }
 
     // Run a test which should result in next() being called
@@ -98,7 +99,7 @@ describe('Channels', function () {
 
         _.extend(req, props);
 
-        channelRouter(req, res, function (empty) {
+        channelsRouter(req, res, function (empty) {
             try {
                 assertions.call(this, empty);
                 res.redirect.called.should.be.false();
@@ -141,7 +142,7 @@ describe('Channels', function () {
 
     before(function () {
         // We don't overwrite this, so only do it once
-        channelRouter = channels.router();
+        channelsRouter = channelsParentRouter.router();
     });
 
     afterEach(function () {

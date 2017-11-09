@@ -2,9 +2,11 @@ var api = require('../api'),
     utils = require('../utils'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
-    renderPost = require('./frontend/render-post'),
+    renderEntry = require('./frontend/render-entry'),
     setRequestIsSecure = require('./frontend/secure');
 
+// This here is a controller.
+// The "route" is handled in site/routes.js
 module.exports = function previewController(req, res, next) {
     var params = {
         uuid: req.params.uuid,
@@ -13,6 +15,7 @@ module.exports = function previewController(req, res, next) {
     };
 
     api.posts.read(params).then(function then(result) {
+        // Format data 1
         var post = result.posts[0];
 
         if (!post) {
@@ -34,6 +37,6 @@ module.exports = function previewController(req, res, next) {
         setRequestIsSecure(req, post);
 
         filters.doFilter('prePostsRender', post, res.locals)
-            .then(renderPost(req, res));
+            .then(renderEntry(req, res));
     }).catch(handleError(next));
 };

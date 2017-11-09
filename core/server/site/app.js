@@ -10,8 +10,8 @@ var debug = require('ghost-ignition').debug('blog'),
     // This should probably be an internal app
     sitemapHandler = require('../data/xml/sitemap/handler'),
 
-    // routes
-    routes = require('./routes'),
+    // Route Service
+    siteRoutes = require('./routes'),
 
     // Global/shared middleware
     cacheControl = require('../middleware/cache-control'),
@@ -26,6 +26,7 @@ var debug = require('ghost-ignition').debug('blog'),
     staticTheme = require('../middleware/static-theme'),
     customRedirects = require('../middleware/custom-redirects'),
     serveFavicon = require('../middleware/serve-favicon'),
+    adminRedirects = require('../middleware/admin-redirects'),
 
     // middleware for themes
     themeMiddleware = require('../themes').middleware;
@@ -42,6 +43,8 @@ module.exports = function setupSiteApp() {
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     customRedirects.use(siteApp);
+    // More redirects
+    siteApp.use(adminRedirects());
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
@@ -119,7 +122,7 @@ module.exports = function setupSiteApp() {
     debug('General middleware done');
 
     // Set up Frontend routes (including private blogging routes)
-    siteApp.use(routes());
+    siteApp.use(siteRoutes());
 
     // ### Error handlers
     siteApp.use(errorHandler.pageNotFound);

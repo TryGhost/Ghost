@@ -1,31 +1,46 @@
-var express = require('express'),
-    config = require('../config'),
+var debug = require('ghost-ignition').debug('site:routes'),
+
+    routeService = require('../services/route'),
+    siteRouter = routeService.siteRouter,
+
+    // Sub Routers
+    appRouter = routeService.appRouter,
+    channelsService = require('../services/channels'),
+
+    // Controllers
     controllers = require('../controllers'),
-    channels = require('../controllers/channels'),
-    apps = require('../services/route').appRouter,
+
+    // Utils for creating paths
+    // @TODO: refactor these away
+    config = require('../config'),
     utils = require('../utils');
 
-module.exports = function siteRouter() {
-    var router = express.Router(),
-        routeKeywords = config.get('routeKeywords');
+module.exports = function siteRoutes() {
+    // @TODO move this path out of this file!
+    // Note this also exists in api/index.js
+    var previewRoute = utils.url.urlJoin('/', config.get('routeKeywords').preview, ':uuid', ':options?');
 
-    // ### Admin routes
-    router.get(/^\/(logout|signout)\/$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '#/signout/'); });
-    router.get(/^\/signup\/$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '#/signup/'); });
-    // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function (req, res) { return utils.url.redirectToAdmin(301, res, '/'); });
+    // Preview - register controller as route
+    // Ideal version, as we don't want these paths all over the place
+    // previewRoute = new Route('GET /:t_preview/:uuid/:options?', previewController);
+    // siteRouter.mountRoute(previewRoute);
+    // Orrrrr maybe preview should be an internal App??!
+    siteRouter.mountRoute(previewRoute, controllers.preview);
 
-    // Post Live Preview
-    router.get(utils.url.urlJoin('/', routeKeywords.preview, ':uuid', ':options?'), controllers.preview);
+    // Channels - register sub-router
+    // The purpose of having a parentRouter for channels, is so that we can load channels from wherever we want:
+    // config, settings, apps, etc, and that it will be possible for the router to be reloaded.
+    siteRouter.mountRouter(channelsService.router());
 
-    // Channels
-    router.use(channels.router());
+    // Apps - register sub-router
+    // The purpose of having a parentRouter for apps, is that Apps can register a route whenever they want.
+    // Apps cannot yet deregister, it's complex to implement and I don't yet have a clear use-case for this.
+    siteRouter.mountRouter(appRouter.router());
 
-    // setup routes for apps
-    router.use(apps.router);
+    // Default - register entry controller as route
+    siteRouter.mountRoute('*', controllers.entry);
 
-    // Default
-    router.get('*', controllers.single);
+    debug('Routes:', routeService.registry.getAll());
 
-    return router;
+    return siteRouter.router();
 };

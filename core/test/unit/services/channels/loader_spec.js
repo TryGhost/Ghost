@@ -2,7 +2,7 @@ var should = require('should'),  // jshint ignore:line
     _ = require('lodash'),
     rewire = require('rewire'),
     channelUtils = require('../../../utils/channelUtils'),
-    channelLoader = rewire('../../../../server/controllers/channels/loader');
+    channelLoader = rewire('../../../../server/services/channels/loader');
 
 describe('Channels', function () {
     describe('Loader', function () {
