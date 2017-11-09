@@ -31,7 +31,6 @@ describe('RSS: Generate Feed', function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
 
         data.version = '0.6';
-        data.siteUrl = 'http://my-ghost-blog.com/';
         data.feedUrl = 'http://my-ghost-blog.com/rss/';
         data.title = 'Test Title';
         data.description = 'Testing Desc';
@@ -180,7 +179,6 @@ describe('RSS: Generate Feed', function () {
     it('should process urls correctly with subdirectory', function (done) {
         configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
 
-        data.siteUrl = 'http://my-ghost-blog.com/blog/';
         data.feedUrl = 'http://my-ghost-blog.com/blog/rss/';
         data.results = {posts: [posts[3]], meta: {pagination: {pages: 1}}};
 

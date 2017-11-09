@@ -73,7 +73,6 @@ generate = function generate(req, res, next) {
         // Renderer begin
         // Format data
         data.version = res.locals.safeVersion;
-        data.siteUrl = utils.url.urlFor('home', {secure: req.secure}, true);
         data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 

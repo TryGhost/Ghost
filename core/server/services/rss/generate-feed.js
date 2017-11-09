@@ -65,22 +65,23 @@ generateItem = function generateItem(post, siteUrl, secure) {
 };
 
 generateFeed = function generateFeed(data) {
-    var feed = new RSS({
-        title: data.title,
-        description: data.description,
-        generator: 'Ghost ' + data.version,
-        feed_url: data.feedUrl,
-        site_url: data.siteUrl,
-        image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
-        ttl: '60',
-        custom_namespaces: {
-            content: 'http://purl.org/rss/1.0/modules/content/',
-            media: 'http://search.yahoo.com/mrss/'
-        }
-    });
+    var siteUrl = utils.url.urlFor('home', {secure: data.secure}, true),
+        feed = new RSS({
+            title: data.title,
+            description: data.description,
+            generator: 'Ghost ' + data.version,
+            feed_url: data.feedUrl,
+            site_url: siteUrl,
+            image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
+            ttl: '60',
+            custom_namespaces: {
+                content: 'http://purl.org/rss/1.0/modules/content/',
+                media: 'http://search.yahoo.com/mrss/'
+            }
+        });
 
     data.results.posts.forEach(function forEach(post) {
-        var item = generateItem(post, data.siteUrl, data.secure);
+        var item = generateItem(post, siteUrl, data.secure);
 
         filters.doFilter('rss.item', item, post).then(function then(item) {
             feed.item(item);
