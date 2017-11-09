@@ -64,6 +64,12 @@
     max-width: 250px;
 }
 
+@media (max-width: 500px) {
+    .gh-setting-action-largeimg img {
+        max-width: 190px;
+    }
+}
+
 .gh-setting-action-smallimg img:hover,
 .gh-setting-action-largeimg img:hover {
     cursor: pointer;
@@ -294,8 +300,16 @@
     line-height: inherit;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 500px) {
+    #importfile {
+        flex-direction: column;
+    }
+    #importfile input {
+        width: 150px;
+    }
+
     #startupload {
+        margin-left: 0;
         margin-top: 5px;
     }
 }
@@ -354,6 +368,15 @@
 .gh-themes-container {
     padding: 25px 0;
     border-top: var(--lightgrey) 1px solid;
+}
+
+@media (max-width: 500px) {
+    .gh-themes-container .apps-configured {
+        justify-content: flex-end;
+    }
+    .gh-themes-container .apps-card-meta {
+        flex-basis: auto;
+    }
 }
 
 .gh-themes-uploadbtn {

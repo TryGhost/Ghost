@@ -252,6 +252,12 @@ body > .ember-view:not(.default-liquid-destination) {
     color:  color(var(--midgrey) l(+5%));
 }
 
+@media (max-width: 500px) {
+    .gh-nav-foot-sitelink {
+        height: 56px;
+    }
+}
+
 .gh-nav-foot-sitelink svg {
     width: 13px;
     margin-left: 5px;
@@ -482,6 +488,21 @@ body > .ember-view:not(.default-liquid-destination) {
         font-size: 1.2rem;
     }
 
+    .gh-mobile-nav-bar a.active {
+        background: color(var(--blue) lightness(+10%));
+        color: #fff;
+    }
+
+    .gh-mobile-nav-bar a.active svg {
+        fill: #fff;
+    }
+
+    .gh-mobile-nav-bar a.active.gh-nav-main-users g,
+    .gh-mobile-nav-bar a.active.gh-nav-main-users path {
+        fill: transparent;
+        stroke: white;
+    }
+
     .gh-mobile-nav-bar svg,
     .gh-mobile-nav-bar svg g {
         width: 15px;
@@ -547,6 +568,15 @@ body > .ember-view:not(.default-liquid-destination) {
     letter-spacing: 0.4px;
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
+}
+
+@media (max-width: 500px) {
+    .gh-canvas-title {
+        display: block;
+    }
+    .gh-canvas-title svg {
+        margin: 0 5px;
+    }
 }
 
 .gh-canvas-title a {

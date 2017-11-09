@@ -380,6 +380,13 @@
     padding: 10vw 4vw;
 }
 
+@media (max-width: 500px) {
+    .gh-markdown-editor-pane,
+    .gh-markdown-editor-preview {
+        padding: 15vw 4vw;
+    }
+}
+
 .gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
 .gh-markdown-editor-side-by-side .gh-markdown-editor-preview {
     padding: 4vw;
