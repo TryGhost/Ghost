@@ -19,5 +19,5 @@
 // We expose this via the App Proxy, so that Apps can register routes
 module.exports.appRouter = require('./app-router');
 // This is the main router, that gets mounted in the express app in /site
-module.exports.router = require('./router');
+module.exports.router = require('./site-router');
 
