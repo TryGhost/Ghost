@@ -572,14 +572,92 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
                 exportData = exported;
 
-                // change title to 1001 characters
-                exportData.data.posts[0].title = new Array(2002).join('a');
+                // change title to 300 characters  (soft limit is 255)
+                exportData.data.posts[0].title = new Array(300).join('a');
                 exportData.data.posts[0].tags = 'Tag';
                 return dataImporter.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
-                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 2000 characters.');
+                error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
+                error[0].errorType.should.eql('ValidationError');
+
+                Promise.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('tags').select()
+                ]).then(function (importedData) {
+                    should.exist(importedData);
+
+                    importedData.length.should.equal(3, 'Did not get data successfully');
+
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        tags = importedData[2];
+
+                    // we always have 1 user, the default user we added
+                    users.length.should.equal(1, 'There should only be one user');
+
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
+
+                    done();
+                });
+            }).catch(done);
+        });
+        it('doesn\'t import a tag when meta title too long', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+                exportData = exported;
+
+                // change meta_title to 305 characters  (soft limit is 300)
+                exportData.data.tags[0].meta_title = new Array(305).join('a');
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }).catch(function (error) {
+                error[0].message.should.eql('Value in [tags.meta_title] exceeds maximum length of 300 characters.');
+                error[0].errorType.should.eql('ValidationError');
+
+                Promise.all([
+                    knex('users').select(),
+                    knex('posts').select(),
+                    knex('tags').select()
+                ]).then(function (importedData) {
+                    should.exist(importedData);
+
+                    importedData.length.should.equal(3, 'Did not get data successfully');
+
+                    var users = importedData[0],
+                        posts = importedData[1],
+                        tags = importedData[2];
+
+                    // we always have 1 user, the default user we added
+                    users.length.should.equal(1, 'There should only be one user');
+
+                    // Nothing should have been imported
+                    posts.length.should.equal(0, 'Wrong number of posts');
+                    tags.length.should.equal(0, 'no new tags');
+
+                    done();
+                });
+            }).catch(done);
+        });
+        it('doesn\'t import a user user when bio too long', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+                exportData = exported;
+
+                // change bio to 300 characters (soft limit is 200)
+                exportData.data.users[0].bio = new Array(300).join('a');
+                return dataImporter.doImport(exportData);
+            }).then(function () {
+                (1).should.eql(0, 'Data import should not resolve promise.');
+            }).catch(function (error) {
+                error[0].message.should.eql('Value in [users.bio] exceeds maximum length of 200 characters.');
                 error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
