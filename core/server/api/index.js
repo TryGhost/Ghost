@@ -29,6 +29,7 @@ var _ = require('lodash'),
     uploads = require('./upload'),
     exporter = require('../data/export'),
     slack = require('./slack'),
+    webhooks = require('./webhooks'),
 
     http,
     addHeaders,
@@ -139,6 +140,10 @@ locationHeader = function locationHeader(req, result) {
         } else if (result.hasOwnProperty('tags')) {
             newObject = result.tags[0];
             location = utils.url.urlJoin(apiRoot, 'tags', newObject.id, '/');
+        } else if (result.hasOwnProperty('webhooks')) {
+            newObject = result.webhooks[0];
+            // TODO: this URL doesn't actually exist but is needed for a 201 response?
+            location = utils.url.urlJoin(apiRoot, 'webhooks', newObject.id, '/');
         }
     }
 
@@ -312,7 +317,8 @@ module.exports = {
     slack: slack,
     themes: themes,
     invites: invites,
-    redirects: redirects
+    redirects: redirects,
+    webhooks: webhooks
 };
 
 /**
