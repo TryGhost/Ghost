@@ -73,7 +73,7 @@ generateProxyFunctions = function (name, permissions, isInternal) {
         // Expose the route service...
         routeService: {
             // This allows for mounting an entirely new Router at a path...
-            registerRouter: checkRegisterPermissions('routes', router.registerRouter.bind(router))
+            registerRouter: checkRegisterPermissions('routes', router.mountRouter.bind(router))
         },
         // Mini proxy to the API - needs review
         api: {
