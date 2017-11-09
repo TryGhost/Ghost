@@ -15,7 +15,7 @@ var debug = require('ghost-ignition').debug('services:routes:ParentRouter'),
 /**
  * We expose a very limited amount of express.Router via specialist methods
  */
-class Router {
+class ParentRouter {
     constructor(name) {
         this.name = name;
         this._router = express.Router({mergeParams: true});
@@ -46,4 +46,4 @@ class Router {
     }
 }
 
-module.exports = Router;
+module.exports = ParentRouter;

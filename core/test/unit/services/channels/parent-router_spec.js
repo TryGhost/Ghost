@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    channelService = require('../../../../server/services/channels'),
+    channelsParentRouter = require('../../../../server/services/route/channels-router'),
     api = require('../../../../server/api'),
     themes = require('../../../../server/themes'),
     sandbox = sinon.sandbox.create();
@@ -142,7 +142,7 @@ describe('Channels', function () {
 
     before(function () {
         // We don't overwrite this, so only do it once
-        channelsRouter = channelService.router();
+        channelsRouter = channelsParentRouter.router();
     });
 
     afterEach(function () {
