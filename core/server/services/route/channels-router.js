@@ -9,9 +9,9 @@ var ParentRouter = require('./ParentRouter'),
 module.exports.router = function channelsRouter() {
     var channelsRouter = new ParentRouter('channels');
 
-    channelService.loader.list().forEach(function (channel) {
-        // Mount this channel router on the parent channels router
-        channelsRouter.mountRouter(channel.route, channelService.router(channel));
+    channelService.load().forEach(function (channel) {
+        // Create a new channelRouter, and mount it onto the parent at the correct route
+        channelsRouter.mountRouter(channel.route, channelService.channelRouter(channel));
     });
 
     return channelsRouter.router();
