@@ -61,6 +61,13 @@
     transition: background 0.3s ease;
 }
 
+@media (max-width: 500px) {
+    .apps-card-app {
+        min-height: 75px;
+        height: auto;
+    }
+}
+
 .apps-grid-cell:first-child .apps-card-app {
     border-top: none;
 }
@@ -68,6 +75,12 @@
 .apps-card-left {
     display: flex;
     align-items: center;
+}
+
+@media (max-width: 500px) {
+    .apps-card-left {
+        flex-basis: 70%;
+    }
 }
 
 .apps-card-right {
@@ -118,6 +131,7 @@
 }
 @media (max-width: 500px) {
     .apps-card-meta {
+        flex-basis: 70%;
         padding-right: 20px;
     }
 }
@@ -133,6 +147,7 @@
 }
 @media (max-width: 500px) {
     .apps-card-app-title {
+        white-space: normal;
         font-size: 1.5rem;
     }
 }
