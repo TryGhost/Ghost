@@ -74,9 +74,6 @@ generate = function generate(req, res, next) {
         data.version = res.locals.safeVersion;
         data.secure = res.locals.secure;
 
-        // No context, no template
-        // @TODO: should we have context? The context file expects it!
-
         // Render call - to a different renderer
         // @TODO this is effectively a renderer
         return rssCache.getXML(baseUrl, data).then(function then(feedXml) {
