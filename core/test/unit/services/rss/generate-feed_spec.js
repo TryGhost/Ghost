@@ -125,6 +125,24 @@ describe('RSS: Generate Feed', function () {
         }).catch(done);
     });
 
+    it('should no error if author is somehow not present', function (done) {
+        data.results = {posts: [_.omit(posts[2], 'author')], meta: {pagination: {pages: 1}}};
+
+        generateFeed(baseUrl, data).then(function (xmlData) {
+            should.exist(xmlData);
+
+            // special/optional tags
+            xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
+            xmlData.should.match(/<description><!\[CDATA\[test stuff/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<div class="kg-card-markdown"><h2 id="testing">testing<\/h2>\n/);
+            xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
+            xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
+            xmlData.should.not.match(/<dc:creator>/);
+
+            done();
+        }).catch(done);
+    });
+
     it('should use meta_description and image where available', function (done) {
         data.results = {posts: [posts[2]], meta: {pagination: {pages: 1}}};
 

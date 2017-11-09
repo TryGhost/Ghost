@@ -9,7 +9,7 @@ var _ = require('lodash'),
     fetchData = require('./frontend/fetch-data'),
     handleError = require('./frontend/error'),
 
-    rssCache = require('../services/rss'),
+    rssService = require('../services/rss'),
     generate;
 
 // @TODO: is this the right logic? Where should this live?!
@@ -69,16 +69,8 @@ generate = function generate(req, res, next) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 
-        // Renderer begin
-        // Format data - this is the same as what Express does
-        _.merge(data, res.locals);
-
-        // Render call - to a different renderer
-        // @TODO this is effectively a renderer
-        return rssCache.getXML(baseUrl, data).then(function then(feedXml) {
-            res.set('Content-Type', 'text/xml; charset=UTF-8');
-            res.send(feedXml);
-        });
+        // Render call - to a special RSS renderer
+        return rssService.render(res, baseUrl, data);
     }).catch(handleError(next));
 };
 
