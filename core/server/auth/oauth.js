@@ -37,29 +37,26 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
 }
 // We are required to pass in authInfo in order to reset spam counter for user login
 function exchangePassword(client, username, password, scope, body, authInfo, done) {
-    models.Client.findOne({slug: client.slug})
-        .then(function then(client) {
-            if (!client) {
-                return done(new errors.NoPermissionError({
-                    message: i18n.t('errors.middleware.oauth.invalidClient')
-                }), false);
-            }
+    if (!client || !client.id) {
+        return done(new errors.UnauthorizedError({
+            message: i18n.t('errors.middleware.auth.clientCredentialsNotProvided')
+        }), false);
+    }
 
-            // Validate the user
-            return models.User.check({email: username, password: password})
-                .then(function then(user) {
-                    return authUtils.createTokens({
-                        clientId: client.id,
-                        userId: user.id
-                    });
-                })
-                .then(function then(response) {
-                    spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
-                    return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
-                });
+    // Validate the user
+    return models.User.check({email: username, password: password})
+        .then(function then(user) {
+            return authUtils.createTokens({
+                clientId: client.id,
+                userId: user.id
+            });
         })
-        .catch(function handleError(error) {
-            return done(error, false);
+        .then(function then(response) {
+            spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
+            return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
+        })
+        .catch(function (err) {
+            done(err, false);
         });
 }
 

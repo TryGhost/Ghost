@@ -9,8 +9,17 @@ var passport = require('passport'),
 authenticate = {
     // ### Authenticate Client Middleware
     authenticateClient: function authenticateClient(req, res, next) {
-        // skip client authentication if bearer token is present
-        if (authUtils.getBearerAutorizationToken(req)) {
+        /**
+         * In theory, client authentication is not required for public clients, only for confidential clients.
+         * See e.g. https://tools.ietf.org/html/rfc6749#page-38. Ghost has no differentiation for this at the moment.
+         * See also See https://tools.ietf.org/html/rfc6749#section-2.1.
+         *
+         * Ghost requires client authentication for `grant_type: password`. This is inconsistent, because you
+         * can skip client authentication to refresh your access token (`grant_type: refresh_token`).
+         *
+         * Keep in mind: You can request data from the API with a Bearer but without client credentials e.g. GET /posts.
+         */
+        if (authUtils.getBearerAutorizationToken(req) && !authUtils.hasGrantType(req, 'password')) {
             return next();
         }
 
