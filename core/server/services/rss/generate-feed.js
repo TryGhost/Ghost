@@ -5,6 +5,7 @@ var downsize = require('downsize'),
     processUrls = require('../../utils/make-absolute-urls'),
 
     generateFeed,
+    generateItem,
     generateTags;
 
 generateTags = function generateTags(data) {
@@ -18,6 +19,48 @@ generateTags = function generateTags(data) {
     }
 
     return [];
+};
+
+generateItem = function generateItem(post, siteUrl, secure) {
+    var itemUrl = utils.url.urlFor('post', {post: post, secure: secure}, true),
+        htmlContent = processUrls(post.html, siteUrl, itemUrl),
+        item = {
+            title: post.title,
+            description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
+            guid: post.id,
+            url: itemUrl,
+            date: post.published_at,
+            categories: generateTags(post),
+            author: post.author ? post.author.name : null,
+            custom_elements: []
+        },
+        imageUrl;
+
+    if (post.feature_image) {
+        imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: secure}, true);
+
+        // Add a media content tag
+        item.custom_elements.push({
+            'media:content': {
+                _attr: {
+                    url: imageUrl,
+                    medium: 'image'
+                }
+            }
+        });
+
+        // Also add the image to the content, because not all readers support media:content
+        htmlContent('p').first().before('<img src="' + imageUrl + '" />');
+        htmlContent('img').attr('alt', post.title);
+    }
+
+    item.custom_elements.push({
+        'content:encoded': {
+            _cdata: htmlContent.html()
+        }
+    });
+
+    return item;
 };
 
 generateFeed = function generateFeed(data) {
@@ -36,43 +79,7 @@ generateFeed = function generateFeed(data) {
     });
 
     data.results.posts.forEach(function forEach(post) {
-        var itemUrl = utils.url.urlFor('post', {post: post, secure: data.secure}, true),
-            htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
-            item = {
-                title: post.title,
-                description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
-                guid: post.id,
-                url: itemUrl,
-                date: post.published_at,
-                categories: generateTags(post),
-                author: post.author ? post.author.name : null,
-                custom_elements: []
-            },
-            imageUrl;
-
-        if (post.feature_image) {
-            imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: data.secure}, true);
-
-            // Add a media content tag
-            item.custom_elements.push({
-                'media:content': {
-                    _attr: {
-                        url: imageUrl,
-                        medium: 'image'
-                    }
-                }
-            });
-
-            // Also add the image to the content, because not all readers support media:content
-            htmlContent('p').first().before('<img src="' + imageUrl + '" />');
-            htmlContent('img').attr('alt', post.title);
-        }
-
-        item.custom_elements.push({
-            'content:encoded': {
-                _cdata: htmlContent.html()
-            }
-        });
+        var item = generateItem(post, data.siteUrl, data.secure);
 
         filters.doFilter('rss.item', item, post).then(function then(item) {
             feed.item(item);
