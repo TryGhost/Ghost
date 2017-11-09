@@ -476,7 +476,7 @@ describe('Acceptance: Team', function () {
                 expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
 
                 // test too long user name
-                await fillIn('[data-test-name-input]', new Array(160).join('a'));
+                await fillIn('[data-test-name-input]', new Array(195).join('a'));
                 await triggerEvent('[data-test-name-input]', 'blur');
 
                 expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;

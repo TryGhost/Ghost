@@ -15,7 +15,7 @@ export default PasswordValidator.create({
             if (validator.empty(name)) {
                 model.get('errors').add('name', 'Please enter a name.');
                 this.invalidate();
-            } else if (!validator.isLength(name, 0, 150)) {
+            } else if (!validator.isLength(name, 0, 191)) {
                 model.get('errors').add('name', 'Name is too long');
                 this.invalidate();
             }
