@@ -3,7 +3,7 @@ var Router = require('./base/Router'),
 
     // Sub Routers
     appRouter = require('./app-router'),
-    channelService = require('../channels'),
+    channelsRouter = require('./channels-router'),
 
     // Controllers
     controllers = require('../../controllers'),
@@ -30,7 +30,7 @@ _private.mountDefaultRoutes = function mountDefaultRoutes() {
     // Channels - register sub-router
     // The purpose of having a parentRouter for channels, is so that we can load channels from wherever we want:
     // config, settings, apps, etc, and that it will be possible for the router to be reloaded.
-    siteRouter.mountRouter(channelService.router());
+    siteRouter.mountRouter(channelsRouter.router());
 
     // Apps - register sub-router
     // The purpose of having a parentRouter for apps, is that Apps can register a route whenever they want.
