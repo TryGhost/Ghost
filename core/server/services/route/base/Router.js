@@ -1,10 +1,15 @@
 /**
- * Router is a Router intended to be extended anywhere that routes need to be registered in Ghost
+ * # Router
+ *
+ * A wrapper around express.Router
+ * Intended to be extended anywhere that routes need to be registered in Ghost
+ * Only allows for .use and .get at the moment - we don't have clear use-cases for anything else yet.
  */
 
 var debug = require('ghost-ignition').debug('services:routes:ParentRouter'),
     express = require('express'),
-    // This is a shared global cache type thing
+    // This is a shared global cache
+    // @TODO expand this as part of the route service
     routes = [];
 /**
  * We expose a very limited amount of express.Router via specialist methods

@@ -25,11 +25,13 @@ _private.mountDefaultRoutes = function mountDefaultRoutes() {
     siteRouter.mountRoute(previewRoute, controllers.preview);
 
     // Channels - register sub-router
-    // The purpose of having a parentRouter for channels, is it can get reloaded if channels change.
+    // The purpose of having a parentRouter for channels, is so that we can load channels from wherever we want:
+    // config, settings, apps, etc, and that it will be possible for the router to be reloaded.
     siteRouter.mountRouter(channelService.router());
 
     // Apps - register sub-router
-    // The purpose of having a parentRouter for apps, is it can get reloaded if apps change.
+    // The purpose of having a parentRouter for apps, is that Apps can register a route whenever they want.
+    // Apps cannot yet deregister, it's complex to implement and I don't yet have a clear use-case for this.
     siteRouter.mountRouter(appRouter.router());
 
     // Default - register entry controller as route
