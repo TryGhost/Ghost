@@ -26,6 +26,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
         htmlContent = processUrls(post.html, siteUrl, itemUrl),
         item = {
             title: post.title,
+            // @TODO: DRY this up with data/meta/index & other excerpt code
             description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
             guid: post.id,
             url: itemUrl,
