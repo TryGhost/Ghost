@@ -64,13 +64,14 @@ generateItem = function generateItem(post, siteUrl, secure) {
     return item;
 };
 
-generateFeed = function generateFeed(data) {
+generateFeed = function generateFeed(baseUrl, data) {
     var siteUrl = utils.url.urlFor('home', {secure: data.secure}, true),
+        feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
         feed = new RSS({
             title: data.title,
             description: data.description,
             generator: 'Ghost ' + data.version,
-            feed_url: data.feedUrl,
+            feed_url: feedUrl,
             site_url: siteUrl,
             image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
             ttl: '60',

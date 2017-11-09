@@ -1,6 +1,5 @@
 var _ = require('lodash'),
     url = require('url'),
-    utils = require('../utils'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     safeString = require('../utils/index').safeString,
@@ -73,7 +72,6 @@ generate = function generate(req, res, next) {
         // Renderer begin
         // Format data
         data.version = res.locals.safeVersion;
-        data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
         // No context, no template
