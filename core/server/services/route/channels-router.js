@@ -1,4 +1,4 @@
-var Router = require('./base/Router'),
+var ParentRouter = require('./ParentRouter'),
     channelService = require('../channels');
 
 /**
@@ -7,7 +7,7 @@ var Router = require('./base/Router'),
  * .router() is called. This allows for reloading.
  */
 module.exports.router = function channelsRouter() {
-    var channelsRouter = new Router('channels');
+    var channelsRouter = new ParentRouter('channels');
 
     channelService.loader.list().forEach(function (channel) {
         // Mount this channel router on the parent channels router

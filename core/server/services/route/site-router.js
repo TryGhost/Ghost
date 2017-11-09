@@ -1,5 +1,5 @@
-var Router = require('./base/Router'),
-    siteRouter = new Router('site'),
+var ParentRouter = require('./ParentRouter'),
+    siteRouter = new ParentRouter('site'),
 
     // Sub Routers
     appRouter = require('./app-router'),
