@@ -80,6 +80,11 @@ I18n = {
         return matchingString;
     },
 
+    doesTranslationKeyExist: function doesTranslationKeyExist(msgPath) {
+        var translation = I18n.findString(msgPath);
+        return translation !== blos.errors.errors.anErrorOccurred;
+    },
+
     /**
      * Setup i18n support:
      *  - Load proper language file in to memory
