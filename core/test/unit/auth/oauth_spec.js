@@ -50,13 +50,11 @@ describe('OAuth', function () {
             req.body.grant_type = 'password';
             req.body.username = 'username';
             req.body.password = 'password';
+            req.client = {
+                id: 1
+            };
             res.setHeader = {};
             res.end = {};
-
-            sandbox.stub(models.Client, 'findOne')
-                .withArgs({slug: 'test'}).returns(new Promise.resolve({
-                id: 1
-            }));
 
             sandbox.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
@@ -105,11 +103,8 @@ describe('OAuth', function () {
             res.setHeader = {};
             res.end = {};
 
-            sandbox.stub(models.Client, 'findOne')
-                .withArgs({slug: 'test'}).returns(new Promise.resolve());
-
             oAuth.generateAccessToken(req, res, function (err) {
-                err.errorType.should.eql('NoPermissionError');
+                err.errorType.should.eql('UnauthorizedError');
                 done();
             });
         });
@@ -124,13 +119,11 @@ describe('OAuth', function () {
             req.body.grant_type = 'password';
             req.body.username = 'username';
             req.body.password = 'password';
+            req.client = {
+                id: 1
+            };
             res.setHeader = {};
             res.end = {};
-
-            sandbox.stub(models.Client, 'findOne')
-                .withArgs({slug: 'test'}).returns(new Promise.resolve({
-                id: 1
-            }));
 
             sandbox.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
