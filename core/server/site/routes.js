@@ -1,4 +1,6 @@
-var routeService = require('../services/route'),
+var debug = require('ghost-ignition').debug('site:routes'),
+
+    routeService = require('../services/route'),
     siteRouter = routeService.siteRouter,
 
     // Sub Routers
@@ -37,6 +39,8 @@ module.exports = function siteRoutes() {
 
     // Default - register entry controller as route
     siteRouter.mountRoute('*', controllers.entry);
+
+    debug('Routes:', routeService.registry.getAll());
 
     return siteRouter.router();
 };

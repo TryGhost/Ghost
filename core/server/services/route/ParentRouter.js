@@ -9,9 +9,8 @@
 
 var debug = require('ghost-ignition').debug('services:routes:ParentRouter'),
     express = require('express'),
-    // This is a shared global cache
-    // @TODO expand this as part of the route service
-    routes = [];
+    // This the route registry for the whole site
+    registry = require('./registry');
 /**
  * We expose a very limited amount of express.Router via specialist methods
  */
@@ -27,7 +26,7 @@ class ParentRouter {
             debug(this.name + ': mountRouter: ' + router.name);
             this._router.use(router);
         } else {
-            routes.push(path);
+            registry.set(this.name, path);
             debug(this.name + ': mountRouter: ' + router.name + ' at ' + path);
             this._router.use(path, router);
         }
@@ -35,7 +34,7 @@ class ParentRouter {
 
     mountRoute(path, controller) {
         debug(this.name + ': mountRoute for', path, controller.name);
-        routes.push(path);
+        registry.set(this.name, path);
         this._router.get(path, controller);
     }
 
@@ -43,10 +42,6 @@ class ParentRouter {
         // @TODO: should this just be the handler that is returned?
         // return this._router.handle.bind(this._router);
         return this._router;
-    }
-
-    static routes() {
-        return routes;
     }
 }
 
