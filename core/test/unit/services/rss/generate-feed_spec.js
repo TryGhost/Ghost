@@ -33,7 +33,7 @@ describe('RSS: Generate Feed', function () {
 
         baseUrl = '/rss/';
 
-        data.version = '0.6';
+        data.safeVersion = '0.6';
         data.title = 'Test Title';
         data.description = 'Testing Desc';
         data.permalinks = '/:slug/';

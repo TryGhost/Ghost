@@ -70,7 +70,7 @@ generateFeed = function generateFeed(baseUrl, data) {
         feed = new RSS({
             title: data.title,
             description: data.description,
-            generator: 'Ghost ' + data.version,
+            generator: 'Ghost ' + data.safeVersion,
             feed_url: feedUrl,
             site_url: siteUrl,
             image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
