@@ -13,6 +13,8 @@ var _               = require('lodash'),
     utils           = require('../utils'),
     baseUtils       = require('./base/utils'),
     i18n            = require('../i18n'),
+    subscriber      = require('./subscriber'),
+    mail            = require('../mail'),
     Post,
     Posts;
 
@@ -86,6 +88,36 @@ Post = ghostBookshelf.Model.extend({
         model.resourceTypeChanging = model.get('page') !== model.updated('page');
         model.publishedAtHasChanged = model.hasDateChanged('published_at');
         model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
+
+        // if post was published at first time, send post to subscribers
+        if (model.isPublished && !model.wasPublished) {
+          // get subscribers list
+          options = {};
+          options.require = true;
+          title = model.get('title');
+          html = model.get('html');
+          blogurl = utils.url.getBlogUrl(true);
+          // append blog url for images under /content
+          html = html.replace(/(src\s*=\s*"\s*)\//g, "$1"+blogurl);
+          subscriber.Subscriber.findAll(options).then(
+            function (data) {
+              return { 'subscribers' : data.toJSON(options) }
+            }
+          ).then(
+            function (response) {
+              var subscribers = response.subscribers;
+              var scope = {ghostMailer: null};
+              scope.ghostMailer = new mail.GhostMailer();
+              for (j = 0; j < subscribers.length; j = j + 1) {
+                scope.ghostMailer.send({
+                  to: subscribers[j].email,
+                  subject: title,
+                  html: html
+                });
+              }
+            }
+          );
+        }
 
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
