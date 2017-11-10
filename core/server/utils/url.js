@@ -359,6 +359,7 @@ module.exports.isSSL = isSSL;
 module.exports.urlPathForPost = urlPathForPost;
 module.exports.redirectToAdmin = redirectToAdmin;
 module.exports.redirect301 = redirect301;
+module.exports.getBlogUrl = getBlogUrl;
 
 /**
  * If you request **any** image in Ghost, it get's served via
