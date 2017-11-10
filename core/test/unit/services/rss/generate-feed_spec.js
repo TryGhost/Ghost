@@ -7,6 +7,7 @@ var should = require('should'),
 
 describe('RSS: Generate Feed', function () {
     var data = {},
+        baseUrl,
         // Static set of posts
         posts;
 
@@ -30,18 +31,18 @@ describe('RSS: Generate Feed', function () {
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
 
-        data.version = '0.6';
-        data.siteUrl = 'http://my-ghost-blog.com/';
-        data.feedUrl = 'http://my-ghost-blog.com/rss/';
+        baseUrl = '/rss/';
+
+        data.safeVersion = '0.6';
         data.title = 'Test Title';
         data.description = 'Testing Desc';
-        data.permalinks = '/:slug/';
+        data.meta = {pagination: {pages: 1}};
     });
 
     it('should get the RSS tags correct', function (done) {
-        data.results = {posts: [], meta: {pagination: {pages: 1}}};
+        data.posts = [];
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // xml & rss tags
@@ -69,9 +70,9 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should get the item tags correct', function (done) {
-        data.results = {posts: posts, meta: {pagination: {pages: 1}}};
+        data.posts = posts;
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // item tags
@@ -107,9 +108,9 @@ describe('RSS: Generate Feed', function () {
             {name: 'visibility'}
         ];
 
-        data.results = {posts: [postWithTags], meta: {pagination: {pages: 1}}};
+        data.posts = [postWithTags];
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
             // item tags
             xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
@@ -124,10 +125,28 @@ describe('RSS: Generate Feed', function () {
         }).catch(done);
     });
 
-    it('should use meta_description and image where available', function (done) {
-        data.results = {posts: [posts[2]], meta: {pagination: {pages: 1}}};
+    it('should no error if author is somehow not present', function (done) {
+        data.posts = [_.omit(posts[2], 'author')];
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
+            should.exist(xmlData);
+
+            // special/optional tags
+            xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
+            xmlData.should.match(/<description><!\[CDATA\[test stuff/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<div class="kg-card-markdown"><h2 id="testing">testing<\/h2>\n/);
+            xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
+            xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
+            xmlData.should.not.match(/<dc:creator>/);
+
+            done();
+        }).catch(done);
+    });
+
+    it('should use meta_description and image where available', function (done) {
+        data.posts = [posts[2]];
+
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // special/optional tags
@@ -142,9 +161,9 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should use excerpt when no meta_description is set', function (done) {
-        data.results = {posts: [posts[0]], meta: {pagination: {pages: 1}}};
+        data.posts = [posts[0]];
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // special/optional tags
@@ -156,9 +175,9 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should process urls correctly', function (done) {
-        data.results = {posts: [posts[3]], meta: {pagination: {pages: 1}}};
+        data.posts = [posts[3]];
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // anchor URL - <a href="#nowhere" title="Anchor URL">
@@ -180,11 +199,10 @@ describe('RSS: Generate Feed', function () {
     it('should process urls correctly with subdirectory', function (done) {
         configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
 
-        data.siteUrl = 'http://my-ghost-blog.com/blog/';
-        data.feedUrl = 'http://my-ghost-blog.com/blog/rss/';
+        baseUrl = '/blog/rss/';
         data.results = {posts: [posts[3]], meta: {pagination: {pages: 1}}};
 
-        generateFeed(data).then(function (xmlData) {
+        generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
 
             // anchor URL - <a href="#nowhere" title="Anchor URL">
