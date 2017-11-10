@@ -2,16 +2,24 @@
 <p>{{subText}}</p>
 
 <section class="gh-content-entry-meta">
-    {{#if isPublished}}
-        {{#if post.page}}
-            <span class="gh-content-status-draft gh-badge gh-badge-black">Page</span>
-        {{else}}
-            <span class="gh-content-status-published">Published</span>
-        {{/if}}
-    {{else if isScheduled}}
+    {{#if isPage}}
+        <span class="gh-content-status-draft gh-badge gh-badge-black">Page</span>
+    {{/if}}
+
+    {{#if isScheduled}}
         <span class="gh-content-status-draft gh-badge">Scheduled</span>
-    {{else}}
+    {{/if}}
+
+    {{#if isDraft}}
         <span class="gh-content-status-draft gh-badge gh-badge-red">Draft</span>
+    {{/if}}
+
+    {{#if isFeatured}}
+        <span class="gh-content-status-featured gh-badge gh-badge-blue">Featured</span>
+    {{/if}}
+
+    {{#if (and isPublished (not post.page))}}
+        <span class="gh-content-status-published">Published</span>
     {{/if}}
 
     by <span class="gh-content-entry-author">{{authorName}}</span> &mdash;

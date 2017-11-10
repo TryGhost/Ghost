@@ -21,6 +21,7 @@ export default Component.extend({
 
     isFeatured: alias('post.featured'),
     isPage: alias('post.page'),
+    isDraft: equal('post.status', 'draft'),
     isPublished: equal('post.status', 'published'),
     isScheduled: equal('post.status', 'scheduled'),
 

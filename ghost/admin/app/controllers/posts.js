@@ -30,6 +30,9 @@ export default Controller.extend({
         name: 'Scheduled posts',
         value: 'scheduled'
     }, {
+        name: 'Featured posts',
+        value: 'featured'
+    }, {
         name: 'Pages',
         value: 'page'
     }],

@@ -37,6 +37,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
             let queryParams = this._typeParams(params.type);
             let filterParams = {tag: params.tag};
 
+            if (params.type === 'featured') {
+                filterParams.featured = true;
+            }
+
             if (user.get('isAuthor')) {
                 // authors can only view their own posts
                 filterParams.author = user.get('slug');
