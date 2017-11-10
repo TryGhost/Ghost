@@ -1,7 +1,6 @@
 var debug = require('ghost-ignition').debug('channels:render'),
     formatResponse = require('./format-response'),
-    setResponseContext = require('./context'),
-    templates = require('./templates');
+    renderer = require('./renderer');
 
 module.exports = function renderChannel(req, res) {
     debug('renderChannel called');
@@ -9,16 +8,9 @@ module.exports = function renderChannel(req, res) {
         // Renderer begin
         // Format data 2
         // Do final data formatting and then render
-        result = formatResponse.channel(result);
-
-        // Context
-        setResponseContext(req, res);
-
-        // Template
-        res.template = templates.channel(res.locals.channel);
+        var data = formatResponse.channel(result);
 
         // Render Call
-        debug('Rendering view: ' + res.template);
-        res.render(res.template, result);
+        return renderer(req, res, data);
     };
 };

@@ -6,7 +6,8 @@
 var _ = require('lodash'),
     path = require('path'),
     config = require('../../config'),
-    themes = require('../../themes');
+    themes = require('../../themes'),
+    _private = {};
 
 /**
  * ## Get Error Template Hierarchy
@@ -18,7 +19,7 @@ var _ = require('lodash'),
  * @param {integer} statusCode
  * @returns {String[]}
  */
-function getErrorTemplateHierarchy(statusCode) {
+_private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCode) {
     var errorCode = _.toString(statusCode),
         templateList = ['error'];
 
@@ -29,7 +30,7 @@ function getErrorTemplateHierarchy(statusCode) {
     templateList.unshift('error-' + errorCode);
 
     return templateList;
-}
+};
 
 /**
  * ## Get Channel Template Hierarchy
@@ -43,7 +44,7 @@ function getErrorTemplateHierarchy(statusCode) {
  * @param {Object} channelOpts
  * @returns {String[]}
  */
-function getChannelTemplateHierarchy(channelOpts) {
+_private.getChannelTemplateHierarchy = function getChannelTemplateHierarchy(channelOpts) {
     var templateList = ['index'];
 
     if (channelOpts.name && channelOpts.name !== 'index') {
@@ -59,7 +60,7 @@ function getChannelTemplateHierarchy(channelOpts) {
     }
 
     return templateList;
-}
+};
 
 /**
  * ## Get Entry Template Hierarchy
@@ -72,7 +73,7 @@ function getChannelTemplateHierarchy(channelOpts) {
  * @param {Object} postObject
  * @returns {String[]}
  */
-function getEntryTemplateHierarchy(postObject) {
+_private.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObject) {
     var templateList = ['post'],
         slugTemplate = 'post-' + postObject.slug;
 
@@ -88,7 +89,7 @@ function getEntryTemplateHierarchy(postObject) {
     templateList.unshift(slugTemplate);
 
     return templateList;
-}
+};
 
 /**
  * ## Pick Template
@@ -99,7 +100,7 @@ function getEntryTemplateHierarchy(postObject) {
  * @param {Array|String} templateList
  * @param {String} fallback - a fallback template
  */
-function pickTemplate(templateList, fallback) {
+_private.pickTemplate = function pickTemplate(templateList, fallback) {
     var template;
 
     if (!_.isArray(templateList)) {
@@ -119,29 +120,49 @@ function pickTemplate(templateList, fallback) {
     }
 
     return template;
-}
+};
 
-function getTemplateForEntry(postObject) {
-    var templateList = getEntryTemplateHierarchy(postObject),
+_private.getTemplateForEntry = function getTemplateForEntry(postObject) {
+    var templateList = _private.getEntryTemplateHierarchy(postObject),
         fallback = templateList[templateList.length - 1];
-    return pickTemplate(templateList, fallback);
-}
+    return _private.pickTemplate(templateList, fallback);
+};
 
-function getTemplateForChannel(channelOpts) {
-    var templateList = getChannelTemplateHierarchy(channelOpts),
+_private.getTemplateForChannel = function getTemplateForChannel(channelOpts) {
+    var templateList = _private.getChannelTemplateHierarchy(channelOpts),
         fallback = templateList[templateList.length - 1];
-    return pickTemplate(templateList, fallback);
-}
+    return _private.pickTemplate(templateList, fallback);
+};
 
-function getTemplateForError(statusCode) {
-    var templateList = getErrorTemplateHierarchy(statusCode),
+_private.getTemplateForError = function getTemplateForError(statusCode) {
+    var templateList = _private.getErrorTemplateHierarchy(statusCode),
         fallback = path.resolve(config.get('paths').defaultViews, 'error.hbs');
-    return pickTemplate(templateList, fallback);
-}
+    return _private.pickTemplate(templateList, fallback);
+};
 
-module.exports = {
-    channel: getTemplateForChannel,
-    entry: getTemplateForEntry,
-    error: getTemplateForError,
-    pickTemplate: pickTemplate
+module.exports.setTemplate = function setTemplate(req, res, data) {
+    var routeConfig = res._route || {};
+
+    if (res._template) {
+        return;
+    }
+
+    if (req.err) {
+        res._template = _private.getTemplateForError(res.statusCode);
+        return;
+    }
+
+    switch (routeConfig.type) {
+        case 'custom':
+            res._template = _private.pickTemplate(routeConfig.templateName, routeConfig.defaultTemplate);
+            break;
+        case 'channel':
+            res._template = _private.getTemplateForChannel(res.locals.channel);
+            break;
+        case 'entry':
+            res._template = _private.getTemplateForEntry(data.post);
+            break;
+        default:
+            res._template = 'index';
+    }
 };

@@ -9,6 +9,12 @@ var utils = require('../utils'),
 // It renders entries = individual posts or pages
 // The "route" is handled in site/routes.js
 module.exports = function entryController(req, res, next) {
+    // Note: this is super similar to the config middleware used in channels
+    // @TODO refactor into to something explicit
+    res._route = {
+        type: 'entry'
+    };
+
     // Query database to find post
     return postLookup(req.path).then(function then(lookup) {
         // Format data 1
