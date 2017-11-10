@@ -246,10 +246,13 @@ export default Controller.extend({
             let oldUrl = this.get('user.facebook');
             let errMessage = '';
 
+            // reset errors and validation
+            this.get('user.errors').remove('facebook');
+            this.get('user.hasValidated').removeObject('facebook');
+
             if (newUrl === '') {
                 // Clear out the Facebook url
                 this.set('user.facebook', '');
-                this.get('user.errors').remove('facebook');
                 return;
             }
 
@@ -258,52 +261,41 @@ export default Controller.extend({
                 newUrl = oldUrl;
             }
 
-            // If new url didn't change, exit
-            if (newUrl === oldUrl) {
-                this.get('user.errors').remove('facebook');
-                return;
-            }
+            try {
+                // strip any facebook URLs out
+                newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
 
-            // TODO: put the validation here into a validator
-            if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
-                let username = [];
-
-                if (newUrl.match(/(?:facebook\.com\/)(\S+)/)) {
-                    [, username] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
-                } else {
-                    [, username] = newUrl.match(/(?:https:\/\/|http:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
+                // don't allow any non-facebook urls
+                if (newUrl.match(/^(http|\/\/)/i)) {
+                    throw 'invalid url';
                 }
 
-                // check if we have a /page/username or without
-                if (username.match(/^(?:\/)?(pages?\/\S+)/mi)) {
-                    // we got a page url, now save the username without the / in the beginning
+                // strip leading / if we have one then concat to full facebook URL
+                newUrl = newUrl.replace(/^\//, '');
+                newUrl = `https://www.facebook.com/${newUrl}`;
 
-                    [, username] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
-                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d.]{1,50})$/mi)) {
-                    errMessage = !username.match(/^([a-z\d.]{1,50})$/mi) ? 'Your Username is not a valid Facebook Username' : 'The URL must be in a format like https://www.facebook.com/yourUsername';
-
-                    this.get('user.errors').add('facebook', errMessage);
-                    this.get('user.hasValidated').pushObject('facebook');
-                    return;
+                // don't allow URL if it's not valid
+                if (!validator.isURL(newUrl)) {
+                    throw 'invalid url';
                 }
 
-                newUrl = `https://www.facebook.com/${username}`;
-                this.set('user.facebook', newUrl);
-
-                this.get('user.errors').remove('facebook');
-                this.get('user.hasValidated').pushObject('facebook');
-
-                // necessary to update the value in the input field
                 this.set('user.facebook', '');
                 run.schedule('afterRender', this, function () {
                     this.set('user.facebook', newUrl);
                 });
-            } else {
-                errMessage = 'The URL must be in a format like '
-                           + 'https://www.facebook.com/yourUsername';
-                this.get('user.errors').add('facebook', errMessage);
+
+            } catch (e) {
+                if (e === 'invalid url') {
+                    errMessage = 'The URL must be in a format like '
+                               + 'https://www.facebook.com/yourPage';
+                    this.get('user.errors').add('facebook', errMessage);
+                    return;
+                }
+
+                throw e;
+
+            } finally {
                 this.get('user.hasValidated').pushObject('facebook');
-                return;
             }
         },
 
@@ -312,10 +304,13 @@ export default Controller.extend({
             let oldUrl = this.get('user.twitter');
             let errMessage = '';
 
+            // reset errors and validation
+            this.get('user.errors').remove('twitter');
+            this.get('user.hasValidated').removeObject('twitter');
+
             if (newUrl === '') {
                 // Clear out the Twitter url
                 this.set('user.twitter', '');
-                this.get('user.errors').remove('twitter');
                 return;
             }
 
@@ -324,13 +319,6 @@ export default Controller.extend({
                 newUrl = oldUrl;
             }
 
-            // If new url didn't change, exit
-            if (newUrl === oldUrl) {
-                this.get('user.errors').remove('twitter');
-                return;
-            }
-
-            // TODO: put the validation here into a validator
             if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
                 let username = [];
 
@@ -350,12 +338,9 @@ export default Controller.extend({
                 }
 
                 newUrl = `https://twitter.com/${username}`;
-                this.set('user.twitter', newUrl);
 
-                this.get('user.errors').remove('twitter');
                 this.get('user.hasValidated').pushObject('twitter');
 
-                // necessary to update the value in the input field
                 this.set('user.twitter', '');
                 run.schedule('afterRender', this, function () {
                     this.set('user.twitter', newUrl);

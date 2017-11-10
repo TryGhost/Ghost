@@ -547,6 +547,29 @@ describe('Acceptance: Team', function () {
 
                 expect(find('[data-test-website-input]').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
 
+                let testSocialInput = async function(type, input, expectedValue, expectedError = '') {
+                    await fillIn(`[data-test-${type}-input]`, input);
+                    await triggerEvent(`[data-test-${type}-input]`, 'blur');
+
+                    expect(
+                        find(`[data-test-${type}-input]`).val(),
+                        `${type} value for ${input}`
+                    ).to.equal(expectedValue);
+
+                    expect(
+                        find(`[data-test-${type}-error]`).text().trim(),
+                        `${type} validation response for ${input}`
+                    ).to.equal(expectedError);
+
+                    expect(
+                        find(`[data-test-${type}-input]`).closest('.form-group').hasClass('error'),
+                        `${type} input should be in error state with '${input}'`
+                    ).to.equal(!!expectedError);
+                };
+
+                let testFacebookValidation = async (...args) => testSocialInput('facebook', ...args);
+                let testTwitterValidation = async (...args) => testSocialInput('twitter', ...args);
+
                 // Testing Facebook input
 
                 // displays initial value
@@ -561,53 +584,43 @@ describe('Acceptance: Team', function () {
                 expect(find('[data-test-facebook-input]').val(), 'facebook value after blur with no change')
                     .to.equal('https://www.facebook.com/test');
 
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', ')(*&%^%)');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await testFacebookValidation(
+                    'facebook.com/username',
+                    'https://www.facebook.com/username');
 
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                await testFacebookValidation(
+                    'testuser',
+                    'https://www.facebook.com/testuser');
 
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'pages/)(*&%^%)');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await testFacebookValidation(
+                    'ab99',
+                    'https://www.facebook.com/ab99');
 
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/)(*&%^%)');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                await testFacebookValidation(
+                    'page/ab99',
+                    'https://www.facebook.com/page/ab99');
 
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'testing');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await testFacebookValidation(
+                    'page/*(&*(%%))',
+                    'https://www.facebook.com/page/*(&*(%%))');
 
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testing');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                await testFacebookValidation(
+                    'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
+                    'https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
 
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'somewebsite.com/pages/some-facebook-page/857469375913?ref=ts');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await testFacebookValidation(
+                    'https://www.facebook.com/groups/savethecrowninn',
+                    'https://www.facebook.com/groups/savethecrowninn');
 
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                await testFacebookValidation(
+                    'http://github.com/username',
+                    'http://github.com/username',
+                    'The URL must be in a format like https://www.facebook.com/yourPage');
 
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'test');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
-
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/test');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
-
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'http://twitter.com/testuser');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
-
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testuser');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
-
-                await fillIn('[data-test-facebook-input]', '');
-                await fillIn('[data-test-facebook-input]', 'facebook.com/testing');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
-
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testing');
-                expect(find('[data-test-facebook-input]').closest('.form-group').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                await testFacebookValidation(
+                    'http://github.com/pages/username',
+                    'http://github.com/pages/username',
+                    'The URL must be in a format like https://www.facebook.com/yourPage');
 
                 // Testing Twitter input
 
@@ -623,32 +636,29 @@ describe('Acceptance: Team', function () {
                 expect(find('[data-test-twitter-input]').val(), 'twitter value after blur with no change')
                     .to.equal('https://twitter.com/test');
 
-                await fillIn('[data-test-twitter-input]', '');
-                await fillIn('[data-test-twitter-input]', ')(*&%^%)');
-                await triggerEvent('[data-test-twitter-input]', 'blur');
+                await testTwitterValidation(
+                    'twitter.com/username',
+                    'https://twitter.com/username');
 
-                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                await testTwitterValidation(
+                    'testuser',
+                    'https://twitter.com/testuser');
 
-                await fillIn('[data-test-twitter-input]', '');
-                await fillIn('[data-test-twitter-input]', 'name');
-                await triggerEvent('[data-test-twitter-input]', 'blur');
+                await testTwitterValidation(
+                    'http://github.com/username',
+                    'https://twitter.com/username');
 
-                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/name');
-                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                await testTwitterValidation(
+                    '*(&*(%%))',
+                    '*(&*(%%))',
+                    'The URL must be in a format like https://twitter.com/yourUsername');
 
-                await fillIn('[data-test-twitter-input]', '');
-                await fillIn('[data-test-twitter-input]', 'http://github.com/user');
-                await triggerEvent('[data-test-twitter-input]', 'blur');
+                await testTwitterValidation(
+                    'thisusernamehasmorethan15characters',
+                    'thisusernamehasmorethan15characters',
+                    'Your Username is not a valid Twitter Username');
 
-                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/user');
-                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
-
-                await fillIn('[data-test-twitter-input]', '');
-                await fillIn('[data-test-twitter-input]', 'twitter.com/user');
-                await triggerEvent('[data-test-twitter-input]', 'blur');
-
-                expect(find('[data-test-twitter-input]').val()).to.be.equal('https://twitter.com/user');
-                expect(find('[data-test-twitter-input]').closest('.form-group').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                // Testing bio input
 
                 await fillIn('[data-test-website-input]', '');
                 await fillIn('[data-test-bio-input]', new Array(210).join('a'));
