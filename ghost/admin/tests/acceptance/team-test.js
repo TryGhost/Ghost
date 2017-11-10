@@ -3,6 +3,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
 import startApp from '../helpers/start-app';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
@@ -449,7 +450,7 @@ describe('Acceptance: Team', function () {
         });
 
         describe('existing user', function () {
-            let user;
+            let user, newLocation, originalReplaceState;
 
             beforeEach(function () {
                 user = server.create('user', {
@@ -458,6 +459,16 @@ describe('Acceptance: Team', function () {
                     facebook: 'test',
                     twitter: '@test'
                 });
+
+                originalReplaceState = windowProxy.replaceState;
+                windowProxy.replaceState = function (params, title, url) {
+                    newLocation = url;
+                };
+                newLocation = undefined;
+            });
+
+            afterEach(function () {
+                windowProxy.replaceState = originalReplaceState;
             });
 
             it('input fields reset and validate correctly', async function () {
@@ -510,6 +521,9 @@ describe('Acceptance: Team', function () {
                 let params = JSON.parse(lastRequest.requestBody);
 
                 expect(params.users[0].name).to.equal('Test User');
+
+                // check that the history state has been updated
+                expect(newLocation).to.equal('Test User');
 
                 await fillIn('[data-test-slug-input]', 'white space');
                 await triggerEvent('[data-test-slug-input]', 'blur');
