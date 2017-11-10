@@ -9,7 +9,7 @@ var _ = require('lodash'),
     renderChannel = require('./frontend/render-channel');
 
 // This here is a controller.
-// The "route" is handled in controllers/channels/router.js
+// The "route" is handled in services/channels/router.js
 // There's both a top-level channelS router, and an individual channel one
 module.exports = function channelController(req, res, next) {
     // Parse the parameters we need from the URL

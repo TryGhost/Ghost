@@ -410,48 +410,6 @@ describe('Contexts', function () {
         });
     });
 
-    describe('RSS', function () {
-        // NOTE: this works, but is never used in reality, as setResponseContext isn't called
-        // for RSS feeds at the moment.
-        it('should correctly identify /rss/ as rss', function () {
-            // Setup test
-            setupContext('/rss/');
-
-            // Execute test
-            setResponseContext(req, res, data);
-
-            // Check context
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('rss');
-        });
-
-        it('will not identify /rss/2/ as rss & paged without page param', function () {
-            // Setup test by setting relativeUrl
-            setupContext('/rss/2/');
-
-            // Execute test
-            setResponseContext(req, res, data);
-
-            // Check context
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('rss');
-        });
-
-        it('should correctly identify /rss/2/ as rss & paged with page param', function () {
-            // Setup test by setting relativeUrl
-            setupContext('/rss/2/', 2);
-
-            // Execute test
-            setResponseContext(req, res, data);
-
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('paged');
-            res.locals.context[1].should.eql('rss');
-        });
-    });
     describe('AMP', function () {
         it('should correctly identify an AMP post', function () {
             // Setup test

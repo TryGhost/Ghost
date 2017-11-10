@@ -5,6 +5,7 @@ var downsize = require('downsize'),
     processUrls = require('../../utils/make-absolute-urls'),
 
     generateFeed,
+    generateItem,
     generateTags;
 
 generateTags = function generateTags(data) {
@@ -20,59 +21,76 @@ generateTags = function generateTags(data) {
     return [];
 };
 
-generateFeed = function generateFeed(data) {
-    var feed = new RSS({
-        title: data.title,
-        description: data.description,
-        generator: 'Ghost ' + data.version,
-        feed_url: data.feedUrl,
-        site_url: data.siteUrl,
-        image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
-        ttl: '60',
-        custom_namespaces: {
-            content: 'http://purl.org/rss/1.0/modules/content/',
-            media: 'http://search.yahoo.com/mrss/'
+generateItem = function generateItem(post, siteUrl, secure) {
+    var itemUrl = utils.url.urlFor('post', {post: post, secure: secure}, true),
+        htmlContent = processUrls(post.html, siteUrl, itemUrl),
+        item = {
+            title: post.title,
+            // @TODO: DRY this up with data/meta/index & other excerpt code
+            description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
+            guid: post.id,
+            url: itemUrl,
+            date: post.published_at,
+            categories: generateTags(post),
+            author: post.author ? post.author.name : null,
+            custom_elements: []
+        },
+        imageUrl;
+
+    if (post.feature_image) {
+        imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: secure}, true);
+
+        // Add a media content tag
+        item.custom_elements.push({
+            'media:content': {
+                _attr: {
+                    url: imageUrl,
+                    medium: 'image'
+                }
+            }
+        });
+
+        // Also add the image to the content, because not all readers support media:content
+        htmlContent('p').first().before('<img src="' + imageUrl + '" />');
+        htmlContent('img').attr('alt', post.title);
+    }
+
+    item.custom_elements.push({
+        'content:encoded': {
+            _cdata: htmlContent.html()
         }
     });
 
-    data.results.posts.forEach(function forEach(post) {
-        var itemUrl = utils.url.urlFor('post', {post: post, secure: data.secure}, true),
-            htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
-            item = {
-                title: post.title,
-                description: post.custom_excerpt || post.meta_description || downsize(htmlContent.html(), {words: 50}),
-                guid: post.id,
-                url: itemUrl,
-                date: post.published_at,
-                categories: generateTags(post),
-                author: post.author ? post.author.name : null,
-                custom_elements: []
-            },
-            imageUrl;
+    return item;
+};
 
-        if (post.feature_image) {
-            imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: data.secure}, true);
-
-            // Add a media content tag
-            item.custom_elements.push({
-                'media:content': {
-                    _attr: {
-                        url: imageUrl,
-                        medium: 'image'
-                    }
-                }
-            });
-
-            // Also add the image to the content, because not all readers support media:content
-            htmlContent('p').first().before('<img src="' + imageUrl + '" />');
-            htmlContent('img').attr('alt', post.title);
-        }
-
-        item.custom_elements.push({
-            'content:encoded': {
-                _cdata: htmlContent.html()
+/**
+ * Generate Feed
+ *
+ * Data is an object which contains the res.locals + results from fetching a channel, but without related data.
+ *
+ * @param {string} baseUrl
+ * @param {{title, description, safeVersion, secure, posts}} data
+ */
+generateFeed = function generateFeed(baseUrl, data) {
+    var siteUrl = utils.url.urlFor('home', {secure: data.secure}, true),
+        feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
+        feed = new RSS({
+            title: data.title,
+            description: data.description,
+            generator: 'Ghost ' + data.safeVersion,
+            feed_url: feedUrl,
+            site_url: siteUrl,
+            image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
+            ttl: '60',
+            custom_namespaces: {
+                content: 'http://purl.org/rss/1.0/modules/content/',
+                media: 'http://search.yahoo.com/mrss/'
             }
         });
+
+    data.posts.forEach(function forEach(post) {
+        var item = generateItem(post, siteUrl, data.secure);
 
         filters.doFilter('rss.item', item, post).then(function then(item) {
             feed.item(item);

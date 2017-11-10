@@ -27,8 +27,8 @@ describe('RSS: Cache', function () {
             data = {
                 title: 'Test Title',
                 description: 'Testing Desc',
-                permalinks: '/:slug/',
-                results: {posts: [], meta: {pagination: {pages: 1}}}
+                posts: [],
+                meta: {pagination: {pages: 1}}
             };
 
         rssCache.getXML('/rss/', data)
