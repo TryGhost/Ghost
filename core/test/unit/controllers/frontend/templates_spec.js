@@ -9,14 +9,15 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('templates', function () {
-    var getActiveThemeStub, hasTemplateStub;
+    var getActiveThemeStub, hasTemplateStub,
+        _private = templates.__get__('_private');
 
     afterEach(function () {
         sandbox.restore();
     });
 
     describe('[private] getChannelTemplateHierarchy', function () {
-        var channelTemplateList = templates.__get__('getChannelTemplateHierarchy');
+        var channelTemplateList = _private.getChannelTemplateHierarchy;
 
         it('should return just index for empty channelOpts', function () {
             channelTemplateList({}).should.eql(['index']);
@@ -61,7 +62,7 @@ describe('templates', function () {
         });
     });
 
-    describe('pickTemplate', function () {
+    describe('[private] pickTemplate', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -73,13 +74,13 @@ describe('templates', function () {
         it('returns fallback if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
-            templates.pickTemplate(['page-my-post', 'page', 'post'], 'fallback').should.eql('fallback');
+            _private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
+            _private.pickTemplate(['page-my-post', 'page', 'post'], 'fallback').should.eql('fallback');
         });
 
         it('returns fallback if active_theme has no templates', function () {
-            templates.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
-            templates.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('fallback');
+            _private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback').should.eql('fallback');
+            _private.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('fallback');
         });
 
         describe('with many templates', function () {
@@ -94,20 +95,20 @@ describe('templates', function () {
             });
 
             it('returns first matching template', function () {
-                templates.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('page-about');
-                templates.pickTemplate(['page-magic', 'page', 'post'], 'fallback').should.eql('page');
-                templates.pickTemplate(['page', 'post'], 'fallback').should.eql('page');
+                _private.pickTemplate(['page-about', 'page', 'post'], 'fallback').should.eql('page-about');
+                _private.pickTemplate(['page-magic', 'page', 'post'], 'fallback').should.eql('page');
+                _private.pickTemplate(['page', 'post'], 'fallback').should.eql('page');
             });
 
             it('returns correctly if template list is a string', function () {
-                templates.pickTemplate('amp', 'fallback').should.eql('amp');
-                templates.pickTemplate('subscribe', 'fallback').should.eql('fallback');
-                templates.pickTemplate('post', 'fallback').should.eql('post');
+                _private.pickTemplate('amp', 'fallback').should.eql('amp');
+                _private.pickTemplate('subscribe', 'fallback').should.eql('fallback');
+                _private.pickTemplate('post', 'fallback').should.eql('post');
             });
         });
     });
 
-    describe('entry', function () {
+    describe('[private] getTemplateForEntry', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -127,7 +128,7 @@ describe('templates', function () {
             });
 
             it('post without custom slug template', function () {
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'test-post'
                 });
@@ -137,7 +138,7 @@ describe('templates', function () {
 
             it('post with custom slug template', function () {
                 hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
@@ -146,7 +147,7 @@ describe('templates', function () {
             });
 
             it('page without custom slug template', function () {
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 1,
                     slug: 'contact'
                 });
@@ -155,7 +156,7 @@ describe('templates', function () {
             });
 
             it('page with custom slug template', function () {
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 1,
                     slug: 'about'
                 });
@@ -166,7 +167,7 @@ describe('templates', function () {
             it('post with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -177,7 +178,7 @@ describe('templates', function () {
             it('page with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -188,7 +189,7 @@ describe('templates', function () {
             it('post with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -199,7 +200,7 @@ describe('templates', function () {
             it('page with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -211,7 +212,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
                 hasTemplateStub.withArgs('post-about').returns(true);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -224,7 +225,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
                 hasTemplateStub.withArgs('post-about').returns(false);
 
-                var view = templates.entry({
+                var view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -237,13 +238,13 @@ describe('templates', function () {
         it('will fall back to post even if no index.hbs', function () {
             hasTemplateStub.returns(false);
 
-            var view = templates.entry({page: 1});
+            var view = _private.getTemplateForEntry({page: 1});
             should.exist(view);
             view.should.eql('post');
         });
     });
 
-    describe('channel', function () {
+    describe('[private] getTemplateForChannel', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -259,7 +260,7 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = _private.getTemplateForChannel({name: 'tag', slugParam: 'development', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('index');
             });
@@ -274,26 +275,26 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel({name: 'tag', slugParam: 'design', slugTemplate: true});
+                var view = _private.getTemplateForChannel({name: 'tag', slugParam: 'design', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = _private.getTemplateForChannel({name: 'tag', slugParam: 'development', slugTemplate: true});
                 should.exist(view);
                 view.should.eql('tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            var view = templates.channel({name: 'tag', slugParam: 'development', slugTemplate: true});
+            var view = _private.getTemplateForChannel({name: 'tag', slugParam: 'development', slugTemplate: true});
             should.exist(view);
             view.should.eql('index');
         });
     });
 
-    describe('error', function () {
+    describe('[private] getTemplateForError', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -305,33 +306,33 @@ describe('templates', function () {
         it('will fall back to default if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            templates.error(500).should.match(/core\/server\/views\/error.hbs$/);
+            _private.getTemplateForError(500).should.match(/core\/server\/views\/error.hbs$/);
         });
 
         it('will fall back to default for all statusCodes with no custom error templates', function () {
-            templates.error(500).should.match(/core\/server\/views\/error.hbs$/);
-            templates.error(503).should.match(/core\/server\/views\/error.hbs$/);
-            templates.error(422).should.match(/core\/server\/views\/error.hbs$/);
-            templates.error(404).should.match(/core\/server\/views\/error.hbs$/);
+            _private.getTemplateForError(500).should.match(/core\/server\/views\/error.hbs$/);
+            _private.getTemplateForError(503).should.match(/core\/server\/views\/error.hbs$/);
+            _private.getTemplateForError(422).should.match(/core\/server\/views\/error.hbs$/);
+            _private.getTemplateForError(404).should.match(/core\/server\/views\/error.hbs$/);
         });
 
         it('will use custom error.hbs for all statusCodes if there are no other templates', function () {
             hasTemplateStub.withArgs('error').returns(true);
 
-            templates.error(500).should.eql('error');
-            templates.error(503).should.eql('error');
-            templates.error(422).should.eql('error');
-            templates.error(404).should.eql('error');
+            _private.getTemplateForError(500).should.eql('error');
+            _private.getTemplateForError(503).should.eql('error');
+            _private.getTemplateForError(422).should.eql('error');
+            _private.getTemplateForError(404).should.eql('error');
         });
 
         it('will use more specific error-4xx.hbs for all 4xx statusCodes if available', function () {
             hasTemplateStub.withArgs('error').returns(true);
             hasTemplateStub.withArgs('error-4xx').returns(true);
 
-            templates.error(500).should.eql('error');
-            templates.error(503).should.eql('error');
-            templates.error(422).should.eql('error-4xx');
-            templates.error(404).should.eql('error-4xx');
+            _private.getTemplateForError(500).should.eql('error');
+            _private.getTemplateForError(503).should.eql('error');
+            _private.getTemplateForError(422).should.eql('error-4xx');
+            _private.getTemplateForError(404).should.eql('error-4xx');
         });
 
         it('will use explicit error-404.hbs for 404 statusCode if available', function () {
@@ -339,10 +340,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            templates.error(500).should.eql('error');
-            templates.error(503).should.eql('error');
-            templates.error(422).should.eql('error-4xx');
-            templates.error(404).should.eql('error-404');
+            _private.getTemplateForError(500).should.eql('error');
+            _private.getTemplateForError(503).should.eql('error');
+            _private.getTemplateForError(422).should.eql('error-4xx');
+            _private.getTemplateForError(404).should.eql('error-404');
         });
 
         it('cascade works the same for 500 errors', function () {
@@ -350,10 +351,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-5xx').returns(true);
             hasTemplateStub.withArgs('error-503').returns(true);
 
-            templates.error(500).should.eql('error-5xx');
-            templates.error(503).should.eql('error-503');
-            templates.error(422).should.eql('error');
-            templates.error(404).should.eql('error');
+            _private.getTemplateForError(500).should.eql('error-5xx');
+            _private.getTemplateForError(503).should.eql('error-503');
+            _private.getTemplateForError(422).should.eql('error');
+            _private.getTemplateForError(404).should.eql('error');
         });
 
         it('cascade works with many specific templates', function () {
@@ -363,12 +364,178 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            templates.error(500).should.eql('error-5xx');
-            templates.error(503).should.eql('error-503');
-            templates.error(422).should.eql('error-4xx');
-            templates.error(404).should.eql('error-404');
-            templates.error(401).should.eql('error-4xx');
-            templates.error(501).should.eql('error-5xx');
+            _private.getTemplateForError(500).should.eql('error-5xx');
+            _private.getTemplateForError(503).should.eql('error-503');
+            _private.getTemplateForError(422).should.eql('error-4xx');
+            _private.getTemplateForError(404).should.eql('error-404');
+            _private.getTemplateForError(401).should.eql('error-4xx');
+            _private.getTemplateForError(501).should.eql('error-5xx');
+        });
+    });
+
+    describe('setTemplate', function () {
+        var stubs = {}, req, res, data;
+
+        beforeEach(function () {
+            req = {};
+            res = {
+                locals: {}
+            };
+            data = {};
+
+            stubs.pickTemplate = sandbox.stub(_private, 'pickTemplate').returns('testFromPickTemplate');
+            stubs.getTemplateForEntry = sandbox.stub(_private, 'getTemplateForEntry').returns('testFromEntry');
+            stubs.getTemplateForChannel = sandbox.stub(_private, 'getTemplateForChannel').returns('testFromChannel');
+            stubs.getTemplateForError = sandbox.stub(_private, 'getTemplateForError').returns('testFromError');
+        });
+
+        it('does nothing if template is already set', function () {
+            // Pre-set template
+            res._template = 'thing';
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // It hasn't changed
+            res._template.should.eql('thing');
+
+            // And nothing got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.false();
+        });
+
+        it('defaults to index', function () {
+            // No route or template config here!!!
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // It should be index
+            res._template.should.eql('index');
+
+            // And nothing got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.false();
+        });
+
+        it('calls pickTemplate for custom routes', function () {
+            res._route = {
+                type: 'custom',
+                templateName: 'test',
+                defaultTemplate: 'path/to/local/test.hbs'
+            };
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // should be testFromPickTemplate
+            res._template.should.eql('testFromPickTemplate');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.true();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.false();
+
+            stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
+        });
+
+        it('calls pickTemplate for custom routes', function () {
+            res._route = {
+                type: 'custom',
+                templateName: 'test',
+                defaultTemplate: 'path/to/local/test.hbs'
+            };
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // should be testFromPickTemplate
+            res._template.should.eql('testFromPickTemplate');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.true();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.false();
+
+            stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
+        });
+
+        it('calls getTemplateForEntry for entry routes', function () {
+            res._route = {
+                type: 'entry'
+            };
+
+            // Requires a post to be set
+            data = {post: {slug: 'test'}};
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // should be getTemplateForEntry
+            res._template.should.eql('testFromEntry');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.true();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.false();
+
+            stubs.getTemplateForEntry.calledWith({slug: 'test'}).should.be.true();
+        });
+
+        it('calls getTemplateForChannel for channel routes', function () {
+            res._route = {
+                type: 'channel'
+            };
+
+            res.locals.channel = {testChannel: 'test'};
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // should be testFromChannel
+            res._template.should.eql('testFromChannel');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.true();
+            stubs.getTemplateForError.called.should.be.false();
+
+            stubs.getTemplateForChannel.calledWith({testChannel: 'test'}).should.be.true();
+        });
+
+        it('calls getTemplateForError if there is an error', function () {
+            // Make the config look like a custom route
+            res._route = {
+                type: 'custom',
+                templateName: 'test',
+                defaultTemplate: 'path/to/local/test.hbs'
+            };
+
+            // Setup an error
+            res.statusCode = 404;
+            req.err = new Error();
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            // should be testFromError
+            res._template.should.eql('testFromError');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForChannel.called.should.be.false();
+            stubs.getTemplateForError.called.should.be.true();
+
+            stubs.getTemplateForError.calledWith(404).should.be.true();
         });
     });
 });
