@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
@@ -182,7 +183,7 @@ export default Controller.extend({
                 newPath[newPath.length - 1] = model.get('slug');
                 newPath = newPath.join('/');
 
-                window.history.replaceState({path: newPath}, '', newPath);
+                windowProxy.replaceState({path: newPath}, '', newPath);
             }
 
             this.set('dirtyAttributes', false);
