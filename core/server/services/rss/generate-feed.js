@@ -64,6 +64,14 @@ generateItem = function generateItem(post, siteUrl, secure) {
     return item;
 };
 
+/**
+ * Generate Feed
+ *
+ * Data is an object which contains the res.locals + results from fetching a channel, but without related data.
+ *
+ * @param {string} baseUrl
+ * @param {{title, description, safeVersion, secure, posts}} data
+ */
 generateFeed = function generateFeed(baseUrl, data) {
     var siteUrl = utils.url.urlFor('home', {secure: data.secure}, true),
         feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
@@ -81,7 +89,7 @@ generateFeed = function generateFeed(baseUrl, data) {
             }
         });
 
-    data.results.posts.forEach(function forEach(post) {
+    data.posts.forEach(function forEach(post) {
         var item = generateItem(post, siteUrl, data.secure);
 
         filters.doFilter('rss.item', item, post).then(function then(item) {

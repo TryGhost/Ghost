@@ -40,7 +40,7 @@ describe('RSS', function () {
             next = sandbox.stub();
 
             // Overwrite getData
-            fakeData = {results: {meta: {pagination: {pages: 3}}}};
+            fakeData = {meta: {pagination: {pages: 3}}};
             getDataStub = sandbox.stub().returns(new Promise.resolve(fakeData));
 
             resetGetData = rssController.__set__('getData', getDataStub);
@@ -163,8 +163,7 @@ describe('RSS', function () {
             sandbox.stub(settingsCache, 'get', function (key) {
                 var obj = {
                     title: 'Test',
-                    description: 'Some Text',
-                    permalinks: '/:slug/'
+                    description: 'Some Text'
                 };
 
                 return obj[key];
@@ -189,10 +188,8 @@ describe('RSS', function () {
                     result.should.eql({
                         title: 'Test',
                         description: 'Some Text',
-                        results: {
-                            posts: [{test: 'hey'}],
-                            meta: {foo: 'you'}
-                        }
+                        posts: [{test: 'hey'}],
+                        meta: {foo: 'you'}
                     });
                     done();
                 })
@@ -212,10 +209,8 @@ describe('RSS', function () {
                     result.should.eql({
                         title: 'Test',
                         description: 'Some Text',
-                        results: {
-                            posts: [{test: 'hey'}],
-                            meta: {foo: 'you'}
-                        }
+                        posts: [{test: 'hey'}],
+                        meta: {foo: 'you'}
                     });
                     done();
                 })
@@ -239,10 +234,8 @@ describe('RSS', function () {
                     result.should.eql({
                         title: 'there - Test',
                         description: 'Some Text',
-                        results: {
-                            posts: [{test: 'hey'}],
-                            meta: {foo: 'you'}
-                        }
+                        posts: [{test: 'hey'}],
+                        meta: {foo: 'you'}
                     });
                     done();
                 })
@@ -262,10 +255,8 @@ describe('RSS', function () {
                     result.should.eql({
                         title: 'Test',
                         description: 'Some Text',
-                        results: {
-                            posts: [{test: 'hey'}],
-                            meta: {foo: 'you'}
-                        }
+                        posts: [{test: 'hey'}],
+                        meta: {foo: 'you'}
                     });
                     done();
                 })
@@ -289,10 +280,8 @@ describe('RSS', function () {
                     result.should.eql({
                         title: 'there - Test',
                         description: 'Some Text',
-                        results: {
-                            posts: [{test: 'hey'}],
-                            meta: {foo: 'you'}
-                        }
+                        posts: [{test: 'hey'}],
+                        meta: {foo: 'you'}
                     });
                     done();
                 })

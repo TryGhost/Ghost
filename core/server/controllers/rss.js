@@ -32,14 +32,10 @@ function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
 
     return fetchData(channelOpts).then(function formatResult(result) {
-        var response = {};
+        var response = _.pick(result, ['posts', 'meta']);
 
         response.title = getTitle(result.data);
         response.description = settingsCache.get('description');
-        response.results = {
-            posts: result.posts,
-            meta: result.meta
-        };
 
         return response;
     });
@@ -63,7 +59,7 @@ generate = function generate(req, res, next) {
 
     return getData(res.locals.channel).then(function handleResult(data) {
         // If page is greater than number of pages we have, go straight to 404
-        if (pageParam > data.results.meta.pagination.pages) {
+        if (pageParam > data.meta.pagination.pages) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 

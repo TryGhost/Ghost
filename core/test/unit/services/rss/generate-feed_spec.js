@@ -36,11 +36,11 @@ describe('RSS: Generate Feed', function () {
         data.safeVersion = '0.6';
         data.title = 'Test Title';
         data.description = 'Testing Desc';
-        data.permalinks = '/:slug/';
+        data.meta = {pagination: {pages: 1}};
     });
 
     it('should get the RSS tags correct', function (done) {
-        data.results = {posts: [], meta: {pagination: {pages: 1}}};
+        data.posts = [];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -70,7 +70,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should get the item tags correct', function (done) {
-        data.results = {posts: posts, meta: {pagination: {pages: 1}}};
+        data.posts = posts;
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -108,7 +108,7 @@ describe('RSS: Generate Feed', function () {
             {name: 'visibility'}
         ];
 
-        data.results = {posts: [postWithTags], meta: {pagination: {pages: 1}}};
+        data.posts = [postWithTags];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -126,7 +126,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should no error if author is somehow not present', function (done) {
-        data.results = {posts: [_.omit(posts[2], 'author')], meta: {pagination: {pages: 1}}};
+        data.posts = [_.omit(posts[2], 'author')];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -144,7 +144,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should use meta_description and image where available', function (done) {
-        data.results = {posts: [posts[2]], meta: {pagination: {pages: 1}}};
+        data.posts = [posts[2]];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -161,7 +161,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should use excerpt when no meta_description is set', function (done) {
-        data.results = {posts: [posts[0]], meta: {pagination: {pages: 1}}};
+        data.posts = [posts[0]];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -175,7 +175,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should process urls correctly', function (done) {
-        data.results = {posts: [posts[3]], meta: {pagination: {pages: 1}}};
+        data.posts = [posts[3]];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
