@@ -46,7 +46,7 @@ function getData(channelOpts) {
 }
 
 // This here is a controller.
-// The "route" is handled in controllers/channels/router.js
+// The "route" is handled in services/channels/router.js
 // We can only generate RSS for channels, so that sorta makes sense, but the location is rubbish
 // @TODO finish refactoring this - it's now a controller
 generate = function generate(req, res, next) {
