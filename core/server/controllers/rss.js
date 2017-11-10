@@ -52,7 +52,9 @@ function getData(channelOpts) {
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
+        slugParam = req.params.slug ? safeString(req.params.slug) : undefined,
+        // Base URL needs to be the URL for the feed without pagination:
+        baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam);
 
     // @TODO: fix this, we shouldn't change the channel object!
     // Set page on postOptions for the query made later
@@ -60,12 +62,8 @@ generate = function generate(req, res, next) {
     res.locals.channel.slugParam = slugParam;
 
     return getData(res.locals.channel).then(function handleResult(data) {
-        // Base URL needs to be the URL for the feed without pagination:
-        var baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam),
-            maxPage = data.results.meta.pagination.pages;
-
-        // If page is greater than number of pages we have, redirect to last page
-        if (pageParam > maxPage) {
+        // If page is greater than number of pages we have, go straight to 404
+        if (pageParam > data.results.meta.pagination.pages) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 
