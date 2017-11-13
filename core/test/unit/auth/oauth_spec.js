@@ -269,13 +269,12 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(authUtils, 'createTokens')
-                .returns(new Promise.reject({
-                    message: 'DB error'
-                }));
+            sandbox.stub(authUtils, 'createTokens', function () {
+                return Promise.reject(new Error('DB error'));
+            });
 
             oAuth.generateAccessToken(req, res, function (err) {
-                err.message.should.eql('DB error');
+                err.stack.should.containEql('DB error');
                 done();
             });
         });

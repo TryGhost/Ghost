@@ -31,14 +31,62 @@ _private.decreaseOldAccessTokenExpiry = function decreaseOldAccessTokenExpiry(da
         });
 };
 
-_private.destroyOldRefreshToken = function destroyOldRefreshToken(options) {
-    debug('destroyOldRefreshToken', options.token);
+_private.handleOldRefreshToken = function handleOldRefreshToken(data, options) {
+    debug('handleOldRefreshToken', data.oldRefreshToken);
 
-    if (!options.token) {
-        return Promise.resolve();
+    if (!data.oldRefreshToken) {
+        return models.Refreshtoken.add({
+            token: data.newRefreshToken,
+            user_id: data.userId,
+            client_id: data.clientId,
+            expires: data.refreshExpires
+        }, options);
     }
 
-    return models.Refreshtoken.destroyByToken(options);
+    // extend refresh token expiry
+    return models.Refreshtoken.edit({
+        expires: data.refreshExpires
+    }, _.merge({id: data.oldRefreshId}, options));
+};
+
+_private.handleTokenCreation = function handleTokenCreation(data, options) {
+    var oldAccessToken = data.oldAccessToken,
+        oldRefreshToken = data.oldRefreshToken,
+        oldRefreshId = data.oldRefreshId,
+        newAccessToken = globalUtils.uid(191),
+        newRefreshToken = globalUtils.uid(191),
+        accessExpires = Date.now() + globalUtils.ONE_MONTH_MS,
+        refreshExpires = Date.now() + globalUtils.SIX_MONTH_MS,
+        clientId = data.clientId,
+        userId = data.userId;
+
+    return _private.decreaseOldAccessTokenExpiry({token: oldAccessToken}, options)
+        .then(function () {
+            return _private.handleOldRefreshToken({
+                userId: userId,
+                clientId: clientId,
+                oldRefreshToken: oldRefreshToken,
+                oldRefreshId: oldRefreshId,
+                newRefreshToken: newRefreshToken,
+                refreshExpires: refreshExpires
+            }, options);
+        })
+        .then(function (refreshToken) {
+            return models.Accesstoken.add({
+                token: newAccessToken,
+                user_id: userId,
+                client_id: clientId,
+                issued_by: refreshToken.id,
+                expires: accessExpires
+            }, options);
+        })
+        .then(function () {
+            return {
+                access_token: newAccessToken,
+                refresh_token: newRefreshToken,
+                expires_in: globalUtils.ONE_MONTH_S
+            };
+        });
 };
 
 /**
@@ -47,53 +95,20 @@ _private.destroyOldRefreshToken = function destroyOldRefreshToken(options) {
  * and re-add the refresh token (this happens because this function is used for 3 different cases).
  * If the operation fails in between, the user can still use e.g. the refresh token and try again.
  */
-module.exports.createTokens = function createTokens(options) {
-    options = options || {};
+module.exports.createTokens = function createTokens(data, modelOptions) {
+    data = data || {};
+    modelOptions = modelOptions || {};
+
     debug('createTokens');
 
-    var oldAccessToken = options.oldAccessToken,
-        oldRefreshToken = options.oldRefreshToken,
-        newAccessToken = globalUtils.uid(191),
-        newRefreshToken = oldRefreshToken || globalUtils.uid(191),
-        accessExpires = Date.now() + globalUtils.ONE_MONTH_MS,
-        refreshExpires = Date.now() + globalUtils.SIX_MONTH_MS,
-        clientId = options.clientId,
-        userId = options.userId,
-        modelOptions;
+    if (modelOptions.transacting) {
+        return _private.handleTokenCreation(data, modelOptions);
+    }
 
     return knex.transaction(function (transaction) {
-        modelOptions = {transacting: transaction};
+        modelOptions.transacting = transaction;
 
-        return _private.decreaseOldAccessTokenExpiry({token: oldAccessToken}, modelOptions)
-            .then(function () {
-                return _private.destroyOldRefreshToken(_.merge({
-                    token: oldRefreshToken
-                }, modelOptions));
-            })
-            .then(function () {
-                return models.Refreshtoken.add({
-                    token: newRefreshToken,
-                    user_id: userId,
-                    client_id: clientId,
-                    expires: refreshExpires
-                }, modelOptions);
-            })
-            .then(function (refreshToken) {
-                return models.Accesstoken.add({
-                    token: newAccessToken,
-                    user_id: userId,
-                    client_id: clientId,
-                    issued_by: refreshToken.id,
-                    expires: accessExpires
-                }, modelOptions);
-            })
-            .then(function () {
-                return {
-                    access_token: newAccessToken,
-                    refresh_token: newRefreshToken,
-                    expires_in: globalUtils.ONE_MONTH_S
-                };
-            });
+        return _private.handleTokenCreation(data, modelOptions);
     });
 };
 

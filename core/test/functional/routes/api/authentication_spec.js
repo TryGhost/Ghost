@@ -184,6 +184,11 @@ describe('Authentication API', function () {
                                 token: accesstoken
                             }).then(function (oldAccessToken) {
                                 moment(oldAccessToken.get('expires')).diff(moment(), 'minutes').should.be.below(6);
+                                return models.Refreshtoken.findOne({
+                                    token: refreshToken
+                                });
+                            }).then(function (refreshTokenModel) {
+                                moment(refreshTokenModel.get('expires')).diff(moment(), 'month').should.be.above(5);
                                 done();
                             });
                         });
