@@ -126,6 +126,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
+     * http://knexjs.org/#Builder-forUpdate
+     * https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html
+     *
+     * Lock target collection/model for further update operations.
+     * This avoids collisions and possible content override cases.
+     */
+    onFetching: function onFetching(model, columns, options) {
+        if (options.forUpdate && options.transacting) {
+            options.query.forUpdate();
+        }
+    },
+
+    onFetchingCollection: function onFetchingCollection(model, columns, options) {
+        if (options.forUpdate && options.transacting) {
+            options.query.forUpdate();
+        }
+    },
+
+    /**
      * Adding resources implies setting these properties on the server side
      * - set `created_by` based on the context
      * - set `updated_by` based on the context
@@ -369,7 +388,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
-        return ['context', 'include', 'transacting', 'importing'];
+        return ['context', 'include', 'transacting', 'importing', 'forUpdate'];
     },
 
     /**
