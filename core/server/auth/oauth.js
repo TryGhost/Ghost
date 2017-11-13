@@ -1,40 +1,66 @@
 var oauth2orize = require('oauth2orize'),
+    _ = require('lodash'),
     passport = require('passport'),
     models = require('../models'),
     errors = require('../errors'),
     authUtils = require('./utils'),
     spamPrevention = require('../middleware/api/spam-prevention'),
     i18n = require('../i18n'),
+    knex = require('../data/db').knex,
     oauthServer,
     oauth;
 
 function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done) {
-    models.Refreshtoken.findOne({token: refreshToken})
-        .then(function then(model) {
-            if (!model) {
-                return done(new errors.NoPermissionError({message: i18n.t('errors.middleware.oauth.invalidRefreshToken')}), false);
-            } else {
+    knex.transaction(function (transacting) {
+        var options = {
+            transacting: transacting
+        };
+
+        return models.Refreshtoken.findOne({token: refreshToken}, _.merge({forUpdate: true}, options))
+            .then(function then(model) {
+                if (!model) {
+                    throw new errors.NoPermissionError({
+                        message: i18n.t('errors.middleware.oauth.invalidRefreshToken')
+                    });
+                }
+
                 var token = model.toJSON();
 
-                if (token.expires > Date.now()) {
-                    spamPrevention.userLogin().reset(authInfo.ip, body.refresh_token + 'login');
-
-                    authUtils.createTokens({
-                        clientId: token.client_id,
-                        userId: token.user_id,
-                        oldAccessToken: authInfo.accessToken,
-                        oldRefreshToken: refreshToken
-                    }).then(function (response) {
-                        return done(null, response.access_token, {expires_in: response.expires_in});
-                    }).catch(function handleError(error) {
-                        return done(error, false);
+                if (token.expires <= Date.now()) {
+                    throw new errors.UnauthorizedError({
+                        message: i18n.t('errors.middleware.oauth.refreshTokenExpired')
                     });
-                } else {
-                    done(new errors.UnauthorizedError({message: i18n.t('errors.middleware.oauth.refreshTokenExpired')}), false);
                 }
-            }
-        });
+
+                // @TODO: this runs outside of the transaction
+                spamPrevention.userLogin().reset(authInfo.ip, body.refresh_token + 'login');
+
+                return authUtils.createTokens({
+                    clientId: token.client_id,
+                    userId: token.user_id,
+                    oldAccessToken: authInfo.accessToken,
+                    oldRefreshToken: refreshToken,
+                    oldRefreshId: token.id
+                }, options).then(function (response) {
+                    return {
+                        access_token: response.access_token,
+                        expires_in: response.expires_in
+                    };
+                });
+            });
+    }).then(function (response) {
+        done(null, response.access_token, {expires_in: response.expires_in});
+    }).catch(function (err) {
+        if (errors.utils.isIgnitionError(err)) {
+            return done(err, false);
+        }
+
+        done(new errors.InternalServerError({
+            err: err
+        }), false);
+    });
 }
+
 // We are required to pass in authInfo in order to reset spam counter for user login
 function exchangePassword(client, username, password, scope, body, authInfo, done) {
     if (!client || !client.id) {
