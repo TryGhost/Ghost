@@ -56,27 +56,6 @@ Post = ghostBookshelf.Model.extend({
         return this.updateTags(model, response, options);
     },
 
-    /**
-     * http://knexjs.org/#Builder-forUpdate
-     * https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html
-     *
-     * Lock target collection/model for further update operations.
-     * This avoids collisions and possible content override cases.
-     *
-     * `forUpdate` is only supported for posts right now
-     */
-    onFetching: function onFetching(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
-            options.query.forUpdate();
-        }
-    },
-
-    onFetchingCollection: function onFetchingCollection(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
-            options.query.forUpdate();
-        }
-    },
-
     onUpdated: function onUpdated(model) {
         model.statusChanging = model.get('status') !== model.updated('status');
         model.isPublished = model.get('status') === 'published';
@@ -624,10 +603,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require', 'forUpdate'],
+                findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
-                findAll: ['columns', 'filter', 'forUpdate'],
-                edit: ['forUpdate']
+                findAll: ['columns', 'filter']
             };
 
         // The post model additionally supports having a formats option
