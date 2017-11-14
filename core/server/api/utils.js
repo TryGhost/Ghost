@@ -118,7 +118,8 @@ utils = {
                 to: {isDate: true},
                 fields: {matches: /^[\w, ]+$/},
                 order: {matches: /^[a-z0-9_,\. ]+$/i},
-                name: {}
+                name: {},
+                email: {isEmail: true}
             },
             // these values are sanitised/validated separately
             noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting', 'formats'],

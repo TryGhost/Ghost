@@ -53,7 +53,7 @@ subscribers = {
      * @return {Promise<Subscriber>} Subscriber
      */
     read: function read(options) {
-        var attrs = ['id'],
+        var attrs = ['id', 'email'],
             tasks;
 
         /**
@@ -192,6 +192,29 @@ subscribers = {
 
         /**
          * ### Delete Subscriber
+         * If we have an email param, check the subscriber exists
+         * @type {[type]}
+         */
+        function getSubscriberByEmail(options) {
+            if (options.email) {
+                return models.Subscriber.getByEmail(options.email, options)
+                    .then(function (subscriber) {
+                        if (!subscriber) {
+                            return Promise.reject(new errors.NotFoundError({
+                                message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                            }));
+                        }
+
+                        options.id = subscriber.get('id');
+                        return options;
+                    });
+            }
+
+            return options;
+        }
+
+        /**
+         * ### Delete Subscriber
          * Make the call to the Model layer
          * @param {Object} options
          */
@@ -201,8 +224,9 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.validate(docName, {opts: ['id', 'email']}),
             apiUtils.handlePermissions(docName, 'destroy'),
+            getSubscriberByEmail,
             doQuery
         ];
 

@@ -155,10 +155,10 @@ describe('Subscribers API', function () {
     });
 
     describe('Destroy', function () {
-        var firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
+        var firstSubscriber = testUtils.DataGenerator.Content.subscribers[0];
 
         it('can destroy subscriber as admin', function (done) {
-            SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstSubscriber}))
+            SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstSubscriber.id}))
                 .then(function (results) {
                     should.not.exist(results);
 
@@ -166,8 +166,28 @@ describe('Subscribers API', function () {
                 }).catch(done);
         });
 
+        it('can destroy subscriber by email', function (done) {
+            SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {email: firstSubscriber.email}))
+                .then(function (results) {
+                    should.not.exist(results);
+
+                    done();
+                }).catch(done);
+        });
+
+        it('returns NotFoundError for unknown email', function (done) {
+            SubscribersAPI.destroy(_.extend({}, testUtils.context.admin, {email: 'unknown@example.com'}))
+                .then(function (results) {
+                    done(new Error('Destroy subscriber should not be possible with unknown email.'));
+                }, function (err) {
+                    should.exist(err);
+                    (err instanceof errors.NotFoundError).should.eql(true);
+                    done();
+                }).catch(done);
+        });
+
         it('CANNOT destroy subscriber', function (done) {
-            SubscribersAPI.destroy(_.extend({}, testUtils.context.editor, {id: firstSubscriber}))
+            SubscribersAPI.destroy(_.extend({}, testUtils.context.editor, {id: firstSubscriber.id}))
                 .then(function () {
                     done(new Error('Destroy subscriber should not be possible as editor.'));
                 }, function (err) {
@@ -219,6 +239,22 @@ describe('Subscribers API', function () {
 
                 var firstSubscriber = _.find(results.subscribers, {id: testUtils.DataGenerator.Content.subscribers[0].id});
                 return SubscribersAPI.read({context: {user: 1}, id: firstSubscriber.id});
+            }).then(function (found) {
+                should.exist(found);
+                testUtils.API.checkResponse(found.subscribers[0], 'subscriber');
+
+                done();
+            }).catch(done);
+        });
+
+        it('with email', function (done) {
+            SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
+                should.exist(results);
+                should.exist(results.subscribers);
+                results.subscribers.length.should.be.above(0);
+
+                var firstSubscriber = _.find(results.subscribers, {id: testUtils.DataGenerator.Content.subscribers[0].id});
+                return SubscribersAPI.read({context: {user: 1}, email: firstSubscriber.email});
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.subscribers[0], 'subscriber');
