@@ -1,6 +1,5 @@
 var _ = require('lodash'),
     url = require('url'),
-    utils = require('../utils'),
     errors = require('../errors'),
     i18n = require('../i18n'),
     safeString = require('../utils/index').safeString,
@@ -10,7 +9,7 @@ var _ = require('lodash'),
     fetchData = require('./frontend/fetch-data'),
     handleError = require('./frontend/error'),
 
-    rssCache = require('../services/rss'),
+    rssService = require('../services/rss'),
     generate;
 
 // @TODO: is this the right logic? Where should this live?!
@@ -33,27 +32,25 @@ function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
 
     return fetchData(channelOpts).then(function formatResult(result) {
-        var response = {};
+        var response = _.pick(result, ['posts', 'meta']);
 
         response.title = getTitle(result.data);
         response.description = settingsCache.get('description');
-        response.results = {
-            posts: result.posts,
-            meta: result.meta
-        };
 
         return response;
     });
 }
 
 // This here is a controller.
-// The "route" is handled in controllers/channels/router.js
+// The "route" is handled in services/channels/router.js
 // We can only generate RSS for channels, so that sorta makes sense, but the location is rubbish
 // @TODO finish refactoring this - it's now a controller
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
+        slugParam = req.params.slug ? safeString(req.params.slug) : undefined,
+        // Base URL needs to be the URL for the feed without pagination:
+        baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam);
 
     // @TODO: fix this, we shouldn't change the channel object!
     // Set page on postOptions for the query made later
@@ -61,31 +58,13 @@ generate = function generate(req, res, next) {
     res.locals.channel.slugParam = slugParam;
 
     return getData(res.locals.channel).then(function handleResult(data) {
-        // Base URL needs to be the URL for the feed without pagination:
-        var baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam),
-            maxPage = data.results.meta.pagination.pages;
-
-        // If page is greater than number of pages we have, redirect to last page
-        if (pageParam > maxPage) {
+        // If page is greater than number of pages we have, go straight to 404
+        if (pageParam > data.meta.pagination.pages) {
             return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
         }
 
-        // Renderer begin
-        // Format data
-        data.version = res.locals.safeVersion;
-        data.siteUrl = utils.url.urlFor('home', {secure: req.secure}, true);
-        data.feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
-        data.secure = req.secure;
-
-        // No context, no template
-        // @TODO: should we have context? The context file expects it!
-
-        // Render call - to a different renderer
-        // @TODO this is effectively a renderer
-        return rssCache.getXML(baseUrl, data).then(function then(feedXml) {
-            res.set('Content-Type', 'text/xml; charset=UTF-8');
-            res.send(feedXml);
-        });
+        // Render call - to a special RSS renderer
+        return rssService.render(res, baseUrl, data);
     }).catch(handleError(next));
 };
 
