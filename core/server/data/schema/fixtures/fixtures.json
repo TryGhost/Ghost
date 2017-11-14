@@ -438,6 +438,7 @@
                     "id": "5951f5fca366002ebd5dbef7",
                     "name": "Ghost",
                     "email": "ghost-author@example.com",
+                    "bio": "You can delete this user to remove all the welcome posts",
                     "status": "active",
                     "roles": ["Author"]
                 }
