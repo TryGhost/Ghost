@@ -1,10 +1,27 @@
 var ghostBookshelf = require('./base'),
+    events = require('../events'),
     Promise = require('bluebird'),
     Webhook,
     Webhooks;
 
 Webhook = ghostBookshelf.Model.extend({
-    tableName: 'webhooks'
+    tableName: 'webhooks',
+
+    emitChange: function emitChange(event) {
+        events.emit('webhook' + '.' + event, this);
+    },
+
+    onCreated: function onCreated(model) {
+        model.emitChange('added');
+    },
+
+    onUpdated: function onUpdated(model) {
+        model.emitChange('edited');
+    },
+
+    onDestroyed: function onDestroyed(model) {
+        model.emitChange('deleted');
+    }
 }, {
     getByEventAndTarget: function getByEventAndTarget(event, targetUrl, options) {
         options = options || {};
