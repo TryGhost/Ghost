@@ -224,9 +224,9 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            getSubscriberByEmail,
-            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            apiUtils.validate(docName, {opts: ['id', 'email']}),
             apiUtils.handlePermissions(docName, 'destroy'),
+            getSubscriberByEmail,
             doQuery
         ];
 
