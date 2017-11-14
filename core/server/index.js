@@ -79,6 +79,9 @@ function init() {
             require('./analytics-events').init();
         }
 
+        // Initialize webhook events
+        require('./webhooks-events').init();
+
         debug('Express Apps done');
     }).then(function () {
         parentApp.use(auth.init());
