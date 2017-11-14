@@ -18,7 +18,7 @@
 }
 
 .gh-image-uploader.-drag-over {
-    border: 2px solid;
+    border: 2px solid var(--blue);
 }
 
 .gh-image-uploader.-with-image {
