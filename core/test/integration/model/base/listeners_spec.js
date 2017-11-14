@@ -98,7 +98,7 @@ describe('Models: listeners', function () {
                  */
 
                 // calculate the offset dynamically, because of DST
-                scope.timezoneOffset = moment.tz.zone('America/Los_Angeles').offset(now) - moment.tz.zone('Europe/London').offset(now);
+                scope.timezoneOffset = moment.tz.zone('America/Los_Angeles').utcOffset(now) - moment.tz.zone('Europe/London').utcOffset(now);
                 scope.newTimezone = 'America/Los_Angeles';
                 scope.oldTimezone = 'Europe/London';
 
@@ -155,7 +155,7 @@ describe('Models: listeners', function () {
                  * The post should be still scheduled for 8PM UTC time.
                  * So the database UTC string must be 2017-04-19 20:00:00.
                  */
-                scope.timezoneOffset = moment.tz.zone('Etc/UTC').offset(now) - moment.tz.zone('Asia/Baghdad').offset(now);
+                scope.timezoneOffset = moment.tz.zone('Etc/UTC').utcOffset(now) - moment.tz.zone('Asia/Baghdad').utcOffset(now);
                 scope.oldTimezone = 'Asia/Baghdad';
                 scope.newTimezone = 'Etc/UTC';
 
@@ -212,7 +212,7 @@ describe('Models: listeners', function () {
                  * The post should be still scheduled for 8PM UTC time.
                  * So the database UTC string must be 2017-04-18 11:00:00.
                  */
-                scope.timezoneOffset = moment.tz.zone('Asia/Seoul').offset(now) - moment.tz.zone('Europe/Amsterdam').offset(now);
+                scope.timezoneOffset = moment.tz.zone('Asia/Seoul').utcOffset(now) - moment.tz.zone('Europe/Amsterdam').utcOffset(now);
                 scope.oldTimezone = 'Europe/Amsterdam';
                 scope.newTimezone = 'Asia/Seoul';
 
@@ -277,7 +277,7 @@ describe('Models: listeners', function () {
                         });
                 });
 
-                scope.timezoneOffset = moment.tz.zone('Asia/Baghdad').offset(now) - moment.tz.zone('Etc/UTC').offset(now);
+                scope.timezoneOffset = moment.tz.zone('Asia/Baghdad').utcOffset(now) - moment.tz.zone('Etc/UTC').utcOffset(now);
                 scope.oldTimezone = 'Asia/Baghdad';
                 scope.newTimezone = 'Etc/UTC';
 
