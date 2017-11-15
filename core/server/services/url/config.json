@@ -5,6 +5,12 @@
         "prefetchOptions": {
             "filter": "visibility:public+status:published+page:false",
             "include": "author,tags"
+        },
+        "events": {
+            "post.published": "add",
+            "post.published.edited": "update",
+            "post.unpublished": "remove",
+            "settings.permalinks.edited": "reload"
         }
     },
     {
@@ -14,13 +20,24 @@
             "filter": "visibility:public+status:published+page:true",
             "include": "author,tags"
         },
-        "urlLookup": "post"
+        "urlLookup": "post",
+        "events": {
+            "page.published": "add",
+            "page.published.edited": "update",
+            "page.unpublished": "remove"
+        }
     },
     {
         "name": "tag",
         "api" : "tags",
         "prefetchOptions": {
             "filter": "visibility:public"
+        },
+        "events": {
+            "tag.added": "add",
+            "tag.edited": "update",
+            "tag.deleted": "remove"
+
         }
     },
     {
@@ -28,6 +45,11 @@
         "api" : "users",
         "prefetchOptions": {
             "filter": "visibility:public"
+        },
+        "events": {
+            "user.activated": "add",
+            "user.activated.edited": "update",
+            "user.deactivated": "remove"
         }
     }
 ]

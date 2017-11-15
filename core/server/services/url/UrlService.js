@@ -11,6 +11,7 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     _debug = require('ghost-ignition').debug._base,
     debug = _debug('ghost:services:url'),
+    events = require('../../events'),
     // TODO: make this dynamic
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),
@@ -23,6 +24,53 @@ class UrlService {
 
         _.each(resourceConfig, (config) => {
             this.resources.push(new Resource(config));
+        });
+    }
+
+    bind() {
+        const eventHandlers = {
+            add(model, resource) {
+                UrlService.cacheResourceItem(resource, model.toJSON());
+            },
+            update(model, resource) {
+                const newItem = model.toJSON();
+                const oldItem = model.updatedAttributes();
+
+                const oldUrl = resource.toUrl(oldItem);
+                const storedData = urlCache.get(oldUrl);
+
+                const newUrl = resource.toUrl(newItem);
+                const newData = resource.toData(newItem);
+
+                debug('update', oldUrl, newUrl);
+                if (oldUrl && oldUrl !== newUrl && storedData) {
+                    // CASE: we are updating a cached item and the URL has changed
+                    debug('Changing URL, unset first');
+                    urlCache.unset(oldUrl);
+                }
+
+                // CASE: the URL is either new, or the same, this will create or update
+                urlCache.set(newUrl, newData);
+            },
+
+            remove(model, resource) {
+                const url = resource.toUrl(model.toJSON());
+                urlCache.unset(url);
+            },
+
+            reload(model, resource) {
+                // @TODO: get reload working, so that permalink changes are reflected
+                // NOTE: the current implementation of sitemaps doesn't have this
+                debug('Need to reload all resources: ' + resource.name);
+            }
+        };
+
+        _.each(this.resources, (resource) => {
+            _.each(resource.events, (method, eventName) => {
+                events.on(eventName, (model) => {
+                    eventHandlers[method].call(this, model, resource, eventName);
+                });
+            });
         });
     }
 

@@ -1,18 +1,13 @@
 const debug = require('ghost-ignition').debug('services:url:init'),
-    config = require('../../config'),
     events = require('../../events'),
     UrlService = require('./UrlService');
 
 // @TODO we seriously should move this or make it do almost nothing...
 module.exports.init = function init() {
-    // Temporary config value just in case this causes problems
-    // @TODO: delete this
-    if (config.get('disableUrlService')) {
-        return;
-    }
-
     // Kick off the constructor
     const urlService = new UrlService();
+
+    urlService.bind();
 
     // Hardcoded routes
     // @TODO figure out how to do this from channel or other config
@@ -28,28 +23,3 @@ module.exports.init = function init() {
         urlService.loadResourceUrls();
     });
 };
-
-// Page events
-// events.on('page.published', self.addOrUpdateUrl.bind(self));
-// events.on('page.published.edited', self.addOrUpdateUrl.bind(self));
-// // Note: This is called if a published page is deleted
-// events.on('page.unpublished', self.removeUrl.bind(self));
-
-// Post events
-// events.on('post.published', self.addOrUpdateUrl.bind(self));
-// events.on('post.published.edited', self.addOrUpdateUrl.bind(self));
-// // Note: This is called if a published post is deleted
-// events.on('post.unpublished', self.removeUrl.bind(self));
-// PERMALINK CHANGE!
-// events.on('settings.permalinks.edited', ARGH! Do something to reset all posts!);
-
-// Tag events
-// events.on('tag.added', self.addOrUpdateUrl.bind(self));
-// events.on('tag.edited', self.addOrUpdateUrl.bind(self));
-// events.on('tag.deleted', self.removeUrl.bind(self));
-
-// Author events
-// events.on('user.activated', self.addOrUpdateUrl.bind(self));
-// events.on('user.activated.edited', self.addOrUpdateUrl.bind(self));
-// events.on('user.deactivated', self.removeUrl.bind(self));
-

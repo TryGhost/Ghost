@@ -16,6 +16,7 @@ class Resource {
         this.api = config.api;
         this.prefetchOptions = config.prefetchOptions || {};
         this.urlLookup = config.urlLookup || config.name;
+        this.events = config.events;
         this.items = {};
     }
 

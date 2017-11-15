@@ -1,6 +1,7 @@
 'use strict';
 // Based heavily on the settings cache
 const _ = require('lodash'),
+    debug = require('ghost-ignition').debug('services:url:cache'),
     events = require('../../events'),
     urlCache = {};
 
@@ -14,7 +15,25 @@ module.exports = {
         return _.cloneDeep(urlCache);
     },
     set(key, value) {
-        urlCache[key] = _.cloneDeep(value);
-        events.emit('url.added', key, value);
+        const existing = this.get(key);
+
+        if (!existing) {
+            debug('adding url', key);
+            urlCache[key] = _.cloneDeep(value);
+            events.emit('url.added', key, value);
+        } else if (!_.isEqual(value, existing)) {
+            debug('overwriting url', key);
+            urlCache[key] = _.cloneDeep(value);
+            events.emit('url.edited', key, value);
+        }
+    },
+    unset(key) {
+        const value = this.get(key);
+        delete urlCache[key];
+        debug('removing url', key);
+        events.emit('url.removed', key, value);
+    },
+    get(key) {
+        return _.cloneDeep(urlCache[key]);
     }
 };
