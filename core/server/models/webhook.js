@@ -23,6 +23,17 @@ Webhook = ghostBookshelf.Model.extend({
         model.emitChange('deleted');
     }
 }, {
+    findAllByEvent: function findAllByEvent(event, options) {
+        options = options || {};
+
+        return Webhook
+            .query({where: {event: event}})
+            .fetchAll(options)
+            .catch(function (error) {
+                return Promise.reject(error);
+            });
+    },
+
     getByEventAndTarget: function getByEventAndTarget(event, targetUrl, options) {
         options = options || {};
         options.require = true;

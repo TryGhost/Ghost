@@ -41,7 +41,7 @@ function triggerSubscriberAdded(subscriber) {
     };
 
     // find relevant Webhooks
-    models.Webhook.findAll({event: 'susbcriber.added'}).then(function (result) {
+    models.Webhook.findAllByEvent('subscriber.added').then(function (result) {
         _.each(result.models, function each(webhook) {
             makeRequest(webhook, payload);
         });
@@ -60,7 +60,7 @@ function triggerSubscriberRemoved(subscriber) {
     };
 
     // find relevant Webhooks
-    models.Webhook.findAll({event: 'susbcriber.deleted'}).then(function (result) {
+    models.Webhook.findAllByEvent('subscriber.deleted').then(function (result) {
         _.each(result.models, function each(webhook) {
             makeRequest(webhook, payload);
         });
