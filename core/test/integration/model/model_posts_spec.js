@@ -1872,6 +1872,55 @@ describe('Post Model', function () {
                     });
                 });
 
+                it('can edit existing tag', function () {
+                    var newJSON = _.cloneDeep(postJSON);
+
+                    // Add an existing tag to the beginning of the array
+                    newJSON.tags = [{id: postJSON.tags[0].id, slug: 'eins'}];
+
+                    // Edit the post
+                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                        updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                        updatedPost.tags.should.have.lengthOf(1);
+                        updatedPost.tags.should.have.enumerable(0).with.properties({
+                            name: postJSON.tags[0].name,
+                            slug: 'eins',
+                            id: postJSON.tags[0].id
+                        });
+                    });
+                });
+
+                it('can\' edit existing tag dates and authors', function () {
+                    var newJSON = _.cloneDeep(postJSON);
+
+                    // Add an existing tag to the beginning of the array
+                    newJSON.tags = [{
+                        id: postJSON.tags[0].id,
+                        slug: 'eins',
+                        created_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                        updated_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                        created_by: 2,
+                        updated_by: 2
+                    }];
+
+                    // Edit the post
+                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                        updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                        updatedPost.tags.should.have.lengthOf(1);
+                        updatedPost.tags.should.have.enumerable(0).with.properties({
+                            name: postJSON.tags[0].name,
+                            slug: 'eins',
+                            id: postJSON.tags[0].id,
+                            created_at: postJSON.tags[0].created_at,
+                            updated_at: postJSON.tags[0].updated_at,
+                            created_by: postJSON.created_by,
+                            updated_by: postJSON.updated_by
+                        });
+                    });
+                });
+
                 it('can add a single tag to the middle of the tags array', function () {
                     var newJSON = _.cloneDeep(postJSON);
 
@@ -2014,6 +2063,35 @@ describe('Post Model', function () {
                         updatedPost.tags.should.have.enumerable(2).with.properties({
                             name: 'tag2',
                             id: postJSON.tags[1].id
+                        });
+                    });
+                });
+
+                it('can reorder existing, added and deleted tags', function () {
+                    var newJSON = _.cloneDeep(postJSON),
+                        lastTag = [postJSON.tags[2]];
+
+                    // remove tag in the middle (tag1, tag2, tag3 -> tag1, tag3)
+                    newJSON.tags.splice(1, 1);
+
+                    // add a new one as first tag and reorder existing (tag4, tag3, tag1)
+                    newJSON.tags = [{name: 'tag4'}].concat([newJSON.tags[1]]).concat([newJSON.tags[0]]);
+
+                    // Edit the post
+                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                        updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                        updatedPost.tags.should.have.lengthOf(3);
+                        updatedPost.tags.should.have.enumerable(0).with.properties({
+                            name: 'tag4'
+                        });
+                        updatedPost.tags.should.have.enumerable(1).with.properties({
+                            name: 'tag3',
+                            id: postJSON.tags[2].id
+                        });
+                        updatedPost.tags.should.have.enumerable(2).with.properties({
+                            name: 'tag1',
+                            id: postJSON.tags[0].id
                         });
                     });
                 });
@@ -2409,6 +2487,21 @@ describe('Post Model', function () {
                         updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
                         updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
                         updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
+                    });
+                });
+
+                it('can handle lowercase/uppercase tags', function () {
+                    var newJSON = _.cloneDeep(postJSON);
+
+                    // Add conflicting tags to the end of the array
+                    newJSON.tags.push({name: 'test'});
+                    newJSON.tags.push({name: 'tEst'});
+
+                    // Edit the post
+                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                        updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                        updatedPost.tags.should.have.lengthOf(1);
                     });
                 });
             });
