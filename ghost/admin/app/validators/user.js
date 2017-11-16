@@ -40,6 +40,11 @@ export default PasswordValidator.create({
             model.get('errors').add('email', 'Please supply a valid email address');
             this.invalidate();
         }
+
+        if (!validator.isLength(email, 0, 191)) {
+            model.get('errors').add('email', 'Email is too long');
+            this.invalidate();
+        }
     },
 
     location(model) {
