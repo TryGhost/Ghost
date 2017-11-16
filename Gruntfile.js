@@ -259,8 +259,7 @@ var config         = require('./core/server/config'),
             clean: {
                 built: {
                     src: [
-                        'core/built/**',
-                        'core/client/dist/**'
+                        'core/built/**'
                     ]
                 },
                 release: {
@@ -692,11 +691,11 @@ var config         = require('./core/server/config'),
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
             if (grunt.option('client')) {
-                grunt.task.run(['bgShell:client']);
+                grunt.task.run(['clean:built', 'bgShell:client']);
             } else if (grunt.option('server')) {
                 grunt.task.run(['express:dev', 'watch']);
             } else {
-                grunt.task.run(['bgShell:client', 'express:dev', 'watch']);
+                grunt.task.run(['clean:built', 'bgShell:client', 'express:dev', 'watch']);
             }
         });
 
@@ -743,7 +742,7 @@ var config         = require('./core/server/config'),
                     }]
                 });
 
-                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
             }
         );
     };
