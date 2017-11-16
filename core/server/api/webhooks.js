@@ -33,7 +33,7 @@ webhooks = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Webhook.getByEventAndTarget(options.data.webhooks[0].event, options.data.webhooks[0].target_url)
+            return models.Webhook.getByEventAndTarget(options.data.webhooks[0].event, options.data.webhooks[0].target_url, _.omit(options, ['data']))
                 .then(function (webhook) {
                     if (webhook) {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')}));
