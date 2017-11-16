@@ -385,6 +385,10 @@ bluebird@3.5.1, bluebird@^3.0.5, bluebird@^3.4.3, bluebird@^3.4.6:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
 
+bluebird@^3.4.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
+
 body-parser@1.18.2:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.18.2.tgz#87678a19d84b47d859b83199bd59bce222b10454"
@@ -414,6 +418,22 @@ body-parser@~1.14.0:
     qs "5.2.0"
     raw-body "~2.1.5"
     type-is "~1.6.10"
+
+"bookshelf-relations@https://github.com/TryGhost/bookshelf-relations/tarball/4684adc6817f740246e1deb246a2137cde651975":
+  version "0.1.0"
+  resolved "https://github.com/TryGhost/bookshelf-relations/tarball/4684adc6817f740246e1deb246a2137cde651975#430ef0ede5304a993c6dee7dbec2f77bfb4abc95"
+  dependencies:
+    bluebird "^3.4.1"
+    ghost-ignition "^2.8.16"
+    lodash "^4.17.4"
+
+"bookshelf-relations@https://github.com/TryGhost/bookshelf-relations/tarball/b15b7fb522630c5e21991ac23cf920020d5af7c1":
+  version "0.1.0"
+  resolved "https://github.com/TryGhost/bookshelf-relations/tarball/b15b7fb522630c5e21991ac23cf920020d5af7c1#b3e05ef9d4f2605e87f58e5c09fa4610f1de3692"
+  dependencies:
+    bluebird "^3.4.1"
+    ghost-ignition "^2.8.16"
+    lodash "^4.17.4"
 
 bookshelf@0.10.3:
   version "0.10.3"
