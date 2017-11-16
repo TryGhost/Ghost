@@ -13,7 +13,10 @@
         ],
         "array-callback-return": "off",
         "array-element-newline": "off",
-        "arrow-body-style": "error",
+        "arrow-body-style": [
+            "error",
+            "always"
+        ],
         "arrow-parens": [
             "error",
             "always"

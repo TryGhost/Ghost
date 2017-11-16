@@ -1,0 +1,55 @@
+[
+    {
+        "name": "post",
+        "api" : "posts",
+        "prefetchOptions": {
+            "filter": "visibility:public+status:published+page:false",
+            "include": "author,tags"
+        },
+        "events": {
+            "post.published": "add",
+            "post.published.edited": "update",
+            "post.unpublished": "remove",
+            "settings.permalinks.edited": "reload"
+        }
+    },
+    {
+        "name": "page",
+        "api" : "posts",
+        "prefetchOptions": {
+            "filter": "visibility:public+status:published+page:true",
+            "include": "author,tags"
+        },
+        "urlLookup": "post",
+        "events": {
+            "page.published": "add",
+            "page.published.edited": "update",
+            "page.unpublished": "remove"
+        }
+    },
+    {
+        "name": "tag",
+        "api" : "tags",
+        "prefetchOptions": {
+            "filter": "visibility:public"
+        },
+        "events": {
+            "tag.added": "add",
+            "tag.edited": "update",
+            "tag.deleted": "remove"
+
+        }
+    },
+    {
+        "name": "author",
+        "api" : "users",
+        "prefetchOptions": {
+            "filter": "visibility:public"
+        },
+        "events": {
+            "user.activated": "add",
+            "user.activated.edited": "update",
+            "user.deactivated": "remove"
+        }
+    }
+]
