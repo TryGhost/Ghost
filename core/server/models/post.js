@@ -539,13 +539,15 @@ Post = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
-        var self = this,
-            editPost = function editPost(data, options) {
-                options.forUpdate = true;
+        let opts = _.cloneDeep(options || {});
 
-                return ghostBookshelf.Model.edit.call(self, data, options).then(function then(post) {
-                    return self.findOne({status: 'all', id: options.id}, options)
-                        .then(function then(found) {
+        const editPost = () => {
+            opts.forUpdate = true;
+
+            return ghostBookshelf.Model.edit.call(this, data, opts)
+                .then((post) => {
+                    return this.findOne({status: 'all', id: opts.id}, opts)
+                        .then((found) => {
                             if (found) {
                                 // Pass along the updated attributes for checking status changes
                                 found._updatedAttributes = post._updatedAttributes;
@@ -553,18 +555,16 @@ Post = ghostBookshelf.Model.extend({
                             }
                         });
                 });
-            };
+        };
 
-        options = options || {};
-
-        if (options.transacting) {
-            return editPost(data, options);
+        if (!opts.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                opts.transacting = transacting;
+                return editPost();
+            });
         }
 
-        return ghostBookshelf.transaction(function (transacting) {
-            options.transacting = transacting;
-            return editPost(data, options);
-        });
+        return editPost();
     },
 
     /**
@@ -573,36 +573,80 @@ Post = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.add](base.js.html#add)
      */
     add: function add(data, options) {
-        var self = this;
-        options = options || {};
+        let opts = _.cloneDeep(options || {});
 
-        return ghostBookshelf.Model.add.call(this, data, options).then(function then(post) {
-            return self.findOne({status: 'all', id: post.id}, options);
+        const addPost = (() => {
+            return ghostBookshelf.Model.add.call(this, data, opts)
+                .then((post) => {
+                    return this.findOne({status: 'all', id: post.id}, opts);
+                });
         });
+
+        if (!opts.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                opts.transacting = transacting;
+
+                return addPost();
+            });
+        }
+
+        return addPost();
+    },
+
+    destroy: function destroy(options) {
+        let opts = _.cloneDeep(options || {});
+
+        const destroyPost = () => {
+            return ghostBookshelf.Model.destroy.call(this, opts);
+        };
+
+        if (!opts.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                opts.transacting = transacting;
+                return destroyPost();
+            });
+        }
+
+        return destroyPost();
     },
 
     /**
      * ### destroyByAuthor
      * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
      */
-    destroyByAuthor: Promise.method(function destroyByAuthor(options) {
-        var postCollection = Posts.forge(),
-            authorId = options.id;
+    destroyByAuthor: function destroyByAuthor(options) {
+        let opts = _.cloneDeep(options || {});
 
-        options = this.filterOptions(options, 'destroyByAuthor');
+        let postCollection = Posts.forge(),
+            authorId = opts.id;
+
+        opts = this.filterOptions(opts, 'destroyByAuthor');
 
         if (!authorId) {
-            throw new errors.NotFoundError({message: i18n.t('errors.models.post.noUserFound')});
+            throw new errors.NotFoundError({
+                message: i18n.t('errors.models.post.noUserFound')
+            });
         }
 
-        return postCollection
-            .query('where', 'author_id', '=', authorId)
-            .fetch(options)
-            .call('invokeThen', 'destroy', options)
-            .catch(function (err) {
-                return Promise.reject(new errors.GhostError({err: err}));
+        const destroyPost = (() => {
+            return postCollection
+                .query('where', 'author_id', '=', authorId)
+                .fetch(opts)
+                .call('invokeThen', 'destroy', opts)
+                .catch((err) => {
+                    throw new errors.GhostError({err: err});
+                });
+        });
+
+        if (!opts.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                opts.transacting = transacting;
+                return destroyPost();
             });
-    }),
+        }
+
+        return destroyPost();
+    },
 
     permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
