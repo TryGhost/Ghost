@@ -15,10 +15,20 @@
     },
     "blog": {
         "title": {
-            "defaultValue": "Ghost"
+            "defaultValue": "Ghost",
+            "validations": {
+                "isLength": {
+                    "max": 150
+                }
+            }
         },
         "description": {
-            "defaultValue": "The professional publishing platform"
+            "defaultValue": "The professional publishing platform",
+            "validations": {
+                "isLength": {
+                    "max": 200
+                }
+            }
         },
         "logo": {
             "defaultValue": "https://casper.ghost.org/v1.0.0/images/ghost-logo.svg"
