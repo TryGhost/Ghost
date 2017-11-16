@@ -21,6 +21,18 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    relationships: ['tags'],
+
+    permittedAttributes: function permittedAttributes() {
+        let filtertedKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+
+        this.relationships.forEach((key) => {
+            filtertedKeys.push(key);
+        });
+
+        return filtertedKeys;
+    },
+
     emitChange: function emitChange(event, options) {
         options = options || {};
 
