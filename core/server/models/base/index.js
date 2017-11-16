@@ -140,6 +140,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     return Promise.resolve(self.onValidate.apply(self, args));
                 });
         });
+
+        proto.initialize.call(this);
     },
 
     onValidate: function onValidate() {
