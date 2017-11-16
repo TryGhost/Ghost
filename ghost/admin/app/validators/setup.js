@@ -10,5 +10,10 @@ export default NewUserValidator.create({
             model.get('errors').add('blogTitle', 'Please enter a blog title.');
             this.invalidate();
         }
+
+        if (!validator.isLength(blogTitle, 0, 150)) {
+            model.get('errors').add('blogTitle', 'Title is too long');
+            this.invalidate();
+        }
     }
 });
