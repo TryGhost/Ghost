@@ -45,6 +45,27 @@ ghostBookshelf.plugin(plugins.pagination);
 // Update collision plugin
 ghostBookshelf.plugin(plugins.collision);
 
+// Manages nested updates (relationships)
+ghostBookshelf.plugin('bookshelf-relations', {
+    allowedOptions: ['context'],
+    unsetRelations: true,
+    hooks: {
+        belongsToMany: {
+            after: function (existing, targets, options) {
+                // reorder tags
+                return Promise.each(targets.models, function (target, index) {
+                    return existing.updatePivot({
+                        sort_order: index
+                    }, _.extend({}, options, {query: {where: {tag_id: target.id}}}));
+                });
+            },
+            beforeRelationCreation: function onCreatingRelation(model, data) {
+                data.id = ObjectId.generate();
+            }
+        }
+    }
+});
+
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
 
