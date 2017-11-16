@@ -29,7 +29,7 @@ Webhook = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findAll');
 
         return webhooksCollection
-            .query({where: {event: event}})
+            .query('where', 'event', '=', event)
             .fetch(options);
     },
 

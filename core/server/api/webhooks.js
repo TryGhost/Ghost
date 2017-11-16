@@ -39,9 +39,7 @@ webhooks = {
                         return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')}));
                     }
 
-                    return models.Webhook.add(options.data.webhooks[0], _.omit(options, ['data'])).catch(function (error) {
-                        return Promise.reject(error);
-                    });
+                    return models.Webhook.add(options.data.webhooks[0], _.omit(options, ['data']));
                 })
                 .then(function onModelResponse(model) {
                     return {

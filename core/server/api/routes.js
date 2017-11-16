@@ -203,7 +203,7 @@ module.exports = function apiRoutes() {
 
     // ## Webhooks (RESTHooks)
     apiRouter.post('/webhooks', mw.authenticatePrivate, api.http(api.webhooks.add));
-    apiRouter.delete('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
+    apiRouter.del('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
 
     return apiRouter;
 };
