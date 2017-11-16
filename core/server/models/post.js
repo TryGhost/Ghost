@@ -53,8 +53,6 @@ Post = ghostBookshelf.Model.extend({
         if (['published', 'scheduled'].indexOf(status) !== -1) {
             model.emitChange(status, {importing: options.importing});
         }
-
-        return this.updateTags(model, response, options);
     },
 
     onUpdated: function onUpdated(model) {
@@ -123,24 +121,12 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    onDestroying: function onDestroying(model, options) {
-        return model.load('tags', options)
-            .then(function (response) {
-                if (!response.related || !response.related('tags') || !response.related('tags').length) {
-                    return;
-                }
+    onDestroying: function onDestroying(model) {
+        if (model.previous('status') === 'published') {
+            model.emitChange('unpublished');
+        }
 
-                return Promise.mapSeries(response.related('tags').models, function (tag) {
-                    return baseUtils.tagUpdate.detachTagFromPost(model, tag, options)();
-                });
-            })
-            .then(function () {
-                if (model.previous('status') === 'published') {
-                    model.emitChange('unpublished');
-                }
-
-                model.emitChange('deleted');
-            });
+        model.emitChange('deleted');
     },
 
     onSaving: function onSaving(model, attr, options) {
@@ -253,19 +239,6 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        /**
-         * - `updateTags` happens before the post is saved to the database
-         * - when editing a post, it's running in a transaction, see `Post.edit`
-         * - we are using a update collision detection, we have to know if tags were updated in the client
-         *
-         * NOTE: For adding a post, updateTags happens after the post insert, see `onCreated` event
-         */
-        if (options.method === 'update' || options.method === 'patch') {
-            ops.push(function updateTags() {
-                return self.updateTags(model, attr, options);
-            });
-        }
-
         // If a title is set, not the same as the old title, a draft post, and has never been published
         if (prevTitle !== undefined && newTitle !== prevTitle && newStatus === 'draft' && !publishedAt) {
             ops.push(function updateSlug() {
@@ -313,116 +286,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
-    },
-
-    /**
-     * ### updateTags
-     * Update tags that are attached to a post.  Create any tags that don't already exist.
-     * @param {Object} savedModel
-     * @param {Object} response
-     * @param {Object} options
-     * @return {Promise(ghostBookshelf.Models.Post)} Updated Post model
-     */
-    updateTags: function updateTags(savedModel, response, options) {
-        if (_.isUndefined(this.tagsToSave)) {
-            // The tag property was not set, so we shouldn't be doing any playing with tags on this request
-            return Promise.resolve();
-        }
-
-        var newTags = this.tagsToSave,
-            TagModel = ghostBookshelf.model('Tag');
-
-        options = options || {};
-
-        function doTagUpdates(options) {
-            return Promise.props({
-                currentPost: baseUtils.tagUpdate.fetchCurrentPost(Post, savedModel.id, options),
-                existingTags: baseUtils.tagUpdate.fetchMatchingTags(TagModel, newTags, options)
-            }).then(function fetchedData(results) {
-                var currentTags = results.currentPost.related('tags').toJSON(options),
-                    existingTags = results.existingTags ? results.existingTags.toJSON(options) : [],
-                    tagOps = [],
-                    tagsToRemove,
-                    tagsToCreate;
-
-                // CASE: if nothing has changed, unset `tags`.
-                if (baseUtils.tagUpdate.tagSetsAreEqual(newTags, currentTags)) {
-                    savedModel.unset('tags');
-                    return;
-                }
-
-                // Tags from the current tag array which don't exist in the new tag array should be removed
-                tagsToRemove = _.reject(currentTags, function (currentTag) {
-                    if (newTags.length === 0) {
-                        return false;
-                    }
-                    return _.some(newTags, function (newTag) {
-                        return baseUtils.tagUpdate.tagsAreEqual(currentTag, newTag);
-                    });
-                });
-
-                // Tags from the new tag array which don't exist in the DB should be created
-                tagsToCreate = _.map(_.reject(newTags, function (newTag) {
-                    return _.some(existingTags, function (existingTag) {
-                        return baseUtils.tagUpdate.tagsAreEqual(existingTag, newTag);
-                    });
-                }), 'name');
-
-                // Remove any tags which don't exist anymore
-                _.each(tagsToRemove, function (tag) {
-                    tagOps.push(baseUtils.tagUpdate.detachTagFromPost(savedModel, tag, options));
-                });
-
-                // Loop through the new tags and either add them, attach them, or update them
-                _.each(newTags, function (newTag, index) {
-                    var tag;
-
-                    if (tagsToCreate.indexOf(newTag.name) > -1) {
-                        tagOps.push(baseUtils.tagUpdate.createTagThenAttachTagToPost(Post, TagModel, savedModel, newTag, index, options));
-                    } else {
-                        // try to find a tag on the current post which matches
-                        tag = _.find(currentTags, function (currentTag) {
-                            return baseUtils.tagUpdate.tagsAreEqual(currentTag, newTag);
-                        });
-
-                        if (tag) {
-                            tagOps.push(baseUtils.tagUpdate.updateTagOrderForPost(savedModel, tag, index, options));
-                            return;
-                        }
-
-                        // else finally, find the existing tag which matches
-                        tag = _.find(existingTags, function (existingTag) {
-                            return baseUtils.tagUpdate.tagsAreEqual(existingTag, newTag);
-                        });
-
-                        if (tag) {
-                            tagOps.push(baseUtils.tagUpdate.attachTagToPost(Post, savedModel.id, tag, index, options));
-                        }
-                    }
-                });
-
-                return sequence(tagOps);
-            });
-        }
-
-        // Handle updating tags in a transaction, unless we're already in one
-        if (options.transacting) {
-            return doTagUpdates(options);
-        } else {
-            return ghostBookshelf.transaction(function (t) {
-                options.transacting = t;
-
-                return doTagUpdates(options);
-            }).then(function () {
-                // Don't do anything, the transaction processed ok
-            }).catch(function failure(err) {
-                return Promise.reject(new errors.GhostError({
-                    err: err,
-                    context: i18n.t('errors.models.post.tagUpdates.error'),
-                    help: i18n.t('errors.models.post.tagUpdates.help')
-                }));
-            });
-        }
     },
 
     // Relations
