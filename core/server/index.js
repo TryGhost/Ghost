@@ -28,6 +28,7 @@ var debug = require('ghost-ignition').debug('boot:init'),
     utils = require('./utils'),
 
     // Services that need initialisation
+    urlService = require('./services/url'),
     apps = require('./services/apps'),
     xmlrpc = require('./services/xmlrpc'),
     slack = require('./services/slack');
@@ -62,7 +63,10 @@ function init() {
             // Initialize xmrpc ping
             xmlrpc.listen(),
             // Initialize slack ping
-            slack.listen()
+            slack.listen(),
+            // Url Service
+            urlService.init()
+
         );
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
