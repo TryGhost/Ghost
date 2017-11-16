@@ -156,13 +156,14 @@ export default Controller.extend({
                 });
             }).catch((response) => {
                 if (isUnsupportedMediaTypeError(response) || isRequestEntityTooLargeError(response)) {
-                    this.set('importErrors', [response]);
-                    return;
+                    return this.set('importErrors', [response]);
                 }
 
-                if (response && response.errors && isEmberArray(response.errors)) {
-                    this.set('importErrors', response.errors);
+                if (response && response.payload.errors && isEmberArray(response.payload.errors)) {
+                    return this.set('importErrors', response.payload.errors);
                 }
+
+                throw response;
             }).finally(() => {
                 this.set('uploadButtonText', 'Import');
             });
