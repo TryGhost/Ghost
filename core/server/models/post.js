@@ -179,22 +179,22 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        // If we have a tags property passed in
-        if (!_.isUndefined(tagsToCheck) && !_.isNull(tagsToCheck)) {
+        // CASE: detect lowercase/uppercase tag slugs
+        if (!_.isUndefined(this.get('tags')) && !_.isNull(this.get('tags'))) {
+            tagsToSave = [];
+
             //  and deduplicate upper/lowercase tags
-            _.each(tagsToCheck, function each(item) {
-                for (i = 0; i < tags.length; i = i + 1) {
-                    if (tags[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+            _.each(this.get('tags'), function each(item) {
+                for (i = 0; i < tagsToSave.length; i = i + 1) {
+                    if (tagsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
                         return;
                     }
                 }
 
-                tags.push(item);
+                tagsToSave.push(item);
             });
 
-            // keep tags for 'saved' event
-            // get('tags') will be removed after saving, because it's not a direct attribute of posts (it's a relation)
-            this.tagsToSave = tags;
+            this.set('tags', tagsToSave);
         }
 
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
