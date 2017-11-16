@@ -24,14 +24,11 @@ Webhook = ghostBookshelf.Model.extend({
     }
 }, {
     findAllByEvent: function findAllByEvent(event, options) {
-        options = options || {};
+        options = this.filterOptions(options, 'findAll');
 
         return Webhook
             .query({where: {event: event}})
-            .fetchAll(options)
-            .catch(function (error) {
-                return Promise.reject(error);
-            });
+            .fetchAll(options);
     },
 
     getByEventAndTarget: function getByEventAndTarget(event, targetUrl, options) {

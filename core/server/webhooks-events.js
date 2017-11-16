@@ -15,12 +15,18 @@ function makeRequest(webhook, payload) {
 
     reqPayload = JSON.stringify(payload);
 
-    // TODO: log that the webhook request was made?
+    logging.info('webhook.trigger', webhook.get('event'), webhook.get('target_url'));
     req = https.request(reqOptions);
 
     req.write(reqPayload);
     req.on('error', function (err) {
-        // TODO: use i18n
+        // when a webhook responds with a 410 Gone response we should remove the hook
+        if (err.status === 410) {
+            logging.info('webhook.destroy (410 response)', webhook.get('event'), webhook.get('target_url'));
+            return models.Webhook.destroy({id: webhook.get('id')});
+        }
+
+        // TODO: use i18n?
         logging.error(new errors.GhostError({
             err: err,
             context: {
