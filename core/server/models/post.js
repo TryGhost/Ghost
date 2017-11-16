@@ -1,18 +1,19 @@
+'use strict';
+
 // # Post Model
-var _               = require('lodash'),
-    uuid            = require('uuid'),
-    moment          = require('moment'),
-    Promise         = require('bluebird'),
-    ObjectId        = require('bson-objectid'),
-    sequence        = require('../utils/sequence'),
-    errors          = require('../errors'),
-    htmlToText      = require('html-to-text'),
-    ghostBookshelf  = require('./base'),
-    events          = require('../events'),
-    config          = require('../config'),
-    utils           = require('../utils'),
-    baseUtils       = require('./base/utils'),
-    i18n            = require('../i18n'),
+var _ = require('lodash'),
+    uuid = require('uuid'),
+    moment = require('moment'),
+    Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
+    sequence = require('../utils/sequence'),
+    errors = require('../errors'),
+    htmlToText = require('html-to-text'),
+    ghostBookshelf = require('./base'),
+    events = require('../events'),
+    config = require('../config'),
+    utils = require('../utils'),
+    i18n = require('../i18n'),
     Post,
     Posts;
 
