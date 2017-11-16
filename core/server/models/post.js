@@ -148,16 +148,16 @@ Post = ghostBookshelf.Model.extend({
             title,
             i,
             // Variables to make the slug checking more readable
-            newTitle    = this.get('title'),
-            newStatus   = this.get('status'),
+            newTitle = this.get('title'),
+            newStatus = this.get('status'),
             olderStatus = this.previous('status'),
-            prevTitle   = this._previousAttributes.title,
-            prevSlug    = this._previousAttributes.slug,
-            tagsToCheck = this.get('tags'),
+            prevTitle = this._previousAttributes.title,
+            prevSlug = this._previousAttributes.slug,
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
-            mobiledoc   = this.get('mobiledoc'),
-            tags = [], ops = [];
+            mobiledoc = this.get('mobiledoc'),
+            tagsToSave,
+            ops = [];
 
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
