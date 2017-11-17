@@ -12,7 +12,8 @@ modelAttrs = {
 // TODO: this works for basic models but we eventually want a full API response
 // with embedded models (?include=tags) and so on
 function generatePayload(event, model) {
-    var [modelName, action] = event.split('.'),
+    var modelName = event.split('.')[0],
+        action = event.split('.')[1],
         payload = {},
         data;
 
