@@ -17,8 +17,11 @@ function generatePayload(event, model) {
         data;
 
     if (action === 'deleted') {
-        data = modelAttrs[modelName].map(function (key) {
-            return model._previousAttributes[key];
+        data = {};
+        modelAttrs[modelName].forEach(function (key) {
+            if (model._previousAttributes[key] !== undefined) {
+                data[key] = model._previousAttributes[key];
+            }
         });
     } else {
         data = model.toJSON();
