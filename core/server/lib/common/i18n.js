@@ -202,7 +202,7 @@ I18n = {
             } catch (err) {
                 blosTheme = undefined;
                 if (err.code === 'ENOENT') {
-                    console.log('Theme\'s file assets/locales/' + currentLocale + '.json not found! Falling back to default English locale.');
+                    logging.warn('Theme\'s file assets/locales/' + currentLocale + '.json not found! Falling back to default English locale.');
                     currentLocale = 'en';
                     settingsCache.set('default_locale', 'en');
                 } else {
