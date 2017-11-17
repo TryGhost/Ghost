@@ -1,0 +1,53 @@
+var _ = require('lodash'),
+    pluralize = require('pluralize'),
+    events = require('../events'),
+    api = require('../api'),
+    modelAttrs;
+
+// TODO: this can be removed once all events pass a .toJSON object through
+modelAttrs = {
+    subscriber: ['id', 'name', 'email']
+};
+
+// TODO: this works for basic models but we eventually want a full API response
+// with embedded models (?include=tags) and so on
+function generatePayload(event, model) {
+    var [modelName, action] = event.split('.'),
+        payload = {},
+        data;
+
+    if (action === 'deleted') {
+        data = modelAttrs[modelName].map(function (key) {
+            return model._previousAttributes[key];
+        });
+    } else {
+        data = model.toJSON();
+    }
+
+    payload[pluralize(modelName)] = [data];
+
+    return payload;
+}
+
+function listener(event, model, options) {
+    var payload = generatePayload(event, model);
+
+    // avoid triggering webhooks when importing
+    if (options && options.importing) {
+        return;
+    }
+
+    api.webhooks.trigger(event, payload, options);
+}
+
+// TODO: use a wildcard with the new event emitter or use the webhooks API to
+// register listeners for events that have webhooks
+function listen() {
+    events.on('subscriber.added', _.partial(listener, 'subscriber.added'));
+    events.on('subscriber.deleted', _.partial(listener, 'subscriber.deleted'));
+}
+
+// Public API
+module.exports = {
+    listen: listen
+};

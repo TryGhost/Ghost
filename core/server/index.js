@@ -31,7 +31,8 @@ var debug = require('ghost-ignition').debug('boot:init'),
     urlService = require('./services/url'),
     apps = require('./services/apps'),
     xmlrpc = require('./services/xmlrpc'),
-    slack = require('./services/slack');
+    slack = require('./services/slack'),
+    webhooks = require('./services/webhooks');
 
 // ## Initialise Ghost
 function init() {
@@ -64,9 +65,10 @@ function init() {
             xmlrpc.listen(),
             // Initialize slack ping
             slack.listen(),
+            // Initialize webhook pings
+            webhooks.listen(),
             // Url Service
             urlService.init()
-
         );
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
@@ -78,9 +80,6 @@ function init() {
         if (config.get('segment:key')) {
             require('./analytics-events').init();
         }
-
-        // Initialize webhook events
-        require('./webhooks-events').init();
 
         debug('Express Apps done');
     }).then(function () {

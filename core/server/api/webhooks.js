@@ -3,13 +3,56 @@
 // also known as "REST Hooks", see http://resthooks.org
 var Promise = require('bluebird'),
     _ = require('lodash'),
+    https = require('https'),
+    url = require('url'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
     errors = require('../errors'),
+    logging = require('../logging'),
     i18n = require('../i18n'),
     docName = 'webhooks',
     webhooks;
+
+// TODO: Use the request util. Do we want retries here?
+function makeRequest(webhook, payload) {
+    var reqOptions, reqPayload, req;
+
+    reqOptions = url.parse(webhook.get('target_url'));
+    reqOptions.method = 'POST';
+    reqOptions.headers = {'Content-Type': 'application/json'};
+
+    reqPayload = JSON.stringify(payload);
+
+    logging.info('webhook.trigger', webhook.get('event'), webhook.get('target_url'));
+    req = https.request(reqOptions);
+
+    req.write(reqPayload);
+    req.on('error', function (err) {
+        // when a webhook responds with a 410 Gone response we should remove the hook
+        if (err.status === 410) {
+            logging.info('webhook.destroy (410 response)', webhook.get('event'), webhook.get('target_url'));
+            return models.Webhook.destroy({id: webhook.get('id')});
+        }
+
+        // TODO: use i18n?
+        logging.error(new errors.GhostError({
+            err: err,
+            context: {
+                id: webhook.get('id'),
+                event: webhook.get('event'),
+                target_url: webhook.get('target_url')
+            }
+        }));
+    });
+    req.end();
+}
+
+function makeRequests(webhooksCollection, payload) {
+    _.each(webhooksCollection.models, function (webhook) {
+        makeRequest(webhook, payload);
+    });
+}
 
 /**
  * ## Webhook API Methods
@@ -86,6 +129,21 @@ webhooks = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
+    },
+
+    trigger: function trigger(event, payload, options) {
+        var tasks;
+
+        function doQuery(options) {
+            return models.Webhook.findAllByEvent(event, options);
+        }
+
+        tasks = [
+            doQuery,
+            _.partialRight(makeRequests, payload)
+        ];
+
         return pipeline(tasks, options);
     }
 };
