@@ -415,9 +415,9 @@ body-parser@~1.14.0:
     raw-body "~2.1.5"
     type-is "~1.6.10"
 
-bookshelf-relations@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-0.1.0.tgz#605c0bcb3932c4e8c59d35933e069a5390fe8ed6"
+bookshelf-relations@0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-0.1.1.tgz#c829a5c8b3e12d1084e8d769042d37a09739eb0f"
   dependencies:
     bluebird "^3.4.1"
     ghost-ignition "^2.8.16"
