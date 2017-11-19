@@ -415,9 +415,9 @@ body-parser@~1.14.0:
     raw-body "~2.1.5"
     type-is "~1.6.10"
 
-"bookshelf-relations@https://github.com/TryGhost/bookshelf-relations/tarball/d6d06f179eb6ffd1cee2b480f34adbb1e0fda204":
+bookshelf-relations@0.1.0:
   version "0.1.0"
-  resolved "https://github.com/TryGhost/bookshelf-relations/tarball/d6d06f179eb6ffd1cee2b480f34adbb1e0fda204#d423bcd9ec664b8d5b1754efe62be1d47cf06a2c"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-0.1.0.tgz#605c0bcb3932c4e8c59d35933e069a5390fe8ed6"
   dependencies:
     bluebird "^3.4.1"
     ghost-ignition "^2.8.16"
