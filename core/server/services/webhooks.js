@@ -45,7 +45,7 @@ function listener(event, model, options) {
 }
 
 // TODO: use a wildcard with the new event emitter or use the webhooks API to
-// register listeners for events that have webhooks
+// register listeners only for events that have webhooks
 function listen() {
     events.on('subscriber.added', _.partial(listener, 'subscriber.added'));
     events.on('subscriber.deleted', _.partial(listener, 'subscriber.deleted'));

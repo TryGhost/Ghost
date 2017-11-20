@@ -242,7 +242,7 @@ module.exports = {
     },
     webhooks: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        event: {type: 'string', maxlength: 50, nullable: false},
+        event: {type: 'string', maxlength: 50, nullable: false, validations: {isLowercase: true}},
         target_url: {type: 'string', maxlength: 2000, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
