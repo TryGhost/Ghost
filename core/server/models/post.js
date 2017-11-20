@@ -23,14 +23,19 @@ Post = ghostBookshelf.Model.extend({
 
     relationships: ['tags'],
 
+    /**
+     * The base model keeps only the columns, which are defined in the schema.
+     * We have to add the relations on top, otherwise bookshelf-relations
+     * has no access to the nested relations, which should be updated.
+     */
     permittedAttributes: function permittedAttributes() {
-        let filtertedKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+        let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
 
         this.relationships.forEach((key) => {
-            filtertedKeys.push(key);
+            filteredKeys.push(key);
         });
 
-        return filtertedKeys;
+        return filteredKeys;
     },
 
     emitChange: function emitChange(event, options) {

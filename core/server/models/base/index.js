@@ -141,6 +141,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 });
         });
 
+        // NOTE: Please keep here. If we don't initialize the parent, bookshelf-relations won't work.
         proto.initialize.call(this);
     },
 
