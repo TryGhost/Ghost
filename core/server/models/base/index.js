@@ -45,6 +45,27 @@ ghostBookshelf.plugin(plugins.pagination);
 // Update collision plugin
 ghostBookshelf.plugin(plugins.collision);
 
+// Manages nested updates (relationships)
+ghostBookshelf.plugin('bookshelf-relations', {
+    allowedOptions: ['context'],
+    unsetRelations: true,
+    hooks: {
+        belongsToMany: {
+            after: function (existing, targets, options) {
+                // reorder tags
+                return Promise.each(targets.models, function (target, index) {
+                    return existing.updatePivot({
+                        sort_order: index
+                    }, _.extend({}, options, {query: {where: {tag_id: target.id}}}));
+                });
+            },
+            beforeRelationCreation: function onCreatingRelation(model, data) {
+                data.id = ObjectId.generate();
+            }
+        }
+    }
+});
+
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
 
@@ -119,6 +140,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     return Promise.resolve(self.onValidate.apply(self, args));
                 });
         });
+
+        // NOTE: Please keep here. If we don't initialize the parent, bookshelf-relations won't work.
+        proto.initialize.call(this);
     },
 
     onValidate: function onValidate() {
@@ -712,7 +736,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
         };
 
+        // the slug may never be longer than the allowed limit of 191 chars, but should also
+        // take the counter into count. We reduce a too long slug to 185 so we're always on the
+        // safe side, also in terms of checking for existing slugs already.
         slug = utils.safeString(base, options);
+
+        if (slug.length > 185) {
+            // CASE: don't cut the slug on import
+            if (!_.has(options, 'importing') || !options.importing) {
+                slug = slug.slice(0, 185);
+            }
+        }
 
         // If it's a user, let's try to cut it down (unless this is a human request)
         if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
