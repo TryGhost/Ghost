@@ -1,5 +1,4 @@
 var _ = require('lodash'),
-    pluralize = require('pluralize'),
     events = require('../events'),
     api = require('../api'),
     modelAttrs;
@@ -13,6 +12,7 @@ modelAttrs = {
 // with embedded models (?include=tags) and so on
 function generatePayload(event, model) {
     var modelName = event.split('.')[0],
+        pluralModelName = modelName + 's',
         action = event.split('.')[1],
         payload = {},
         data;
@@ -28,7 +28,7 @@ function generatePayload(event, model) {
         data = model.toJSON();
     }
 
-    payload[pluralize(modelName)] = [data];
+    payload[pluralModelName] = [data];
 
     return payload;
 }
