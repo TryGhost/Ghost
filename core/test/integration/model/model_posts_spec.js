@@ -1691,838 +1691,187 @@ describe('Post Model', function () {
         });
     });
 
-    describe('Post tag handling', function () {
+    describe('Post tag handling edge cases', function () {
         beforeEach(testUtils.setup());
 
-        describe('Post with tags', function () {
-            var postJSON,
-                tagJSON,
-                editOptions,
-                createTag = testUtils.DataGenerator.forKnex.createTag;
+        var postJSON,
+            tagJSON,
+            editOptions,
+            createTag = testUtils.DataGenerator.forKnex.createTag;
 
-            beforeEach(function () {
-                tagJSON = [];
+        beforeEach(function () {
+            tagJSON = [];
 
-                var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
-                    postTags = [
-                        createTag({name: 'tag1'}),
-                        createTag({name: 'tag2'}),
-                        createTag({name: 'tag3'})
-                    ],
-                    extraTags = [
-                        createTag({name: 'existing tag a'}),
-                        createTag({name: 'existing-tag-b'}),
-                        createTag({name: 'existing_tag_c'})
-                    ];
+            var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
+                postTags = [
+                    createTag({name: 'tag1'}),
+                    createTag({name: 'tag2'}),
+                    createTag({name: 'tag3'})
+                ],
+                extraTags = [
+                    createTag({name: 'existing tag a'}),
+                    createTag({name: 'existing-tag-b'}),
+                    createTag({name: 'existing_tag_c'})
+                ];
 
-                post.tags = postTags;
-                post.status = 'published';
+            post.tags = postTags;
+            post.status = 'published';
 
-                return Promise.props({
-                    post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                    tag1: TagModel.add(extraTags[0], context),
-                    tag2: TagModel.add(extraTags[1], context),
-                    tag3: TagModel.add(extraTags[2], context)
-                }).then(function (result) {
-                    postJSON = result.post.toJSON({include: ['tags']});
-                    tagJSON.push(result.tag1.toJSON());
-                    tagJSON.push(result.tag2.toJSON());
-                    tagJSON.push(result.tag3.toJSON());
-                    editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+            return Promise.props({
+                post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
+                tag1: TagModel.add(extraTags[0], context),
+                tag2: TagModel.add(extraTags[1], context),
+                tag3: TagModel.add(extraTags[2], context)
+            }).then(function (result) {
+                postJSON = result.post.toJSON({include: ['tags']});
+                tagJSON.push(result.tag1.toJSON());
+                tagJSON.push(result.tag2.toJSON());
+                tagJSON.push(result.tag3.toJSON());
+                editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
 
-                    // reset the eventSpy here
-                    sandbox.restore();
-                });
+                // reset the eventSpy here
+                sandbox.restore();
             });
-
-            it('should create the test data correctly', function (done) {
-                // creates a test tag
-                should.exist(tagJSON);
-                tagJSON.should.be.an.Array().with.lengthOf(3);
-                tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
-                tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
-                tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
-
-                // creates a test post with an array of tags in the correct order
-                should.exist(postJSON);
-                postJSON.title.should.eql('HTML Ipsum');
-                should.exist(postJSON.tags);
-                postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
-                postJSON.tags.should.have.enumerable(0).with.property('name', 'tag1');
-                postJSON.tags.should.have.enumerable(1).with.property('name', 'tag2');
-                postJSON.tags.should.have.enumerable(2).with.property('name', 'tag3');
-
-                done();
-            });
-
-            describe('Adding brand new tags', function () {
-                it('can add a single tag to the end of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a single tag to the end of the array
-                    newJSON.tags.push(createTag({name: 'tag4'}));
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
-                    });
-                });
-
-                it('can add a single tag to the beginning of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a single tag to the beginning of the array
-                    newJSON.tags = [createTag({name: 'tag4'})].concat(postJSON.tags);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag4');
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                    });
-                });
-            });
-
-            describe('Adding pre-existing tags', function () {
-                it('can add a single tag to the end of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a single pre-existing tag to the end of the array
-                    newJSON.tags.push(tagJSON[0]);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                    });
-                });
-
-                it('can add a single tag to the beginning of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add an existing tag to the beginning of the array
-                    newJSON.tags = [tagJSON[0]].concat(postJSON.tags);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                    });
-                });
-
-                it('can add a single tag to the middle of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a single pre-existing tag to the middle of the array
-                    newJSON.tags = postJSON.tags.slice(0, 1).concat([tagJSON[0]]).concat(postJSON.tags.slice(1));
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                    });
-                });
-            });
-
-            describe('Removing tags', function () {
-                it('can remove a single tag from the end of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Remove a single tag from the end of the array
-                    newJSON.tags = postJSON.tags.slice(0, -1);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(2);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                    });
-                });
-
-                it('can remove a single tag from the beginning of the tags array', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Remove a single tag from the beginning of the array
-                    newJSON.tags = postJSON.tags.slice(1);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(2);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                    });
-                });
-
-                it('can remove all tags', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Remove all the tags
-                    newJSON.tags = [];
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(0);
-                    });
-                });
-            });
-
-            describe('Reordering tags', function () {
-                it('can reorder the first tag to be the last', function () {
-                    var newJSON = _.cloneDeep(postJSON),
-                        firstTag = [postJSON.tags[0]];
-
-                    // Reorder the tags, so that the first tag is moved to the end
-                    newJSON.tags = postJSON.tags.slice(1).concat(firstTag);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                    });
-                });
-
-                it('can reorder the last tag to be the first', function () {
-                    var newJSON = _.cloneDeep(postJSON),
-                        lastTag = [postJSON.tags[2]];
-
-                    // Reorder the tags, so that the last tag is moved to the beginning
-                    newJSON.tags = lastTag.concat(postJSON.tags.slice(0, -1));
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                    });
-                });
-            });
-
-            describe('Edit post', function () {
-                // These tests are for #6920
-                it('can edit a post SAFELY when tags are not included', function () {
-                    var postId = postJSON.id,
-                        toJSONOpts = {include: ['tags']},
-                        startTags;
-
-                    // Step 1, fetch a post with its tags, just to see what tags we have
-                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                        var post = results.toJSON(toJSONOpts);
-                        should.exist(results);
-                        post.title.should.not.equal('new title');
-                        post.tags.should.have.lengthOf(3);
-
-                        // Save a copy of these tags to test later
-                        startTags = _.cloneDeep(post.tags);
-
-                        // Step 2, edit a single property of the post... we aren't doing anything with tags here...
-                        return PostModel.edit({title: 'new title'}, _.extend({}, context, {id: postId}));
-                    }).then(function (edited) {
-                        should.exist(edited);
-                        var post = edited.toJSON(toJSONOpts);
-
-                        post.title.should.equal('new title');
-                        // edit didn't include tags, so they should be blank
-                        should.not.exist(post.tags);
-
-                        // Step 3, request the same post again, including tags... they should still be present
-                        return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                            var post = results.toJSON(toJSONOpts);
-                            post.tags.should.have.lengthOf(3);
-                            post.tags.should.eql(startTags);
-                        });
-                    });
-                });
-
-                it('can edit a post SAFELY when tags is undefined', function () {
-                    var postId = postJSON.id,
-                        toJSONOpts = {include: ['tags']},
-                        startTags;
-
-                    // Step 1, fetch a post with its tags, just to see what tags we have
-                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                        var post = results.toJSON(toJSONOpts);
-                        should.exist(results);
-                        post.title.should.not.equal('new title');
-                        post.tags.should.have.lengthOf(3);
-
-                        // Save a copy of these tags to test later
-                        startTags = _.cloneDeep(post.tags);
-
-                        // Step 2, edit a single property of the post... we aren't doing anything with tags here...
-                        return PostModel.edit({
-                            title: 'new title',
-                            tags: undefined
-                        }, _.extend({}, context, {id: postId}));
-                    }).then(function (edited) {
-                        should.exist(edited);
-                        var post = edited.toJSON(toJSONOpts);
-
-                        post.title.should.equal('new title');
-                        // edit didn't include tags, so they should be blank
-                        should.not.exist(post.tags);
-
-                        // Step 3, request the same post again, including tags... they should still be present
-                        return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                            var post = results.toJSON(toJSONOpts);
-                            post.tags.should.have.lengthOf(3);
-                            post.tags.should.eql(startTags);
-                        });
-                    });
-                });
-
-                it('can edit a post SAFELY when tags is null', function () {
-                    var postId = postJSON.id,
-                        toJSONOpts = {include: ['tags']},
-                        startTags;
-
-                    // Step 1, fetch a post with its tags, just to see what tags we have
-                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                        var post = results.toJSON(toJSONOpts);
-                        should.exist(results);
-                        post.title.should.not.equal('new title');
-                        post.tags.should.have.lengthOf(3);
-
-                        // Save a copy of these tags to test later
-                        startTags = _.cloneDeep(post.tags);
-
-                        // Step 2, edit a single property of the post... we aren't doing anything with tags here...
-                        return PostModel.edit({title: 'new title', tags: null}, _.extend({}, context, {id: postId}));
-                    }).then(function (edited) {
-                        should.exist(edited);
-                        var post = edited.toJSON(toJSONOpts);
-
-                        post.title.should.equal('new title');
-                        // edit didn't include tags, so they should be blank
-                        should.not.exist(post.tags);
-
-                        // Step 3, request the same post again, including tags... they should still be present
-                        return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                            var post = results.toJSON(toJSONOpts);
-                            post.tags.should.have.lengthOf(3);
-                            post.tags.should.eql(startTags);
-                        });
-                    });
-                });
-
-                it('can remove all tags when sent an empty array', function () {
-                    var postId = postJSON.id,
-                        toJSONOpts = {include: ['tags']};
-
-                    // Step 1, fetch a post with its tags, just to see what tags we have
-                    return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                        var post = results.toJSON(toJSONOpts);
-                        should.exist(results);
-                        post.title.should.not.equal('new title');
-                        post.tags.should.have.lengthOf(3);
-
-                        // Step 2, edit a single property of the post... we aren't doing anything with tags here...
-                        return PostModel.edit({title: 'new title', tags: []}, _.extend({}, context, {id: postId}));
-                    }).then(function (edited) {
-                        should.exist(edited);
-                        var post = edited.toJSON(toJSONOpts);
-
-                        post.title.should.equal('new title');
-                        // edit didn't include tags, so they should be blank
-                        should.not.exist(post.tags);
-
-                        // Step 3, request the same post again, including tags... they should be gone
-                        return PostModel.findOne({id: postId}, {withRelated: ['tags']}).then(function (results) {
-                            var post = results.toJSON(toJSONOpts);
-                            // Tags should be gone
-                            post.tags.should.eql([]);
-                        });
-                    });
-                });
-            });
-
-            describe('Combination updates', function () {
-                it('can add a combination of new and pre-existing tags', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Push a bunch of new and existing tags to the end of the array
-                    newJSON.tags.push({name: 'tag4'});
-                    newJSON.tags.push({name: 'existing tag a'});
-                    newJSON.tags.push({name: 'tag5'});
-                    newJSON.tags.push({name: 'existing-tag-b'});
-                    newJSON.tags.push({name: 'bob'});
-                    newJSON.tags.push({name: 'existing_tag_c'});
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(9);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
-                        updatedPost.tags.should.have.enumerable(4).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(5).with.property('name', 'tag5');
-                        updatedPost.tags.should.have.enumerable(6).with.properties({
-                            name: 'existing-tag-b',
-                            id: tagJSON[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(7).with.property('name', 'bob');
-                        updatedPost.tags.should.have.enumerable(8).with.properties({
-                            name: 'existing_tag_c',
-                            id: tagJSON[2].id
-                        });
-                    });
-                });
-
-                it('can reorder the first tag to be the last and add a tag to the beginning', function () {
-                    var newJSON = _.cloneDeep(postJSON),
-                        firstTag = [postJSON.tags[0]];
-
-                    // Add a new tag to the beginning, and move the original first tag to the end
-                    newJSON.tags = [tagJSON[0]].concat(postJSON.tags.slice(1)).concat(firstTag);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(4);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                    });
-                });
-
-                it('can reorder the first tag to be the last, remove the original last tag & add a tag to the beginning', function () {
-                    var newJSON = _.cloneDeep(postJSON),
-                        firstTag = [newJSON.tags[0]];
-
-                    // And an existing tag to the beginning of the array, move the original first tag to the end and remove the original last tag
-                    newJSON.tags = [tagJSON[0]].concat(newJSON.tags.slice(1, -1)).concat(firstTag);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                    });
-                });
-
-                it('can reorder original tags, remove one, and add new and existing tags', function () {
-                    var newJSON = _.cloneDeep(postJSON),
-                        firstTag = [newJSON.tags[0]];
-
-                    // Reorder original 3 so that first is at the end
-                    newJSON.tags = newJSON.tags.slice(1).concat(firstTag);
-
-                    // add an existing tag in the middle
-                    newJSON.tags = newJSON.tags.slice(0, 1).concat({name: 'existing-tag-b'}).concat(newJSON.tags.slice(1));
-
-                    // add a brand new tag in the middle
-                    newJSON.tags = newJSON.tags.slice(0, 3).concat({name: 'betty'}).concat(newJSON.tags.slice(3));
-
-                    // Add some more tags to the end
-                    newJSON.tags.push({name: 'bob'});
-                    newJSON.tags.push({name: 'existing tag a'});
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(7);
-
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'tag2',
-                            id: postJSON.tags[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'existing-tag-b',
-                            id: tagJSON[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'tag3',
-                            id: postJSON.tags[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(3).with.property('name', 'betty');
-                        updatedPost.tags.should.have.enumerable(4).with.properties({
-                            name: 'tag1',
-                            id: postJSON.tags[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(5).with.property('name', 'bob');
-                        updatedPost.tags.should.have.enumerable(6).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                    });
+        });
+
+        it('should create the test data correctly', function (done) {
+            // creates a test tag
+            should.exist(tagJSON);
+            tagJSON.should.be.an.Array().with.lengthOf(3);
+            tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
+            tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
+            tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
+
+            // creates a test post with an array of tags in the correct order
+            should.exist(postJSON);
+            postJSON.title.should.eql('HTML Ipsum');
+            should.exist(postJSON.tags);
+            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
+            postJSON.tags.should.have.enumerable(0).with.property('name', 'tag1');
+            postJSON.tags.should.have.enumerable(1).with.property('name', 'tag2');
+            postJSON.tags.should.have.enumerable(2).with.property('name', 'tag3');
+
+            done();
+        });
+
+        it('can edit slug of existing tag', function () {
+            var newJSON = _.cloneDeep(postJSON);
+
+            // Add an existing tag to the beginning of the array
+            newJSON.tags = [{id: postJSON.tags[0].id, slug: 'eins'}];
+
+            // Edit the post
+            return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                updatedPost.tags.should.have.lengthOf(1);
+                updatedPost.tags.should.have.enumerable(0).with.properties({
+                    name: postJSON.tags[0].name,
+                    slug: 'eins',
+                    id: postJSON.tags[0].id
                 });
             });
         });
 
-        describe('Posts with NO tags', function () {
-            var postJSON,
-                tagJSON,
-                editOptions,
-                createTag = testUtils.DataGenerator.forKnex.createTag;
+        it('can\'t edit dates and authors of existing tag', function () {
+            var newJSON = _.cloneDeep(postJSON), updatedAtFormat;
 
-            beforeEach(function () {
-                tagJSON = [];
+            // Add an existing tag to the beginning of the array
+            newJSON.tags = [{
+                id: postJSON.tags[0].id,
+                slug: 'eins',
+                created_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                updated_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                created_by: 2,
+                updated_by: 2
+            }];
 
-                var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
-                    extraTag1 = createTag({name: 'existing tag a'}),
-                    extraTag2 = createTag({name: 'existing-tag-b'}),
-                    extraTag3 = createTag({name: 'existing_tag_c'});
+            // Edit the post
+            return Promise.delay(1000)
+                .then(function () {
+                    return PostModel.edit(newJSON, editOptions);
+                })
+                .then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                return Promise.props({
-                    post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                    tag1: TagModel.add(extraTag1, context),
-                    tag2: TagModel.add(extraTag2, context),
-                    tag3: TagModel.add(extraTag3, context)
-                }).then(function (result) {
-                    postJSON = result.post.toJSON({include: ['tags']});
-                    tagJSON.push(result.tag1.toJSON());
-                    tagJSON.push(result.tag2.toJSON());
-                    tagJSON.push(result.tag3.toJSON());
-                    editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+                    updatedPost.tags.should.have.lengthOf(1);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({
+                        name: postJSON.tags[0].name,
+                        slug: 'eins',
+                        id: postJSON.tags[0].id,
+                        created_at: postJSON.tags[0].created_at,
+                        created_by: postJSON.created_by,
+                        updated_by: postJSON.updated_by
+                    });
+
+                    updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
+                    updatedAtFormat.should.not.eql(moment(postJSON.updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                });
+        });
+
+        it('can reorder existing, added and deleted tags', function () {
+            var newJSON = _.cloneDeep(postJSON),
+                lastTag = [postJSON.tags[2]];
+
+            // remove tag in the middle (tag1, tag2, tag3 -> tag1, tag3)
+            newJSON.tags.splice(1, 1);
+
+            // add a new one as first tag and reorder existing (tag4, tag3, tag1)
+            newJSON.tags = [{name: 'tag4'}].concat([newJSON.tags[1]]).concat([newJSON.tags[0]]);
+
+            // Edit the post
+            return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                updatedPost.tags.should.have.lengthOf(3);
+                updatedPost.tags.should.have.enumerable(0).with.properties({
+                    name: 'tag4'
+                });
+                updatedPost.tags.should.have.enumerable(1).with.properties({
+                    name: 'tag3',
+                    id: postJSON.tags[2].id
+                });
+                updatedPost.tags.should.have.enumerable(2).with.properties({
+                    name: 'tag1',
+                    id: postJSON.tags[0].id
                 });
             });
+        });
 
-            it('should create the test data correctly', function () {
-                // creates two test tags
-                should.exist(tagJSON);
-                tagJSON.should.be.an.Array().with.lengthOf(3);
-                tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
-                tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
-                tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
+        it('can add multiple tags with conflicting slugs', function () {
+            var newJSON = _.cloneDeep(postJSON);
 
-                // creates a test post with no tags
-                should.exist(postJSON);
-                postJSON.title.should.eql('HTML Ipsum');
-                should.exist(postJSON.tags);
+            // Add conflicting tags to the end of the array
+            newJSON.tags = [];
+            newJSON.tags.push({name: 'C'});
+            newJSON.tags.push({name: 'C++'});
+            newJSON.tags.push({name: 'C#'});
+
+            // Edit the post
+            return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                updatedPost.tags.should.have.lengthOf(3);
+                updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
+                updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
+                updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
             });
+        });
 
-            describe('Adding brand new tags', function () {
-                it('can add a single tag', function () {
-                    var newJSON = _.cloneDeep(postJSON);
+        it('can handle lowercase/uppercase tags', function () {
+            var newJSON = _.cloneDeep(postJSON);
 
-                    // Add a single tag to the end of the array
-                    newJSON.tags.push(createTag({name: 'tag1'}));
+            // Add conflicting tags to the end of the array
+            newJSON.tags = [];
+            newJSON.tags.push({name: 'test'});
+            newJSON.tags.push({name: 'tEst'});
 
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
+            // Edit the post
+            return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                        updatedPost.tags.should.have.lengthOf(1);
-                        updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
-                    });
-                });
-
-                it('can add multiple tags', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a bunch of tags to the end of the array
-                    newJSON.tags.push(createTag({name: 'tag1'}));
-                    newJSON.tags.push(createTag({name: 'tag2'}));
-                    newJSON.tags.push(createTag({name: 'tag3'}));
-                    newJSON.tags.push(createTag({name: 'tag4'}));
-                    newJSON.tags.push(createTag({name: 'tag5'}));
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(5);
-                        updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
-                        updatedPost.tags.should.have.enumerable(1).with.property('name', 'tag2');
-                        updatedPost.tags.should.have.enumerable(2).with.property('name', 'tag3');
-                        updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
-                        updatedPost.tags.should.have.enumerable(4).with.property('name', 'tag5');
-                    });
-                });
-
-                it('can add multiple tags with conflicting slugs', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add conflicting tags to the end of the array
-                    newJSON.tags.push({name: 'C'});
-                    newJSON.tags.push({name: 'C++'});
-                    newJSON.tags.push({name: 'C#'});
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
-                        updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
-                        updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
-                    });
-                });
-            });
-
-            describe('Adding pre-existing tags', function () {
-                it('can add a single tag', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a single pre-existing tag
-                    newJSON.tags.push(tagJSON[0]);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(1);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                    });
-                });
-
-                it('can add multiple tags', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add many preexisting tags
-                    newJSON.tags.push(tagJSON[0]);
-                    newJSON.tags.push(tagJSON[1]);
-                    newJSON.tags.push(tagJSON[2]);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'existing-tag-b',
-                            id: tagJSON[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'existing_tag_c',
-                            id: tagJSON[2].id
-                        });
-                    });
-                });
-
-                it('can add multiple tags in wrong order', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add tags to the array
-                    newJSON.tags.push(tagJSON[2]);
-                    newJSON.tags.push(tagJSON[0]);
-                    newJSON.tags.push(tagJSON[1]);
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(3);
-                        updatedPost.tags.should.have.enumerable(0).with.properties({
-                            name: 'existing_tag_c',
-                            id: tagJSON[2].id
-                        });
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.properties({
-                            name: 'existing-tag-b',
-                            id: tagJSON[1].id
-                        });
-                    });
-                });
-            });
-
-            describe('Adding combinations', function () {
-                it('can add a combination of new and pre-existing tags', function () {
-                    var newJSON = _.cloneDeep(postJSON);
-
-                    // Add a bunch of new and existing tags to the array
-                    newJSON.tags.push({name: 'tag1'});
-                    newJSON.tags.push({name: 'existing tag a'});
-                    newJSON.tags.push({name: 'tag3'});
-                    newJSON.tags.push({name: 'existing-tag-b'});
-                    newJSON.tags.push({name: 'tag5'});
-                    newJSON.tags.push({name: 'existing_tag_c'});
-
-                    // Edit the post
-                    return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                        updatedPost = updatedPost.toJSON({include: ['tags']});
-
-                        updatedPost.tags.should.have.lengthOf(6);
-                        updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
-                        updatedPost.tags.should.have.enumerable(1).with.properties({
-                            name: 'existing tag a',
-                            id: tagJSON[0].id
-                        });
-                        updatedPost.tags.should.have.enumerable(2).with.property('name', 'tag3');
-                        updatedPost.tags.should.have.enumerable(3).with.properties({
-                            name: 'existing-tag-b',
-                            id: tagJSON[1].id
-                        });
-                        updatedPost.tags.should.have.enumerable(4).with.property('name', 'tag5');
-                        updatedPost.tags.should.have.enumerable(5).with.properties({
-                            name: 'existing_tag_c',
-                            id: tagJSON[2].id
-                        });
-                    });
-                });
+                updatedPost.tags.should.have.lengthOf(1);
             });
         });
     });
