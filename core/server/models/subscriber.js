@@ -21,15 +21,15 @@ Subscriber = ghostBookshelf.Model.extend({
         };
     },
 
-    onCreated: function onCreated(model, options) {
+    onCreated: function onCreated(model, response, options) {
         model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model, options) {
+    onUpdated: function onUpdated(model, response, options) {
         model.emitChange('edited', options);
     },
 
-    onDestroyed: function onDestroyed(model, options) {
+    onDestroyed: function onDestroyed(model, response, options) {
         model.emitChange('deleted', options);
     }
 }, {
