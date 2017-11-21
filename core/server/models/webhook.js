@@ -62,5 +62,5 @@ Webhooks = ghostBookshelf.Collection.extend({
 
 module.exports = {
     Webhook: ghostBookshelf.model('Webhook', Webhook),
-    Webhooks: ghostBookshelf.collection('Webhook', Webhooks)
+    Webhooks: ghostBookshelf.collection('Webhooks', Webhooks)
 };
