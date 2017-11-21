@@ -9,8 +9,10 @@ var ghostBookshelf = require('./base'),
 Subscriber = ghostBookshelf.Model.extend({
     tableName: 'subscribers',
 
-    emitChange: function emitChange(event) {
-        events.emit('subscriber' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        options = options || {};
+
+        events.emit('subscriber' + '.' + event, this, options);
     },
 
     defaults: function defaults() {
@@ -19,16 +21,16 @@ Subscriber = ghostBookshelf.Model.extend({
         };
     },
 
-    onCreated: function onCreated(model) {
-        model.emitChange('added');
+    onCreated: function onCreated(model, response, options) {
+        model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model) {
-        model.emitChange('edited');
+    onUpdated: function onUpdated(model, response, options) {
+        model.emitChange('edited', options);
     },
 
-    onDestroyed: function onDestroyed(model) {
-        model.emitChange('deleted');
+    onDestroyed: function onDestroyed(model, response, options) {
+        model.emitChange('deleted', options);
     }
 }, {
 

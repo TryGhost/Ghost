@@ -435,6 +435,10 @@ fixtures = {
 
     insertInvites: function insertInvites() {
         return db.knex('invites').insert(DataGenerator.forKnex.invites);
+    },
+
+    insertWebhooks: function insertWebhooks() {
+        return db.knex('webhooks').insert(DataGenerator.forKnex.webhooks);
     }
 };
 
@@ -540,6 +544,9 @@ toDoList = {
     },
     themes: function loadThemes() {
         return themes.loadAll();
+    },
+    webhooks: function insertWebhooks() {
+        return fixtures.insertWebhooks();
     }
 };
 

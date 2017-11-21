@@ -201,5 +201,9 @@ module.exports = function apiRoutes() {
         api.http(api.redirects.upload)
     );
 
+    // ## Webhooks (RESTHooks)
+    apiRouter.post('/webhooks', mw.authenticatePrivate, api.http(api.webhooks.add));
+    apiRouter.del('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
+
     return apiRouter;
 };

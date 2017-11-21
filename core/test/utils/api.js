@@ -53,7 +53,8 @@ var _ = require('lodash'),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
         theme: ['name', 'package', 'active'],
         themes: ['themes'],
-        invites: _(schema.invites).keys().without('token').value()
+        invites: _(schema.invites).keys().without('token').value(),
+        webhook: _.keys(schema.webhooks)
     };
 
 function getApiQuery(route) {

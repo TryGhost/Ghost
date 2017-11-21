@@ -329,6 +329,19 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             email: 'subscriber2@test.com'
         }
+    ],
+
+    webhooks: [
+        {
+            id: ObjectId.generate(),
+            event: 'subscriber.added',
+            target_url: 'https://example.com/webhooks/subscriber-added'
+        },
+        {
+            id: ObjectId.generate(),
+            event: 'subscriber.removed',
+            target_url: 'https://example.com/webhooks/subscriber-removed'
+        }
     ]
 };
 
@@ -344,7 +357,8 @@ DataGenerator.forKnex = (function () {
         users,
         roles_users,
         clients,
-        invites;
+        invites,
+        webhooks;
 
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
@@ -522,6 +536,20 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createWebhook(overrides) {
+        var newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            event: 'test',
+            target_url: 'https://example.com/hooks/test',
+            created_by: DataGenerator.Content.users[0].id,
+            created_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id,
+            updated_at: new Date()
+        });
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -626,6 +654,11 @@ DataGenerator.forKnex = (function () {
         createInvite({email: 'test2@ghost.org', role_id: DataGenerator.Content.roles[2].id})
     ];
 
+    webhooks = [
+        createWebhook(DataGenerator.Content.webhooks[0]),
+        createWebhook(DataGenerator.Content.webhooks[1])
+    ];
+
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
@@ -644,6 +677,7 @@ DataGenerator.forKnex = (function () {
         createSubscriber: createBasic,
         createInvite: createInvite,
         createTrustedDomain: createTrustedDomain,
+        createWebhook: createWebhook,
 
         invites: invites,
         posts: posts,
@@ -654,7 +688,8 @@ DataGenerator.forKnex = (function () {
         roles: roles,
         users: users,
         roles_users: roles_users,
-        clients: clients
+        clients: clients,
+        webhooks: webhooks
     };
 }());
 
