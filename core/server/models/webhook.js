@@ -7,20 +7,22 @@ var ghostBookshelf = require('./base'),
 Webhook = ghostBookshelf.Model.extend({
     tableName: 'webhooks',
 
-    emitChange: function emitChange(event) {
-        events.emit('webhook' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        options = options || {};
+
+        events.emit('webhook' + '.' + event, this, options);
     },
 
-    onCreated: function onCreated(model) {
-        model.emitChange('added');
+    onCreated: function onCreated(model, response, options) {
+        model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model) {
-        model.emitChange('edited');
+    onUpdated: function onUpdated(model, response, options) {
+        model.emitChange('edited', options);
     },
 
-    onDestroyed: function onDestroyed(model) {
-        model.emitChange('deleted');
+    onDestroyed: function onDestroyed(model, response, options) {
+        model.emitChange('deleted', options);
     }
 }, {
     findAllByEvent: function findAllByEvent(event, options) {
