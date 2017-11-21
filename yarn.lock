@@ -88,20 +88,18 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
-amperize@0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.5.tgz#0185eaea9ae617ca27e0c3dac5092574403a3851"
+amperize@0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.6.tgz#3b16888924af9ced28d6f8538d2329b361c9c580"
   dependencies:
     async "^2.1.4"
     emits "^3.0.0"
     got "^7.1.0"
     htmlparser2 "^3.9.2"
-    image-size "0.5.1"
+    image-size "0.6.1"
     lodash "^4.17.4"
-    nock "^9.0.2"
-    rewire "^2.5.2"
     uuid "^3.0.0"
-    validator "^8.2.0"
+    validator "^9.1.1"
 
 analytics-node@2.4.1:
   version "2.4.1"
@@ -2671,10 +2669,6 @@ iltorb@^1.0.13:
     node-gyp "^3.6.2"
     prebuild-install "^2.3.0"
 
-image-size@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.5.1.tgz#28eea8548a4b1443480ddddc1e083ae54652439f"
-
 image-size@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.6.1.tgz#98122a562d59dcc097ef1b2c8191866eb8f5d663"
@@ -3876,7 +3870,7 @@ netjet@1.1.4:
     lru-cache "^4.0.0"
     posthtml "^0.9.0"
 
-nock@9.1.0, nock@^9.0.2:
+nock@9.1.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/nock/-/nock-9.1.0.tgz#b6fd783abc1e774cb028058ea81207369a735747"
   dependencies:
@@ -4905,7 +4899,7 @@ restore-cursor@^2.0.0:
     onetime "^2.0.0"
     signal-exit "^3.0.2"
 
-rewire@2.5.2, rewire@^2.5.2:
+rewire@2.5.2:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/rewire/-/rewire-2.5.2.tgz#6427de7b7feefa7d36401507eb64a5385bc58dc7"
 
@@ -5793,9 +5787,9 @@ validator@6.3.0, validator@^6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-6.3.0.tgz#47ce23ed8d4eaddfa9d4b8ef0071b6cf1078d7c8"
 
-validator@^8.2.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-8.2.0.tgz#3c1237290e37092355344fef78c231249dab77b9"
+validator@^9.1.1:
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-9.1.1.tgz#3bdd1065cbd28f9d96ac806dee01030d32fd97ef"
 
 vary@^1, vary@~1.1.0, vary@~1.1.2:
   version "1.1.2"
