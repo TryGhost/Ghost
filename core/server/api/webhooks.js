@@ -16,32 +16,36 @@ var Promise = require('bluebird'),
 
 // TODO: Use the request util. Do we want retries here?
 function makeRequest(webhook, payload) {
-    var reqOptions, reqPayload, req;
+    var event = webhook.get('event'),
+        targetUrl = webhook.get('target_url'),
+        webhookId = webhook.get('id'),
+        reqOptions, reqPayload, req;
 
-    reqOptions = url.parse(webhook.get('target_url'));
+    reqOptions = url.parse(targetUrl);
     reqOptions.method = 'POST';
     reqOptions.headers = {'Content-Type': 'application/json'};
 
     reqPayload = JSON.stringify(payload);
 
-    logging.info('webhook.trigger', webhook.get('event'), webhook.get('target_url'));
+    logging.info('webhook.trigger', event, targetUrl);
     req = https.request(reqOptions);
 
     req.write(reqPayload);
     req.on('error', function (err) {
         // when a webhook responds with a 410 Gone response we should remove the hook
         if (err.status === 410) {
-            logging.info('webhook.destroy (410 response)', webhook.get('event'), webhook.get('target_url'));
-            return models.Webhook.destroy({id: webhook.get('id')});
+            logging.info('webhook.destroy (410 response)', event, targetUrl);
+            return models.Webhook.destroy({id: webhookId});
         }
 
         // TODO: use i18n?
         logging.error(new errors.GhostError({
             err: err,
             context: {
-                id: webhook.get('id'),
-                event: webhook.get('event'),
-                target_url: webhook.get('target_url')
+                id: webhookId,
+                event: event,
+                target_url: targetUrl,
+                payload: payload
             }
         }));
     });
