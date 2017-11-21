@@ -18,9 +18,6 @@ describe('Webhooks API', function () {
 
     function checkForErrorType(type, done) {
         return function checkForErrorType(error) {
-            // TODO: should this be necessary? The schema validation returns an
-            // array of errors, whereas api-level checks and permissions return
-            // a single error
             if (Array.isArray(error)) {
                 error = error[0];
             }
