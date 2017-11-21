@@ -421,6 +421,16 @@
                     "name": "Upload redirects",
                     "action_type": "upload",
                     "object_type": "redirect"
+                },
+                {
+                    "name": "Add webhooks",
+                    "action_type": "add",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Delete webhooks",
+                    "action_type": "destroy",
+                    "object_type": "webhook"
                 }
             ]
         },
@@ -472,7 +482,8 @@
                     "client": "all",
                     "subscriber": "all",
                     "invite": "all",
-                    "redirect": "all"
+                    "redirect": "all",
+                    "webhook": "all"
                 },
                 "Editor": {
                     "post": "all",
