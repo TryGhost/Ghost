@@ -239,5 +239,14 @@ module.exports = {
         lastRequest: {type: 'bigInteger'},
         lifetime: {type: 'bigInteger'},
         count: {type: 'integer'}
+    },
+    webhooks: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        event: {type: 'string', maxlength: 50, nullable: false, validations: {isLowercase: true}},
+        target_url: {type: 'string', maxlength: 2000, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
     }
 };

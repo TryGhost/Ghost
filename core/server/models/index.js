@@ -29,7 +29,8 @@ models = [
     'subscriber',
     'tag',
     'user',
-    'invite'
+    'invite',
+    'webhook'
 ];
 
 function init() {
