@@ -15,7 +15,7 @@ var Promise = require('bluebird'),
     webhooks;
 
 // TODO: Use the request util. Do we want retries here?
-function makeRequest(webhook, payload) {
+function makeRequest(webhook, payload, options) {
     var event = webhook.get('event'),
         targetUrl = webhook.get('target_url'),
         webhookId = webhook.get('id'),
@@ -35,7 +35,7 @@ function makeRequest(webhook, payload) {
         // when a webhook responds with a 410 Gone response we should remove the hook
         if (err.status === 410) {
             logging.info('webhook.destroy (410 response)', event, targetUrl);
-            return models.Webhook.destroy({id: webhookId});
+            return models.Webhook.destroy({id: webhookId}, options);
         }
 
         // TODO: use i18n?
@@ -52,9 +52,9 @@ function makeRequest(webhook, payload) {
     req.end();
 }
 
-function makeRequests(webhooksCollection, payload) {
+function makeRequests(webhooksCollection, payload, options) {
     _.each(webhooksCollection.models, function (webhook) {
-        makeRequest(webhook, payload);
+        makeRequest(webhook, payload, options);
     });
 }
 
@@ -145,7 +145,7 @@ webhooks = {
 
         tasks = [
             doQuery,
-            _.partialRight(makeRequests, payload)
+            _.partialRight(makeRequests, payload, options)
         ];
 
         return pipeline(tasks, options);
