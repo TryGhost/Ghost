@@ -12,6 +12,7 @@ module.exports = function addWebhooksTable(options) {
         .then(function (exists) {
             if (exists) {
                 logging.warn(message);
+                return Promise.resolve();
             }
 
             logging.info(message);
