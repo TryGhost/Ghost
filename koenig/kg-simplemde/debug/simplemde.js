@@ -2104,11 +2104,50 @@ module.exports = CodeMirrorSpellChecker;
           : (parseInt(match[3], 10) + 1) + match[4];
 
         replacements[i] = "\n" + indent + bullet + after;
+
+        incrementRemainingMarkdownListNumbers(cm, pos);
       }
     }
 
     cm.replaceSelections(replacements);
   };
+
+  // Auto-updating Markdown list numbers when a new item is added to the
+  // middle of a list
+  function incrementRemainingMarkdownListNumbers(cm, pos) {
+    var startLine = pos.line, lookAhead = 0, skipCount = 0;
+    var startItem = listRE.exec(cm.getLine(startLine)), startIndent = startItem[1];
+
+    do {
+      lookAhead += 1;
+      var nextLineNumber = startLine + lookAhead;
+      var nextLine = cm.getLine(nextLineNumber), nextItem = listRE.exec(nextLine);
+
+      if (nextItem) {
+        var nextIndent = nextItem[1];
+        var newNumber = (parseInt(startItem[3], 10) + lookAhead - skipCount);
+        var nextNumber = (parseInt(nextItem[3], 10)), itemNumber = nextNumber;
+
+        if (startIndent === nextIndent) {
+          if (newNumber === nextNumber) itemNumber = nextNumber + 1;
+          if (newNumber > nextNumber) itemNumber = newNumber + 1;
+          cm.replaceRange(
+            nextLine.replace(listRE, nextIndent + itemNumber + nextItem[4] + nextItem[5]),
+          {
+            line: nextLineNumber, ch: 0
+          }, {
+            line: nextLineNumber, ch: nextLine.length
+          });
+        } else {
+          if (startIndent.length > nextIndent.length) return;
+          // This doesn't run if the next line immediatley indents, as it is
+          // not clear of the users intention (new indented item or same level)
+          if ((startIndent.length < nextIndent.length) && (lookAhead === 1)) return;
+          skipCount += 1;
+        }
+      }
+    } while (nextItem);
+  }
 });
 
 },{"../../lib/codemirror":10}],8:[function(require,module,exports){
@@ -5603,8 +5642,10 @@ function updateHeightsInViewport(cm) {
 // Read and store the height of line widgets associated with the
 // given line.
 function updateWidgetHeight(line) {
-  if (line.widgets) { for (var i = 0; i < line.widgets.length; ++i)
-    { line.widgets[i].height = line.widgets[i].node.parentNode.offsetHeight; } }
+  if (line.widgets) { for (var i = 0; i < line.widgets.length; ++i) {
+    var w = line.widgets[i], parent = w.node.parentNode;
+    if (parent) { w.height = parent.offsetHeight; }
+  } }
 }
 
 // Compute the lines that are visible in a given viewport (defaults
@@ -9400,18 +9441,26 @@ function lookupKeyForEditor(cm, name, handle) {
 // for bound mouse clicks.
 
 var stopSeq = new Delayed;
+
 function dispatchKey(cm, name, e, handle) {
   var seq = cm.state.keySeq;
   if (seq) {
     if (isModifierKey(name)) { return "handled" }
-    stopSeq.set(50, function () {
-      if (cm.state.keySeq == seq) {
-        cm.state.keySeq = null;
-        cm.display.input.reset();
-      }
-    });
-    name = seq + " " + name;
+    if (/\'$/.test(name))
+      { cm.state.keySeq = null; }
+    else
+      { stopSeq.set(50, function () {
+        if (cm.state.keySeq == seq) {
+          cm.state.keySeq = null;
+          cm.display.input.reset();
+        }
+      }); }
+    if (dispatchKeyInner(cm, seq + " " + name, e, handle)) { return true }
   }
+  return dispatchKeyInner(cm, name, e, handle)
+}
+
+function dispatchKeyInner(cm, name, e, handle) {
   var result = lookupKeyForEditor(cm, name, handle);
 
   if (result == "multi")
@@ -9424,10 +9473,6 @@ function dispatchKey(cm, name, e, handle) {
     restartBlink(cm);
   }
 
-  if (seq && !result && /\'$/.test(name)) {
-    e_preventDefault(e);
-    return true
-  }
   return !!result
 }
 
@@ -11979,7 +12024,7 @@ CodeMirror$1.fromTextArea = fromTextArea;
 
 addLegacyProps(CodeMirror$1);
 
-CodeMirror$1.version = "5.31.0";
+CodeMirror$1.version = "5.32.0";
 
 return CodeMirror$1;
 
