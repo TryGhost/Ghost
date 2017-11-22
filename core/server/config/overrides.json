@@ -52,7 +52,7 @@
         },
         "db": {
             "extensions": [".json", ".zip"],
-            "contentTypes": ["application/octet-stream", "application/json", "application/zip", "application/x-zip-compressed"]
+            "contentTypes": ["text/plain", "application/octet-stream", "application/json", "application/zip", "application/x-zip-compressed"]
         },
         "themes": {
             "extensions": [".zip"],
@@ -60,7 +60,7 @@
         },
         "redirects": {
             "extensions": [".json"],
-            "contentTypes": ["application/octet-stream", "application/json"]
+            "contentTypes": ["text/plain", "application/octet-stream", "application/json"]
         }
     },
     "times": {
