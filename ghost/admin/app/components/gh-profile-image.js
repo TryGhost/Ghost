@@ -127,7 +127,7 @@ export default Component.extend({
     },
 
     actions: {
-        imageSelected(fileList) {
+        imageSelected(fileList, resetInput) {
             // eslint-disable-next-line
             let imageFile = fileList[0];
 
@@ -144,22 +144,17 @@ export default Component.extend({
 
                 reader.readAsDataURL(imageFile);
             }
+
+            resetInput();
         },
 
         openFileDialog(event) {
-            let fileInput = $(event.target)
+            // simulate click to open file dialog
+            // using jQuery because IE11 doesn't support MouseEvent
+            $(event.target)
                 .closest('figure')
-                .find('input[type="file"]');
-
-            if (fileInput.length > 0) {
-                // reset file input value before clicking so that the same image
-                // can be selected again
-                fileInput.value = '';
-
-                // simulate click to open file dialog
-                // using jQuery because IE11 doesn't support MouseEvent
-                $(fileInput).click();
-            }
+                .find('input[type="file"]')
+                .click();
         }
     }
 });

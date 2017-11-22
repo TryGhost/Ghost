@@ -94,6 +94,12 @@ export default Component.extend({
 
         // if we have new files, validate and start an upload
         let files = this.get('files');
+        this._setFiles(files);
+    },
+
+    _setFiles(files) {
+        this.set('files', files);
+
         if (files && files !== this._files) {
             if (this.get('_uploadFiles.isRunning')) {
                 // eslint-disable-next-line
@@ -289,6 +295,14 @@ export default Component.extend({
     },
 
     actions: {
+        setFiles(files, resetInput) {
+            this._setFiles(files);
+
+            if (resetInput) {
+                resetInput();
+            }
+        },
+
         cancel() {
             this._reset();
             this.onCancel();

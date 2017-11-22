@@ -229,7 +229,7 @@ export default Component.extend({
     },
 
     actions: {
-        fileSelected(fileList) {
+        fileSelected(fileList, resetInput) {
             // can't use array destructuring here as FileList is not a strict
             // array and fails in Safari
             // eslint-disable-next-line ember-suave/prefer-destructuring
@@ -242,9 +242,17 @@ export default Component.extend({
             if (validationResult === true) {
                 run.schedule('actions', this, function () {
                     this.generateRequest();
+
+                    if (resetInput) {
+                        resetInput();
+                    }
                 });
             } else {
                 this._uploadFailed(validationResult);
+
+                if (resetInput) {
+                    resetInput();
+                }
             }
         },
 

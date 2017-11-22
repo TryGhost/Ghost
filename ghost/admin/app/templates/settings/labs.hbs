@@ -111,7 +111,6 @@
         </div>
         <div class="gh-setting">
             {{#gh-uploader
-                files=redirectsUpload
                 extensions=jsonExtension
                 uploadUrl="/redirects/json/"
                 paramName="redirects"
@@ -150,7 +149,7 @@
                 {{/if}}
 
                 <div style="display:none">
-                    {{gh-file-input multiple=false action=(action (mut redirectsUpload)) accept=jsonMimeType data-test-file-input="redirects"}}
+                    {{gh-file-input multiple=false action=uploader.setFiles accept=jsonMimeType data-test-file-input="redirects"}}
                 </div>
             </div>
             {{/gh-uploader}}

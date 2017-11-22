@@ -193,19 +193,12 @@ export default Controller.extend({
          * @param  {MouseEvent} event - MouseEvent fired by the button click
          */
         triggerFileDialog(event) {
-            let fileInput = $(event.target)
-                .closest('.gh-setting')
-                .find('input[type="file"]');
-
-            if (fileInput.length > 0) {
-                // reset file input value before clicking so that the same image
-                // can be selected again
-                fileInput.val('');
-
-                // simulate click to open file dialog
-                // using jQuery because IE11 doesn't support MouseEvent
-                $(fileInput).click();
-            }
+            // simulate click to open file dialog
+            // using jQuery because IE11 doesn't support MouseEvent
+            $(event.target)
+                .closest('figure')
+                .find('input[type="file"]')
+                .click();
         }
     }
 });
