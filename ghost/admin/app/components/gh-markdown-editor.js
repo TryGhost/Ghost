@@ -196,8 +196,6 @@ export default Component.extend(ShortcutsMixin, {
             // a single render
             run.scheduleOnce('afterRender', this, () => {
                 this._insertImages(uploadedImageUrls);
-                // reset the file input so the same file can be selected again
-                this.$('input[type=file]').val('');
             });
         }
 

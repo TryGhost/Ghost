@@ -103,6 +103,11 @@ export default Controller.extend({
             this.get('model').set(image, '');
         },
 
+        updateImage(property, image, resetInput) {
+            this.get('model').set(property, image);
+            resetInput();
+        },
+
         /**
          * Opens a file selection dialog - Triggered by "Upload Image" buttons,
          * searches for the hidden file input within the .gh-setting element
@@ -110,19 +115,12 @@ export default Controller.extend({
          * @param  {MouseEvent} event - MouseEvent fired by the button click
          */
         triggerFileDialog(event) {
-            let fileInput = $(event.target)
-                .closest('.gh-setting')
-                .find('input[type="file"]');
-
-            if (fileInput.length > 0) {
-                // reset file input value before clicking so that the same image
-                // can be selected again
-                fileInput.val('');
-
-                // simulate click to open file dialog
-                // using jQuery because IE11 doesn't support MouseEvent
-                $(fileInput).click();
-            }
+            // simulate click to open file dialog
+            // using jQuery because IE11 doesn't support MouseEvent
+            $(event.target)
+                .closest('figure')
+                .find('input[type="file"]')
+                .click();
         },
 
         /**
@@ -133,10 +131,6 @@ export default Controller.extend({
          */
         imageUploaded(property, results) {
             if (results[0]) {
-                // Note: We have to reset the file input after upload, otherwise you can't upload the same image again
-                // See https://github.com/thefrontside/emberx-file-input/blob/master/addon/components/x-file-input.js#L37
-                // See https://github.com/TryGhost/Ghost/issues/8545
-                $('.x-file--input').val('');
                 return this.get('model').set(property, results[0].url);
             }
         },

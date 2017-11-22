@@ -155,8 +155,9 @@ export default Component.extend({
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
-        uploadImages(fileList) {
+        uploadImages(fileList, resetInput) {
             this.set('droppedFiles', fileList);
+            resetInput();
         },
 
         uploadComplete(uploads) {

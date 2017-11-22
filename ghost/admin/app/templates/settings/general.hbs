@@ -61,7 +61,6 @@
         <div class="gh-setting-header">Publication identity</div>
         <div class="gh-setting" data-test-setting="icon">
             {{#gh-uploader
-                files=iconUpload
                 extensions=iconExtensions
                 uploadUrl="/uploads/icon/"
                 onComplete=(action "imageUploaded" "icon")
@@ -88,14 +87,13 @@
                     </button>
                 {{/if}}
                 <div style="display:none">
-                    {{gh-file-input multiple=false action=(action (mut iconUpload)) accept=iconMimeTypes data-test-file-input="icon"}}
+                    {{gh-file-input multiple=false action=uploader.setFiles accept=iconMimeTypes data-test-file-input="icon"}}
                 </div>
             </div>
             {{/gh-uploader}}
         </div>
         <div class="gh-setting" data-test-setting="logo">
             {{#gh-uploader
-                files=logoUpload
                 extensions=imageExtensions
                 onComplete=(action "imageUploaded" "logo")
                 as |uploader|
@@ -121,14 +119,13 @@
                     </button>
                 {{/if}}
                 <div style="display:none">
-                    {{gh-file-input multiple=false action=(action (mut logoUpload)) accept=imageMimeTypes data-test-file-input="logo"}}
+                    {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes data-test-file-input="logo"}}
                 </div>
             </div>
             {{/gh-uploader}}
         </div>
         <div class="gh-setting" data-test-setting="coverImage">
             {{#gh-uploader
-                files=coverImageUpload
                 extensions=imageExtensions
                 onComplete=(action "imageUploaded" "coverImage")
                 as |uploader|
@@ -154,7 +151,7 @@
                     </button>
                 {{/if}}
                 <div style="display:none">
-                    {{gh-file-input multiple=false action=(action (mut coverImageUpload)) accept=imageMimeTypes data-test-file-input="coverImage"}}
+                    {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes data-test-file-input="coverImage"}}
                 </div>
             </div>
             {{/gh-uploader}}
