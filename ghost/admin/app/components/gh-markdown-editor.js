@@ -44,6 +44,7 @@ export default Component.extend(ShortcutsMixin, {
     mobiledoc: null,
     options: null,
     placeholder: '',
+    showMarkdownHelp: false,
     uploadedImageUrls: null,
 
     // Closure actions
@@ -52,7 +53,6 @@ export default Component.extend(ShortcutsMixin, {
     onImageFilesSelected() {},
     onPreviewToggle() {},
     onSplitScreenToggle() {},
-    showMarkdownHelp() {},
 
     // Internal attributes
     markdown: null,
@@ -132,7 +132,7 @@ export default Component.extend(ShortcutsMixin, {
                 {
                     name: 'guide',
                     action: () => {
-                        this.showMarkdownHelp();
+                        this.send('toggleMarkdownHelp');
                     },
                     className: 'fa fa-question-circle',
                     title: 'Markdown Guide'
@@ -603,6 +603,10 @@ export default Component.extend(ShortcutsMixin, {
 
         toggleHemingway() {
             this._toggleHemingway();
+        },
+
+        toggleMarkdownHelp() {
+            this.toggleProperty('showMarkdownHelp');
         },
 
         // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw

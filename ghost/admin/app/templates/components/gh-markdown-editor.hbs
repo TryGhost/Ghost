@@ -23,3 +23,9 @@
         insert=(action "insertUnsplashPhoto")
         close=(action "toggleUnsplash")}}
 {{/if}}
+
+{{#if showMarkdownHelp}}
+    {{gh-fullscreen-modal "markdown-help"
+        close=(action "toggleMarkdownHelp")
+        modifier="wide"}}
+{{/if}}

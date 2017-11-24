@@ -205,10 +205,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             }
         },
 
-        toggleMarkdownHelpModal() {
-            this.get('controller').toggleProperty('showMarkdownHelpModal');
-        },
-
         // noop default for unhandled save (used from shortcuts)
         save: K,
 
