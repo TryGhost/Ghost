@@ -94,7 +94,7 @@
     "ember-truth-helpers": "2.0.0",
     "ember-wormhole": "0.5.3",
     "emberx-file-input": "1.1.2",
-    "eslint-plugin-ember": "4.6.2",
+    "eslint-plugin-ember": "5.0.1",
     "eslint-plugin-ember-suave": "1.0.0",
     "eslint-plugin-sort-imports-es6-autofix": "https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat",
     "fs-extra": "4.0.2",

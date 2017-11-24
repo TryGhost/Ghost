@@ -4034,9 +4034,9 @@ eslint-plugin-ember-suave@1.0.0:
   dependencies:
     requireindex "~1.1.0"
 
-eslint-plugin-ember@4.6.2:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-4.6.2.tgz#9916198e8ef091c5249f8b3f2d9d0a9c5d9a936d"
+eslint-plugin-ember@5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-5.0.1.tgz#bd4b20e137b01530b709d87feb8428bbd68eb096"
   dependencies:
     ember-rfc176-data "^0.2.7"
     require-folder-tree "^1.4.5"
