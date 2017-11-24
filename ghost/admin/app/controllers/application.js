@@ -17,13 +17,5 @@ export default Controller.extend({
 
         return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated'))
                 && !this.get('currentPath').match(/(signin|signup|setup|reset)/);
-    }),
-
-    topNotificationCount: 0,
-
-    actions: {
-        topNotificationChange(count) {
-            this.set('topNotificationCount', count);
-        }
-    }
+    })
 });
