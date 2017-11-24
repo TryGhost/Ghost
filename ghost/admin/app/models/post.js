@@ -148,7 +148,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.get('ghostPaths.url').join(blogUrl, postUrl);
     }),
 
-    previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', 'config.routeKeywords.preview', function () {
+    previewUrl: computed('uuid', 'ghostPaths.url', 'config.{blogUrl,routeKeywords.preview}', function () {
         let blogUrl = this.get('config.blogUrl');
         let uuid = this.get('uuid');
         let previewKeyword = this.get('config.routeKeywords.preview');

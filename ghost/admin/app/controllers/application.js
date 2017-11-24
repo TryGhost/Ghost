@@ -8,7 +8,7 @@ export default Controller.extend({
     settings: service(),
     ui: service(),
 
-    showNavMenu: computed('currentPath', 'session.isAuthenticated', 'session.user.isFulfilled', function () {
+    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', function () {
         // we need to defer showing the navigation menu until the session.user
         // promise has fulfilled so that gh-user-can-admin has the correct data
         if (!this.get('session.isAuthenticated') || !this.get('session.user.isFulfilled')) {

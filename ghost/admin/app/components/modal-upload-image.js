@@ -15,7 +15,7 @@ export default ModalComponent.extend({
     config: service(),
     notifications: service(),
 
-    image: computed('model.model', 'model.imageProperty', {
+    image: computed('model.{model,imageProperty}', {
         get() {
             let imageProperty = this.get('model.imageProperty');
 
