@@ -10,7 +10,12 @@ export default Service.extend(_ProxyMixin, {
     ajax: service(),
     ghostPaths: service(),
 
-    content: {},
+    content: null,
+
+    init() {
+        this._super(...arguments);
+        this.content = {};
+    },
 
     fetch() {
         let configUrl = this.get('ghostPaths.url').api('configuration');

@@ -16,6 +16,15 @@ import {task, timeout} from 'ember-concurrency';
 const {testing} = Ember;
 const {Promise} = RSVP;
 
+const IMPORT_MIME_TYPES =  [
+    'application/json',
+    'application/zip',
+    'application/x-zip-compressed'
+];
+
+const JSON_EXTENSION = ['json'];
+const JSON_MIME_TYPE = ['application/json'];
+
 export default Controller.extend({
     importErrors: null,
     importSuccessful: false,
@@ -23,9 +32,9 @@ export default Controller.extend({
     submitting: false,
     uploadButtonText: 'Import',
 
-    importMimeType: ['application/json', 'application/zip', 'application/x-zip-compressed'],
-    jsonExtension: ['json'],
-    jsonMimeType: ['application/json'],
+    importMimeType: null,
+    jsonExtension: null,
+    jsonMimeType: null,
 
     ajax: service(),
     config: service(),
@@ -33,6 +42,13 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+
+    init() {
+        this._super(...arguments);
+        this.importMimeType = IMPORT_MIME_TYPES;
+        this.jsonExtension = JSON_EXTENSION;
+        this.jsonMimeType = JSON_MIME_TYPE;
+    },
 
     // TODO: convert to ember-concurrency task
     _validate(file) {

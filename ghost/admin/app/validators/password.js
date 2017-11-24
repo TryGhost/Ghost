@@ -13,8 +13,6 @@ const BAD_PASSWORDS = [
 const DISALLOWED_PASSWORDS = ['ghost', 'password', 'passw0rd'];
 
 export default BaseValidator.extend({
-    properties: ['passwordValidation'],
-
     /**
     * Counts repeated characters if a string. When 50% or more characters are the same,
     * we return false and therefore invalidate the string.

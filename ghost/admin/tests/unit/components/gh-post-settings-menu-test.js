@@ -202,12 +202,16 @@ describe.skip('Unit: Component: post-settings-menu', function () {
                     author: RSVP.resolve(),
                     metaDescription: null,
                     metaDescriptionScratch: boundOneWay('metaDescription'),
-                    scratch: {
-                        cards: [
-                            ['markdown-card', {
-                                markdown: '# This is a <strong>test</strong> <script>foo</script>'
-                            }]
-                        ]
+
+                    init() {
+                        this._super(...arguments);
+                        this.scratch = {
+                            cards: [
+                                ['markdown-card', {
+                                    markdown: '# This is a <strong>test</strong> <script>foo</script>'
+                                }]
+                            ]
+                        };
                     }
                 }).create()
             });

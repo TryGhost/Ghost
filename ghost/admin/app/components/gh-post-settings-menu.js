@@ -14,7 +14,7 @@ const PSM_ANIMATION_LENGTH = 400;
 
 export default Component.extend(SettingsMenuMixin, {
     selectedAuthor: null,
-    authors: [],
+    authors: null,
 
     store: service(),
     config: service(),
@@ -48,6 +48,11 @@ export default Component.extend(SettingsMenuMixin, {
 
     _showSettingsMenu: false,
     _showThrobbers: false,
+
+    init() {
+        this._super(...arguments);
+        this.authors = this.authors || [];
+    },
 
     didReceiveAttrs() {
         this._super(...arguments);

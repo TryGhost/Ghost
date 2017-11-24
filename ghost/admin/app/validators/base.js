@@ -5,8 +5,12 @@ import EmberObject from '@ember/object';
  * Handles checking of individual properties or the entire model
  */
 export default EmberObject.extend({
-    properties: [],
     passed: false,
+
+    init() {
+        this._super(...arguments);
+        this.properties = this.properties || [];
+    },
 
     /**
      * When passed a model and (optionally) a property name,

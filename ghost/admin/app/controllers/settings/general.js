@@ -11,6 +11,8 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
+const ICON_EXTENSIONS = ['ico', 'png'];
+
 export default Controller.extend({
     config: service(),
     ghostPaths: service(),
@@ -18,7 +20,7 @@ export default Controller.extend({
     session: service(),
 
     availableTimezones: null,
-    iconExtensions: ['ico', 'png'],
+    iconExtensions: null,
     iconMimeTypes: 'image/png,image/x-icon',
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
@@ -54,6 +56,11 @@ export default Controller.extend({
 
         return `${blogUrl}/${publicHash}/rss`;
     }),
+
+    init() {
+        this._super(...arguments);
+        this.iconExtensions = ICON_EXTENSIONS;
+    },
 
     _deleteTheme() {
         let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);

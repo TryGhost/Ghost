@@ -12,6 +12,7 @@ const App = Application.extend({
     modulePrefix: config.modulePrefix,
     podModulePrefix: config.podModulePrefix,
 
+    // eslint-disable-next-line
     customEvents: {
         touchstart: null,
         touchmove: null,

@@ -15,7 +15,12 @@ export default Controller.extend({
     testNotificationDisabled: empty('model.url'),
 
     leaveSettingsTransition: null,
-    slackArray: [],
+    slackArray: null,
+
+    init() {
+        this._super(...arguments);
+        this.slackArray = [];
+    },
 
     save: task(function* () {
         let slack = this.get('model');

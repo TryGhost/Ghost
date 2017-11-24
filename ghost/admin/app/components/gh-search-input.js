@@ -24,7 +24,7 @@ export function computedGroup(category) {
 export default Component.extend({
 
     selection: null,
-    content: [],
+    content: null,
     isLoading: false,
     contentExpiry: 10 * 1000,
     contentExpiresAt: false,
@@ -39,6 +39,11 @@ export default Component.extend({
     router: service('router'),
     ajax: service(),
     notifications: service(),
+
+    init() {
+        this._super(...arguments);
+        this.content = [];
+    },
 
     refreshContent() {
         let promises = [];

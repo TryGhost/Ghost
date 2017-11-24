@@ -1,7 +1,10 @@
 import PasswordValidator from 'ghost-admin/validators/password';
 
 export default PasswordValidator.extend({
-    properties: ['name', 'email', 'password'],
+    init() {
+        this._super(...arguments);
+        this.properties = this.properties || ['name', 'email', 'password'];
+    },
 
     name(model) {
         let name = model.get('name');

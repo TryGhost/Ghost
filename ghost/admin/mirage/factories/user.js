@@ -19,5 +19,5 @@ export default Factory.extend({
     updatedAt: '2015-11-02T16:12:05.000Z',
     updatedBy: '2015-09-02T13:41:50.000Z',
     website: 'http://example.com',
-    roles: []
+    roles() { return []; }
 });
