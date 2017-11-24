@@ -29,7 +29,7 @@ export default Component.extend({
     onClick() {},
     onDoubleClick() {},
 
-    authorName: computed('post.author.name', 'post.author.email', function () {
+    authorName: computed('post.author.{name,email}', function () {
         return this.get('post.author.name') || this.get('post.author.email');
     }),
 
