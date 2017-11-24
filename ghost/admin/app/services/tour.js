@@ -20,7 +20,7 @@ export default Service.extend(Evented, {
     // modal - this allows the component lifecycle hooks to perform automatic
     // display/cleanup when the relevant UI is visible.
 
-    viewed: [],
+    viewed: null,
 
     // IDs should **NOT** be changed if they have been part of a release unless
     // the re-display of the throbber should be forced. In that case it may be
@@ -36,11 +36,13 @@ export default Service.extend(Evented, {
     // TODO: it may be better to keep this configuration elsewhere to keep the
     // service clean. Eventually we'll want apps to be able to register their
     // own throbbers and tour content
-    throbbers: [],
+    throbbers: null,
 
     init() {
         let adminUrl = `${window.location.origin}${this.get('ghostPaths.url').admin()}`;
         let adminDisplayUrl = adminUrl.replace(`${window.location.protocol}//`, '');
+
+        this.viewed = [];
 
         this.throbbers = [{
             id: 'getting-started',

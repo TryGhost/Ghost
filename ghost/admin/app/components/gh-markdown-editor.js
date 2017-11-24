@@ -47,6 +47,8 @@ export default Component.extend(ShortcutsMixin, {
     showMarkdownHelp: false,
     uploadedImageUrls: null,
 
+    shortcuts: null,
+
     // Closure actions
     onChange() {},
     onFullScreenToggle() {},
@@ -170,17 +172,16 @@ export default Component.extend(ShortcutsMixin, {
         return assign(defaultOptions, options);
     }),
 
-    shortcuts: {},
-
     init() {
         this._super(...arguments);
-        let shortcuts = this.get('shortcuts');
 
+        let shortcuts = {};
         shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'openImageFileDialog'};
         shortcuts['ctrl+alt+r'] = {action: 'togglePreview'};
         shortcuts['ctrl+alt+p'] = {action: 'toggleSplitScreen'};
         shortcuts['ctrl+alt+s'] = {action: 'toggleSpellcheck'};
         shortcuts['ctrl+alt+h'] = {action: 'toggleHemingway'};
+        this.shortcuts = shortcuts;
     },
 
     // extract markdown content from single markdown card

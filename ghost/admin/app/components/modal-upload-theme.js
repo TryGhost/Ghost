@@ -11,10 +11,15 @@ import {mapBy, or} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
+const DEFAULTS = {
+    accept: ['application/zip', 'application/x-zip-compressed'],
+    extensions: ['zip']
+};
+
 export default ModalComponent.extend({
 
-    accept: ['application/zip', 'application/x-zip-compressed'],
-    extensions: ['zip'],
+    accept: null,
+    extensions: null,
     themes: null,
     closeDisabled: false,
     file: null,
@@ -48,6 +53,13 @@ export default ModalComponent.extend({
         let theme = this.get('theme');
         return theme && !theme.get('active');
     }),
+
+    init() {
+        this._super(...arguments);
+
+        this.accept = this.accept || DEFAULTS.accept;
+        this.extensions = this.extensions || DEFAULTS.extensions;
+    },
 
     actions: {
         validateTheme(file) {

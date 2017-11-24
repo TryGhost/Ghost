@@ -12,7 +12,12 @@ export default Service.extend({
     // This is needed so we can disable it in unit tests
     testing,
 
-    scriptPromises: {},
+    scriptPromises: null,
+
+    init() {
+        this._super(...arguments);
+        this.scriptPromises = {};
+    },
 
     loadScript(key, url) {
         if (this.get('testing')) {

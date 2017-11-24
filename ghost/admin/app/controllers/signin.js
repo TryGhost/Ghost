@@ -10,7 +10,7 @@ import {task} from 'ember-concurrency';
 export default Controller.extend(ValidationEngine, {
     submitting: false,
     loggingIn: false,
-    authProperties: ['identification', 'password'],
+    authProperties: null,
 
     ajax: service(),
     application: controller(),
@@ -24,6 +24,11 @@ export default Controller.extend(ValidationEngine, {
 
     // ValidationEngine settings
     validationType: 'signin',
+
+    init() {
+        this._super(...arguments);
+        this.authProperties = ['identification', 'password'];
+    },
 
     authenticate: task(function* (authStrategy, authentication) {
         try {

@@ -4,21 +4,26 @@ import {sort} from '@ember/object/computed';
 
 export default Controller.extend({
 
+    session: service(),
+
     showInviteUserModal: false,
 
     activeUsers: null,
     suspendedUsers: null,
     invites: null,
 
-    session: service(),
+    inviteOrder: null,
+    userOrder: null,
 
-    inviteOrder: ['email'],
     sortedInvites: sort('invites', 'inviteOrder'),
-
-    userOrder: ['name', 'email'],
-
     sortedActiveUsers: sort('activeUsers', 'userOrder'),
     sortedSuspendedUsers: sort('suspendedUsers', 'userOrder'),
+
+    init() {
+        this._super(...arguments);
+        this.inviteOrder = ['email'];
+        this.userOrder = ['name', 'email'];
+    },
 
     actions: {
         toggleInviteUserModal() {

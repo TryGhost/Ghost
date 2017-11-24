@@ -13,6 +13,11 @@ import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
+const DEFAULTS = {
+    accept: ['text/csv'],
+    extensions: ['csv']
+};
+
 export default Component.extend({
     tagName: 'section',
     classNames: ['gh-image-uploader'],
@@ -21,8 +26,8 @@ export default Component.extend({
     labelText: 'Select or drag-and-drop a file',
     url: null,
     paramName: 'file',
-    accept: ['text/csv'],
-    extensions: ['csv'],
+    accept: null,
+    extensions: null,
     validate: null,
 
     file: null,
@@ -64,6 +69,9 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         let listenTo = this.get('listenTo');
+
+        this.accept = this.accept || DEFAULTS.accept;
+        this.extensions = this.extensions || DEFAULTS.extensions;
 
         if (listenTo) {
             this.get('eventBus').subscribe(`${listenTo}:upload`, this, function (file) {

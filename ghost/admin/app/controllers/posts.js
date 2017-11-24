@@ -3,6 +3,34 @@ import {computed} from '@ember/object';
 import {get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
+const TYPES = [{
+    name: 'All posts',
+    value: null
+}, {
+    name: 'Draft posts',
+    value: 'draft'
+}, {
+    name: 'Published posts',
+    value: 'published'
+}, {
+    name: 'Scheduled posts',
+    value: 'scheduled'
+}, {
+    name: 'Featured posts',
+    value: 'featured'
+}, {
+    name: 'Pages',
+    value: 'page'
+}];
+
+const ORDERS = [{
+    name: 'Newest',
+    value: null
+}, {
+    name: 'Oldest',
+    value: 'published_at asc'
+}];
+
 export default Controller.extend({
 
     session: service(),
@@ -17,33 +45,8 @@ export default Controller.extend({
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
 
-    availableTypes: [{
-        name: 'All posts',
-        value: null
-    }, {
-        name: 'Draft posts',
-        value: 'draft'
-    }, {
-        name: 'Published posts',
-        value: 'published'
-    }, {
-        name: 'Scheduled posts',
-        value: 'scheduled'
-    }, {
-        name: 'Featured posts',
-        value: 'featured'
-    }, {
-        name: 'Pages',
-        value: 'page'
-    }],
-
-    availableOrders: [{
-        name: 'Newest',
-        value: null
-    }, {
-        name: 'Oldest',
-        value: 'published_at asc'
-    }],
+    availableTypes: null,
+    availableOrders: null,
 
     showingAll: computed('type', 'author', 'tag', function () {
         let {type, author, tag} = this.getProperties(['type', 'author', 'tag']);
@@ -102,6 +105,12 @@ export default Controller.extend({
 
         return authors.findBy('slug', author);
     }),
+
+    init() {
+        this._super(...arguments);
+        this.availableTypes = TYPES;
+        this.availableOrders = ORDERS;
+    },
 
     actions: {
         changeType(type) {

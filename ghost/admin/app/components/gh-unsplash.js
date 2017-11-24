@@ -12,18 +12,23 @@ export default Component.extend(ShortcutsMixin, {
     unsplash: service(),
     ui: service(),
 
+    shortcuts: null,
     tagName: '',
     zoomedPhoto: null,
-
-    shortcuts: {
-        escape: 'handleEscape'
-    },
 
     // closure actions
     close() {},
     insert() {},
 
     sideNavHidden: or('ui.{autoNav,isFullScreen,showMobileMenu}'),
+
+    init() {
+        this._super(...arguments);
+
+        this.shortcuts = {
+            escape: 'handleEscape'
+        };
+    },
 
     didInsertElement() {
         this._super(...arguments);

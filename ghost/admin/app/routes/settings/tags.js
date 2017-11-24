@@ -7,12 +7,17 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     titleToken: 'Settings - Tags',
 
-    shortcuts: {
-        'up, k': 'moveUp',
-        'down, j': 'moveDown',
-        left: 'focusList',
-        right: 'focusContent',
-        c: 'newTag'
+    shortcuts: null,
+
+    init() {
+        this._super(...arguments);
+        this.shortcuts = {
+            'up, k': 'moveUp',
+            'down, j': 'moveDown',
+            left: 'focusList',
+            right: 'focusContent',
+            c: 'newTag'
+        };
     },
 
     // authors aren't allowed to manage tags

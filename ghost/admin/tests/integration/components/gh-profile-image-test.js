@@ -11,13 +11,17 @@ import {setupComponentTest} from 'ember-mocha';
 import {timeout} from 'ember-concurrency';
 
 let pathsStub = Service.extend({
-    url: {
-        api() {
-            return '';
-        },
-        asset(src) {
-            return src;
-        }
+    init() {
+        this._super(...arguments);
+
+        this.url = {
+            api() {
+                return '';
+            },
+            asset(src) {
+                return src;
+            }
+        };
     }
 });
 

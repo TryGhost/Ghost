@@ -20,5 +20,5 @@ export default Factory.extend({
     publishedBy: 1,
     createdAt: '2015-09-11T09:44:29.871Z',
     createdBy: 1,
-    tags: []
+    tags() { return []; }
 });
