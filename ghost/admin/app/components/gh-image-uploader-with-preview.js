@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import {invokeAction} from 'ember-invoke-action';
 
 export default Component.extend({
 
@@ -7,25 +6,31 @@ export default Component.extend({
 
     actions: {
         update() {
-            if (typeof this.attrs.update === 'function') {
-                this.attrs.update(...arguments);
+            let action = this.get('update');
+            if (action) {
+                action(...arguments);
             }
         },
 
         uploadStarted() {
-            if (typeof this.attrs.uploadStarted === 'function') {
-                this.attrs.uploadStarted(...arguments);
+            let action = this.get('uploadStarted');
+            if (action) {
+                action(...arguments);
             }
         },
 
         uploadFinished() {
-            if (typeof this.attrs.uploadFinished === 'function') {
-                this.attrs.uploadFinished(...arguments);
+            let action = this.get('uploadFinished');
+            if (action) {
+                action(...arguments);
             }
         },
 
         remove() {
-            invokeAction(this, 'remove');
+            let action = this.get('remove');
+            if (action) {
+                action();
+            }
         }
     }
 });

@@ -27,10 +27,6 @@ export default Component.extend({
         this._setIconStyle();
     },
 
-    mouseEnter() {
-        this.sendAction('onMouseEnter');
-    },
-
     showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function() {
         return this.get('config.clientExtensions.menu') && this.get('session.user.isOwner');
     }),

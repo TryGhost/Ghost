@@ -257,6 +257,7 @@ describe('Acceptance: Authentication', function () {
         // necessary to visit a page to fully boot the app in testing
         await visit('/');
 
+        /* eslint-disable ember/jquery-ember-run */
         await $.ajax({
             type: 'POST',
             url: `${Ghost.apiRoot}/uploads/`,
@@ -269,5 +270,6 @@ describe('Acceptance: Authentication', function () {
         }).always(() => {
             done();
         });
+        /* eslint-enable ember/jquery-ember-run */
     });
 });

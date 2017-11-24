@@ -60,7 +60,7 @@ describe('Integration: Component: gh-navitem', function () {
             deleteActionCallCount++;
         });
 
-        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl deleteItem="deleteItem"}}`);
+        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl deleteItem=(action "deleteItem")}}`);
         this.$('.gh-blognav-delete').trigger('click');
 
         expect(deleteActionCallCount).to.equal(1);
@@ -74,7 +74,7 @@ describe('Integration: Component: gh-navitem', function () {
             addActionCallCount++;
         });
 
-        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl addItem="add"}}`);
+        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl addItem=(action "add")}}`);
         this.$('.gh-blognav-add').trigger('click');
 
         expect(addActionCallCount).to.equal(1);
@@ -88,7 +88,7 @@ describe('Integration: Component: gh-navitem', function () {
             updateActionCallCount++;
         });
 
-        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl="update"}}`);
+        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl=(action "update")}}`);
         this.$('.gh-blognav-url input').trigger('blur');
 
         expect(updateActionCallCount).to.equal(1);
@@ -102,7 +102,7 @@ describe('Integration: Component: gh-navitem', function () {
             updateActionCallCount++;
         });
 
-        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel="update"}}`);
+        this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel=(action "update")}}`);
         this.$('.gh-blognav-label input').trigger('blur');
 
         expect(updateActionCallCount).to.equal(1);

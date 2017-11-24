@@ -6,7 +6,7 @@
         </section>
     </header>
 
-    {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
+    {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile=(action "leftMobile") as |container|}}
         <div class="tag-list">
             <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
                 {{#vertical-collection sortedTags

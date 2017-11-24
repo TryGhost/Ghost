@@ -33,6 +33,7 @@ const UploadTracker = EmberObject.extend({
     loaded: 0,
 
     init() {
+        this._super(...arguments);
         this.total = this.file && this.file.size || 0;
     },
 

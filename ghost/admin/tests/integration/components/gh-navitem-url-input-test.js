@@ -27,7 +27,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('renders correctly with blank url', function () {
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -39,7 +39,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('renders correctly with relative urls', function () {
         this.set('url', '/about');
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -52,7 +52,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('renders correctly with absolute urls', function () {
         this.set('url', 'https://example.com:2368/#test');
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -73,7 +73,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('deletes base URL on backspace', function () {
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -90,7 +90,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('deletes base URL on delete', function () {
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -110,7 +110,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             return null;
         });
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -129,7 +129,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             return null;
         });
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -154,7 +154,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             return null;
         });
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -176,7 +176,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             return null;
         });
         this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -187,14 +187,14 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         expect($input.val()).to.equal(`${currentUrl} /test`);
     });
 
-    it('triggers "change" action on blur', function () {
+    it('triggers "update" action on blur', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
             changeActionCallCount++;
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -203,14 +203,14 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         expect(changeActionCallCount).to.equal(1);
     });
 
-    it('triggers "change" action on enter', function () {
+    it('triggers "update" action on enter', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
             changeActionCallCount++;
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -225,14 +225,14 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         expect(changeActionCallCount).to.equal(1);
     });
 
-    it('triggers "change" action on CMD-S', function () {
+    it('triggers "update" action on CMD-S', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
             changeActionCallCount++;
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -256,7 +256,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -289,7 +289,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -318,7 +318,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -337,7 +337,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -363,7 +363,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -391,7 +391,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
         let $input = this.$('input');
 
@@ -424,7 +424,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -451,7 +451,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 

@@ -25,7 +25,7 @@
             <div class="apps-grid">
 
                 {{#each sortedInvites as |invite|}}
-                    {{#gh-user-invited invite=invite reload="reload" as |component|}}
+                    {{#gh-user-invited invite=invite reload=(route-action "reload") as |component|}}
                         <div class="apps-grid-cell" data-test-invite-id="{{invite.id}}">
                             <article class="apps-card-app">
                                 <div class="apps-card-left">

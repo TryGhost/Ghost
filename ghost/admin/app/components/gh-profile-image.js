@@ -122,7 +122,10 @@ export default Component.extend({
         let fileName = data.files[0].name;
 
         if ((/\.(gif|jpe?g|png|svg?z)$/i).test(fileName)) {
-            this.sendAction('setImage', data);
+            let action = this.get('setImage');
+            if (action) {
+                action(data);
+            }
         }
     },
 
