@@ -20,7 +20,7 @@ describe('Integration: Component: gh-tags-management-container', function () {
         });
 
         this.render(hbs`
-            {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile"}}{{/gh-tags-management-container}}
+            {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile=(action "leftMobile")}}{{/gh-tags-management-container}}
         `);
         expect(this.$()).to.have.length(1);
     });

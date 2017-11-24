@@ -76,7 +76,11 @@ export default Component.extend({
             }).catch((error) => {
                 if (isNotFoundError(error)) {
                     // if the invite no longer exists, then show a warning and reload the route
-                    this.sendAction('reload');
+                    let action = this.get('reload');
+                    if (action) {
+                        action();
+                    }
+
                     notifications.showAlert('This invite has been revoked or a user has already accepted the invitation.', {type: 'error', delayed: true, key: 'invite.revoke.already-accepted'});
                 } else {
                     throw error;

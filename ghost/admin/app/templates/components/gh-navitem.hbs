@@ -11,7 +11,7 @@
         {{gh-error-message errors=navItem.errors property="label"}}
     {{/gh-validation-status-container}}
     {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
-        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url isNew=navItem.isNew change="updateUrl" clearErrors=(action "clearUrlErrors")}}
+        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url isNew=navItem.isNew update=(action "updateUrl") clearErrors=(action "clearUrlErrors")}}
         {{gh-error-message errors=navItem.errors property="url"}}
     {{/gh-validation-status-container}}
 </div>

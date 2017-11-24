@@ -44,7 +44,10 @@ export default Component.extend({
 
     fireMobileChangeActions: observer('isMobile', function () {
         if (!this.get('isMobile')) {
-            this.sendAction('leftMobile');
+            let action = this.get('leftMobile');
+            if (action) {
+                action();
+            }
         }
     })
 });

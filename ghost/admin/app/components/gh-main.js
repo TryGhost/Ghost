@@ -6,6 +6,9 @@ export default Component.extend({
     ariaRole: 'main',
 
     mouseEnter() {
-        this.sendAction('onMouseEnter');
+        let action = this.get('onMouseEnter');
+        if (action) {
+            action();
+        }
     }
 });

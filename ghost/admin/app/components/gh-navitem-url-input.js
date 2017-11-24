@@ -142,6 +142,9 @@ export default TextField.extend(InvokeActionMixin, {
             }
         }
 
-        this.sendAction('change', url);
+        let action = this.get('update');
+        if (action) {
+            action(url);
+        }
     }
 });

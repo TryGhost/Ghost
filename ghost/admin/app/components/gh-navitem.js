@@ -31,19 +31,31 @@ export default Component.extend(ValidationState, {
 
     actions: {
         addItem() {
-            this.sendAction('addItem');
+            let action = this.get('addItem');
+            if (action) {
+                action();
+            }
         },
 
         deleteItem(item) {
-            this.sendAction('deleteItem', item);
+            let action = this.get('deleteItem');
+            if (action) {
+                action(item);
+            }
         },
 
         updateUrl(value) {
-            this.sendAction('updateUrl', value, this.get('navItem'));
+            let action = this.get('updateUrl');
+            if (action) {
+                action(value, this.get('navItem'));
+            }
         },
 
         updateLabel(value) {
-            this.sendAction('updateLabel', value, this.get('navItem'));
+            let action = this.get('updateLabel');
+            if (action) {
+                action(value, this.get('navItem'));
+            }
         },
 
         clearLabelErrors() {
