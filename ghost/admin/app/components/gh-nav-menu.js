@@ -78,11 +78,5 @@ export default Component.extend({
         iconUrl += `?t=${(new Date()).valueOf()}`;
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
-    },
-
-    actions: {
-        showMarkdownHelp() {
-            this.sendAction('showMarkdownHelp');
-        }
     }
 });

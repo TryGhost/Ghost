@@ -20,7 +20,6 @@ export default Controller.extend({
     }),
 
     topNotificationCount: 0,
-    showMarkdownHelpModal: false,
 
     actions: {
         topNotificationChange(count) {
