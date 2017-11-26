@@ -31,7 +31,7 @@ _.extend(PostMapGenerator.prototype, {
             status: 'published',
             staticPages: false,
             limit: 'all',
-            include: 'author'
+            include: 'author,tags'
         }).then(function (resp) {
             return resp.posts;
         });
