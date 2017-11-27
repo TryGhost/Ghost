@@ -39,7 +39,7 @@ I18n = {
     t: function t(path, bindings) {
         var string, defaultString, msg;
 
-        currentLocale = settingsCache.get('default_locale') || 'en';
+        currentLocale = I18n.locale();
         if (bindings !== undefined) {
             defaultString = bindings.defaultString;
             delete bindings.defaultString;
@@ -99,8 +99,10 @@ I18n = {
             return '';
         }
 
+        // If not in memory, load translations for core and theme.
         if (blos === undefined) {
-            I18n.init(true, true);
+            I18n.init();
+            I18n.loadThemeTranslations();
         }
 
         // Both jsonpath's dot-notation and bracket-notation start with '$'
@@ -132,7 +134,7 @@ I18n = {
     },
 
     doesTranslationKeyExist: function doesTranslationKeyExist(msgPath) {
-        var translation = I18n.findString(msgPath, {log: false});
+        var translation = I18n.findString(msgPath, '', {log: false});
         return translation !== blos.errors.errors.anErrorOccurred;
     },
 
@@ -141,59 +143,78 @@ I18n = {
      *  - Load proper language file in to memory
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
-    init: function init(i18nCore, i18nTheme) {
-        // This function is called during Ghost's initialization, when switching language or theme...
+    init: function init() {
+        // This function is called during Ghost's initialization, and if switching backend language.
         // For the first initialization call, settings for language and theme are not yet available,
         // and English default is used for core; settings are available shortly after, allowing
-        // full internationalization of core and theme.
+        // full internationalization of core (in future versions) and theme.
 
-        var blosTheme, hasBuiltInLocaleData, IntlPolyfill, backendTranslations;
+        var hasBuiltInLocaleData, IntlPolyfill;
 
-        if (blos === undefined) {
-            // If not in memory, load translations for core and theme.
-            i18nCore = true;
-            i18nTheme = true;
-        }
+        currentLocale = I18n.locale();
 
-        // Switch to enable/disable translations of back-end messages from core .js files.
-        // - true: enabled; optional files like content/locales/es.json, etc. are used when available.
-        // - false: disabled; only the default English file core/server/translations/en.json is used.
-        // Before enabling back-end message translations, see previous tasks on issue #6526
-        // (error codes or identifiers, error message translation at the point of display...)
-        backendTranslations = false;
-
-        currentLocale = settingsCache.get('default_locale') || 'en';
-        activeTheme = settingsCache.get('active_theme') || '';
-
-        // Reading files for current locale and active theme and keeping their content in memory
+        // Reading translation file for core .js files and keeping its content in memory
         // (during Ghost's initialization, when English is the language in settings, the second call
         // to i18n.init() doesn't read again the default English file for core if already in memory).
-        if (i18nCore) {
-            // Reading translation file for core .js files.
-            if (currentLocale === 'en' || !backendTranslations) {
-                blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
-            } else {
-                // Preventing missing file.
-                try {
-                    blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'locales', currentLocale + '.json'));
-                } catch (err) {
-                    if (err.code === 'ENOENT') {
-                        logging.warn('File content/locales/' + currentLocale + '.json not found! Falling back to default core/server/translations/en.json.');
-                        blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
-                    } else {
-                        throw err;
-                    }
+        // The English file is always loaded, until back-end translations are enabled in future versions.
+        if (currentLocale === 'en' || !I18n.backendTranslations()) {
+            blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
+        } else {
+            // Preventing missing file.
+            try {
+                blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'locales', currentLocale + '.json'));
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    logging.warn('File content/locales/' + currentLocale + '.json not found! Falling back to default core/server/translations/en.json.');
+                    blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
+                } else {
+                    throw err;
                 }
             }
-            // if translation file is not valid, you will see an error
-            try {
-                blos = JSON.parse(blos);
-            } catch (err) {
-                blos = undefined;
-                throw err;
-            }
         }
-        if (i18nTheme && activeTheme) {
+        // if translation file is not valid, you will see an error
+        try {
+            blos = JSON.parse(blos);
+        } catch (err) {
+            blos = undefined;
+            throw err;
+        }
+
+        if (global.Intl) {
+            // Determine if the built-in `Intl` has the locale data we need.
+            hasBuiltInLocaleData = supportedLocales.every(function (locale) {
+                return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
+                    Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
+            });
+
+            if (!hasBuiltInLocaleData) {
+                // `Intl` exists, but it doesn't have the data we need, so load the
+                // polyfill and replace the constructors with need with the polyfill's.
+                IntlPolyfill = require('intl');
+                Intl.NumberFormat   = IntlPolyfill.NumberFormat;
+                Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
+            }
+        } else {
+            // No `Intl`, so use and load the polyfill.
+            global.Intl = require('intl');
+        }
+    },
+
+    /**
+     * Setup i18n support for themes:
+     *  - Load proper language file in to memory
+     *  - Polyfill node.js if it does not have Intl support or support for a particular locale
+     */
+    loadThemeTranslations: function loadThemeTranslations() {
+        // This function is called during theme initialization, and when switching language or theme.
+
+        var blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+
+        currentLocale = I18n.locale();
+        activeTheme = settingsCache.get('active_theme') || '';
+
+        // Reading file for current locale and active theme and keeping its content in memory
+        if (activeTheme) {
             // Reading translation file for theme .hbs templates.
             // Compatibility with both old themes and i18n-capable themes.
             // Falling back any wrong locale to default English for this session.
@@ -240,13 +261,25 @@ I18n = {
             global.Intl = require('intl');
         }
     },
+
     /**
-     * Exporting the current locale (e.g. "en") to make it available for other files,
+     * Exporting a switch to enable/disable translations of back-end messages from core .js files.
+     * - true: enabled; optional files like content/locales/es.json, etc. are used when available.
+     * - false: disabled; only the default English file core/server/translations/en.json is used.
+     * Before enabling back-end message translations, see previous tasks on issue #6526
+     * (error codes or identifiers, error message translation at the point of display...)
+     */
+    backendTranslations: function backendTranslations() {
+        return false;
+    },
+
+    /**
+     * Exporting the current locale (e.g. "en") to make it available for other files as well,
      * such as core/server/helpers/date.js and core/server/helpers/lang.js
      */
     locale: function locale() {
-        currentLocale = settingsCache.get('default_locale') || 'en';
-        return currentLocale;
+        var settingsLocale = settingsCache.get('default_locale') || 'en';
+        return settingsLocale;
     }
 };
 

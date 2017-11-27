@@ -67,13 +67,13 @@ themes = {
             })
             // Load theme translations when activating a theme
             // (when starting Ghost, or when switching themes).
-            // There is usually no need to reload the complete
-            // core and theme translations with i18n.init(true, true)
+            // There is usually no need to reload the back-end
+            // translations (if enabled) with i18n.init()
             // when switching themes, because the old theme
             // translations take little memory space and do
             // not conflict (they have different theme name).
             .then(function () {
-                return i18n.init(false, true);
+                return i18n.loadThemeTranslations();
             })
             // Call activate
             .then(function hasEditedSetting() {

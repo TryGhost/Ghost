@@ -37,11 +37,11 @@ var debug = require('ghost-ignition').debug('boot:init'),
 function init() {
     debug('Init Start...');
 
-    var ghostServer, parentApp, i18nCore;
+    var ghostServer, parentApp;
 
     // Initialize default internationalization, just for core now
     // (settings for language and theme not yet available here)
-    common.i18n.init(true, false);
+    common.i18n.init();
     debug('Default i18n done for core');
     models.init();
     debug('models done');
@@ -54,17 +54,13 @@ function init() {
     }).then(function () {
         debug('Update settings cache done');
         // Initialize full internationalization for core
+        // if back-end translations are enabled
         // (settings for language and theme available here;
         // full internationalization for theme is done
         // shortly after, when activating the theme)
-        if (i18n.locale() === 'en') {
-            // it will be loaded if not in memory, but normally it is
-            i18nCore = false;
-        } else {
-            // it will be loaded
-            i18nCore = true;
+        if (i18n.locale() !== 'en' && i18n.backendTranslations()) {
+            return i18n.init();
         }
-        return i18n.init(i18nCore, false);
     }).then(function () {
         debug('Full i18n done for core');
         // Initialize the permissions actions and objects
