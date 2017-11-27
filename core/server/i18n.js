@@ -1,6 +1,6 @@
 /* global Intl */
 
-var supportedLocales    = ['en'],
+var supportedLocales    = ['en', 'zh'],
     _                   = require('lodash'),
     fs                  = require('fs'),
     chalk               = require('chalk'),
@@ -10,7 +10,9 @@ var supportedLocales    = ['en'],
 
     // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
     currentLocale       = 'en',
+    defaultLocale       = 'en',
     blos,
+    defaultBlos,
     I18n;
 
 I18n = {
@@ -97,10 +99,18 @@ I18n = {
     init: function init() {
         // read file for current locale and keep its content in memory
         blos = fs.readFileSync(__dirname + '/translations/' + currentLocale + '.json');
+        // Merge current locale to default locale.
+        if (currentLocale !== defaultLocale) {
+            defaultBlos = fs.readFileSync(__dirname + '/translations/' + defaultLocale + '.json');
+        } else {
+            defaultBlos = null;
+        }
 
         // if translation file is not valid, you will see an error
         try {
             blos = JSON.parse(blos);
+            defaultBlos = JSON.parse(defaultBlos);
+            blos = _.merge({}, defaultBlos, blos);
         } catch (err) {
             blos = undefined;
             throw err;
