@@ -114,6 +114,9 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
             return res.send(html);
         }
 
+        // re-attach new error e.g. error template has syntax error or misusage
+        req.err = err;
+
         // And then try to explain things to the user...
         // Cheat and output the error using handlebars escapeExpression
         return res.status(500).send(
