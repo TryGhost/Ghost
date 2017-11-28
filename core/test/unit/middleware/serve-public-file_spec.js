@@ -36,7 +36,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile', function (file, cb) {
+        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
@@ -62,7 +62,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile', function (file, cb) {
+        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
@@ -86,7 +86,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: {{blog-url}}';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile', function (file, cb) {
+        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 

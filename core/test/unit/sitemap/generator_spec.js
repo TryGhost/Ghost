@@ -52,10 +52,10 @@ should.Assertion.add('ValidUrlNode', function (options) {
 
 describe('Generators', function () {
     var stubUrl = function (generator) {
-            sandbox.stub(generator, 'getUrlForDatum', function (datum) {
+            sandbox.stub(generator, 'getUrlForDatum').callsFake(function (datum) {
                 return 'http://my-ghost-blog.com/url/' + datum.id;
             });
-            sandbox.stub(generator, 'getUrlForImage', function (image) {
+            sandbox.stub(generator, 'getUrlForImage').callsFake(function (image) {
                 return 'http://my-ghost-blog.com/images/' + image;
             });
 
@@ -92,7 +92,7 @@ describe('Generators', function () {
         it('can initialize with non-empty siteMapContent', function (done) {
             stubUrl(generator);
 
-            sandbox.stub(generator, 'getData', function () {
+            sandbox.stub(generator, 'getData').callsFake(function () {
                 return Promise.resolve([
                     makeFakeDatum(100),
                     makeFakeDatum(200),
@@ -174,7 +174,7 @@ describe('Generators', function () {
         it('can initialize with non-empty siteMapContent', function (done) {
             stubUrl(generator);
 
-            sandbox.stub(generator, 'getData', function () {
+            sandbox.stub(generator, 'getData').callsFake(function () {
                 return Promise.resolve([
                     _.extend(makeFakeDatum(100), {
                         feature_image: 'post-100.jpg',
@@ -230,7 +230,7 @@ describe('Generators', function () {
 
         it('has a home item even if pages are empty', function (done) {
             // Fake the api call to return no posts
-            sandbox.stub(api.posts, 'browse', function () {
+            sandbox.stub(api.posts, 'browse').callsFake(function () {
                 return Promise.resolve({posts: []});
             });
 
@@ -247,7 +247,7 @@ describe('Generators', function () {
 
         it('has a home item when pages are not empty', function (done) {
             // Fake the api call to return no posts
-            sandbox.stub(api.posts, 'browse', function () {
+            sandbox.stub(api.posts, 'browse').callsFake(function () {
                 return Promise.resolve({
                     posts: [_.extend(makeFakeDatum(100), {
                         page: true,

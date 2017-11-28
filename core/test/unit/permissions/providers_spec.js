@@ -18,7 +18,7 @@ describe('Permission Providers', function () {
 
     describe('User', function () {
         it('errors if user cannot be found', function (done) {
-            var findUserSpy = sandbox.stub(models.User, 'findOne', function () {
+            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
                 return Promise.resolve();
             });
 
@@ -35,7 +35,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne', function () {
+            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -79,7 +79,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and role.permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne', function () {
+            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -126,7 +126,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, permissions and role.permissions and deduplicate them', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne', function () {
+            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -178,7 +178,7 @@ describe('Permission Providers', function () {
         // Why is this an empty array, when the success is an object?
         // Also why is this an empty array when for users we error?!
         it('returns empty array if app cannot be found!', function (done) {
-            var findAppSpy = sandbox.stub(models.App, 'findOne', function () {
+            var findAppSpy = sandbox.stub(models.App, 'findOne').callsFake(function () {
                 return Promise.resolve();
             });
 
@@ -193,7 +193,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findAppSpy = sandbox.stub(models.App, 'findOne', function () {
+            var findAppSpy = sandbox.stub(models.App, 'findOne').callsFake(function () {
                 var fakeApp = models.App.forge(testUtils.DataGenerator.Content.apps[0]),
                     fakePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 

@@ -53,25 +53,25 @@ describe('OAuth', function () {
             req.client = {
                 id: 1
             };
-            res.setHeader = {};
-            res.end = {};
+
+            res.setHeader = function () {};
+            res.end = function () {};
 
             sandbox.stub(models.User, 'check')
-                .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
+                .withArgs({email: 'username', password: 'password'}).returns(Promise.resolve({
                 id: 1
             }));
 
             sandbox.stub(authUtils, 'createTokens')
-                .returns(new Promise.resolve({
+                .returns(Promise.resolve({
                     access_token: 'AT',
                     refresh_token: 'RT',
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader', function () {
-            });
+            sandbox.stub(res, 'setHeader').callsFake(function () {});
 
-            sandbox.stub(res, 'end', function (json) {
+            sandbox.stub(res, 'end').callsFake(function (json) {
                 try {
                     should.exist(json);
                     json = JSON.parse(json);
@@ -161,8 +161,8 @@ describe('OAuth', function () {
             req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
-            res.setHeader = {};
-            res.end = {};
+            res.setHeader = function () {};
+            res.end = function () {};
 
             sandbox.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
@@ -180,10 +180,9 @@ describe('OAuth', function () {
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader', function () {
-            });
+            sandbox.stub(res, 'setHeader').callsFake(function () {});
 
-            sandbox.stub(res, 'end', function (json) {
+            sandbox.stub(res, 'end').callsFake(function (json) {
                 try {
                     should.exist(json);
                     json = JSON.parse(json);
@@ -269,7 +268,7 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(authUtils, 'createTokens', function () {
+            sandbox.stub(authUtils, 'createTokens').callsFake(function () {
                 return Promise.reject(new Error('DB error'));
             });
 
@@ -318,7 +317,7 @@ describe('OAuth', function () {
                     expires_in: 10
                 }));
 
-            sandbox.stub(passport, 'authenticate', function (name, options, onSuccess) {
+            sandbox.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
                 return function () {
                     onSuccess(null, user);
                 };
@@ -339,7 +338,7 @@ describe('OAuth', function () {
             req.body.grant_type = 'authorization_code';
             req.body.authorizationCode = '1234';
 
-            sandbox.stub(passport, 'authenticate', function (name, options, onSuccess) {
+            sandbox.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
                 return function () {
                     onSuccess(new errors.UnauthorizedError());
                 };

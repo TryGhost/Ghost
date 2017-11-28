@@ -13,7 +13,7 @@ describe('{{asset}} helper', function () {
         configUtils.set({assetHash: 'abc'});
         configUtils.set({useMinFiles: true});
 
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });

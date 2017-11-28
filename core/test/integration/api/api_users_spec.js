@@ -23,7 +23,7 @@ describe('Users API', function () {
     beforeEach(function () {
         eventsTriggered = {};
 
-        sandbox.stub(events, 'emit', function (eventName, eventObj) {
+        sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];
             }

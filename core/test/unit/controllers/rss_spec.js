@@ -41,11 +41,11 @@ describe('RSS', function () {
 
             // Overwrite getData
             fakeData = {meta: {pagination: {pages: 3}}};
-            getDataStub = sandbox.stub().returns(new Promise.resolve(fakeData));
+            getDataStub = sandbox.stub().returns(Promise.resolve(fakeData));
 
             resetGetData = rssController.__set__('getData', getDataStub);
 
-            rssServiceStub = sandbox.stub(rssService, 'render').returns(new Promise.resolve());
+            rssServiceStub = sandbox.stub(rssService, 'render').returns(Promise.resolve());
         });
 
         afterEach(function () {
@@ -160,7 +160,7 @@ describe('RSS', function () {
             resetFetchData = rssController.__set__('fetchData', fetchDataStub);
             getData = rssController.__get__('getData');
 
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 var obj = {
                     title: 'Test',
                     description: 'Some Text'

@@ -90,7 +90,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(gravatar, 'lookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup').callsFake(function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                 return Promise.resolve(userData);
             });
@@ -107,7 +107,7 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(gravatar, 'lookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup').callsFake(function (userData) {
                 return Promise.resolve(userData);
             });
 
@@ -171,7 +171,7 @@ describe('User Model', function run() {
 
         beforeEach(function () {
             eventsTriggered = {};
-            sandbox.stub(events, 'emit', function (eventName, eventObj) {
+            sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                 if (!eventsTriggered[eventName]) {
                     eventsTriggered[eventName] = [];
                 }

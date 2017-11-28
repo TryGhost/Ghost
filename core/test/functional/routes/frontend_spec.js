@@ -337,7 +337,7 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should not render AMP, when AMP is disabled', function (done) {
-                    sandbox.stub(settingsCache, 'get', function (key, options) {
+                    sandbox.stub(settingsCache, 'get').callsFake(function (key, options) {
                         if (key === 'amp' && !options) {
                             return false;
                         }
