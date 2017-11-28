@@ -101,7 +101,7 @@ describe('Controllers', function () {
         }];
 
         beforeEach(function () {
-            sandbox.stub(api.posts, 'read', function (args) {
+            sandbox.stub(api.posts, 'read').callsFake(function (args) {
                 var post = _.find(mockPosts, function (mock) {
                     return mock.posts[0].uuid === args.uuid;
                 });

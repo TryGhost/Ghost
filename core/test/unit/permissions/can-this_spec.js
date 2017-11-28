@@ -19,15 +19,15 @@ describe('Permissions', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(models.Permission, 'findAll', function () {
+        sandbox.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
         });
 
-        findPostSpy = sandbox.stub(models.Post, 'findOne', function () {
+        findPostSpy = sandbox.stub(models.Post, 'findOne').callsFake(function () {
             return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
         });
 
-        findTagSpy = sandbox.stub(models.Tag, 'findOne', function () {
+        findTagSpy = sandbox.stub(models.Tag, 'findOne').callsFake(function () {
             return Promise.resolve({});
         });
     });
@@ -241,7 +241,7 @@ describe('Permissions', function () {
             // It can depend on bookshelf, but should NOT use hard coded model knowledge.
             // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
             it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: [],
@@ -264,7 +264,7 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -285,7 +285,7 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -306,7 +306,7 @@ describe('Permissions', function () {
             });
 
             it('Specific permissions: can edit correct specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -335,7 +335,7 @@ describe('Permissions', function () {
             });
 
             it('Specific permissions: cannot edit incorrect specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -367,7 +367,7 @@ describe('Permissions', function () {
 
             // @TODO fix this case - it makes no sense?!
             it('Specific permissions: CAN edit non-specific tag (no permissible function on model) @TODO fix this', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -396,7 +396,7 @@ describe('Permissions', function () {
             });
 
             it('With owner role: can edit tag (no permissible function on model)', function (done) {
-                var userProviderStub = sandbox.stub(providers, 'user', function () {
+                var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: [],
@@ -421,7 +421,7 @@ describe('Permissions', function () {
         describe('App-based permissions (requires user as well)', function () {
             // @TODO: revisit this - do we really need to have USER permissions AND app permissions?
             it('No permissions: cannot edit tag with app only (no permissible function on model)', function (done) {
-                var appProviderStub = sandbox.stub(providers, 'app', function () {
+                var appProviderStub = sandbox.stub(providers, 'app').callsFake(function () {
                     // Fake the response from providers.app, which contains an empty array for this case
                     return Promise.resolve([]);
                 });
@@ -441,11 +441,11 @@ describe('Permissions', function () {
             });
 
             it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
-                var appProviderStub = sandbox.stub(providers, 'app', function () {
+                var appProviderStub = sandbox.stub(providers, 'app').callsFake(function () {
                         // Fake the response from providers.app, which contains an empty array for this case
                         return Promise.resolve([]);
                     }),
-                    userProviderStub = sandbox.stub(providers, 'user', function () {
+                    userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                         // Fake the response from providers.user, which contains permissions and roles
                         return Promise.resolve({
                             permissions: [],
@@ -469,13 +469,13 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
-                var appProviderStub = sandbox.stub(providers, 'app', function () {
+                var appProviderStub = sandbox.stub(providers, 'app').callsFake(function () {
                         // Fake the response from providers.app, which contains permissions only
                         return Promise.resolve({
                             permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
                         });
                     }),
-                    userProviderStub = sandbox.stub(providers, 'user', function () {
+                    userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                         // Fake the response from providers.user, which contains permissions and roles
                         return Promise.resolve({
                             permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -497,13 +497,13 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
-                var appProviderStub = sandbox.stub(providers, 'app', function () {
+                var appProviderStub = sandbox.stub(providers, 'app').callsFake(function () {
                         // Fake the response from providers.app, which contains permissions only
                         return Promise.resolve({
                             permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
                         });
                     }),
-                    userProviderStub = sandbox.stub(providers, 'user', function () {
+                    userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                         // Fake the response from providers.user, which contains permissions and roles
                         return Promise.resolve({
                             permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -528,14 +528,14 @@ describe('Permissions', function () {
 
     describe('permissible (overridden)', function () {
         it('can use permissible function on model to forbid something (post model)', function (done) {
-            var userProviderStub = sandbox.stub(providers, 'user', function () {
+            var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
                         roles: undefined
                     });
                 }),
-                permissibleStub = sandbox.stub(models.Post, 'permissible', function () {
+                permissibleStub = sandbox.stub(models.Post, 'permissible').callsFake(function () {
                     return Promise.reject({message: 'Hello World!'});
                 });
 
@@ -565,14 +565,14 @@ describe('Permissions', function () {
         });
 
         it('can use permissible function on model to allow something (post model)', function (done) {
-            var userProviderStub = sandbox.stub(providers, 'user', function () {
+            var userProviderStub = sandbox.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
                         roles: undefined
                     });
                 }),
-                permissibleStub = sandbox.stub(models.Post, 'permissible', function () {
+                permissibleStub = sandbox.stub(models.Post, 'permissible').callsFake(function () {
                     return Promise.resolve();
                 });
 

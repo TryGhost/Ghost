@@ -19,7 +19,7 @@ describe('{{url}} helper', function () {
 
     beforeEach(function () {
         rendered = null;
-        sandbox.stub(api.settings, 'read', function () {
+        sandbox.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});
         });
     });
