@@ -4,6 +4,7 @@ var should = require('should'),
     nock = require('nock'),
     configUtils = require('../../utils/configUtils'),
     utils = require('../../../server/utils'),
+    errors = require('../../../server/errors'),
     storage = require('../../../server/adapters/storage'),
     path = require('path'),
 
@@ -463,7 +464,7 @@ describe('Image Size', function () {
             result = imageSize.getImageSizeFromFilePath(url)
                 .catch(function (err) {
                     should.exist(err);
-                    err.message.should.match(/Could not read image:/);
+                    (err instanceof errors.NotFoundError).should.eql(true);
                     done();
                 });
         });
