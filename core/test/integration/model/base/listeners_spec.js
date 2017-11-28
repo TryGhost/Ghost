@@ -34,11 +34,11 @@ describe('Models: listeners', function () {
         listeners = rewire(config.get('paths').corePath + '/server/models/base/listeners');
     });
 
-    afterEach(function (done) {
+    afterEach(function () {
         events.on.restore();
         sandbox.restore();
         scope.posts = [];
-        testUtils.teardown(done);
+        return testUtils.teardown();
     });
 
     describe('on timezone changed', function () {

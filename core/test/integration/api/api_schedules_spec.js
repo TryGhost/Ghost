@@ -14,9 +14,7 @@ var should = require('should'),
 describe('Schedules API', function () {
     var scope = {posts: []};
 
-    after(function (done) {
-        testUtils.teardown(done);
-    });
+    after(testUtils.teardown);
 
     describe('fn: getScheduledPosts', function () {
         before(function (done) {
