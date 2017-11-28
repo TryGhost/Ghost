@@ -12,7 +12,9 @@ var proxy = require('./proxy'),
 pagination = function (options) {
     if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.pagination.invalidData')
+            level: 'normal',
+            message: i18n.t('warnings.helpers.pagination.invalidData'),
+            help: 'https://themes.ghost.org/docs/pagination'
         });
     }
 
