@@ -21,7 +21,7 @@ var supportedLocales = ['en'],
     // https://www.w3.org/International/articles/language-tags/
     //
     // The corresponding translation files should be at e.g. content/locales/es.json
-    // and content/themes/mytheme/assets/locales/es.json, etc.
+    // and content/themes/mytheme/locales/es.json, etc.
     currentLocale,
     activeTheme,
     blos,
@@ -219,11 +219,11 @@ I18n = {
             // Compatibility with both old themes and i18n-capable themes.
             // Falling back any wrong locale to default English for this session.
             try {
-                blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'assets', 'locales', currentLocale + '.json'));
+                blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', currentLocale + '.json'));
             } catch (err) {
                 blosTheme = undefined;
                 if (err.code === 'ENOENT') {
-                    logging.warn('Theme\'s file assets/locales/' + currentLocale + '.json not found! Falling back to default English locale.');
+                    logging.warn('Theme\'s file locales/' + currentLocale + '.json not found! Falling back to default English locale.');
                     currentLocale = 'en';
                     settingsCache.set('default_locale', 'en');
                 } else {

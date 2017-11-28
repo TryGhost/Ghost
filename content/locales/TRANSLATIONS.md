@@ -31,7 +31,7 @@ Translatable themes usually include *.json* translation files for one or several
 
 For example, for Spanish (language tag "`es`"), and an example theme that we can call "`mytheme`", the **translation file** is:
 
-- In the theme folder *content/themes/mytheme/assets/locales* (each theme's files):
+- In the theme folder *content/themes/mytheme/locales* (each theme's files):
   - *es.json* - to translate the theme's *.hbs* templates
  
 ### If you choose a translatable theme that includes your target language
@@ -56,7 +56,7 @@ See the section below: [*How to Make Any Theme Translatable*](#how-to-make-any-t
 
 If the theme is already translatable, you can likely find the default file in this folder:
 
-- *content/themes/mytheme/assets/locales*
+- *content/themes/mytheme/locales*
   - *en.json* - copy it for front-end and theme translation
 
 ### 2. Rename the language file
@@ -65,7 +65,7 @@ Just change the default `en` language tag to the desired language.
 
 ### 3. Translate the included sentences
 
-Edit the renamed translation file with any plain text editor. Usually they manage the international `UTF-8` encoding well. And place the file in the *assets/locales* folder of your theme.
+Edit the renamed translation file with any plain text editor. Usually they manage the international `UTF-8` encoding well. And place the file in the *locales* folder of your theme.
 
 An example with [optional features](#optional-advanced-features) (see the related section below) such as placeholders for flexibility, is the complete default English file *en.json* for [WorldCasper2 &#x27B6;](https://github.com/juan-g/WorldCasper2/tree/i18n-translatable-frontend), translatable clone of the default Casper 2.x theme:
 
@@ -180,9 +180,9 @@ Just copy and paste `{{t "` to the left, and `"}}` to the rigth.
 
 Do all these three steps for each text, before going to the next, to remember to add all of them to the translation file.
 
-For now, just quickly write the English default file *assets/locales/en.json*. Later you can translate it as explained before.
+For now, just quickly write the English default file *locales/en.json*. Later you can translate it as explained before.
 
-Although the English version will work for themes even without default English file (because of the mentioned fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *assets/locales/en.json* anyway, because:
+Although the English version will work for themes even without default English file (because of the mentioned fallback to the text inside the `{{t}}` translation helper when no translation is available), it's advisable to include the default *locales/en.json* anyway, because:
 
 - It will be much easier for users to [add and contribute languages](#how-to-add-any-language) by copying and editing the default file, as explained in the previous section.
 - Even for sites in English, Ghost users will be able to customize any theme texts by simply editing the default English file, without modifying the theme templates.
@@ -370,13 +370,13 @@ File *es.css* (optional file to translate CSS content text visible to site visit
 And, in theme template *default.hbs*, after the rest of style sheets to override
 
 ```
-<link rel="stylesheet" type="text/css" href="{{asset "locales/{lang}.css" lang=(lang)}}" />
+<link rel="stylesheet" type="text/css" href="{{asset "css/{lang}.css" lang=(lang)}}" />
 ```
 
 In this line, the {{asset}} helper can be equivalent in this example to
 
 ```
-{{asset "locales/es.css"}}
+{{asset "css/es.css"}}
 ```
 
 That stylesheet line uses the replacement placeholder `{lang}`, and the nested helper `(lang)`.
