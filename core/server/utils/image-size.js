@@ -202,9 +202,10 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 }
             }));
         }).catch(function (err) {
-            if (err instanceof errors.GhostError) {
+            if (errors.utils.isIgnitionError(err)) {
                 return Promise.reject(err);
             }
+
             return Promise.reject(new errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
