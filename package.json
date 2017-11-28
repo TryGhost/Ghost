@@ -110,7 +110,7 @@
     "grunt-docker": "0.0.11",
     "grunt-eslint": "20.1.0",
     "grunt-express-server": "0.5.3",
-    "grunt-mocha-cli": "2.1.0",
+    "grunt-mocha-cli": "3.0.0",
     "grunt-mocha-istanbul": "5.0.2",
     "grunt-shell": "2.1.0",
     "grunt-subgrunt": "1.2.0",
