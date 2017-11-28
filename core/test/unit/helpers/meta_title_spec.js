@@ -8,7 +8,7 @@ var should = require('should'),
 
 describe('{{meta_title}} helper', function () {
     before(function () {
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 title: 'Ghost'
             }[key];

@@ -239,10 +239,10 @@ describe('Importer', function () {
                 var input = {data: {posts: []}, images: []},
                     // pass a copy so that input doesn't get modified
                     inputCopy = _.cloneDeep(input),
-                    dataSpy = sandbox.stub(DataImporter, 'doImport', function (i) {
+                    dataSpy = sandbox.stub(DataImporter, 'doImport').callsFake(function (i) {
                         return Promise.resolve(i);
                     }),
-                    imageSpy = sandbox.stub(ImageImporter, 'doImport', function (i) {
+                    imageSpy = sandbox.stub(ImageImporter, 'doImport').callsFake(function (i) {
                         return Promise.resolve(i);
                     }),
 
@@ -686,7 +686,7 @@ describe('Importer', function () {
                 storageApi = {
                     save: sandbox.stub().returns(Promise.resolve())
                 },
-                storageSpy = sandbox.stub(storage, 'getStorage', function () {
+                storageSpy = sandbox.stub(storage, 'getStorage').callsFake(function () {
                     return storageApi;
                 });
 

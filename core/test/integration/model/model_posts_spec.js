@@ -90,7 +90,7 @@ describe('Post Model', function () {
 
         describe('findAll', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -145,7 +145,7 @@ describe('Post Model', function () {
 
         describe('findPage', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -334,7 +334,7 @@ describe('Post Model', function () {
 
         describe('findOne', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -387,7 +387,7 @@ describe('Post Model', function () {
             it('can findOne, returning a dated permalink', function (done) {
                 settingsCache.get.restore();
 
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:year/:month/:day/:slug/'
                     }[key];
@@ -411,7 +411,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1017,7 +1017,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1402,7 +1402,7 @@ describe('Post Model', function () {
         describe('destroy', function () {
             beforeEach(function () {
                 eventsTriggered = {};
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }

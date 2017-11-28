@@ -316,7 +316,7 @@ describe('Schedules API', function () {
                 }, 500);
 
                 // target post to publish was read already, simulate a client request
-                sandbox.stub(api.posts, 'edit', function () {
+                sandbox.stub(api.posts, 'edit').callsFake(function () {
                     var self = this,
                         args = arguments;
 

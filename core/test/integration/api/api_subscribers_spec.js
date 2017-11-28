@@ -279,12 +279,12 @@ describe('Subscribers API', function () {
             stub;
 
         beforeEach(function () {
-            sandbox.stub(fs, 'unlink', function (path, cb) {
+            sandbox.stub(fs, 'unlink').callsFake(function (path, cb) {
                 cb();
             });
             sandbox.stub(apiUtils, 'checkFileExists').returns(true);
             stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
-            sandbox.stub(serverUtils, 'readCSV', function () {
+            sandbox.stub(serverUtils, 'readCSV').callsFake(function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
                 }

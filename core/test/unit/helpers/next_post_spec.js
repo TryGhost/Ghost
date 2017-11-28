@@ -19,7 +19,7 @@ describe('{{next_post}} helper', function () {
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 3'}]
@@ -61,7 +61,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for valid post with no next post', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: []});
                 }
@@ -99,7 +99,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({});
                 }
@@ -126,7 +126,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for page', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
@@ -161,7 +161,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for unpublished post', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/next/', title: 'post 3'}]});
                 }
@@ -195,7 +195,7 @@ describe('{{next_post}} helper', function () {
 
     describe('with "in" option', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function (options) {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 1'}]
@@ -334,7 +334,7 @@ describe('{{next_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api.posts, 'browse', function () {
+            browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function () {
                 return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });

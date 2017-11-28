@@ -68,7 +68,7 @@ describe('Scheduling Default Adapter', function () {
                 }),
                 allJobs = {};
 
-            sandbox.stub(scope.adapter, '_execute', function (nextJobs) {
+            sandbox.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
                 Object.keys(nextJobs).length.should.eql(182);
                 Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 182);
                 done();
@@ -107,7 +107,7 @@ describe('Scheduling Default Adapter', function () {
                 nextJobs = {};
 
             sandbox.stub(scope.adapter, 'run');
-            sandbox.stub(scope.adapter, '_pingUrl', function () {
+            sandbox.stub(scope.adapter, '_pingUrl').callsFake(function () {
                 pinged = pinged + 1;
             });
 
@@ -132,7 +132,7 @@ describe('Scheduling Default Adapter', function () {
                 jobsToExecute = {};
 
             sandbox.stub(scope.adapter, 'run');
-            sandbox.stub(scope.adapter, '_pingUrl', function () {
+            sandbox.stub(scope.adapter, '_pingUrl').callsFake(function () {
                 pinged = pinged + 1;
             });
 

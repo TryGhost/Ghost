@@ -13,7 +13,7 @@ describe('Redirects API', function () {
     beforeEach(testUtils.setup('settings', 'users:roles', 'perms:redirect', 'perms:init'));
 
     beforeEach(function () {
-        sandbox.stub(mail, 'send', function () {
+        sandbox.stub(mail, 'send').callsFake(function () {
             return Promise.resolve();
         });
     });

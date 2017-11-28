@@ -27,7 +27,7 @@ describe('Models: listeners', function () {
     beforeEach(testUtils.setup('owner', 'user-token:0'));
 
     beforeEach(function () {
-        sandbox.stub(events, 'on', function (eventName, callback) {
+        sandbox.stub(events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 

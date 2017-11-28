@@ -49,7 +49,7 @@ describe('getContextObject', function () {
 
     describe('override blog', function () {
         before(function () {
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     cover_image: 'test.png'
                 }[key];

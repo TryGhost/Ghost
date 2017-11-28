@@ -16,7 +16,7 @@ describe('Invites API', function () {
     beforeEach(testUtils.setup('invites', 'settings', 'users:roles', 'perms:invite', 'perms:init'));
 
     beforeEach(function () {
-        sandbox.stub(mail, 'send', function () {
+        sandbox.stub(mail, 'send').callsFake(function () {
             return Promise.resolve();
         });
     });

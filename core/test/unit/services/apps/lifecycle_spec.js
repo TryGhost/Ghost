@@ -20,10 +20,10 @@ describe('Apps', function () {
     beforeEach(function () {
         settingsCacheStub = sandbox.stub(settingsCache, 'get');
         settingsEditStub = sandbox.stub(api.settings, 'edit');
-        loaderActivateStub = sandbox.stub(AppLoader, 'activateAppByName', function (appName) {
+        loaderActivateStub = sandbox.stub(AppLoader, 'activateAppByName').callsFake(function (appName) {
             return new Promise.resolve(appName);
         });
-        loaderInstallStub = sandbox.stub(AppLoader, 'installAppByName', function (appName) {
+        loaderInstallStub = sandbox.stub(AppLoader, 'installAppByName').callsFake(function (appName) {
             return new Promise.resolve(appName);
         });
     });

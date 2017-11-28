@@ -10,7 +10,7 @@ describe('Models: listeners', function () {
     var eventsToRemember = {};
 
     before(function () {
-        sandbox.stub(events, 'on', function (name, callback) {
+        sandbox.stub(events, 'on').callsFake(function (name, callback) {
             eventsToRemember[name] = callback;
         });
 

@@ -154,7 +154,7 @@ describe('Channels', function () {
 
         // Stub the posts api
         function setupPostsAPIStub() {
-            postAPIStub = sandbox.stub(api.posts, 'browse', function () {
+            postAPIStub = sandbox.stub(api.posts, 'browse').callsFake(function () {
                 return Promise.resolve({posts: [{}], meta: {pagination: {pages: 3}}});
             });
         }
@@ -300,11 +300,11 @@ describe('Channels', function () {
 
         // Stub the posts and tags api
         function setupAPIStubs() {
-            postAPIStub = sandbox.stub(api.posts, 'browse', function () {
+            postAPIStub = sandbox.stub(api.posts, 'browse').callsFake(function () {
                 return Promise.resolve({posts: [{}], meta: {pagination: {pages: 3}}});
             });
 
-            tagAPIStub = sandbox.stub(api.tags, 'read', function () {
+            tagAPIStub = sandbox.stub(api.tags, 'read').callsFake(function () {
                 return Promise.resolve({tags: [{}]});
             });
         }

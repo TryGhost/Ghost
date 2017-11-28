@@ -29,7 +29,7 @@ describe('Subscriber: Routing', function () {
     });
 
     before(function () {
-        sandbox.stub(labs, 'isSet', function (key) {
+        sandbox.stub(labs, 'isSet').callsFake(function (key) {
             if (key === 'subscribers') {
                 return true;
             }

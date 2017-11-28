@@ -46,7 +46,7 @@ describe('{{ghost_head}} helper', function () {
         };
 
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
 
@@ -1279,7 +1279,7 @@ describe('{{ghost_head}} helper', function () {
         };
 
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
 
@@ -1316,7 +1316,7 @@ describe('{{ghost_head}} helper', function () {
         };
 
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
 
@@ -1382,7 +1382,7 @@ describe('{{ghost_head}} helper', function () {
         };
 
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
 
@@ -1613,7 +1613,7 @@ describe('{{ghost_head}} helper', function () {
                 url: 'http://localhost:65530/'
             });
 
-            sandbox.stub(settingsCache, 'get', function (key) {
+            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
         });
