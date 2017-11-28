@@ -220,7 +220,7 @@ describe('API Utils', function () {
 
                 errors = apiUtils.validateOptions(options);
                 errors.should.be.an.Array().and.have.lengthOf(1);
-                errors.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                errors[0].errorType.should.eql('ValidationError');
             });
         }
 
