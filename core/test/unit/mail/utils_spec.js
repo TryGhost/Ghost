@@ -9,7 +9,7 @@ describe('Mail: Utils', function () {
     beforeEach(function () {
         scope.ghostMailer = new mail.GhostMailer();
 
-        sandbox.stub(scope.ghostMailer.transport, 'sendMail', function (message, sendMailDone) {
+        sandbox.stub(scope.ghostMailer.transport, 'sendMail').callsFake(function (message, sendMailDone) {
             sendMailDone(null, {
                 statusHandler: {
                     once: function (eventName, eventDone) {

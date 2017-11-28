@@ -8,7 +8,7 @@ describe('getTitle', function () {
     var localSettingsCache = {};
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });

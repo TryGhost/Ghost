@@ -43,7 +43,7 @@ describe('Authentication API', function () {
 
     // Stub mail
     beforeEach(function () {
-        sandbox.stub(mail, 'send', function () {
+        sandbox.stub(mail, 'send').callsFake(function () {
             return Promise.resolve();
         });
     });

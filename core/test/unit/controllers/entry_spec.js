@@ -46,7 +46,7 @@ describe('Controllers', function () {
             hasTemplate: hasTemplateStub
         });
 
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     }
@@ -119,7 +119,7 @@ describe('Controllers', function () {
         }];
 
         beforeEach(function () {
-            sandbox.stub(api.posts, 'read', function (args) {
+            sandbox.stub(api.posts, 'read').callsFake(function (args) {
                 var post = _.find(mockPosts, function (mock) {
                     return mock.posts[0].slug === args.slug;
                 });

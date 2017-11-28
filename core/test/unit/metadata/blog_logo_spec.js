@@ -13,7 +13,7 @@ describe('getBlogLogo', function () {
     it('should return logo if uploaded', function () {
         var blogLogo;
 
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 logo: '/content/images/logo.png',
                 icon: null
@@ -28,7 +28,7 @@ describe('getBlogLogo', function () {
     it('should return custom uploaded png icon if no logo given', function () {
         var blogLogo;
 
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 logo: null,
                 icon: '/content/images/favicon.png'

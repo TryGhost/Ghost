@@ -19,15 +19,15 @@ describe('Permissions', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(models.Permission, 'findAll', function () {
+        sandbox.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
         });
 
-        findPostSpy = sandbox.stub(models.Post, 'findOne', function () {
+        findPostSpy = sandbox.stub(models.Post, 'findOne').callsFake(function () {
             return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
         });
 
-        findTagSpy = sandbox.stub(models.Tag, 'findOne', function () {
+        findTagSpy = sandbox.stub(models.Tag, 'findOne').callsFake(function () {
             return Promise.resolve({});
         });
     });

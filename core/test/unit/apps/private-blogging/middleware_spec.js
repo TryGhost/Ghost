@@ -142,7 +142,7 @@ describe('Private Blogging', function () {
                 req.url = req.path = '/robots.txt';
                 res.writeHead = sandbox.spy();
                 res.end = sandbox.spy();
-                sandbox.stub(fs, 'readFile', function (file, cb) {
+                sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
                     cb(null, 'User-agent: * Disallow: /');
                 });
                 privateBlogging.filterPrivateRoutes(req, res, next);

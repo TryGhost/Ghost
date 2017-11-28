@@ -124,7 +124,7 @@
     "run-sequence": "1.2.2",
     "should": "11.2.1",
     "should-http": "0.1.1",
-    "sinon": "1.17.7",
+    "sinon": "4.1.2",
     "supertest": "3.0.0",
     "tmp": "0.0.33"
   },
