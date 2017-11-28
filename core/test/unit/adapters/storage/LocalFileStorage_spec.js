@@ -175,7 +175,7 @@ describe('Local File System Storage', function () {
                     done(new Error('image should not exist'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.GhostError).should.eql(true);
+                    (err instanceof errors.NotFoundError).should.eql(true);
                     err.code.should.eql('ENOENT');
                     done();
                 });
