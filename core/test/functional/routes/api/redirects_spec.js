@@ -109,7 +109,7 @@ describe('Redirects API', function () {
 
             afterEach(stopGhost);
 
-            it('no redirects file exists', function (done) {
+            it('no redirects file exists', function () {
                 return startGhost({redirectsFile: false})
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -150,12 +150,10 @@ describe('Redirects API', function () {
 
                         var dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(1);
-                        done();
-                    })
-                    .catch(done);
+                    });
             });
 
-            it('override', function (done) {
+            it('override', function () {
                 return startGhost()
                     .then(function () {
                         return new Promise(function (resolve) {
@@ -235,9 +233,7 @@ describe('Redirects API', function () {
                     .then(function () {
                         var dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
-                        done();
-                    })
-                    .catch(done);
+                    });
             });
         });
 

@@ -54,9 +54,9 @@ describe('Scheduling: Post Scheduling', function () {
         sandbox.spy(scope.adapter, 'reschedule');
     });
 
-    afterEach(function (done) {
+    afterEach(function () {
         sandbox.restore();
-        testUtils.teardown(done);
+        return testUtils.teardown();
     });
 
     describe('fn:init', function () {

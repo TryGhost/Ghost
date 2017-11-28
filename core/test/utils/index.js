@@ -625,16 +625,9 @@ setup = function setup() {
     var self = this,
         args = arguments;
 
-    return function setup(done) {
+    return function setup() {
         models.init();
-
-        if (done) {
-            initFixtures.apply(self, args).then(function () {
-                done();
-            }).catch(done);
-        } else {
-            return initFixtures.apply(self, args);
-        }
+        return initFixtures.apply(self, args);
     };
 };
 
@@ -768,7 +761,7 @@ togglePermalinks = function togglePermalinks(request, toggle) {
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
-teardown = function teardown(done) {
+teardown = function teardown() {
     debug('Database teardown');
     var tables = schemaTables.concat(['migrations']);
 
@@ -777,16 +770,13 @@ teardown = function teardown(done) {
             .mapSeries(tables, function createTable(table) {
                 return db.knex.raw('DELETE FROM ' + table + ';');
             })
-            .then(function () {
-                done && done();
-            })
             .catch(function (err) {
                 // CASE: table does not exist
                 if (err.errno === 1) {
-                    return done && done();
+                    return Promise.resolve();
                 }
 
-                done && done(err);
+                throw err;
             });
     }
 
@@ -801,16 +791,13 @@ teardown = function teardown(done) {
             .then(function () {
                 return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
             })
-            .then(function () {
-                done && done();
-            })
             .catch(function (err) {
                 // CASE: table does not exist
                 if (err.errno === 1146) {
-                    return done && done();
+                    return Promise.resolve();
                 }
 
-                return done ? done(err) : Promise.reject(err);
+                throw err;
             });
     });
 };
