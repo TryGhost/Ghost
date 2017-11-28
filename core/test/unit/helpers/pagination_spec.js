@@ -29,11 +29,11 @@ describe('{{pagination}} helper', function () {
             return function () {
                 helpers.pagination.call(data);
             };
-        };
+        }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://themes.ghost.org/docs/pagination.';
 
-        runHelper('not an object').should.throwError('pagination data is not an object or is a function');
+        runHelper('not an object').should.throwError(expectedMessage);
         runHelper(function () {
-        }).should.throwError('pagination data is not an object or is a function');
+        }).should.throwError(expectedMessage);
     });
 
     it('can render single page with no pagination necessary', function () {
