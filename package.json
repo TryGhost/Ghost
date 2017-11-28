@@ -116,7 +116,7 @@
     "grunt-subgrunt": "1.2.0",
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.5",
-    "matchdep": "1.0.1",
+    "matchdep": "2.0.0",
     "minimist": "1.2.0",
     "mocha": "4.0.1",
     "nock": "9.1.3",
