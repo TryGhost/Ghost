@@ -168,7 +168,7 @@ describe('Database Migration (special functions)', function () {
         describe('Populate', function () {
             beforeEach(testUtils.setup('default'));
 
-            it('should populate all fixtures correctly', function (done) {
+            it('should populate all fixtures correctly', function () {
                 var props = {
                     posts: Models.Post.findAll({include: ['tags']}),
                     tags: Models.Tag.findAll(),
@@ -226,9 +226,7 @@ describe('Database Migration (special functions)', function () {
                     // Permissions
                     result.permissions.length.should.eql(53);
                     result.permissions.toJSON().should.be.CompletePermissions();
-
-                    done();
-                }).catch(done);
+                });
             });
         });
     });
