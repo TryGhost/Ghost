@@ -118,7 +118,7 @@
     "istanbul": "0.4.5",
     "matchdep": "1.0.1",
     "minimist": "1.2.0",
-    "mocha": "3.5.3",
+    "mocha": "4.0.1",
     "nock": "9.1.3",
     "rewire": "3.0.2",
     "run-sequence": "1.2.2",
