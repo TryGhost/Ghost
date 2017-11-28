@@ -5149,13 +5149,13 @@ shebang-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
 
-should-equal@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/should-equal/-/should-equal-1.0.1.tgz#0b6e9516f2601a9fb0bb2dcc369afa1c7e200af7"
+should-equal@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/should-equal/-/should-equal-2.0.0.tgz#6072cf83047360867e68e98b09d71143d04ee0c3"
   dependencies:
-    should-type "^1.0.0"
+    should-type "^1.4.0"
 
-should-format@^3.0.2:
+should-format@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/should-format/-/should-format-3.0.3.tgz#9bfc8f74fa39205c53d38c34d717303e277124f1"
   dependencies:
@@ -5175,7 +5175,7 @@ should-type-adaptors@^1.0.1:
     should-type "^1.3.0"
     should-util "^1.0.0"
 
-should-type@^1.0.0, should-type@^1.3.0, should-type@^1.4.0:
+should-type@^1.3.0, should-type@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/should-type/-/should-type-1.4.0.tgz#0756d8ce846dfd09843a6947719dfa0d4cff5cf3"
 
@@ -5183,12 +5183,12 @@ should-util@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/should-util/-/should-util-1.0.0.tgz#c98cda374aa6b190df8ba87c9889c2b4db620063"
 
-should@11.2.1:
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/should/-/should-11.2.1.tgz#90f55145552d01cfc200666e4e818a1c9670eda2"
+should@13.1.3:
+  version "13.1.3"
+  resolved "https://registry.yarnpkg.com/should/-/should-13.1.3.tgz#a089bdf7979392a8272a712c8b63acbaafb7948f"
   dependencies:
-    should-equal "^1.0.0"
-    should-format "^3.0.2"
+    should-equal "^2.0.0"
+    should-format "^3.0.3"
     should-type "^1.4.0"
     should-type-adaptors "^1.0.1"
     should-util "^1.0.0"

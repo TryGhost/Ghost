@@ -81,7 +81,7 @@ describe('Tags API', function () {
                 .then(function () {
                     done(new Error('Adding a tag with an invalid name is not rejected.'));
                 }).catch(function (errors) {
-                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                errors[0].errorType.should.eql('ValidationError');
                 done();
             }).catch(done);
         });
@@ -127,7 +127,7 @@ describe('Tags API', function () {
                 .then(function () {
                     done(new Error('Adding a tag with an invalid name is not rejected.'));
                 }).catch(function (errors) {
-                errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                errors[0].errorType.should.eql('ValidationError');
                 done();
             }).catch(done);
         });
