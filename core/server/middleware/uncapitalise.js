@@ -13,13 +13,15 @@
 //  req.path =  /ghost/signin/
 
 var utils = require('../utils'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
     uncapitalise;
 
 uncapitalise = function uncapitalise(req, res, next) {
     var pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path,
         isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i),
         isAPI = pathToTest.match(/^(.*\/ghost\/api\/v[\d\.]+\/.*?\/)/i),
-        redirectPath;
+        redirectPath, decodedURI;
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
@@ -30,11 +32,20 @@ uncapitalise = function uncapitalise(req, res, next) {
         pathToTest = isAPI[1];
     }
 
+    try {
+        decodedURI = decodeURIComponent(pathToTest);
+    } catch (err) {
+        return next(new errors.NotFoundError({
+            message: i18n.t('errors.errors.pageNotFound'),
+            err: err
+        }));
+    }
+
     /**
      * In node < 0.11.1 req.path is not encoded, afterwards, it is always encoded such that | becomes %7C etc.
      * That encoding isn't useful here, as it triggers an extra uncapitalise redirect, so we decode the path first
      */
-    if (/[A-Z]/.test(decodeURIComponent(pathToTest))) {
+    if (/[A-Z]/.test(decodedURI)) {
         redirectPath = (
             utils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
         );
