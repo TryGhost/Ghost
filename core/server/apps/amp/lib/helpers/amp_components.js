@@ -13,7 +13,7 @@ var proxy = require('../../../../helpers/proxy'),
 
 function ampComponents() {
     var components = [],
-        html = this.post.html || this.html;
+        html = this.post && this.post.html || this.html;
 
     if (!html) {
         return;
