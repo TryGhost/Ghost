@@ -99,6 +99,10 @@ export default Component.extend({
         },
 
         setTime(time) {
+            if (time.match(/^\d:\d\d$/)) {
+                time = `0${time}`;
+            }
+
             if (time !== this.get('_previousTime')) {
                 this.get('setTime')(time);
                 this.set('_previousTime', time);
