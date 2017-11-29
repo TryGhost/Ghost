@@ -6,6 +6,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
     ghost = testUtils.startGhost,
     i18n = require('../../../../core/server/i18n'),
     config = require('../../../../core/server/config'),
@@ -40,139 +41,109 @@ describe('Admin Routing', function () {
         };
     }
 
-    before(testUtils.teardown);
-
-    describe('NO FORK', function () {
-        var ghostServer;
-
-        before(function (done) {
-            ghost().then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                return ghostServer.start();
-            }).then(function () {
+    before(function () {
+        return ghost()
+            .then(function () {
                 request = supertest.agent(config.get('url'));
-                done();
-            }).catch(function (e) {
-                console.log('Ghost Error: ', e);
-                console.log(e.stack);
-                done(e);
             });
+    });
+
+    describe('Assets', function () {
+        it('should return 404 for unknown assets', function (done) {
+            request.get('/ghost/assets/not-found.js')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .end(doEnd(done));
         });
 
-        after(function () {
-            return testUtils.clearData()
-                .then(function () {
-                    return ghostServer.stop();
-                });
-        });
-
-        describe('Assets', function () {
-            it('should return 404 for unknown assets', function (done) {
-                request.get('/ghost/assets/not-found.js')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .end(doEnd(done));
-            });
-
-            it('should retrieve built assets', function (done) {
-                request.get('/ghost/assets/vendor.js')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-        });
-
-        describe('Legacy Redirects', function () {
-            it('should redirect /logout/ to /ghost/#/signout/', function (done) {
-                request.get('/logout/')
-                    .expect('Location', '/ghost/#/signout/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
-
-            it('should redirect /signout/ to /ghost/#/signout/', function (done) {
-                request.get('/signout/')
-                    .expect('Location', '/ghost/#/signout/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
-
-            it('should redirect /signup/ to /ghost/#/signup/', function (done) {
-                request.get('/signup/')
-                    .expect('Location', '/ghost/#/signup/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
-
-            // Admin aliases
-            it('should redirect /signin/ to /ghost/', function (done) {
-                request.get('/signin/')
-                    .expect('Location', '/ghost/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
-
-            it('should redirect /admin/ to /ghost/', function (done) {
-                request.get('/admin/')
-                    .expect('Location', '/ghost/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
-
-            it('should redirect /GHOST/ to /ghost/', function (done) {
-                request.get('/GHOST/')
-                    .expect('Location', '/ghost/')
-                    .expect(301)
-                    .end(doEndNoAuth(done));
-            });
+        it('should retrieve built assets', function (done) {
+            request.get('/ghost/assets/vendor.js')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(200)
+                .end(doEnd(done));
         });
     });
 
-    describe('FORK', function () {
-        // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
-        describe('Require HTTPS - redirect', function () {
-            var forkedGhost;
+    describe('Legacy Redirects', function () {
+        it('should redirect /logout/ to /ghost/#/signout/', function (done) {
+            request.get('/logout/')
+                .expect('Location', '/ghost/#/signout/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
 
-            before(function (done) {
-                testUtils.fork.ghost({
-                    url: 'https://localhost/',
-                    server: {
-                        port: 2390
-                    }
-                }, 'testhttps')
-                    .then(function (child) {
-                        forkedGhost = child;
-                        request = supertest.agent('http://localhost:2390');
-                    }).then(done)
-                    .catch(done);
-            });
+        it('should redirect /signout/ to /ghost/#/signout/', function (done) {
+            request.get('/signout/')
+                .expect('Location', '/ghost/#/signout/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
 
-            after(function (done) {
-                if (forkedGhost) {
-                    forkedGhost.kill(done);
-                } else {
-                    done(new Error('No forked ghost process exists, test setup must have failed.'));
-                }
-            });
+        it('should redirect /signup/ to /ghost/#/signup/', function (done) {
+            request.get('/signup/')
+                .expect('Location', '/ghost/#/signup/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
 
-            it('should redirect admin access over non-HTTPS', function (done) {
-                request.get('/ghost/')
-                    .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
+        // Admin aliases
+        it('should redirect /signin/ to /ghost/', function (done) {
+            request.get('/signin/')
+                .expect('Location', '/ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
 
-            it('should allow admin access over HTTPS', function (done) {
-                request.get('/ghost/')
-                    .set('X-Forwarded-Proto', 'https')
-                    .expect(200)
-                    .end(doEnd(done));
-            });
+        it('should redirect /admin/ to /ghost/', function (done) {
+            request.get('/admin/')
+                .expect('Location', '/ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+
+        it('should redirect /GHOST/ to /ghost/', function (done) {
+            request.get('/GHOST/')
+                .expect('Location', '/ghost/')
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
+    });
+
+    // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
+    describe('Require HTTPS - redirect', function () {
+        var ghostServer;
+
+        before(function () {
+            configUtils.set('url', 'https://localhost:2390');
+
+            return ghost({forceStart: true})
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+                });
+        });
+
+        after(function () {
+            configUtils.restore();
+        });
+
+        it('should redirect admin access over non-HTTPS', function (done) {
+            request.get('/ghost/')
+                .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should allow admin access over HTTPS', function (done) {
+            request.get('/ghost/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200)
+                .end(doEnd(done));
         });
     });
 });

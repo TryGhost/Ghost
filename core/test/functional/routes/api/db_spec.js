@@ -15,37 +15,28 @@ var should = require('should'),
 describe('DB API', function () {
     var accesstoken = '', ghostServer, clients, backupClient, schedulerClient, backupQuery, schedulerQuery, fsStub;
 
-    before(function (done) {
-        // starting ghost automatically populates the db
-        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-        }).then(function () {
-            return testUtils.doAuth(request);
-        }).then(function (token) {
-            accesstoken = token;
-            return models.Client.findAll();
-        }).then(function (result) {
-            clients = result.toJSON();
-            backupClient = _.find(clients, {slug: 'ghost-backup'});
-            schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
-
-            done();
-        }).catch(done);
+    before(function () {
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            })
+            .then(function () {
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                accesstoken = token;
+                return models.Client.findAll();
+            })
+            .then(function (result) {
+                clients = result.toJSON();
+                backupClient = _.find(clients, {slug: 'ghost-backup'});
+                schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
+            });
     });
 
     afterEach(function () {
         sandbox.restore();
-    });
-
-    after(function () {
-        return testUtils.clearData()
-            .then(function () {
-                return ghostServer.stop();
-            });
     });
 
     it('attaches the Content-Disposition header on export', function (done) {
@@ -103,7 +94,7 @@ describe('DB API', function () {
         request.post(testUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .attach('importfile',  path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
             .expect(415)
             .end(function (err) {
                 if (err) {

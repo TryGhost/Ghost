@@ -12,22 +12,13 @@ describe('Public API', function () {
     var ghostServer;
 
     before(function () {
-        // starting ghost automatically populates the db
-        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        return ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-        }).then(function () {
-            return testUtils.doAuth(request, 'posts', 'tags', 'client:trusted-domain');
-        });
-    });
-
-    after(function () {
-        return testUtils.clearData()
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            })
             .then(function () {
-                return ghostServer.stop();
+                return testUtils.doAuth(request, 'posts', 'tags', 'client:trusted-domain');
             });
     });
 

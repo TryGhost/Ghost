@@ -8,26 +8,13 @@ var supertest = require('supertest'),
     sandbox = sinon.sandbox.create();
 
 describe('Subscriber: Routing', function () {
-    var ghostServer, request;
+    var request;
 
-    before(function (done) {
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-            done();
-        }).catch(function (e) {
-            console.log('Ghost Error: ', e);
-            console.log(e.stack);
-            done(e);
-        });
-    });
-
-    after(testUtils.teardown);
-
-    after(function () {
-        return ghostServer.stop();
+    before(function () {
+        return ghost()
+            .then(function () {
+                request = supertest.agent(config.get('url'));
+            });
     });
 
     before(function () {
@@ -46,7 +33,7 @@ describe('Subscriber: Routing', function () {
         it('[success]', function (done) {
             request.get('/subscribe/')
                 .expect(200)
-                .end(function (err) {
+                .end(function (err, res) {
                     should.not.exist(err);
                     done();
                 });
