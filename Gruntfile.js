@@ -132,7 +132,8 @@ var config         = require('./core/server/config'),
                     reporter: grunt.option('reporter') || 'spec',
                     timeout: '30000',
                     save: grunt.option('reporter-output'),
-                    require: ['core/server/overrides']
+                    require: ['core/server/overrides'],
+                    exit: true
                 },
 
                 // #### All Unit tests
