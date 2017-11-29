@@ -220,7 +220,7 @@ describe('API Utils', function () {
 
                 errors = apiUtils.validateOptions(options);
                 errors.should.be.an.Array().and.have.lengthOf(1);
-                errors.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                errors[0].errorType.should.eql('ValidationError');
             });
         }
 
@@ -541,7 +541,7 @@ describe('API Utils', function () {
 
         it('should handle an unknown rejection', function (done) {
             var testStub = sandbox.stub().returns(new Promise.reject()),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -567,7 +567,7 @@ describe('API Utils', function () {
             var testStub = sandbox.stub().returns(new Promise.reject(
                     new errors.NoPermissionError()
                 )),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -593,7 +593,7 @@ describe('API Utils', function () {
 
         it('should handle success', function (done) {
             var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -620,7 +620,7 @@ describe('API Utils', function () {
 
         it('should ignore unsafe attrs if none are provided', function (done) {
             var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -647,7 +647,7 @@ describe('API Utils', function () {
 
         it('should ignore unsafe attrs if they are provided but not present', function (done) {
             var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -674,7 +674,7 @@ describe('API Utils', function () {
 
         it('should pass through unsafe attrs if they DO exist', function (done) {
             var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis', function () {
+                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub

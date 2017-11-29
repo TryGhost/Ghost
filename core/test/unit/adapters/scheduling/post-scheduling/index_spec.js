@@ -34,11 +34,11 @@ describe('Scheduling: Post Scheduling', function () {
 
         scope.adapter = new SchedulingDefault();
 
-        sandbox.stub(api.schedules, 'getScheduledPosts', function () {
+        sandbox.stub(api.schedules, 'getScheduledPosts').callsFake(function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sandbox.stub(events, 'onMany', function (events, stubDone) {
+        sandbox.stub(events, 'onMany').callsFake(function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
@@ -46,7 +46,7 @@ describe('Scheduling: Post Scheduling', function () {
 
         sandbox.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(scope.adapter));
 
-        sandbox.stub(models.Client, 'findOne', function () {
+        sandbox.stub(models.Client, 'findOne').callsFake(function () {
             return Promise.resolve(scope.client);
         });
 
@@ -54,9 +54,9 @@ describe('Scheduling: Post Scheduling', function () {
         sandbox.spy(scope.adapter, 'reschedule');
     });
 
-    afterEach(function (done) {
+    afterEach(function () {
         sandbox.restore();
-        testUtils.teardown(done);
+        return testUtils.teardown();
     });
 
     describe('fn:init', function () {

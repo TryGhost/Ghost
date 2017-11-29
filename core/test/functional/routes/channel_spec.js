@@ -34,7 +34,7 @@ describe('Channel Routes', function () {
     before(function (done) {
         // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
         var originalSettingsCacheGetFn = settingsCache.get;
-        sandbox.stub(settingsCache, 'get', function (key, options) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key, options) {
             if (key === 'active_theme') {
                 return 'casper-1.4';
             }

@@ -12,7 +12,7 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
-    var tablesStub, queryMock, knexMock, knexStub;
+    var tablesStub, queryMock, knexMock;
 
     before(function () {
         models.init();
@@ -20,7 +20,6 @@ describe('Exporter', function () {
 
     afterEach(function () {
         sandbox.restore();
-        knexStub.restore();
     });
 
     describe('doExport', function () {
@@ -37,11 +36,8 @@ describe('Exporter', function () {
 
             knexMock = sandbox.stub().returns(queryMock);
 
-            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
-            knexStub = sinon.stub(db, 'knex', {
-                get: function () {
-                    return knexMock;
-                }
+            sandbox.stub(db, 'knex').get(function () {
+                return knexMock;
             });
         });
 
@@ -59,8 +55,7 @@ describe('Exporter', function () {
                 exportData.meta.version.should.eql('1.0.0');
 
                 tablesStub.calledOnce.should.be.true();
-                knexStub.get.called.should.be.true();
-                knexMock.called.should.be.true();
+                db.knex.called.should.be.true();
                 queryMock.select.called.should.be.true();
 
                 knexMock.callCount.should.eql(expectedCallCount);
@@ -92,7 +87,7 @@ describe('Exporter', function () {
 
         it('should catch and log any errors', function (done) {
             // Setup for failure
-            queryMock.select.returns(new Promise.reject({}));
+            queryMock.select.returns(Promise.reject({}));
 
             // Execute
             exporter.doExport()

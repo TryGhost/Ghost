@@ -14,9 +14,7 @@ var should = require('should'),
 describe('Schedules API', function () {
     var scope = {posts: []};
 
-    after(function (done) {
-        testUtils.teardown(done);
-    });
+    after(testUtils.teardown);
 
     describe('fn: getScheduledPosts', function () {
         before(function (done) {
@@ -316,7 +314,7 @@ describe('Schedules API', function () {
                 }, 500);
 
                 // target post to publish was read already, simulate a client request
-                sandbox.stub(api.posts, 'edit', function () {
+                sandbox.stub(api.posts, 'edit').callsFake(function () {
                     var self = this,
                         args = arguments;
 

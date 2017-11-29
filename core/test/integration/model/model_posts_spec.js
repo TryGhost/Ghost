@@ -90,7 +90,7 @@ describe('Post Model', function () {
 
         describe('findAll', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -145,7 +145,7 @@ describe('Post Model', function () {
 
         describe('findPage', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -334,7 +334,7 @@ describe('Post Model', function () {
 
         describe('findOne', function () {
             beforeEach(function () {
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:slug/'
                     }[key];
@@ -387,7 +387,7 @@ describe('Post Model', function () {
             it('can findOne, returning a dated permalink', function (done) {
                 settingsCache.get.restore();
 
-                sandbox.stub(settingsCache, 'get', function (key) {
+                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
                     return {
                         permalinks: '/:year/:month/:day/:slug/'
                     }[key];
@@ -411,7 +411,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1017,7 +1017,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1402,7 +1402,7 @@ describe('Post Model', function () {
         describe('destroy', function () {
             beforeEach(function () {
                 eventsTriggered = {};
-                sandbox.stub(events, 'emit', function (eventName, eventObj) {
+                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1738,18 +1738,20 @@ describe('Post Model', function () {
             // creates a test tag
             should.exist(tagJSON);
             tagJSON.should.be.an.Array().with.lengthOf(3);
-            tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
-            tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
-            tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
+
+            tagJSON[0].name.should.eql('existing tag a');
+            tagJSON[1].name.should.eql('existing-tag-b');
+            tagJSON[2].name.should.eql('existing_tag_c');
 
             // creates a test post with an array of tags in the correct order
             should.exist(postJSON);
             postJSON.title.should.eql('HTML Ipsum');
             should.exist(postJSON.tags);
             postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
-            postJSON.tags.should.have.enumerable(0).with.property('name', 'tag1');
-            postJSON.tags.should.have.enumerable(1).with.property('name', 'tag2');
-            postJSON.tags.should.have.enumerable(2).with.property('name', 'tag3');
+
+            postJSON.tags[0].name.should.eql('tag1');
+            postJSON.tags[1].name.should.eql('tag2');
+            postJSON.tags[2].name.should.eql('tag3');
 
             done();
         });
@@ -1765,11 +1767,9 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({include: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(1);
-                updatedPost.tags.should.have.enumerable(0).with.properties({
-                    name: postJSON.tags[0].name,
-                    slug: 'eins',
-                    id: postJSON.tags[0].id
-                });
+                updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
+                updatedPost.tags[0].slug.should.eql('eins');
+                updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
             });
         });
 
@@ -1795,7 +1795,7 @@ describe('Post Model', function () {
                     updatedPost = updatedPost.toJSON({include: ['tags']});
 
                     updatedPost.tags.should.have.lengthOf(1);
-                    updatedPost.tags.should.have.enumerable(0).with.properties({
+                    updatedPost.tags[0].should.have.properties({
                         name: postJSON.tags[0].name,
                         slug: 'eins',
                         id: postJSON.tags[0].id,
@@ -1825,14 +1825,16 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({include: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(3);
-                updatedPost.tags.should.have.enumerable(0).with.properties({
+                updatedPost.tags[0].should.have.properties({
                     name: 'tag4'
                 });
-                updatedPost.tags.should.have.enumerable(1).with.properties({
+
+                updatedPost.tags[1].should.have.properties({
                     name: 'tag3',
                     id: postJSON.tags[2].id
                 });
-                updatedPost.tags.should.have.enumerable(2).with.properties({
+
+                updatedPost.tags[2].should.have.properties({
                     name: 'tag1',
                     id: postJSON.tags[0].id
                 });
@@ -1853,9 +1855,10 @@ describe('Post Model', function () {
                 updatedPost = updatedPost.toJSON({include: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(3);
-                updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
-                updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
+
+                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
+                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
+                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
             });
         });
 

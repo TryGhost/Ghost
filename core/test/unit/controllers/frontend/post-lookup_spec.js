@@ -19,7 +19,7 @@ describe('postLookup', function () {
     beforeEach(function () {
         postAPIStub = sandbox.stub(api.posts, 'read');
 
-        sandbox.stub(settingsCache, 'get', function (key) {
+        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });

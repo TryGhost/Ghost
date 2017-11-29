@@ -143,7 +143,7 @@ _private.getTemplateForError = function getTemplateForError(statusCode) {
 module.exports.setTemplate = function setTemplate(req, res, data) {
     var routeConfig = res._route || {};
 
-    if (res._template) {
+    if (res._template && !req.err) {
         return;
     }
 
