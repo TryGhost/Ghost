@@ -10,31 +10,24 @@ var should = require('should'), // jshint ignore:line
 describe('Upload Icon API', function () {
     var accesstoken = '', icons = [], ghostServer;
 
-    before(function (done) {
-        // starting ghost automatically populates the db
-        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-        }).then(function () {
-            return testUtils.doAuth(request);
-        }).then(function (token) {
-            accesstoken = token;
-            done();
-        }).catch(done);
+    before(function () {
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            })
+            .then(function () {
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                accesstoken = token;
+            });
     });
 
     after(function () {
         icons.forEach(function (icon) {
             fs.removeSync(config.get('paths').appRoot + icon);
         });
-
-        return testUtils.clearData()
-            .then(function () {
-                return ghostServer.stop();
-            });
     });
 
     describe('success cases for icons', function () {
