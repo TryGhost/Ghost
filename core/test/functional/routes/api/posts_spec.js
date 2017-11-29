@@ -15,26 +15,17 @@ describe('Post API', function () {
     describe('As Owner', function () {
         var ownerAccessToken;
 
-        before(function (done) {
-            // starting ghost automatically populates the db
-            // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-            ghost().then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                return ghostServer.start();
-            }).then(function () {
-                request = supertest.agent(config.get('url'));
-            }).then(function () {
-                return testUtils.doAuth(request, 'posts');
-            }).then(function (token) {
-                ownerAccessToken = token;
-                done();
-            }).catch(done);
-        });
-
-        after(function () {
-            return testUtils.clearData()
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
                 .then(function () {
-                    return ghostServer.stop();
+                    return testUtils.doAuth(request, 'posts');
+                })
+                .then(function (token) {
+                    ownerAccessToken = token;
                 });
         });
 
@@ -1383,33 +1374,24 @@ describe('Post API', function () {
     describe('As Author', function () {
         var authorAccessToken, author;
 
-        before(function (done) {
-            // starting ghost automatically populates the db
-            // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-            ghost().then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                return ghostServer.start();
-            }).then(function () {
-                request = supertest.agent(config.get('url'));
-            }).then(function () {
-                // create author
-                return testUtils.createUser({
-                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[2]
-                });
-            }).then(function (_author) {
-                request.user = author = _author;
-                return testUtils.doAuth(request, 'posts');
-            }).then(function (token) {
-                authorAccessToken = token;
-                done();
-            }).catch(done);
-        });
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
 
-        after(function () {
-            return testUtils.clearData()
-                .then(function () {
-                    return ghostServer.stop();
+                    // create author
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[2]
+                    });
+                })
+                .then(function (_author) {
+                    request.user = author = _author;
+                    return testUtils.doAuth(request, 'posts');
+                })
+                .then(function (token) {
+                    authorAccessToken = token;
                 });
         });
 
@@ -1472,12 +1454,12 @@ describe('Post API', function () {
 
             before(function () {
                 return testUtils.createPost({
-                        post: {
-                            title: 'Author\'s test post',
-                            slug: 'author-post',
-                            author_id: author.id
-                        }
-                    })
+                    post: {
+                        title: 'Author\'s test post',
+                        slug: 'author-post',
+                        author_id: author.id
+                    }
+                })
                     .then(function (post) {
                         authorPostId = post.id;
                     });

@@ -16,13 +16,10 @@ describe('Spam Prevention API', function () {
         owner = testUtils.DataGenerator.Content.users[0],
         ghostServer;
 
-    before(function (done) {
-        ghost()
+    before(function () {
+        return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
-                return ghostServer.start();
-            })
-            .then(function () {
                 request = supertest.agent(config.get('url'));
 
                 // in functional tests we start Ghost and the database get's migrated/seeded
@@ -38,22 +35,11 @@ describe('Spam Prevention API', function () {
             })
             .then(function (user) {
                 author = user;
-                done();
-            })
-            .catch(done);
-    });
-
-    after(function () {
-        return testUtils.clearData()
-            .then(function () {
-                return ghostServer.stop();
             });
     });
 
-    afterEach(function (done) {
-        testUtils.clearBruteData().then(function () {
-            done();
-        }).catch(done);
+    afterEach(function () {
+        return testUtils.clearBruteData();
     });
 
     it('Too many failed login attempts for a user results in 429 TooManyRequestsError', function (done) {

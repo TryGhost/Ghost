@@ -14,22 +14,12 @@ require('should-http');
 describe('Unauthorized', function () {
     var ghostServer;
 
-    before(function (done) {
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-            done();
-        }).catch(done);
-    });
-
-    after(function () {
-        return testUtils.clearData()
-            .then(function () {
-                return ghostServer.stop();
-            })
-            .catch();
+    before(function () {
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            });
     });
 
     it('returns 401 error for known endpoint', function (done) {
@@ -73,26 +63,17 @@ describe('Unauthorized', function () {
 describe('Authorized API', function () {
     var accesstoken, ghostServer;
 
-    before(function (done) {
-        // starting ghost automatically populates the db
-        // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-        }).then(function () {
-            return testUtils.doAuth(request);
-        }).then(function (token) {
-            accesstoken = token;
-            done();
-        }).catch(done);
-    });
-
-    after(function () {
-        return testUtils.clearData()
+    before(function () {
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            })
             .then(function () {
-                return ghostServer.stop();
+                return testUtils.doAuth(request);
+            })
+            .then(function (token) {
+                accesstoken = token;
             });
     });
 
