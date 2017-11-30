@@ -5,7 +5,10 @@
 
     <div class="gh-viewport {{if ui.autoNav 'gh-autonav'}} {{if ui.showSettingsMenu 'settings-menu-expanded'}} {{if ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if showNavMenu}}
-            {{gh-nav-menu open=ui.autoNavOpen}}
+            {{gh-nav-menu
+                open=ui.autoNavOpen
+                icon=settings.settledIcon
+            }}
         {{/if}}
 
         {{#gh-main onMouseEnter=(action "closeAutoNav" target=ui)}}
