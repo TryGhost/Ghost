@@ -212,7 +212,7 @@ export default Controller.extend({
             // simulate click to open file dialog
             // using jQuery because IE11 doesn't support MouseEvent
             $(event.target)
-                .closest('figure')
+                .closest('.gh-setting-action')
                 .find('input[type="file"]')
                 .click();
         }
