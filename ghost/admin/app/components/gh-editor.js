@@ -156,7 +156,10 @@ export default Component.extend({
         },
 
         uploadImages(fileList, resetInput) {
-            this.set('droppedFiles', fileList);
+            // convert FileList to an array so that resetting the input doesn't
+            // clear the file references before upload actions can be triggered
+            let files = Array.from(fileList);
+            this.set('droppedFiles', files);
             resetInput();
         },
 
