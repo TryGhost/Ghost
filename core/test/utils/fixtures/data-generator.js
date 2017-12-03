@@ -263,6 +263,11 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Owner',
             description: 'Blog Owner'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Contributor',
+            description: 'Contributors'
         }
     ],
 

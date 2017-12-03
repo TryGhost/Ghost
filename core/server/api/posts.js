@@ -10,7 +10,7 @@ var Promise = require('bluebird'),
     allowedIncludes = [
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'
     ],
-    unsafeAttrs = ['author_id'],
+    unsafeAttrs = ['author_id', 'status'],
     posts;
 
 /**
