@@ -180,7 +180,7 @@ var config         = require('./core/server/config'),
                     options: {
                         mask: '**/*_spec.js',
                         coverageFolder: 'core/test/coverage/unit',
-                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides'],
+                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides', '--exit'],
                         excludes: ['core/client', 'core/server/built']
                     }
                 },
@@ -193,7 +193,7 @@ var config         = require('./core/server/config'),
                     options: {
                         coverageFolder: 'core/test/coverage/all',
                         mask: '**/*_spec.js',
-                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides'],
+                        mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides', '--exit'],
                         excludes: ['core/client', 'core/server/built']
                     }
 
