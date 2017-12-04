@@ -24,6 +24,8 @@ describe('Subscriber: Routing', function () {
         });
     });
 
+    after(testUtils.teardown);
+
     after(function () {
         return ghostServer.stop();
     });
