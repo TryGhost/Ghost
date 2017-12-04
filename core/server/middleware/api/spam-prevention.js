@@ -190,7 +190,7 @@ privateBlog = function privateBlog() {
             failCallback: function (req, res, next, nextValidRequestDate) {
                 logging.error(new errors.GhostError({
                     message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
-                        {rfa: spamPrivateBlog.freeRetries + 1 || 5, rfp: spamPrivateBlog.lifetime || 60 * 60}),
+                        {rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5, rateSigninPeriod: spamPrivateBlog.lifetime || 60 * 60}),
                     context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
 
