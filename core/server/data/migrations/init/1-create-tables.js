@@ -13,6 +13,9 @@ module.exports.up = function createTables(options) {
     });
 };
 
+/*
+@TODO: This works, but is very dangerous in the current state of the knex-migrator v3.
+@TODO: Enable if knex-migrator v3 is stable.
 module.exports.down = function dropTables(options) {
     var connection = options.connection;
 
@@ -23,3 +26,4 @@ module.exports.down = function dropTables(options) {
         return commands.deleteTable(table, connection);
     });
 };
+*/
