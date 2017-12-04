@@ -40,22 +40,22 @@ function placeHoldersCount (b64) {
 
 function byteLength (b64) {
   // base64 is 4/3 + up to two characters of the original data
-  return b64.length * 3 / 4 - placeHoldersCount(b64)
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
 }
 
 function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
+  var i, l, tmp, placeHolders, arr
   var len = b64.length
   placeHolders = placeHoldersCount(b64)
 
-  arr = new Arr(len * 3 / 4 - placeHolders)
+  arr = new Arr((len * 3 / 4) - placeHolders)
 
   // if there are placeholders, only get up to the last complete 4 chars
   l = placeHolders > 0 ? len - 4 : len
 
   var L = 0
 
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+  for (i = 0; i < l; i += 4) {
     tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
     arr[L++] = (tmp >> 16) & 0xFF
     arr[L++] = (tmp >> 8) & 0xFF
@@ -126,7 +126,7 @@ function fromByteArray (uint8) {
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */
 /* eslint-disable no-proto */
@@ -229,7 +229,7 @@ function from (value, encodingOrOffset, length) {
     throw new TypeError('"value" argument must not be a number')
   }
 
-  if (value instanceof ArrayBuffer) {
+  if (isArrayBuffer(value)) {
     return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
@@ -489,7 +489,7 @@ function byteLength (string, encoding) {
   if (Buffer.isBuffer(string)) {
     return string.length
   }
-  if (isArrayBufferView(string) || string instanceof ArrayBuffer) {
+  if (isArrayBufferView(string) || isArrayBuffer(string)) {
     return string.byteLength
   }
   if (typeof string !== 'string') {
@@ -1819,6 +1819,14 @@ function blitBuffer (src, dst, offset, length) {
     dst[i + offset] = src[i]
   }
   return i
+}
+
+// ArrayBuffers from another context (i.e. an iframe) do not pass the `instanceof` check
+// but they should be treated as valid. See: https://github.com/feross/buffer/issues/166
+function isArrayBuffer (obj) {
+  return obj instanceof ArrayBuffer ||
+    (obj != null && obj.constructor != null && obj.constructor.name === 'ArrayBuffer' &&
+      typeof obj.byteLength === 'number')
 }
 
 // Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
