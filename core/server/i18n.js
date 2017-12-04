@@ -1,15 +1,15 @@
 /* global Intl */
 
-var supportedLocales    = ['en'],
-    _                   = require('lodash'),
-    fs                  = require('fs'),
-    chalk               = require('chalk'),
-    MessageFormat       = require('intl-messageformat'),
-    logging             = require('./logging'),
-    errors              = require('./errors'),
+var supportedLocales = ['en'],
+    _ = require('lodash'),
+    fs = require('fs'),
+    chalk = require('chalk'),
+    MessageFormat = require('intl-messageformat'),
+    logging = require('./logging'),
+    errors = require('./errors'),
 
     // TODO: fetch this dynamically based on overall blog settings (`key = "default_locale"`) in the `settings` table
-    currentLocale       = 'en',
+    currentLocale = 'en',
     blos,
     I18n;
 
@@ -34,11 +34,30 @@ I18n = {
             string.forEach(function (s) {
                 var m = new MessageFormat(s, currentLocale);
 
-                msg.push(m.format(bindings));
+                try {
+                    m.format(bindings);
+                } catch (err) {
+                    logging.error(err.message);
+
+                    // fallback
+                    m = new MessageFormat(blos.errors.errors.anErrorOccurred, currentLocale);
+                    m = msg.format();
+                }
+
+                msg.push(m);
             });
         } else {
             msg = new MessageFormat(string, currentLocale);
-            msg = msg.format(bindings);
+
+            try {
+                msg = msg.format(bindings);
+            } catch (err) {
+                logging.error(err.message);
+
+                // fallback
+                msg = new MessageFormat(blos.errors.errors.anErrorOccurred, currentLocale);
+                msg = msg.format();
+            }
         }
 
         return msg;
@@ -120,7 +139,7 @@ I18n = {
                 // `Intl` exists, but it doesn't have the data we need, so load the
                 // polyfill and replace the constructors with need with the polyfill's.
                 IntlPolyfill = require('intl');
-                Intl.NumberFormat   = IntlPolyfill.NumberFormat;
+                Intl.NumberFormat = IntlPolyfill.NumberFormat;
                 Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
             }
         } else {
