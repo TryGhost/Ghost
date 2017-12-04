@@ -1,4 +1,5 @@
-var config = require('../../../../config'),
+var _ = require('lodash'),
+    config = require('../../../../config'),
     database = require('../../../db');
 
 module.exports = function after() {
