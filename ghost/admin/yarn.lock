@@ -8441,7 +8441,7 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4f13b1bc91c3d54cfa1d313197e855a8cf575c4a"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#3633c1038e767c3bdf0586aa9e05f3a66ab1f817"
   dependencies:
     codemirror "*"
     codemirror-spell-checker "*"
