@@ -9,6 +9,12 @@ module.exports = function after() {
         return;
     }
 
+    _.each(require.cache, function (val, key) {
+        if (key.match(/core\/server/)) {
+            delete require.cache[key];
+        }
+    });
+
     // we need to close the database connection
     // the after hook signals the last step of a knex-migrator command
     // Example:
