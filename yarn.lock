@@ -3482,9 +3482,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.0.7.tgz#9f7e4364c26013cc91be4aa9187f96251e64485c"
+knex-migrator@3.0.10:
+  version "3.0.10"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.0.10.tgz#603c4b3c6c7d3690fde5a5b5afb380677ef283e8"
   dependencies:
     bluebird "^3.4.6"
     commander "2.9.0"
@@ -3492,6 +3492,7 @@ knex-migrator@3.0.7:
     ghost-ignition "^2.8.16"
     knex "^0.12.8"
     lodash "^4.16.4"
+    moment "^2.19.3"
     nconf "^0.8.5"
     resolve "1.1.7"
   optionalDependencies:
@@ -4105,6 +4106,10 @@ moment-timezone@0.5.14:
 moment@2.19.2, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.17.1, moment@^2.18.1:
   version "2.19.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.2.tgz#8a7f774c95a64550b4c7ebd496683908f9419dbe"
+
+moment@^2.19.3:
+  version "2.19.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.3.tgz#bdb99d270d6d7fda78cc0fbace855e27fe7da69f"
 
 ms@0.7.1:
   version "0.7.1"
