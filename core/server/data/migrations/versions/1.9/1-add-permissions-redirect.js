@@ -42,20 +42,8 @@ module.exports.up = function addRedirectsPermissions(options) {
     });
 };
 
-module.exports.down = function removeRedirectsPermissions(options) {
-    var modelToRemove = _private.getPermissions(),
-        relationToRemove = _private.getRelations(),
-        localOptions = _.merge({
-            context: {internal: true}
-        }, options);
-
-    return utils.removeFixturesForRelation(relationToRemove, localOptions)
-        .then(function (result) {
-            _private.printResult(result, 'Removing permissions_roles fixtures for ' + resource + 's');
-            return utils.removeFixturesForModel(modelToRemove, localOptions);
-        })
-        .then(function (result) {
-            _private.printResult(result, 'Removing permissions fixtures for ' + resource + 's');
-            return permissions.init(localOptions);
-        });
-};
+/**
+ * @TODO:
+ * The down function is quite tricky, because the fixture utility adds **all** missing fixtures for a target resource.
+ * So if we are writing a down function, we are only allowed to remove the fixtures which were added between two Ghost versions.
+ */
