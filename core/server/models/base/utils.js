@@ -6,7 +6,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     errors = require('../../errors'),
-    attach;
+    attach, detach;
 
 /**
  * Attach wrapper (please never call attach manual!)
@@ -63,4 +63,36 @@ attach = function attach(Model, effectedModelId, relation, modelsToAttach, optio
         });
 };
 
+detach = function detach(Model, effectedModelId, relation, modelsToAttach, options) {
+    options = options || {};
+
+    var fetchedModel,
+        localOptions = {transacting: options.transacting};
+
+    return Model.forge({id: effectedModelId}).fetch(localOptions)
+        .then(function successFetchedModel(_fetchedModel) {
+            fetchedModel = _fetchedModel;
+
+            if (!fetchedModel) {
+                throw new errors.NotFoundError({level: 'critical', help: effectedModelId});
+            }
+
+            return Promise.resolve(modelsToAttach)
+                .then(function then(models) {
+                    models = _.map(models, function mapper(model) {
+                        if (model.id) {
+                            return model.id;
+                        } else if (!_.isObject(model)) {
+                            return model.toString();
+                        } else {
+                            return model;
+                        }
+                    });
+
+                    return fetchedModel.related(relation).detach(models, localOptions);
+                });
+        });
+};
+
 module.exports.attach = attach;
+module.exports.detach = detach;

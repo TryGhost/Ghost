@@ -454,7 +454,7 @@ clearBruteData = function clearBruteData() {
 // we must always try to delete all tables
 clearData = function clearData() {
     debug('Database reset');
-    return knexMigrator.reset();
+    return knexMigrator.reset({force: true});
 };
 
 toDoList = {
@@ -851,7 +851,7 @@ startGhost = function startGhost(options) {
         fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
     }
 
-    return knexMigrator.reset()
+    return knexMigrator.reset({force: true})
         .then(function initialiseDatabase() {
             return knexMigrator.init();
         })

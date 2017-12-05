@@ -3,7 +3,11 @@ var Promise = require('bluebird'),
     fixtures = require('../../schema/fixtures'),
     logging = require('../../../logging');
 
-module.exports = function insertFixtures(options) {
+module.exports.config = {
+    transaction: true
+};
+
+module.exports.up = function insertFixtures(options) {
     var localOptions = _.merge({
         context: {internal: true}
     }, options);

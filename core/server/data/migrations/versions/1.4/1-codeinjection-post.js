@@ -4,41 +4,38 @@ const Promise = require('bluebird'),
     logging = require('../../../../logging'),
     commands = require('../../../schema').commands,
     table = 'posts',
-    column1 = 'codeinjection_head',
-    column2 = 'codeinjection_foot',
-    message1 = 'Adding column: ' + table + '.' + column1,
-    message2 = 'Adding column: ' + table + '.' + column2;
+    columns = ['codeinjection_head', 'codeinjection_foot'],
+    _private = {};
 
-module.exports = function addCodeInjectionPostColumns(options) {
-    let transacting = options.transacting;
+_private.handle = function handle(options) {
+    let type = options.type,
+        isAdding = type === 'Adding',
+        operation = isAdding ? commands.addColumn : commands.dropColumn;
 
-    return transacting.schema.hasTable(table)
-        .then(function (exists) {
-            if (!exists) {
-                return Promise.reject(new Error('Table does not exist!'));
-            }
+    return function (options) {
+        let connection = options.connection;
 
-            return transacting.schema.hasColumn(table, column1);
-        })
-        .then(function (exists) {
-            if (exists) {
-                logging.warn(message1);
-                return Promise.resolve();
-            }
+        return connection.schema.hasTable(table)
+            .then(function (exists) {
+                if (!exists) {
+                    return Promise.reject(new Error('Table does not exist!'));
+                }
 
-            logging.info(message1);
-            return commands.addColumn(table, column1, transacting);
-        })
-        .then(function () {
-            return transacting.schema.hasColumn(table, column2);
-        })
-        .then(function (exists) {
-            if (exists) {
-                logging.warn(message2);
-                return Promise.resolve();
-            }
+                return Promise.each(columns, function (column) {
+                    return connection.schema.hasColumn(table, column)
+                        .then(function (exists) {
+                            if (exists && isAdding || !exists && !isAdding) {
+                                logging.warn(`${type} column ${table}.${column}`);
+                                return Promise.resolve();
+                            }
 
-            logging.info(message2);
-            return commands.addColumn(table, column2, transacting);
-        });
+                            logging.info(`${type} column ${table}.${column}`);
+                            return operation(table, column, connection);
+                        });
+                });
+            });
+    };
 };
+
+module.exports.up = _private.handle({type: 'Adding'});
+module.exports.down = _private.handle({type: 'Dropping'});

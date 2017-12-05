@@ -1,2 +1,2 @@
-exports.after = require('./after');
+exports.shutdown = require('./shutdown');
 exports.before = require('./before');

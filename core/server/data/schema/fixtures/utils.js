@@ -18,6 +18,8 @@ var _ = require('lodash'),
 
     addFixturesForModel,
     addFixturesForRelation,
+    removeFixturesForModel,
+
     findModelFixtureEntry,
     findModelFixtures,
     findPermissionRelationsForObject;
@@ -245,10 +247,23 @@ findPermissionRelationsForObject = function findPermissionRelationsForObject(obj
     return foundRelation;
 };
 
+removeFixturesForModel = function removeFixturesForModel(modelFixture, options) {
+    return Promise.mapSeries(modelFixture.entries, function (entry) {
+        return models[modelFixture.name].findOne(entry.id ? {id: entry.id} : entry, options).then(function (found) {
+            if (found) {
+                return models[modelFixture.name].destroy(_.extend(options, {id: found.id}));
+            }
+        });
+    }).then(function (results) {
+        return {expected: modelFixture.entries.length, done: results.length};
+    });
+};
+
 module.exports = {
     addFixturesForModel: addFixturesForModel,
     addFixturesForRelation: addFixturesForRelation,
     findModelFixtureEntry: findModelFixtureEntry,
     findModelFixtures: findModelFixtures,
-    findPermissionRelationsForObject: findPermissionRelationsForObject
+    findPermissionRelationsForObject: findPermissionRelationsForObject,
+    removeFixturesForModel: removeFixturesForModel
 };
