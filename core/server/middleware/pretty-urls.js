@@ -9,12 +9,13 @@
 var slashes = require('connect-slashes'),
     config = require('../config');
 
-module.exports = [
-    var baseUrl = config.get('url');
+var baseUrl = config.get('url');
 
-    if (!baseUrl) {
-        baseUrl = '/';
-    }
+if (!baseUrl) {
+    baseUrl = '/';
+}
+
+module.exports = [
 
     slashes(true, {
         base: baseUrl,
