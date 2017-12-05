@@ -135,7 +135,7 @@ describe('Server Utilities', function () {
         it('will timeout', function (done) {
             nock('https://www.gravatar.com')
                 .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=404&r=x')
-                .delay(11)
+                .delay(15)
                 .reply(200);
 
             gravatar.lookup({email: 'exists@example.com'}, 10).then(function (result) {
