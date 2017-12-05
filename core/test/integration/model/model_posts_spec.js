@@ -1397,6 +1397,21 @@ describe('Post Model', function () {
                     done();
                 }).catch(done);
             });
+
+            it('can\'t add post with numeric id', function () {
+                var post = {
+                    id: 42,
+                    title: 'Here\'s a test post',
+                    mobiledoc: markdownToMobiledoc('Post Content')
+                };
+
+                return PostModel.add(post, context).then(function () {
+                    throw new Error('Adding should have failed');
+                }).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
+                });
+            });
         });
 
         describe('destroy', function () {

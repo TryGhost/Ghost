@@ -297,6 +297,12 @@ Post = ghostBookshelf.Model.extend({
     onCreating: function onCreating(model, attr, options) {
         options = options || {};
 
+        if (this.get('id') && !ObjectId.isValid(this.get('id'))) {
+            return Promise.reject(new errors.ValidationError({
+                message: i18n.t('notices.data.validation.index.validationFailed', {validationName: 'isValidObjectId', key: 'id'})
+            }));
+        }
+
         // set any dynamic default properties
         if (!this.get('author_id')) {
             this.set('author_id', this.contextUser(options));
