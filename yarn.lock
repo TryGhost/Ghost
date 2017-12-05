@@ -3482,9 +3482,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@2.1.9:
-  version "2.1.9"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.1.9.tgz#fbed309f96544882e949214a2e00f8b9a80e445a"
+knex-migrator@3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.1.2.tgz#e3ccca84a440f32690d7a8ef76525b1ed1d8a54f"
   dependencies:
     bluebird "^3.4.6"
     commander "2.9.0"
@@ -3492,6 +3492,8 @@ knex-migrator@2.1.9:
     ghost-ignition "^2.8.16"
     knex "^0.12.8"
     lodash "^4.16.4"
+    moment "^2.19.3"
+    nconf "^0.8.5"
     resolve "1.1.7"
   optionalDependencies:
     mysql "^2.11.1"
@@ -4105,6 +4107,10 @@ moment@2.19.2, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.17.1
   version "2.19.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.2.tgz#8a7f774c95a64550b4c7ebd496683908f9419dbe"
 
+moment@^2.19.3:
+  version "2.19.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.3.tgz#bdb99d270d6d7fda78cc0fbace855e27fe7da69f"
+
 ms@0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.1.tgz#9cd13c03adbff25b65effde7ce864ee952017098"
@@ -4191,6 +4197,15 @@ nconf@0.8.4:
 nconf@0.9.1:
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.9.1.tgz#f11baf90f418aecef0cb484974b479fb4803fa6c"
+  dependencies:
+    async "^1.4.0"
+    ini "^1.3.0"
+    secure-keys "^1.0.0"
+    yargs "^3.19.0"
+
+nconf@^0.8.5:
+  version "0.8.5"
+  resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.8.5.tgz#f2941e1561952fa906bbb32328cf88d4c635e794"
   dependencies:
     async "^1.4.0"
     ini "^1.3.0"

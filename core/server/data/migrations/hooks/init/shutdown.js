@@ -1,4 +1,5 @@
-var config = require('../../../../config'),
+var _ = require('lodash'),
+    config = require('../../../../config'),
     database = require('../../../db');
 
 module.exports = function after() {
@@ -8,6 +9,14 @@ module.exports = function after() {
     if (config.get('env').match(/testing/g)) {
         return;
     }
+
+    // running knex-migrator migrate --init does two different migration calls within a single process
+    // we have to ensure that we clear the Ghost cache afterwards, otherwise we operate on a destroyed connection
+    _.each(require.cache, function (val, key) {
+        if (key.match(/core\/server/)) {
+            delete require.cache[key];
+        }
+    });
 
     // we need to close the database connection
     // the after hook signals the last step of a knex-migrator command
