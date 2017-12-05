@@ -9,8 +9,16 @@
 var slashes = require('connect-slashes'),
     config = require('../config');
 
+var baseUrl = config.get('url');
+
+if (!baseUrl) {
+    baseUrl = '';
+}
+
 module.exports = [
+
     slashes(true, {
+        base: baseUrl,
         headers: {
             'Cache-Control': 'public, max-age=' + config.get('caching:301:maxAge')
         }
