@@ -12,7 +12,7 @@ var slashes = require('connect-slashes'),
 var baseUrl = config.get('url');
 
 if (!baseUrl) {
-    baseUrl = '/';
+    baseUrl = '';
 }
 
 module.exports = [
