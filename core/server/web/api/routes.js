@@ -1,19 +1,19 @@
 var express = require('express'),
     // This essentially provides the controllers for the routes
-    api = require('../../api/index'),
+    api = require('../../api'),
 
     // Middleware
     mw = require('./middleware'),
 
     // API specific
-    auth = require('../../auth/index'),
+    auth = require('../../auth'),
     cors = require('../middleware/api/cors'),
     brute = require('../middleware/brute'),
 
     // Handling uploads & imports
     tmpdir = require('os').tmpdir,
     upload = require('multer')({dest: tmpdir()}),
-    validation = require('../middleware/validation/index'),
+    validation = require('../middleware/validation'),
 
     // Temporary
     // @TODO find a more appy way to do this!

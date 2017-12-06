@@ -3,9 +3,9 @@ var debug = require('ghost-ignition').debug('blog'),
     express = require('express'),
 
     // App requires
-    config = require('../../config/index'),
-    storage = require('../../adapters/storage/index'),
-    utils = require('../../utils/index'),
+    config = require('../../config'),
+    storage = require('../../adapters/storage'),
+    utils = require('../../utils'),
 
     // This should probably be an internal app
     sitemapHandler = require('../../data/xml/sitemap/handler'),
@@ -29,7 +29,7 @@ var debug = require('ghost-ignition').debug('blog'),
     adminRedirects = require('../middleware/admin-redirects'),
 
     // middleware for themes
-    themeMiddleware = require('../../themes/index').middleware;
+    themeMiddleware = require('../../themes').middleware;
 
 module.exports = function setupSiteApp() {
     debug('Site setup start');
@@ -71,7 +71,7 @@ module.exports = function setupSiteApp() {
     // We do this here, at the top level, because helpers require so much stuff.
     // Moving this to being inside themes, where it probably should be requires the proxy to be refactored
     // Else we end up with circular dependencies
-    require('../../helpers/index').loadCoreHelpers();
+    require('../../helpers').loadCoreHelpers();
     debug('Helpers done');
 
     // Theme middleware

@@ -1,8 +1,8 @@
 var debug = require('ghost-ignition').debug('admin:controller'),
     _ = require('lodash'),
     path = require('path'),
-    config = require('../../config/index'),
-    api = require('../../api/index'),
+    config = require('../../config'),
+    api = require('../../api'),
     updateCheck = require('../../update-check'),
     logging = require('../../logging'),
     i18n = require('../../i18n');

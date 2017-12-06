@@ -1,4 +1,4 @@
-var api = require('../../api/index'),
+var api = require('../../api'),
     labs = require('../../utils/labs'),
     logging = require('../../logging');
 

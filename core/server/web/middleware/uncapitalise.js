@@ -12,7 +12,7 @@
 //  req.baseUrl = /blog
 //  req.path =  /ghost/signin/
 
-var utils = require('../../utils/index'),
+var utils = require('../../utils'),
     errors = require('../../errors'),
     i18n = require('../../i18n'),
     uncapitalise;

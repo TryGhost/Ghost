@@ -1,6 +1,6 @@
 var apiUtils = require('../../../api/utils'),
     errors = require('../../../errors'),
-    config = require('../../../config/index'),
+    config = require('../../../config'),
     i18n = require('../../../i18n');
 
 module.exports = function upload(options) {

@@ -1,4 +1,4 @@
-var config = require('../../config/index'),
+var config = require('../../config'),
     i18n   = require('../../i18n'),
     errors = require('../../errors');
 

@@ -2,7 +2,7 @@ var debug = require('ghost-ignition').debug('app'),
     express = require('express'),
 
     // App requires
-    config = require('../config/index'),
+    config = require('../config'),
 
     // middleware
     compress = require('compression'),

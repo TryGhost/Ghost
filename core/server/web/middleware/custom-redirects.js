@@ -4,11 +4,11 @@ var fs = require('fs-extra'),
     url = require('url'),
     path = require('path'),
     debug = require('ghost-ignition').debug('custom-redirects'),
-    config = require('../../config/index'),
+    config = require('../../config'),
     errors = require('../../errors'),
     logging = require('../../logging'),
     i18n = require('../../i18n'),
-    globalUtils = require('../../utils/index'),
+    globalUtils = require('../../utils'),
     customRedirectsRouter,
     _private = {};
 

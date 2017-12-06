@@ -1,8 +1,8 @@
 var crypto = require('crypto'),
     fs     = require('fs'),
     path   = require('path'),
-    config = require('../../config/index'),
-    utils  = require('../../utils/index');
+    config = require('../../config'),
+    utils  = require('../../utils');
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)

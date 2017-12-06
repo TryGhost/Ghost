@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     hbs = require('express-hbs'),
-    config = require('../../config/index'),
+    config = require('../../config'),
     errors = require('../../errors'),
     i18n = require('../../i18n'),
     templates = require('../../controllers/frontend/templates'),

@@ -1,5 +1,5 @@
 var express = require('express'),
-    utils = require('../../utils/index'),
+    utils = require('../../utils'),
     adminRedirect;
 
 adminRedirect = function adminRedirect(path) {

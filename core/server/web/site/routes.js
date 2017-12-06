@@ -1,19 +1,19 @@
 var debug = require('ghost-ignition').debug('site:routes'),
 
-    routeService = require('../../services/route/index'),
+    routeService = require('../../services/route'),
     siteRouter = routeService.siteRouter,
 
     // Sub Routers
     appRouter = routeService.appRouter,
-    channelsService = require('../../services/channels/index'),
+    channelsService = require('../../services/channels'),
 
     // Controllers
-    controllers = require('../../controllers/index'),
+    controllers = require('../../controllers'),
 
     // Utils for creating paths
     // @TODO: refactor these away
-    config = require('../../config/index'),
-    utils = require('../../utils/index');
+    config = require('../../config'),
+    utils = require('../../utils');
 
 module.exports = function siteRoutes() {
     // @TODO move this path out of this file!

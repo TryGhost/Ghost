@@ -7,7 +7,7 @@
 // @TODO optimise this to reduce the number of redirects required to get to a pretty URL
 // @TODO move this to being used by routers?
 var slashes = require('connect-slashes'),
-    config = require('../../config/index');
+    config = require('../../config');
 
 module.exports = [
     slashes(true, {

@@ -7,7 +7,7 @@
 // Allows each app to declare its own default caching rules
 
 var _   = require('lodash'),
-    config = require('../../config/index'),
+    config = require('../../config'),
     cacheControl;
 
 cacheControl = function cacheControl(options) {

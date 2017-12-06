@@ -1,5 +1,5 @@
 var errors = require('../../../errors'),
-    config = require('../../../config/index'),
+    config = require('../../../config'),
     i18n = require('../../../i18n'),
     blogIconUtils = require('../../../utils/blog-icon'),
     validIconFileSize;
