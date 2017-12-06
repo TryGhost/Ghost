@@ -149,7 +149,7 @@ For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.x have diff
 
 ## How to Make Any Theme Translatable
 
-Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system (although back-end translations are not yet enabled for the current versions) and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation key can also optionally be used.
+Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system (although back-end translations are not yet enabled for the current versions) and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation keys can also optionally be used.
 
 For example, in *.hbs* theme templates:
 
@@ -186,6 +186,7 @@ Although the English version will work for themes even without default English f
 
 - It will be much easier for users to [add and contribute languages](#how-to-add-any-language) by copying and editing the default file, as explained in the previous section.
 - Even for sites in English, Ghost users will be able to customize any theme texts by simply editing the default English file, without modifying the theme templates.
+- In the optional case of using translation keys in the `{{t}}` helpers instead of the easy to read default English text, then the default English file will provide the fallback.
 
 If you have the translation files of another Ghost theme, surely part of the texts will be common, and you can copy them and their translations.
 

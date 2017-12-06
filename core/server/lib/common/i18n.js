@@ -165,7 +165,7 @@ I18n = {
                 blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'locales', currentLocale + '.json'));
             } catch (err) {
                 if (err.code === 'ENOENT') {
-                    logging.warn('File content/locales/' + currentLocale + '.json not found! Falling back to default core/server/translations/en.json.');
+                    logging.warn('File content/locales/' + currentLocale + '.json not found. Falling back to default core/server/translations/en.json.');
                     blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
                 } else {
                     throw err;
@@ -217,17 +217,28 @@ I18n = {
         if (activeTheme) {
             // Reading translation file for theme .hbs templates.
             // Compatibility with both old themes and i18n-capable themes.
-            // Falling back any wrong locale to default English for this session.
+            // Preventing missing files.
             try {
                 blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', currentLocale + '.json'));
             } catch (err) {
                 blosTheme = undefined;
                 if (err.code === 'ENOENT') {
-                    logging.warn('Theme\'s file locales/' + currentLocale + '.json not found! Falling back to default English locale.');
-                    currentLocale = 'en';
-                    settingsCache.set('default_locale', 'en');
+                    logging.warn('Theme\'s file locales/' + currentLocale + '.json not found.');
                 } else {
                     throw err;
+                }
+            }
+            if (blosTheme === undefined && currentLocale !== 'en') {
+                logging.warn('Falling back to locales/en.json.');
+                try {
+                    blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', 'en.json'));
+                } catch (err) {
+                    blosTheme = undefined;
+                    if (err.code === 'ENOENT') {
+                        logging.warn('Theme\'s file locales/en.json not found.');
+                    } else {
+                        throw err;
+                    }
                 }
             }
             if (blosTheme !== undefined) {

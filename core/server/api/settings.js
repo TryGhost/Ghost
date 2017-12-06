@@ -236,7 +236,7 @@ settings = {
                 // Reload translations for theme when saving group of settings that includes language.
                 // There is a previous call to i18n.init() if back-end translations are enabled.
                 if (i18n.backendTranslations()) {
-                    return i18n.init();
+                    i18n.init();
                 }
                 i18n.loadThemeTranslations();
                 return settingsResult(settingsKeyedJSON, type);
