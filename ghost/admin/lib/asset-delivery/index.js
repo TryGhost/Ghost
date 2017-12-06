@@ -30,7 +30,7 @@ module.exports = {
         var fs = this.project.require('fs-extra'),
             walkSync = this.project.require('walk-sync'),
             assetsIn = results.directory + '/assets',
-            templateOutDir = '../server/admin/views',
+            templateOutDir = '../server/web/admin/views',
             assetsOut = '../built/assets',
             assets = walkSync(assetsIn);
 
