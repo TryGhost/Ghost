@@ -9,35 +9,14 @@ i18n.init();
 
 describe('Module', function () {
     describe('Setup', function () {
-        it('should resolve with a ghost-server instance', function () {
-            return ghost()
-                .then(function (ghostServer) {
-                    should.exist(ghostServer);
-                });
-        });
-
-        it('should expose an express instance', function () {
+        it('expose ghost server', function () {
             return ghost()
                 .then(function (ghostServer) {
                     should.exist(ghostServer);
                     should.exist(ghostServer.rootApp);
-                });
-        });
-
-        it('should expose configuration values', function () {
-            return ghost()
-                .then(function (ghostServer) {
-                    should.exist(ghostServer);
                     should.exist(ghostServer.config);
                     should.exist(ghostServer.config.get('server'));
                     should.exist(ghostServer.config.get('paths'));
-                });
-        });
-
-        it('should have start/stop/restart functions', function () {
-            return ghost()
-                .then(function (ghostServer) {
-                    should.exist(ghostServer);
                     ghostServer.start.should.be.a.Function();
                     ghostServer.restart.should.be.a.Function();
                     ghostServer.stop.should.be.a.Function();
