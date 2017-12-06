@@ -3,7 +3,7 @@ var path                = require('path'),
     middleware          = require('./middleware'),
     bodyParser          = require('body-parser'),
     renderer            = require('../../../controllers/frontend/renderer'),
-    brute               = require('../../../middleware/brute'),
+    brute               = require('../../../web/middleware/brute'),
 
     templateName = 'private',
 

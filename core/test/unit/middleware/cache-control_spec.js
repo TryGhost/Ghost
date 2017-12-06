@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    cacheControl = require('../../../server/middleware/cache-control'),
+    cacheControl = require('../../../server/web/middleware/cache-control'),
 
     sandbox = sinon.sandbox.create();
 

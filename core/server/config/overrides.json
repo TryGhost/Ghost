@@ -4,7 +4,7 @@
         "corePath": "core/",
         "clientAssets": "core/built/assets",
         "helperTemplates": "core/server/helpers/tpl/",
-        "adminViews": "core/server/admin/views/",
+        "adminViews": "core/server/web/admin/views/",
         "defaultViews": "core/server/views/",
         "internalAppPath": "core/server/apps/",
         "internalStoragePath": "core/server/adapters/storage/",

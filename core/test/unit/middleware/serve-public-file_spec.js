@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     fs = require('fs'),
-    servePublicFile = require('../../../server/middleware/serve-public-file'),
+    servePublicFile = require('../../../server/web/middleware/serve-public-file'),
 
     sandbox = sinon.sandbox.create();
 

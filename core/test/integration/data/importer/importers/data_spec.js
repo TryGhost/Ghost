@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    testUtils = require('../../../../utils/index'),
+    testUtils = require('../../../../utils'),
     Promise = require('bluebird'),
     moment = require('moment'),
     assert = require('assert'),
