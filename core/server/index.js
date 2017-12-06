@@ -74,7 +74,7 @@ function init() {
         debug('Apps, XMLRPC, Slack done');
 
         // Setup our collection of express apps
-        parentApp = require('./app')();
+        parentApp = require('./web/parent-app')();
 
         // Initialise analytics events
         if (config.get('segment:key')) {

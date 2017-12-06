@@ -9,7 +9,7 @@ const fs = require('fs-extra'),
     i18n = require('../i18n'),
     globalUtils = require('../utils'),
     apiUtils = require('./utils'),
-    customRedirectsMiddleware = require('../middleware/custom-redirects');
+    customRedirectsMiddleware = require('../web/middleware/custom-redirects');
 
 let redirectsAPI,
     _private = {};

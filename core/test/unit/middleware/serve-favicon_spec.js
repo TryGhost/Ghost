@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     express = require('express'),
-    serveFavicon = require('../../../server/middleware/serve-favicon'),
+    serveFavicon = require('../../../server/web/middleware/serve-favicon'),
     settingsCache = require('../../../server/settings/cache'),
     storage = require('../../../server/adapters/storage'),
     configUtils = require('../../utils/configUtils'),

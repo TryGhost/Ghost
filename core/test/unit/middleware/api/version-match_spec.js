@@ -1,7 +1,7 @@
 var should  = require('should'), // jshint ignore:line
     sinon   = require('sinon'),
 
-    versionMatch = require('../../../../server/middleware/api/version-match'),
+    versionMatch = require('../../../../server/web/middleware/api/version-match'),
 
     sandbox = sinon.sandbox.create();
 

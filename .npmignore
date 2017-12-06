@@ -35,7 +35,7 @@ CONTRIBUTING.md
 SECURITY.md
 .travis.yml
 *.html
-!core/server/admin/views/**
+!core/server/web/admin/views/**
 !core/server/mail/templates/**
 bower_components/**
 .editorconfig

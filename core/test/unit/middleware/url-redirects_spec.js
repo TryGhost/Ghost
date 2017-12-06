@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
-    urlRedirects = require('../../../server/middleware/url-redirects'),
+    urlRedirects = require('../../../server/web/middleware/url-redirects'),
 
     sandbox = sinon.sandbox.create();
 

@@ -47,7 +47,7 @@ var config         = require('./core/server/config'),
             pkg: grunt.file.readJSON('package.json'),
 
             clientFiles: [
-                'server/admin/views/default.html',
+                'server/web/admin/views/default.html',
                 'built/assets/ghost.js',
                 'built/assets/ghost.css',
                 'built/assets/vendor.js',
@@ -738,8 +738,8 @@ var config         = require('./core/server/config'),
                 grunt.config.set('copy.admin_html', {
                     files: [{
                         cwd: '.',
-                        src: 'core/server/admin/views/default-prod.html',
-                        dest: 'core/server/admin/views/default.html'
+                        src: 'core/server/web/admin/views/default-prod.html',
+                        dest: 'core/server/web/admin/views/default.html'
                     }]
                 });
 
