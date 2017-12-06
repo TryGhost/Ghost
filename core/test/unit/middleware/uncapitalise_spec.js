@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    uncapitalise = require('../../../server/middleware/uncapitalise'),
+    uncapitalise = require('../../../server/web/middleware/uncapitalise'),
 
     sandbox = sinon.sandbox.create();
 
