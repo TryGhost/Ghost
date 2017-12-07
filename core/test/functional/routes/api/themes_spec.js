@@ -1,13 +1,16 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    config = require('../../../../server/config'),
+    ghost = testUtils.startGhost,
     fs = require('fs-extra'),
-    join = require('path').join,
-    tmp = require('tmp'),
+    path = require('path'),
+    uuid = require('uuid'),
+    os = require('os'),
     _ = require('lodash'),
     request;
 
-describe('Themes API (Forked)', function () {
+describe('Themes API', function () {
     var scope = {
         ownerAccessToken: '',
         editorAccessToken: '',
@@ -21,59 +24,47 @@ describe('Themes API (Forked)', function () {
                 .attach(fieldName, themePath);
         },
         editor: null
-    },
-        forkedGhost,
-        tmpContentPath;
+    }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
 
     /**
      * Create a temporary folder that contains:
-     * - 1 valid theme: casper
      * - 1 valid theme that has warnings: test-theme
      * - 1 invalid theme: broken-theme
      */
-    function setupThemesFolder() {
-        tmpContentPath = tmp.dirSync({unsafeCleanup: true});
+    function setupThemesFolder(tmpContentPath) {
+        fs.ensureDirSync(tmpContentPath);
 
-        fs.mkdirSync(join(tmpContentPath.name, 'themes'));
-        fs.mkdirSync(join(tmpContentPath.name, 'themes', 'casper'));
+        fs.mkdirSync(path.join(tmpContentPath, 'casper'));
         fs.writeFileSync(
-            join(tmpContentPath.name, 'themes', 'casper', 'package.json'),
+            path.join(tmpContentPath, 'casper', 'package.json'),
             JSON.stringify({name: 'casper', version: '0.1.2'})
         );
-        fs.writeFileSync(join(tmpContentPath.name, 'themes', 'casper', 'index.hbs'));
-        fs.writeFileSync(join(tmpContentPath.name, 'themes', 'casper', 'post.hbs'));
+        fs.writeFileSync(path.join(tmpContentPath, 'casper', 'index.hbs'));
+        fs.writeFileSync(path.join(tmpContentPath, 'casper', 'post.hbs'));
 
-        fs.mkdirSync(join(tmpContentPath.name, 'themes', 'test-theme'));
+        fs.mkdirSync(path.join(tmpContentPath, 'test-theme'));
         fs.writeFileSync(
-            join(tmpContentPath.name, 'themes', 'test-theme', 'package.json'),
+            path.join(tmpContentPath, 'test-theme', 'package.json'),
             JSON.stringify({name: 'test-theme', version: '0.5.9', author: {email: 'test@example.org'}})
         );
-        fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'index.hbs'));
-        fs.writeFileSync(join(tmpContentPath.name, 'themes', 'test-theme', 'post.hbs'));
+        fs.writeFileSync(path.join(tmpContentPath, 'test-theme', 'index.hbs'));
+        fs.writeFileSync(path.join(tmpContentPath, 'test-theme', 'post.hbs'));
 
-        fs.mkdirSync(join(tmpContentPath.name, 'themes', 'broken-theme'));
+        fs.mkdirSync(path.join(tmpContentPath, 'broken-theme'));
         fs.writeFileSync(
-            join(tmpContentPath.name, 'themes', 'broken-theme', 'package.json'),
+            path.join(tmpContentPath, 'broken-theme', 'package.json'),
             JSON.stringify({name: 'broken-theme', version: '1.1.2'})
         );
     }
 
-    function teardownThemesFolder() {
-        return tmpContentPath.removeCallback();
-    }
+    before(function () {
+        // extend content theme folder
+        setupThemesFolder(path.join(contentFolder, 'themes'));
 
-    before(function (done) {
-        // Setup a temporary themes directory
-        setupThemesFolder();
-        // Fork Ghost to read from the temp directory, not the developer's themes
-        testUtils.fork.ghost({
-            paths: {
-                contentPath: tmpContentPath.name
-            }
-        }, 'themetests')
-            .then(function (child) {
-                forkedGhost = child;
-                request = supertest('http://127.0.0.1:' + child.port);
+        return ghost({contentFolder: contentFolder, copyThemes: false})
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
             })
             .then(function () {
                 return testUtils.doAuth(request);
@@ -108,19 +99,7 @@ describe('Themes API (Forked)', function () {
             })
             .then(function (token) {
                 scope.authorAccessToken = token;
-                done();
-            })
-            .catch(done);
-    });
-
-    after(function (done) {
-        teardownThemesFolder();
-
-        if (forkedGhost) {
-            forkedGhost.kill(done);
-        } else {
-            done(new Error('No forked ghost process exists, test setup must have failed.'));
-        }
+            });
     });
 
     describe('success cases', function () {
@@ -175,7 +154,7 @@ describe('Themes API (Forked)', function () {
         it('upload new "valid" theme', function (done) {
             var jsonResponse;
 
-            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
+            scope.uploadTheme({themePath: path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -191,7 +170,7 @@ describe('Themes API (Forked)', function () {
                     jsonResponse.themes[0].active.should.be.false();
 
                     // upload same theme again to force override
-                    scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip')})
+                    scope.uploadTheme({themePath: path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')})
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
@@ -207,7 +186,7 @@ describe('Themes API (Forked)', function () {
                             jsonResponse.themes[0].active.should.be.false();
 
                             // ensure tmp theme folder contains two themes now
-                            var tmpFolderContents = fs.readdirSync(join(tmpContentPath.name, 'themes'));
+                            var tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
                             tmpFolderContents.should.be.an.Array().with.lengthOf(4);
                             tmpFolderContents[0].should.eql('broken-theme');
                             tmpFolderContents[1].should.eql('casper');
@@ -266,7 +245,7 @@ describe('Themes API (Forked)', function () {
                     jsonResponse.should.eql({});
 
                     // ensure tmp theme folder contains one theme again now
-                    var tmpFolderContents = fs.readdirSync(join(tmpContentPath.name, 'themes'));
+                    var tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
                     tmpFolderContents.should.be.an.Array().with.lengthOf(3);
                     tmpFolderContents[0].should.eql('broken-theme');
                     tmpFolderContents[1].should.eql('casper');
@@ -306,7 +285,7 @@ describe('Themes API (Forked)', function () {
         it('upload new "warnings" theme that has validation warnings', function (done) {
             var jsonResponse;
 
-            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/warnings.zip')})
+            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/warnings.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -395,7 +374,7 @@ describe('Themes API (Forked)', function () {
 
     describe('error cases', function () {
         it('upload invalid theme', function (done) {
-            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/invalid.zip')})
+            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/invalid.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -410,7 +389,7 @@ describe('Themes API (Forked)', function () {
         });
 
         it('upload casper.zip', function (done) {
-            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/themes/casper.zip')})
+            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/casper.zip')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -529,7 +508,7 @@ describe('Themes API (Forked)', function () {
         });
 
         it('upload non application/zip', function (done) {
-            scope.uploadTheme({themePath: join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv')})
+            scope.uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv')})
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -547,7 +526,7 @@ describe('Themes API (Forked)', function () {
         // @TODO: make this a nicer error!
         it.skip('upload different field name', function (done) {
             scope.uploadTheme({
-                themePath: join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'),
+                themePath: path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'),
                 fieldName: 'wrong'
             }).end(function (err, res) {
                 if (err) {
@@ -576,7 +555,7 @@ describe('Themes API (Forked)', function () {
 
             it('no permissions to upload theme', function (done) {
                 scope.uploadTheme({
-                    themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
+                    themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
                     accessToken: scope.editorAccessToken
                 }).end(function (err, res) {
                     if (err) {
@@ -647,7 +626,7 @@ describe('Themes API (Forked)', function () {
 
             it('no permissions to upload theme', function (done) {
                 scope.uploadTheme({
-                    themePath: join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
+                    themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
                     accessToken: scope.authorAccessToken
                 }).end(function (err, res) {
                     if (err) {

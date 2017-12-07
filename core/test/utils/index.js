@@ -5,6 +5,7 @@ var Promise = require('bluebird'),
     path = require('path'),
     Module = require('module'),
     os = require('os'),
+    express = require('express'),
     debug = require('ghost-ignition').debug('test'),
     ObjectId = require('bson-objectid'),
     uuid = require('uuid'),
@@ -16,7 +17,10 @@ var Promise = require('bluebird'),
     schema = require('../../server/data/schema').tables,
     schemaTables = Object.keys(schema),
     models = require('../../server/models'),
+    utils = require('../../server/utils'),
+    events = require('../../server/events'),
     SettingsLib = require('../../server/settings'),
+    customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
     permissions = require('../../server/permissions'),
     sequence = require('../../server/utils/sequence'),
     themes = require('../../server/themes'),
@@ -24,7 +28,6 @@ var Promise = require('bluebird'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
     API = require('./api'),
-    fork = require('./fork'),
     mocks = require('./mocks'),
     config = require('../../server/config'),
     knexMigrator = new KnexMigrator(),
@@ -821,19 +824,29 @@ unmockNotExistingModule = function unmockNotExistingModule() {
     Module.prototype.require = originalRequireFn;
 };
 
+var ghostServer;
+
 /**
- * 1. sephiroth init db
- * 2. start ghost
+ * 1. reset & init db
+ * 2. start the server once
+ *
+ * @TODO: tidy up the tmp folders
  */
 startGhost = function startGhost(options) {
-    options = options || {redirectsFile: true};
+    options = _.merge({
+        redirectsFile: true,
+        forceStart: false,
+        copyThemes: true,
+        contentFolder: path.join(os.tmpdir(), uuid.v1(), 'ghost-test'),
+        subdir: false
+    }, options);
 
-    var contentFolderForTests = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
+    var contentFolderForTests = options.contentFolder,
+        parentApp;
 
     /**
      * We never use the root content folder for testing!
      * We use a tmp folder.
-     * @TODO: add testUtils.stopServer and ensure we remove the tmp folder.
      */
     configUtils.set('paths:contentPath', contentFolderForTests);
 
@@ -844,19 +857,61 @@ startGhost = function startGhost(options) {
     fs.ensureDirSync(path.join(contentFolderForTests, 'logs'));
     fs.ensureDirSync(path.join(contentFolderForTests, 'adapters'));
 
-    // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+    if (options.copyThemes) {
+        // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
+        fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+    }
 
     if (options.redirectsFile) {
         fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
     }
 
+    // truncate database and re-run fixtures
+    // we have to ensure that some components in Ghost are reloaded
+    if (ghostServer && ghostServer.httpServer && !options.forceStart) {
+        return teardown()
+            .then(function () {
+                return knexMigrator.init({only: 2});
+            })
+            .then(function () {
+                return SettingsLib.init();
+            })
+            .then(function () {
+                return themes.init();
+            })
+            .then(function () {
+                customRedirectsMiddleware.reload();
+
+                events.emit('server:start');
+                return ghostServer;
+            });
+    }
+
     return knexMigrator.reset({force: true})
+        .then(function () {
+            if (ghostServer && ghostServer.httpServer) {
+                return ghostServer.stop();
+            }
+        })
         .then(function initialiseDatabase() {
             return knexMigrator.init();
         })
-        .then(function startGhost() {
+        .then(function initializeGhost() {
             return ghost();
+        })
+        .then(function startGhost(_ghostServer) {
+            ghostServer = _ghostServer;
+
+            if (options.subdir) {
+                parentApp = express();
+                parentApp.use(utils.url.getSubdir(), ghostServer.rootApp);
+                return ghostServer.start(parentApp);
+            }
+
+            return ghostServer.start();
+        })
+        .then(function returnGhost() {
+            return ghostServer;
         });
 };
 
@@ -912,8 +967,6 @@ module.exports = {
     DataGenerator: DataGenerator,
     filterData: filterData,
     API: API,
-
-    fork: fork,
 
     // Helpers to make it easier to write tests which are easy to read
     context: {

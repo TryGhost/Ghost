@@ -31,7 +31,7 @@ describe('Channel Routes', function () {
         };
     }
 
-    before(function (done) {
+    before(function () {
         // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
         var originalSettingsCacheGetFn = settingsCache.get;
         sandbox.stub(settingsCache, 'get').callsFake(function (key, options) {
@@ -42,24 +42,15 @@ describe('Channel Routes', function () {
             return originalSettingsCacheGetFn(key, options);
         });
 
-        ghost().then(function (_ghostServer) {
-            ghostServer = _ghostServer;
-            return ghostServer.start();
-        }).then(function () {
-            request = supertest.agent(config.get('url'));
-            done();
-        }).catch(function (e) {
-            console.log('Ghost Error: ', e);
-            console.log(e.stack);
-            done(e);
-        });
+        return ghost()
+            .then(function (_ghostServer) {
+                ghostServer = _ghostServer;
+                request = supertest.agent(config.get('url'));
+            });
     });
-
-    after(testUtils.teardown);
 
     after(function () {
         sandbox.restore();
-        return ghostServer.stop();
     });
 
     describe('Index', function () {

@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    ghostLocals = require('../../../server/middleware/ghost-locals'),
+    ghostLocals = require('../../../server/web/middleware/ghost-locals'),
 
     sandbox = sinon.sandbox.create();
 
