@@ -26,6 +26,6 @@ module.exports = function t(text, options) {
     }
     bindings.defaultString = text;
     theme = settingsCache.get('active_theme') || 'casper';
-    path = jp.stringify(['$', theme, text]);
+    path = jp.stringify(['$', 'theme', theme, text]);
     return i18n.t(path, bindings);
 };
