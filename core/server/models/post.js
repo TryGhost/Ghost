@@ -8,6 +8,7 @@ var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     sequence = require('../lib/promise/sequence'),
     common = require('../lib/common'),
+    baseUtils = require('./base/utils'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
@@ -676,27 +677,15 @@ Post = ghostBookshelf.Model.extend({
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
         }
 
-        // For the purposes of this function, an actor is an author if they are a contributor
-        // or an author
-        function actorIsAuthor(loadedPermissions) {
-            return loadedPermissions.user && _.some(loadedPermissions.user.roles, function (role) {
-                return role.name === 'Author' || role.name === 'Contributor';
-            });
-        }
-
-        function actorIsContributor(loadedPermissions) {
-            return loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        }
-
         function isOwner() {
             return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
         }
 
-        if (actorIsContributor(loadedPermissions) && action === 'edit' && isChanging('status')) {
+        if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'edit' && isChanging('status')) {
             hasUserPermission = false;
-        } else if (actorIsAuthor(loadedPermissions) && action === 'edit' && isChanging('author_id')) {
+        } else if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor']) && action === 'edit' && isChanging('author_id')) {
             hasUserPermission = false;
-        } else if (actorIsAuthor(loadedPermissions) && action === 'add') {
+        } else if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor']) && action === 'add') {
             hasUserPermission = isOwner();
         } else if (postModel) {
             hasUserPermission = hasUserPermission || context.user === postModel.get('author_id');

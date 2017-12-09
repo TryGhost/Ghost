@@ -643,16 +643,16 @@ User = ghostBookshelf.Model.extend({
         if (action === 'edit') {
             // Owner can only be edited by owner
             if (loadedPermissions.user && userModel.hasRole('Owner')) {
-                hasUserPermission = _.some(loadedPermissions.user.roles, {name: 'Owner'});
+                hasUserPermission = baseUtils.actorIs(loadedPermissions.user, 'Owner');
             }
             // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'})) {
+            if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor'])) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = hasUserPermission || context.user === userModel.get('id');
             }
 
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
@@ -668,7 +668,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
