@@ -98,7 +98,7 @@ function listener(model, options) {
 
 function testPing() {
     ping({
-        message: 'Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'
+        message: 'Heya! This is a test notification from your Ghost blog :). Seems to work fine!'
     });
 }
 
