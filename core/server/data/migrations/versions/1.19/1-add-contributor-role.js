@@ -43,7 +43,11 @@ _private.addContributorPermissions = function getPermissions(options) {
     });
 };
 
-module.exports = function addContributorRole(options) {
+module.exports.config = {
+    transaction: true
+};
+
+module.exports.up = function addContributorRole(options) {
     var localOptions = merge({
         context: {internal: true}
     }, options);
