@@ -657,7 +657,7 @@ User = ghostBookshelf.Model.extend({
                 hasUserPermission = context.user === userModel.get('id');
 
                 // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = hasUserPermission || userModel.hasRole('Author');
+                hasUserPermission = hasUserPermission || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 

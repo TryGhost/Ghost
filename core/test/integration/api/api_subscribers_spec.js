@@ -60,6 +60,16 @@ describe('Subscribers API', function () {
                 }).catch(done);
         });
 
+        it('can add a subscriber (contributor)', function (done) {
+            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.contributor)
+                .then(function (results) {
+                    should.exist(results);
+                    should.exist(results.subscribers);
+                    results.subscribers.length.should.be.above(0);
+                    done();
+                }).catch(done);
+        });
+
         it('can add a subscriber (external)', function (done) {
             SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
                 .then(function (results) {
@@ -136,6 +146,17 @@ describe('Subscribers API', function () {
                 })
                 .catch(function (err) {
                     (err instanceof common.errors.NoPermissionError).should.eql(true);
+                    done();
+                });
+        });
+
+        it('CANNOT edit subscriber (contributor)', function (done) {
+            SubscribersAPI.edit({subscribers: [{email: newSubscriberEmail}]}, _.extend({}, context.contributor, {id: firstSubscriber}))
+                .then(function () {
+                    done(new Error('Edit subscriber as contributor should have no access.'));
+                })
+                .catch(function (err) {
+                    (err instanceof errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });
