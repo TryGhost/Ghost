@@ -11,7 +11,6 @@
  * - overrides is the first package to load
  */
 require('./overrides');
-require('./services/url');
 
 // Module dependencies
 var debug = require('ghost-ignition').debug('boot:init'),
@@ -26,7 +25,7 @@ var debug = require('ghost-ignition').debug('boot:init'),
     scheduling = require('./adapters/scheduling'),
     settings = require('./settings'),
     themes = require('./themes'),
-    utils = require('./utils'),
+    urlService = require('./services/url'),
 
     // Services that need initialisation
     apps = require('./services/apps'),
@@ -94,7 +93,7 @@ function init() {
         return scheduling.init({
             schedulerUrl: config.get('scheduling').schedulerUrl,
             active: config.get('scheduling').active,
-            apiUrl: utils.url.urlFor('api', true),
+            apiUrl: urlService.utils.urlFor('api', true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         });

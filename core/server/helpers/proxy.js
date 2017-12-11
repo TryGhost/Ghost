@@ -63,7 +63,7 @@ module.exports = {
     // Various utils, needs cleaning up / simplifying
     socialUrls: require('../utils/social-urls'),
     blogIcon: require('../utils/blog-icon'),
-    url: require('../utils').url,
+    url: require('../services/url').utils,
     utils: {
         findKey: function findKey(key /* ...objects... */) {
             var objects = Array.prototype.slice.call(arguments, 1);

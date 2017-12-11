@@ -16,7 +16,7 @@ var Promise = require('bluebird'),
     i18n = proxy.i18n,
     errors = proxy.errors,
     makeAbsoluteUrl = require('../../../../utils/make-absolute-urls'),
-    utils = require('../../../../utils'),
+    urlService = require('../../../../services/url'),
     amperizeCache = {},
     allowedAMPTags = [],
     allowedAMPAttributes = {},
@@ -126,7 +126,7 @@ function getAmperizeHTML(html, post) {
     amperize = amperize || new Amperize();
 
     // make relative URLs abolute
-    html = makeAbsoluteUrl(html, utils.url.urlFor('home', true), post.url).html();
+    html = makeAbsoluteUrl(html, urlService.utils.urlFor('home', true), post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise(function (resolve) {
