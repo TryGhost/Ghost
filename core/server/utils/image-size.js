@@ -3,7 +3,7 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     url = require('url'),
     Promise = require('bluebird'),
     request = require('../utils/request'),
-    utils = require('../utils'),
+    urlService = require('../services/url'),
     errors = require('../errors'),
     config = require('../config'),
     storage = require('../adapters/storage'),
@@ -85,7 +85,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 
     // CASE: pre 1.0 users were able to use an asset path for their blog logo
     if (imagePath.match(/^\/assets/)) {
-        imagePath = utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', imagePath);
+        imagePath = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), urlService.utils.getSubdir(), '/', imagePath);
     }
 
     parsedUrl = url.parse(imagePath);
@@ -174,7 +174,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
     var filePath;
 
-    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
+    imagePath = urlService.utils.urlFor('image', {image: imagePath}, true);
 
     // get the storage readable filePath
     filePath = storageUtils.getLocalFileStoragePath(imagePath);

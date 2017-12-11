@@ -3,7 +3,7 @@
 
 var startTime = Date.now(),
     debug = require('ghost-ignition').debug('boot:index'),
-    ghost, express, logging, errors, utils, parentApp;
+    ghost, express, logging, errors, urlService, parentApp;
 
 debug('First requires...');
 
@@ -14,13 +14,13 @@ debug('Required ghost');
 express = require('express');
 logging = require('./core/server/logging');
 errors = require('./core/server/errors');
-utils = require('./core/server/utils');
+urlService = require('./core/server/services/url');
 parentApp = express();
 
 debug('Initialising Ghost');
 ghost().then(function (ghostServer) {
     // Mount our Ghost instance on our desired subdirectory path if it exists.
-    parentApp.use(utils.url.getSubdir(), ghostServer.rootApp);
+    parentApp.use(urlService.utils.getSubdir(), ghostServer.rootApp);
 
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
