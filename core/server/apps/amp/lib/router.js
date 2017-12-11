@@ -1,10 +1,10 @@
 var path                = require('path'),
     express             = require('express'),
     ampRouter           = express.Router(),
-    i18n                = require('../../../i18n'),
+    i18n                = require('../../../lib/common/i18n'),
 
     // Dirty requires
-    errors              = require('../../../errors'),
+    errors              = require('../../../lib/common/errors'),
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     renderer            = require('../../../controllers/frontend/renderer'),
 

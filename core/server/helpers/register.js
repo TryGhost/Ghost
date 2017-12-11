@@ -1,8 +1,8 @@
 var hbs = require('../themes/engine'),
     Promise = require('bluebird'),
     config = require('../config'),
-    errors = require('../errors'),
-    logging = require('../logging');
+    errors = require('../lib/common/errors'),
+    logging = require('../lib/common/logging');
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(hbs, name, fn) {

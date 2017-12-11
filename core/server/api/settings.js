@@ -5,8 +5,8 @@ var Promise = require('bluebird'),
     models = require('../models'),
     canThis = require('../permissions').canThis,
     apiUtils = require('./utils'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     settingsCache = require('../settings/cache'),
     docName = 'settings',
     settings,
@@ -118,7 +118,7 @@ canEditAllSettings = function (settingsInfo, options) {
 /**
  * ## Settings API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 settings = {
 

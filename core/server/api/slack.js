@@ -1,13 +1,13 @@
 // # Slack API
 // API for sending Test Notifications to Slack
 var Promise = require('bluebird'),
-    events = require('../events'),
+    events = require('../lib/common/events'),
     slack;
 
 /**
  * ## Slack API Method
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  * @typedef Slack
  * @param slack
  */

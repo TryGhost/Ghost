@@ -1,7 +1,7 @@
 var got = require('got'),
     Promise = require('bluebird'),
     validator = require('../data/validation').validator,
-    errors = require('../errors'),
+    errors = require('../lib/common/errors'),
     _  = require('lodash');
 
 module.exports = function request(url, options) {

@@ -8,10 +8,10 @@ var Promise = require('bluebird'),
     apiUtils = require('./utils'),
     models = require('../models'),
     config = require('../config'),
-    errors = require('../errors'),
-    events = require('../events'),
-    i18n = require('../i18n'),
-    logging = require('../logging'),
+    errors = require('../lib/common/errors'),
+    events = require('../lib/common/events'),
+    i18n = require('../lib/common/i18n'),
+    logging = require('../lib/common/logging'),
     spamPrevention = require('../web/middleware/api/spam-prevention'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
@@ -130,7 +130,7 @@ function setupTasks(setupData) {
 /**
  * ## Authentication API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 authentication = {
     /**

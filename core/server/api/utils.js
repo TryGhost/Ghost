@@ -5,8 +5,8 @@ var Promise = require('bluebird'),
     path = require('path'),
     permissions = require('../permissions'),
     validation = require('../data/validation'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     utils;
 
 utils = {

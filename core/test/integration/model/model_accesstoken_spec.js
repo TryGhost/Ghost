@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     globalUtils = require('../../../server/utils'),
 
     // Stuff we are testing

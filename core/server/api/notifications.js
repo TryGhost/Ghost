@@ -7,8 +7,8 @@ var Promise = require('bluebird'),
     permissions = require('../permissions'),
     canThis = permissions.canThis,
     apiUtils = require('./utils'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     settingsAPI = require('./settings'),
     // Holds the persistent notifications
     notificationsStore = [],
@@ -17,7 +17,7 @@ var Promise = require('bluebird'),
 /**
  * ## Notification API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 notifications = {
 

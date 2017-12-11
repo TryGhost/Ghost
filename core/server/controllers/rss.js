@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     url = require('url'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     safeString = require('../utils').safeString,
     settingsCache = require('../settings/cache'),
 

@@ -4,7 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     permissions = require('../../../server/permissions'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     apiUtils = require('../../../server/api/utils'),
 
     sandbox = sinon.sandbox.create();

@@ -11,7 +11,7 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     _debug = require('ghost-ignition').debug._base,
     debug = _debug('ghost:services:url'),
-    events = require('../../events'),
+    events = require('../../lib/common/events'),
     // TODO: make this dynamic
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),

@@ -6,7 +6,7 @@ var should = require('should'),
     oAuth = require('../../../server/auth/oauth'),
     authUtils = require('../../../server/auth/utils'),
     spamPrevention = require('../../../server/web/middleware/api/spam-prevention'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     models = require('../../../server/models'),
 
     sandbox = sinon.sandbox.create();

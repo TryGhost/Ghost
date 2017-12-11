@@ -5,11 +5,11 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     gravatar = require('../../../server/utils/gravatar'),
     UserModel = require('../../../server/models/user').User,
     RoleModel = require('../../../server/models/role').Role,
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     context = testUtils.context.admin,
     sandbox = sinon.sandbox.create();
 

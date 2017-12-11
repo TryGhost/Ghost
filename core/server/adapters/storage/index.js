@@ -1,4 +1,4 @@
-var errors = require('../../errors'),
+var errors = require('../../lib/common/errors'),
     config = require('../../config'),
     StorageBase = require('ghost-storage-base'),
     _ = require('lodash'),

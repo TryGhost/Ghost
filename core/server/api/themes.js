@@ -4,10 +4,10 @@ var debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
     apiUtils = require('./utils'),
-    errors = require('../errors'),
-    events = require('../events'),
-    i18n = require('../i18n'),
-    logging = require('../logging'),
+    errors = require('../lib/common/errors'),
+    events = require('../lib/common/events'),
+    i18n = require('../lib/common/i18n'),
+    logging = require('../lib/common/logging'),
     settingsModel = require('../models/settings').Settings,
     settingsCache = require('../settings/cache'),
     themeUtils = require('../themes'),
@@ -17,7 +17,7 @@ var debug = require('ghost-ignition').debug('api:themes'),
 /**
  * ## Themes API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 themes = {
     /**

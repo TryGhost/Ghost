@@ -5,7 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     ModelsTag = require('../../../server/models/tag'),
     ModelsPost = require('../../../server/models/post'),
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     context = testUtils.context.admin,
     TagModel,
     PostModel,
