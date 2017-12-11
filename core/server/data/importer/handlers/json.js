@@ -1,8 +1,8 @@
 var _            = require('lodash'),
     Promise      = require('bluebird'),
     fs           = require('fs-extra'),
-    errors       = require('../../../errors'),
-    i18n         = require('../../../i18n'),
+    errors       = require('../../../lib/common/errors'),
+    i18n         = require('../../../lib/common/i18n'),
     JSONHandler;
 
 JSONHandler = {

@@ -2,7 +2,7 @@
  * Dependencies
  */
 var parsePackageJson = require('./parse-package-json'),
-    errors = require('../../errors'),
+    errors = require('../../lib/common/errors'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     join = require('path').join,

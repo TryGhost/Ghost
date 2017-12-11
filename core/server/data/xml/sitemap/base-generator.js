@@ -4,7 +4,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     path = require('path'),
     urlService = require('../../../services/url'),
-    events = require('../../../events'),
+    events = require('../../../lib/common/events'),
     localUtils = require('./utils'),
     CHANGE_FREQ = 'weekly',
     XMLNS_DECLS;

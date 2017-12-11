@@ -1,6 +1,6 @@
 var _ = require('lodash'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     filters = require('../filters'),
     safeString = require('../utils').safeString,
     handleError = require('./frontend/error'),

@@ -6,8 +6,8 @@ var Promise = require('bluebird'),
     apiUtils = require('./utils'),
     canThis = require('../permissions').canThis,
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'],
@@ -16,7 +16,7 @@ var Promise = require('bluebird'),
 /**
  * ### Users API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 users = {
     /**

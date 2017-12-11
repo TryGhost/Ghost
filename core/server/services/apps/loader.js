@@ -2,7 +2,7 @@ var path = require('path'),
     _    = require('lodash'),
     Promise = require('bluebird'),
     config = require('../../config'),
-    i18n = require('../../i18n'),
+    i18n = require('../../lib/common/i18n'),
 
     AppProxy = require('./proxy'),
     AppSandbox = require('./sandbox'),

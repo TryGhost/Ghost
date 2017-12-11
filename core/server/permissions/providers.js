@@ -1,8 +1,8 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n');
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n');
 
 module.exports = {
     user: function (id) {

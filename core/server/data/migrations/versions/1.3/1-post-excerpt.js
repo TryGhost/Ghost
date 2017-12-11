@@ -1,7 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird'),
-    logging = require('../../../../logging'),
+    logging = require('../../../../lib/common/logging'),
     commands = require('../../../schema').commands,
     table = 'posts',
     columns = ['custom_excerpt'],

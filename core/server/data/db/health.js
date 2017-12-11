@@ -1,6 +1,6 @@
 var KnexMigrator = require('knex-migrator'),
     config = require('../../config'),
-    errors = require('../../errors'),
+    errors = require('../../lib/common/errors'),
     models = require('../../models');
 
 module.exports.check = function healthCheck() {

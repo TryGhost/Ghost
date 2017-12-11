@@ -1,4 +1,4 @@
-var errors      = require('../../errors'),
+var errors      = require('../../lib/common/errors'),
     labsUtil    = require('../../utils/labs'),
     labs;
 

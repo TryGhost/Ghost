@@ -1,7 +1,7 @@
 var ghostBookshelf = require('./base'),
-    errors = require('../errors'),
-    events = require('../events'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    events = require('../lib/common/events'),
+    i18n = require('../lib/common/i18n'),
     Promise = require('bluebird'),
     Subscriber,
     Subscribers;

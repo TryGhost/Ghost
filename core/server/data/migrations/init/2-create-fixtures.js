@@ -1,7 +1,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     fixtures = require('../../schema/fixtures'),
-    logging = require('../../../logging');
+    logging = require('../../../lib/common/logging');
 
 module.exports.config = {
     transaction: true

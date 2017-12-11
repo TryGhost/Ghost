@@ -39,7 +39,7 @@ function getBaseConfig() {
  *
  * We need to load the client credentials dynamically.
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 configuration = {
 

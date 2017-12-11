@@ -7,7 +7,7 @@ var Promise = require('bluebird'),
 /**
  * ## Upload API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 upload = {
 

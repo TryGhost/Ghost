@@ -6,7 +6,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     InvitesAPI = require('../../../server/api/invites'),
     mail = require('../../../server/api/mail'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     context = testUtils.context,
 
     sandbox = sinon.sandbox.create();

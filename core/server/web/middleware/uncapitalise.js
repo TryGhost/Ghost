@@ -13,8 +13,8 @@
 //  req.path =  /ghost/signin/
 
 var urlService = require('../../services/url'),
-    errors = require('../../errors'),
-    i18n = require('../../i18n'),
+    errors = require('../../lib/common/errors'),
+    i18n = require('../../lib/common/i18n'),
     globalUtils = require('../../utils'),
     uncapitalise;
 

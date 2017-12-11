@@ -1,6 +1,6 @@
 var _              = require('lodash'),
     ghostBookshelf = require('./base'),
-    events         = require('../events'),
+    events         = require('../lib/common/events'),
     Tag,
     Tags;
 

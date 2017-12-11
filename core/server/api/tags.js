@@ -5,8 +5,8 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     docName = 'tags',
     allowedIncludes = ['count.posts'],
     tags;
@@ -14,7 +14,7 @@ var Promise = require('bluebird'),
 /**
  * ### Tags API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 tags = {
     /**

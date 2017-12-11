@@ -3,6 +3,7 @@
 var supportedLocales = ['en'],
     _ = require('lodash'),
     fs = require('fs'),
+    path = require('path'),
     chalk = require('chalk'),
     MessageFormat = require('intl-messageformat'),
     logging = require('./logging'),
@@ -115,7 +116,7 @@ I18n = {
      */
     init: function init() {
         // read file for current locale and keep its content in memory
-        blos = fs.readFileSync(__dirname + '/translations/' + currentLocale + '.json');
+        blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', currentLocale + '.json'));
 
         // if translation file is not valid, you will see an error
         try {

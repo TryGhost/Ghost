@@ -8,7 +8,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     ghost = testUtils.startGhost,
-    i18n = require('../../../../core/server/i18n'),
+    i18n = require('../../../server/lib/common/i18n'),
     config = require('../../../../core/server/config'),
     request;
 

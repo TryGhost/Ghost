@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     rewire = require('rewire'),
-    events = require('../../../../server/events'),
+    events = require('../../../../server/lib/common/events'),
     Models = require('../../../../server/models'),
 
     sandbox = sinon.sandbox.create();

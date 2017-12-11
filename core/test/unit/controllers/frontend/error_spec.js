@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    errors = require('../../../../server/errors'),
+    errors = require('../../../../server/lib/common/errors'),
 
     // Stuff we are testing
     handleError = require('../../../../server/controllers/frontend/error'),

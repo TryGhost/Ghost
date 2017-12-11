@@ -1,7 +1,7 @@
 var urlService = require('../../services/url');
 
 /**
- * @TODO: move `index.js` to here - e.g. storageUtils.getStorage
+ * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
  */
 
 /**

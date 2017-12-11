@@ -1,9 +1,9 @@
 var passport = require('passport'),
     authUtils = require('./utils'),
-    errors = require('../errors'),
+    errors = require('../lib/common/errors'),
     models = require('../models'),
-    events = require('../events'),
-    i18n = require('../i18n'),
+    events = require('../lib/common/events'),
+    i18n = require('../lib/common/i18n'),
     authenticate;
 
 authenticate = {

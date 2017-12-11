@@ -1,7 +1,7 @@
 'use strict';
 
 const models = require('../../../../models'),
-    logging = require('../../../../logging'),
+    logging = require('../../../../lib/common/logging'),
     fixtures = require('../../../schema/fixtures'),
     _ = require('lodash'),
     backupClient = fixtures.utils.findModelFixtureEntry('Client', {slug: 'ghost-backup'}),

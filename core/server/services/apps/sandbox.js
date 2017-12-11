@@ -1,6 +1,6 @@
 var path = require('path'),
     Module = require('module'),
-    i18n = require('../../i18n'),
+    i18n = require('../../lib/common/i18n'),
     _ = require('lodash');
 
 function AppSandbox(opts) {

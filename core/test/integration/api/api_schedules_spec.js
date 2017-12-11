@@ -5,10 +5,10 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     testUtils = require('../../utils'),
     config = require('../../../server/config'),
-    sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
-    errors = require(config.get('paths').corePath + '/server/errors'),
-    api = require(config.get('paths').corePath + '/server/api'),
-    models = require(config.get('paths').corePath + '/server/models'),
+    sequence = require('../../../server/utils/sequence'),
+    errors = require('../../../server/lib/common/errors'),
+    api = require('../../../server/api'),
+    models = require('../../../server/models'),
     sandbox = sinon.sandbox.create();
 
 describe('Schedules API', function () {

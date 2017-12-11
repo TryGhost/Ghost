@@ -16,7 +16,7 @@ require('./overrides');
 var debug = require('ghost-ignition').debug('boot:init'),
     config = require('./config'),
     Promise = require('bluebird'),
-    i18n = require('./i18n'),
+    i18n = require('./lib/common/i18n'),
     models = require('./models'),
     permissions = require('./permissions'),
     auth = require('./auth'),

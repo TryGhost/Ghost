@@ -1,7 +1,7 @@
 var unidecode  = require('unidecode'),
     _          = require('lodash'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     utils,
     getRandomInt;
 

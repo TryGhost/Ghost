@@ -5,7 +5,7 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     ampController = rewire('../../../../server/apps/amp/lib/router'),
-    errors = require('../../../../server/errors'),
+    errors = require('../../../../server/lib/common/errors'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/themes'),
 

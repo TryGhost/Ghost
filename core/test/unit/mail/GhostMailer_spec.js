@@ -4,7 +4,7 @@ var should = require('should'),
     mail = require('../../../server/mail'),
     settingsCache = require('../../../server/settings/cache'),
     configUtils = require('../../utils/configUtils'),
-    i18n = require('../../../server/i18n'),
+    i18n = require('../../../server/lib/common/i18n'),
     sandbox = sinon.sandbox.create(),
     mailer,
 

@@ -17,7 +17,7 @@ var debug = require('ghost-ignition').debug('site:routes'),
 
 module.exports = function siteRoutes() {
     // @TODO move this path out of this file!
-    // Note this also exists in api/index.js
+    // Note this also exists in api/events.js
     var previewRoute = urlService.utils.urlJoin('/', config.get('routeKeywords').preview, ':uuid', ':options?');
 
     // Preview - register controller as route

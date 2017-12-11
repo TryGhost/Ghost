@@ -1,6 +1,6 @@
-var errors = require('../../../errors'),
+var errors = require('../../../lib/common/errors'),
     config = require('../../../config'),
-    i18n = require('../../../i18n'),
+    i18n = require('../../../lib/common/i18n'),
     blogIconUtils = require('../../../utils/blog-icon'),
     validIconFileSize;
 

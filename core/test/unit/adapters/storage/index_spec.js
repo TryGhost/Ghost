@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     StorageBase = require('ghost-storage-base'),
     configUtils = require('../../../utils/configUtils'),
     storage = require('../../../../server/adapters/storage'),
-    errors = require('../../../../server/errors'),
+    errors = require('../../../../server/lib/common/errors'),
     LocalFileStorage = require('../../../../server/adapters/storage/LocalFileStorage');
 
 describe('storage: index_spec', function () {

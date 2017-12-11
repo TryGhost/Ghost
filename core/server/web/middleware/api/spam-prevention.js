@@ -1,5 +1,5 @@
 var moment = require('moment'),
-    errors = require('../../../errors'),
+    errors = require('../../../lib/common/errors'),
     config = require('../../../config'),
     spam = config.get('spam') || {},
     _ = require('lodash'),
@@ -9,7 +9,7 @@ var moment = require('moment'),
     spamUserReset = spam.user_reset || {},
     spamUserLogin = spam.user_login || {},
 
-    i18n = require('../../../i18n'),
+    i18n = require('../../../lib/common/i18n'),
     store,
     handleStoreError,
     globalBlock,
@@ -22,7 +22,7 @@ var moment = require('moment'),
     privateBlog,
     userLogin,
     userReset,
-    logging = require('../../../logging'),
+    logging = require('../../../lib/common/logging'),
     spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 handleStoreError = function handleStoreError(err) {

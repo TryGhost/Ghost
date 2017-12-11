@@ -4,8 +4,8 @@ var debug = require('ghost-ignition').debug('admin:controller'),
     config = require('../../config'),
     api = require('../../api'),
     updateCheck = require('../../update-check'),
-    logging = require('../../logging'),
-    i18n = require('../../i18n');
+    logging = require('../../lib/common/logging'),
+    i18n = require('../../lib/common/i18n');
 
 // Route: index
 // Path: /ghost/

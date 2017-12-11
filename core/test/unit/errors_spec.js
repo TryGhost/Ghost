@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    errors = require('../../server/errors');
+    errors = require('../../server/lib/common/errors');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {

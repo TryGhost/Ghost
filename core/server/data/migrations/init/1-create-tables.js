@@ -1,6 +1,6 @@
 var Promise = require('bluebird'),
     commands = require('../../schema').commands,
-    logging = require('../../../logging'),
+    logging = require('../../../lib/common/logging'),
     schema = require('../../schema').tables,
     schemaTables = Object.keys(schema);
 

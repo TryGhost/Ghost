@@ -5,7 +5,7 @@ var should = require('should'),
     path = require('path'),
     configUtils = require('../../utils/configUtils'),
     urlService = require('../../../server/services/url'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     storage = require('../../../server/adapters/storage'),
 
     // Stuff we are testing

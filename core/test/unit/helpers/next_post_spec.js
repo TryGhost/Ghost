@@ -6,7 +6,7 @@ var should = require('should'), // jshint ignore:line
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
 
     sandbox = sinon.sandbox.create();
 

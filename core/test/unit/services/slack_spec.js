@@ -9,7 +9,7 @@ var should = require('should'), // jshint ignore:line,
 
     // Stuff we test
     slack = rewire('../../../server/services/slack'),
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema').checks,
     settingsCache = require('../../../server/settings/cache'),

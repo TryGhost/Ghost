@@ -3,7 +3,7 @@
 var should = require('should'),
     testUtils = require('../../utils'),
     ghost = testUtils.startGhost,
-    i18n = require('../../../../core/server/i18n');
+    i18n = require('../../../server/lib/common/i18n');
 
 i18n.init();
 

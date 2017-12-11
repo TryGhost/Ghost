@@ -1,6 +1,6 @@
 'use strict';
 
-const logging = require('../../../../logging'),
+const logging = require('../../../../lib/common/logging'),
     commands = require('../../../schema').commands,
     table = 'webhooks',
     message1 = 'Adding table: ' + table,

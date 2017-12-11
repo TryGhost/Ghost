@@ -5,12 +5,12 @@ var debug = require('ghost-ignition').debug('server'),
     fs = require('fs'),
     path = require('path'),
     _ = require('lodash'),
-    errors = require('./errors'),
-    events = require('./events'),
-    logging = require('./logging'),
+    errors = require('./lib/common/errors'),
+    events = require('./lib/common/events'),
+    logging = require('./lib/common/logging'),
     config = require('./config'),
     urlService = require('./services/url'),
-    i18n = require('./i18n'),
+    i18n = require('./lib/common/i18n'),
     moment = require('moment');
 
 /**

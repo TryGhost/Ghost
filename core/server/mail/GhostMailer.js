@@ -4,9 +4,9 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     validator = require('validator'),
     config = require('../config'),
-    errors = require('../errors'),
+    errors = require('../lib/common/errors'),
     settingsCache = require('../settings/cache'),
-    i18n = require('../i18n'),
+    i18n = require('../lib/common/i18n'),
     urlService = require('../services/url');
 
 function GhostMailer() {

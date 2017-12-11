@@ -5,7 +5,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../../../server/errors'),
+    errors = require('../../../../server/lib/common/errors'),
 
     // Stuff we are testing
     ImportManager = require('../../../../server/data/importer'),

@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     config = require('./config'),
-    events = require('./events'),
+    events = require('./lib/common/events'),
     Analytics = require('analytics-node'),
     analytics;
 

@@ -2,7 +2,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
     configUtils = require('../../utils/configUtils'),
-    i18n = require('../../../../core/server/i18n'),
+    i18n = require('../../../server/lib/common/i18n'),
     mailData = {
         mail: [{
             message: {

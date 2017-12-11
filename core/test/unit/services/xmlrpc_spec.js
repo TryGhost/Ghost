@@ -7,8 +7,8 @@ var should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     xmlrpc = rewire('../../../server/services/xmlrpc'),
-    events = require('../../../server/events'),
-    logging = require('../../../server/logging'),
+    events = require('../../../server/lib/common/events'),
+    logging = require('../../../server/lib/common/logging'),
 
     sandbox = sinon.sandbox.create();
 

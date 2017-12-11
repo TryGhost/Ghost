@@ -1,7 +1,7 @@
 var apiUtils = require('../../../api/utils'),
-    errors = require('../../../errors'),
+    errors = require('../../../lib/common/errors'),
     config = require('../../../config'),
-    i18n = require('../../../i18n');
+    i18n = require('../../../lib/common/i18n');
 
 module.exports = function upload(options) {
     var type = options.type;
