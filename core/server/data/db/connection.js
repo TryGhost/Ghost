@@ -1,7 +1,7 @@
 var knex = require('knex'),
     config = require('../../config'),
-    logging = require('../../logging'),
-    errors = require('../../errors'),
+    logging = require('../../lib/common/logging'),
+    errors = require('../../lib/common/errors'),
     knexInstance;
 
 // @TODO:

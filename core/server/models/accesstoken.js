@@ -1,6 +1,6 @@
 var ghostBookshelf  = require('./base'),
     Basetoken       = require('./base/token'),
-    events         = require('../events'),
+    events         = require('../lib/common/events'),
 
     Accesstoken,
     Accesstokens;

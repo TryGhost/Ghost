@@ -8,9 +8,9 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    logging = require('../logging'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    logging = require('../lib/common/logging'),
+    i18n = require('../lib/common/i18n'),
     docName = 'webhooks',
     webhooks;
 
@@ -61,7 +61,7 @@ function makeRequests(webhooksCollection, payload, options) {
 /**
  * ## Webhook API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 webhooks = {
 

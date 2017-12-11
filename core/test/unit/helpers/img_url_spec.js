@@ -4,7 +4,7 @@ var should = require('should'), // jshint ignore:line
 
     // Stuff we are testing
     helpers = require('../../../server/helpers'),
-    logging = require('../../../server/logging'),
+    logging = require('../../../server/lib/common/logging'),
 
     sandbox = sinon.sandbox.create();
 

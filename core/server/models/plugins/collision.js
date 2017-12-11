@@ -1,7 +1,7 @@
 var moment = require('moment-timezone'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    errors = require('../../errors');
+    errors = require('../../lib/common/errors');
 
 module.exports = function (Bookshelf) {
     var ParentModel = Bookshelf.Model,

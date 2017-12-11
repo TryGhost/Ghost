@@ -1,9 +1,9 @@
 var _  = require('lodash'),
     hbs = require('./engine'),
     urlService = require('../services/url'),
-    errors = require('../errors'),
+    errors = require('../lib/common/errors'),
     config = require('../config'),
-    i18n = require('../i18n'),
+    i18n = require('../lib/common/i18n'),
     settingsCache = require('../settings/cache'),
     activeTheme = require('./active'),
     themeMiddleware = {};

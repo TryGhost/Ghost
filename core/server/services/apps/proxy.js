@@ -2,7 +2,7 @@ var _ = require('lodash'),
     api = require('../../api'),
     helpers = require('../../helpers/register'),
     filters = require('../../filters'),
-    i18n = require('../../i18n'),
+    i18n = require('../../lib/common/i18n'),
     router = require('../route').appRouter,
     generateProxyFunctions;
 

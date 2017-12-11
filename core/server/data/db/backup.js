@@ -4,7 +4,7 @@ var fs = require('fs'),
     path = require('path'),
     Promise = require('bluebird'),
     config = require('../../config'),
-    logging = require('../../logging'),
+    logging = require('../../lib/common/logging'),
     urlService = require('../../services/url'),
     exporter = require('../export'),
 

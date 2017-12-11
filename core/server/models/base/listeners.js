@@ -1,11 +1,10 @@
-var config = require('../../config'),
-    events = require(config.get('paths:corePath') + '/server/events'),
-    models = require(config.get('paths:corePath') + '/server/models'),
-    errors = require(config.get('paths:corePath') + '/server/errors'),
-    logging = require(config.get('paths:corePath') + '/server/logging'),
-    sequence = require(config.get('paths:corePath') + '/server/utils/sequence'),
-    moment = require('moment-timezone'),
-    _ = require('lodash');
+var moment = require('moment-timezone'),
+    _ = require('lodash'),
+    models = require('../../models'),
+    events = require('../../lib/common/events'),
+    errors = require('../../lib/common/errors'),
+    logging = require('../../lib/common/logging'),
+    sequence = require('../../utils/sequence');
 
 /**
  * WHEN access token is created we will update last_seen for user.

@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     SiteMapManager = require('../../../server/data/xml/sitemap/manager'),
     PostGenerator = require('../../../server/data/xml/sitemap/post-generator'),
     PageGenerator = require('../../../server/data/xml/sitemap/page-generator'),

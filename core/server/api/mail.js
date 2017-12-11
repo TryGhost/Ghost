@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    i18n = require('../i18n'),
+    i18n = require('../lib/common/i18n'),
     mail = require('../mail'),
     notificationsAPI = require('./notifications'),
     docName = 'mail',
@@ -42,7 +42,7 @@ function sendMail(object) {
 /**
  * ## Mail API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  * @typedef Mail
  * @param mail
  */

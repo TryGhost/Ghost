@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     _ = require('lodash'),
-    errors = require('../../../server/errors'),
+    errors = require('../../../server/lib/common/errors'),
     applyPublicRules = require('../../../server/permissions/public');
 
 describe('Permissions', function () {

@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     helpers = require('../../../server/helpers'),
-    logging = require('../../../server/logging'),
+    logging = require('../../../server/lib/common/logging'),
 
     sandbox = sinon.sandbox.create();
 

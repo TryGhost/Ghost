@@ -1,6 +1,6 @@
-var errors = require('../errors'),
+var errors = require('../lib/common/errors'),
     labs = require('../utils/labs'),
-    i18n = require('../i18n'),
+    i18n = require('../lib/common/i18n'),
     authorize;
 
 authorize = {

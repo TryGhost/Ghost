@@ -1,6 +1,6 @@
 var semver = require('semver'),
-    errors = require('../../../errors'),
-    i18n = require('../../../i18n');
+    errors = require('../../../lib/common/errors'),
+    i18n = require('../../../lib/common/i18n');
 
 function checkVersionMatch(req, res, next) {
     var clientVersion = req.get('X-Ghost-Version'),

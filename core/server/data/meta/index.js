@@ -1,7 +1,7 @@
 var Promise = require('bluebird'),
     settingsCache = require('../../settings/cache'),
     urlService = require('../../services/url'),
-    logging = require('../../logging'),
+    logging = require('../../lib/common/logging'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
     getCanonicalUrl = require('./canonical_url'),

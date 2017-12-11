@@ -5,7 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     SettingsModel = require('../../../server/models/settings').Settings,
     db = require('../../../server/data/db'),
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
     context = testUtils.context.admin,
     sandbox = sinon.sandbox.create();
 

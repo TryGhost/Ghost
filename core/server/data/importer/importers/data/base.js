@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('ghost-ignition').debug('importer:base'),
-    errors = require('../../../../errors'),
+    errors = require('../../../../lib/common/errors'),
     models = require('../../../../models'),
     _ = require('lodash'),
     Promise = require('bluebird');
@@ -86,7 +86,7 @@ class Base {
     handleError(errs, obj) {
         let self = this, errorsToReject = [], problems = [];
 
-        // CASE: validation errors, see models/base/index.js onValidate
+        // CASE: validation errors, see models/base/events.js onValidate
         if (!_.isArray(errs)) {
             errs = [errs];
         }

@@ -2,7 +2,7 @@
 // Based heavily on the settings cache
 const _ = require('lodash'),
     debug = require('ghost-ignition').debug('services:url:cache'),
-    events = require('../../events'),
+    events = require('../../lib/common/events'),
     urlCache = {};
 
 module.exports = {

@@ -1,7 +1,7 @@
 var _ = require('lodash'),
-    errors = require('../../errors'),
+    errors = require('../../lib/common/errors'),
     gql = require('ghost-gql'),
-    i18n = require('../../i18n'),
+    i18n = require('../../lib/common/i18n'),
     filter,
     filterUtils;
 

@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     fs = require('fs-extra'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../../../server/errors'),
+    errors = require('../../../../server/lib/common/errors'),
     LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
     localFileStore,
 
