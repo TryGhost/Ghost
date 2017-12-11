@@ -136,7 +136,6 @@ utils = {
     removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
     zipFolder: require('./zip-folder'),
     generateAssetHash: require('./asset-hash'),
-    url: require('./url'),
     tokens: require('./tokens'),
     sequence: require('./sequence'),
     ghostVersion: require('./ghost-version'),

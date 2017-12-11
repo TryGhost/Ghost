@@ -5,7 +5,7 @@ var fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
     config = require('../config'),
-    utils = require('../utils'),
+    globalUtils = require('../utils'),
     LocalFileStorage = require('../adapters/storage/LocalFileStorage'),
     remove = Promise.promisify(fs.remove);
 
@@ -31,13 +31,13 @@ class ThemeStorage extends LocalFileStorage {
                 themePath = path.join(self.storagePath, themeName),
                 zipName = themeName + '.zip',
                 // store this in a unique temporary folder
-                zipBasePath = path.join(os.tmpdir(), utils.uid(10)),
+                zipBasePath = path.join(os.tmpdir(), globalUtils.uid(10)),
                 zipPath = path.join(zipBasePath, zipName),
                 stream;
 
             Promise.promisify(fs.ensureDir)(zipBasePath)
                 .then(function () {
-                    return Promise.promisify(utils.zipFolder)(themePath, zipPath);
+                    return Promise.promisify(globalUtils.zipFolder)(themePath, zipPath);
                 })
                 .then(function (length) {
                     res.set({

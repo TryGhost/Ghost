@@ -7,7 +7,7 @@ var should = require('should'),
     _ = require('lodash'),
     context = testUtils.context,
     errors = require('../../../server/errors'),
-    serverUtils = require('../../../server/utils'),
+    globalUtils = require('../../../server/utils'),
     apiUtils = require('../../../server/api/utils'),
     SubscribersAPI = require('../../../server/api/subscribers'),
 
@@ -284,7 +284,7 @@ describe('Subscribers API', function () {
             });
             sandbox.stub(apiUtils, 'checkFileExists').returns(true);
             stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
-            sandbox.stub(serverUtils, 'readCSV').callsFake(function () {
+            sandbox.stub(globalUtils, 'readCSV').callsFake(function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
                 }

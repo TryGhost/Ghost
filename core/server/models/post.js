@@ -12,7 +12,8 @@ var _ = require('lodash'),
     ghostBookshelf = require('./base'),
     events = require('../events'),
     config = require('../config'),
-    utils = require('../utils'),
+    globalUtils = require('../utils'),
+    urlService = require('../services/url'),
     i18n = require('../i18n'),
     Post,
     Posts;
@@ -217,7 +218,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
+            this.set('html', globalUtils.mobiledocConverter.render(JSON.parse(mobiledoc)));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
@@ -375,7 +376,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = utils.url.urlPathForPost(attrs);
+            attrs.url = urlService.utils.urlPathForPost(attrs);
         }
 
         if (oldPostId) {
