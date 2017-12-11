@@ -6,7 +6,7 @@ var _ = require('lodash'),
 
     // Stuff we test
     webhooks = rewire('../../../server/services/webhooks'),
-    events = require('../../../server/events'),
+    events = require('../../../server/lib/common/events'),
 
     sandbox = sinon.sandbox.create();
 

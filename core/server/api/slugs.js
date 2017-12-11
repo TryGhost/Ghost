@@ -4,8 +4,8 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    errors = require('../lib/common/errors'),
+    i18n = require('../lib/common/i18n'),
     docName = 'slugs',
     slugs,
     allowedTypes;
@@ -13,7 +13,7 @@ var Promise = require('bluebird'),
 /**
  * ## Slugs API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 slugs = {
 

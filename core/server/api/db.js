@@ -10,7 +10,7 @@ var Promise = require('bluebird'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
     config = require('../config'),
-    errors = require('../errors'),
+    errors = require('../lib/common/errors'),
     urlService = require('../services/url'),
     docName = 'db',
     db;
@@ -18,7 +18,7 @@ var Promise = require('bluebird'),
 /**
  * ## DB API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 db = {
     /**

@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    events = require('../events'),
+    events = require('../lib/common/events'),
     api = require('../api'),
     modelAttrs;
 

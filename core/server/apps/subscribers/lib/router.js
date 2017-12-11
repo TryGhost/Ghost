@@ -6,7 +6,7 @@ var path                = require('path'),
 
     // Dirty requires
     api                 = require('../../../api'),
-    errors              = require('../../../errors'),
+    errors              = require('../../../lib/common/errors'),
     validator           = require('../../../data/validation').validator,
     postLookup          = require('../../../controllers/frontend/post-lookup'),
     renderer            = require('../../../controllers/frontend/renderer'),

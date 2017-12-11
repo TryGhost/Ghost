@@ -1,5 +1,5 @@
 var ghostBookshelf = require('./base'),
-    events = require('../events'),
+    events = require('../lib/common/events'),
     Promise = require('bluebird'),
     Webhook,
     Webhooks;

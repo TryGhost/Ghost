@@ -1,6 +1,6 @@
 var config = require('../../config'),
-    i18n   = require('../../i18n'),
-    errors = require('../../errors');
+    i18n   = require('../../lib/common/i18n'),
+    errors = require('../../lib/common/errors');
 
 module.exports = function maintenance(req, res, next) {
     if (config.get('maintenance').enabled) {

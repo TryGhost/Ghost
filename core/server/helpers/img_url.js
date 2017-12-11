@@ -9,8 +9,8 @@
 // `absolute` flag outputs absolute URL, else URL is relative.
 
 var proxy = require('./proxy'),
-    logging = require('../logging'),
-    i18n = require('../i18n'),
+    logging = require('../lib/common/logging'),
+    i18n = require('../lib/common/i18n'),
     url = proxy.url;
 
 module.exports = function imgUrl(attr, options) {

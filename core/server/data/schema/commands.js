@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    i18n = require('../../i18n'),
+    i18n = require('../../lib/common/i18n'),
     db = require('../db'),
     schema = require('./schema'),
     clients = require('./clients');

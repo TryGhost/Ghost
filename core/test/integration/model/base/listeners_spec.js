@@ -4,12 +4,11 @@ var should = require('should'), // jshint ignore:line
     moment = require('moment-timezone'),
     rewire = require('rewire'),
     _ = require('lodash'),
-    config = require('../../../../server/config'),
-    events = require(config.get('paths').corePath + '/server/events'),
-    models = require(config.get('paths').corePath + '/server/models'),
-    testUtils = require(config.get('paths').corePath + '/test/utils'),
-    logging = require(config.get('paths').corePath + '/server/logging'),
-    sequence = require(config.get('paths').corePath + '/server/utils/sequence'),
+    events = require('../../../../server/lib/common/events'),
+    logging = require('../../../../server/lib/common/logging'),
+    models = require('../../../../server/models'),
+    testUtils = require('../../../../test/utils'),
+    sequence = require('../../../../server/utils/sequence'),
     sandbox = sinon.sandbox.create();
 
 describe('Models: listeners', function () {
@@ -31,7 +30,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        listeners = rewire(config.get('paths').corePath + '/server/models/base/listeners');
+        listeners = rewire('../../../../server/models/base/listeners');
     });
 
     afterEach(function () {
