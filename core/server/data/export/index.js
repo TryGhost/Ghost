@@ -4,10 +4,8 @@ var _ = require('lodash'),
     commands = require('../schema').commands,
     globalUtils = require('../../utils'),
     ghostVersion = require('../../utils/ghost-version'),
-    errors = require('../../lib/common/errors'),
-    logging = require('../../lib/common/logging'),
+    common = require('../../lib/common'),
     models = require('../../models'),
-    i18n = require('../../lib/common/i18n'),
     excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
     modelOptions = {context: {internal: true}},
 
@@ -30,7 +28,7 @@ exportFileName = function exportFileName(options) {
 
         return title + 'ghost.' + datetime + '.json';
     }).catch(function (err) {
-        logging.error(new errors.GhostError({err: err}));
+        common.logging.error(new common.errors.GhostError({err: err}));
         return 'ghost.' + datetime + '.json';
     });
 };
@@ -79,9 +77,9 @@ doExport = function doExport(options) {
 
         return exportData;
     }).catch(function (err) {
-        return Promise.reject(new errors.DataExportError({
+        return Promise.reject(new common.errors.DataExportError({
             err: err,
-            context: i18n.t('errors.data.export.errorExportingData')
+            context: common.i18n.t('errors.data.export.errorExportingData')
         }));
     });
 };

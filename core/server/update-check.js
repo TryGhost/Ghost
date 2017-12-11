@@ -32,24 +32,22 @@ var crypto = require('crypto'),
     api = require('./api'),
     config = require('./config'),
     urlService = require('./services/url'),
-    logging = require('./lib/common/logging'),
-    errors = require('./lib/common/errors'),
-    i18n = require('./lib/common/i18n'),
+    common = require('./lib/common'),
     currentVersion = require('./utils/ghost-version').full,
     internal = {context: {internal: true}},
     checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
 
 function updateCheckError(err) {
-    err = errors.utils.deserialize(err);
+    err = common.errors.utils.deserialize(err);
 
     api.settings.edit(
         {settings: [{key: 'next_update_check', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
     );
 
-    err.context = i18n.t('errors.update-check.checkingForUpdatesFailed.error');
-    err.help = i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
-    logging.error(err);
+    err.context = common.i18n.t('errors.update-check.checkingForUpdatesFailed.error');
+    err.help = common.i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
+    common.logging.error(err);
 }
 
 /**
@@ -176,7 +174,7 @@ function updateCheckRequest() {
 
                         resolve(resData);
                     } catch (e) {
-                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
+                        reject(common.i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
                     }
                 });
             });

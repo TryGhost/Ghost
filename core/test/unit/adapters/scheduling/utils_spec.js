@@ -1,7 +1,7 @@
 var should = require('should'),
     fs = require('fs'),
     config = require('../../../../server/config'),
-    errors = require('../../../../server/lib/common/errors'),
+    common = require('../../../../server/lib/common'),
     schedulingUtils = require('../../../../server/adapters/scheduling/utils');
 
 describe('Scheduling: utils', function () {
@@ -74,7 +74,7 @@ describe('Scheduling: utils', function () {
                 active: __dirname + '/bad-adapter'
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.IncorrectUsageError).should.eql(true);
+                (err instanceof common.errors.IncorrectUsageError).should.eql(true);
                 done();
             }).finally(function () {
                 fs.unlinkSync(__dirname + '/bad-adapter.js');

@@ -10,7 +10,7 @@ var Promise = require('bluebird'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
     config = require('../config'),
-    errors = require('../lib/common/errors'),
+    common = require('../lib/common'),
     urlService = require('../services/url'),
     docName = 'db',
     db;
@@ -18,7 +18,7 @@ var Promise = require('bluebird'),
 /**
  * ## DB API Methods
  *
- * **See:** [API Methods](events.js.html#api%20methods)
+ * **See:** [API Methods](index.js.html#api%20methods)
  */
 db = {
     /**
@@ -62,7 +62,7 @@ db = {
             return exporter.doExport().then(function (exportedData) {
                 return {db: [exportedData]};
             }).catch(function (err) {
-                return Promise.reject(new errors.GhostError({err: err}));
+                return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
 
@@ -124,7 +124,7 @@ db = {
                 return Collection.invokeThen('destroy', queryOpts);
             }).return({db: []})
                 .catch(function (err) {
-                    throw new errors.GhostError({err: err});
+                    throw new common.errors.GhostError({err: err});
                 });
         }
 

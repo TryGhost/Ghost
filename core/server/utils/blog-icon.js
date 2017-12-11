@@ -2,8 +2,7 @@ var sizeOf = require('image-size'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     path = require('path'),
-    i18n = require('../lib/common/i18n'),
-    errors = require('../lib/common/errors'),
+    common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
     config = require('../config'),
     urlService = require('../services/url'),
@@ -29,8 +28,12 @@ getIconDimensions = function getIconDimensions(path) {
             dimensions = sizeOf(path);
 
             if (dimensions.images) {
-                dimensions.width = _.maxBy(dimensions.images, function (w) {return w.width;}).width;
-                dimensions.height = _.maxBy(dimensions.images, function (h) {return h.height;}).height;
+                dimensions.width = _.maxBy(dimensions.images, function (w) {
+                    return w.width;
+                }).width;
+                dimensions.height = _.maxBy(dimensions.images, function (h) {
+                    return h.height;
+                }).height;
             }
 
             return resolve({
@@ -38,7 +41,12 @@ getIconDimensions = function getIconDimensions(path) {
                 height: dimensions.height
             });
         } catch (err) {
-            return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: err.message})}));
+            return reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.blogIcon.error', {
+                    file: path,
+                    error: err.message
+                })
+            }));
         }
     });
 };

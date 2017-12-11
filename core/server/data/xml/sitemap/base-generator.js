@@ -4,7 +4,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     path = require('path'),
     urlService = require('../../../services/url'),
-    events = require('../../../lib/common/events'),
+    common = require('../../../lib/common'),
     localUtils = require('./utils'),
     CHANGE_FREQ = 'weekly',
     XMLNS_DECLS;
@@ -22,7 +22,7 @@ function BaseSiteMapGenerator() {
     this.nodeLookup = {};
     this.nodeTimeLookup = {};
     this.siteMapContent = '';
-    this.dataEvents = events;
+    this.dataEvents = common.events;
 }
 
 _.extend(BaseSiteMapGenerator.prototype, {

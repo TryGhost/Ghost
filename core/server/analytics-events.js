@@ -1,7 +1,7 @@
 var _ = require('lodash'),
-    config = require('./config'),
-    events = require('./lib/common/events'),
     Analytics = require('analytics-node'),
+    config = require('./config'),
+    common = require('./lib/common'),
     analytics;
 
 module.exports.init = function () {
@@ -62,7 +62,7 @@ module.exports.init = function () {
     ];
 
     _.each(toTrack, function (track) {
-        events.on(track.event, function () {
+        common.events.on(track.event, function () {
             analytics.track(_.extend(trackDefaults, {event: prefix + track.name}));
         });
     });

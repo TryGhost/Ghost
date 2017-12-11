@@ -1,12 +1,9 @@
 var https = require('https'),
     url = require('url'),
-    errors = require('../lib/common/errors'),
-    logging = require('../lib/common/logging'),
+    common = require('../lib/common'),
     urlService = require('../services/url'),
     blogIconUtils = require('../utils/blog-icon'),
-    events = require('../lib/common/events'),
     settingsCache = require('../settings/cache'),
-    i18n = require('../lib/common/i18n'),
     schema = require('../data/schema').checks,
     defaultPostSlugs = [
         'welcome',
@@ -32,10 +29,10 @@ function makeRequest(reqOptions, reqPayload) {
 
     req.write(reqPayload);
     req.on('error', function (err) {
-        logging.error(new errors.GhostError({
+        common.logging.error(new common.errors.GhostError({
             err: err,
-            context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-            help: i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+            context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+            help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
         }));
     });
 
@@ -103,8 +100,8 @@ function testPing() {
 }
 
 function listen() {
-    events.on('post.published', listener);
-    events.on('slack.test', testPing);
+    common.events.on('post.published', listener);
+    common.events.on('slack.test', testPing);
 }
 
 // Public API
