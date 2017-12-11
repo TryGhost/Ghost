@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-    events = require('../../../server/lib/common/events'),
+    common = require('../../../server/lib/common'),
     globalUtils = require('../../../server/utils'),
 
     // Stuff we are testing
@@ -22,7 +22,7 @@ describe('Accesstoken Model', function () {
 
     it('on creation emits token.added event', function (done) {
         // Setup
-        var eventSpy = sandbox.spy(events, 'emit');
+        var eventSpy = sandbox.spy(common.events, 'emit');
 
         // Test
         // Stub refreshtoken

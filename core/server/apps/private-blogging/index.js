@@ -1,8 +1,6 @@
 var config = require('../../config'),
     urlService = require('../../services/url'),
-    errors = require('../../lib/common/errors'),
-    logging = require('../../lib/common/logging'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     middleware = require('./lib/middleware'),
     router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
@@ -15,10 +13,10 @@ checkSubdir = function checkSubdir() {
         paths = urlService.utils.getSubdir().split('/');
 
         if (paths.pop() === config.get('routeKeywords').private) {
-            logging.error(new errors.GhostError({
-                message: i18n.t('errors.config.urlCannotContainPrivateSubdir.error'),
-                context: i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
-                help: i18n.t('errors.config.urlCannotContainPrivateSubdir.help')
+            common.logging.error(new common.errors.GhostError({
+                message: common.i18n.t('errors.config.urlCannotContainPrivateSubdir.error'),
+                context: common.i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
+                help: common.i18n.t('errors.config.urlCannotContainPrivateSubdir.help')
             }));
 
             // @TODO: why

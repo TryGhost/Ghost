@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('ghost-ignition').debug('importer:base'),
-    errors = require('../../../../lib/common/errors'),
+    common = require('../../../../lib/common'),
     models = require('../../../../models'),
     _ = require('lodash'),
     Promise = require('bluebird');
@@ -103,14 +103,14 @@ class Base {
                         });
                     }
                 } else {
-                    errorsToReject.push(new errors.DataImportError({
+                    errorsToReject.push(new common.errors.DataImportError({
                         message: 'Detected duplicated entry.',
                         help: self.modelName,
                         context: JSON.stringify(obj),
                         err: err
                     }));
                 }
-            } else if (err instanceof errors.NotFoundError) {
+            } else if (err instanceof common.errors.NotFoundError) {
                 if (self.showNotFoundWarning) {
                     problems.push({
                         message: 'Entry was not imported and ignored. Could not find entry.',
@@ -120,8 +120,8 @@ class Base {
                     });
                 }
             } else {
-                if (!errors.utils.isIgnitionError(err)) {
-                    err = new errors.DataImportError({
+                if (!common.errors.utils.isIgnitionError(err)) {
+                    err = new common.errors.DataImportError({
                         message: err.message,
                         context: JSON.stringify(obj),
                         help: self.modelName,

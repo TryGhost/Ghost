@@ -3,8 +3,7 @@ var util = require('util'),
     request = require('superagent'),
     debug = require('ghost-ignition').debug('scheduling-default'),
     SchedulingBase = require('./SchedulingBase'),
-    errors = require('../../lib/common/errors'),
-    logging = require('../../lib/common/logging');
+    common = require('../../lib/common');
 
 /**
  * allJobs is a sorted list by time attribute
@@ -237,7 +236,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 }, self.retryTimeoutInMs);
             }
 
-            logging.error(new errors.GhostError({
+            common.logging.error(new common.errors.GhostError({
                 err: err,
                 level: 'critical'
             }));
