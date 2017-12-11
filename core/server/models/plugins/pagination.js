@@ -2,8 +2,7 @@
 //
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 var _ = require('lodash'),
-    errors = require('../../lib/common/errors'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     defaults,
     paginationUtils,
     pagination;
@@ -195,7 +194,7 @@ pagination = function pagination(bookshelf) {
                     .catch(function (err) {
                         // e.g. offset/limit reached max allowed integer value
                         if (err.errno === 20 || err.errno === 1064) {
-                            throw new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')});
+                            throw new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')});
                         }
 
                         throw err;

@@ -12,14 +12,13 @@ var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     config = require('../../config'),
     db = require('../../data/db'),
-    errors = require('../../lib/common/errors'),
+    common = require('../../lib/common'),
     filters = require('../../filters'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
     globalUtils = require('../../utils'),
     validation = require('../../data/validation'),
     plugins = require('../plugins'),
-    i18n = require('../../lib/common/i18n'),
 
     ghostBookshelf,
     proto;
@@ -309,8 +308,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else if (options.context.external) {
             return ghostBookshelf.Model.externalUser;
         } else {
-            throw new errors.NotFoundError({
-                message: i18n.t('errors.models.base.index.missingContext'),
+            throw new common.errors.NotFoundError({
+                message: common.i18n.t('errors.models.base.index.missingContext'),
                 level: 'critical'
             });
         }
@@ -462,8 +461,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                 // CASE: client sends `0000-00-00 00:00:00`
                 if (!dateMoment.isValid()) {
-                    throw new errors.ValidationError({
-                        message: i18n.t('errors.models.base.invalidDate', {key: key})
+                    throw new common.errors.ValidationError({
+                        message: common.i18n.t('errors.models.base.invalidDate', {key: key})
                     });
                 }
 

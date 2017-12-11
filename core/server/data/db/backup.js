@@ -4,7 +4,7 @@ var fs = require('fs'),
     path = require('path'),
     Promise = require('bluebird'),
     config = require('../../config'),
-    logging = require('../../lib/common/logging'),
+    common = require('../../lib/common'),
     urlService = require('../../services/url'),
     exporter = require('../export'),
 
@@ -23,7 +23,7 @@ writeExportFile = function writeExportFile(exportResult) {
  * @returns {Promise<*>}
  */
 backup = function backup(options) {
-    logging.info('Creating database backup');
+    common.logging.info('Creating database backup');
     options = options || {};
 
     var props = {
@@ -34,7 +34,7 @@ backup = function backup(options) {
     return Promise.props(props)
         .then(writeExportFile)
         .then(function successMessage(filename) {
-            logging.info('Database backup written to: ' + filename);
+            common.logging.info('Database backup written to: ' + filename);
         });
 };
 
