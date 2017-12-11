@@ -19,12 +19,34 @@ const _ = require('lodash'),
     utils = require('../../utils');
 
 class UrlService {
-    constructor() {
+    constructor(options) {
         this.resources = [];
 
         _.each(resourceConfig, (config) => {
             this.resources.push(new Resource(config));
         });
+
+        // You can disable the url preload, in case we encounter a problem with the new url service.
+        if (options.disableUrlPreload) {
+            return;
+        }
+
+        this.bind();
+
+        // Hardcoded routes
+        // @TODO figure out how to do this from channel or other config
+        // @TODO get rid of name concept (for compat with sitemaps)
+        UrlService.cacheRoute('/', {name: 'home'});
+
+        // @TODO figure out how to do this from apps
+        // @TODO only do this if subscribe is enabled!
+        UrlService.cacheRoute('/subscribe/', {});
+
+        // Register a listener for server-start to load all the known urls
+        events.on('server:start', (() => {
+            debug('URL service, loading all URLS');
+            this.loadResourceUrls();
+        }));
     }
 
     bind() {
