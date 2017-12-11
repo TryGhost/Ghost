@@ -1,12 +1,12 @@
-var utils            = require('../../utils'),
-    settingsCache    = require('../../settings/cache'),
-    blogIconUtils    = require('../../utils/blog-icon');
+var urlService = require('../../services/url'),
+    settingsCache = require('../../settings/cache'),
+    blogIconUtils = require('../../utils/blog-icon');
 
 function getBlogLogo() {
     var logo = {};
 
     if (settingsCache.get('logo')) {
-        logo.url = utils.url.urlFor('image', {image: settingsCache.get('logo')}, true);
+        logo.url = urlService.utils.urlFor('image', {image: settingsCache.get('logo')}, true);
     } else {
         // CASE: no publication logo is updated. We can try to use either an uploaded publication icon
         // or use the default one to make

@@ -6,6 +6,7 @@ var should = require('should'),
     authStrategies = require('../../../server/auth/auth-strategies'),
     Models = require('../../../server/models'),
     errors = require('../../../server/errors'),
+    urlService = require('../../../server/services/url'),
     globalUtils = require('../../../server/utils'),
 
     sandbox = sinon.sandbox.create(),

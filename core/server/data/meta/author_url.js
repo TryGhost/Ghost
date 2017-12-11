@@ -1,4 +1,4 @@
-var utils            = require('../../utils');
+var urlService = require('../../services/url');
 
 function getAuthorUrl(data, absolute) {
     var context = data.context ? data.context[0] : null;
@@ -6,10 +6,10 @@ function getAuthorUrl(data, absolute) {
     context = context === 'amp' ? 'post' : context;
 
     if (data.author) {
-        return utils.url.urlFor('author', {author: data.author}, absolute);
+        return urlService.utils.urlFor('author', {author: data.author}, absolute);
     }
     if (data[context] && data[context].author) {
-        return utils.url.urlFor('author', {author: data[context].author}, absolute);
+        return urlService.utils.urlFor('author', {author: data[context].author}, absolute);
     }
     return null;
 }

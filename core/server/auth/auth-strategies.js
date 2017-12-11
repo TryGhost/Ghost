@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     models = require('../models'),
-    utils = require('../utils'),
+    globalUtils = require('../utils'),
     i18n = require('../i18n'),
     errors = require('../errors'),
     strategies;
@@ -95,7 +95,7 @@ strategies = {
 
         handleInviteToken = function handleInviteToken() {
             var user, invite;
-            inviteToken = utils.decodeBase64URLsafe(inviteToken);
+            inviteToken = globalUtils.decodeBase64URLsafe(inviteToken);
 
             return models.Invite.findOne({token: inviteToken}, options)
                 .then(function addInviteUser(_invite) {
@@ -116,7 +116,7 @@ strategies = {
                     return models.User.add({
                         email: profile.email,
                         name: profile.name,
-                        password: utils.uid(50),
+                        password: globalUtils.uid(50),
                         roles: [invite.toJSON().role_id],
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken

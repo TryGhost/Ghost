@@ -16,11 +16,12 @@ const _ = require('lodash'),
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),
     urlCache = require('./cache'),
-    utils = require('../../utils');
+    localUtils = require('./utils');
 
 class UrlService {
     constructor(options) {
         this.resources = [];
+        this.utils = localUtils;
 
         _.each(resourceConfig, (config) => {
             this.resources.push(new Resource(config));
@@ -135,7 +136,7 @@ class UrlService {
     }
 
     static cacheRoute(relativeUrl, data) {
-        const url = utils.url.urlFor({relativeUrl: relativeUrl});
+        const url = localUtils.urlFor({relativeUrl: relativeUrl});
         data.static = true;
         urlCache.set(url, data);
     }

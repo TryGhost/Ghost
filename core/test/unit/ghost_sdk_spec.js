@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     ghostSdk = require('../../server/public/ghost-sdk'),
     configUtils = require('../utils/configUtils'),
-    utils = require('../../server/utils');
+    urlService = require('../../server/services/url');
 
 describe('Ghost Ajax Helper', function () {
     beforeEach(function () {
@@ -27,7 +27,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
@@ -41,7 +41,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         ghostSdk.url.api().should.equal('https://testblog.com/ghost/api/v0.1/');
@@ -58,7 +58,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         ghostSdk.url.api().should.equal('https://admin.testblog.com/ghost/api/v0.1/');
@@ -68,7 +68,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         ghostSdk.url.api('a/', '/b', '/c/').should.equal('//testblog.com/ghost/api/v0.1/a/b/c/');
@@ -78,7 +78,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/?client_id=ghost-frontend&client_secret=notasecret');
@@ -88,7 +88,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         var rendered = ghostSdk.url.api({a: 'string', b: 5, c: 'en coded'});
@@ -126,7 +126,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -146,7 +146,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', true)
+            url: urlService.utils.urlFor('api', true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -165,7 +165,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', true)
+            url: urlService.utils.urlFor('api', true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -185,7 +185,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: utils.url.urlFor('api', {cors: true}, true)
+            url: urlService.utils.urlFor('api', {cors: true}, true)
         });
 
         var rendered = ghostSdk.url.api('posts', {limit: 3}),

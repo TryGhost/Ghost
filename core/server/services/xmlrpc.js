@@ -2,7 +2,7 @@ var _ = require('lodash'),
     http = require('http'),
     xml = require('xml'),
     config = require('../config'),
-    utils = require('../utils'),
+    urlService = require('../services/url'),
     errors = require('../errors'),
     logging = require('../logging'),
     events = require('../events'),
@@ -30,7 +30,7 @@ var _ = require('lodash'),
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = utils.url.urlFor('post', {post: post}, true);
+        url = urlService.utils.urlFor('post', {post: post}, true);
 
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;

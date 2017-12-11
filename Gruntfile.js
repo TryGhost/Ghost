@@ -8,22 +8,22 @@
 
 require('./core/server/overrides');
 
-var config         = require('./core/server/config'),
-    utils          = require('./core/server/utils'),
-    _              = require('lodash'),
-    chalk          = require('chalk'),
-    fs             = require('fs-extra'),
-    KnexMigrator   = require('knex-migrator'),
+var config = require('./core/server/config'),
+    urlService = require('./core/server/services/url'),
+    _ = require('lodash'),
+    chalk = require('chalk'),
+    fs = require('fs-extra'),
+    KnexMigrator = require('knex-migrator'),
     knexMigrator = new KnexMigrator({
         knexMigratorFilePath: config.get('paths:appRoot')
     }),
 
-    path           = require('path'),
+    path = require('path'),
 
-    escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
-    cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
+    escapeChar = process.platform.match(/^win/) ? '^' : '\\',
+    cwd = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
-    distDirectory  = path.resolve(cwd, '.dist'),
+    distDirectory = path.resolve(cwd, '.dist'),
 
     // ## Grunt configuration
 
@@ -230,8 +230,8 @@ var config         = require('./core/server/config'),
                         var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                         grunt.log.writeln('Pulling down the latest master from ' + upstream);
                         return 'git checkout master; git pull ' + upstream + ' master; ' +
-                        'yarn; git submodule foreach "git checkout master && git pull ' +
-                        upstream + ' master"';
+                            'yarn; git submodule foreach "git checkout master && git pull ' +
+                            upstream + ' master"';
                     }
                 },
 
@@ -349,7 +349,7 @@ var config         = require('./core/server/config'),
 
                 watch: {
                     projects: {
-                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + utils.url.getSubdir() + '/ghost/"']
+                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"']
                     }
                 }
             },

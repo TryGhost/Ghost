@@ -1,4 +1,4 @@
-var utils = require('../utils'),
+var urlService = require('../services/url'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
     postLookup = require('./frontend/post-lookup'),
@@ -31,12 +31,12 @@ module.exports = function entryController(req, res, next) {
 
         // CASE: last param is of url is /edit, redirect to admin
         if (lookup.isEditURL) {
-            return utils.url.redirectToAdmin(302, res, '#/editor/' + post.id);
+            return urlService.utils.redirectToAdmin(302, res, '#/editor/' + post.id);
         }
 
         // CASE: permalink is not valid anymore, we redirect him permanently to the correct one
         if (post.url !== req.path) {
-            return utils.url.redirect301(res, post.url);
+            return urlService.utils.redirect301(res, post.url);
         }
 
         setRequestIsSecure(req, post);

@@ -1,8 +1,7 @@
 'use strict';
 
 const _ = require('lodash'),
-    api = require('../../api'),
-    utils = require('../../utils'),
+    localUtils = require('./utils'),
     prefetchDefaults = {
         context: {
             internal: true
@@ -23,7 +22,7 @@ class Resource {
     fetchAll() {
         const options = _.defaults(this.prefetchOptions, prefetchDefaults);
 
-        return api[this.api]
+        return require('../../api')[this.api]
             .browse(options)
             .then((resp) => {
                 this.items = resp[this.api];
@@ -35,7 +34,7 @@ class Resource {
         const data = {
             [this.urlLookup]: item
         };
-        return utils.url.urlFor(this.urlLookup, data);
+        return localUtils.urlFor(this.urlLookup, data);
     }
 
     toData(item) {

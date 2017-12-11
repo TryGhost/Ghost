@@ -7,7 +7,7 @@ var schema    = require('../schema').tables,
     errors    = require('../../errors'),
     i18n      = require('../../i18n'),
     settingsCache = require('../../settings/cache'),
-    utils = require('../../utils/url'),
+    urlService = require('../../services/url'),
 
     validatePassword,
     validateSchema,
@@ -95,7 +95,7 @@ validator.extend('isSlug', function isSlug(str) {
 validatePassword = function validatePassword(password, email, blogTitle) {
     var validationResult = {isValid: true},
         disallowedPasswords = ['password', 'ghost', 'passw0rd'],
-        blogUrl = utils.urlFor('home', true),
+        blogUrl = urlService.utils.urlFor('home', true),
         badPasswords = [
             '1234567890',
             'qwertyuiop',

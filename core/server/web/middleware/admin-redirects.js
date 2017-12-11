@@ -1,10 +1,10 @@
 var express = require('express'),
-    utils = require('../../utils'),
+    urlService = require('../../services/url'),
     adminRedirect;
 
 adminRedirect = function adminRedirect(path) {
     return function doRedirect(req, res) {
-        return utils.url.redirectToAdmin(301, res, path);
+        return urlService.utils.redirectToAdmin(301, res, path);
     };
 };
 

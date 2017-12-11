@@ -3,7 +3,8 @@ var fs = require('fs'),
     crypto = require('crypto'),
     path = require('path'),
     config = require('../../../config'),
-    utils = require('../../../utils'),
+    urlService = require('../../../services/url'),
+    globalUtils = require('../../../utils'),
     errors = require('../../../errors'),
     i18n = require('../../../i18n'),
     settingsCache = require('../../../settings/cache'),
@@ -32,7 +33,7 @@ privateBlogging = {
         res.isPrivateBlog = true;
 
         return session({
-            maxAge: utils.ONE_MONTH_MS,
+            maxAge: globalUtils.ONE_MONTH_MS,
             signed: false
         })(req, res, next);
     },
@@ -88,7 +89,7 @@ privateBlogging = {
         if (isVerified) {
             return next();
         } else {
-            url = utils.url.urlFor({relativeUrl: privateRoute});
+            url = urlService.utils.urlFor({relativeUrl: privateRoute});
             url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
             return res.redirect(url);
         }
@@ -97,7 +98,7 @@ privateBlogging = {
     // This is here so a call to /private/ after a session is verified will redirect to home;
     isPrivateSessionAuth: function isPrivateSessionAuth(req, res, next) {
         if (!res.isPrivateBlog) {
-            return res.redirect(utils.url.urlFor('home', true));
+            return res.redirect(urlService.utils.urlFor('home', true));
         }
 
         var hash = req.session.token || '',
@@ -106,7 +107,7 @@ privateBlogging = {
 
         if (isVerified) {
             // redirect to home if user is already authenticated
-            return res.redirect(utils.url.urlFor('home', true));
+            return res.redirect(urlService.utils.urlFor('home', true));
         } else {
             return next();
         }
@@ -129,7 +130,7 @@ privateBlogging = {
             req.session.token = hasher.digest('hex');
             req.session.salt = salt;
 
-            return res.redirect(utils.url.urlFor({relativeUrl: decodeURIComponent(forward)}));
+            return res.redirect(urlService.utils.urlFor({relativeUrl: decodeURIComponent(forward)}));
         } else {
             res.error = {
                 message: i18n.t('errors.middleware.privateblogging.wrongPassword')

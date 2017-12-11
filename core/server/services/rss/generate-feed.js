@@ -1,6 +1,6 @@
 var downsize = require('downsize'),
     RSS = require('rss'),
-    utils = require('../../utils'),
+    urlService = require('../../services/url'),
     filters = require('../../filters'),
     processUrls = require('../../utils/make-absolute-urls'),
 
@@ -22,7 +22,7 @@ generateTags = function generateTags(data) {
 };
 
 generateItem = function generateItem(post, siteUrl, secure) {
-    var itemUrl = utils.url.urlFor('post', {post: post, secure: secure}, true),
+    var itemUrl = urlService.utils.urlFor('post', {post: post, secure: secure}, true),
         htmlContent = processUrls(post.html, siteUrl, itemUrl),
         item = {
             title: post.title,
@@ -38,7 +38,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
         imageUrl;
 
     if (post.feature_image) {
-        imageUrl = utils.url.urlFor('image', {image: post.feature_image, secure: secure}, true);
+        imageUrl = urlService.utils.urlFor('image', {image: post.feature_image, secure: secure}, true);
 
         // Add a media content tag
         item.custom_elements.push({
@@ -73,15 +73,15 @@ generateItem = function generateItem(post, siteUrl, secure) {
  * @param {{title, description, safeVersion, secure, posts}} data
  */
 generateFeed = function generateFeed(baseUrl, data) {
-    var siteUrl = utils.url.urlFor('home', {secure: data.secure}, true),
-        feedUrl = utils.url.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
+    var siteUrl = urlService.utils.urlFor('home', {secure: data.secure}, true),
+        feedUrl = urlService.utils.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
         feed = new RSS({
             title: data.title,
             description: data.description,
             generator: 'Ghost ' + data.safeVersion,
             feed_url: feedUrl,
             site_url: siteUrl,
-            image_url: utils.url.urlFor({relativeUrl: 'favicon.png'}, true),
+            image_url: urlService.utils.urlFor({relativeUrl: 'favicon.png'}, true),
             ttl: '60',
             custom_namespaces: {
                 content: 'http://purl.org/rss/1.0/modules/content/',

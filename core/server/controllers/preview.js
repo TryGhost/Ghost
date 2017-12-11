@@ -1,5 +1,5 @@
 var api = require('../api'),
-    utils = require('../utils'),
+    urlService = require('../services/url'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
     renderEntry = require('./frontend/render-entry'),
@@ -30,14 +30,14 @@ module.exports = function previewController(req, res, next) {
 
         if (req.params.options && req.params.options.toLowerCase() === 'edit') {
             // CASE: last param is of url is /edit, redirect to admin
-            return utils.url.redirectToAdmin(302, res, '#/editor/' + post.id);
+            return urlService.utils.redirectToAdmin(302, res, '#/editor/' + post.id);
         } else if (req.params.options) {
             // CASE: unknown options param detected. Ignore and end in 404.
             return next();
         }
 
         if (post.status === 'published') {
-            return utils.url.redirect301(res, utils.url.urlFor('post', {post: post}));
+            return urlService.utils.redirect301(res, urlService.utils.urlFor('post', {post: post}));
         }
 
         setRequestIsSecure(req, post);

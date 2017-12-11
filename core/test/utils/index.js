@@ -17,7 +17,7 @@ var Promise = require('bluebird'),
     schema = require('../../server/data/schema').tables,
     schemaTables = Object.keys(schema),
     models = require('../../server/models'),
-    utils = require('../../server/utils'),
+    urlService = require('../../server/services/url'),
     events = require('../../server/events'),
     SettingsLib = require('../../server/settings'),
     customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
@@ -904,7 +904,7 @@ startGhost = function startGhost(options) {
 
             if (options.subdir) {
                 parentApp = express();
-                parentApp.use(utils.url.getSubdir(), ghostServer.rootApp);
+                parentApp.use(urlService.utils.getSubdir(), ghostServer.rootApp);
                 return ghostServer.start(parentApp);
             }
 

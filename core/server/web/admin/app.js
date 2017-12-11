@@ -3,7 +3,8 @@ var debug = require('ghost-ignition').debug('admin'),
 
     // App requires
     config = require('../../config'),
-    utils = require('../../utils'),
+    globalUtils = require('../../utils'),
+    urlService = require('../../services/url'),
 
     // Middleware
     // Admin only middleware
@@ -34,7 +35,7 @@ module.exports = function setupAdminApp() {
     configMaxAge = config.get('caching:admin:maxAge');
     adminApp.use('/assets', serveStatic(
         config.get('paths').clientAssets,
-        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS, fallthrough: false}
+        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : globalUtils.ONE_YEAR_MS, fallthrough: false}
     ));
 
     // Service Worker for offline support
@@ -43,7 +44,7 @@ module.exports = function setupAdminApp() {
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
         adminApp.get('/ember-cli-live-reload.js', function (req, res) {
-            res.redirect('http://localhost:4200' + utils.url.getSubdir() + '/ghost/ember-cli-live-reload.js');
+            res.redirect('http://localhost:4200' + urlService.utils.getSubdir() + '/ghost/ember-cli-live-reload.js');
         });
     }
 

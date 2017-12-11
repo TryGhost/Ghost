@@ -11,7 +11,7 @@ var Promise = require('bluebird'),
     models = require('../models'),
     config = require('../config'),
     errors = require('../errors'),
-    utilsUrl = require('../utils/url'),
+    urlService = require('../services/url'),
     docName = 'db',
     db;
 
@@ -36,7 +36,7 @@ db = {
 
         return Promise.props(props)
             .then(function successMessage(exportResult) {
-                var filename = path.resolve(utilsUrl.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+                var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
                 return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data))
                     .then(function () {

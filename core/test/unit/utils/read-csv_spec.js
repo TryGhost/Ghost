@@ -1,11 +1,11 @@
 var should = require('should'),
-    utils = require('../../../server/utils'),
     path = require('path'),
+    globalUtils = require('../../../server/utils'),
     csvPath = path.join(__dirname, '../../utils/fixtures/csv/');
 
 describe('read csv', function () {
     it('read csv: one column', function (done) {
-        utils.readCSV({
+        globalUtils.readCSV({
             path: csvPath + 'single-column-with-header.csv',
             columnsToExtract: [{name: 'email', lookup: /email/i}]
         }).then(function (result) {
@@ -19,7 +19,7 @@ describe('read csv', function () {
     });
 
     it('read csv: two columns, 1 filter', function (done) {
-        utils.readCSV({
+        globalUtils.readCSV({
             path: csvPath + 'two-columns-with-header.csv',
             columnsToExtract: [{name: 'email', lookup: /email/i}]
         }).then(function (result) {
@@ -34,7 +34,7 @@ describe('read csv', function () {
     });
 
     it('read csv: two columns, 2 filters', function (done) {
-        utils.readCSV({
+        globalUtils.readCSV({
             path: csvPath + 'two-columns-obscure-header.csv',
             columnsToExtract: [
                 {name: 'email', lookup: /email/i},

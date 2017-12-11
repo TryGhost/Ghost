@@ -1,13 +1,13 @@
 // Contains all path information to be used throughout the codebase.
 // Assumes that config.url is set, and is valid
 
-var moment            = require('moment-timezone'),
-    _                 = require('lodash'),
-    url               = require('url'),
-    config            = require('./../config'),
-    settingsCache     = require('./../settings/cache'),
+var moment = require('moment-timezone'),
+    _ = require('lodash'),
+    url = require('url'),
+    config = require('../../config/index'),
+    settingsCache = require('../../settings/cache'),
     // @TODO: unify this with the path in server/app.js
-    API_PATH          = '/ghost/api/v0.1/',
+    API_PATH = '/ghost/api/v0.1/',
     STATIC_IMAGE_URL_PREFIX = 'content/images';
 
 /**
@@ -174,13 +174,27 @@ function urlPathForPost(post) {
         primaryTagFallback = config.get('routeKeywords').primaryTagFallback,
         publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('active_timezone')),
         tags = {
-            year: function () { return publishedAtMoment.format('YYYY'); },
-            month: function () { return publishedAtMoment.format('MM'); },
-            day: function () { return publishedAtMoment.format('DD'); },
-            author: function () { return post.author.slug; },
-            primary_tag: function () { return post.primary_tag ? post.primary_tag.slug : primaryTagFallback; },
-            slug: function () { return post.slug; },
-            id: function () { return post.id; }
+            year: function () {
+                return publishedAtMoment.format('YYYY');
+            },
+            month: function () {
+                return publishedAtMoment.format('MM');
+            },
+            day: function () {
+                return publishedAtMoment.format('DD');
+            },
+            author: function () {
+                return post.author.slug;
+            },
+            primary_tag: function () {
+                return post.primary_tag ? post.primary_tag.slug : primaryTagFallback;
+            },
+            slug: function () {
+                return post.slug;
+            },
+            id: function () {
+                return post.id;
+            }
         };
 
     if (post.page) {

@@ -2,7 +2,7 @@ var https = require('https'),
     url = require('url'),
     errors = require('../errors'),
     logging = require('../logging'),
-    utils = require('../utils'),
+    urlService = require('../services/url'),
     blogIconUtils = require('../utils/blog-icon'),
     events = require('../events'),
     settingsCache = require('../settings/cache'),
@@ -50,7 +50,7 @@ function ping(post) {
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
-        message = utils.url.urlFor('post', {post: post}, true);
+        message = urlService.utils.urlFor('post', {post: post}, true);
     } else {
         message = post.message;
     }

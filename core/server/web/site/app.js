@@ -4,8 +4,9 @@ var debug = require('ghost-ignition').debug('blog'),
 
     // App requires
     config = require('../../config'),
+    globalUtils = require('../../utils'),
     storage = require('../../adapters/storage'),
-    utils = require('../../utils'),
+    urlService = require('../../services/url'),
 
     // This should probably be an internal app
     sitemapHandler = require('../../data/xml/sitemap/handler'),
@@ -51,21 +52,21 @@ module.exports = function setupSiteApp() {
     // Favicon
     siteApp.use(serveFavicon());
     // /public/ghost-sdk.js
-    siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', utils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', globalUtils.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
+    siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', globalUtils.ONE_DAY_S));
 
     // Serve stylesheets for default templates
-    siteApp.use(servePublicFile('public/ghost.css', 'text/css', utils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.css', 'text/css', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', globalUtils.ONE_HOUR_S));
 
     // Serve images for default templates
-    siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', utils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/404-ghost.png', 'png', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost.png', 'png', globalUtils.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
-    siteApp.use('/' + utils.url.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
+    siteApp.use('/' + urlService.utils.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.
@@ -86,7 +87,7 @@ module.exports = function setupSiteApp() {
     debug('Static content done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(servePublicFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('robots.txt', 'text/plain', globalUtils.ONE_HOUR_S));
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps

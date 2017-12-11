@@ -1,6 +1,6 @@
 var url = require('url'),
     debug = require('ghost-ignition').debug('url-redirects'),
-    utils = require('../../utils'),
+    urlService = require('../../services/url'),
     urlRedirects,
     _private = {};
 
@@ -26,8 +26,8 @@ _private.redirectUrl = function redirectUrl(options) {
 };
 
 _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
-    var blogHostWithProtocol = utils.url.urlFor('home', true),
-        adminHostWithProtocol = utils.url.urlFor('admin', true),
+    var blogHostWithProtocol = urlService.utils.urlFor('home', true),
+        adminHostWithProtocol = urlService.utils.urlFor('admin', true),
         adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
         blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
         requestedHost = options.requestedHost,
@@ -41,8 +41,8 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     // If url and admin.url are not equal AND the requested host does not match, redirect.
     // The first condition is the most important, because it ensures that you have a custom admin url configured,
     // because we don't force an admin redirect if you have a custom url configured, but no admin url.
-    if (adminHostWithoutProtocol !== utils.url.urlJoin(blogHostWithoutProtocol, 'ghost/') &&
-        adminHostWithoutProtocol !== utils.url.urlJoin(requestedHost, utils.url.getSubdir(), 'ghost/')) {
+    if (adminHostWithoutProtocol !== urlService.utils.urlJoin(blogHostWithoutProtocol, 'ghost/') &&
+        adminHostWithoutProtocol !== urlService.utils.urlJoin(requestedHost, urlService.utils.getSubdir(), 'ghost/')) {
         debug('redirect because admin host does not match');
 
         return _private.redirectUrl({
@@ -53,7 +53,7 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     }
 
     // CASE: configured admin url is HTTPS, but request is HTTP
-    if (utils.url.isSSL(adminHostWithProtocol) && !secure) {
+    if (urlService.utils.isSSL(adminHostWithProtocol) && !secure) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
@@ -65,7 +65,7 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
 };
 
 _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
-    var blogHostWithProtocol = utils.url.urlFor('home', true),
+    var blogHostWithProtocol = urlService.utils.urlFor('home', true),
         requestedHost = options.requestedHost,
         requestedUrl = options.requestedUrl,
         queryParameters = options.queryParameters,
@@ -74,7 +74,7 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
     debug('getBlogRedirectUrl', requestedHost, requestedUrl, blogHostWithProtocol);
 
     // CASE: configured canonical url is HTTPS, but request is HTTP, redirect to requested host + SSL
-    if (utils.url.isSSL(blogHostWithProtocol) && !secure) {
+    if (urlService.utils.isSSL(blogHostWithProtocol) && !secure) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
@@ -102,7 +102,7 @@ urlRedirects = function urlRedirects(req, res, next) {
 
     if (redirectUrl) {
         debug('url redirect to: ' + redirectUrl);
-        return utils.url.redirect301(res, redirectUrl);
+        return urlService.utils.redirect301(res, redirectUrl);
     }
 
     debug('no url redirect');
