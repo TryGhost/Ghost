@@ -11,6 +11,7 @@
  * - overrides is the first package to load
  */
 require('./overrides');
+require('./services/url');
 
 // Module dependencies
 var debug = require('ghost-ignition').debug('boot:init'),
@@ -28,7 +29,6 @@ var debug = require('ghost-ignition').debug('boot:init'),
     utils = require('./utils'),
 
     // Services that need initialisation
-    urlService = require('./services/url'),
     apps = require('./services/apps'),
     xmlrpc = require('./services/xmlrpc'),
     slack = require('./services/slack'),
@@ -66,9 +66,7 @@ function init() {
             // Initialize slack ping
             slack.listen(),
             // Initialize webhook pings
-            webhooks.listen(),
-            // Url Service
-            urlService.init()
+            webhooks.listen()
         );
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
