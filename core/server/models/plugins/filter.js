@@ -1,7 +1,6 @@
 var _ = require('lodash'),
-    errors = require('../../lib/common/errors'),
     gql = require('ghost-gql'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     filter,
     filterUtils;
 
@@ -25,11 +24,11 @@ filterUtils = {
                 return _.isString(arg) ? gql.parse(arg) : arg;
             });
         } catch (err) {
-            throw new errors.ValidationError({
+            throw new common.errors.ValidationError({
                 err: err,
                 property: 'filter',
-                context: i18n.t('errors.models.plugins.filter.errorParsing'),
-                help: i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'http://api.ghost.org/docs/filter'})
+                context: common.i18n.t('errors.models.plugins.filter.errorParsing'),
+                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'http://api.ghost.org/docs/filter'})
             });
         }
 
@@ -80,17 +79,21 @@ filter = function filter(Bookshelf) {
         // Cached copy of the filters setup for this model instance
         _filters: null,
         // Override these on the various models
-        enforcedFilters: function enforcedFilters() {},
-        defaultFilters: function defaultFilters() {},
+        enforcedFilters: function enforcedFilters() {
+        },
+        defaultFilters: function defaultFilters() {
+        },
 
         preProcessFilters: function preProcessFilters() {
             this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
                 statement.prop = 'tags.slug';
-                return {group: [
-                    statement,
-                    {prop: 'posts_tags.sort_order', op: '=', value: 0},
-                    {prop: 'tags.visibility', op: '=', value: 'public'}
-                ]};
+                return {
+                    group: [
+                        statement,
+                        {prop: 'posts_tags.sort_order', op: '=', value: 0},
+                        {prop: 'tags.visibility', op: '=', value: 'public'}
+                    ]
+                };
             });
         },
 

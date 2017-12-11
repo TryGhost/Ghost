@@ -3,8 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     moment = require('moment'),
     testUtils = require('../../../../utils'),
-    errors = require('../../../../../server/lib/common/errors'),
-    events = require('../../../../../server/lib/common/events'),
+    common = require('../../../../../server/lib/common'),
     models = require('../../../../../server/models'),
     api = require('../../../../../server/api'),
     schedulingUtils = require('../../../../../server/adapters/scheduling/utils'),
@@ -29,7 +28,10 @@ describe('Scheduling: Post Scheduling', function () {
 
     beforeEach(function () {
         scope.client = models.Client.forge(testUtils.DataGenerator.forKnex.createClient({slug: 'ghost-scheduler'}));
-        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({id: 1337, mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')}));
+        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
+            id: 1337,
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+        }));
 
         scope.adapter = new SchedulingDefault();
 
@@ -37,7 +39,7 @@ describe('Scheduling: Post Scheduling', function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sandbox.stub(events, 'onMany').callsFake(function (events, stubDone) {
+        sandbox.stub(common.events, 'onMany').callsFake(function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
@@ -100,7 +102,7 @@ describe('Scheduling: Post Scheduling', function () {
                 postScheduling.init()
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.IncorrectUsageError).should.eql(true);
+                        (err instanceof common.errors.IncorrectUsageError).should.eql(true);
                         done();
                     });
             });

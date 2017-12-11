@@ -9,11 +9,9 @@ var serveStatic = require('express').static,
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require('../../config'),
-    errors = require('../../lib/common/errors'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     globalUtils = require('../../utils'),
     urlService = require('../../services/url'),
-    logging = require('../../lib/common/logging'),
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
@@ -89,20 +87,20 @@ class LocalFileStore extends StorageBase {
                     maxAge: globalUtils.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: function onEnd() {
-                        logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
+                        common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
             )(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
-                        return next(new errors.NotFoundError({
-                            message: i18n.t('errors.errors.imageNotFound'),
+                        return next(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.errors.imageNotFound'),
                             code: 'STATIC_FILE_NOT_FOUND',
                             property: err.path
                         }));
                     }
 
-                    return next(new errors.GhostError({err: err}));
+                    return next(new common.errors.GhostError({err: err}));
                 }
 
                 next();
@@ -136,15 +134,15 @@ class LocalFileStore extends StorageBase {
             fs.readFile(targetPath, function (err, bytes) {
                 if (err) {
                     if (err.code === 'ENOENT') {
-                        return reject(new errors.NotFoundError({
+                        return reject(new common.errors.NotFoundError({
                             err: err,
-                            message: i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
+                            message: common.i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
                         }));
                     }
 
-                    return reject(new errors.GhostError({
+                    return reject(new common.errors.GhostError({
                         err: err,
-                        message: i18n.t('errors.errors.cannotReadImage', {img: options.path})
+                        message: common.i18n.t('errors.errors.cannotReadImage', {img: options.path})
                     }));
                 }
 

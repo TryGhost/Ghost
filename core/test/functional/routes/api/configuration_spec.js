@@ -30,7 +30,7 @@ describe('Configuration API', function () {
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
-                        done(err);
+                        return done(err);
                     }
 
                     should.exist(res.body.configuration);

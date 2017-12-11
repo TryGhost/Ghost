@@ -1,12 +1,11 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    errors = require('../lib/common/errors'),
-    i18n = require('../lib/common/i18n'),
+    common = require('../lib/common'),
     parseContext = require('./parse-context'),
     _private = {};
 
 _private.applyStatusRules = function applyStatusRules(docName, method, opts) {
-    var err = new errors.NoPermissionError({message: i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
+    var err = new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
 
     // Enforce status 'active' for users
     if (docName === 'users') {

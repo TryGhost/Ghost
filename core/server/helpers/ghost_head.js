@@ -173,7 +173,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 escapeExpression(safeVersion) + '" />');
 
             head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(metaData.blog.title)  + '" href="' +
+                escapeExpression(metaData.blog.title) + '" href="' +
                 escapeExpression(metaData.rssUrl) + '" />');
 
             // no code injection for amp context!!!

@@ -16,7 +16,7 @@ require('./overrides');
 var debug = require('ghost-ignition').debug('boot:init'),
     config = require('./config'),
     Promise = require('bluebird'),
-    i18n = require('./lib/common/i18n'),
+    common = require('./lib/common'),
     models = require('./models'),
     permissions = require('./permissions'),
     auth = require('./auth'),
@@ -40,7 +40,7 @@ function init() {
     var ghostServer, parentApp;
 
     // Initialize Internationalization
-    i18n.init();
+    common.i18n.init();
     debug('I18n done');
     models.init();
     debug('models done');

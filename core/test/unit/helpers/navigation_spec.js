@@ -4,7 +4,6 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
-// Stuff we are testing
     helpers = require('../../../server/helpers');
 
 describe('{{navigation}} helper', function () {

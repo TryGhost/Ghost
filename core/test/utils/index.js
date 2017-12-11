@@ -11,14 +11,13 @@ var Promise = require('bluebird'),
     uuid = require('uuid'),
     KnexMigrator = require('knex-migrator'),
     ghost = require('../../server'),
-    errors = require('../../server/lib/common/errors'),
+    common = require('../../server/lib/common'),
     db = require('../../server/data/db'),
     fixtureUtils = require('../../server/data/schema/fixtures/utils'),
     schema = require('../../server/data/schema').tables,
     schemaTables = Object.keys(schema),
     models = require('../../server/models'),
     urlService = require('../../server/services/url'),
-    events = require('../../server/lib/common/events'),
     SettingsLib = require('../../server/settings'),
     customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
     permissions = require('../../server/permissions'),
@@ -714,7 +713,7 @@ login = function login(request) {
                 client_secret: 'not_available'
             }).then(function then(res) {
             if (res.statusCode !== 200) {
-                return reject(new errors.GhostError({
+                return reject(new common.errors.GhostError({
                     message: res.body.errors[0].message
                 }));
             }
@@ -882,7 +881,7 @@ startGhost = function startGhost(options) {
             .then(function () {
                 customRedirectsMiddleware.reload();
 
-                events.emit('server:start');
+                common.events.emit('server:start');
                 return ghostServer;
             });
     }

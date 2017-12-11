@@ -11,7 +11,7 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     _debug = require('ghost-ignition').debug._base,
     debug = _debug('ghost:services:url'),
-    events = require('../../lib/common/events'),
+    common = require('../../lib/common'),
     // TODO: make this dynamic
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),
@@ -44,7 +44,7 @@ class UrlService {
         UrlService.cacheRoute('/subscribe/', {});
 
         // Register a listener for server-start to load all the known urls
-        events.on('server:start', (() => {
+        common.events.on('server:start', (() => {
             debug('URL service, loading all URLS');
             this.loadResourceUrls();
         }));
@@ -90,7 +90,7 @@ class UrlService {
 
         _.each(this.resources, (resource) => {
             _.each(resource.events, (method, eventName) => {
-                events.on(eventName, (model) => {
+                common.events.on(eventName, (model) => {
                     eventHandlers[method].call(this, model, resource, eventName);
                 });
             });

@@ -13,8 +13,7 @@
 //  req.path =  /ghost/signin/
 
 var urlService = require('../../services/url'),
-    errors = require('../../lib/common/errors'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     globalUtils = require('../../utils'),
     uncapitalise;
 
@@ -36,8 +35,8 @@ uncapitalise = function uncapitalise(req, res, next) {
     try {
         decodedURI = decodeURIComponent(pathToTest);
     } catch (err) {
-        return next(new errors.NotFoundError({
-            message: i18n.t('errors.errors.pageNotFound'),
+        return next(new common.errors.NotFoundError({
+            message: common.i18n.t('errors.errors.pageNotFound'),
             err: err
         }));
     }

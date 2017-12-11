@@ -1,8 +1,7 @@
 var _ = require('lodash'),
     models = require('../models'),
     globalUtils = require('../utils'),
-    i18n = require('../lib/common/i18n'),
-    errors = require('../lib/common/errors'),
+    common = require('../lib/common'),
     strategies;
 
 strategies = {
@@ -50,8 +49,8 @@ strategies = {
                                 }
 
                                 if (!model.isActive()) {
-                                    throw new errors.NoPermissionError({
-                                        message: i18n.t('errors.models.user.accountSuspended')
+                                    throw new common.errors.NoPermissionError({
+                                        message: common.i18n.t('errors.models.user.accountSuspended')
                                     });
                                 }
 
@@ -88,7 +87,7 @@ strategies = {
 
         // CASE: socket hangs up for example
         if (!ghostAuthAccessToken || !profile) {
-            return done(new errors.NoPermissionError({
+            return done(new common.errors.NoPermissionError({
                 help: 'Please try again.'
             }));
         }
@@ -102,14 +101,14 @@ strategies = {
                     invite = _invite;
 
                     if (!invite) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.invites.inviteNotFound')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.inviteNotFound')
                         });
                     }
 
                     if (invite.get('expires') < Date.now()) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.invites.inviteExpired')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.inviteExpired')
                         });
                     }
 
@@ -135,8 +134,8 @@ strategies = {
             return models.User.findOne({slug: 'ghost-owner', status: 'inactive'}, options)
                 .then(function fetchedOwner(owner) {
                     if (!owner) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.models.user.userNotFound')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.user.userNotFound')
                         });
                     }
 
@@ -160,12 +159,12 @@ strategies = {
                     user = _user;
 
                     if (!user) {
-                        throw new errors.NotFoundError();
+                        throw new common.errors.NotFoundError();
                     }
 
                     if (!user.isActive()) {
-                        throw new errors.NoPermissionError({
-                            message: i18n.t('errors.models.user.accountSuspended')
+                        throw new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.models.user.accountSuspended')
                         });
                     }
 
@@ -196,7 +195,7 @@ strategies = {
                 done(null, user, profile);
             })
             .catch(function (err) {
-                if (!(err instanceof errors.NotFoundError)) {
+                if (!(err instanceof common.errors.NotFoundError)) {
                     return done(err);
                 }
 

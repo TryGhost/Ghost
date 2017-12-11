@@ -1,8 +1,7 @@
 var Promise = require('bluebird'),
     moment = require('moment'),
     localUtils = require('../utils'),
-    events = require('../../../lib/common/events'),
-    errors = require('../../../lib/common/errors'),
+    common = require('../../../lib/common'),
     models = require('../../../models'),
     schedules = require('../../../api/schedules'),
     urlService = require('../../../services/url'),
@@ -41,11 +40,11 @@ exports.init = function init(options) {
         client = null;
 
     if (!config) {
-        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
+        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
     }
 
     if (!apiUrl) {
-        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
+        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
     }
 
     return _private.loadClient()
@@ -73,21 +72,21 @@ exports.init = function init(options) {
             adapter.run();
         })
         .then(function () {
-            events.onMany([
+            common.events.onMany([
                 'post.scheduled',
                 'page.scheduled'
             ], function (object) {
                 adapter.schedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
-            events.onMany([
+            common.events.onMany([
                 'post.rescheduled',
                 'page.rescheduled'
             ], function (object) {
                 adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
-            events.onMany([
+            common.events.onMany([
                 'post.unscheduled',
                 'page.unscheduled'
             ], function (object) {

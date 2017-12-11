@@ -3,10 +3,7 @@ var _ = require('lodash'),
     xml = require('xml'),
     config = require('../config'),
     urlService = require('../services/url'),
-    errors = require('../lib/common/errors'),
-    logging = require('../lib/common/logging'),
-    events = require('../lib/common/events'),
-    i18n = require('../lib/common/i18n'),
+    common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
 
     defaultPostSlugs = [
@@ -78,11 +75,11 @@ function ping(post) {
         req.write(pingXML);
 
         req.on('error', function handleError(err) {
-            logging.error(new errors.GhostError({
+            common.logging.error(new common.errors.GhostError({
                 err: err,
                 message: err.message,
-                context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-                help: i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
             }));
         });
 
@@ -101,7 +98,7 @@ function listener(model, options) {
 }
 
 function listen() {
-    events.on('post.published', listener);
+    common.events.on('post.published', listener);
 }
 
 module.exports = {

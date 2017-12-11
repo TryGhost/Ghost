@@ -1,8 +1,7 @@
 var express = require('express'),
     _ = require('lodash'),
     config = require('../../config'),
-    errors = require('../../lib/common/errors'),
-    i18n = require('../../lib/common/i18n'),
+    common = require('../../lib/common'),
     urlService = require('../../services/url'),
     channelController = require('../../controllers/channel'),
     rssController = require('../../controllers/rss'),
@@ -24,7 +23,7 @@ function handlePageParam(req, res, next, page) {
         }
     } else if (page < 1 || isNaN(page)) {
         // Nothing less than 1 is a valid page number, go straight to a 404
-        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+        return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
     } else {
         // Set req.params.page to the already parsed number, and continue
         req.params.page = page;

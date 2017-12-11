@@ -6,7 +6,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     config = require('../../../server/config'),
     sequence = require('../../../server/utils/sequence'),
-    errors = require('../../../server/lib/common/errors'),
+    common = require('../../../server/lib/common'),
     api = require('../../../server/api'),
     models = require('../../../server/models'),
     sandbox = sinon.sandbox.create();
@@ -167,7 +167,7 @@ describe('Schedules API', function () {
                     from: 'bee'
                 }).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -392,7 +392,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                         done();
                     });
             });
@@ -404,7 +404,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                         done();
                     });
             });
@@ -418,7 +418,7 @@ describe('Schedules API', function () {
                             })
                             .catch(function (err) {
                                 should.exist(err);
-                                (err instanceof errors.NoPermissionError).should.eql(true);
+                                (err instanceof common.errors.NoPermissionError).should.eql(true);
                                 done();
                             });
                     })
@@ -432,7 +432,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.ValidationError).should.eql(true);
+                        (err instanceof common.errors.ValidationError).should.eql(true);
                         done();
                     });
             });
@@ -444,7 +444,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });
@@ -456,7 +456,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });
@@ -468,7 +468,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });
@@ -480,7 +480,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });
@@ -492,7 +492,7 @@ describe('Schedules API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });
