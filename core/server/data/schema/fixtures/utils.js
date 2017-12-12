@@ -264,6 +264,7 @@ module.exports = {
     addFixturesForRelation: addFixturesForRelation,
     findModelFixtureEntry: findModelFixtureEntry,
     findModelFixtures: findModelFixtures,
+    findRelationFixture: findRelationFixture,
     findPermissionRelationsForObject: findPermissionRelationsForObject,
     removeFixturesForModel: removeFixturesForModel
 };
