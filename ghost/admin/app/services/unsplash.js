@@ -1,5 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
+import {assign} from '@ember/polyfills';
 import {isEmpty} from '@ember/utils';
 import {or} from '@ember/object/computed';
 import {reject, resolve} from 'rsvp';
@@ -61,6 +62,14 @@ export default Service.extend({
         if (newColumnCount !== this.get('columnCount')) {
             this.set('columnCount', newColumnCount);
             this._resetColumns();
+        }
+    },
+
+    // let Unsplash know that the photo was inserted
+    // https://medium.com/unsplash/unsplash-api-guidelines-triggering-a-download-c39b24e99e02
+    triggerDownload(photo) {
+        if (photo.links.download_location) {
+            this._makeRequest(photo.links.download_location, {ignoreErrors: true});
         }
     },
 
@@ -156,8 +165,12 @@ export default Service.extend({
         }
     },
 
-    _makeRequest(url) {
+    _makeRequest(url, _options = {}) {
+        let defaultOptions = {ignoreErrors: false};
         let headers = {};
+        let options = {};
+
+        assign(options, defaultOptions, _options);
 
         // clear any previous error
         this.set('error', '');
@@ -177,7 +190,7 @@ export default Service.extend({
             .then((response) => this._addPhotosFromResponse(response))
             .catch(() => {
                 // if the error text isn't already set then we've get a connection error from `fetch`
-                if (!this.get('error')) {
+                if (!options.ignoreErrors && !this.get('error')) {
                     this.set('error', 'Uh-oh! Trouble reaching the Unsplash API, please check your connection');
                 }
             });

@@ -57,6 +57,7 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         insert(photo) {
+            this.get('unsplash').triggerDownload(photo);
             this.insert(photo);
             this.close();
         },
