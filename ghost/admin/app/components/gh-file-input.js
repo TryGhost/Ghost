@@ -6,8 +6,10 @@ import XFileInput from 'emberx-file-input/components/x-file-input';
 export default XFileInput.extend({
     change(e) {
         let action = this.get('action');
-        if (action) {
-            action(this.files(e), this.resetInput.bind(this));
+        let files = this.files(e);
+
+        if (files.length && action) {
+            action(files, this.resetInput.bind(this));
         }
     },
 
