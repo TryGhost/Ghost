@@ -1,4 +1,4 @@
-var fs = require('fs'),
+var fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),
     parsePackageJson = require('../../utils/packages').parsePackageJSON;

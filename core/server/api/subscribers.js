@@ -2,7 +2,7 @@
 // RESTful API for the Tag resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     pipeline = require('../utils/pipeline'),
     globalUtils = require('../utils'),
     apiUtils = require('./utils'),

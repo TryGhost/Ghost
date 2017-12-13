@@ -1,4 +1,4 @@
-var fs = require('fs'),
+var fs = require('fs-extra'),
     session = require('cookie-session'),
     crypto = require('crypto'),
     path = require('path'),
