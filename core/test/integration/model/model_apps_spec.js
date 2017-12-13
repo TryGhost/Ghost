@@ -1,6 +1,6 @@
 var should = require('should'),
     testUtils = require('../../utils'),
-    sequence = require('../../../server/utils/sequence'),
+    sequence = require('../../../server/lib/promise/sequence'),
     _ = require('lodash'),
 
     // Stuff we are testing

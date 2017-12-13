@@ -1,7 +1,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     config = require('../config'),

@@ -7,7 +7,7 @@ var should = require('should'), // jshint ignore:line
     common = require('../../../../server/lib/common'),
     models = require('../../../../server/models'),
     testUtils = require('../../../../test/utils'),
-    sequence = require('../../../../server/utils/sequence'),
+    sequence = require('../../../../server/lib/promise/sequence'),
     sandbox = sinon.sandbox.create();
 
 describe('Models: listeners', function () {

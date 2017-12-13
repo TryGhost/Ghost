@@ -3,7 +3,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
     permissions = require('../permissions'),
     canThis = permissions.canThis,
     localUtils = require('./utils'),

@@ -1,7 +1,7 @@
 // # Slug API
 // RESTful API for the Slug resource
 var Promise = require('bluebird'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),

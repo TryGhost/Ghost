@@ -9,7 +9,7 @@ var _ = require('lodash'),
     utils = require('../utils'),
     gravatar = require('../utils/gravatar'),
     validation = require('../data/validation'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
 
     bcryptGenSalt = Promise.promisify(bcrypt.genSalt),
     bcryptHash = Promise.promisify(bcrypt.hash),

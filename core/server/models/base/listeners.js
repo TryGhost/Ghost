@@ -2,7 +2,7 @@ var moment = require('moment-timezone'),
     _ = require('lodash'),
     models = require('../../models'),
     common = require('../../lib/common'),
-    sequence = require('../../utils/sequence');
+    sequence = require('../../lib/promise/sequence');
 
 /**
  * WHEN access token is created we will update last_seen for user.

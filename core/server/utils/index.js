@@ -135,7 +135,7 @@ utils = {
     zipFolder: require('./zip-folder'),
     generateAssetHash: require('./asset-hash'),
     tokens: require('./tokens'),
-    sequence: require('./sequence'),
+    sequence: require('../lib/promise/sequence'),
     ghostVersion: require('./ghost-version'),
     mobiledocConverter: require('./mobiledoc-converter'),
     markdownConverter: require('./markdown-converter')

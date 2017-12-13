@@ -3,7 +3,7 @@
 var Promise = require('bluebird'),
     path = require('path'),
     fs = require('fs-extra'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     exporter = require('../data/export'),
     importer = require('../data/importer'),
