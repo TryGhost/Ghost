@@ -1,8 +1,8 @@
 var crypto = require('crypto'),
-    fs     = require('fs'),
-    path   = require('path'),
+    fs = require('fs'),
+    path = require('path'),
     config = require('../../config'),
-    utils  = require('../../utils');
+    urlService = require('../../services/url');
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
@@ -27,8 +27,8 @@ function servePublicFile(file, type, maxAge) {
                     }
 
                     if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
-                        buf = buf.toString().replace(blogRegex, utils.url.urlFor('home', true).replace(/\/$/, ''));
-                        buf = buf.toString().replace(apiRegex, utils.url.urlFor('api', {cors: true}, true));
+                        buf = buf.toString().replace(blogRegex, urlService.utils.urlFor('home', true).replace(/\/$/, ''));
+                        buf = buf.toString().replace(apiRegex, urlService.utils.urlFor('api', {cors: true}, true));
                     }
                     content = {
                         headers: {

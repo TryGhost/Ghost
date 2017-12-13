@@ -1,7 +1,7 @@
 'use strict';
 
 const models = require('../../../../models'),
-    logging = require('../../../../logging'),
+    common = require('../../../../lib/common'),
     fixtures = require('../../../schema/fixtures'),
     _ = require('lodash'),
     backupClient = fixtures.utils.findModelFixtureEntry('Client', {slug: 'ghost-backup'}),
@@ -22,10 +22,10 @@ module.exports.up = function addGhostBackupClient(options) {
         .findOne({slug: backupClient.slug}, localOptions)
         .then(function (client) {
             if (!client) {
-                logging.info(message);
+                common.logging.info(message);
                 return fixtures.utils.addFixturesForModel({name: 'Client', entries: [backupClient]}, localOptions);
             } else {
-                logging.warn(message);
+                common.logging.warn(message);
                 return Promise.resolve();
             }
         });
@@ -40,10 +40,10 @@ module.exports.down = function removeGhostBackupClient(options) {
         .findOne({slug: backupClient.slug}, localOptions)
         .then(function (client) {
             if (client) {
-                logging.info(message1);
+                common.logging.info(message1);
                 return fixtures.utils.removeFixturesForModel({name: 'Client', entries: [backupClient]}, localOptions);
             } else {
-                logging.warn(message1);
+                common.logging.warn(message1);
                 return Promise.resolve();
             }
         });

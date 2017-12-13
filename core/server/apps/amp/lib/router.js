@@ -1,12 +1,11 @@
-var path                = require('path'),
-    express             = require('express'),
-    ampRouter           = express.Router(),
-    i18n                = require('../../../i18n'),
+var path = require('path'),
+    express = require('express'),
+    ampRouter = express.Router(),
 
     // Dirty requires
-    errors              = require('../../../errors'),
-    postLookup          = require('../../../controllers/frontend/post-lookup'),
-    renderer            = require('../../../controllers/frontend/renderer'),
+    common = require('../../../lib/common'),
+    postLookup = require('../../../controllers/frontend/post-lookup'),
+    renderer = require('../../../controllers/frontend/renderer'),
 
     templateName = 'amp';
 
@@ -25,7 +24,7 @@ function _renderer(req, res, next) {
 
     // CASE: we only support amp pages for posts that are not static pages
     if (!data.post || data.post.page) {
-        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+        return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
     }
 
     // Render Call

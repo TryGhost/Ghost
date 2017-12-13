@@ -1,15 +1,14 @@
 var moment = require('moment'),
-    errors = require('../../../errors'),
-    config = require('../../../config'),
-    spam = config.get('spam') || {},
     _ = require('lodash'),
+    config = require('../../../config'),
+    common = require('../../../lib/common'),
+    spam = config.get('spam') || {},
     spamPrivateBlog = spam.private_blog || {},
     spamGlobalBlock = spam.global_block || {},
     spamGlobalReset = spam.global_reset || {},
     spamUserReset = spam.user_reset || {},
     spamUserLogin = spam.user_login || {},
 
-    i18n = require('../../../i18n'),
     store,
     handleStoreError,
     globalBlock,
@@ -22,11 +21,10 @@ var moment = require('moment'),
     privateBlog,
     userLogin,
     userReset,
-    logging = require('../../../logging'),
     spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 handleStoreError = function handleStoreError(err) {
-    var customError = new errors.InternalServerError({
+    var customError = new common.errors.InternalServerError({
         message: 'Unknown error',
         err: err.parent ? err.parent : err
     });
@@ -36,7 +34,7 @@ handleStoreError = function handleStoreError(err) {
     // we are using reset as synchronous call, so we have to log the error if it occurs
     // there is no way to try/catch, because the reset operation happens asynchronous
     if (!err.next) {
-        logging.error(err);
+        common.logging.error(err);
         return;
     }
 
@@ -62,11 +60,11 @@ globalBlock = function globalBlock() {
         _.extend({
             attachResetToRequest: false,
             failCallback: function (req, res, next, nextValidRequestDate) {
-                return next(new errors.TooManyRequestsError({
+                return next(new common.errors.TooManyRequestsError({
                     message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
                         {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                    help: common.i18n.t('errors.middleware.spamprevention.tooManyAttempts')
                 }));
             },
             handleStoreError: handleStoreError
@@ -92,11 +90,11 @@ globalReset = function globalReset() {
             attachResetToRequest: false,
             failCallback: function (req, res, next, nextValidRequestDate) {
                 // TODO use i18n again
-                return next(new errors.TooManyRequestsError({
+                return next(new common.errors.TooManyRequestsError({
                     message: 'Too many attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
                         {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                    help: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -125,11 +123,11 @@ userLogin = function userLogin() {
         _.extend({
             attachResetToRequest: true,
             failCallback: function (req, res, next, nextValidRequestDate) {
-                return next(new errors.TooManyRequestsError({
+                return next(new common.errors.TooManyRequestsError({
                     message: 'Too many sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
                     // TODO add more options to i18n
-                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
-                    help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                    context: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
+                    help: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -157,11 +155,11 @@ userReset = function userReset() {
         _.extend({
             attachResetToRequest: true,
             failCallback: function (req, res, next, nextValidRequestDate) {
-                return next(new errors.TooManyRequestsError({
+                return next(new common.errors.TooManyRequestsError({
                     message: 'Too many password reset attempts try again in ' + moment(nextValidRequestDate).fromNow(true),
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
+                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
                         {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
+                    help: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -188,13 +186,16 @@ privateBlog = function privateBlog() {
         _.extend({
             attachResetToRequest: false,
             failCallback: function (req, res, next, nextValidRequestDate) {
-                logging.error(new errors.GhostError({
-                    message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
-                        {rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5, rateSigninPeriod: spamPrivateBlog.lifetime || 60 * 60}),
-                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                common.logging.error(new common.errors.GhostError({
+                    message: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
+                        {
+                            rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5,
+                            rateSigninPeriod: spamPrivateBlog.lifetime || 60 * 60
+                        }),
+                    context: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
 
-                return next(new errors.GhostError({
+                return next(new common.errors.GhostError({
                     message: 'Too many private sign-in attempts try again in ' + moment(nextValidRequestDate).fromNow(true)
                 }));
             },

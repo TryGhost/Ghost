@@ -7,8 +7,7 @@ var Promise = require('bluebird'),
     permissions = require('../permissions'),
     canThis = permissions.canThis,
     apiUtils = require('./utils'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     settingsAPI = require('./settings'),
     // Holds the persistent notifications
     notificationsStore = [],
@@ -30,7 +29,7 @@ notifications = {
         return canThis(options.context).browse.notification().then(function () {
             return {notifications: notificationsStore};
         }, function () {
-            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToBrowseNotif')}));
+            return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToBrowseNotif')}));
         });
     },
 
@@ -70,7 +69,7 @@ notifications = {
             return canThis(options.context).add.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToAddNotif')}));
+                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToAddNotif')}));
             });
         }
 
@@ -137,7 +136,12 @@ notifications = {
             return settingsAPI.read({key: 'seen_notifications', context: context}).then(function then(response) {
                 var seenNotifications = JSON.parse(response.settings[0].value);
                 seenNotifications = _.uniqBy(seenNotifications.concat([notification.id]));
-                return settingsAPI.edit({settings: [{key: 'seen_notifications', value: seenNotifications}]}, {context: context});
+                return settingsAPI.edit({
+                    settings: [{
+                        key: 'seen_notifications',
+                        value: seenNotifications
+                    }]
+                }, {context: context});
             });
         }
 
@@ -151,7 +155,7 @@ notifications = {
             return canThis(options.context).destroy.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToDestroyNotif')}));
+                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')}));
             });
         }
 
@@ -162,12 +166,12 @@ notifications = {
 
             if (notification && !notification.dismissible) {
                 return Promise.reject(
-                    new errors.NoPermissionError({message: i18n.t('errors.api.notifications.noPermissionToDismissNotif')})
+                    new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToDismissNotif')})
                 );
             }
 
             if (!notification) {
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.notifications.notificationDoesNotExist')}));
+                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.notifications.notificationDoesNotExist')}));
             }
 
             notificationsStore = _.reject(notificationsStore, function (element) {
@@ -200,9 +204,9 @@ notifications = {
             notificationsStore = [];
             return notificationsStore;
         }, function (err) {
-            return Promise.reject(new errors.NoPermissionError({
+            return Promise.reject(new common.errors.NoPermissionError({
                 err: err,
-                context: i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
+                context: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
             }));
         });
     }

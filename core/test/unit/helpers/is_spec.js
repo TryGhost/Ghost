@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     helpers = require('../../../server/helpers'),
-    logging = require('../../../server/logging'),
+    common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
 
@@ -56,7 +56,7 @@ describe('{{#is}} helper', function () {
     it('should log warning with no args', function () {
         var fn = sandbox.spy(),
             inverse = sandbox.spy(),
-            logWarn = sandbox.stub(logging, 'warn');
+            logWarn = sandbox.stub(common.logging, 'warn');
 
         helpers.is.call(
             {},

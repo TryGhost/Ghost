@@ -5,8 +5,7 @@ var Promise = require('bluebird'),
     path = require('path'),
     permissions = require('../permissions'),
     validation = require('../data/validation'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     utils;
 
 utils = {
@@ -214,12 +213,15 @@ utils = {
             return permsPromise.then(function permissionGranted() {
                 return options;
             }).catch(function handleNoPermissionError(err) {
-                if (err instanceof errors.NoPermissionError) {
-                    err.message = i18n.t('errors.api.utils.noPermissionToCall', {method: method, docName: docName});
+                if (err instanceof common.errors.NoPermissionError) {
+                    err.message = common.i18n.t('errors.api.utils.noPermissionToCall', {
+                        method: method,
+                        docName: docName
+                    });
                     return Promise.reject(err);
                 }
 
-                return Promise.reject(new errors.GhostError({
+                return Promise.reject(new common.errors.GhostError({
                     err: err
                 }));
             });
@@ -291,8 +293,8 @@ utils = {
      */
     checkObject: function checkObject(object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
-            return Promise.reject(new errors.BadRequestError({
-                message: i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})
+            return Promise.reject(new common.errors.BadRequestError({
+                message: common.i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})
             }));
         }
 
@@ -314,8 +316,8 @@ utils = {
         });
 
         if (editId && object[docName][0].id && editId !== object[docName][0].id) {
-            return Promise.reject(new errors.BadRequestError({
-                message: i18n.t('errors.api.utils.invalidIdProvided')
+            return Promise.reject(new common.errors.BadRequestError({
+                message: common.i18n.t('errors.api.utils.invalidIdProvided')
             }));
         }
 

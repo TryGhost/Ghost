@@ -2,12 +2,10 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     db = require('../../data/db'),
     commands = require('../schema').commands,
-    serverUtils = require('../../utils'),
+    globalUtils = require('../../utils'),
     ghostVersion = require('../../utils/ghost-version'),
-    errors      = require('../../errors'),
-    logging     = require('../../logging'),
-    models      = require('../../models'),
-    i18n        = require('../../i18n'),
+    common = require('../../lib/common'),
+    models = require('../../models'),
     excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
     modelOptions = {context: {internal: true}},
 
@@ -25,12 +23,12 @@ exportFileName = function exportFileName(options) {
 
     return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, options)).then(function (result) {
         if (result) {
-            title = serverUtils.safeString(result.get('value')) + '.';
+            title = globalUtils.safeString(result.get('value')) + '.';
         }
 
         return title + 'ghost.' + datetime + '.json';
     }).catch(function (err) {
-        logging.error(new errors.GhostError({err: err}));
+        common.logging.error(new common.errors.GhostError({err: err}));
         return 'ghost.' + datetime + '.json';
     });
 };
@@ -79,9 +77,9 @@ doExport = function doExport(options) {
 
         return exportData;
     }).catch(function (err) {
-        return Promise.reject(new errors.DataExportError({
+        return Promise.reject(new common.errors.DataExportError({
             err: err,
-            context: i18n.t('errors.data.export.errorExportingData')
+            context: common.i18n.t('errors.data.export.errorExportingData')
         }));
     });
 };

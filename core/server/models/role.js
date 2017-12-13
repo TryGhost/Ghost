@@ -1,8 +1,7 @@
-var _              = require('lodash'),
-    errors         = require('../errors'),
+var _ = require('lodash'),
     ghostBookshelf = require('./base'),
-    Promise        = require('bluebird'),
-    i18n           = require('../i18n'),
+    Promise = require('bluebird'),
+    common = require('../lib/common'),
 
     Role,
     Roles;
@@ -20,10 +19,10 @@ Role = ghostBookshelf.Model.extend({
     }
 }, {
     /**
-    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-    * @param {String} methodName The name of the method to check valid options for.
-    * @return {Array} Keys allowed in the `options` hash of the model's method.
-    */
+     * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+     * @param {String} methodName The name of the method to check valid options for.
+     * @return {Array} Keys allowed in the `options` hash of the model's method.
+     */
     permittedOptions: function permittedOptions(methodName) {
         var options = ghostBookshelf.Model.permittedOptions(),
 
@@ -78,7 +77,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.role.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.role.notEnoughPermission')}));
     }
 });
 

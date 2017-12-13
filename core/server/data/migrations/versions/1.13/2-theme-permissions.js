@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     utils = require('../../../schema/fixtures/utils'),
     permissions = require('../../../../permissions'),
-    logging = require('../../../../logging'),
+    common = require('../../../../lib/common'),
     resource = 'theme',
     _private = {};
 
@@ -15,9 +15,9 @@ _private.getRelations = function getRelations() {
 
 _private.printResult = function printResult(result, message) {
     if (result.done === result.expected) {
-        logging.info(message);
+        common.logging.info(message);
     } else {
-        logging.warn('(' + result.done + '/' + result.expected + ') ' + message);
+        common.logging.warn('(' + result.done + '/' + result.expected + ') ' + message);
     }
 };
 

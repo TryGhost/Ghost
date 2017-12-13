@@ -1,18 +1,18 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
-var fs       = require('fs'),
-    path     = require('path'),
-    Promise  = require('bluebird'),
-    config   = require('../../config'),
-    logging  = require('../../logging'),
-    utils    = require('../../utils'),
+var fs = require('fs'),
+    path = require('path'),
+    Promise = require('bluebird'),
+    config = require('../../config'),
+    common = require('../../lib/common'),
+    urlService = require('../../services/url'),
     exporter = require('../export'),
 
     writeExportFile,
     backup;
 
 writeExportFile = function writeExportFile(exportResult) {
-    var filename = path.resolve(utils.url.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+    var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
     return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data)).return(filename);
 };
@@ -23,7 +23,7 @@ writeExportFile = function writeExportFile(exportResult) {
  * @returns {Promise<*>}
  */
 backup = function backup(options) {
-    logging.info('Creating database backup');
+    common.logging.info('Creating database backup');
     options = options || {};
 
     var props = {
@@ -34,7 +34,7 @@ backup = function backup(options) {
     return Promise.props(props)
         .then(writeExportFile)
         .then(function successMessage(filename) {
-            logging.info('Database backup written to: ' + filename);
+            common.logging.info('Database backup written to: ' + filename);
         });
 };
 

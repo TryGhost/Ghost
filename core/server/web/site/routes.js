@@ -13,12 +13,12 @@ var debug = require('ghost-ignition').debug('site:routes'),
     // Utils for creating paths
     // @TODO: refactor these away
     config = require('../../config'),
-    utils = require('../../utils');
+    urlService = require('../../services/url');
 
 module.exports = function siteRoutes() {
     // @TODO move this path out of this file!
-    // Note this also exists in api/index.js
-    var previewRoute = utils.url.urlJoin('/', config.get('routeKeywords').preview, ':uuid', ':options?');
+    // Note this also exists in api/events.js
+    var previewRoute = urlService.utils.urlJoin('/', config.get('routeKeywords').preview, ':uuid', ':options?');
 
     // Preview - register controller as route
     // Ideal version, as we don't want these paths all over the place

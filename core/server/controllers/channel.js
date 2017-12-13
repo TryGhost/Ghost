@@ -1,6 +1,5 @@
 var _ = require('lodash'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     filters = require('../filters'),
     safeString = require('../utils').safeString,
     handleError = require('./frontend/error'),
@@ -25,7 +24,7 @@ module.exports = function channelController(req, res, next) {
     return fetchData(res.locals.channel).then(function handleResult(result) {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > result.meta.pagination.pages) {
-            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+            return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
         }
 
         // Format data 1

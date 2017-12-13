@@ -8,9 +8,7 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    logging = require('../logging'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     docName = 'webhooks',
     webhooks;
 
@@ -27,19 +25,19 @@ function makeRequest(webhook, payload, options) {
 
     reqPayload = JSON.stringify(payload);
 
-    logging.info('webhook.trigger', event, targetUrl);
+    common.logging.info('webhook.trigger', event, targetUrl);
     req = https.request(reqOptions);
 
     req.write(reqPayload);
     req.on('error', function (err) {
         // when a webhook responds with a 410 Gone response we should remove the hook
         if (err.status === 410) {
-            logging.info('webhook.destroy (410 response)', event, targetUrl);
+            common.logging.info('webhook.destroy (410 response)', event, targetUrl);
             return models.Webhook.destroy({id: webhookId}, options);
         }
 
         // TODO: use i18n?
-        logging.error(new errors.GhostError({
+        common.logging.error(new common.errors.GhostError({
             err: err,
             context: {
                 id: webhookId,
@@ -83,7 +81,7 @@ webhooks = {
             return models.Webhook.getByEventAndTarget(options.data.webhooks[0].event, options.data.webhooks[0].target_url, _.omit(options, ['data']))
                 .then(function (webhook) {
                     if (webhook) {
-                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')}));
+                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.webhooks.webhookAlreadyExists')}));
                     }
 
                     return models.Webhook.add(options.data.webhooks[0], _.omit(options, ['data']));

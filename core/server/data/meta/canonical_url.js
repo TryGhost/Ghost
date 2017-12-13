@@ -1,8 +1,8 @@
-var utils  = require('../../utils'),
+var urlService = require('../../services/url'),
     getUrl = require('./url');
 
 function getCanonicalUrl(data) {
-    var url = utils.url.urlJoin(utils.url.urlFor('home', true), getUrl(data, false));
+    var url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));
 
     if (url.indexOf('/amp/')) {
         url = url.replace(/\/amp\/$/i, '/');

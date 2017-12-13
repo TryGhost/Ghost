@@ -1,12 +1,11 @@
 var sizeOf = require('image-size'),
-    errors = require('../errors'),
-    url = require('./url'),
     Promise = require('bluebird'),
-    i18n = require('../i18n'),
-    settingsCache = require('../settings/cache'),
     _ = require('lodash'),
     path = require('path'),
+    common = require('../lib/common'),
+    settingsCache = require('../settings/cache'),
     config = require('../config'),
+    urlService = require('../services/url'),
     storageUtils = require('../adapters/storage/utils'),
     getIconDimensions,
     isIcoImageType,
@@ -29,8 +28,12 @@ getIconDimensions = function getIconDimensions(path) {
             dimensions = sizeOf(path);
 
             if (dimensions.images) {
-                dimensions.width = _.maxBy(dimensions.images, function (w) {return w.width;}).width;
-                dimensions.height = _.maxBy(dimensions.images, function (h) {return h.height;}).height;
+                dimensions.width = _.maxBy(dimensions.images, function (w) {
+                    return w.width;
+                }).width;
+                dimensions.height = _.maxBy(dimensions.images, function (h) {
+                    return h.height;
+                }).height;
             }
 
             return resolve({
@@ -38,7 +41,12 @@ getIconDimensions = function getIconDimensions(path) {
                 height: dimensions.height
             });
         } catch (err) {
-            return reject(new errors.ValidationError({message: i18n.t('errors.utils.blogIcon.error', {file: path, error: err.message})}));
+            return reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.blogIcon.error', {
+                    file: path,
+                    error: err.message
+                })
+            }));
         }
     });
 };
@@ -81,15 +89,15 @@ getIconUrl = function getIconUrl(absolut) {
 
     if (absolut) {
         if (blogIcon) {
-            return isIcoImageType(blogIcon) ? url.urlFor({relativeUrl: '/favicon.ico'}, true) : url.urlFor({relativeUrl: '/favicon.png'}, true);
+            return isIcoImageType(blogIcon) ? urlService.utils.urlFor({relativeUrl: '/favicon.ico'}, true) : urlService.utils.urlFor({relativeUrl: '/favicon.png'}, true);
         } else {
-            return url.urlFor({relativeUrl: '/favicon.ico'}, true);
+            return urlService.utils.urlFor({relativeUrl: '/favicon.ico'}, true);
         }
     } else {
         if (blogIcon) {
-            return isIcoImageType(blogIcon) ? url.urlFor({relativeUrl: '/favicon.ico'}) : url.urlFor({relativeUrl: '/favicon.png'});
+            return isIcoImageType(blogIcon) ? urlService.utils.urlFor({relativeUrl: '/favicon.ico'}) : urlService.utils.urlFor({relativeUrl: '/favicon.png'});
         } else {
-            return url.urlFor({relativeUrl: '/favicon.ico'});
+            return urlService.utils.urlFor({relativeUrl: '/favicon.ico'});
         }
     }
 };

@@ -4,7 +4,7 @@ var should = require('should'),
     mail = require('../../../server/mail'),
     settingsCache = require('../../../server/settings/cache'),
     configUtils = require('../../utils/configUtils'),
-    i18n = require('../../../server/i18n'),
+    common = require('../../../server/lib/common'),
     sandbox = sinon.sandbox.create(),
     mailer,
 
@@ -36,7 +36,7 @@ var should = require('should'),
         html: '<p>This</p>'
     };
 
-i18n.init();
+common.i18n.init();
 
 describe('Mail: Ghostmailer', function () {
     afterEach(function () {

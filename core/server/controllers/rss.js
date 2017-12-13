@@ -1,7 +1,6 @@
 var _ = require('lodash'),
     url = require('url'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     safeString = require('../utils').safeString,
     settingsCache = require('../settings/cache'),
 
@@ -20,10 +19,10 @@ function getBaseUrlForRSSReq(originalUrl, pageParam) {
 // @TODO: is this really correct? Should we be using meta data title?
 function getTitle(relatedData) {
     relatedData = relatedData || {};
-    var titleStart =  _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
+    var titleStart = _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
 
     titleStart += titleStart ? ' - ' : '';
-    return  titleStart + settingsCache.get('title');
+    return titleStart + settingsCache.get('title');
 }
 
 // @TODO: merge this with the rest of the data processing for RSS
@@ -60,7 +59,7 @@ generate = function generate(req, res, next) {
     return getData(res.locals.channel).then(function handleResult(data) {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > data.meta.pagination.pages) {
-            return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+            return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
         }
 
         // Render call - to a special RSS renderer

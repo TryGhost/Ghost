@@ -4,7 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     permissions = require('../../../server/permissions'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     apiUtils = require('../../../server/api/utils'),
 
     sandbox = sinon.sandbox.create();
@@ -514,7 +514,7 @@ describe('API Utils', function () {
         it('should throw a permissions error if permission is not granted', function (done) {
             var cTMethodStub = {
                     test: {
-                        test: sandbox.stub().returns(Promise.reject(new errors.NoPermissionError()))
+                        test: sandbox.stub().returns(Promise.reject(new common.errors.NoPermissionError()))
                     }
                 },
                 cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
@@ -564,9 +564,7 @@ describe('API Utils', function () {
         });
 
         it('should handle a NoPermissions rejection', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.reject(
-                    new errors.NoPermissionError()
-                )),
+            var testStub = sandbox.stub().returns(Promise.reject(new common.errors.NoPermissionError())),
                 permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {

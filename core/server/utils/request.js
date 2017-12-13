@@ -1,12 +1,12 @@
 var got = require('got'),
     Promise = require('bluebird'),
+    _ = require('lodash'),
     validator = require('../data/validation').validator,
-    errors = require('../errors'),
-    _  = require('lodash');
+    common = require('../lib/common');
 
 module.exports = function request(url, options) {
     if (_.isEmpty(url) || !validator.isURL(url)) {
-        return Promise.reject(new errors.InternalServerError({
+        return Promise.reject(new common.errors.InternalServerError({
             message: 'URL empty or invalid.',
             code: 'URL_MISSING_INVALID',
             context: url

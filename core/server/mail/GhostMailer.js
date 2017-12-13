@@ -4,10 +4,9 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     validator = require('validator'),
     config = require('../config'),
-    errors = require('../errors'),
+    common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
-    i18n = require('../i18n'),
-    utils = require('../utils');
+    urlService = require('../services/url');
 
 function GhostMailer() {
     var nodemailer = require('nodemailer'),
@@ -31,7 +30,7 @@ GhostMailer.prototype.from = function () {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
-        defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: this.getDomain()});
+        defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : common.i18n.t('common.mail.title', {domain: this.getDomain()});
         from = '"' + defaultBlogTitle + '" <' + from + '>';
     }
 
@@ -40,7 +39,7 @@ GhostMailer.prototype.from = function () {
 
 // Moved it to its own module
 GhostMailer.prototype.getDomain = function () {
-    var domain = utils.url.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    var domain = urlService.utils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
 };
 
@@ -49,16 +48,16 @@ GhostMailer.prototype.getDomain = function () {
 GhostMailer.prototype.send = function (message) {
     var self = this,
         to,
-        help = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'}),
-        errorMessage = i18n.t('errors.mail.failedSendingEmail.error');
+        help = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://docs.ghost.org/v1/docs/mail-config'}),
+        errorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
 
     // important to clone message as we modify it
     message = _.clone(message) || {};
     to = message.to || false;
 
     if (!(message && message.subject && message.html && message.to)) {
-        return Promise.reject(new errors.EmailError({
-            message: i18n.t('errors.mail.incompleteMessageData.error'),
+        return Promise.reject(new common.errors.EmailError({
+            message: common.i18n.t('errors.mail.incompleteMessageData.error'),
             help: help
         }));
     }
@@ -73,9 +72,9 @@ GhostMailer.prototype.send = function (message) {
     return new Promise(function (resolve, reject) {
         self.transport.sendMail(message, function (err, response) {
             if (err) {
-                errorMessage += i18n.t('errors.mail.reason', {reason: err.message || err});
+                errorMessage += common.i18n.t('errors.mail.reason', {reason: err.message || err});
 
-                return reject(new errors.EmailError({
+                return reject(new common.errors.EmailError({
                     message: errorMessage,
                     err: err,
                     help: help
@@ -88,10 +87,10 @@ GhostMailer.prototype.send = function (message) {
 
             response.statusHandler.once('failed', function (data) {
                 if (data.error && data.error.errno === 'ENOTFOUND') {
-                    errorMessage += i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
+                    errorMessage += common.i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
                 }
 
-                return reject(new errors.EmailError({
+                return reject(new common.errors.EmailError({
                     message: errorMessage,
                     help: help
                 }));
@@ -99,17 +98,17 @@ GhostMailer.prototype.send = function (message) {
 
             response.statusHandler.once('requeue', function (data) {
                 if (data.error && data.error.message) {
-                    errorMessage += i18n.t('errors.mail.reason', {reason: data.error.message});
+                    errorMessage += common.i18n.t('errors.mail.reason', {reason: data.error.message});
                 }
 
-                return reject(new errors.EmailError({
+                return reject(new common.errors.EmailError({
                     message: errorMessage,
                     help: help
                 }));
             });
 
             response.statusHandler.once('sent', function () {
-                return resolve(i18n.t('notices.mail.messageSent'));
+                return resolve(common.i18n.t('notices.mail.messageSent'));
             });
         });
     });

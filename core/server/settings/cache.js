@@ -3,7 +3,7 @@
 // circular dependency bugs.
 var debug = require('ghost-ignition').debug('settings:cache'),
     _ = require('lodash'),
-    events = require('../events'),
+    common = require('../lib/common'),
     /**
      * ## Cache
      * Holds cached settings
@@ -104,9 +104,9 @@ module.exports = {
         }
 
         // Bind to events to automatically keep up-to-date
-        events.on('settings.edited', updateSettingFromModel);
-        events.on('settings.added', updateSettingFromModel);
-        events.on('settings.deleted', updateSettingFromModel);
+        common.events.on('settings.edited', updateSettingFromModel);
+        common.events.on('settings.added', updateSettingFromModel);
+        common.events.on('settings.deleted', updateSettingFromModel);
 
         return settingsCache;
     }

@@ -1,12 +1,12 @@
-var utils = require('../../utils');
+var urlService = require('../../services/url');
 
 function redirectAdminUrls(req, res, next) {
-    var subdir = utils.url.getSubdir(),
+    var subdir = urlService.utils.getSubdir(),
         ghostPathRegex = new RegExp('^' + subdir + '/ghost/(.+)'),
         ghostPathMatch = req.originalUrl.match(ghostPathRegex);
 
     if (ghostPathMatch) {
-        return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin'), '#', ghostPathMatch[1]));
+        return res.redirect(urlService.utils.urlJoin(urlService.utils.urlFor('admin'), '#', ghostPathMatch[1]));
     }
 
     next();

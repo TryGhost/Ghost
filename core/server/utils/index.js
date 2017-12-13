@@ -1,7 +1,6 @@
-var unidecode  = require('unidecode'),
-    _          = require('lodash'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+var unidecode = require('unidecode'),
+    _ = require('lodash'),
+    common = require('../lib/common'),
     utils,
     getRandomInt;
 
@@ -22,18 +21,18 @@ utils = {
      * Timespans in seconds and milliseconds for better readability
      */
     /* eslint-disable key-spacing */
-    ONE_HOUR_S:          3600,
-    ONE_DAY_S:          86400,
-    ONE_MONTH_S:      2628000,
-    SIX_MONTH_S:     15768000,
-    ONE_YEAR_S:      31536000,
-    FIVE_MINUTES_MS:   300000,
-    ONE_HOUR_MS:      3600000,
-    ONE_DAY_MS:      86400000,
-    ONE_WEEK_MS:    604800000,
-    ONE_MONTH_MS:  2628000000,
+    ONE_HOUR_S: 3600,
+    ONE_DAY_S: 86400,
+    ONE_MONTH_S: 2628000,
+    SIX_MONTH_S: 15768000,
+    ONE_YEAR_S: 31536000,
+    FIVE_MINUTES_MS: 300000,
+    ONE_HOUR_MS: 3600000,
+    ONE_DAY_MS: 86400000,
+    ONE_WEEK_MS: 604800000,
+    ONE_MONTH_MS: 2628000000,
     SIX_MONTH_MS: 15768000000,
-    ONE_YEAR_MS:  31536000000,
+    ONE_YEAR_MS: 31536000000,
     // eslint-enable key-spacing */
 
     /**
@@ -74,7 +73,7 @@ utils = {
 
         // Replace URL reserved chars: `@:/?#[]!$&()*+,;=` as well as `\%<>|^~£"{}` and \`
         string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|\{|\}|`|–|—)/g, '-')
-            // Remove apostrophes
+        // Remove apostrophes
             .replace(/'/g, '')
             // Make the whole thing lowercase
             .toLowerCase();
@@ -83,7 +82,7 @@ utils = {
         if (!_.has(options, 'importing') || !options.importing) {
             // Convert 2 or more dashes into a single dash
             string = string.replace(/-+/g, '-')
-                // Remove trailing dash
+            // Remove trailing dash
                 .replace(/-$/, '')
                 // Remove any dashes at the beginning
                 .replace(/^-/, '');
@@ -115,16 +114,16 @@ utils = {
      */
     validateRedirects: function validateRedirects(redirects) {
         if (!_.isArray(redirects)) {
-            throw new errors.ValidationError({
-                message: i18n.t('errors.utils.redirectsWrongFormat'),
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.redirectsWrongFormat'),
                 help: 'https://docs.ghost.org/docs/redirects'
             });
         }
 
         _.each(redirects, function (redirect) {
             if (!redirect.from || !redirect.to) {
-                throw new errors.ValidationError({
-                    message: i18n.t('errors.utils.redirectsWrongFormat'),
+                throw new common.errors.ValidationError({
+                    message: common.i18n.t('errors.utils.redirectsWrongFormat'),
                     context: JSON.stringify(redirect),
                     help: 'https://docs.ghost.org/docs/redirects'
                 });
@@ -136,7 +135,6 @@ utils = {
     removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
     zipFolder: require('./zip-folder'),
     generateAssetHash: require('./asset-hash'),
-    url: require('./url'),
     tokens: require('./tokens'),
     sequence: require('./sequence'),
     ghostVersion: require('./ghost-version'),

@@ -1,6 +1,7 @@
 'use strict';
 
-const logging = require('../../../../logging'),
+var Promise = require('bluebird'),
+    common = require('../../../../lib/common'),
     commands = require('../../../schema').commands,
     table = 'webhooks',
     message1 = 'Adding table: ' + table,
@@ -12,11 +13,11 @@ module.exports.up = function addWebhooksTable(options) {
     return connection.schema.hasTable(table)
         .then(function (exists) {
             if (exists) {
-                logging.warn(message1);
+                common.logging.warn(message1);
                 return Promise.resolve();
             }
 
-            logging.info(message1);
+            common.logging.info(message1);
             return commands.createTable(table, connection);
         });
 };
@@ -27,11 +28,11 @@ module.exports.down = function removeWebhooksTable(options) {
     return connection.schema.hasTable(table)
         .then(function (exists) {
             if (!exists) {
-                logging.warn(message2);
+                common.logging.warn(message2);
                 return Promise.resolve();
             }
 
-            logging.info(message2);
+            common.logging.info(message2);
             return commands.deleteTable(table, connection);
         });
 };

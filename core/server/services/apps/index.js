@@ -1,10 +1,8 @@
 var debug = require('ghost-ignition').debug('services:apps'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    logging = require('../../logging'),
-    errors = require('../../errors'),
     api = require('../../api'),
-    i18n = require('../../i18n'),
+    common = require('../../lib/common'),
     config = require('../../config'),
     settingsCache = require('../../settings/cache'),
     loader = require('./loader'),
@@ -31,7 +29,12 @@ function saveInstalledApps(installedApps) {
     }
 
     debug('saving settings');
-    return api.settings.edit({settings: [{key: 'installed_apps', value: updatedAppsInstalled}]}, {context: {internal: true}});
+    return api.settings.edit({
+        settings: [{
+            key: 'installed_apps',
+            value: updatedAppsInstalled
+        }]
+    }, {context: {internal: true}});
 }
 
 module.exports = {
@@ -65,10 +68,10 @@ module.exports = {
                 return saveInstalledApps(_.keys(availableApps));
             })
             .catch(function (err) {
-                logging.error(new errors.GhostError({
+                common.logging.error(new common.errors.GhostError({
                     err: err,
-                    context: i18n.t('errors.apps.appWillNotBeLoaded.error'),
-                    help: i18n.t('errors.apps.appWillNotBeLoaded.help')
+                    context: common.i18n.t('errors.apps.appWillNotBeLoaded.error'),
+                    help: common.i18n.t('errors.apps.appWillNotBeLoaded.help')
                 }));
             });
     },

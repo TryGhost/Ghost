@@ -1,12 +1,12 @@
 /**
  * Dependencies
  */
-var parsePackageJson = require('./parse-package-json'),
-    errors = require('../../errors'),
-    Promise = require('bluebird'),
+var Promise = require('bluebird'),
     _ = require('lodash'),
     join = require('path').join,
     fs = require('fs'),
+    parsePackageJson = require('./parse-package-json'),
+    common = require('../../lib/common'),
 
     notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i,
     packageJSONPath = 'package.json',
@@ -57,7 +57,7 @@ readPackage = function readPackage(packagePath, packageName) {
                 });
         })
         .catch(function (err) {
-            return Promise.reject(new errors.NotFoundError({
+            return Promise.reject(new common.errors.NotFoundError({
                 message: 'Package not found',
                 err: err,
                 help: 'path: ' + packagePath,

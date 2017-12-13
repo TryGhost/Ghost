@@ -7,7 +7,7 @@ var should = require('should'),
     AuthAPI = require('../../../server/api/authentication'),
     mail = require('../../../server/api/mail'),
     models = require('../../../server/models'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     context = testUtils.context,
     Accesstoken,
     Refreshtoken,
@@ -323,7 +323,7 @@ describe('Authentication API', function () {
                     })
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         err.message.should.eql('Invite is expired.');
                     });
             });

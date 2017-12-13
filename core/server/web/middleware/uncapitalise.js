@@ -12,9 +12,9 @@
 //  req.baseUrl = /blog
 //  req.path =  /ghost/signin/
 
-var utils = require('../../utils'),
-    errors = require('../../errors'),
-    i18n = require('../../i18n'),
+var urlService = require('../../services/url'),
+    common = require('../../lib/common'),
+    globalUtils = require('../../utils'),
     uncapitalise;
 
 uncapitalise = function uncapitalise(req, res, next) {
@@ -35,8 +35,8 @@ uncapitalise = function uncapitalise(req, res, next) {
     try {
         decodedURI = decodeURIComponent(pathToTest);
     } catch (err) {
-        return next(new errors.NotFoundError({
-            message: i18n.t('errors.errors.pageNotFound'),
+        return next(new common.errors.NotFoundError({
+            message: common.i18n.t('errors.errors.pageNotFound'),
             err: err
         }));
     }
@@ -47,10 +47,10 @@ uncapitalise = function uncapitalise(req, res, next) {
      */
     if (/[A-Z]/.test(decodedURI)) {
         redirectPath = (
-            utils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
+            globalUtils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
         );
 
-        return utils.url.redirect301(res, redirectPath);
+        return urlService.utils.redirect301(res, redirectPath);
     }
 
     next();

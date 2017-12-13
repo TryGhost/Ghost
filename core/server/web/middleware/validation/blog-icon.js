@@ -1,6 +1,5 @@
-var errors = require('../../../errors'),
-    config = require('../../../config'),
-    i18n = require('../../../i18n'),
+var config = require('../../../config'),
+    common = require('../../../lib/common'),
     blogIconUtils = require('../../../utils/blog-icon'),
     validIconFileSize;
 
@@ -15,7 +14,7 @@ module.exports = function blogIcon() {
 
         // CASE: file should not be larger than 100kb
         if (!validIconFileSize(req.file.size)) {
-            return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
+            return next(new common.errors.ValidationError({message: common.i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
         }
 
         return blogIconUtils.getIconDimensions(req.file.path).then(function (response) {
@@ -24,18 +23,18 @@ module.exports = function blogIcon() {
 
             // CASE: file needs to be a square
             if (req.file.dimensions.width !== req.file.dimensions.height) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
+                return next(new common.errors.ValidationError({message: common.i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             // CASE: icon needs to be bigger than or equal to 60px
             // .ico files can contain multiple sizes, we need at least a minimum of 60px (16px is ok, as long as 60px are present as well)
             if (req.file.dimensions.width < 60) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
+                return next(new common.errors.ValidationError({message: common.i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             // CASE: icon needs to be smaller than or equal to 1000px
             if (req.file.dimensions.width > 1000) {
-                return next(new errors.ValidationError({message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
+                return next(new common.errors.ValidationError({message: common.i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})}));
             }
 
             next();

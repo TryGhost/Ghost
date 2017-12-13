@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     crypto = require('crypto'),
     fs = require('fs'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
     settingsCache = require('../../../../server/settings/cache'),
     privateBlogging = require('../../../../server/apps/private-blogging/lib/middleware'),
     sandbox = sinon.sandbox.create();
@@ -239,7 +239,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should 404 for /rss requests', function () {
@@ -256,7 +256,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should 404 for tag rss requests', function () {
@@ -273,7 +273,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes: allow private /rss/ feed', function () {

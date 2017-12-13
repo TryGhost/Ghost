@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
 
     // Stuff we are testing
     handleError = require('../../../../server/controllers/frontend/error'),
@@ -18,7 +18,7 @@ describe('handleError', function () {
     });
 
     it('should call next with no args for 404 errors', function () {
-        var notFoundError = new errors.NotFoundError({message: 'Something wasn\'t found'});
+        var notFoundError = new common.errors.NotFoundError({message: 'Something wasn\'t found'});
         handleError(next)(notFoundError);
 
         next.calledOnce.should.be.true();

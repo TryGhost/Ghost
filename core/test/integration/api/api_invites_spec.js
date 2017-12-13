@@ -6,7 +6,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     InvitesAPI = require('../../../server/api/invites'),
     mail = require('../../../server/api/mail'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     context = testUtils.context,
 
     sandbox = sinon.sandbox.create();
@@ -68,7 +68,7 @@ describe('Invites API', function () {
                         throw new Error('expected validation error');
                     })
                     .catch(function (err) {
-                        (err instanceof errors.ValidationError).should.eql(true);
+                        (err instanceof common.errors.ValidationError).should.eql(true);
                         done();
                     });
             });
@@ -84,7 +84,7 @@ describe('Invites API', function () {
                         throw new Error('expected validation error');
                     })
                     .catch(function (err) {
-                        (err instanceof errors.ValidationError).should.eql(true);
+                        (err instanceof common.errors.ValidationError).should.eql(true);
                         done();
                     });
             });
@@ -122,7 +122,7 @@ describe('Invites API', function () {
                 })).then(function () {
                     throw new Error('expected not found error for invite');
                 }).catch(function (err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
+                    (err instanceof common.errors.NotFoundError).should.eql(true);
                     done();
                 });
             });
@@ -153,7 +153,7 @@ describe('Invites API', function () {
                         return InvitesAPI.read(_.merge({}, testUtils.context.owner, {
                             email: 'test1@ghost.org'
                         })).catch(function (err) {
-                            (err instanceof errors.NotFoundError).should.eql(true);
+                            (err instanceof common.errors.NotFoundError).should.eql(true);
                             done();
                         });
                     }).catch(done);
@@ -165,7 +165,7 @@ describe('Invites API', function () {
                         throw new Error('expect error on destroy invite');
                     })
                     .catch(function (err) {
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        (err instanceof common.errors.NotFoundError).should.eql(true);
                         done();
                     });
             });

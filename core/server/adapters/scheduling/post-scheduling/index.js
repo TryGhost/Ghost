@@ -1,11 +1,10 @@
 var Promise = require('bluebird'),
     moment = require('moment'),
-    localUtils = require(__dirname + '/../utils'),
-    events = require(__dirname + '/../../../events'),
-    errors = require(__dirname + '/../../../errors'),
-    models = require(__dirname + '/../../../models'),
-    schedules = require(__dirname + '/../../../api/schedules'),
-    utils = require(__dirname + '/../../../utils'),
+    localUtils = require('../utils'),
+    common = require('../../../lib/common'),
+    models = require('../../../models'),
+    schedules = require('../../../api/schedules'),
+    urlService = require('../../../services/url'),
     _private = {};
 
 _private.normalize = function normalize(options) {
@@ -15,7 +14,7 @@ _private.normalize = function normalize(options) {
 
     return {
         time: moment(object.get('published_at')).valueOf(),
-        url: utils.url.urlJoin(apiUrl, 'schedules', 'posts', object.get('id')) + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
+        url: urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', object.get('id')) + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
         extra: {
             httpMethod: 'PUT',
             oldTime: object.updated('published_at') ? moment(object.updated('published_at')).valueOf() : null
@@ -41,11 +40,11 @@ exports.init = function init(options) {
         client = null;
 
     if (!config) {
-        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
+        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
     }
 
     if (!apiUrl) {
-        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
+        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
     }
 
     return _private.loadClient()
@@ -73,21 +72,21 @@ exports.init = function init(options) {
             adapter.run();
         })
         .then(function () {
-            events.onMany([
+            common.events.onMany([
                 'post.scheduled',
                 'page.scheduled'
             ], function (object) {
                 adapter.schedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
-            events.onMany([
+            common.events.onMany([
                 'post.rescheduled',
                 'page.rescheduled'
             ], function (object) {
                 adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
-            events.onMany([
+            common.events.onMany([
                 'post.unscheduled',
                 'page.unscheduled'
             ], function (object) {

@@ -5,7 +5,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    errors = require('../../errors'),
+    common = require('../../lib/common'),
     attach, detach;
 
 /**
@@ -32,7 +32,7 @@ attach = function attach(Model, effectedModelId, relation, modelsToAttach, optio
             fetchedModel = _fetchedModel;
 
             if (!fetchedModel) {
-                throw new errors.NotFoundError({level: 'critical', help: effectedModelId});
+                throw new common.errors.NotFoundError({level: 'critical', help: effectedModelId});
             }
 
             fetchedModel.related(relation).on('creating', function (collection, data) {
@@ -74,7 +74,7 @@ detach = function detach(Model, effectedModelId, relation, modelsToAttach, optio
             fetchedModel = _fetchedModel;
 
             if (!fetchedModel) {
-                throw new errors.NotFoundError({level: 'critical', help: effectedModelId});
+                throw new common.errors.NotFoundError({level: 'critical', help: effectedModelId});
             }
 
             return Promise.resolve(modelsToAttach)

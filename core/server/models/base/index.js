@@ -12,13 +12,13 @@ var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     config = require('../../config'),
     db = require('../../data/db'),
-    errors = require('../../errors'),
+    common = require('../../lib/common'),
     filters = require('../../filters'),
     schema = require('../../data/schema'),
-    utils = require('../../utils'),
+    urlService = require('../../services/url'),
+    globalUtils = require('../../utils'),
     validation = require('../../data/validation'),
     plugins = require('../plugins'),
-    i18n = require('../../i18n'),
 
     ghostBookshelf,
     proto;
@@ -308,8 +308,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else if (options.context.external) {
             return ghostBookshelf.Model.externalUser;
         } else {
-            throw new errors.NotFoundError({
-                message: i18n.t('errors.models.base.index.missingContext'),
+            throw new common.errors.NotFoundError({
+                message: common.i18n.t('errors.models.base.index.missingContext'),
                 level: 'critical'
             });
         }
@@ -461,8 +461,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                 // CASE: client sends `0000-00-00 00:00:00`
                 if (!dateMoment.isValid()) {
-                    throw new errors.ValidationError({
-                        message: i18n.t('errors.models.base.invalidDate', {key: key})
+                    throw new common.errors.ValidationError({
+                        message: common.i18n.t('errors.models.base.invalidDate', {key: key})
                     });
                 }
 
@@ -739,7 +739,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // the slug may never be longer than the allowed limit of 191 chars, but should also
         // take the counter into count. We reduce a too long slug to 185 so we're always on the
         // safe side, also in terms of checking for existing slugs already.
-        slug = utils.safeString(base, options);
+        slug = globalUtils.safeString(base, options);
 
         if (slug.length > 185) {
             // CASE: don't cut the slug on import
@@ -765,7 +765,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Check the filtered slug doesn't match any of the reserved keywords
         return filters.doFilter('slug.reservedSlugs', config.get('slugs').reserved).then(function then(slugList) {
             // Some keywords cannot be changed
-            slugList = _.union(slugList, utils.url.getProtectedSlugs());
+            slugList = _.union(slugList, urlService.utils.getProtectedSlugs());
 
             return _.includes(slugList, slug) ? slug + '-' + baseName : slug;
         }).then(function then(slug) {

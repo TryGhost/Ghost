@@ -1,11 +1,11 @@
-var _         = require('lodash'),
-    xml       = require('xml'),
-    moment    = require('moment'),
-    utils     = require('../../../utils'),
-    events    = require('../../../events'),
-    localUtils  = require('./utils'),
-    Promise   = require('bluebird'),
-    path      = require('path'),
+var _ = require('lodash'),
+    xml = require('xml'),
+    moment = require('moment'),
+    Promise = require('bluebird'),
+    path = require('path'),
+    urlService = require('../../../services/url'),
+    common = require('../../../lib/common'),
+    localUtils = require('./utils'),
     CHANGE_FREQ = 'weekly',
     XMLNS_DECLS;
 
@@ -22,7 +22,7 @@ function BaseSiteMapGenerator() {
     this.nodeLookup = {};
     this.nodeTimeLookup = {};
     this.siteMapContent = '';
-    this.dataEvents = events;
+    this.dataEvents = common.events;
 }
 
 _.extend(BaseSiteMapGenerator.prototype, {
@@ -133,11 +133,11 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     getUrlForDatum: function () {
-        return utils.url.urlFor('home', true);
+        return urlService.utils.urlFor('home', true);
     },
 
     getUrlForImage: function (image) {
-        return utils.url.urlFor('image', {image: image}, true);
+        return urlService.utils.urlFor('image', {image: image}, true);
     },
 
     getPriorityForDatum: function () {

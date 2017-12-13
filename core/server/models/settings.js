@@ -1,13 +1,11 @@
 var Settings,
-    Promise        = require('bluebird'),
-    _              = require('lodash'),
-    uuid           = require('uuid'),
-    crypto         = require('crypto'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+    uuid = require('uuid'),
+    crypto = require('crypto'),
     ghostBookshelf = require('./base'),
-    errors         = require('../errors'),
-    events         = require('../events'),
-    i18n           = require('../i18n'),
-    validation     = require('../data/validation'),
+    common = require('../lib/common'),
+    validation = require('../data/validation'),
 
     internalContext = {context: {internal: true}},
 
@@ -60,7 +58,7 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        events.emit('settings' + '.' + event, this, options);
+        common.events.emit('settings' + '.' + event, this, options);
     },
 
     onDestroyed: function onDestroyed(model, response, options) {
@@ -110,9 +108,11 @@ Settings = ghostBookshelf.Model.extend({
 
         return Promise.map(data, function (item) {
             // Accept an array of models as input
-            if (item.toJSON) { item = item.toJSON(); }
+            if (item.toJSON) {
+                item = item.toJSON();
+            }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.settings.valueCannotBeBlank')}));
+                return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.settings.valueCannotBeBlank')}));
             }
 
             item = self.filterData(item);
@@ -141,7 +141,7 @@ Settings = ghostBookshelf.Model.extend({
                     }
                 }
 
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
+                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
             });
         });
     },
@@ -154,7 +154,9 @@ Settings = ghostBookshelf.Model.extend({
         return this
             .findAll(options)
             .then(function checkAllSettings(allSettings) {
-                var usedKeys = allSettings.models.map(function mapper(setting) { return setting.get('key'); }),
+                var usedKeys = allSettings.models.map(function mapper(setting) {
+                        return setting.get('key');
+                    }),
                     insertOperations = [];
 
                 _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {

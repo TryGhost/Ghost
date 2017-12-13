@@ -1,8 +1,7 @@
 var _ = require('lodash'),
     models = require('../models'),
-    utils = require('../utils'),
-    i18n = require('../i18n'),
-    errors = require('../errors'),
+    globalUtils = require('../utils'),
+    common = require('../lib/common'),
     strategies;
 
 strategies = {
@@ -50,8 +49,8 @@ strategies = {
                                 }
 
                                 if (!model.isActive()) {
-                                    throw new errors.NoPermissionError({
-                                        message: i18n.t('errors.models.user.accountSuspended')
+                                    throw new common.errors.NoPermissionError({
+                                        message: common.i18n.t('errors.models.user.accountSuspended')
                                     });
                                 }
 
@@ -88,35 +87,35 @@ strategies = {
 
         // CASE: socket hangs up for example
         if (!ghostAuthAccessToken || !profile) {
-            return done(new errors.NoPermissionError({
+            return done(new common.errors.NoPermissionError({
                 help: 'Please try again.'
             }));
         }
 
         handleInviteToken = function handleInviteToken() {
             var user, invite;
-            inviteToken = utils.decodeBase64URLsafe(inviteToken);
+            inviteToken = globalUtils.decodeBase64URLsafe(inviteToken);
 
             return models.Invite.findOne({token: inviteToken}, options)
                 .then(function addInviteUser(_invite) {
                     invite = _invite;
 
                     if (!invite) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.invites.inviteNotFound')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.inviteNotFound')
                         });
                     }
 
                     if (invite.get('expires') < Date.now()) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.invites.inviteExpired')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.inviteExpired')
                         });
                     }
 
                     return models.User.add({
                         email: profile.email,
                         name: profile.name,
-                        password: utils.uid(50),
+                        password: globalUtils.uid(50),
                         roles: [invite.toJSON().role_id],
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken
@@ -135,8 +134,8 @@ strategies = {
             return models.User.findOne({slug: 'ghost-owner', status: 'inactive'}, options)
                 .then(function fetchedOwner(owner) {
                     if (!owner) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.models.user.userNotFound')
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.user.userNotFound')
                         });
                     }
 
@@ -160,12 +159,12 @@ strategies = {
                     user = _user;
 
                     if (!user) {
-                        throw new errors.NotFoundError();
+                        throw new common.errors.NotFoundError();
                     }
 
                     if (!user.isActive()) {
-                        throw new errors.NoPermissionError({
-                            message: i18n.t('errors.models.user.accountSuspended')
+                        throw new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.models.user.accountSuspended')
                         });
                     }
 
@@ -196,7 +195,7 @@ strategies = {
                 done(null, user, profile);
             })
             .catch(function (err) {
-                if (!(err instanceof errors.NotFoundError)) {
+                if (!(err instanceof common.errors.NotFoundError)) {
                     return done(err);
                 }
 

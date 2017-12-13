@@ -3,9 +3,9 @@
 var should = require('should'),
     testUtils = require('../../utils'),
     ghost = testUtils.startGhost,
-    i18n = require('../../../../core/server/i18n');
+    common = require('../../../server/lib/common');
 
-i18n.init();
+common.i18n.init();
 
 describe('Module', function () {
     describe('Setup', function () {

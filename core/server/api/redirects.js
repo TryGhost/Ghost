@@ -5,8 +5,7 @@ const fs = require('fs-extra'),
     moment = require('moment'),
     path = require('path'),
     config = require('../config'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     globalUtils = require('../utils'),
     apiUtils = require('./utils'),
     customRedirectsMiddleware = require('../web/middleware/custom-redirects');
@@ -22,8 +21,8 @@ _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
             try {
                 content = JSON.parse(content);
             } catch (err) {
-                throw new errors.BadRequestError({
-                    message: i18n.t('errors.general.jsonParse', {context: err.message})
+                throw new common.errors.BadRequestError({
+                    message: common.i18n.t('errors.general.jsonParse', {context: err.message})
                 });
             }
 
@@ -34,11 +33,11 @@ _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
                 return Promise.resolve([]);
             }
 
-            if (errors.utils.isIgnitionError(err)) {
+            if (common.errors.utils.isIgnitionError(err)) {
                 throw err;
             }
 
-            throw new errors.NotFoundError({
+            throw new common.errors.NotFoundError({
                 err: err
             });
         });

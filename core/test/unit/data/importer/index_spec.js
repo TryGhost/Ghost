@@ -5,7 +5,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
 
     // Stuff we are testing
     ImportManager = require('../../../../server/data/importer'),
@@ -172,13 +172,13 @@ describe('Importer', function () {
                 it('fails a zip with two base directories', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-invalid');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('shows a special error for old Roon exports', function () {
@@ -186,7 +186,7 @@ describe('Importer', function () {
                         msg = 'Your zip file looks like an old format Roon export, ' +
                             'please re-export your Roon blog and try again.';
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(msg);
                 });
             });

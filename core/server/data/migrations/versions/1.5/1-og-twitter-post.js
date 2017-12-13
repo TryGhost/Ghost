@@ -1,7 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird'),
-    logging = require('../../../../logging'),
+    common = require('../../../../lib/common'),
     commands = require('../../../schema').commands,
     table = 'posts',
     columns = ['og_image', 'og_title', 'og_description', 'twitter_image', 'twitter_title', 'twitter_description'],
@@ -25,11 +25,11 @@ _private.handle = function handle(options) {
                     return connection.schema.hasColumn(table, column)
                         .then(function (exists) {
                             if (exists && isAdding || !exists && !isAdding) {
-                                logging.warn(`${type} column ${table}.${column}`);
+                                common.logging.warn(`${type} column ${table}.${column}`);
                                 return Promise.resolve();
                             }
 
-                            logging.info(`${type} column ${table}.${column}`);
+                            common.logging.info(`${type} column ${table}.${column}`);
                             return operation(table, column, connection);
                         });
                 });

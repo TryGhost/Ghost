@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     mail = require('../mail'),
     notificationsAPI = require('./notifications'),
     docName = 'mail',
@@ -23,14 +23,16 @@ function sendMail(object) {
     return mailer.send(object.mail[0].message).catch(function (err) {
         if (mailer.state.usingDirect) {
             notificationsAPI.add(
-                {notifications: [{
-                    type: 'warn',
-                    message: [
-                        i18n.t('warnings.index.unableToSendEmail'),
-                        i18n.t('common.seeLinkForInstructions',
-                            {link: '<a href=\'https://docs.ghost.org/v1/docs/mail-config\' target=\'_blank\'>Checkout our mail configuration docs!</a>'})
-                    ].join(' ')
-                }]},
+                {
+                    notifications: [{
+                        type: 'warn',
+                        message: [
+                            common.i18n.t('warnings.index.unableToSendEmail'),
+                            common.i18n.t('common.seeLinkForInstructions',
+                                {link: '<a href=\'https://docs.ghost.org/v1/docs/mail-config\' target=\'_blank\'>Checkout our mail configuration docs!</a>'})
+                        ].join(' ')
+                    }]
+                },
                 {context: {internal: true}}
             );
         }
@@ -120,7 +122,7 @@ apiMail = {
                     mail: [{
                         message: {
                             to: result.get('email'),
-                            subject: i18n.t('common.api.mail.testGhostEmail'),
+                            subject: common.i18n.t('common.api.mail.testGhostEmail'),
                             html: content.html,
                             text: content.text
                         }

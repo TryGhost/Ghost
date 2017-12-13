@@ -5,7 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     ModelsTag = require('../../../server/models/tag'),
     ModelsPost = require('../../../server/models/post'),
-    events = require('../../../server/events'),
+    common = require('../../../server/lib/common'),
     context = testUtils.context.admin,
     TagModel,
     PostModel,
@@ -23,7 +23,7 @@ describe('Tag Model', function () {
         sandbox.restore();
     });
     beforeEach(function () {
-        eventSpy = sandbox.spy(events, 'emit');
+        eventSpy = sandbox.spy(common.events, 'emit');
     });
 
     before(function () {

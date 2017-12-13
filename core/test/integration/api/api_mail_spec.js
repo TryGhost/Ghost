@@ -2,7 +2,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
     configUtils = require('../../utils/configUtils'),
-    i18n = require('../../../../core/server/i18n'),
+    common = require('../../../server/lib/common'),
     mailData = {
         mail: [{
             message: {
@@ -14,7 +14,7 @@ var should = require('should'),
         }]
     };
 
-i18n.init();
+common.i18n.init();
 
 describe('Mail API', function () {
     before(testUtils.teardown);

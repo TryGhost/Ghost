@@ -7,8 +7,7 @@ var should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     xmlrpc = rewire('../../../server/services/xmlrpc'),
-    events = require('../../../server/events'),
-    logging = require('../../../server/logging'),
+    common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
 
@@ -16,7 +15,7 @@ describe('XMLRPC', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(events, 'on');
+        eventStub = sandbox.stub(common.events, 'on');
         configUtils.set('privacy:useRpcPing', true);
     });
 
@@ -133,7 +132,7 @@ describe('XMLRPC', function () {
                         eventDone(new Error('ping site is down'));
                     }
                 }),
-                loggingStub = sandbox.stub(logging, 'error');
+                loggingStub = sandbox.stub(common.logging, 'error');
 
             ping(testPost);
 

@@ -1,8 +1,7 @@
 var _ = require('lodash'),
     hbs = require('express-hbs'),
     config = require('../../config'),
-    errors = require('../../errors'),
-    i18n = require('../../i18n'),
+    common = require('../../lib/common'),
     templates = require('../../controllers/frontend/templates'),
     escapeExpression = hbs.Utils.escapeExpression,
     _private = {},
@@ -29,15 +28,15 @@ _private.prepareError = function prepareError(err, req, res, next) {
         err = err[0];
     }
 
-    if (!errors.utils.isIgnitionError(err)) {
+    if (!common.errors.utils.isIgnitionError(err)) {
         // We need a special case for 404 errors
         // @TODO look at adding this to the GhostError class
         if (err.statusCode && err.statusCode === 404) {
-            err = new errors.NotFoundError({
+            err = new common.errors.NotFoundError({
                 err: err
             });
         } else {
-            err = new errors.GhostError({
+            err = new common.errors.GhostError({
                 err: err,
                 message: err.message,
                 statusCode: err.statusCode
@@ -120,10 +119,10 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
         // And then try to explain things to the user...
         // Cheat and output the error using handlebars escapeExpression
         return res.status(500).send(
-            '<h1>' + i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
-            '<p>' + i18n.t('errors.errors.encounteredError') + '</p>' +
+            '<h1>' + common.common.common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
+            '<p>' + common.common.i18n.t('errors.errors.encounteredError') + '</p>' +
             '<pre>' + escapeExpression(err.message || err) + '</pre>' +
-            '<br ><p>' + i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
+            '<br ><p>' + common.i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
             err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>'
         );
     });
@@ -136,11 +135,11 @@ _private.BasicErorRenderer = function BasicErrorRenderer(err, req, res, next) { 
 errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
     // TODO, handle unknown resources & methods differently, so that we can also produce
     // 405 Method Not Allowed
-    next(new errors.NotFoundError({message: i18n.t('errors.errors.resourceNotFound')}));
+    next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.resourceNotFound')}));
 };
 
 errorHandler.pageNotFound = function pageNotFound(req, res, next) {
-    next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+    next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
 };
 
 errorHandler.handleJSONResponse = [

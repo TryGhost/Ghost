@@ -8,11 +8,11 @@ var should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     ghost = testUtils.startGhost,
-    i18n = require('../../../../core/server/i18n'),
+    common = require('../../../server/lib/common'),
     config = require('../../../../core/server/config'),
     request;
 
-i18n.init();
+common.i18n.init();
 
 describe('Admin Routing', function () {
     function doEnd(done) {

@@ -3,7 +3,6 @@ var should = require('should'), // jshint ignore:line
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
-// Stuff we are testing
     helpers = require('../../../server/helpers');
 
 describe('{{pagination}} helper', function () {

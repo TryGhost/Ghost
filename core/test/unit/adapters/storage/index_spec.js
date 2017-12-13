@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     StorageBase = require('ghost-storage-base'),
     configUtils = require('../../../utils/configUtils'),
     storage = require('../../../../server/adapters/storage'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
     LocalFileStorage = require('../../../../server/adapters/storage/LocalFileStorage');
 
 describe('storage: index_spec', function () {
@@ -88,7 +88,7 @@ describe('storage: index_spec', function () {
             storage.getStorage();
         } catch (err) {
             should.exist(err);
-            (err instanceof errors.IncorrectUsageError).should.eql(true);
+            (err instanceof common.errors.IncorrectUsageError).should.eql(true);
         }
     });
 });

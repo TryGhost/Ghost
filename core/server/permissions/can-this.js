@@ -1,8 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     providers = require('./providers'),
     parseContext = require('./parse-context'),
     actionsMap = require('./actions-map-cache'),
@@ -10,7 +9,8 @@ var _ = require('lodash'),
     CanThisResult;
 
 // Base class for canThis call results
-CanThisResult = function () {};
+CanThisResult = function () {
+};
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
     var objectTypeModelMap = {
@@ -99,7 +99,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.noPermissionToAction')}));
             });
         };
 
@@ -117,7 +117,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (actionsMap.empty()) {
-        throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
+        throw new Error(common.i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
     // Kick off loading of user permissions if necessary

@@ -5,7 +5,7 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     ampController = rewire('../../../../server/apps/amp/lib/router'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/themes'),
 
@@ -141,7 +141,8 @@ describe('AMP getPostData', function () {
             }
         };
 
-        next = function () {};
+        next = function () {
+        };
 
         postLookupStub = sandbox.stub();
         resetPostLookup = ampController.__set__('postLookup', postLookupStub);
@@ -171,7 +172,7 @@ describe('AMP getPostData', function () {
     });
 
     it('should return error if postlookup returns NotFoundError', function (done) {
-        postLookupStub.returns(new Promise.reject(new errors.NotFoundError({message: 'not found'})));
+        postLookupStub.returns(new Promise.reject(new common.errors.NotFoundError({message: 'not found'})));
 
         ampController.getPostData(req, res, function (err) {
             should.exist(err);

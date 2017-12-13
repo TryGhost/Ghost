@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    events = require('../events'),
+    common = require('../lib/common'),
     api = require('../api'),
     modelAttrs;
 
@@ -47,8 +47,8 @@ function listener(event, model, options) {
 // TODO: use a wildcard with the new event emitter or use the webhooks API to
 // register listeners only for events that have webhooks
 function listen() {
-    events.on('subscriber.added', _.partial(listener, 'subscriber.added'));
-    events.on('subscriber.deleted', _.partial(listener, 'subscriber.deleted'));
+    common.events.on('subscriber.added', _.partial(listener, 'subscriber.added'));
+    common.events.on('subscriber.deleted', _.partial(listener, 'subscriber.deleted'));
 }
 
 // Public API

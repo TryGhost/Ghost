@@ -6,8 +6,8 @@ var should = require('should'),
     fs = require('fs'),
     _ = require('lodash'),
     context = testUtils.context,
-    errors = require('../../../server/errors'),
-    serverUtils = require('../../../server/utils'),
+    common = require('../../../server/lib/common'),
+    globalUtils = require('../../../server/utils'),
     apiUtils = require('../../../server/api/utils'),
     SubscribersAPI = require('../../../server/api/subscribers'),
 
@@ -90,7 +90,7 @@ describe('Subscribers API', function () {
                     done(new Error('Add subscriber without context should have no access.'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });
@@ -126,7 +126,7 @@ describe('Subscribers API', function () {
                     done(new Error('Edit subscriber as author should have no access.'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });
@@ -137,7 +137,7 @@ describe('Subscribers API', function () {
                     done(new Error('Edit subscriber as author should have no access.'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });
@@ -148,7 +148,7 @@ describe('Subscribers API', function () {
                     done(new Error('Edit non-existent subscriber is possible.'));
                 }, function (err) {
                     should.exist(err);
-                    (err instanceof errors.NotFoundError).should.eql(true);
+                    (err instanceof common.errors.NotFoundError).should.eql(true);
                     done();
                 }).catch(done);
         });
@@ -181,7 +181,7 @@ describe('Subscribers API', function () {
                     done(new Error('Destroy subscriber should not be possible with unknown email.'));
                 }, function (err) {
                     should.exist(err);
-                    (err instanceof errors.NotFoundError).should.eql(true);
+                    (err instanceof common.errors.NotFoundError).should.eql(true);
                     done();
                 }).catch(done);
         });
@@ -192,7 +192,7 @@ describe('Subscribers API', function () {
                     done(new Error('Destroy subscriber should not be possible as editor.'));
                 }, function (err) {
                     should.exist(err);
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 }).catch(done);
         });
@@ -224,7 +224,7 @@ describe('Subscribers API', function () {
                     done(new Error('Browse subscriber should be denied with external context.'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });
@@ -268,7 +268,7 @@ describe('Subscribers API', function () {
                 done(new Error('Should not return a result'));
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.NotFoundError).should.eql(true);
+                (err instanceof common.errors.NotFoundError).should.eql(true);
                 done();
             });
         });
@@ -284,7 +284,7 @@ describe('Subscribers API', function () {
             });
             sandbox.stub(apiUtils, 'checkFileExists').returns(true);
             stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
-            sandbox.stub(serverUtils, 'readCSV').callsFake(function () {
+            sandbox.stub(globalUtils, 'readCSV').callsFake(function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
                 }

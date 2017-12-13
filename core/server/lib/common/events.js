@@ -1,5 +1,5 @@
-var events  = require('events'),
-    util    = require('util'),
+var events = require('events'),
+    util = require('util'),
     EventRegistry,
     EventRegistryInstance;
 

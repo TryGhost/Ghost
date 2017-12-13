@@ -3,10 +3,9 @@ var should = require('should'), // jshint ignore:line
     Promise = require('bluebird'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
 
-// Stuff we are testing
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
 
@@ -335,7 +334,7 @@ describe('{{prev_post}} helper', function () {
     describe('general error handling', function () {
         beforeEach(function () {
             browsePostStub = sandbox.stub(api.posts, 'browse').callsFake(function () {
-                return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
+                return Promise.reject(new common.errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
 

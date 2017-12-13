@@ -5,7 +5,8 @@ var should = require('should'),
 
     authStrategies = require('../../../server/auth/auth-strategies'),
     Models = require('../../../server/models'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
+    urlService = require('../../../server/services/url'),
     globalUtils = require('../../../server/utils'),
 
     sandbox = sinon.sandbox.create(),
@@ -174,7 +175,7 @@ describe('Auth Strategies', function () {
                 userStub.calledWith({id: userId}).should.be.true();
                 next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(1);
-                (next.firstCall.args[0] instanceof errors.NoPermissionError).should.eql(true);
+                (next.firstCall.args[0] instanceof common.errors.NoPermissionError).should.eql(true);
                 next.firstCall.args[0].message.should.eql('Your account was suspended.');
                 done();
             }).catch(done);
@@ -241,11 +242,11 @@ describe('Auth Strategies', function () {
                 profile = {email: 'test@example.com', id: '1234'};
 
             userFindOneStub.returns(Promise.resolve(null));
-            inviteFindOneStub.returns(Promise.reject(new errors.NotFoundError()));
+            inviteFindOneStub.returns(Promise.reject(new common.errors.NotFoundError()));
 
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
-                (err instanceof errors.NotFoundError).should.eql(true);
+                (err instanceof common.errors.NotFoundError).should.eql(true);
                 userFindOneStub.calledOnce.should.be.false();
                 inviteFindOneStub.calledOnce.should.be.true();
                 done();
@@ -266,7 +267,7 @@ describe('Auth Strategies', function () {
 
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, profile, function (err) {
                 should.exist(err);
-                (err instanceof errors.NotFoundError).should.eql(true);
+                (err instanceof common.errors.NotFoundError).should.eql(true);
                 userFindOneStub.calledOnce.should.be.false();
                 inviteFindOneStub.calledOnce.should.be.true();
                 done();

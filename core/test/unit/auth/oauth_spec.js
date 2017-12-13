@@ -6,7 +6,7 @@ var should = require('should'),
     oAuth = require('../../../server/auth/oauth'),
     authUtils = require('../../../server/auth/utils'),
     spamPrevention = require('../../../server/web/middleware/api/spam-prevention'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     models = require('../../../server/models'),
 
     sandbox = sinon.sandbox.create();
@@ -54,8 +54,10 @@ describe('OAuth', function () {
                 id: 1
             };
 
-            res.setHeader = function () {};
-            res.end = function () {};
+            res.setHeader = function () {
+            };
+            res.end = function () {
+            };
 
             sandbox.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(Promise.resolve({
@@ -69,7 +71,8 @@ describe('OAuth', function () {
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader').callsFake(function () {});
+            sandbox.stub(res, 'setHeader').callsFake(function () {
+            });
 
             sandbox.stub(res, 'end').callsFake(function (json) {
                 try {
@@ -161,8 +164,10 @@ describe('OAuth', function () {
             req.connection = {remoteAddress: '127.0.0.1'};
             req.body.grant_type = 'refresh_token';
             req.body.refresh_token = 'token';
-            res.setHeader = function () {};
-            res.end = function () {};
+            res.setHeader = function () {
+            };
+            res.end = function () {
+            };
 
             sandbox.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
@@ -180,7 +185,8 @@ describe('OAuth', function () {
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader').callsFake(function () {});
+            sandbox.stub(res, 'setHeader').callsFake(function () {
+            });
 
             sandbox.stub(res, 'end').callsFake(function (json) {
                 try {
@@ -340,13 +346,13 @@ describe('OAuth', function () {
 
             sandbox.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
                 return function () {
-                    onSuccess(new errors.UnauthorizedError());
+                    onSuccess(new common.errors.UnauthorizedError());
                 };
             });
 
             oAuth.generateAccessToken(req, res, function (err) {
                 should.exist(err);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             });
         });
@@ -362,7 +368,7 @@ describe('OAuth', function () {
 
             oAuth.generateAccessToken(req, res, function (err) {
                 should.exist(err);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             });
         });

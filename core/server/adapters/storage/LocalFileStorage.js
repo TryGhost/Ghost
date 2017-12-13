@@ -9,10 +9,9 @@ var serveStatic = require('express').static,
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require('../../config'),
-    errors = require('../../errors'),
-    i18n = require('../../i18n'),
-    utils = require('../../utils'),
-    logging = require('../../logging'),
+    common = require('../../lib/common'),
+    globalUtils = require('../../utils'),
+    urlService = require('../../services/url'),
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
@@ -47,8 +46,8 @@ class LocalFileStore extends StorageBase {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
             var fullUrl = (
-                utils.url.urlJoin('/', utils.url.getSubdir(),
-                    utils.url.STATIC_IMAGE_URL_PREFIX,
+                urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
+                    urlService.utils.STATIC_IMAGE_URL_PREFIX,
                     path.relative(self.storagePath, targetFilename))
             ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
@@ -85,23 +84,23 @@ class LocalFileStore extends StorageBase {
             return serveStatic(
                 self.storagePath,
                 {
-                    maxAge: utils.ONE_YEAR_MS,
+                    maxAge: globalUtils.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: function onEnd() {
-                        logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
+                        common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
             )(req, res, function (err) {
                 if (err) {
                     if (err.statusCode === 404) {
-                        return next(new errors.NotFoundError({
-                            message: i18n.t('errors.errors.imageNotFound'),
+                        return next(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.errors.imageNotFound'),
                             code: 'STATIC_FILE_NOT_FOUND',
                             property: err.path
                         }));
                     }
 
-                    return next(new errors.GhostError({err: err}));
+                    return next(new common.errors.GhostError({err: err}));
                 }
 
                 next();
@@ -135,15 +134,15 @@ class LocalFileStore extends StorageBase {
             fs.readFile(targetPath, function (err, bytes) {
                 if (err) {
                     if (err.code === 'ENOENT') {
-                        return reject(new errors.NotFoundError({
+                        return reject(new common.errors.NotFoundError({
                             err: err,
-                            message: i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
+                            message: common.i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
                         }));
                     }
 
-                    return reject(new errors.GhostError({
+                    return reject(new common.errors.GhostError({
                         err: err,
-                        message: i18n.t('errors.errors.cannotReadImage', {img: options.path})
+                        message: common.i18n.t('errors.errors.cannotReadImage', {img: options.path})
                     }));
                 }
 

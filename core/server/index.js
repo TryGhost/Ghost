@@ -16,7 +16,7 @@ require('./overrides');
 var debug = require('ghost-ignition').debug('boot:init'),
     config = require('./config'),
     Promise = require('bluebird'),
-    i18n = require('./i18n'),
+    common = require('./lib/common'),
     models = require('./models'),
     permissions = require('./permissions'),
     auth = require('./auth'),
@@ -25,10 +25,9 @@ var debug = require('ghost-ignition').debug('boot:init'),
     scheduling = require('./adapters/scheduling'),
     settings = require('./settings'),
     themes = require('./themes'),
-    utils = require('./utils'),
+    urlService = require('./services/url'),
 
     // Services that need initialisation
-    urlService = require('./services/url'),
     apps = require('./services/apps'),
     xmlrpc = require('./services/xmlrpc'),
     slack = require('./services/slack'),
@@ -41,7 +40,7 @@ function init() {
     var ghostServer, parentApp;
 
     // Initialize Internationalization
-    i18n.init();
+    common.i18n.init();
     debug('I18n done');
     models.init();
     debug('models done');
@@ -66,9 +65,7 @@ function init() {
             // Initialize slack ping
             slack.listen(),
             // Initialize webhook pings
-            webhooks.listen(),
-            // Url Service
-            urlService.init()
+            webhooks.listen()
         );
     }).then(function () {
         debug('Apps, XMLRPC, Slack done');
@@ -96,7 +93,7 @@ function init() {
         return scheduling.init({
             schedulerUrl: config.get('scheduling').schedulerUrl,
             active: config.get('scheduling').active,
-            apiUrl: utils.url.urlFor('api', true),
+            apiUrl: urlService.utils.urlFor('api', true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         });

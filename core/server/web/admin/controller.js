@@ -4,8 +4,7 @@ var debug = require('ghost-ignition').debug('admin:controller'),
     config = require('../../config'),
     api = require('../../api'),
     updateCheck = require('../../update-check'),
-    logging = require('../../logging'),
-    i18n = require('../../i18n');
+    common = require('../../lib/common');
 
 // Route: index
 // Path: /ghost/
@@ -25,7 +24,7 @@ module.exports = function adminController(req, res) {
             type: 'info',
             location: 'upgrade.new-version-available',
             dismissible: false,
-            message: i18n.t('notices.controllers.newVersionAvailable',
+            message: common.i18n.t('notices.controllers.newVersionAvailable',
                 {
                     version: updateVersion,
                     link: '<a href="https://docs.ghost.org/docs/upgrade" target="_blank">Click here</a>'
@@ -43,6 +42,6 @@ module.exports = function adminController(req, res) {
 
         res.sendFile(templatePath);
     }).catch(function (err) {
-        logging.error(err);
+        common.logging.error(err);
     });
 };

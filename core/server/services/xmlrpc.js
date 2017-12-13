@@ -2,11 +2,8 @@ var _ = require('lodash'),
     http = require('http'),
     xml = require('xml'),
     config = require('../config'),
-    utils = require('../utils'),
-    errors = require('../errors'),
-    logging = require('../logging'),
-    events = require('../events'),
-    i18n = require('../i18n'),
+    urlService = require('../services/url'),
+    common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
 
     defaultPostSlugs = [
@@ -30,7 +27,7 @@ var _ = require('lodash'),
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = utils.url.urlFor('post', {post: post}, true);
+        url = urlService.utils.urlFor('post', {post: post}, true);
 
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
@@ -78,11 +75,11 @@ function ping(post) {
         req.write(pingXML);
 
         req.on('error', function handleError(err) {
-            logging.error(new errors.GhostError({
+            common.logging.error(new common.errors.GhostError({
                 err: err,
                 message: err.message,
-                context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-                help: i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
             }));
         });
 
@@ -101,7 +98,7 @@ function listener(model, options) {
 }
 
 function listen() {
-    events.on('post.published', listener);
+    common.events.on('post.published', listener);
 }
 
 module.exports = {

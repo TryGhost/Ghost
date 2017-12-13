@@ -7,13 +7,12 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     sequence = require('../utils/sequence'),
-    errors = require('../errors'),
+    common = require('../lib/common'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
-    events = require('../events'),
     config = require('../config'),
-    utils = require('../utils'),
-    i18n = require('../i18n'),
+    globalUtils = require('../utils'),
+    urlService = require('../services/url'),
     Post,
     Posts;
 
@@ -47,7 +46,7 @@ Post = ghostBookshelf.Model.extend({
             resourceType = this.updated('page') ? 'page' : 'post';
         }
 
-        events.emit(resourceType + '.' + event, this, options);
+        common.events.emit(resourceType + '.' + event, this, options);
     },
 
     defaults: function defaults() {
@@ -167,29 +166,29 @@ Post = ghostBookshelf.Model.extend({
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
-            return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.models.post.isAlreadyPublished', {key: 'status'})
+            return Promise.reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.models.post.isAlreadyPublished', {key: 'status'})
             }));
         }
 
         // CASE: both page and post can get scheduled
         if (newStatus === 'scheduled') {
             if (!publishedAt) {
-                return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
                 }));
             } else if (!moment(publishedAt).isValid()) {
-                return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
                 }));
-            // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
+                // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
             } else if (
                 publishedAtHasChanged &&
                 moment(publishedAt).isBefore(moment().add(config.get('times').cannotScheduleAPostBeforeInMinutes, 'minutes')) &&
                 !options.importing
             ) {
-                return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.expectedPublishedAtInFuture', {
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('errors.models.post.expectedPublishedAtInFuture', {
                         cannotScheduleAPostBeforeInMinutes: config.get('times').cannotScheduleAPostBeforeInMinutes
                     })
                 }));
@@ -217,7 +216,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', utils.mobiledocConverter.render(JSON.parse(mobiledoc)));
+            this.set('html', globalUtils.mobiledocConverter.render(JSON.parse(mobiledoc)));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
@@ -233,7 +232,7 @@ Post = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         if (!options.importing) {
-            title = this.get('title') || i18n.t('errors.models.post.untitled');
+            title = this.get('title') || common.i18n.t('errors.models.post.untitled');
             this.set('title', _.toString(title).trim());
         }
 
@@ -375,7 +374,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = utils.url.urlPathForPost(attrs);
+            attrs.url = urlService.utils.urlPathForPost(attrs);
         }
 
         if (oldPostId) {
@@ -474,10 +473,10 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-    * @param {String} methodName The name of the method to check valid options for.
-    * @return {Array} Keys allowed in the `options` hash of the model's method.
-    */
+     * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+     * @param {String} methodName The name of the method to check valid options for.
+     * @return {Array} Keys allowed in the `options` hash of the model's method.
+     */
     permittedOptions: function permittedOptions(methodName) {
         var options = ghostBookshelf.Model.permittedOptions(),
 
@@ -628,8 +627,8 @@ Post = ghostBookshelf.Model.extend({
         opts = this.filterOptions(opts, 'destroyByAuthor');
 
         if (!authorId) {
-            throw new errors.NotFoundError({
-                message: i18n.t('errors.models.post.noUserFound')
+            throw new common.errors.NotFoundError({
+                message: common.i18n.t('errors.models.post.noUserFound')
             });
         }
 
@@ -639,7 +638,7 @@ Post = ghostBookshelf.Model.extend({
                 .fetch(opts)
                 .call('invokeThen', 'destroy', opts)
                 .catch((err) => {
-                    throw new errors.GhostError({err: err});
+                    throw new common.errors.GhostError({err: err});
                 });
         });
 
@@ -697,7 +696,7 @@ Post = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.post.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.post.notEnoughPermission')}));
     }
 });
 

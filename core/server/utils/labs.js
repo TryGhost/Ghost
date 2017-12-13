@@ -2,9 +2,7 @@ var settingsCache = require('../settings/cache'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     SafeString = require('../themes/engine').SafeString,
-    errors = require('../errors'),
-    logging = require('../logging'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     labs = module.exports = {};
 
 labs.isSet = function isSet(flag) {
@@ -22,15 +20,15 @@ labs.enabledHelper = function enabledHelper(options, callback) {
 
     // Else, the helper is not active and we need to handle this as an error
     errDetails = {
-        message: i18n.t('warnings.helpers.helperNotAvailable', {helperName: options.helperName}),
-        context: i18n.t('warnings.helpers.flagMustBeEnabled', {
+        message: common.i18n.t('warnings.helpers.helperNotAvailable', {helperName: options.helperName}),
+        context: common.i18n.t('warnings.helpers.flagMustBeEnabled', {
             helperName: options.helperName,
             flagName: options.flagName
         }),
-        help: i18n.t('warnings.helpers.seeLink', {url: options.helpUrl})
+        help: common.i18n.t('warnings.helpers.seeLink', {url: options.helpUrl})
     };
 
-    logging.error(new errors.DisabledFeatureError(errDetails));
+    common.logging.error(new common.errors.DisabledFeatureError(errDetails));
 
     errString = new SafeString(
         '<script>console.error("' + _.values(errDetails).join(' ') + '");</script>'

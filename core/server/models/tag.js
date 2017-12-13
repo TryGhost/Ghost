@@ -1,6 +1,6 @@
-var _              = require('lodash'),
+var _ = require('lodash'),
     ghostBookshelf = require('./base'),
-    events         = require('../events'),
+    common = require('../lib/common'),
     Tag,
     Tags;
 
@@ -15,7 +15,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event) {
-        events.emit('tag' + '.' + event, this);
+        common.events.emit('tag' + '.' + event, this);
     },
 
     onCreated: function onCreated(model) {

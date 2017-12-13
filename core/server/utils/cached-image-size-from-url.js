@@ -1,7 +1,6 @@
 var debug = require('ghost-ignition').debug('utils:image-size-cache'),
     imageSize = require('./image-size'),
-    logging = require('../logging'),
-    errors = require('../errors'),
+    common = require('../lib/common'),
     imageSizeCache = {};
 
 /**
@@ -25,7 +24,7 @@ function getCachedImageSizeFromUrl(url) {
             debug('Cached image:', url);
 
             return imageSizeCache[url];
-        }).catch(errors.NotFoundError, function () {
+        }).catch(common.errors.NotFoundError, function () {
             debug('Cached image (not found):', url);
             // in case of error we just attach the url
             imageSizeCache[url] = url;
@@ -33,7 +32,7 @@ function getCachedImageSizeFromUrl(url) {
             return imageSizeCache[url];
         }).catch(function (err) {
             debug('Cached image (error):', url);
-            logging.error(err);
+            common.logging.error(err);
 
             // in case of error we just attach the url
             imageSizeCache[url] = url;

@@ -1,6 +1,5 @@
 var semver = require('semver'),
-    errors = require('../../../errors'),
-    i18n = require('../../../i18n');
+    common = require('../../../lib/common');
 
 function checkVersionMatch(req, res, next) {
     var clientVersion = req.get('X-Ghost-Version'),
@@ -12,8 +11,11 @@ function checkVersionMatch(req, res, next) {
     // always error when the major version is different
 
     if (clientVersion && !semver.satisfies(serverVersion, constraint)) {
-        return next(new errors.VersionMismatchError({
-            message: i18n.t('errors.middleware.api.versionMismatch', {clientVersion: clientVersion, serverVersion: serverVersion})
+        return next(new common.errors.VersionMismatchError({
+            message: common.i18n.t('errors.middleware.api.versionMismatch', {
+                clientVersion: clientVersion,
+                serverVersion: serverVersion
+            })
         }));
     }
 

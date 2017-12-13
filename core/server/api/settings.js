@@ -5,8 +5,7 @@ var Promise = require('bluebird'),
     models = require('../models'),
     canThis = require('../permissions').canThis,
     apiUtils = require('./utils'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
     docName = 'settings',
     settings,
@@ -83,28 +82,28 @@ canEditAllSettings = function (settingsInfo, options) {
     var checkSettingPermissions = function checkSettingPermissions(setting) {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
-                    new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
+                    new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
                 );
             }
 
             return canThis(options.context).edit.setting(setting.key).catch(function () {
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToEditSettings')}));
+                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToEditSettings')}));
             });
         },
         checks = _.map(settingsInfo, function (settingInfo) {
             var setting = settingsCache.get(settingInfo.key, {resolve: false});
 
             if (!setting) {
-                return Promise.reject(new errors.NotFoundError(
-                    {message: i18n.t('errors.api.settings.problemFindingSetting', {key: settingInfo.key})}
+                return Promise.reject(new common.errors.NotFoundError(
+                    {message: common.i18n.t('errors.api.settings.problemFindingSetting', {key: settingInfo.key})}
                 ));
             }
 
             if (setting.key === 'active_theme') {
                 return Promise.reject(
-                    new errors.BadRequestError({
-                        message: i18n.t('errors.api.settings.activeThemeSetViaAPI.error'),
-                        help: i18n.t('errors.api.settings.activeThemeSetViaAPI.help')
+                    new common.errors.BadRequestError({
+                        message: common.i18n.t('errors.api.settings.activeThemeSetViaAPI.error'),
+                        help: common.i18n.t('errors.api.settings.activeThemeSetViaAPI.help')
                     })
                 );
             }
@@ -134,14 +133,18 @@ settings = {
 
         // If there is no context, return only blog settings
         if (!options.context) {
-            return Promise.resolve(_.filter(result.settings, function (setting) { return setting.type === 'blog'; }));
+            return Promise.resolve(_.filter(result.settings, function (setting) {
+                return setting.type === 'blog';
+            }));
         }
 
         // Otherwise return whatever this context is allowed to browse
         return canThis(options.context).browse.setting().then(function () {
             // Omit core settings unless internal request
             if (!options.context.internal) {
-                result.settings = _.filter(result.settings, function (setting) { return setting.type !== 'core'; });
+                result.settings = _.filter(result.settings, function (setting) {
+                    return setting.type !== 'core';
+                });
             }
 
             return result;
@@ -162,8 +165,8 @@ settings = {
             result = {};
 
         if (!setting) {
-            return Promise.reject(new errors.NotFoundError(
-                {message: i18n.t('errors.api.settings.problemFindingSetting', {key: options.key})}
+            return Promise.reject(new common.errors.NotFoundError(
+                {message: common.i18n.t('errors.api.settings.problemFindingSetting', {key: options.key})}
             ));
         }
 
@@ -171,7 +174,7 @@ settings = {
 
         if (setting.type === 'core' && !(options.context && options.context.internal)) {
             return Promise.reject(
-                new errors.NoPermissionError({message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
+                new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
             );
         }
 
@@ -182,7 +185,7 @@ settings = {
         return canThis(options.context).read.setting(options.key).then(function () {
             return settingsResult(result);
         }, function () {
-            return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.api.settings.noPermissionToReadSettings')}));
+            return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToReadSettings')}));
         });
     },
 
@@ -210,7 +213,9 @@ settings = {
             }
         });
 
-        type = _.find(object.settings, function (setting) { return setting.key === 'type'; });
+        type = _.find(object.settings, function (setting) {
+            return setting.key === 'type';
+        });
         if (_.isObject(type)) {
             type = type.value;
         }

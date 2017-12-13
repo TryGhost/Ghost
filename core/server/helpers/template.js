@@ -1,9 +1,7 @@
 var templates = {},
-
     _ = require('lodash'),
-    hbs = require('../themes/engine'),
-    errors = require('../errors'),
-    i18n = require('../i18n');
+    proxy = require('./proxy'),
+    hbs = require('../themes/engine');
 
 // ## Template utils
 
@@ -13,8 +11,8 @@ templates.execute = function execute(name, context, options) {
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
-        throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.template.templateNotFound', {name: name})
+        throw new proxy.errors.IncorrectUsageError({
+            message: proxy.i18n.t('warnings.helpers.template.templateNotFound', {name: name})
         });
     }
 

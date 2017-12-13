@@ -5,8 +5,7 @@ var Promise = require('bluebird'),
     apiUtils = require('./utils'),
     models = require('../models'),
     config = require('../config'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     postsAPI = require('../api/posts');
 
 /**
@@ -29,7 +28,7 @@ exports.publishPost = function publishPost(object, options) {
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
     if (!options.context || !options.context.client || options.context.client !== 'ghost-scheduler') {
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.noPermissionToAction')}));
     }
 
     options.context = {internal: true};
@@ -52,11 +51,11 @@ exports.publishPost = function publishPost(object, options) {
                         publishedAtMoment = moment(post.published_at);
 
                         if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-                            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.notFound')}));
+                            return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.job.notFound')}));
                         }
 
                         if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && object.force !== true) {
-                            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.publishInThePast')}));
+                            return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.job.publishInThePast')}));
                         }
 
                         return postsAPI.edit(

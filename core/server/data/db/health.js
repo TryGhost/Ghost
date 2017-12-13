@@ -1,6 +1,6 @@
 var KnexMigrator = require('knex-migrator'),
     config = require('../../config'),
-    errors = require('../../errors'),
+    common = require('../../lib/common'),
     models = require('../../models');
 
 module.exports.check = function healthCheck() {
@@ -22,7 +22,7 @@ module.exports.check = function healthCheck() {
                         throw outerErr;
                     }
 
-                    throw new errors.DatabaseVersionError({
+                    throw new common.errors.DatabaseVersionError({
                         message: 'Your database version is not compatible with Ghost 1.0.0 (master branch)',
                         context: 'Want to keep your DB? Use Ghost < 1.0.0 or the "stable" branch. Otherwise please delete your DB and restart Ghost.',
                         help: 'More information on the Ghost 1.0.0 at https://docs.ghost.org/docs/introduction'

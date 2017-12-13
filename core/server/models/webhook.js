@@ -1,6 +1,6 @@
-var ghostBookshelf = require('./base'),
-    events = require('../events'),
-    Promise = require('bluebird'),
+var Promise = require('bluebird'),
+    ghostBookshelf = require('./base'),
+    common = require('../lib/common'),
     Webhook,
     Webhooks;
 
@@ -10,7 +10,7 @@ Webhook = ghostBookshelf.Model.extend({
     emitChange: function emitChange(event, options) {
         options = options || {};
 
-        events.emit('webhook' + '.' + event, this, options);
+        common.events.emit('webhook' + '.' + event, this, options);
     },
 
     onCreated: function onCreated(model, response, options) {

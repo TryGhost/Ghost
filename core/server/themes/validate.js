@@ -1,7 +1,6 @@
 var Promise = require('bluebird'),
     config = require('../config'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     checkTheme;
 
 checkTheme = function checkTheme(theme, isZip) {
@@ -29,8 +28,8 @@ checkTheme = function checkTheme(theme, isZip) {
             return checkedTheme;
         }
 
-        return Promise.reject(new errors.ThemeValidationError({
-            message: i18n.t('errors.api.themes.invalidTheme'),
+        return Promise.reject(new common.errors.ThemeValidationError({
+            message: common.i18n.t('errors.api.themes.invalidTheme'),
             errorDetails: checkedTheme.results.error,
             context: checkedTheme
         }));

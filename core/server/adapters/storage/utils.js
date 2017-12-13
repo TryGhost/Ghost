@@ -1,7 +1,7 @@
-var globalUtils = require('../../utils');
+var urlService = require('../../services/url');
 
 /**
- * @TODO: move `index.js` to here - e.g. storageUtils.getStorage
+ * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
  */
 
 /**
@@ -15,8 +15,8 @@ var globalUtils = require('../../utils');
  */
 exports.getLocalFileStoragePath = function getLocalFileStoragePath(imagePath) {
     // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-    var urlRegExp = new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.urlFor('home', true), globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX)),
-        filePathRegExp = new RegExp('^' + globalUtils.url.urlJoin(globalUtils.url.getSubdir(), '/', globalUtils.url.STATIC_IMAGE_URL_PREFIX));
+    var urlRegExp = new RegExp('^' + urlService.utils.urlJoin(urlService.utils.urlFor('home', true), urlService.utils.getSubdir(), '/', urlService.utils.STATIC_IMAGE_URL_PREFIX)),
+        filePathRegExp = new RegExp('^' + urlService.utils.urlJoin(urlService.utils.getSubdir(), '/', urlService.utils.STATIC_IMAGE_URL_PREFIX));
 
     if (imagePath.match(urlRegExp)) {
         return imagePath.replace(urlRegExp, '');

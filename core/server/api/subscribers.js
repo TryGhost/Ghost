@@ -7,8 +7,7 @@ var Promise = require('bluebird'),
     globalUtils = require('../utils'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     docName = 'subscribers',
     subscribers;
 
@@ -66,8 +65,8 @@ subscribers = {
             return models.Subscriber.findOne(options.data, _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
                         }));
                     }
 
@@ -109,12 +108,12 @@ subscribers = {
                         // we don't expose this information
                         return Promise.resolve(subscriber);
                     } else if (subscriber) {
-                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
+                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                     }
 
                     return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
+                            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                         }
 
                         return Promise.reject(error);
@@ -158,8 +157,8 @@ subscribers = {
             return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
                         }));
                     }
 
@@ -200,8 +199,8 @@ subscribers = {
                 return models.Subscriber.getByEmail(options.email, options)
                     .then(function (subscriber) {
                         if (!subscriber) {
-                            return Promise.reject(new errors.NotFoundError({
-                                message: i18n.t('errors.api.subscribers.subscriberNotFound')
+                            return Promise.reject(new common.errors.NotFoundError({
+                                message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
                             }));
                         }
 
@@ -275,7 +274,7 @@ subscribers = {
             return models.Subscriber.findAll(options).then(function (data) {
                 return formatCSV(data.toJSON(options));
             }).catch(function (err) {
-                return Promise.reject(new errors.GhostError({err: err}));
+                return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
 
@@ -318,7 +317,7 @@ subscribers = {
                     if (inspection.isFulfilled()) {
                         fulfilled = fulfilled + 1;
                     } else {
-                        if (inspection.reason() instanceof errors.ValidationError) {
+                        if (inspection.reason() instanceof common.errors.ValidationError) {
                             duplicates = duplicates + 1;
                         } else {
                             invalid = invalid + 1;

@@ -4,7 +4,7 @@ var should = require('should'), // jshint ignore:line
 
     // Stuff we are testing
     helpers = require('../../../server/helpers'),
-    logging = require('../../../server/logging'),
+    common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
 
@@ -16,7 +16,7 @@ describe('{{image}} helper', function () {
     });
 
     beforeEach(function () {
-        logWarnStub = sandbox.stub(logging, 'warn');
+        logWarnStub = sandbox.stub(common.logging, 'warn');
     });
 
     afterEach(function () {

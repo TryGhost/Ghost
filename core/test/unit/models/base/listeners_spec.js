@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     rewire = require('rewire'),
-    events = require('../../../../server/events'),
+    common = require('../../../../server/lib/common'),
     Models = require('../../../../server/models'),
 
     sandbox = sinon.sandbox.create();
@@ -10,7 +10,7 @@ describe('Models: listeners', function () {
     var eventsToRemember = {};
 
     before(function () {
-        sandbox.stub(events, 'on').callsFake(function (name, callback) {
+        sandbox.stub(common.events, 'on').callsFake(function (name, callback) {
             eventsToRemember[name] = callback;
         });
 

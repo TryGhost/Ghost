@@ -5,7 +5,7 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     Promise = require('bluebird'),
     configUtils = require('../../utils/configUtils'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     db = require('../../../server/data/db'),
     models = require('../../../server/models'),
     PostAPI = require('../../../server/api/posts'),
@@ -697,7 +697,7 @@ describe('Post API', function () {
                 done(new Error('expected permission error'));
             }).catch(function (err) {
                 should.exist(err);
-                (err instanceof errors.NoPermissionError).should.eql(true);
+                (err instanceof common.errors.NoPermissionError).should.eql(true);
                 done();
             });
         });

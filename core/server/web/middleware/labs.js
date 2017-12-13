@@ -1,5 +1,5 @@
-var errors      = require('../../errors'),
-    labsUtil    = require('../../utils/labs'),
+var labsUtil = require('../../utils/labs'),
+    common = require('../../lib/common'),
     labs;
 
 labs = {
@@ -7,7 +7,7 @@ labs = {
         if (labsUtil.isSet('subscribers') === true) {
             return next();
         } else {
-            return next(new errors.NotFoundError());
+            return next(new common.errors.NotFoundError());
         }
     }
 };

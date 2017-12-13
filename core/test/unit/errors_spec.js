@@ -1,9 +1,9 @@
 var should = require('should'), // jshint ignore:line
-    errors = require('../../server/errors');
+    common = require('../../server/lib/common');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {
-        var ghostError = new errors.GhostError();
+        var ghostError = new common.errors.GhostError();
         (ghostError instanceof Error).should.eql(true);
     });
 
@@ -15,7 +15,7 @@ describe('Errors', function () {
             someError.context = 'test';
             someError.help = 'test';
 
-            ghostError = new errors.GhostError({err: someError});
+            ghostError = new common.errors.GhostError({err: someError});
             ghostError.stack.should.match(/Error: test/);
             ghostError.context.should.eql(someError.context);
             ghostError.help.should.eql(someError.help);
@@ -28,7 +28,7 @@ describe('Errors', function () {
                 a: 'b'
             };
 
-            ghostError = new errors.GhostError({
+            ghostError = new common.errors.GhostError({
                 err: someError
             });
 
@@ -40,7 +40,7 @@ describe('Errors', function () {
 
             someError.context = 'test';
 
-            ghostError = new errors.GhostError({
+            ghostError = new common.errors.GhostError({
                 err: someError,
                 context: 'context'
             });
@@ -51,7 +51,7 @@ describe('Errors', function () {
         it('with custom attribute', function () {
             var someError = new Error(), ghostError;
 
-            ghostError = new errors.GhostError({
+            ghostError = new common.errors.GhostError({
                 err: someError,
                 message: 'test'
             });
@@ -60,7 +60,7 @@ describe('Errors', function () {
         });
 
         it('error is string', function () {
-            var ghostError = new errors.GhostError({
+            var ghostError = new common.errors.GhostError({
                 err: 'string'
             });
 

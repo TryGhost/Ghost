@@ -24,9 +24,9 @@ module.exports = {
     settingsCache: settingsCache,
 
     // These 3 are kind of core and required all the time
-    errors: require('../errors'),
-    i18n: require('../i18n'),
-    logging: require('../logging'),
+    errors: require('../lib/common/errors'),
+    i18n: require('../lib/common/i18n'),
+    logging: require('../lib/common/logging'),
 
     // This is used to detect if "isPost" is true in prevNext.
     checks: require('../data/schema').checks,
@@ -63,7 +63,7 @@ module.exports = {
     // Various utils, needs cleaning up / simplifying
     socialUrls: require('../utils/social-urls'),
     blogIcon: require('../utils/blog-icon'),
-    url: require('../utils').url,
+    url: require('../services/url').utils,
     utils: {
         findKey: function findKey(key /* ...objects... */) {
             var objects = Array.prototype.slice.call(arguments, 1);

@@ -5,15 +5,14 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     docName = 'clients',
     clients;
 
 /**
  * ### Clients API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](events.js.html#api%20methods)
  */
 clients = {
 
@@ -39,8 +38,8 @@ clients = {
             return models.Client.findOne(options.data, _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('common.api.clients.clientNotFound')
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('common.api.clients.clientNotFound')
                         }));
                     }
 

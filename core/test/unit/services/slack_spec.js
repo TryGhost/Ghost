@@ -9,8 +9,8 @@ var should = require('should'), // jshint ignore:line,
 
     // Stuff we test
     slack = rewire('../../../server/services/slack'),
-    events = require('../../../server/events'),
-    utils = require('../../../server/utils'),
+    common = require('../../../server/lib/common'),
+    urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema').checks,
     settingsCache = require('../../../server/settings/cache'),
 
@@ -24,7 +24,7 @@ describe('Slack', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(events, 'on');
+        eventStub = sandbox.stub(common.events, 'on');
     });
 
     afterEach(function () {
@@ -165,7 +165,7 @@ describe('Slack', function () {
 
         beforeEach(function () {
             isPostStub = sandbox.stub(schema, 'isPost');
-            urlForSpy = sandbox.spy(utils.url, 'urlFor');
+            urlForSpy = sandbox.spy(urlService.utils, 'urlFor');
 
             settingsCacheStub = sandbox.stub(settingsCache, 'get');
 

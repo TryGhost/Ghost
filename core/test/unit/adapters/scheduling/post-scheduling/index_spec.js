@@ -2,16 +2,14 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     moment = require('moment'),
-    config = require(__dirname + '/../../../../../server/config'),
-    testUtils = require(config.get('paths').corePath + '/test/utils'),
-    errors = require(config.get('paths').corePath + '/server/errors'),
-    events = require(config.get('paths').corePath + '/server/events'),
-    models = require(config.get('paths').corePath + '/server/models'),
-    api = require(config.get('paths').corePath + '/server/api'),
-    schedulingUtils = require(config.get('paths').corePath + '/server/adapters/scheduling/utils'),
-    SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault'),
-    postScheduling = require(config.get('paths').corePath + '/server/adapters/scheduling/post-scheduling'),
-    generalUtils = require(__dirname + '/../../../../../server/utils'),
+    testUtils = require('../../../../utils'),
+    common = require('../../../../../server/lib/common'),
+    models = require('../../../../../server/models'),
+    api = require('../../../../../server/api'),
+    schedulingUtils = require('../../../../../server/adapters/scheduling/utils'),
+    SchedulingDefault = require('../../../../../server/adapters/scheduling/SchedulingDefault'),
+    postScheduling = require('../../../../../server/adapters/scheduling/post-scheduling'),
+    urlService = require('../../../../../server/services/url'),
 
     sandbox = sinon.sandbox.create();
 
@@ -30,7 +28,10 @@ describe('Scheduling: Post Scheduling', function () {
 
     beforeEach(function () {
         scope.client = models.Client.forge(testUtils.DataGenerator.forKnex.createClient({slug: 'ghost-scheduler'}));
-        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({id: 1337, mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')}));
+        scope.post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
+            id: 1337,
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+        }));
 
         scope.adapter = new SchedulingDefault();
 
@@ -38,7 +39,7 @@ describe('Scheduling: Post Scheduling', function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sandbox.stub(events, 'onMany').callsFake(function (events, stubDone) {
+        sandbox.stub(common.events, 'onMany').callsFake(function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
@@ -70,7 +71,7 @@ describe('Scheduling: Post Scheduling', function () {
 
                     scope.adapter.schedule.calledWith({
                         time: moment(scope.post.get('published_at')).valueOf(),
-                        url: generalUtils.url.urlJoin(scope.apiUrl, 'schedules', 'posts', scope.post.get('id')) + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
+                        url: urlService.utils.urlJoin(scope.apiUrl, 'schedules', 'posts', scope.post.get('id')) + '?client_id=' + scope.client.get('slug') + '&client_secret=' + scope.client.get('secret'),
                         extra: {
                             httpMethod: 'PUT',
                             oldTime: null
@@ -101,7 +102,7 @@ describe('Scheduling: Post Scheduling', function () {
                 postScheduling.init()
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof errors.IncorrectUsageError).should.eql(true);
+                        (err instanceof common.errors.IncorrectUsageError).should.eql(true);
                         done();
                     });
             });

@@ -6,7 +6,7 @@ var _ = require('lodash'),
 
     // Stuff we test
     webhooks = rewire('../../../server/services/webhooks'),
-    events = require('../../../server/events'),
+    common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
 
@@ -14,7 +14,7 @@ describe('Webhooks', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(events, 'on');
+        eventStub = sandbox.stub(common.events, 'on');
     });
 
     afterEach(function () {

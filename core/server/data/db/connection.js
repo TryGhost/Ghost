@@ -1,7 +1,6 @@
 var knex = require('knex'),
     config = require('../../config'),
-    logging = require('../../logging'),
-    errors = require('../../errors'),
+    common = require('../../lib/common'),
     knexInstance;
 
 // @TODO:
@@ -20,7 +19,7 @@ function configure(dbConfig) {
         dbConfig.connection.charset = 'utf8mb4';
 
         dbConfig.connection.loggingHook = function loggingHook(err) {
-            logging.error(new errors.InternalServerError({
+            common.logging.error(new common.errors.InternalServerError({
                 code: 'MYSQL_LOGGING_HOOK',
                 err: err
             }));

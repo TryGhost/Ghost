@@ -3,7 +3,7 @@ var should = require('should'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
     db = require('../../server/data/db'),
-    errors = require('../../server/errors'),
+    common = require('../../server/lib/common'),
     exporter = rewire('../../server/data/export'),
     schema = require('../../server/data/schema'),
     models = require('../../server/models'),
@@ -95,7 +95,7 @@ describe('Exporter', function () {
                     done(new Error('expected error for export'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.DataExportError).should.eql(true);
+                    (err instanceof common.errors.DataExportError).should.eql(true);
                     done();
                 });
         });

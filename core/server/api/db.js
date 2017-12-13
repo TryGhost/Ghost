@@ -10,8 +10,8 @@ var Promise = require('bluebird'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
     config = require('../config'),
-    errors = require('../errors'),
-    utilsUrl = require('../utils/url'),
+    common = require('../lib/common'),
+    urlService = require('../services/url'),
     docName = 'db',
     db;
 
@@ -36,7 +36,7 @@ db = {
 
         return Promise.props(props)
             .then(function successMessage(exportResult) {
-                var filename = path.resolve(utilsUrl.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+                var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
                 return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data))
                     .then(function () {
@@ -62,7 +62,7 @@ db = {
             return exporter.doExport().then(function (exportedData) {
                 return {db: [exportedData]};
             }).catch(function (err) {
-                return Promise.reject(new errors.GhostError({err: err}));
+                return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
 
@@ -124,7 +124,7 @@ db = {
                 return Collection.invokeThen('destroy', queryOpts);
             }).return({db: []})
                 .catch(function (err) {
-                    throw new errors.GhostError({err: err});
+                    throw new common.errors.GhostError({err: err});
                 });
         }
 

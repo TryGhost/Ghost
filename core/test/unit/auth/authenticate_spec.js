@@ -2,9 +2,8 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     passport = require('passport'),
     rewire = require('rewire'),
-    errors = require('../../../server/errors'),
     auth = rewire('../../../server/auth'),
-    logging = require('../../../server/logging'),
+    common = require('../../../server/lib/common'),
     BearerStrategy = require('passport-http-bearer').Strategy,
     ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy,
     user = {id: 1},
@@ -89,7 +88,7 @@ describe('Auth', function () {
         req = {};
         res = {};
         next = sandbox.spy();
-        loggingStub = sandbox.stub(logging, 'error');
+        loggingStub = sandbox.stub(common.logging, 'error');
     });
 
     afterEach(function () {
@@ -111,7 +110,7 @@ describe('Auth', function () {
 
         var next = function next(err) {
             err.statusCode.should.eql(403);
-            (err instanceof errors.NoPermissionError).should.eql(true);
+            (err instanceof common.errors.NoPermissionError).should.eql(true);
             done();
         };
 
@@ -150,7 +149,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -164,7 +163,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -180,7 +179,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -220,7 +219,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -233,7 +232,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -247,7 +246,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -261,7 +260,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -275,7 +274,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 
@@ -291,7 +290,7 @@ describe('Auth', function () {
 
             var next = function next(err) {
                 err.statusCode.should.eql(401);
-                (err instanceof errors.UnauthorizedError).should.eql(true);
+                (err instanceof common.errors.UnauthorizedError).should.eql(true);
                 done();
             };
 

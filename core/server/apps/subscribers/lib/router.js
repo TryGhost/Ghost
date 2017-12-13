@@ -1,15 +1,15 @@
-var path                = require('path'),
-    express             = require('express'),
-    _                   = require('lodash'),
-    subscribeRouter     = express.Router(),
-    bodyParser          = require('body-parser'),
+var path = require('path'),
+    express = require('express'),
+    _ = require('lodash'),
+    subscribeRouter = express.Router(),
+    bodyParser = require('body-parser'),
 
     // Dirty requires
-    api                 = require('../../../api'),
-    errors              = require('../../../errors'),
-    validator           = require('../../../data/validation').validator,
-    postLookup          = require('../../../controllers/frontend/post-lookup'),
-    renderer            = require('../../../controllers/frontend/renderer'),
+    api = require('../../../api'),
+    common = require('../../../lib/common'),
+    validator = require('../../../data/validation').validator,
+    postLookup = require('../../../controllers/frontend/post-lookup'),
+    renderer = require('../../../controllers/frontend/renderer'),
 
     templateName = 'subscribe';
 
@@ -75,7 +75,7 @@ function handleSource(req, res, next) {
             next();
         })
         .catch(function (err) {
-            if (err instanceof errors.NotFoundError) {
+            if (err instanceof common.errors.NotFoundError) {
                 return next();
             }
 
@@ -87,9 +87,9 @@ function storeSubscriber(req, res, next) {
     req.body.status = 'subscribed';
 
     if (_.isEmpty(req.body.email)) {
-        return next(new errors.ValidationError({message: 'Email cannot be blank.'}));
+        return next(new common.errors.ValidationError({message: 'Email cannot be blank.'}));
     } else if (!validator.isEmail(req.body.email)) {
-        return next(new errors.ValidationError({message: 'Invalid email.'}));
+        return next(new common.errors.ValidationError({message: 'Invalid email.'}));
     }
 
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})

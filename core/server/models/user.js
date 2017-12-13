@@ -1,29 +1,26 @@
-var _              = require('lodash'),
-    Promise        = require('bluebird'),
-    bcrypt         = require('bcryptjs'),
-    validator      = require('validator'),
-    ObjectId      = require('bson-objectid'),
+var _ = require('lodash'),
+    Promise = require('bluebird'),
+    bcrypt = require('bcryptjs'),
+    validator = require('validator'),
+    ObjectId = require('bson-objectid'),
     ghostBookshelf = require('./base'),
-    baseUtils      = require('./base/utils'),
-    errors         = require('../errors'),
-    logging        = require('../logging'),
-    utils          = require('../utils'),
-    gravatar       = require('../utils/gravatar'),
-    validation     = require('../data/validation'),
-    events         = require('../events'),
-    i18n           = require('../i18n'),
-    pipeline       = require('../utils/pipeline'),
+    baseUtils = require('./base/utils'),
+    common = require('../lib/common'),
+    utils = require('../utils'),
+    gravatar = require('../utils/gravatar'),
+    validation = require('../data/validation'),
+    pipeline = require('../utils/pipeline'),
 
-    bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
-    bcryptHash     = Promise.promisify(bcrypt.hash),
-    bcryptCompare  = Promise.promisify(bcrypt.compare),
-    activeStates     = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
+    bcryptGenSalt = Promise.promisify(bcrypt.genSalt),
+    bcryptHash = Promise.promisify(bcrypt.hash),
+    bcryptCompare = Promise.promisify(bcrypt.compare),
+    activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
      * locked user: imported users, they get a random passport
      */
-    inactiveStates   = ['inactive', 'locked'],
-    allStates        = activeStates.concat(inactiveStates),
+    inactiveStates = ['inactive', 'locked'],
+    allStates = activeStates.concat(inactiveStates),
     User,
     Users;
 
@@ -49,7 +46,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        events.emit('user' + '.' + event, this, options);
+        common.events.emit('user' + '.' + event, this, options);
     },
 
     onDestroyed: function onDestroyed(model, response, options) {
@@ -171,7 +168,7 @@ User = ghostBookshelf.Model.extend({
                 passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
 
                 if (!passwordValidation.isValid) {
-                    return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
+                    return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
                 }
             }
 
@@ -322,10 +319,10 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
-    * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-    * @param {String} methodName The name of the method to check valid options for.
-    * @return {Array} Keys allowed in the `options` hash of the model's method.
-    */
+     * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+     * @param {String} methodName The name of the method to check valid options for.
+     * @return {Array} Keys allowed in the `options` hash of the model's method.
+     */
     permittedOptions: function permittedOptions(methodName, options) {
         var permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions(),
 
@@ -420,7 +417,7 @@ User = ghostBookshelf.Model.extend({
 
         if (data.roles && data.roles.length > 1) {
             return Promise.reject(
-                new errors.ValidationError({message: i18n.t('errors.models.user.onlyOneRolePerUserSupported')})
+                new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')})
             );
         }
 
@@ -431,7 +428,7 @@ User = ghostBookshelf.Model.extend({
             ops.push(function checkForDuplicateEmail() {
                 return self.getByEmail(data.email, options).then(function then(user) {
                     if (user && user.id !== options.id) {
-                        return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')}));
+                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')}));
                     }
                 });
             });
@@ -456,7 +453,7 @@ User = ghostBookshelf.Model.extend({
                 }).then(function then(roleToAssign) {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return Promise.reject(
-                            new errors.ValidationError({message: i18n.t('errors.models.user.methodDoesNotSupportOwnerRole')})
+                            new common.errors.ValidationError({message: common.i18n.t('errors.models.user.methodDoesNotSupportOwnerRole')})
                         );
                     } else {
                         // assign all other roles
@@ -496,7 +493,7 @@ User = ghostBookshelf.Model.extend({
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.onlyOneRolePerUserSupported')}));
+            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')}));
         }
 
         function getAuthorRole() {
@@ -569,7 +566,7 @@ User = ghostBookshelf.Model.extend({
         passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
 
         if (!passwordValidation.isValid) {
-            return Promise.reject(new errors.ValidationError({message: passwordValidation.message}));
+            return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
         }
 
         options = this.filterOptions(options, 'setup');
@@ -602,8 +599,8 @@ User = ghostBookshelf.Model.extend({
             status: 'all'
         }, options).then(function (owner) {
             if (!owner) {
-                return Promise.reject(new errors.NotFoundError({
-                    message: i18n.t('errors.models.user.ownerNotFound')
+                return Promise.reject(new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.models.user.ownerNotFound')
                 }));
             }
 
@@ -626,10 +623,13 @@ User = ghostBookshelf.Model.extend({
             origArgs = _.toArray(arguments).slice(1);
 
             // Get the actual user model
-            return this.findOne({id: userModelOrId, status: 'all'}, {include: ['roles']}).then(function then(foundUserModel) {
+            return this.findOne({
+                id: userModelOrId,
+                status: 'all'
+            }, {include: ['roles']}).then(function then(foundUserModel) {
                 if (!foundUserModel) {
-                    throw new errors.NotFoundError({
-                        message: i18n.t('errors.models.user.userNotFound')
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.user.userNotFound')
                     });
                 }
 
@@ -664,7 +664,7 @@ User = ghostBookshelf.Model.extend({
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
             if (loadedPermissions.user && userModel.hasRole('Owner')) {
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.notEnoughPermission')}));
+                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
@@ -681,7 +681,7 @@ User = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
     },
 
     // Finds the user by email, and checks the password
@@ -691,20 +691,20 @@ User = ghostBookshelf.Model.extend({
 
         return this.getByEmail(object.email).then(function then(user) {
             if (!user) {
-                return Promise.reject(new errors.NotFoundError({
-                    message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
+                return Promise.reject(new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
                 }));
             }
 
             if (user.isLocked()) {
-                return Promise.reject(new errors.NoPermissionError({
-                    message: i18n.t('errors.models.user.accountLocked')
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.models.user.accountLocked')
                 }));
             }
 
             if (user.isInactive()) {
-                return Promise.reject(new errors.NoPermissionError({
-                    message: i18n.t('errors.models.user.accountSuspended')
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.models.user.accountSuspended')
                 }));
             }
 
@@ -714,10 +714,10 @@ User = ghostBookshelf.Model.extend({
                         .catch(function handleError(err) {
                             // If we get a validation or other error during this save, catch it and log it, but don't
                             // cause a login error because of it. The user validation is not important here.
-                            logging.error(new errors.GhostError({
+                            common.logging.error(new common.errors.GhostError({
                                 err: err,
-                                context: i18n.t('errors.models.user.userUpdateError.context'),
-                                help: i18n.t('errors.models.user.userUpdateError.help')
+                                context: common.i18n.t('errors.models.user.userUpdateError.context'),
+                                help: common.i18n.t('errors.models.user.userUpdateError.help')
                             }));
 
                             return user;
@@ -728,7 +728,7 @@ User = ghostBookshelf.Model.extend({
                 });
         }, function handleError(error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
+                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
             }
 
             return Promise.reject(error);
@@ -740,8 +740,8 @@ User = ghostBookshelf.Model.extend({
             hashedPassword = object.hashedPassword;
 
         if (!plainPassword || !hashedPassword) {
-            return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.models.user.passwordRequiredForOperation')
+            return Promise.reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.models.user.passwordRequiredForOperation')
             }));
         }
 
@@ -751,10 +751,10 @@ User = ghostBookshelf.Model.extend({
                     return;
                 }
 
-                return Promise.reject(new errors.ValidationError({
-                    context: i18n.t('errors.models.user.incorrectPassword'),
-                    message: i18n.t('errors.models.user.incorrectPassword'),
-                    help: i18n.t('errors.models.user.userUpdateError.help'),
+                return Promise.reject(new common.errors.ValidationError({
+                    context: common.i18n.t('errors.models.user.incorrectPassword'),
+                    message: common.i18n.t('errors.models.user.incorrectPassword'),
+                    help: common.i18n.t('errors.models.user.userUpdateError.help'),
                     code: 'PASSWORD_INCORRECT'
                 }));
             });
@@ -804,7 +804,7 @@ User = ghostBookshelf.Model.extend({
                 // check if user has the owner role
                 var currentRoles = contextUser.toJSON(options).roles;
                 if (!_.some(currentRoles, {id: ownerRole.id})) {
-                    return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')}));
+                    return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')}));
                 }
 
                 return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
@@ -816,7 +816,7 @@ User = ghostBookshelf.Model.extend({
                     currentRoles = user.toJSON(options).roles;
 
                 if (!_.some(currentRoles, {id: adminRole.id})) {
-                    return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')}));
+                    return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')}));
                 }
 
                 // convert owner to admin

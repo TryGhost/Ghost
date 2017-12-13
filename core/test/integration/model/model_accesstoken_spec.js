@@ -1,9 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-
-    events = require('../../../server/events'),
-    utils = require('../../../server/utils'),
+    common = require('../../../server/lib/common'),
+    globalUtils = require('../../../server/utils'),
 
     // Stuff we are testing
     AccesstokenModel = require('../../../server/models/accesstoken').Accesstoken,
@@ -23,7 +22,7 @@ describe('Accesstoken Model', function () {
 
     it('on creation emits token.added event', function (done) {
         // Setup
-        var eventSpy = sandbox.spy(events, 'emit');
+        var eventSpy = sandbox.spy(common.events, 'emit');
 
         // Test
         // Stub refreshtoken
@@ -31,7 +30,7 @@ describe('Accesstoken Model', function () {
             token: 'foobartoken',
             user_id: testUtils.DataGenerator.Content.users[0].id,
             client_id: testUtils.DataGenerator.forKnex.clients[0].id,
-            expires: Date.now() + utils.ONE_MONTH_MS
+            expires: Date.now() + globalUtils.ONE_MONTH_MS
         })
             .then(function (token) {
                 should.exist(token);

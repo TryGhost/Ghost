@@ -4,8 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     models = require('../../../server/models'),
-    errors = require('../../../server/errors'),
-    events = require('../../../server/events'),
+    common = require('../../../server/lib/common'),
     UserAPI = require('../../../server/api/users'),
     db = require('../../../server/data/db'),
     context = testUtils.context,
@@ -23,7 +22,7 @@ describe('Users API', function () {
     beforeEach(function () {
         eventsTriggered = {};
 
-        sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
+        sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];
             }
@@ -563,7 +562,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -579,7 +578,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
             });
@@ -597,7 +596,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -613,7 +612,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -629,7 +628,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -663,7 +662,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -679,7 +678,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -695,7 +694,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -711,7 +710,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -745,7 +744,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -761,7 +760,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -777,7 +776,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -793,7 +792,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -809,7 +808,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
             });

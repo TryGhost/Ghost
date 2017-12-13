@@ -3,7 +3,7 @@ var should = require('should'), // jshint ignore:line
     fs = require('fs-extra'),
     moment = require('moment'),
     path = require('path'),
-    errors = require('../../../../server/errors'),
+    common = require('../../../../server/lib/common'),
     LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
     localFileStore,
 
@@ -175,7 +175,7 @@ describe('Local File System Storage', function () {
                     done(new Error('image should not exist'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NotFoundError).should.eql(true);
+                    (err instanceof common.errors.NotFoundError).should.eql(true);
                     err.code.should.eql('ENOENT');
                     done();
                 });

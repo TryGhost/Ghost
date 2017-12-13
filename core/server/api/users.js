@@ -6,8 +6,7 @@ var Promise = require('bluebird'),
     apiUtils = require('./utils'),
     canThis = require('../permissions').canThis,
     models = require('../models'),
-    errors = require('../errors'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'],
@@ -76,8 +75,8 @@ users = {
             return models.User.findOne(options.data, _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.users.userNotFound')
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.users.userNotFound')
                         }));
                     }
 
@@ -137,8 +136,8 @@ users = {
                 // CASE: can't edit my own status to inactive or locked
                 if (options.id === options.context.user) {
                     if (models.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
-                        return Promise.reject(new errors.NoPermissionError({
-                            message: i18n.t('errors.api.users.cannotChangeStatus')
+                        return Promise.reject(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.users.cannotChangeStatus')
                         }));
                     }
                 }
@@ -159,8 +158,8 @@ users = {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
-                        return Promise.reject(new errors.NoPermissionError({
-                            message: i18n.t('errors.api.users.cannotChangeOwnRole')
+                        return Promise.reject(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.users.cannotChangeOwnRole')
                         }));
                     }
 
@@ -168,8 +167,8 @@ users = {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {
-                                    return Promise.reject(new errors.NoPermissionError({
-                                        message: i18n.t('errors.api.users.cannotChangeOwnersRole')
+                                    return Promise.reject(new common.errors.NoPermissionError({
+                                        message: common.i18n.t('errors.api.users.cannotChangeOwnersRole')
                                     }));
                                 }
                             } else if (roleId !== contextRoleId) {
@@ -183,9 +182,9 @@ users = {
                     });
                 });
             }).catch(function handleError(err) {
-                return Promise.reject(new errors.NoPermissionError({
+                return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
-                    context: i18n.t('errors.api.users.noPermissionToEditUser')
+                    context: common.i18n.t('errors.api.users.noPermissionToEditUser')
                 }));
             });
         }
@@ -200,8 +199,8 @@ users = {
             return models.User.edit(options.data.users[0], _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.users.userNotFound')
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.users.userNotFound')
                         }));
                     }
 
@@ -241,9 +240,9 @@ users = {
                 options.status = 'all';
                 return options;
             }).catch(function handleError(err) {
-                return Promise.reject(new errors.NoPermissionError({
+                return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
-                    context: i18n.t('errors.api.users.noPermissionToDestroyUser')
+                    context: common.i18n.t('errors.api.users.noPermissionToDestroyUser')
                 }));
             });
         }
@@ -265,7 +264,7 @@ users = {
                     return models.User.destroy(options);
                 }).return(null);
             }).catch(function (err) {
-                return Promise.reject(new errors.NoPermissionError({
+                return Promise.reject(new common.errors.NoPermissionError({
                     err: err
                 }));
             });
@@ -298,8 +297,8 @@ users = {
                     var data = options.data.password[0];
 
                     if (data.newPassword !== data.ne2Password) {
-                        return Promise.reject(new errors.ValidationError({
-                            message: i18n.t('errors.models.user.newPasswordsDoNotMatch')
+                        return Promise.reject(new common.errors.ValidationError({
+                            message: common.i18n.t('errors.models.user.newPasswordsDoNotMatch')
                         }));
                     }
 
@@ -317,9 +316,9 @@ users = {
             return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
             }).catch(function (err) {
-                return Promise.reject(new errors.NoPermissionError({
+                return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
-                    context: i18n.t('errors.api.users.noPermissionToChangeUsersPwd')
+                    context: common.i18n.t('errors.api.users.noPermissionToChangeUsersPwd')
                 }));
             });
         }
@@ -336,7 +335,7 @@ users = {
                 _.omit(options, ['data'])
             ).then(function onModelResponse() {
                 return Promise.resolve({
-                    password: [{message: i18n.t('notices.api.users.pwdChangedSuccessfully')}]
+                    password: [{message: common.i18n.t('notices.api.users.pwdChangedSuccessfully')}]
                 });
             });
         }

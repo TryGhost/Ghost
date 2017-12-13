@@ -1,8 +1,6 @@
-var ghostBookshelf = require('./base'),
-    errors = require('../errors'),
-    events = require('../events'),
-    i18n = require('../i18n'),
-    Promise = require('bluebird'),
+var Promise = require('bluebird'),
+    ghostBookshelf = require('./base'),
+    common = require('../lib/common'),
     Subscriber,
     Subscribers;
 
@@ -12,7 +10,7 @@ Subscriber = ghostBookshelf.Model.extend({
     emitChange: function emitChange(event, options) {
         options = options || {};
 
-        events.emit('subscriber' + '.' + event, this, options);
+        common.events.emit('subscriber' + '.' + event, this, options);
     },
 
     defaults: function defaults() {
@@ -73,7 +71,7 @@ Subscriber = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.subscriber.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.subscriber.notEnoughPermission')}));
     },
 
     // TODO: This is a copy paste of models/user.js!

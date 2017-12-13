@@ -13,10 +13,19 @@ var should = require('should'), // jshint ignore:line
 
     sandbox = sinon.sandbox.create();
 
-// Check version integrity
-// These tests exist to ensure that developers are not able to modify the database schema, or permissions fixtures
-// without knowing that they also need to update the default database version,
-// both of which are required for migrations to work properly.
+/**
+ * @NOTE
+ *
+ * If this test fails for you, you have modified the database schema or fixtures.
+ * When you make a change, please test that:
+ *
+ * 1. A new blog get's installed and the database looks correct and complete.
+ * 2. A blog get's updated from a lower Ghost version and the database looks correct and complete.
+ *
+ * Typical cases:
+ * You have to add a migration script if you've added/modified permissions.
+ * You have to add a migration script if you've add a new table.
+ */
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentSchemaHash = '329f9b498944c459040426e16fc65b11',

@@ -5,9 +5,7 @@ var fs = require('fs-extra'),
     path = require('path'),
     debug = require('ghost-ignition').debug('custom-redirects'),
     config = require('../../config'),
-    errors = require('../../errors'),
-    logging = require('../../logging'),
-    i18n = require('../../i18n'),
+    common = require('../../lib/common'),
     globalUtils = require('../../utils'),
     customRedirectsRouter,
     _private = {};
@@ -53,11 +51,11 @@ _private.registerRoutes = function registerRoutes() {
             });
         });
     } catch (err) {
-        if (errors.utils.isIgnitionError(err)) {
-            logging.error(err);
+        if (common.errors.utils.isIgnitionError(err)) {
+            common.logging.error(err);
         } else if (err.code !== 'ENOENT') {
-            logging.error(new errors.IncorrectUsageError({
-                message: i18n.t('errors.middleware.redirects.register'),
+            common.logging.error(new common.errors.IncorrectUsageError({
+                message: common.i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
                 help: 'https://docs.ghost.org/docs/redirects'
             }));

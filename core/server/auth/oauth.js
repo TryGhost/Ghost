@@ -2,10 +2,9 @@ var oauth2orize = require('oauth2orize'),
     _ = require('lodash'),
     passport = require('passport'),
     models = require('../models'),
-    errors = require('../errors'),
     authUtils = require('./utils'),
     spamPrevention = require('../web/middleware/api/spam-prevention'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     knex = require('../data/db').knex,
     oauthServer,
     oauth;
@@ -19,16 +18,16 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
         return models.Refreshtoken.findOne({token: refreshToken}, _.merge({forUpdate: true}, options))
             .then(function then(model) {
                 if (!model) {
-                    throw new errors.NoPermissionError({
-                        message: i18n.t('errors.middleware.oauth.invalidRefreshToken')
+                    throw new common.errors.NoPermissionError({
+                        message: common.i18n.t('errors.middleware.oauth.invalidRefreshToken')
                     });
                 }
 
                 var token = model.toJSON();
 
                 if (token.expires <= Date.now()) {
-                    throw new errors.UnauthorizedError({
-                        message: i18n.t('errors.middleware.oauth.refreshTokenExpired')
+                    throw new common.errors.UnauthorizedError({
+                        message: common.i18n.t('errors.middleware.oauth.refreshTokenExpired')
                     });
                 }
 
@@ -51,11 +50,11 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
     }).then(function (response) {
         done(null, response.access_token, {expires_in: response.expires_in});
     }).catch(function (err) {
-        if (errors.utils.isIgnitionError(err)) {
+        if (common.errors.utils.isIgnitionError(err)) {
             return done(err, false);
         }
 
-        done(new errors.InternalServerError({
+        done(new common.errors.InternalServerError({
             err: err
         }), false);
     });
@@ -64,8 +63,8 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
 // We are required to pass in authInfo in order to reset spam counter for user login
 function exchangePassword(client, username, password, scope, body, authInfo, done) {
     if (!client || !client.id) {
-        return done(new errors.UnauthorizedError({
-            message: i18n.t('errors.middleware.auth.clientCredentialsNotProvided')
+        return done(new common.errors.UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.clientCredentialsNotProvided')
         }), false);
     }
 
@@ -88,8 +87,8 @@ function exchangePassword(client, username, password, scope, body, authInfo, don
 
 function exchangeAuthorizationCode(req, res, next) {
     if (!req.body.authorizationCode) {
-        return next(new errors.UnauthorizedError({
-            message: i18n.t('errors.middleware.auth.accessDenied')
+        return next(new common.errors.UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.accessDenied')
         }));
     }
 
@@ -101,8 +100,8 @@ function exchangeAuthorizationCode(req, res, next) {
         }
 
         if (!user) {
-            return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.accessDenied')
+            return next(new common.errors.UnauthorizedError({
+                message: common.i18n.t('errors.middleware.auth.accessDenied')
             }));
         }
 

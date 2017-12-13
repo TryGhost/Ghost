@@ -9,8 +9,7 @@ var should = require('should'),
     ghostBookshelf = require('../../../server/models/base'),
     PostModel = require('../../../server/models/post').Post,
     TagModel = require('../../../server/models/tag').Tag,
-    events = require('../../../server/events'),
-    errors = require('../../../server/errors'),
+    common = require('../../../server/lib/common'),
     configUtils = require('../../utils/configUtils'),
     DataGenerator = testUtils.DataGenerator,
     context = testUtils.context.owner,
@@ -411,7 +410,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
+                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -458,7 +457,7 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('expected validation error'));
                 }).catch(function (err) {
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
+                    (err[0] instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -577,7 +576,7 @@ describe('Post Model', function () {
                     done(new Error('expected error'));
                 }).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -596,7 +595,7 @@ describe('Post Model', function () {
                     }, _.extend({}, context, {id: post.id}));
                 }).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -749,7 +748,7 @@ describe('Post Model', function () {
                     done(new Error('change status from published to scheduled is not allowed right now!'));
                 }).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -1017,7 +1016,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
+                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1157,7 +1156,7 @@ describe('Post Model', function () {
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     Object.keys(eventsTriggered).length.should.eql(0);
                     done();
                 });
@@ -1171,7 +1170,7 @@ describe('Post Model', function () {
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     Object.keys(eventsTriggered).length.should.eql(0);
                     done();
                 });
@@ -1184,7 +1183,7 @@ describe('Post Model', function () {
                     title: 'scheduled 1',
                     mobiledoc: markdownToMobiledoc('This is some content')
                 }, context).catch(function (err) {
-                    (err instanceof errors.ValidationError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     Object.keys(eventsTriggered).length.should.eql(0);
                     done();
                 });
@@ -1402,7 +1401,7 @@ describe('Post Model', function () {
         describe('destroy', function () {
             beforeEach(function () {
                 eventsTriggered = {};
-                sandbox.stub(events, 'emit').callsFake(function (eventName, eventObj) {
+                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }

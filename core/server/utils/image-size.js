@@ -3,8 +3,8 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     url = require('url'),
     Promise = require('bluebird'),
     request = require('../utils/request'),
-    utils = require('../utils'),
-    errors = require('../errors'),
+    urlService = require('../services/url'),
+    common = require('../lib/common'),
     config = require('../config'),
     storage = require('../adapters/storage'),
     _ = require('lodash'),
@@ -33,8 +33,12 @@ function fetchDimensionsFromBuffer(options) {
         // CASE: `.ico` files might have multiple images and therefore multiple sizes.
         // We return the largest size found (image-size default is the first size found)
         if (dimensions.images) {
-            dimensions.width = _.maxBy(dimensions.images, function (w) {return w.width;}).width;
-            dimensions.height = _.maxBy(dimensions.images, function (h) {return h.height;}).height;
+            dimensions.width = _.maxBy(dimensions.images, function (w) {
+                return w.width;
+            }).width;
+            dimensions.height = _.maxBy(dimensions.images, function (h) {
+                return h.height;
+            }).height;
         }
 
         imageObject.width = dimensions.width;
@@ -42,7 +46,7 @@ function fetchDimensionsFromBuffer(options) {
 
         return Promise.resolve(imageObject);
     } catch (err) {
-        return Promise.reject(new errors.InternalServerError({
+        return Promise.reject(new common.errors.InternalServerError({
             code: 'IMAGE_SIZE',
             err: err,
             context: imagePath
@@ -85,7 +89,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 
     // CASE: pre 1.0 users were able to use an asset path for their blog logo
     if (imagePath.match(/^\/assets/)) {
-        imagePath = utils.url.urlJoin(utils.url.urlFor('home', true), utils.url.getSubdir(), '/', imagePath);
+        imagePath = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), urlService.utils.getSubdir(), '/', imagePath);
     }
 
     parsedUrl = url.parse(imagePath);
@@ -119,32 +123,32 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
             imagePath: parsedUrl.href
         });
     }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
-        return Promise.reject(new errors.InternalServerError({
+        return Promise.reject(new common.errors.InternalServerError({
             message: err.message,
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
-        return Promise.reject(new errors.InternalServerError({
+        return Promise.reject(new common.errors.InternalServerError({
             message: 'Request timed out.',
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
-        return Promise.reject(new errors.NotFoundError({
+        return Promise.reject(new common.errors.NotFoundError({
             message: 'Image not found.',
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
     }).catch(function (err) {
-        if (errors.utils.isIgnitionError(err)) {
+        if (common.errors.utils.isIgnitionError(err)) {
             return Promise.reject(err);
         }
 
-        return Promise.reject(new errors.InternalServerError({
+        return Promise.reject(new common.errors.InternalServerError({
             message: 'Unknown Request error.',
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
@@ -174,7 +178,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
     var filePath;
 
-    imagePath = utils.url.urlFor('image', {image: imagePath}, true);
+    imagePath = urlService.utils.urlFor('image', {image: imagePath}, true);
 
     // get the storage readable filePath
     filePath = storageUtils.getLocalFileStoragePath(imagePath);
@@ -191,7 +195,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 imagePath: imagePath
             });
         }).catch({code: 'ENOENT'}, function (err) {
-            return Promise.reject(new errors.NotFoundError({
+            return Promise.reject(new common.errors.NotFoundError({
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
                 err: err,
@@ -202,11 +206,11 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 }
             }));
         }).catch(function (err) {
-            if (errors.utils.isIgnitionError(err)) {
+            if (common.errors.utils.isIgnitionError(err)) {
                 return Promise.reject(err);
             }
 
-            return Promise.reject(new errors.InternalServerError({
+            return Promise.reject(new common.errors.InternalServerError({
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
                 err: err,

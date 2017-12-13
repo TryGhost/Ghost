@@ -1,6 +1,6 @@
 var api = require('../../api'),
     labs = require('../../utils/labs'),
-    logging = require('../../logging');
+    common = require('../../lib/common');
 
 module.exports = function getFrontendClient(req, res, next) {
     if (labs.isSet('publicAPI') !== true) {
@@ -23,7 +23,7 @@ module.exports = function getFrontendClient(req, res, next) {
         })
         .catch(function (err) {
             // Log the error, but carry on as this is non-critical
-            logging.error(err);
+            common.logging.error(err);
             next();
         });
 };

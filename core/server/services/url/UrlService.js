@@ -11,20 +11,43 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     _debug = require('ghost-ignition').debug._base,
     debug = _debug('ghost:services:url'),
-    events = require('../../events'),
+    common = require('../../lib/common'),
     // TODO: make this dynamic
     resourceConfig = require('./config.json'),
     Resource = require('./Resource'),
     urlCache = require('./cache'),
-    utils = require('../../utils');
+    localUtils = require('./utils');
 
 class UrlService {
-    constructor() {
+    constructor(options) {
         this.resources = [];
+        this.utils = localUtils;
 
         _.each(resourceConfig, (config) => {
             this.resources.push(new Resource(config));
         });
+
+        // You can disable the url preload, in case we encounter a problem with the new url service.
+        if (options.disableUrlPreload) {
+            return;
+        }
+
+        this.bind();
+
+        // Hardcoded routes
+        // @TODO figure out how to do this from channel or other config
+        // @TODO get rid of name concept (for compat with sitemaps)
+        UrlService.cacheRoute('/', {name: 'home'});
+
+        // @TODO figure out how to do this from apps
+        // @TODO only do this if subscribe is enabled!
+        UrlService.cacheRoute('/subscribe/', {});
+
+        // Register a listener for server-start to load all the known urls
+        common.events.on('server:start', (() => {
+            debug('URL service, loading all URLS');
+            this.loadResourceUrls();
+        }));
     }
 
     bind() {
@@ -67,7 +90,7 @@ class UrlService {
 
         _.each(this.resources, (resource) => {
             _.each(resource.events, (method, eventName) => {
-                events.on(eventName, (model) => {
+                common.events.on(eventName, (model) => {
                     eventHandlers[method].call(this, model, resource, eventName);
                 });
             });
@@ -113,7 +136,7 @@ class UrlService {
     }
 
     static cacheRoute(relativeUrl, data) {
-        const url = utils.url.urlFor({relativeUrl: relativeUrl});
+        const url = localUtils.urlFor({relativeUrl: relativeUrl});
         data.static = true;
         urlCache.set(url, data);
     }

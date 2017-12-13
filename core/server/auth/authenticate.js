@@ -1,9 +1,7 @@
 var passport = require('passport'),
     authUtils = require('./utils'),
-    errors = require('../errors'),
     models = require('../models'),
-    events = require('../events'),
-    i18n = require('../i18n'),
+    common = require('../lib/common'),
     authenticate;
 
 authenticate = {
@@ -39,10 +37,10 @@ authenticate = {
         }
 
         if (!req.body.client_id || !req.body.client_secret) {
-            return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.accessDenied'),
-                context: i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
-                help: i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+            return next(new common.errors.UnauthorizedError({
+                message: common.i18n.t('errors.middleware.auth.accessDenied'),
+                context: common.i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
+                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
             }));
         }
 
@@ -57,16 +55,16 @@ authenticate = {
                 delete req.body.client_secret;
 
                 if (!client) {
-                    return next(new errors.UnauthorizedError({
-                        message: i18n.t('errors.middleware.auth.accessDenied'),
-                        context: i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
-                        help: i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+                    return next(new common.errors.UnauthorizedError({
+                        message: common.i18n.t('errors.middleware.auth.accessDenied'),
+                        context: common.i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
+                        help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
                     }));
                 }
 
                 req.client = client;
 
-                events.emit('client.authenticated', client);
+                common.events.emit('client.authenticated', client);
                 return next(null, client);
             }
         )(req, res, next);
@@ -84,19 +82,19 @@ authenticate = {
                     req.authInfo = info;
                     req.user = user;
 
-                    events.emit('user.authenticated', user);
+                    common.events.emit('user.authenticated', user);
                     return next(null, user, info);
                 } else if (authUtils.getBearerAutorizationToken(req)) {
-                    return next(new errors.UnauthorizedError({
-                        message: i18n.t('errors.middleware.auth.accessDenied')
+                    return next(new common.errors.UnauthorizedError({
+                        message: common.i18n.t('errors.middleware.auth.accessDenied')
                     }));
                 } else if (req.client) {
                     req.user = {id: models.User.externalUser};
                     return next();
                 }
 
-                return next(new errors.UnauthorizedError({
-                    message: i18n.t('errors.middleware.auth.accessDenied')
+                return next(new common.errors.UnauthorizedError({
+                    message: common.i18n.t('errors.middleware.auth.accessDenied')
                 }));
             }
         )(req, res, next);

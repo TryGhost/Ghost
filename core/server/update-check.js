@@ -20,36 +20,34 @@
 // - theme - name of the currently active theme
 // - apps - names of any active apps
 
-var crypto   = require('crypto'),
-    exec     = require('child_process').exec,
-    https    = require('https'),
-    http    = require('http'),
-    moment   = require('moment'),
-    semver   = require('semver'),
-    Promise  = require('bluebird'),
-    _        = require('lodash'),
-    url      = require('url'),
-    api      = require('./api'),
-    config   = require('./config'),
-    utils    = require('./utils'),
-    logging  = require('./logging'),
-    errors   = require('./errors'),
-    i18n     = require('./i18n'),
+var crypto = require('crypto'),
+    exec = require('child_process').exec,
+    https = require('https'),
+    http = require('http'),
+    moment = require('moment'),
+    semver = require('semver'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
+    url = require('url'),
+    api = require('./api'),
+    config = require('./config'),
+    urlService = require('./services/url'),
+    common = require('./lib/common'),
     currentVersion = require('./utils/ghost-version').full,
     internal = {context: {internal: true}},
     checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
 
 function updateCheckError(err) {
-    err = errors.utils.deserialize(err);
+    err = common.errors.utils.deserialize(err);
 
     api.settings.edit(
         {settings: [{key: 'next_update_check', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
     );
 
-    err.context = i18n.t('errors.update-check.checkingForUpdatesFailed.error');
-    err.help = i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
-    logging.error(err);
+    err.context = common.i18n.t('errors.update-check.checkingForUpdatesFailed.error');
+    err.help = common.i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
+    common.logging.error(err);
 }
 
 /**
@@ -87,14 +85,14 @@ function updateCheckData() {
     var data = {},
         mailConfig = config.get('mail');
 
-    data.ghost_version   = currentVersion;
-    data.node_version    = process.versions.node;
-    data.env             = config.get('env');
-    data.database_type   = config.get('database').client;
+    data.ghost_version = currentVersion;
+    data.node_version = process.versions.node;
+    data.env = config.get('env');
+    data.database_type = config.get('database').client;
     data.email_transport = mailConfig &&
-    (mailConfig.options && mailConfig.options.service ?
-        mailConfig.options.service :
-        mailConfig.transport);
+        (mailConfig.options && mailConfig.options.service ?
+            mailConfig.options.service :
+            mailConfig.transport);
 
     return Promise.props({
         hash: api.settings.read(_.extend({key: 'db_hash'}, internal)).reflect(),
@@ -105,29 +103,31 @@ function updateCheckData() {
 
                 apps = JSON.parse(apps.value);
 
-                return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
+                return _.reduce(apps, function (memo, item) {
+                    return memo === '' ? memo + item : memo + ', ' + item;
+                }, '');
             }).reflect(),
         posts: api.posts.browse().reflect(),
         users: api.users.browse(internal).reflect(),
         npm: Promise.promisify(exec)('npm -v').reflect()
     }).then(function (descriptors) {
-        var hash             = descriptors.hash.value().settings[0],
-            theme            = descriptors.theme.value().settings[0],
-            apps             = descriptors.apps.value(),
-            posts            = descriptors.posts.value(),
-            users            = descriptors.users.value(),
-            npm              = descriptors.npm.value(),
-            blogUrl          = url.parse(utils.url.urlFor('home', true)),
-            blogId           = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
+        var hash = descriptors.hash.value().settings[0],
+            theme = descriptors.theme.value().settings[0],
+            apps = descriptors.apps.value(),
+            posts = descriptors.posts.value(),
+            users = descriptors.users.value(),
+            npm = descriptors.npm.value(),
+            blogUrl = url.parse(urlService.utils.urlFor('home', true)),
+            blogId = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
-        data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');
-        data.theme           = theme ? theme.value : '';
-        data.apps            = apps || '';
-        data.post_count      = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
-        data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
+        data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');
+        data.theme = theme ? theme.value : '';
+        data.apps = apps || '';
+        data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
+        data.user_count = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
-        data.npm_version     = npm.trim();
-        data.lts             = false;
+        data.npm_version = npm.trim();
+        data.lts = false;
 
         return data;
     }).catch(updateCheckError);
@@ -158,8 +158,12 @@ function updateCheckRequest() {
                 method: 'POST',
                 headers: headers
             }, function handler(res) {
-                res.on('error', function onError(error) { reject(error); });
-                res.on('data', function onData(chunk) { resData += chunk; });
+                res.on('error', function onError(error) {
+                    reject(error);
+                });
+                res.on('data', function onData(chunk) {
+                    resData += chunk;
+                });
                 res.on('end', function onEnd() {
                     try {
                         resData = JSON.parse(resData);
@@ -170,7 +174,7 @@ function updateCheckRequest() {
 
                         resolve(resData);
                     } catch (e) {
-                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
+                        reject(common.i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
                     }
                 });
             });

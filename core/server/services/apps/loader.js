@@ -1,8 +1,8 @@
 var path = require('path'),
-    _    = require('lodash'),
+    _ = require('lodash'),
     Promise = require('bluebird'),
     config = require('../../config'),
-    i18n = require('../../i18n'),
+    common = require('../../lib/common'),
 
     AppProxy = require('./proxy'),
     AppSandbox = require('./sandbox'),
@@ -83,7 +83,10 @@ loader = {
 
                 return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
-                    return Promise.reject(new Error(i18n.t('errors.apps.permissionsErrorLoadingApp.error', {name: name, message: err.message})));
+                    return Promise.reject(new Error(common.i18n.t('errors.apps.permissionsErrorLoadingApp.error', {
+                        name: name,
+                        message: err.message
+                    })));
                 });
             })
             .then(function (appPerms) {
@@ -93,7 +96,7 @@ loader = {
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
-                    return Promise.reject(new Error(i18n.t('errors.apps.noInstallMethodLoadingApp.error', {name: name})));
+                    return Promise.reject(new Error(common.i18n.t('errors.apps.noInstallMethodLoadingApp.error', {name: name})));
                 }
 
                 // Run the app.install() method
@@ -114,7 +117,7 @@ loader = {
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
-                return Promise.reject(new Error(i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
+                return Promise.reject(new Error(common.i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
             }
 
             // Wrapping the activate() with a when because it's possible

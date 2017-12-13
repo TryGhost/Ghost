@@ -2,11 +2,11 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     nock = require('nock'),
-    configUtils = require('../../utils/configUtils'),
-    utils = require('../../../server/utils'),
-    errors = require('../../../server/errors'),
-    storage = require('../../../server/adapters/storage'),
     path = require('path'),
+    configUtils = require('../../utils/configUtils'),
+    urlService = require('../../../server/services/url'),
+    common = require('../../../server/lib/common'),
+    storage = require('../../../server/adapters/storage'),
 
     // Stuff we are testing
     imageSize = rewire('../../../server/utils/image-size'),
@@ -40,11 +40,11 @@ describe('Image Size', function () {
         it('[success] should return image dimensions with http request', function (done) {
             var url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg',
                 expectedImageObject =
-                {
-                    height: 50,
-                    url: 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg',
-                    width: 50
-                };
+                    {
+                        height: 50,
+                        url: 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg',
+                        width: 50
+                    };
 
             requestMock = nock('http://img.stockfresh.com')
                 .get('/files/f/feedough/x/11/1540353_20925115.jpg')
@@ -70,11 +70,11 @@ describe('Image Size', function () {
         it('[success] should return image dimensions with https request', function (done) {
             var url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256',
                 expectedImageObject =
-                {
-                    height: 256,
-                    url: 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256',
-                    width: 256
-                };
+                    {
+                        height: 256,
+                        url: 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256',
+                        width: 256
+                    };
 
             requestMock = nock('https://static.wixstatic.com')
                 .get('/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256')
@@ -102,11 +102,11 @@ describe('Image Size', function () {
         it('[success] should returns largest image value for .ico files', function (done) {
             var url = 'https://super-website.com/media/icon.ico',
                 expectedImageObject =
-                {
-                    height: 48,
-                    url: 'https://super-website.com/media/icon.ico',
-                    width: 48
-                };
+                    {
+                        height: 48,
+                        url: 'https://super-website.com/media/icon.ico',
+                        width: 48
+                    };
 
             requestMock = nock('https://super-website.com')
                 .get('/media/icon.ico')
@@ -145,15 +145,15 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub,
                 expectedImageObject =
-                {
-                    height: 100,
-                    url: 'http://myblog.com/assets/img/logo.png?v=d30c3d1e41',
-                    width: 100
-                };
+                    {
+                        height: 100,
+                        url: 'http://myblog.com/assets/img/logo.png?v=d30c3d1e41',
+                        width: 100
+                    };
 
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             requestMock = nock('http://myblog.com')
@@ -182,11 +182,11 @@ describe('Image Size', function () {
         it('[success] should return image dimensions for gravatar images request', function (done) {
             var url = '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
                 expectedImageObject =
-                {
-                    height: 250,
-                    url: '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
-                    width: 250
-                };
+                    {
+                        height: 250,
+                        url: '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
+                        width: 250
+                    };
 
             requestMock = nock('http://www.gravatar.com')
                 .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x')
@@ -214,20 +214,20 @@ describe('Image Size', function () {
         it('[success] can handle redirect', function (done) {
             var url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg',
                 expectedImageObject =
-                {
-                    height: 100,
-                    url: 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg',
-                    width: 100
-                };
+                    {
+                        height: 100,
+                        url: 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg',
+                        width: 100
+                    };
 
             requestMock = nock('http://noimagehere.com')
                 .get('/files/f/feedough/x/11/1540353_20925115.jpg')
                 .reply(301, {
-                    body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
-                },
-                {
-                    location: 'http://someredirectedurl.com/files/f/feedough/x/11/1540353_20925115.jpg'
-                });
+                        body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
+                    },
+                    {
+                        location: 'http://someredirectedurl.com/files/f/feedough/x/11/1540353_20925115.jpg'
+                    });
 
             secondRequestMock = nock('http://someredirectedurl.com')
                 .get('/files/f/feedough/x/11/1540353_20925115.jpg')
@@ -257,17 +257,17 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub,
                 expectedImageObject =
-                {
-                    height: 100,
-                    url: 'http://myblog.com/content/images/favicon.png',
-                    width: 100
-                };
+                    {
+                        height: 100,
+                        url: 'http://myblog.com/content/images/favicon.png',
+                        width: 100
+                    };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             requestMock = nock('http://myblog.com')
@@ -364,17 +364,17 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub,
                 expectedImageObject =
-                {
-                    height: 257,
-                    url: 'http://myblog.com/content/images/ghost-logo.png',
-                    width: 800
-                };
+                    {
+                        height: 257,
+                        url: 'http://myblog.com/content/images/ghost-logo.png',
+                        width: 800
+                    };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
@@ -394,17 +394,17 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub,
                 expectedImageObject =
-                {
-                    height: 1010,
-                    url: 'http://myblog.com/blog/content/images/favicon_too_large.png',
-                    width: 1010
-                };
+                    {
+                        height: 1010,
+                        url: 'http://myblog.com/blog/content/images/favicon_too_large.png',
+                        width: 1010
+                    };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/blog/content/images/favicon_too_large.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
@@ -424,17 +424,17 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub,
                 expectedImageObject =
-                {
-                    height: 64,
-                    url: 'http://myblog.com/content/images/favicon_multi_sizes.ico',
-                    width: 64
-                };
+                    {
+                        height: 64,
+                        url: 'http://myblog.com/content/images/favicon_multi_sizes.ico',
+                        width: 64
+                    };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon_multi_sizes.ico');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
@@ -455,16 +455,16 @@ describe('Image Size', function () {
                 urlGetSubdirStub;
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/not-existing-image.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromFilePath(url)
                 .catch(function (err) {
                     should.exist(err);
-                    (err instanceof errors.NotFoundError).should.eql(true);
+                    (err instanceof common.errors.NotFoundError).should.eql(true);
                     done();
                 });
         });
@@ -479,10 +479,10 @@ describe('Image Size', function () {
             imageSize.__set__('sizeOf', sizeOfStub);
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(utils.url, 'urlFor');
+            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.pngx');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(utils.url, 'getSubdir');
+            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromFilePath(url)

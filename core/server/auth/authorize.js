@@ -1,6 +1,5 @@
-var errors = require('../errors'),
-    labs = require('../utils/labs'),
-    i18n = require('../i18n'),
+var labs = require('../utils/labs'),
+    common = require('../lib/common'),
     authorize;
 
 authorize = {
@@ -10,7 +9,7 @@ authorize = {
         if (req.user && req.user.id) {
             return next();
         } else {
-            return next(new errors.NoPermissionError({message: i18n.t('errors.middleware.auth.pleaseSignIn')}));
+            return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignIn')}));
         }
     },
 
@@ -22,7 +21,7 @@ authorize = {
             if (req.user && req.user.id) {
                 return next();
             } else {
-                return next(new errors.NoPermissionError({message: i18n.t('errors.middleware.auth.pleaseSignIn')}));
+                return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignIn')}));
             }
         }
     },
@@ -31,7 +30,7 @@ authorize = {
     requiresAuthorizedClient: function requiresAuthorizedClient(client) {
         return function doAuthorizedClient(req, res, next) {
             if (!req.client || !req.client.name || req.client.name !== client) {
-                return next(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+                return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.noPermissionToAction')}));
             }
 
             return next();
