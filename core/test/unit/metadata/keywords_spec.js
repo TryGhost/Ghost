@@ -1,12 +1,18 @@
 var should = require('should'),
     sinon = require('sinon'),
+    models = require('../../../server/models'),
     getKeywords = require('../../../server/data/meta/keywords'),
     sandbox = sinon.sandbox.create();
 
 describe('getKeywords', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sandbox.restore();
     });
+
     it('should return tags as keywords if post has tags', function () {
         var keywords = getKeywords({
             post: {
