@@ -11,9 +11,6 @@ var Promise = require('bluebird'),
     notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i,
     packageJSONPath = 'package.json',
 
-    statFile = Promise.promisify(fs.stat),
-    readDir = Promise.promisify(fs.readdir),
-
     readPackage,
     readPackages,
     processPackage;
@@ -43,7 +40,7 @@ processPackage = function processPackage(absolutePath, packageName) {
 
 readPackage = function readPackage(packagePath, packageName) {
     var absolutePath = join(packagePath, packageName);
-    return statFile(absolutePath)
+    return fs.stat(absolutePath)
         .then(function (stat) {
             if (!stat.isDirectory()) {
                 return {};
@@ -67,14 +64,14 @@ readPackage = function readPackage(packagePath, packageName) {
 };
 
 readPackages = function readPackages(packagePath) {
-    return readDir(packagePath)
+    return fs.readdir(packagePath)
         .filter(function (packageName) {
             // Filter out things which are not packages by regex
             if (packageName.match(notAPackageRegex)) {
                 return;
             }
             // Check the remaining items to ensure they are a directory
-            return statFile(join(packagePath, packageName)).then(function (stat) {
+            return fs.stat(join(packagePath, packageName)).then(function (stat) {
                 return stat.isDirectory();
             });
         })

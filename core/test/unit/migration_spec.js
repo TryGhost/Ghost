@@ -65,9 +65,9 @@ describe('Migrations', function () {
         var exportStub, filenameStub, fsStub;
 
         beforeEach(function () {
-            exportStub = sandbox.stub(exporter, 'doExport').returns(new Promise.resolve());
-            filenameStub = sandbox.stub(exporter, 'fileName').returns(new Promise.resolve('test'));
-            fsStub = sandbox.stub(fs, 'writeFile').yields();
+            exportStub = sandbox.stub(exporter, 'doExport').resolves();
+            filenameStub = sandbox.stub(exporter, 'fileName').resolves('test');
+            fsStub = sandbox.stub(fs, 'writeFile').resolves();
         });
 
         it('should create a backup JSON file', function (done) {

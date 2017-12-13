@@ -1,6 +1,5 @@
 var _ = require('lodash').runInContext(),
     fs = require('fs-extra'),
-    Promise = require('bluebird'),
     path = require('path'),
     htmlToText = require('html-to-text'),
     urlService = require('../services/url'),
@@ -19,7 +18,7 @@ exports.generateContent = function generateContent(options) {
     data = _.defaults(defaults, options.data);
 
     // read the proper email body template
-    return Promise.promisify(fs.readFile)(path.join(templatesDir, options.template + '.html'), 'utf8')
+    return fs.readFile(path.join(templatesDir, options.template + '.html'), 'utf8')
         .then(function (content) {
             var compiled,
                 htmlContent,

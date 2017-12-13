@@ -16,7 +16,7 @@ let redirectsAPI,
 _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
     let redirectsPath = customRedirectsPath || path.join(config.getContentPath('data'), 'redirects.json');
 
-    return Promise.promisify(fs.readFile)(redirectsPath, 'utf-8')
+    return fs.readFile(redirectsPath, 'utf-8')
         .then(function serveContent(content) {
             try {
                 content = JSON.parse(content);
@@ -56,29 +56,29 @@ redirectsAPI = {
 
         return apiUtils.handlePermissions('redirects', 'upload')(options)
             .then(function backupOldRedirectsFile() {
-                return Promise.promisify(fs.pathExists)(redirectsPath)
+                return fs.pathExists(redirectsPath)
                     .then(function (exists) {
                         if (!exists) {
                             return null;
                         }
 
-                        return Promise.promisify(fs.pathExists)(backupRedirectsPath)
+                        return fs.pathExists(backupRedirectsPath)
                             .then(function (exists) {
                                 if (!exists) {
                                     return null;
                                 }
 
-                                return Promise.promisify(fs.unlink)(backupRedirectsPath);
+                                return fs.unlink(backupRedirectsPath);
                             })
                             .then(function () {
-                                return Promise.promisify(fs.move)(redirectsPath, backupRedirectsPath);
+                                return fs.move(redirectsPath, backupRedirectsPath);
                             });
                     })
                     .then(function overrideFile() {
                         return _private.readRedirectsFile(options.path)
                             .then(function (content) {
                                 globalUtils.validateRedirects(content);
-                                return Promise.promisify(fs.writeFile)(redirectsPath, JSON.stringify(content), 'utf-8');
+                                return fs.writeFile(redirectsPath, JSON.stringify(content), 'utf-8');
                             })
                             .then(function () {
                                 // CASE: trigger that redirects are getting re-registered
