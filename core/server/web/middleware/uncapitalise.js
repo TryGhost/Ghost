@@ -14,7 +14,7 @@
 
 var urlService = require('../../services/url'),
     common = require('../../lib/common'),
-    globalUtils = require('../../utils'),
+    localUtils = require('../utils'),
     uncapitalise;
 
 uncapitalise = function uncapitalise(req, res, next) {
@@ -46,10 +46,7 @@ uncapitalise = function uncapitalise(req, res, next) {
      * That encoding isn't useful here, as it triggers an extra uncapitalise redirect, so we decode the path first
      */
     if (/[A-Z]/.test(decodedURI)) {
-        redirectPath = (
-            globalUtils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase()))
-        );
-
+        redirectPath = (localUtils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase())));
         return urlService.utils.redirect301(res, redirectPath);
     }
 

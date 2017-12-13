@@ -1,7 +1,10 @@
-var url = require('url');
+'use strict';
 
-function removeDoubleCharacters(character, string) {
-    var stringArray = string.split('');
+const url = require('url');
+let _private = {};
+
+_private.removeDoubleCharacters = function removeDoubleCharacters(character, string) {
+    let stringArray = string.split('');
 
     return stringArray.reduce(function (newString, currentCharacter, index) {
         if (
@@ -13,19 +16,17 @@ function removeDoubleCharacters(character, string) {
 
         return newString + currentCharacter;
     }, '');
-}
+};
 
-function removeOpenRedirectFromUrl(urlString) {
-    var parsedUrl = url.parse(urlString);
+module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(urlString) {
+    let parsedUrl = url.parse(urlString);
 
     return (
         // http://
         (parsedUrl.protocol ? parsedUrl.protocol + '//' : '') +
         (parsedUrl.auth || '') +
         (parsedUrl.host || '') +
-        removeDoubleCharacters('/', parsedUrl.path) +
+        _private.removeDoubleCharacters('/', parsedUrl.path) +
         (parsedUrl.hash || '')
     );
-}
-
-module.exports = removeOpenRedirectFromUrl;
+};
