@@ -7,7 +7,7 @@
 var proxy = require('./proxy'),
     schema = require('../data/schema').checks,
     SafeString = proxy.SafeString,
-    wordCountUtil = require('../utils/word-count');
+    localUtils = proxy.localUtils;
 
 module.exports = function reading_time() {// eslint-disable-line camelcase
     var html,
@@ -25,7 +25,7 @@ module.exports = function reading_time() {// eslint-disable-line camelcase
 
     html = this.html;
     imageCount = this.feature_image ? 1 : 0;
-    wordCount = wordCountUtil(html);
+    wordCount = localUtils.wordCount(html);
     readingTimeSeconds = wordCount / wordsPerSecond;
 
     // add 12 seconds to reading time if feature image is present
