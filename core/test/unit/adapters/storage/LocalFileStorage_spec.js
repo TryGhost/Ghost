@@ -2,6 +2,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     fs = require('fs-extra'),
     moment = require('moment'),
+    Promise = require('bluebird'),
     path = require('path'),
     common = require('../../../../server/lib/common'),
     LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
@@ -39,10 +40,10 @@ describe('Local File System Storage', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(fs, 'mkdirs').yields();
-        sandbox.stub(fs, 'copy').yields();
-        sandbox.stub(fs, 'stat').yields(true);
-        sandbox.stub(fs, 'unlink').yields();
+        sandbox.stub(fs, 'mkdirs').resolves();
+        sandbox.stub(fs, 'copy').resolves();
+        sandbox.stub(fs, 'stat').rejects();
+        sandbox.stub(fs, 'unlink').resolves();
 
         image = {
             path: 'tmp/123456.jpg',
@@ -111,13 +112,13 @@ describe('Local File System Storage', function () {
     });
 
     it('can upload two different images with the same name without overwriting the first', function (done) {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).yields(true);
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).rejects();
 
         // if on windows need to setup with back slashes
         // doesn't hurt for the test to cope with both
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).yields(true);
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-1.jpg');
@@ -127,18 +128,18 @@ describe('Local File System Storage', function () {
     });
 
     it('can upload five different images with the same name without overwriting the first', function (done) {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).yields(true);
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).rejects();
 
         // windows setup
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).yields(false);
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).yields(true);
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
+        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-4.jpg');

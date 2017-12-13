@@ -1,6 +1,5 @@
 var Promise = require('bluebird'),
     fs = require('fs-extra'),
-    pUnlink = Promise.promisify(fs.unlink),
     storage = require('../adapters/storage'),
     upload;
 
@@ -23,7 +22,7 @@ upload = {
 
         return store.save(options).finally(function () {
             // Remove uploaded file from tmp location
-            return pUnlink(options.path);
+            return fs.unlink(options.path);
         });
     })
 };

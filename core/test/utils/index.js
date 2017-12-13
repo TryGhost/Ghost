@@ -344,10 +344,9 @@ fixtures = {
 
     loadExportFixture: function loadExportFixture(filename, options) {
         options = options || {lts: false};
-        var filePath = this.getExportFixturePath(filename, options),
-            readFile = Promise.promisify(fs.readFile);
+        var filePath = this.getExportFixturePath(filename, options);
 
-        return readFile(filePath).then(function (fileContents) {
+        return fs.readFile(filePath).then(function (fileContents) {
             var data;
 
             // Parse the json data

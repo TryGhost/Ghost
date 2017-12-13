@@ -143,7 +143,7 @@ themes = {
                 // @TODO we should probably do this as part of saving the theme
                 // remove zip upload from multer
                 // happens in background
-                Promise.promisify(fs.remove)(zip.path)
+                fs.remove(zip.path)
                     .catch(function (err) {
                         common.logging.error(new common.errors.GhostError({err: err}));
                     });
@@ -152,7 +152,7 @@ themes = {
                 // remove extracted dir from gscan
                 // happens in background
                 if (checkedTheme) {
-                    Promise.promisify(fs.remove)(checkedTheme.path)
+                    fs.remove(checkedTheme.path)
                         .catch(function (err) {
                             common.logging.error(new common.errors.GhostError({err: err}));
                         });
