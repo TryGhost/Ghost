@@ -8,25 +8,24 @@
 
 var proxy = require('./proxy'),
     _ = require('lodash'),
-
     SafeString = proxy.SafeString,
     templates = proxy.templates,
     url = proxy.url,
-    visibilityUtils = proxy.visibility;
+    models = proxy.models;
 
 module.exports = function tags(options) {
     options = options || {};
     options.hash = options.hash || {};
 
-    var autolink   = !(_.isString(options.hash.autolink) && options.hash.autolink === 'false'),
-        separator  = _.isString(options.hash.separator) ? options.hash.separator : ', ',
-        prefix     = _.isString(options.hash.prefix) ? options.hash.prefix : '',
-        suffix     = _.isString(options.hash.suffix) ? options.hash.suffix : '',
-        limit      = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
-        from       = options.hash.from ? parseInt(options.hash.from, 10) : 1,
-        to         = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
-        visibility = visibilityUtils.parser(options),
-        output     = '';
+    var autolink = !(_.isString(options.hash.autolink) && options.hash.autolink === 'false'),
+        separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
+        prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
+        suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
+        limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
+        from = options.hash.from ? parseInt(options.hash.from, 10) : 1,
+        to = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
+        visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility),
+        output = '';
 
     function createTagList(tags) {
         function processTag(tag) {
@@ -36,7 +35,7 @@ module.exports = function tags(options) {
             }) : _.escape(tag.name);
         }
 
-        return visibilityUtils.filter(tags, visibility, !!options.hash.visibility, processTag);
+        return models.Base.Model.filterByVisibility(tags, visibilityArr, !!options.hash.visibility, processTag);
     }
 
     if (this.tags && this.tags.length) {
