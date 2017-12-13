@@ -3,7 +3,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'clients',
@@ -51,7 +51,7 @@ clients = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {attrs: attrs}),
+            localUtils.validate(docName, {attrs: attrs}),
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'read'),
             doQuery

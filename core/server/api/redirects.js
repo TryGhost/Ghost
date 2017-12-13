@@ -7,7 +7,7 @@ const fs = require('fs-extra'),
     config = require('../config'),
     common = require('../lib/common'),
     globalUtils = require('../utils'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     customRedirectsMiddleware = require('../web/middleware/custom-redirects');
 
 let redirectsAPI,
@@ -45,7 +45,7 @@ _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
 
 redirectsAPI = {
     download: function download(options) {
-        return apiUtils.handlePermissions('redirects', 'download')(options)
+        return localUtils.handlePermissions('redirects', 'download')(options)
             .then(function () {
                 return _private.readRedirectsFile();
             });
@@ -54,7 +54,7 @@ redirectsAPI = {
         let redirectsPath = path.join(config.getContentPath('data'), 'redirects.json'),
             backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 
-        return apiUtils.handlePermissions('redirects', 'upload')(options)
+        return localUtils.handlePermissions('redirects', 'upload')(options)
             .then(function backupOldRedirectsFile() {
                 return fs.pathExists(redirectsPath)
                     .then(function (exists) {

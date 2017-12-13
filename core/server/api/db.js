@@ -4,7 +4,7 @@ var Promise = require('bluebird'),
     path = require('path'),
     fs = require('fs-extra'),
     pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     exporter = require('../data/export'),
     importer = require('../data/importer'),
     backupDatabase = require('../data/db/backup'),
@@ -67,7 +67,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'exportContent'),
+            localUtils.handlePermissions(docName, 'exportContent'),
             exportContent
         ];
 
@@ -94,7 +94,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'importContent'),
+            localUtils.handlePermissions(docName, 'importContent'),
             importContent
         ];
 
@@ -129,7 +129,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'deleteAllContent'),
+            localUtils.handlePermissions(docName, 'deleteAllContent'),
             backupDatabase,
             deleteContent
         ];

@@ -6,7 +6,7 @@ var Promise = require('bluebird'),
     https = require('https'),
     url = require('url'),
     pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'webhooks',
@@ -95,8 +95,8 @@ webhooks = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName),
-            apiUtils.handlePermissions(docName, 'add'),
+            localUtils.validate(docName),
+            localUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
 
@@ -125,8 +125,8 @@ webhooks = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
-            apiUtils.handlePermissions(docName, 'destroy'),
+            localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
+            localUtils.handlePermissions(docName, 'destroy'),
             doQuery
         ];
 
