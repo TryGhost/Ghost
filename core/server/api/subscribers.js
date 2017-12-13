@@ -336,7 +336,7 @@ subscribers = {
                 };
             }).finally(function () {
                 // Remove uploaded file from tmp location
-                return Promise.promisify(fs.unlink)(filePath);
+                return fs.unlink(filePath);
             });
         }
 
