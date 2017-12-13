@@ -1,4 +1,6 @@
-var moment = require('moment-timezone');
+'use strict';
+
+const moment = require('moment-timezone');
 
 /**
  * force UTC
@@ -8,3 +10,8 @@ var moment = require('moment-timezone');
  *   - be careful when you work with date operations, therefor always wrap a date into moment
  */
 moment.tz.setDefault('UTC');
+
+/**
+ * https://github.com/TryGhost/Ghost/issues/9064
+ */
+global.Promise = require('bluebird');
