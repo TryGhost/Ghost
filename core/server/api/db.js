@@ -38,7 +38,7 @@ db = {
             .then(function successMessage(exportResult) {
                 var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
-                return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data))
+                return fs.writeFile(filename, JSON.stringify(exportResult.data))
                     .then(function () {
                         return filename;
                     });

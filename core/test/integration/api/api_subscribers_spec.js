@@ -279,9 +279,7 @@ describe('Subscribers API', function () {
             stub;
 
         beforeEach(function () {
-            sandbox.stub(fs, 'unlink').callsFake(function (path, cb) {
-                cb();
-            });
+            sandbox.stub(fs, 'unlink').resolves();
             sandbox.stub(apiUtils, 'checkFileExists').returns(true);
             stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
             sandbox.stub(globalUtils, 'readCSV').callsFake(function () {

@@ -4,8 +4,7 @@
 
 var Promise = require('bluebird'),
     fs = require('fs-extra'),
-    common = require('../../lib/common'),
-    readFile = Promise.promisify(fs.readFile);
+    common = require('../../lib/common');
 
 /**
  * Parse package.json and validate it has
@@ -13,7 +12,7 @@ var Promise = require('bluebird'),
  */
 
 function parsePackageJson(path) {
-    return readFile(path)
+    return fs.readFile(path)
         .catch(function () {
             var err = new Error(common.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
             err.context = path;
