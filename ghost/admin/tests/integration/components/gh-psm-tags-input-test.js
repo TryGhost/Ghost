@@ -3,7 +3,7 @@ import mockPosts from '../../../mirage/config/posts';
 import mockTags from '../../../mirage/config/themes';
 import wait from 'ember-test-helpers/wait';
 import {click, findAll} from 'ember-native-dom-helpers';
-import {clickTrigger, selectChoose, typeInSearch} from '../../../tests/helpers/ember-power-select';
+import {clickTrigger, selectChoose, typeInSearch} from 'ember-power-select/test-support/helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
