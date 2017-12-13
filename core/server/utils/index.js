@@ -132,7 +132,6 @@ utils = {
     },
 
     readCSV: require('./read-csv'),
-    removeOpenRedirectFromUrl: require('./remove-open-redirect-from-url'),
     zipFolder: require('./zip-folder'),
     generateAssetHash: require('./asset-hash'),
     tokens: require('./tokens'),
