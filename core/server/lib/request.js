@@ -2,7 +2,7 @@ var got = require('got'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     validator = require('../data/validation').validator,
-    common = require('../lib/common');
+    common = require('./common');
 
 module.exports = function request(url, options) {
     if (_.isEmpty(url) || !validator.isURL(url)) {

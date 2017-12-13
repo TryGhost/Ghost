@@ -2,10 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     nock = require('nock'),
-
-    // Stuff we are testing
-    request = rewire('../../../server/utils/request'),
-
+    request = rewire('../../../server/lib/request'),
     sandbox = sinon.sandbox.create();
 
 describe('Request', function () {
