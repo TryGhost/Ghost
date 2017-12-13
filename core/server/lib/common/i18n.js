@@ -2,7 +2,7 @@
 
 var supportedLocales = ['en'],
     _ = require('lodash'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     chalk = require('chalk'),
     MessageFormat = require('intl-messageformat'),

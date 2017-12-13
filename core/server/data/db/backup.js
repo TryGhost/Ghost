@@ -1,6 +1,6 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
-var fs = require('fs'),
+var fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
     config = require('../../config'),
