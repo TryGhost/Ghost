@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     mail = require('./../mail'),
     globalUtils = require('../utils'),
     urlService = require('../services/url'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
@@ -59,7 +59,7 @@ function setupTasks(setupData) {
     var tasks;
 
     function validateData(setupData) {
-        return apiUtils.checkObject(setupData, 'setup').then(function then(checked) {
+        return localUtils.checkObject(setupData, 'setup').then(function then(checked) {
             var data = checked.setup[0];
 
             return {
@@ -139,7 +139,7 @@ authentication = {
         var tasks;
 
         function validateRequest(object) {
-            return apiUtils.checkObject(object, 'passwordreset').then(function then(data) {
+            return localUtils.checkObject(object, 'passwordreset').then(function then(data) {
                 var email = data.passwordreset[0].email;
 
                 if (typeof email !== 'string' || !validator.isEmail(email)) {
@@ -236,7 +236,7 @@ authentication = {
         var tasks, tokenIsCorrect, dbHash, options = {context: {internal: true}}, tokenParts;
 
         function validateRequest() {
-            return apiUtils.validate('passwordreset')(object, options)
+            return localUtils.validate('passwordreset')(object, options)
                 .then(function (options) {
                     var data = options.data.passwordreset[0];
 
@@ -359,7 +359,7 @@ authentication = {
         var tasks, invite, options = {context: {internal: true}};
 
         function validateInvitation(invitation) {
-            return apiUtils.checkObject(invitation, 'invitation')
+            return localUtils.checkObject(invitation, 'invitation')
                 .then(function () {
                     if (!invitation.invitation[0].token) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noTokenProvided')}));

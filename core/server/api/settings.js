@@ -4,7 +4,7 @@ var Promise = require('bluebird'),
     _ = require('lodash'),
     models = require('../models'),
     canThis = require('../permissions').canThis,
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     common = require('../lib/common'),
     settingsCache = require('../settings/cache'),
     docName = 'settings',
@@ -225,7 +225,7 @@ settings = {
         });
 
         return canEditAllSettings(object.settings, options).then(function () {
-            return apiUtils.checkObject(object, docName).then(function (checkedData) {
+            return localUtils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
                 return models.Settings.edit(checkedData.settings, options);
             }).then(function (settingsModelsArray) {

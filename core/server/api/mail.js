@@ -3,7 +3,7 @@
 
 var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     mail = require('../mail'),
@@ -85,7 +85,7 @@ apiMail = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'send'),
+            localUtils.handlePermissions(docName, 'send'),
             send,
             formatResponse
         ];

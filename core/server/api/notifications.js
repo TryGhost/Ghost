@@ -6,7 +6,7 @@ var Promise = require('bluebird'),
     pipeline = require('../utils/pipeline'),
     permissions = require('../permissions'),
     canThis = permissions.canThis,
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     common = require('../lib/common'),
     settingsAPI = require('./settings'),
     // Holds the persistent notifications
@@ -108,7 +108,7 @@ notifications = {
         }
 
         tasks = [
-            apiUtils.validate('notifications'),
+            localUtils.validate('notifications'),
             handlePermissions,
             saveNotifications
         ];
@@ -184,7 +184,7 @@ notifications = {
         }
 
         tasks = [
-            apiUtils.validate('notifications', {opts: apiUtils.idDefaultOptions}),
+            localUtils.validate('notifications', {opts: localUtils.idDefaultOptions}),
             handlePermissions,
             destroyNotification
         ];

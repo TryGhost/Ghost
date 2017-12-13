@@ -3,7 +3,7 @@
 var debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     common = require('../lib/common'),
     settingsModel = require('../models/settings').Settings,
     settingsCache = require('../settings/cache'),
@@ -24,7 +24,7 @@ themes = {
      * in the PSM to be able to choose a custom post template.
      */
     browse: function browse(options) {
-        return apiUtils
+        return localUtils
         // Permissions
             .handlePermissions('themes', 'browse')(options)
             // Main action
@@ -43,7 +43,7 @@ themes = {
             loadedTheme,
             checkedTheme;
 
-        return apiUtils
+        return localUtils
         // Permissions
             .handlePermissions('themes', 'activate')(options)
             // Validation
@@ -94,7 +94,7 @@ themes = {
             throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.overrideCasper')});
         }
 
-        return apiUtils
+        return localUtils
         // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
@@ -168,7 +168,7 @@ themes = {
             return Promise.reject(new common.errors.BadRequestError({message: common.i18n.t('errors.api.themes.invalidRequest')}));
         }
 
-        return apiUtils
+        return localUtils
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(function sendTheme() {
@@ -187,7 +187,7 @@ themes = {
         var themeName = options.name,
             theme;
 
-        return apiUtils
+        return localUtils
         // Permissions
             .handlePermissions('themes', 'destroy')(options)
             // Validation
