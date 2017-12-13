@@ -1,6 +1,6 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     tmp = require('tmp'),
     join = require('path').join,
 

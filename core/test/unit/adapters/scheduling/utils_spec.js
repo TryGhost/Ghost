@@ -1,5 +1,5 @@
 var should = require('should'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     config = require('../../../../server/config'),
     common = require('../../../../server/lib/common'),
     schedulingUtils = require('../../../../server/adapters/scheduling/utils');

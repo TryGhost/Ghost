@@ -2,7 +2,7 @@
 // API for DB operations
 var Promise = require('bluebird'),
     path = require('path'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     pipeline = require('../utils/pipeline'),
     apiUtils = require('./utils'),
     exporter = require('../data/export'),

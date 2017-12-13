@@ -4,7 +4,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     join = require('path').join,
-    fs = require('fs'),
+    fs = require('fs-extra'),
     parsePackageJson = require('./parse-package-json'),
     common = require('../../lib/common'),
 

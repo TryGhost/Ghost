@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     tmp = require('tmp'),
     join = require('path').join,
-    fs = require('fs'),
+    fs = require('fs-extra'),
 
     // Things we are testing
     packages = require('../../../server/utils/packages'),
