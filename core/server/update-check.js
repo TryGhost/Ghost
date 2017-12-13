@@ -22,8 +22,6 @@
 
 var crypto = require('crypto'),
     exec = require('child_process').exec,
-    https = require('https'),
-    http = require('http'),
     moment = require('moment'),
     semver = require('semver'),
     Promise = require('bluebird'),
@@ -33,12 +31,15 @@ var crypto = require('crypto'),
     config = require('./config'),
     urlService = require('./services/url'),
     common = require('./lib/common'),
+    request = require('./lib/request'),
     currentVersion = require('./utils/ghost-version').full,
     internal = {context: {internal: true}},
     checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
 
 function updateCheckError(err) {
-    err = common.errors.utils.deserialize(err);
+    if (err.response && err.response.body && typeof err.response.body === 'object') {
+        err = common.errors.utils.deserialize(err.response.body);
+    }
 
     api.settings.edit(
         {settings: [{key: 'next_update_check', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
@@ -134,67 +135,19 @@ function updateCheckData() {
 }
 
 function updateCheckRequest() {
-    return updateCheckData().then(function then(reqData) {
-        var resData = '',
-            headers,
-            req,
-            requestHandler,
-            parsedUrl;
-
-        reqData = JSON.stringify(reqData);
-
-        headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(reqData)
-        };
-
-        return new Promise(function p(resolve, reject) {
-            requestHandler = checkEndpoint.indexOf('https') === 0 ? https : http;
-            parsedUrl = url.parse(checkEndpoint);
-
-            req = requestHandler.request({
-                hostname: parsedUrl.hostname,
-                port: parsedUrl.port,
-                method: 'POST',
-                headers: headers
-            }, function handler(res) {
-                res.on('error', function onError(error) {
-                    reject(error);
-                });
-                res.on('data', function onData(chunk) {
-                    resData += chunk;
-                });
-                res.on('end', function onEnd() {
-                    try {
-                        resData = JSON.parse(resData);
-
-                        if (this.statusCode >= 400) {
-                            return reject(resData);
-                        }
-
-                        resolve(resData);
-                    } catch (e) {
-                        reject(common.i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
-                    }
-                });
+    return updateCheckData()
+        .then(function then(reqData) {
+            return request(checkEndpoint, {
+                json: true,
+                body: reqData,
+                headers: {
+                    'Content-Length': Buffer.byteLength(JSON.stringify(reqData))
+                },
+                timeout: 1000
+            }).then(function (response) {
+                return response.body;
             });
-
-            req.on('socket', function onSocket(socket) {
-                // Wait a maximum of 10seconds
-                socket.setTimeout(10000);
-                socket.on('timeout', function onTimeout() {
-                    req.abort();
-                });
-            });
-
-            req.on('error', function onError(error) {
-                reject(error);
-            });
-
-            req.write(reqData);
-            req.end();
         });
-    });
 }
 
 /**
