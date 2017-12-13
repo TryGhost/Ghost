@@ -2,7 +2,6 @@
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we do in apps
 var hbs = require('../themes/engine'),
-    _ = require('lodash'),
     settingsCache = require('../settings/cache'),
     config = require('../config');
 
@@ -66,17 +65,5 @@ module.exports = {
     socialUrls: require('../utils/social-urls'),
     blogIcon: require('../utils/blog-icon'),
     url: require('../services/url').utils,
-    utils: {
-        findKey: function findKey(key /* ...objects... */) {
-            var objects = Array.prototype.slice.call(arguments, 1);
-
-            return _.reduceRight(objects, function (result, object) {
-                if (object && _.has(object, key) && !_.isEmpty(object[key])) {
-                    result = object[key];
-                }
-
-                return result;
-            }, null);
-        }
-    }
+    localUtils: require('./utils')
 };
