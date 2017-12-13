@@ -1,6 +1,6 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    pipeline = require('../utils/pipeline'),
+    pipeline = require('../lib/promise/pipeline'),
     mail = require('./../mail'),
     globalUtils = require('../utils'),
     urlService = require('../services/url'),
