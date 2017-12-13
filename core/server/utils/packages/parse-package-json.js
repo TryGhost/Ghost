@@ -3,7 +3,7 @@
  */
 
 var Promise = require('bluebird'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     common = require('../../lib/common'),
     readFile = Promise.promisify(fs.readFile);
 

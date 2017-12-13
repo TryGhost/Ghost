@@ -1,5 +1,5 @@
 var _ = require('lodash').runInContext(),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),
     htmlToText = require('html-to-text'),

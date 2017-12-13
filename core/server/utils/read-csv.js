@@ -1,7 +1,7 @@
 var Promise = require('bluebird'),
     csvParser = require('csv-parser'),
     _ = require('lodash'),
-    fs = require('fs');
+    fs = require('fs-extra');
 
 function readCSV(options) {
     var columnsToExtract = options.columnsToExtract || [],

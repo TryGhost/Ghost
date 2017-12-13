@@ -1,5 +1,5 @@
 var crypto = require('crypto'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     config = require('../../config'),
     urlService = require('../../services/url');
