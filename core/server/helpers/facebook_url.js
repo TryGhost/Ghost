@@ -14,7 +14,7 @@ module.exports = function facebook_url(username, options) { // eslint-disable-li
     }
 
     if (username) {
-        return socialUrls.facebookUrl(username);
+        return socialUrls.facebook(username);
     }
 
     return null;

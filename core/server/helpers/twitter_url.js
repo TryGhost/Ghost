@@ -14,7 +14,7 @@ module.exports = function twitter_url(username, options) { // eslint-disable-lin
     }
 
     if (username) {
-        return socialUrls.twitterUrl(username);
+        return socialUrls.twitter(username);
     }
 
     return null;
