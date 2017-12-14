@@ -6,7 +6,7 @@ const fs = require('fs-extra'),
     path = require('path'),
     config = require('../config'),
     common = require('../lib/common'),
-    globalUtils = require('../utils'),
+    validation = require('../data/validation'),
     localUtils = require('./utils'),
     customRedirectsMiddleware = require('../web/middleware/custom-redirects');
 
@@ -77,7 +77,7 @@ redirectsAPI = {
                     .then(function overrideFile() {
                         return _private.readRedirectsFile(options.path)
                             .then(function (content) {
-                                globalUtils.validateRedirects(content);
+                                validation.validateRedirects(content);
                                 return fs.writeFile(redirectsPath, JSON.stringify(content), 'utf-8');
                             })
                             .then(function () {

@@ -1,6 +1,5 @@
 var unidecode = require('unidecode'),
     _ = require('lodash'),
-    common = require('../lib/common'),
     utils,
     getRandomInt;
 
@@ -107,28 +106,6 @@ utils = {
             base64String += '=';
         }
         return base64String;
-    },
-
-    /**
-     * NOTE: No separate utils file, because redirects won't live forever in a JSON file, see V2 of https://github.com/TryGhost/Ghost/issues/7707
-     */
-    validateRedirects: function validateRedirects(redirects) {
-        if (!_.isArray(redirects)) {
-            throw new common.errors.ValidationError({
-                message: common.i18n.t('errors.utils.redirectsWrongFormat'),
-                help: 'https://docs.ghost.org/docs/redirects'
-            });
-        }
-
-        _.each(redirects, function (redirect) {
-            if (!redirect.from || !redirect.to) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.utils.redirectsWrongFormat'),
-                    context: JSON.stringify(redirect),
-                    help: 'https://docs.ghost.org/docs/redirects'
-                });
-            }
-        });
     },
 
     readCSV: require('./read-csv'),
