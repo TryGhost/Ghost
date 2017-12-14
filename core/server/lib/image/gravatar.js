@@ -1,7 +1,7 @@
 var Promise = require('bluebird'),
     crypto = require('crypto'),
-    config = require('../config'),
-    request = require('../lib/request');
+    config = require('../../config'),
+    request = require('../request');
 
 module.exports.lookup = function lookup(userData, timeout) {
     var gravatarUrl = '//www.gravatar.com/avatar/' +

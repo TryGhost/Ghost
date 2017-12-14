@@ -7,9 +7,9 @@ var _ = require('lodash'),
     baseUtils = require('./base/utils'),
     common = require('../lib/common'),
     security = require('../lib/security'),
-    gravatar = require('../utils/gravatar'),
-    validation = require('../data/validation'),
+    imageLib = require('../lib/image'),
     pipeline = require('../lib/promise/pipeline'),
+    validation = require('../data/validation'),
 
     bcryptGenSalt = Promise.promisify(bcrypt.genSalt),
     bcryptHash = Promise.promisify(bcrypt.hash),
@@ -107,7 +107,7 @@ User = ghostBookshelf.Model.extend({
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
-                return gravatar.lookup({
+                return imageLib.gravatar.lookup({
                     email: self.get('email')
                 }).then(function (response) {
                     if (response && response.image) {

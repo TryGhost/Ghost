@@ -6,7 +6,7 @@ var should = require('should'),
 
     // Stuff we are testing
     common = require('../../../server/lib/common'),
-    gravatar = require('../../../server/utils/gravatar'),
+    imageLib = require('../../../server/lib/image'),
     UserModel = require('../../../server/models/user').User,
     RoleModel = require('../../../server/models/role').Role,
     context = testUtils.context.admin,
@@ -89,7 +89,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(gravatar, 'lookup').callsFake(function (userData) {
+            sandbox.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                 return Promise.resolve(userData);
             });
@@ -106,7 +106,7 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(gravatar, 'lookup').callsFake(function (userData) {
+            sandbox.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 return Promise.resolve(userData);
             });
 
