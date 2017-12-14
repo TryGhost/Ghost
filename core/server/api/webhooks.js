@@ -3,40 +3,37 @@
 // also known as "REST Hooks", see http://resthooks.org
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    https = require('https'),
-    url = require('url'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
+    request = require('../lib/request'),
     docName = 'webhooks',
     webhooks;
 
-// TODO: Use the request util. Do we want retries here?
 function makeRequest(webhook, payload, options) {
     var event = webhook.get('event'),
         targetUrl = webhook.get('target_url'),
         webhookId = webhook.get('id'),
-        reqOptions, reqPayload, req;
-
-    reqOptions = url.parse(targetUrl);
-    reqOptions.method = 'POST';
-    reqOptions.headers = {'Content-Type': 'application/json'};
-
-    reqPayload = JSON.stringify(payload);
+        reqPayload = JSON.stringify(payload);
 
     common.logging.info('webhook.trigger', event, targetUrl);
-    req = https.request(reqOptions);
 
-    req.write(reqPayload);
-    req.on('error', function (err) {
+    request(targetUrl, {
+        body: reqPayload,
+        headers: {
+            'Content-Length': Buffer.byteLength(reqPayload),
+            'Content-Type': 'application/json'
+        },
+        timeout: 2 * 1000,
+        retries: 5
+    }).catch(function (err) {
         // when a webhook responds with a 410 Gone response we should remove the hook
-        if (err.status === 410) {
+        if (err.statusCode === 410) {
             common.logging.info('webhook.destroy (410 response)', event, targetUrl);
             return models.Webhook.destroy({id: webhookId}, options);
         }
 
-        // TODO: use i18n?
         common.logging.error(new common.errors.GhostError({
             err: err,
             context: {
@@ -47,7 +44,6 @@ function makeRequest(webhook, payload, options) {
             }
         }));
     });
-    req.end();
 }
 
 function makeRequests(webhooksCollection, payload, options) {
