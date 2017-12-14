@@ -4,7 +4,7 @@ var Promise = require('bluebird'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     pipeline = require('../lib/promise/pipeline'),
-    globalUtils = require('../utils'),
+    fsLib = require('../lib/fs'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
@@ -304,7 +304,7 @@ subscribers = {
                 invalid = 0,
                 duplicates = 0;
 
-            return globalUtils.readCSV({
+            return fsLib.readCSV({
                 path: filePath,
                 columnsToExtract: [{name: 'email', lookup: /email/i}]
             }).then(function (result) {
