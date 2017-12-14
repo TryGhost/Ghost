@@ -31,4 +31,18 @@ describe('Markdown card', function () {
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<h2>Heading 2></div>');
     });
+
+    it('Does not create duplicate IDs', function () {
+        opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                markdown: '# Foo\r\nLorem\r\n\r\n# Foo\r\nDolor'
+            }
+        };
+
+        var serializer = new SimpleDom.HTMLSerializer([]);
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-markdown"><h1 id="foo">Foo</h1>\n<p>Lorem</p>\n<h1 id="foo2">Foo</h1>\n<p>Dolor</p>\n</div>');
+    });
 });

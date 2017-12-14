@@ -14,16 +14,17 @@ var MarkdownIt = require('markdown-it'),
                 if (usedHeaders[slug]) {
                     usedHeaders[slug] += 1;
                     slug += usedHeaders[slug];
+                } else {
+                    usedHeaders[slug] = 1;
                 }
                 return slug;
             };
             var originalHeadingOpen = md.renderer.rules.heading_open;
+            var usedHeaders = {};
 
             // originally from https://github.com/leff/markdown-it-named-headers
             // moved here to avoid pulling in http://stringjs.com dependency
             md.renderer.rules.heading_open = function (tokens, idx, something, somethingelse, self) {
-                var usedHeaders = {};
-
                 tokens[idx].attrs = tokens[idx].attrs || [];
 
                 var title = tokens[idx + 1].children.reduce(function (acc, t) {
