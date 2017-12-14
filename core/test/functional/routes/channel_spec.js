@@ -8,7 +8,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     cheerio = require('cheerio'),
     config = require('../../../../core/server/config'),
-    settingsCache = require('../../../../core/server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
     ghost = testUtils.startGhost,
     sandbox = sinon.sandbox.create(),
     request;

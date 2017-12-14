@@ -3,7 +3,7 @@ var router           = require('./lib/router'),
 
     // Dirty requires
     config = require('../../config'),
-    settingsCache = require('../../settings/cache');
+    settingsCache = require('../../services/settings/cache');
 
 module.exports = {
     activate: function activate(ghost) {

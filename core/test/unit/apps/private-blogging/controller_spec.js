@@ -3,7 +3,7 @@ var should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../server/themes'),
+    themes = require('../../../../server/services/themes'),
     privateController = require('../../../../server/apps/private-blogging/lib/router'),
 
     sandbox = sinon.sandbox.create();

@@ -7,7 +7,7 @@ var should = require('should'),
     ampController = rewire('../../../../server/apps/amp/lib/router'),
     common = require('../../../../server/lib/common'),
     configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../server/themes'),
+    themes = require('../../../../server/services/themes'),
 
     sandbox = sinon.sandbox.create();
 

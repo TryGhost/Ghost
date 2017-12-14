@@ -1,5 +1,5 @@
 var Promise = require('bluebird'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     urlService = require('../../services/url'),
     common = require('../../lib/common'),
     getUrl = require('./url'),

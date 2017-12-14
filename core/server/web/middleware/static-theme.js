@@ -2,7 +2,7 @@ var _       = require('lodash'),
     express = require('express'),
     path    = require('path'),
     config  = require('../../config'),
-    themeUtils = require('../../themes'),
+    themeUtils = require('../../services/themes'),
     utils   = require('../../utils');
 
 function isBlackListedFileType(file) {

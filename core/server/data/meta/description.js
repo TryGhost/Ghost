@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    settingsCache = require('../../settings/cache');
+    settingsCache = require('../../services/settings/cache');
 
 function getDescription(data, root, options) {
     var description = '',

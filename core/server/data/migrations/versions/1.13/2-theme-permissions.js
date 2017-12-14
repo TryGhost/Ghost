@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     utils = require('../../../schema/fixtures/utils'),
-    permissions = require('../../../../permissions'),
+    permissions = require('../../../../services/permissions'),
     common = require('../../../../lib/common'),
     resource = 'theme',
     _private = {};
