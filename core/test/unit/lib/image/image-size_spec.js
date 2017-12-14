@@ -3,17 +3,17 @@ var should = require('should'),
     rewire = require('rewire'),
     nock = require('nock'),
     path = require('path'),
-    configUtils = require('../../utils/configUtils'),
-    urlService = require('../../../server/services/url'),
-    common = require('../../../server/lib/common'),
-    storage = require('../../../server/adapters/storage'),
+    configUtils = require('../../../utils/configUtils'),
+    urlService = require('../../../../server/services/url'),
+    common = require('../../../../server/lib/common'),
+    storage = require('../../../../server/adapters/storage'),
 
     // Stuff we are testing
-    imageSize = rewire('../../../server/utils/image-size'),
+    imageSize = rewire('../../../../server/lib/image/image-size'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Image Size', function () {
+describe('lib/image: image size', function () {
     var sizeOfStub,
         result,
         requestMock,
@@ -27,7 +27,7 @@ describe('Image Size', function () {
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
-        imageSize = rewire('../../../server/utils/image-size');
+        imageSize = rewire('../../../../server/lib/image/image-size');
         storage.getStorage().storagePath = originalStoragePath;
     });
 
@@ -263,7 +263,7 @@ describe('Image Size', function () {
                         width: 100
                     };
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -370,7 +370,7 @@ describe('Image Size', function () {
                         width: 800
                     };
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -400,7 +400,7 @@ describe('Image Size', function () {
                         width: 1010
                     };
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/blog/content/images/favicon_too_large.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -430,7 +430,7 @@ describe('Image Size', function () {
                         width: 64
                     };
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon_multi_sizes.ico');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -454,7 +454,7 @@ describe('Image Size', function () {
                 urlForStub,
                 urlGetSubdirStub;
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/not-existing-image.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -478,7 +478,7 @@ describe('Image Size', function () {
             sizeOfStub.throws({error: 'image-size could not find dimensions'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
-            storage.getStorage().storagePath = path.join(__dirname, '../../../test/utils/fixtures/images/');
+            storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
             urlForStub = sandbox.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.pngx');
             urlForStub.withArgs('home').returns('http://myblog.com/');

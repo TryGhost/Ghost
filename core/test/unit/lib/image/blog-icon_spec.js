@@ -2,19 +2,19 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    settingsCache = require('../../../server/services/settings/cache'),
-    configUtils = require('../../utils/configUtils'),
-    testUtils = require('../../utils'),
-    config = configUtils.config,
     path = require('path'),
     rewire = require('rewire'),
+    settingsCache = require('../../../../server/services/settings/cache'),
+    configUtils = require('../../../utils/configUtils'),
+    testUtils = require('../../../utils'),
+    config = configUtils.config,
 
     // stuff we are testing
-    blogIcon = rewire('../../../server/utils/blog-icon'),
+    blogIcon = rewire('../../../../server/lib/image/blog-icon'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Blog Icon', function () {
+describe('lib/image: blog icon', function () {
     before(function () {
         configUtils.restore();
     });
@@ -22,7 +22,7 @@ describe('Blog Icon', function () {
     afterEach(function () {
         configUtils.restore();
         sandbox.restore();
-        rewire('../../../server/utils/blog-icon');
+        rewire('../../../../server/lib/image/blog-icon');
     });
 
     describe('getIconUrl', function () {
@@ -92,7 +92,7 @@ describe('Blog Icon', function () {
         });
 
         it('default ico blog icon', function () {
-            blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../server/public/favicon.ico'));
+            blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../../server/public/favicon.ico'));
         });
 
         describe('with subdirectory', function () {
@@ -112,7 +112,7 @@ describe('Blog Icon', function () {
 
             it('default ico blog icon', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-                blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../server/public/favicon.ico'));
+                blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../../server/public/favicon.ico'));
             });
         });
     });
@@ -139,7 +139,7 @@ describe('Blog Icon', function () {
 
     describe('getIconDimensions', function () {
         it('[success] returns .ico dimensions', function (done) {
-            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon.ico'))
+            blogIcon.getIconDimensions(path.join(__dirname, '../../../utils/fixtures/images/favicon.ico'))
                 .then(function (result) {
                     should.exist(result);
                     result.should.eql({
@@ -151,7 +151,7 @@ describe('Blog Icon', function () {
         });
 
         it('[success] returns .png dimensions', function (done) {
-            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon.png'))
+            blogIcon.getIconDimensions(path.join(__dirname, '../../../utils/fixtures/images/favicon.png'))
                 .then(function (result) {
                     should.exist(result);
                     result.should.eql({
@@ -163,7 +163,7 @@ describe('Blog Icon', function () {
         });
 
         it('[success] returns .ico dimensions for icon with multiple sizes', function (done) {
-            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon_multi_sizes.ico'))
+            blogIcon.getIconDimensions(path.join(__dirname, '../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .then(function (result) {
                     should.exist(result);
                     result.should.eql({
@@ -181,7 +181,7 @@ describe('Blog Icon', function () {
 
             blogIcon.__set__('sizeOf', sizeOfStub);
 
-            blogIcon.getIconDimensions(path.join(__dirname, '../../utils/fixtures/images/favicon_multi_sizes.ico'))
+            blogIcon.getIconDimensions(path.join(__dirname, '../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .catch(function (error) {
                     should.exist(error);
                     error.message.should.eql('Could not fetch icon dimensions.');

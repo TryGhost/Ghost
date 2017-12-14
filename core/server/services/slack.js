@@ -1,7 +1,7 @@
 var common = require('../lib/common'),
     request = require('../lib/request'),
+    imageLib = require('../lib/image'),
     urlService = require('../services/url'),
-    blogIconUtils = require('../utils/blog-icon'),
     settingsCache = require('./settings/cache'),
     schema = require('../data/schema').checks,
     defaultPostSlugs = [
@@ -50,7 +50,7 @@ function ping(post) {
         slackData = {
             text: message,
             unfurl_links: true,
-            icon_url: blogIconUtils.getIconUrl(true),
+            icon_url: imageLib.blogIcon.getIconUrl(true),
             username: 'Ghost'
         };
 

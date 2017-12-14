@@ -4,11 +4,11 @@ var should = require('should'),
     rewire = require('rewire'),
 
     // Stuff we are testing
-    getCachedImageSizeFromUrl = rewire('../../../server/utils/cached-image-size-from-url'),
+    getCachedImageSizeFromUrl = rewire('../../../../server/lib/image/cached-image-size-from-url'),
 
     sandbox = sinon.sandbox.create();
 
-describe('getCachedImageSizeFromUrl', function () {
+describe('lib/image: image size cache', function () {
     var sizeOfStub,
         cachedImagedSize;
 
@@ -18,7 +18,7 @@ describe('getCachedImageSizeFromUrl', function () {
 
     afterEach(function () {
         sandbox.restore();
-        getCachedImageSizeFromUrl.__set__('imageSizeCache', {});
+        getCachedImageSizeFromUrl.__set__('cache', {});
     });
 
     it('should read from cache, if dimensions for image are fetched already', function (done) {
@@ -39,7 +39,7 @@ describe('getCachedImageSizeFromUrl', function () {
         cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
         cachedImagedSizeResult.then(function () {
             // first call to get result from `getImageSizeFromUrl`
-            cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
+            cachedImagedSize = getCachedImageSizeFromUrl.__get__('cache');
             should.exist(cachedImagedSize);
             cachedImagedSize.should.have.property(url);
             should.exist(cachedImagedSize[url].width);
@@ -50,7 +50,7 @@ describe('getCachedImageSizeFromUrl', function () {
             // second call to check if values get returned from cache
             cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
             cachedImagedSizeResult.then(function () {
-                cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
+                cachedImagedSize = getCachedImageSizeFromUrl.__get__('cache');
                 imageSizeSpy.calledOnce.should.be.true();
                 imageSizeSpy.calledTwice.should.be.false();
                 should.exist(cachedImagedSize);
@@ -75,13 +75,13 @@ describe('getCachedImageSizeFromUrl', function () {
 
         cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
         cachedImagedSizeResult.then(function () {
-                cachedImagedSize = getCachedImageSizeFromUrl.__get__('imageSizeCache');
-                should.exist(cachedImagedSize);
-                cachedImagedSize.should.have.property(url);
-                should.not.exist(cachedImagedSize[url].width);
-                should.not.exist(cachedImagedSize[url].height);
-                done();
-            }).catch(done);
+            cachedImagedSize = getCachedImageSizeFromUrl.__get__('cache');
+            should.exist(cachedImagedSize);
+            cachedImagedSize.should.have.property(url);
+            should.not.exist(cachedImagedSize[url].width);
+            should.not.exist(cachedImagedSize[url].height);
+            done();
+        }).catch(done);
     });
 
     it('should return null if url is undefined', function (done) {
