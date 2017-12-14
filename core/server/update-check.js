@@ -32,7 +32,7 @@ var crypto = require('crypto'),
     urlService = require('./services/url'),
     common = require('./lib/common'),
     request = require('./lib/request'),
-    currentVersion = require('./utils/ghost-version').full,
+    currentVersion = require('./lib/ghost-version').full,
     internal = {context: {internal: true}},
     checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
 

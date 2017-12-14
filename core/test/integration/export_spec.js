@@ -5,7 +5,7 @@ var should = require('should'),
 
     // Stuff we are testing
     exporter = require('../../server/data/export'),
-    ghostVersion = require('../../server/utils/ghost-version'),
+    ghostVersion = require('../../server/lib/ghost-version'),
 
     sandbox = sinon.sandbox.create();
 
