@@ -9,8 +9,7 @@ var supportedLocales = ['en'],
     logging = require('./logging'),
     errors = require('./errors'),
     jp = require('jsonpath'),
-    path = require('path'),
-    settingsCache = require('./settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
 
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
     // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)

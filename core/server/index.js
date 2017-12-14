@@ -58,8 +58,8 @@ function init() {
         // (settings for language and theme available here;
         // full internationalization for theme is done
         // shortly after, when activating the theme)
-        if (i18n.locale() !== 'en' && i18n.backendTranslations()) {
-            return i18n.init();
+        if (common.i18n.locale() !== 'en' && common.i18n.backendTranslations()) {
+            return common.i18n.init();
         }
     }).then(function () {
         debug('Full i18n done for core');
