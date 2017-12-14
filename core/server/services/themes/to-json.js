@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     themeList = require('./list'),
     active = require('./active'),
-    packages = require('../../utils/packages'),
+    packageJSON = require('../../lib/fs/package-json'),
     settingsCache = require('../settings/cache');
 
 /**
@@ -21,13 +21,13 @@ module.exports = function toJSON(name, checkedTheme) {
 
     if (!name) {
         toFilter = themeList.getAll();
-        themeResult = packages.filterPackages(toFilter, settingsCache.get('active_theme'));
+        themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
     } else {
         toFilter = {
             [name]: themeList.get(name)
         };
 
-        themeResult = packages.filterPackages(toFilter, settingsCache.get('active_theme'));
+        themeResult = packageJSON.filter(toFilter, settingsCache.get('active_theme'));
 
         if (checkedTheme && checkedTheme.results.warning.length > 0) {
             themeResult[0].warnings = _.cloneDeep(checkedTheme.results.warning);

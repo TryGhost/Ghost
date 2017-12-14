@@ -42,7 +42,7 @@ exports.publishPost = function publishPost(object, options) {
                 cleanOptions.transacting = transacting;
                 cleanOptions.forUpdate = true;
 
-                // CASE: extend allowed options, see api/utils.js
+                // CASE: extend allowed options, see api/zip-folder.js
                 cleanOptions.opts = ['forUpdate', 'transacting'];
 
                 return postsAPI.read(cleanOptions)

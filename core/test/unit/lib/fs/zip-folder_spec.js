@@ -2,9 +2,9 @@ var should = require('should'), // jshint ignore:line
     path = require('path'),
     fs = require('fs-extra'),
     extract = require('extract-zip'),
-    themeUtils = require('../../../../server/services/themes/utils');
+    fsLib = require('../../../../server/lib/fs');
 
-describe('services/themes: theme utils', function () {
+describe('lib/fs: read csv', function () {
     const symlinkPath = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink'),
         folderToSymlink = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'casper'),
         zipDestination = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink.zip'),
@@ -25,7 +25,7 @@ describe('services/themes: theme utils', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        themeUtils.zipFolder(symlinkPath, zipDestination, function (err) {
+        fsLib.zipFolder(symlinkPath, zipDestination, function (err) {
             if (err) {
                 return done(err);
             }

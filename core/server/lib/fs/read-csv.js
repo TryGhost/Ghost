@@ -1,9 +1,11 @@
-var Promise = require('bluebird'),
+'use strict';
+
+const Promise = require('bluebird'),
     csvParser = require('csv-parser'),
     _ = require('lodash'),
     fs = require('fs-extra');
 
-function readCSV(options) {
+module.exports = function readCSV(options) {
     var columnsToExtract = options.columnsToExtract || [],
         results = [], rows = [];
 
@@ -54,6 +56,4 @@ function readCSV(options) {
                 resolve(results);
             });
     });
-}
-
-module.exports = readCSV;
+};
