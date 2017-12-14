@@ -134,7 +134,6 @@ utils = {
     readCSV: require('./read-csv'),
     zipFolder: require('./zip-folder'),
     tokens: require('./tokens'),
-    sequence: require('../lib/promise/sequence'),
     ghostVersion: require('./ghost-version'),
     mobiledocConverter: require('./mobiledoc-converter'),
     markdownConverter: require('./markdown-converter')
