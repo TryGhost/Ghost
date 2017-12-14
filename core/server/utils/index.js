@@ -133,7 +133,6 @@ utils = {
 
     readCSV: require('./read-csv'),
     zipFolder: require('./zip-folder'),
-    generateAssetHash: require('./asset-hash'),
     tokens: require('./tokens'),
     sequence: require('../lib/promise/sequence'),
     ghostVersion: require('./ghost-version'),
