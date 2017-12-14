@@ -45,15 +45,10 @@ install:
 
 after_success:
   - |
-      if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "6" ]]; then
-          echo "Generate coverage..."
-          grunt coverage
-          npm install -g codeclimate-test-reporter
-          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
-        else
-          echo "False DB and NODE_VERSION. No coverage generated."
-        fi
+      if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "6" ]]; then
+        echo "Generate coverage..."
+        grunt coverage-travis
+        cat core/test/coverage/travis/lcov.info | coveralls
       else
-        echo "This is a PR. No coverage generated."
+        echo "False DB and NODE_VERSION. No coverage generated."
       fi

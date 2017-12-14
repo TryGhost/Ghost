@@ -196,7 +196,19 @@ var config = require('./core/server/config'),
                         mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides', '--exit'],
                         excludes: ['core/client', 'core/server/built']
                     }
-
+                },
+                coverage_travis: {
+                    src: [
+                        'core/test/integration',
+                        'core/test/functional',
+                        'core/test/unit'
+                    ],
+                    options: {
+                        coverageFolder: 'core/test/coverage/travis',
+                        mask: '**/*_spec.js',
+                        mochaOptions: ['--reporter', 'mocha-lcov-reporter', '--timeout=15000', '--require', 'core/server/overrides', '--exit'],
+                        excludes: ['core/client', 'core/server/built']
+                    }
                 }
             },
 
@@ -603,12 +615,16 @@ var config = require('./core/server/config'),
         //
         // Key areas for coverage are: helpers and theme elements, apps / GDK, the api and model layers.
 
-        grunt.registerTask('coverage', 'Generate unit and integration (mocha) tests coverage report',
+        grunt.registerTask('coverage', 'Generate unit tests coverage report',
             ['test-setup', 'mocha_istanbul:coverage']
         );
 
         grunt.registerTask('coverage-all', 'Generate unit and integration tests coverage report',
             ['test-setup', 'mocha_istanbul:coverage_all']
+        );
+
+        grunt.registerTask('coverage-travis', 'Generate report for Travis.',
+            ['test-setup', 'mocha_istanbul:coverage_travis']
         );
 
         // #### Master Warning *(Utility Task)*
