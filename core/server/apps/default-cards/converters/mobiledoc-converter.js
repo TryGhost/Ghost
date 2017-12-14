@@ -1,7 +1,7 @@
 var SimpleDom = require('simple-dom'),
     Renderer = require('mobiledoc-dom-renderer').default,
-    config = require('../config'),
-    common = require('../lib/common'),
+    config = require('../../../config'),
+    common = require('../../../lib/common'),
     defaults = require(config.get('paths').internalAppPath + 'default-cards'),
     options = {
         dom: new SimpleDom.Document(),

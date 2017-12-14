@@ -2,12 +2,12 @@ module.exports = {
     name: 'card-markdown',
     type: 'dom',
     render: function (opts) {
-        var markdownConverter = require('../../../utils/markdown-converter'),
+        var converters = require('../converters'),
             html, element;
 
         // convert markdown to HTML ready for insertion into dom
         html = '<div class="kg-card-markdown">'
-            + markdownConverter.render(opts.payload.markdown || '')
+            + converters.markdownConverter.render(opts.payload.markdown || '')
             + '</div>';
 
         // use the SimpleDOM document to create a raw HTML section.
