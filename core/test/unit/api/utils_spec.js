@@ -298,6 +298,7 @@ describe('API Utils', function () {
                 allowed = ['a', 'b', 'c'],
                 options = {include: 'a,b'},
                 actualResult;
+
             actualResult = apiUtils.convertOptions(allowed)(_.clone(options));
 
             prepareIncludeStub.calledOnce.should.be.true();
@@ -306,6 +307,11 @@ describe('API Utils', function () {
             actualResult.should.have.hasOwnProperty('include');
             actualResult.include.should.be.an.Array();
             actualResult.include.should.eql(expectedResult);
+        });
+
+        it('should lowercase formats', function () {
+            var actualResult = actualResult = apiUtils.convertOptions([])(_.clone({formats: ['a', 'BE', 'hAllO', '3']}));
+            actualResult.formats.should.eql(['a', 'be', 'hallo', '3']);
         });
     });
 

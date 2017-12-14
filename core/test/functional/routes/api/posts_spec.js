@@ -51,105 +51,9 @@ describe('Post API', function () {
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
-                        done();
-                    });
-            });
-
-            it('can retrieve a single post format', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                        _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-
-                        done();
-                    });
-            });
-
-            it('can retrieve multiple post formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc,amp'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                        _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-
-                        done();
-                    });
-            });
-
-            it('can handle unknown post formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledo'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                        _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-
-                        done();
-                    });
-            });
-
-            it('can handle empty formats (default html is expected)', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats='))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                        _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+                        _.map(jsonResponse.posts, function (post) {
+                            post.status.should.eql('published');
+                        });
 
                         done();
                     });
@@ -207,8 +111,6 @@ describe('Post API', function () {
                         done();
                     });
             });
-
-            // Test bits of the API we don't use in the app yet to ensure the API behaves properly
 
             it('can retrieve all status posts and pages', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/?staticPages=all&status=all'))
@@ -348,30 +250,6 @@ describe('Post API', function () {
                         jsonResponse.posts[0].created_by.should.be.a.String();
                         // Tags aren't included by default
                         should.not.exist(jsonResponse.posts[0].tags);
-                        done();
-                    });
-            });
-
-            it('can retrieve multiple post formats', function (done) {
-                request
-                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc,amp'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        jsonResponse.posts.should.have.length(1);
-                        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
-
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
-
                         done();
                     });
             });

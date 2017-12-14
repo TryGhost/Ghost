@@ -60,7 +60,7 @@ posts = {
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
             localUtils.handlePublicPermissions(docName, 'browse', unsafeAttrs),
-            localUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
+            localUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 
@@ -107,7 +107,7 @@ posts = {
         tasks = [
             localUtils.validate(docName, {attrs: attrs, opts: extraAllowedOptions}),
             localUtils.handlePublicPermissions(docName, 'read', unsafeAttrs),
-            localUtils.convertOptions(allowedIncludes, models.Post.allowedFormats),
+            localUtils.convertOptions(allowedIncludes),
             modelQuery
         ];
 

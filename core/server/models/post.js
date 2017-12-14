@@ -338,7 +338,11 @@ Post = ghostBookshelf.Model.extend({
      */
     formatsToJSON: function formatsToJSON(attrs, options) {
         var defaultFormats = ['html'],
-            formatsToKeep = options.formats || defaultFormats;
+            formatsToKeep = _.intersection(options.formats, Post.allowedFormats);
+
+        if (!formatsToKeep.length) {
+            formatsToKeep = defaultFormats;
+        }
 
         // Iterate over all known formats, and if they are not in the keep list, remove them
         _.each(Post.allowedFormats, function (format) {

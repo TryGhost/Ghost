@@ -1758,7 +1758,7 @@ describe('Import (new test structure)', function () {
         after(testUtils.teardown);
 
         it('keeps the value of the amp field', function () {
-            return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
+            return models.Post.findPage(_.merge({formats: ['amp']}, testUtils.context.internal)).then(function (response) {
                 should.exist(response.posts);
 
                 response.posts.length.should.eql(exportData.data.posts.length);

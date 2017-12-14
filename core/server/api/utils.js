@@ -246,8 +246,8 @@ utils = {
         return this.trimAndLowerCase(fields);
     },
 
-    prepareFormats: function prepareFormats(formats, allowedFormats) {
-        return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
+    prepareFormats: function prepareFormats(formats) {
+        return this.trimAndLowerCase(formats);
     },
 
     /**
@@ -255,7 +255,7 @@ utils = {
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */
-    convertOptions: function convertOptions(allowedIncludes, allowedFormats) {
+    convertOptions: function convertOptions(allowedIncludes) {
         /**
          * Convert our options from API-style to Model-style
          * @param {Object} options
@@ -272,7 +272,7 @@ utils = {
             }
 
             if (options.formats) {
-                options.formats = utils.prepareFormats(options.formats, allowedFormats);
+                options.formats = utils.prepareFormats(options.formats);
             }
 
             if (options.formats && options.columns) {
