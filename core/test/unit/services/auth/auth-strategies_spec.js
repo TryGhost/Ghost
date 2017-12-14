@@ -6,6 +6,7 @@ var should = require('should'),
     authStrategies = require('../../../../server/services/auth/auth-strategies'),
     Models = require('../../../../server/models'),
     common = require('../../../../server/lib/common'),
+    security = require('../../../../server/lib/security'),
     urlService = require('../../../../server/services/url'),
     globalUtils = require('../../../../server/utils'),
 
@@ -286,7 +287,7 @@ describe('Auth Strategies', function () {
                     role_id: '2'
                 });
 
-            sandbox.stub(globalUtils, 'uid').returns('12345678');
+            sandbox.stub(security.identifier, 'uid').returns('12345678');
 
             userFindOneStub.returns(Promise.resolve(null));
 
