@@ -13,10 +13,10 @@ var _ = require('lodash'),
     config = require('../../config'),
     db = require('../../data/db'),
     common = require('../../lib/common'),
+    security = require('../../lib/security'),
     filters = require('../../filters'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
-    globalUtils = require('../../utils'),
     validation = require('../../data/validation'),
     plugins = require('../plugins'),
 
@@ -739,7 +739,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // the slug may never be longer than the allowed limit of 191 chars, but should also
         // take the counter into count. We reduce a too long slug to 185 so we're always on the
         // safe side, also in terms of checking for existing slugs already.
-        slug = globalUtils.safeString(base, options);
+        slug = security.string.safe(base, options);
 
         if (slug.length > 185) {
             // CASE: don't cut the slug on import

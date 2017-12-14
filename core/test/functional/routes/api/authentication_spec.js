@@ -6,7 +6,7 @@ var should = require('should'),
     userForKnex = testUtils.DataGenerator.forKnex.users[0],
     models = require('../../../../../core/server/models'),
     config = require('../../../../../core/server/config'),
-    utils = require('../../../../../core/server/utils'),
+    security = require('../../../../../core/server/lib/security'),
     ghost = testUtils.startGhost,
     request;
 
@@ -212,7 +212,7 @@ describe('Authentication API', function () {
         models.Settings
             .findOne({key: 'db_hash'})
             .then(function (response) {
-                var token = utils.tokens.resetToken.generateHash({
+                var token = security.tokens.resetToken.generateHash({
                     expires: Date.now() + (1000 * 60),
                     email: user.email,
                     dbHash: response.attributes.value,

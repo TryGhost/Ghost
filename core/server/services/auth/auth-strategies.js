@@ -2,6 +2,7 @@ var _ = require('lodash'),
     models = require('../../models'),
     globalUtils = require('../../utils'),
     common = require('../../lib/common'),
+    security = require('../../lib/security'),
     strategies;
 
 strategies = {
@@ -94,7 +95,7 @@ strategies = {
 
         handleInviteToken = function handleInviteToken() {
             var user, invite;
-            inviteToken = globalUtils.decodeBase64URLsafe(inviteToken);
+            inviteToken = security.url.decodeBase64(inviteToken);
 
             return models.Invite.findOne({token: inviteToken}, options)
                 .then(function addInviteUser(_invite) {

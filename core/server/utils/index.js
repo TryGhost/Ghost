@@ -1,6 +1,4 @@
-var unidecode = require('unidecode'),
-    _ = require('lodash'),
-    utils,
+var utils,
     getRandomInt;
 
 /**
@@ -57,60 +55,8 @@ utils = {
         return buf.join('');
     },
 
-    safeString: function (string, options) {
-        options = options || {};
-
-        if (string === null) {
-            string = '';
-        }
-
-        // Handle the £ symbol separately, since it needs to be removed before the unicode conversion.
-        string = string.replace(/£/g, '-');
-
-        // Remove non ascii characters
-        string = unidecode(string);
-
-        // Replace URL reserved chars: `@:/?#[]!$&()*+,;=` as well as `\%<>|^~£"{}` and \`
-        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|\{|\}|`|–|—)/g, '-')
-        // Remove apostrophes
-            .replace(/'/g, '')
-            // Make the whole thing lowercase
-            .toLowerCase();
-
-        // We do not need to make the following changes when importing data
-        if (!_.has(options, 'importing') || !options.importing) {
-            // Convert 2 or more dashes into a single dash
-            string = string.replace(/-+/g, '-')
-            // Remove trailing dash
-                .replace(/-$/, '')
-                // Remove any dashes at the beginning
-                .replace(/^-/, '');
-        }
-
-        // Handle whitespace at the beginning or end.
-        string = string.trim();
-
-        return string;
-    },
-
-    // The token is encoded URL safe by replacing '+' with '-', '\' with '_' and removing '='
-    // NOTE: the token is not encoded using valid base64 anymore
-    encodeBase64URLsafe: function (base64String) {
-        return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    },
-
-    // Decode url safe base64 encoding and add padding ('=')
-    decodeBase64URLsafe: function (base64String) {
-        base64String = base64String.replace(/-/g, '+').replace(/_/g, '/');
-        while (base64String.length % 4) {
-            base64String += '=';
-        }
-        return base64String;
-    },
-
     readCSV: require('./read-csv'),
     zipFolder: require('./zip-folder'),
-    tokens: require('./tokens'),
     ghostVersion: require('./ghost-version')
 };
 

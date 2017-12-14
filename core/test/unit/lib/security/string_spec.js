@@ -1,96 +1,93 @@
 var should = require('should'), // jshint ignore:line
-    nock = require('nock'),
-    configUtils = require('../../utils/configUtils'),
-    utils = require('../../../server/utils');
+    security = require('../../../../server/lib/security');
 
-describe('Server Utilities', function () {
+describe('Lib: Security - String', function () {
     describe('Safe String', function () {
-        var safeString = utils.safeString,
-            options = {};
+        var options = {};
 
         it('should remove beginning and ending whitespace', function () {
-            var result = safeString(' stringwithspace ', options);
+            var result = security.string.safe(' stringwithspace ', options);
             result.should.equal('stringwithspace');
         });
 
         it('can handle null strings', function () {
-            var result = safeString(null);
+            var result = security.string.safe(null);
             result.should.equal('');
         });
 
         it('should remove non ascii characters', function () {
-            var result = safeString('howtowin✓', options);
+            var result = security.string.safe('howtowin✓', options);
             result.should.equal('howtowin');
         });
 
         it('should replace spaces with dashes', function () {
-            var result = safeString('how to win', options);
+            var result = security.string.safe('how to win', options);
             result.should.equal('how-to-win');
         });
 
         it('should replace most special characters with dashes', function () {
-            var result = safeString('a:b/c?d#e[f]g!h$i&j(k)l*m+n,o;{p}=q\\r%s<t>u|v^w~x£y"z@1.2`3', options);
+            var result = security.string.safe('a:b/c?d#e[f]g!h$i&j(k)l*m+n,o;{p}=q\\r%s<t>u|v^w~x£y"z@1.2`3', options);
             result.should.equal('a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z-1-2-3');
         });
 
         it('should replace all of the html4 compat symbols in ascii except hyphen and underscore', function () {
             // note: This is missing the soft-hyphen char that isn't much-liked by linters/browsers/etc,
             // it passed the test before it was removed
-            var result = safeString('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿');
+            var result = security.string.safe('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿');
             result.should.equal('_-c-y-ss-c-a-r-deg-23up-1o-1-41-23-4');
         });
 
         it('should replace all of the foreign chars in ascii', function () {
-            var result = safeString('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ');
+            var result = security.string.safe('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ');
             result.should.equal('aaaaaaaeceeeeiiiidnoooooxouuuuuthssaaaaaaaeceeeeiiiidnooooo-ouuuuythy');
         });
 
         it('should remove special characters at the beginning of a string', function () {
-            var result = safeString('.Not special', options);
+            var result = security.string.safe('.Not special', options);
             result.should.equal('not-special');
         });
 
         it('should remove apostrophes ', function () {
-            var result = safeString('how we shouldn\'t be', options);
+            var result = security.string.safe('how we shouldn\'t be', options);
             result.should.equal('how-we-shouldnt-be');
         });
 
         it('should convert to lowercase', function () {
-            var result = safeString('This has Upper Case', options);
+            var result = security.string.safe('This has Upper Case', options);
             result.should.equal('this-has-upper-case');
         });
 
         it('should convert multiple dashes into a single dash', function () {
-            var result = safeString('This :) means everything', options);
+            var result = security.string.safe('This :) means everything', options);
             result.should.equal('this-means-everything');
         });
 
         it('should remove trailing dashes from the result', function () {
-            var result = safeString('This.', options);
+            var result = security.string.safe('This.', options);
             result.should.equal('this');
         });
 
         it('should handle pound signs', function () {
-            var result = safeString('WHOOPS! I spent all my £ again!', options);
+            var result = security.string.safe('WHOOPS! I spent all my £ again!', options);
             result.should.equal('whoops-i-spent-all-my-again');
         });
 
         it('should properly handle unicode punctuation conversion', function () {
-            var result = safeString('に間違いがないか、再度確認してください。再読み込みしてください。', options);
+            var result = security.string.safe('に間違いがないか、再度確認してください。再読み込みしてください。', options);
             result.should.equal('nijian-wei-iganaika-zai-du-que-ren-sitekudasai-zai-du-miip-misitekudasai');
         });
 
         it('should not lose or convert dashes if options are passed with truthy importing flag', function () {
             var result,
                 options = {importing: true};
-            result = safeString('-slug-with-starting-ending-and---multiple-dashes-', options);
+            result = security.string.safe('-slug-with-starting-ending-and---multiple-dashes-', options);
             result.should.equal('-slug-with-starting-ending-and---multiple-dashes-');
         });
 
         it('should still remove/convert invalid characters when passed options with truthy importing flag', function () {
             var result,
                 options = {importing: true};
-            result = safeString('-slug-&with-✓-invalid-characters-に\'', options);
+            result = security.string.safe('-slug-&with-✓-invalid-characters-に\'', options);
             result.should.equal('-slug--with--invalid-characters-ni');
         });
     });
