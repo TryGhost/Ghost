@@ -1,6 +1,8 @@
-var fs = require('fs-extra');
+'use strict';
 
-module.exports = function zipFolder(folderToZip, destination, callback) {
+const fs = require('fs-extra');
+
+exports.zipFolder = function zipFolder(folderToZip, destination, callback) {
     var archiver = require('archiver'),
         output = fs.createWriteStream(destination),
         archive = archiver.create('zip', {});
