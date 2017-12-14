@@ -1,4 +1,4 @@
-var socialUrls = require('../../utils/social-urls');
+var social = require('../../lib/social');
 
 function getStructuredData(metaData) {
     var structuredData,
@@ -21,8 +21,8 @@ function getStructuredData(metaData) {
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
-        'article:publisher': metaData.blog.facebook ? socialUrls.facebookUrl(metaData.blog.facebook) : undefined,
-        'article:author': metaData.authorFacebook ? socialUrls.facebookUrl(metaData.authorFacebook) : undefined,
+        'article:publisher': metaData.blog.facebook ? social.urls.facebook(metaData.blog.facebook) : undefined,
+        'article:author': metaData.authorFacebook ? social.urls.facebook(metaData.authorFacebook) : undefined,
         'twitter:card': card,
         'twitter:title': metaData.twitterTitle || metaData.metaTitle,
         'twitter:description': metaData.twitterDescription || metaData.excerpt || metaData.metaDescription,
