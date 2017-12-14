@@ -445,11 +445,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * - but Bookshelf is not in our control for this case
      *
      * @IMPORTANT
-     * Before the new client data get's inserted again, the dates get's retransformed into
+     * Before the new client data get's inserted again, the dates get's re-transformed into
      * proper strings, see `format`.
      */
     sanitizeData: function sanitizeData(data) {
-        var tableName = _.result(this.prototype, 'tableName'), dateMoment;
+        var tableName = _.result(this.prototype, 'tableName'), date;
 
         _.each(data, function (value, key) {
             if (value !== null
@@ -457,16 +457,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 && schema.tables[tableName][key].type === 'dateTime'
                 && typeof value === 'string'
             ) {
-                dateMoment = moment(value);
+                date = new Date(value);
 
                 // CASE: client sends `0000-00-00 00:00:00`
-                if (!dateMoment.isValid()) {
+                if (isNaN(date)) {
                     throw new common.errors.ValidationError({
-                        message: common.i18n.t('errors.models.base.invalidDate', {key: key})
+                        message: common.i18n.t('errors.models.base.invalidDate', {key: key}),
+                        code: 'DATE_INVALID'
                     });
                 }
 
-                data[key] = dateMoment.toDate();
+                data[key] = moment(value).toDate();
             }
         });
 
