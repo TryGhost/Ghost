@@ -1,6 +1,5 @@
-var https = require('https'),
-    url = require('url'),
-    common = require('../lib/common'),
+var common = require('../lib/common'),
+    request = require('../lib/request'),
     urlService = require('../services/url'),
     blogIconUtils = require('../utils/blog-icon'),
     settingsCache = require('./settings/cache'),
@@ -22,26 +21,8 @@ function getSlackSettings() {
     return setting ? setting[0] : {};
 }
 
-function makeRequest(reqOptions, reqPayload) {
-    var req = https.request(reqOptions);
-
-    reqPayload = JSON.stringify(reqPayload);
-
-    req.write(reqPayload);
-    req.on('error', function (err) {
-        common.logging.error(new common.errors.GhostError({
-            err: err,
-            context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-            help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
-        }));
-    });
-
-    req.end();
-}
-
 function ping(post) {
     var message,
-        reqOptions,
         slackData = {},
         slackSettings = getSlackSettings();
 
@@ -73,13 +54,18 @@ function ping(post) {
             username: 'Ghost'
         };
 
-        // fill the options for https request
-        reqOptions = url.parse(slackSettings.url);
-        reqOptions.method = 'POST';
-        reqOptions.headers = {'Content-type': 'application/json'};
-
-        // with all the data we have, we're doing the request now
-        makeRequest(reqOptions, slackData);
+        return request(slackSettings.url, {
+            body: JSON.stringify(slackData),
+            headers: {
+                'Content-type': 'application/json'
+            }
+        }).catch(function (err) {
+            common.logging.error(new common.errors.GhostError({
+                err: err,
+                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+            }));
+        });
     }
 }
 
