@@ -19,6 +19,7 @@ var Promise = require('bluebird'),
     models = require('../../server/models'),
     urlService = require('../../server/services/url'),
     SettingsLib = require('../../server/services/settings'),
+    SettingsCache = require('../../server/services/settings/cache'),
     customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
     permissions = require('../../server/services/permissions'),
     sequence = require('../../server/lib/promise/sequence'),
@@ -502,6 +503,7 @@ toDoList = {
         return fixtures.insertApps();
     },
     settings: function populateSettings() {
+        SettingsCache.shutdown();
         return SettingsLib.init();
     },
     'users:roles': function createUsersWithRoles() {
@@ -872,6 +874,7 @@ startGhost = function startGhost(options) {
                 return knexMigrator.init({only: 2});
             })
             .then(function () {
+                SettingsCache.shutdown();
                 return SettingsLib.init();
             })
             .then(function () {
