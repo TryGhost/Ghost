@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
+    sequence = require('../../../../lib/promise/sequence'),
     models = require('../../../../models'),
-    globalUtils = require('../../../../utils'),
     SubscribersImporter = require('./subscribers'),
     PostsImporter = require('./posts'),
     TagsImporter = require('./tags'),
@@ -65,7 +65,7 @@ DataImporter = {
                 });
             });
 
-            globalUtils.sequence(ops)
+            sequence(ops)
                 .then(function () {
                     results.forEach(function (promise) {
                         if (!promise.isFulfilled()) {
