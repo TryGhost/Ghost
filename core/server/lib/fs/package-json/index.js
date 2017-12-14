@@ -10,8 +10,18 @@
  * These utils facilitate loading, reading, managing etc, packages from the file system.
  */
 
+'use strict';
+
 module.exports = {
-    read: require('./read-packages'),
-    parsePackageJSON: require('./parse-package-json'),
-    filterPackages: require('./filter-packages')
+    get read() {
+        return require('./read');
+    },
+
+    get parse() {
+        return require('./parse');
+    },
+
+    get filter() {
+        return require('./filter');
+    }
 };
