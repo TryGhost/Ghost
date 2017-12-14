@@ -1,4 +1,4 @@
-var config = require('../../config/index'),
+var config = require('../../config'),
     logging = require('ghost-ignition').logging;
 
 module.exports = logging({

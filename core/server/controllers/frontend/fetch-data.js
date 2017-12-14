@@ -5,7 +5,7 @@
 var api = require('../../api'),
     _   = require('lodash'),
     Promise = require('bluebird'),
-    themes = require('../../themes'),
+    themes = require('../../services/themes'),
     queryDefaults,
     defaultPostQuery = {};
 

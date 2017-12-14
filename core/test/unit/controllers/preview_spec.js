@@ -10,7 +10,7 @@ var should = require('should'),
     // Server requires
     api = require('../../../server/api'),
     controllers = require('../../../server/controllers'),
-    themes = require('../../../server/themes'),
+    themes = require('../../../server/services/themes'),
 
     sandbox = sinon.sandbox.create();
 

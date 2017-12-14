@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     getAssetUrl = require('../../../server/data/meta/asset_url'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
     configUtils = require('../../utils/configUtils'),
     config = configUtils.config,
 

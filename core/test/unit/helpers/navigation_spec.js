@@ -1,5 +1,5 @@
 var should = require('should'),
-    hbs = require('../../../server/themes/engine'),
+    hbs = require('../../../server/services/themes/engine'),
 
     configUtils = require('../../utils/configUtils'),
     path = require('path'),

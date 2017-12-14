@@ -1,7 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     getTitle = require('../../../server/data/meta/title'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
     sandbox = sinon.sandbox.create();
 
 describe('getTitle', function () {

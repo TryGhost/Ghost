@@ -3,7 +3,7 @@ var _          = require('lodash'),
     url        = require('url'),
     routeMatch = require('path-match')(),
     api        = require('../../api'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     optionsFormat = '/:options?';
 
 function getOptionsFormat(linkStructure) {

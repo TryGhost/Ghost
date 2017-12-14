@@ -12,7 +12,7 @@
  */
 
 var config = require('../../config'),
-    labs = require('../../utils/labs'),
+    labs = require('../../services/labs'),
 
     // Context patterns, should eventually come from Channel configuration
     privatePattern = new RegExp('^\\/' + config.get('routeKeywords').private + '\\/'),

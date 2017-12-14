@@ -6,7 +6,7 @@ var express = require('express'),
     mw = require('./middleware'),
 
     // API specific
-    auth = require('../../auth'),
+    auth = require('../../services/auth'),
     cors = require('../middleware/api/cors'),
     brute = require('../middleware/brute'),
 

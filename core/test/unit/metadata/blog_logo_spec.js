@@ -1,7 +1,7 @@
 var should        = require('should'),
     getBlogLogo   = require('../../../server/data/meta/blog_logo'),
     sinon         = require('sinon'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox       = sinon.sandbox.create();
 

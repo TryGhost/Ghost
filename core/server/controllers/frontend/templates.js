@@ -6,7 +6,7 @@
 var _ = require('lodash'),
     path = require('path'),
     config = require('../../config'),
-    themes = require('../../themes'),
+    themes = require('../../services/themes'),
     _private = {};
 
 /**
