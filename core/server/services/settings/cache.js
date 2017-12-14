@@ -11,7 +11,15 @@ var debug = require('ghost-ignition').debug('settings:cache'),
      * Contains the JSON version of the model
      * @type {{}} - object of objects
      */
-    settingsCache = {};
+    settingsCache = {},
+    _private = {};
+
+// Local function, only ever used for initialising
+// We deliberately call "set" on each model so that set is a consistent interface
+_private.updateSettingFromModel = function updateSettingFromModel(settingModel) {
+    debug('Auto updating', settingModel.get('key'));
+    module.exports.set(settingModel.get('key'), settingModel.toJSON());
+};
 
 /**
  *
@@ -86,28 +94,25 @@ module.exports = {
      * @return {{}}
      */
     init: function init(settingsCollection) {
-        var self = this;
-
-        // Local function, only ever used for initialising
-        // We deliberately call "set" on each model so that set is a consistent interface
-        function updateSettingFromModel(settingModel) {
-            debug('Auto updating', settingModel.get('key'));
-            self.set(settingModel.get('key'), settingModel.toJSON());
-        }
-
         // First, reset the cache
         settingsCache = {};
 
         // // if we have been passed a collection of settings, use this to populate the cache
         if (settingsCollection && settingsCollection.models) {
-            _.each(settingsCollection.models, updateSettingFromModel);
+            _.each(settingsCollection.models, _private.updateSettingFromModel);
         }
 
         // Bind to events to automatically keep up-to-date
-        common.events.on('settings.edited', updateSettingFromModel);
-        common.events.on('settings.added', updateSettingFromModel);
-        common.events.on('settings.deleted', updateSettingFromModel);
+        common.events.on('settings.edited', _private.updateSettingFromModel);
+        common.events.on('settings.added', _private.updateSettingFromModel);
+        common.events.on('settings.deleted', _private.updateSettingFromModel);
 
         return settingsCache;
+    },
+
+    shutdown: function () {
+        common.events.removeListener('settings.edited', _private.updateSettingFromModel);
+        common.events.removeListener('settings.added', _private.updateSettingFromModel);
+        common.events.removeListener('settings.deleted', _private.updateSettingFromModel);
     }
 };
