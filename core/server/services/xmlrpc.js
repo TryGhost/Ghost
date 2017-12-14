@@ -4,7 +4,7 @@ var _ = require('lodash'),
     config = require('../config'),
     urlService = require('../services/url'),
     common = require('../lib/common'),
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('./settings/cache'),
 
     defaultPostSlugs = [
         'welcome',

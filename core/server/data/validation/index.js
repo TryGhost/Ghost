@@ -5,7 +5,7 @@ var schema = require('../schema').tables,
     assert = require('assert'),
     Promise = require('bluebird'),
     common = require('../../lib/common'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     urlService = require('../../services/url'),
 
     validatePassword,

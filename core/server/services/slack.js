@@ -3,7 +3,7 @@ var https = require('https'),
     common = require('../lib/common'),
     urlService = require('../services/url'),
     blogIconUtils = require('../utils/blog-icon'),
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('./settings/cache'),
     schema = require('../data/schema').checks,
     defaultPostSlugs = [
         'welcome',

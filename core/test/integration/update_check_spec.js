@@ -6,7 +6,7 @@ var should = require('should'),
     configUtils = require('../utils/configUtils'),
     packageInfo = require('../../../package'),
     updateCheck = rewire('../../server/update-check'),
-    settingsCache = require('../../server/settings/cache'),
+    settingsCache = require('../../server/services/settings/cache'),
     NotificationsAPI = require('../../server/api/notifications');
 
 describe('Update Check', function () {

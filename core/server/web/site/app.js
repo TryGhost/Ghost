@@ -30,7 +30,7 @@ var debug = require('ghost-ignition').debug('blog'),
     adminRedirects = require('../middleware/admin-redirects'),
 
     // middleware for themes
-    themeMiddleware = require('../../themes').middleware;
+    themeMiddleware = require('../../services/themes').middleware;
 
 module.exports = function setupSiteApp() {
     debug('Site setup start');
