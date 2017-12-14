@@ -3,14 +3,14 @@ var should = require('should'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    uid = require('../../../server/utils').uid,
     AuthAPI = require('../../../server/api/authentication'),
     mail = require('../../../server/api/mail'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
+    security = require('../../../server/lib/security'),
     context = testUtils.context,
-    Accesstoken,
-    Refreshtoken,
+    accessToken,
+    refreshToken,
     User,
 
     sandbox = sinon.sandbox.create();
@@ -203,8 +203,8 @@ describe('Authentication API', function () {
 
         describe('Completed', function () {
             before(function () {
-                Accesstoken = require('../../../server/models/accesstoken').Accesstoken;
-                Refreshtoken = require('../../../server/models/refreshtoken').Refreshtoken;
+                accessToken = require('../../../server/models/accesstoken').Accesstoken;
+                refreshToken = require('../../../server/models/refreshtoken').Refreshtoken;
                 User = require('../../../server/models/user').User;
             });
 
@@ -369,9 +369,9 @@ describe('Authentication API', function () {
             });
 
             it('should allow an access token to be revoked', function (done) {
-                var id = uid(191);
+                var id = security.identifier.uid(191);
 
-                Accesstoken.add({
+                accessToken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: testUtils.DataGenerator.Content.users[0].id,
@@ -388,7 +388,7 @@ describe('Authentication API', function () {
                     should.exist(response);
                     response.token.should.equal(id);
 
-                    return Accesstoken.findOne({token: id});
+                    return accessToken.findOne({token: id});
                 }).then(function (token) {
                     should.not.exist(token);
 
@@ -436,9 +436,9 @@ describe('Authentication API', function () {
             });
 
             it('should allow a refresh token to be revoked', function (done) {
-                var id = uid(191);
+                var id = security.identifier.uid(191);
 
-                Refreshtoken.add({
+                refreshToken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: testUtils.DataGenerator.Content.users[0].id,
@@ -455,7 +455,7 @@ describe('Authentication API', function () {
                     should.exist(response);
                     response.token.should.equal(id);
 
-                    return Refreshtoken.findOne({token: id});
+                    return refreshToken.findOne({token: id});
                 }).then(function (token) {
                     should.not.exist(token);
 
@@ -464,9 +464,9 @@ describe('Authentication API', function () {
             });
 
             it('should return success when attempting to revoke an invalid token', function (done) {
-                var id = uid(191);
+                var id = security.identifier.uid(191);
 
-                Accesstoken.add({
+                accessToken.add({
                     token: id,
                     expires: Date.now() + 8640000,
                     user_id: testUtils.DataGenerator.Content.users[0].id,

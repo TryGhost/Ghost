@@ -11,5 +11,9 @@ module.exports = {
 
     get string() {
         return require('./string');
+    },
+
+    get identifier() {
+        return require('./identifier');
     }
 };

@@ -1,17 +1,4 @@
-var utils,
-    getRandomInt;
-
-/**
- * Return a random int, used by `utils.uid()`
- *
- * @param {Number} min
- * @param {Number} max
- * @return {Number}
- * @api private
- */
-getRandomInt = function (min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+var utils;
 
 utils = {
     /**
@@ -31,29 +18,6 @@ utils = {
     SIX_MONTH_MS: 15768000000,
     ONE_YEAR_MS: 31536000000,
     // eslint-enable key-spacing */
-
-    /**
-     * Return a unique identifier with the given `len`.
-     *
-     *     utils.uid(10);
-     *     // => "FDaS435D2z"
-     *
-     * @param {Number} len
-     * @return {String}
-     * @api private
-     */
-    uid: function (len) {
-        var buf = [],
-            chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-            charlen = chars.length,
-            i;
-
-        for (i = 0; i < len; i = i + 1) {
-            buf.push(chars[getRandomInt(0, charlen - 1)]);
-        }
-
-        return buf.join('');
-    },
 
     readCSV: require('./read-csv'),
     zipFolder: require('./zip-folder'),
