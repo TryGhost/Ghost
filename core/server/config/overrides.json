@@ -16,8 +16,7 @@
         "internal": [
             "private-blogging",
             "subscribers",
-            "amp",
-            "default-cards"
+            "amp"
         ]
     },
     "routeKeywords": {
