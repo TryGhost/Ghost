@@ -1,0 +1,15 @@
+'use strict';
+
+module.exports = {
+    get url() {
+        return require('./url');
+    },
+
+    get tokens() {
+        return require('./tokens');
+    },
+
+    get string() {
+        return require('./string');
+    }
+};

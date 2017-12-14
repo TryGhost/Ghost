@@ -1,13 +1,13 @@
 var should = require('should'), // jshint ignore:line
     uuid = require('uuid'),
-    utils = require('../../../server/utils');
+    security = require('../../../../server/lib/security');
 
 describe('Utils: tokens', function () {
     it('generate', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token;
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
             expires: expires,
             password: 'password',
@@ -22,14 +22,14 @@ describe('Utils: tokens', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, tokenIsCorrect;
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
             expires: expires,
             password: '12345678',
             dbHash: dbHash
         });
 
-        tokenIsCorrect = utils.tokens.resetToken.compare({
+        tokenIsCorrect = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '12345678'
@@ -42,14 +42,14 @@ describe('Utils: tokens', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, tokenIsCorrect;
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
             expires: expires,
             password: '12345678',
             dbHash: dbHash
         });
 
-        tokenIsCorrect = utils.tokens.resetToken.compare({
+        tokenIsCorrect = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '123456'
@@ -62,14 +62,14 @@ describe('Utils: tokens', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, parts, email = 'test1@ghost.org';
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: email,
             expires: expires,
             password: '12345678',
             dbHash: dbHash
         });
 
-        parts = utils.tokens.resetToken.extract({
+        parts = security.tokens.resetToken.extract({
             token: token
         });
 
@@ -83,14 +83,14 @@ describe('Utils: tokens', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, parts, email = 'test3@ghost.org';
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: email,
             expires: expires,
             password: '$2a$10$t5dY1uRRdjvqfNlXhae3uuc0nuhi.Rd7/K/9JaHHwSkLm6UUa3NsW',
             dbHash: dbHash
         });
 
-        parts = utils.tokens.resetToken.extract({
+        parts = security.tokens.resetToken.extract({
             token: token
         });
 
@@ -105,26 +105,26 @@ describe('Utils: tokens', function () {
             email = 'test1@ghost.org',
             dbHash = uuid.v4(), token, tokenIsCorrect, parts;
 
-        token = utils.tokens.resetToken.generateHash({
+        token = security.tokens.resetToken.generateHash({
             email: email,
             expires: expires,
             password: '12345678',
             dbHash: dbHash
         });
 
-        token = utils.encodeBase64URLsafe(token);
+        token = security.url.encodeBase64(token);
         token = encodeURIComponent(token);
         token = decodeURIComponent(token);
-        token = utils.decodeBase64URLsafe(token);
+        token = security.url.decodeBase64(token);
 
-        parts = utils.tokens.resetToken.extract({
+        parts = security.tokens.resetToken.extract({
             token: token
         });
 
         parts.email.should.eql(email);
         parts.expires.should.eql(expires);
 
-        tokenIsCorrect = utils.tokens.resetToken.compare({
+        tokenIsCorrect = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '12345678'

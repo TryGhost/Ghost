@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     common = require('../lib/common'),
+    security = require('../lib/security'),
     filters = require('../filters'),
-    safeString = require('../utils').safeString,
     handleError = require('./frontend/error'),
     fetchData = require('./frontend/fetch-data'),
     setRequestIsSecure = require('./frontend/secure'),
@@ -13,7 +13,7 @@ var _ = require('lodash'),
 module.exports = function channelController(req, res, next) {
     // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
+        slugParam = req.params.slug ? security.string.safe(req.params.slug) : undefined;
 
     // @TODO: fix this, we shouldn't change the channel object!
     // Set page on postOptions for the query made later
