@@ -106,6 +106,7 @@ describe('Slack', function () {
             urlForSpy = sandbox.spy(urlService.utils, 'urlFor');
 
             settingsCacheStub = sandbox.stub(settingsCache, 'get');
+            sandbox.spy(common.logging, 'error');
 
             makeRequestStub = sandbox.stub();
             slackReset = slack.__set__('request', makeRequestStub);
@@ -168,6 +169,23 @@ describe('Slack', function () {
             requestData.icon_url.should.equal('https://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
+        });
+
+        it('makes a request and errors', function (done) {
+            makeRequestStub.rejects();
+            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+
+            // execute code
+            ping({});
+
+            (function retry() {
+                if (common.logging.error.calledOnce) {
+                    makeRequestStub.calledOnce.should.be.true();
+                    return done();
+                }
+
+                setTimeout(retry, 50);
+            }());
         });
 
         it('does not make a request if post is a page', function () {
