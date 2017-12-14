@@ -16,7 +16,7 @@ var Promise = require('bluebird'),
 /**
  * ## Notification API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 notifications = {
 

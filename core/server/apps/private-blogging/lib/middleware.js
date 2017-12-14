@@ -4,7 +4,7 @@ var fs = require('fs-extra'),
     path = require('path'),
     config = require('../../../config'),
     urlService = require('../../../services/url'),
-    globalUtils = require('../../../utils'),
+    constants = require('../../../lib/constants'),
     common = require('../../../lib/common'),
     settingsCache = require('../../../services/settings/cache'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
@@ -32,7 +32,7 @@ privateBlogging = {
         res.isPrivateBlog = true;
 
         return session({
-            maxAge: globalUtils.ONE_MONTH_MS,
+            maxAge: constants.ONE_MONTH_MS,
             signed: false
         })(req, res, next);
     },
