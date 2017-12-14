@@ -6,7 +6,7 @@ var _ = require('lodash'),
     ghostBookshelf = require('./base'),
     baseUtils = require('./base/utils'),
     common = require('../lib/common'),
-    utils = require('../utils'),
+    security = require('../lib/security'),
     gravatar = require('../utils/gravatar'),
     validation = require('../data/validation'),
     pipeline = require('../lib/promise/pipeline'),
@@ -41,7 +41,7 @@ User = ghostBookshelf.Model.extend({
         var baseDefaults = ghostBookshelf.Model.prototype.defaults.call(this);
 
         return _.merge({
-            password: utils.uid(50)
+            password: security.identifier.uid(50)
         }, baseDefaults);
     },
 
@@ -157,7 +157,7 @@ User = ghostBookshelf.Model.extend({
 
             if (options.importing) {
                 // always set password to a random uid when importing
-                this.set('password', utils.uid(50));
+                this.set('password', security.identifier.uid(50));
 
                 // lock users so they have to follow the password reset flow
                 if (this.get('status') !== 'inactive') {

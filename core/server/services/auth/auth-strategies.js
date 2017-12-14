@@ -1,6 +1,5 @@
 var _ = require('lodash'),
     models = require('../../models'),
-    globalUtils = require('../../utils'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
     strategies;
@@ -116,7 +115,7 @@ strategies = {
                     return models.User.add({
                         email: profile.email,
                         name: profile.name,
-                        password: globalUtils.uid(50),
+                        password: security.identifier.uid(50),
                         roles: [invite.toJSON().role_id],
                         ghost_auth_id: profile.id,
                         ghost_auth_access_token: ghostAuthAccessToken
