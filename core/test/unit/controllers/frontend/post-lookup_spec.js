@@ -4,7 +4,7 @@ var should = require('should'),
     configUtils = require('../../../utils/configUtils'),
     api = require('../../../../server/api'),
     postLookup = require('../../../../server/controllers/frontend/post-lookup'),
-    settingsCache = require('../../../../server/settings/cache'),
+    settingsCache = require('../../../../server/services/settings/cache'),
     sandbox = sinon.sandbox.create();
 
 describe('postLookup', function () {

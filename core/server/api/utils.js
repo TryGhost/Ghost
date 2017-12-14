@@ -3,7 +3,7 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     path = require('path'),
-    permissions = require('../permissions'),
+    permissions = require('../services/permissions'),
     validation = require('../data/validation'),
     common = require('../lib/common'),
     utils;

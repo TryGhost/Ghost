@@ -3,7 +3,7 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    permissions = require('../../../server/permissions'),
+    permissions = require('../../../server/services/permissions'),
     common = require('../../../server/lib/common'),
     apiUtils = require('../../../server/api/utils'),
 

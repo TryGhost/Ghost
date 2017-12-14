@@ -6,7 +6,7 @@ var fs = require('fs-extra'),
     urlService = require('../../../services/url'),
     globalUtils = require('../../../utils'),
     common = require('../../../lib/common'),
-    settingsCache = require('../../../settings/cache'),
+    settingsCache = require('../../../services/settings/cache'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
     privateBlogging;
 

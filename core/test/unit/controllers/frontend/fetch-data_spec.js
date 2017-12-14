@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     // Stuff we are testing
     api = require('../../../../server/api'),
-    themes = require('../../../../server/themes'),
+    themes = require('../../../../server/services/themes'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
     configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();

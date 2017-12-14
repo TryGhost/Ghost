@@ -2,7 +2,7 @@ var _ = require('lodash'),
     url = require('url'),
     common = require('../lib/common'),
     safeString = require('../utils').safeString,
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('../services/settings/cache'),
 
     // Slightly less ugly temporary hack for location of things
     fetchData = require('./frontend/fetch-data'),

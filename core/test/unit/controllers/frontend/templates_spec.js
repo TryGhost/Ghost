@@ -4,7 +4,7 @@ var should = require('should'),
 
 // Stuff we are testing
     templates = rewire('../../../../server/controllers/frontend/templates'),
-    themes = require('../../../../server/themes'),
+    themes = require('../../../../server/services/themes'),
 
     sandbox = sinon.sandbox.create();
 

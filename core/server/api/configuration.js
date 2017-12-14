@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     urlService = require('../services/url'),
     models = require('../models'),
     config = require('../config'),
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('../services/settings/cache'),
     ghostVersion = require('../utils/ghost-version'),
     configuration;
 

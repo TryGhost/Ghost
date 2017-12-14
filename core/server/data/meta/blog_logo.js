@@ -1,5 +1,5 @@
 var urlService = require('../../services/url'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     blogIconUtils = require('../../utils/blog-icon');
 
 function getBlogLogo() {

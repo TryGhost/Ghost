@@ -1,7 +1,5 @@
 var should = require('should'),
-    hbs = require.main.require('core/server/themes/engine'),
-
-    // Stuff we are testing
+    hbs = require.main.require('core/server/services/themes/engine'),
     template = require.main.require('core/server/helpers/template');
 
 describe('Helpers Template', function () {

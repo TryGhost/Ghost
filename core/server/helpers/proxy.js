@@ -1,8 +1,8 @@
 // This file defines everything that helpers "require"
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we do in apps
-var hbs = require('../themes/engine'),
-    settingsCache = require('../settings/cache'),
+var hbs = require('../services/themes/engine'),
+    settingsCache = require('../services/settings/cache'),
     config = require('../config');
 
 // Direct requires:
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     // Labs utils for enabling/disabling helpers
-    labs: require('../utils/labs'),
+    labs: require('../services/labs'),
 
     // System for apps to hook into one day maybe
     filters: require('../filters'),

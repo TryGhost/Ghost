@@ -2,7 +2,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
     configUtils = require('../../utils/configUtils'),
     testUtils = require('../../utils'),
     config = configUtils.config,

@@ -1,5 +1,5 @@
 // Dirty requires!
-var labs = require('../../../../utils/labs');
+var labs = require('../../../../services/labs');
 
 module.exports = function registerHelpers(ghost) {
     ghost.helpers.register('input_email', require('./input_email'));

@@ -11,8 +11,8 @@ var should = require('should'),
     // Server requires
     api = require('../../../server/api'),
     controllers = require('../../../server/controllers'),
-    themes = require('../../../server/themes'),
-    settingsCache = require('../../../server/settings/cache'),
+    themes = require('../../../server/services/themes'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create();
 

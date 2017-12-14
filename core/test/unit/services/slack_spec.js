@@ -12,7 +12,7 @@ var should = require('should'), // jshint ignore:line,
     common = require('../../../server/lib/common'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema').checks,
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create(),
 

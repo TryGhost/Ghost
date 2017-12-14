@@ -1,5 +1,5 @@
 var api = require('../../api'),
-    labs = require('../../utils/labs'),
+    labs = require('../../services/labs'),
     common = require('../../lib/common');
 
 module.exports = function getFrontendClient(req, res, next) {

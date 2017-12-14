@@ -9,7 +9,7 @@ var should = require('should'),
     db = require('../../../server/data/db'),
     models = require('../../../server/models'),
     PostAPI = require('../../../server/api/posts'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create();
 

@@ -1,4 +1,4 @@
-var labsUtil = require('../../utils/labs'),
+var labsUtil = require('../../services/labs'),
     common = require('../../lib/common'),
     labs;
 

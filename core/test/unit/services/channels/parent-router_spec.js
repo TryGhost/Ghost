@@ -6,7 +6,7 @@ var should = require('should'),
     // Stuff we are testing
     channelsParentRouter = require('../../../../server/services/channels'),
     api = require('../../../../server/api'),
-    themes = require('../../../../server/themes'),
+    themes = require('../../../../server/services/themes'),
     sandbox = sinon.sandbox.create();
 
 /**

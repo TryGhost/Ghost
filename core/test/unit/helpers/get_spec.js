@@ -7,7 +7,7 @@ var should = require('should'),
     models = require('../../../server/models'),
     api = require('../../../server/api'),
 
-    labs = require('../../../server/utils/labs'),
+    labs = require('../../../server/services/labs'),
 
     sandbox = sinon.sandbox.create();
 

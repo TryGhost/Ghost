@@ -4,7 +4,7 @@ var fs = require('fs-extra'),
     storage = require('../../adapters/storage'),
     urlService = require('../../services/url'),
     config = require('../../config'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     blogIconUtils = require('../../utils/blog-icon'),
     buildContentResponse,
     content;

@@ -1,5 +1,5 @@
 var config = require('../../config'),
-    escapeExpression = require('../../themes/engine').escapeExpression,
+    escapeExpression = require('../../services/themes/engine').escapeExpression,
     socialUrls = require('../../utils/social-urls'),
     _ = require('lodash');
 

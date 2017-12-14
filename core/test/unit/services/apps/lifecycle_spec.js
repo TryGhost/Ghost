@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
 
-    settingsCache = require('../../../../server/settings/cache'),
+    settingsCache = require('../../../../server/services/settings/cache'),
     api = require('../../../../server/api'),
 
     // Stuff we are testing

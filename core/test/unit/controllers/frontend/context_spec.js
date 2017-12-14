@@ -5,7 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     channelUtils = require('../../../utils/channelUtils'),
     setResponseContext = require('../../../../server/controllers/frontend/context'),
-    labs = require('../../../../server/utils/labs'),
+    labs = require('../../../../server/services/labs'),
 
     sandbox = sinon.sandbox.create();
 
