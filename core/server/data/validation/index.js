@@ -52,6 +52,7 @@ function characterOccurance(stringToTest) {
 }
 
 // extends has been removed in validator >= 5.0.0, need to monkey-patch it back in
+// @TODO: We modify the global validator dependency here! https://github.com/chriso/validator.js/issues/525#issuecomment-213149570
 validator.extend = function (name, fn) {
     validator[name] = function () {
         var args = Array.prototype.slice.call(arguments);
