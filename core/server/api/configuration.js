@@ -6,7 +6,7 @@ var Promise = require('bluebird'),
     models = require('../models'),
     config = require('../config'),
     settingsCache = require('../services/settings/cache'),
-    ghostVersion = require('../utils/ghost-version'),
+    ghostVersion = require('../lib/ghost-version'),
     configuration;
 
 function fetchAvailableTimezones() {
