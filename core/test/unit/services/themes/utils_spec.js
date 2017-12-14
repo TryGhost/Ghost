@@ -2,13 +2,13 @@ var should = require('should'), // jshint ignore:line
     path = require('path'),
     fs = require('fs-extra'),
     extract = require('extract-zip'),
-    zipFolder = require('../../../server/utils/zip-folder');
+    themeUtils = require('../../../../server/services/themes/utils');
 
-describe('Utils: zip-folder', function () {
-    const symlinkPath = path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink'),
-        folderToSymlink = path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'casper'),
-        zipDestination = path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink.zip'),
-        unzipDestination = path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink-unzipped');
+describe('services/themes: theme utils', function () {
+    const symlinkPath = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink'),
+        folderToSymlink = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'casper'),
+        zipDestination = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink.zip'),
+        unzipDestination = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink-unzipped');
 
     before(function () {
         fs.removeSync(symlinkPath);
@@ -25,7 +25,7 @@ describe('Utils: zip-folder', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        zipFolder(symlinkPath, zipDestination, function (err) {
+        themeUtils.zipFolder(symlinkPath, zipDestination, function (err) {
             if (err) {
                 return done(err);
             }
