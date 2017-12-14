@@ -63,7 +63,7 @@ module.exports = {
 
     // Various utils, needs cleaning up / simplifying
     socialUrls: require('../utils/social-urls'),
-    blogIcon: require('../utils/blog-icon'),
+    blogIcon: require('../lib/image/blog-icon'),
     url: require('../services/url').utils,
     localUtils: require('./utils')
 };

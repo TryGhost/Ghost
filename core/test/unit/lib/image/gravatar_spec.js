@@ -1,9 +1,9 @@
 var should = require('should'), // jshint ignore:line
     nock = require('nock'),
-    configUtils = require('../../utils/configUtils'),
-    gravatar = require('../../../server/utils/gravatar');
+    configUtils = require('../../../utils/configUtils'),
+    gravatar = require('../../../../server/lib/image/gravatar');
 
-describe('Utils: gravatar-lookup', function () {
+describe('lib/image: gravatar', function () {
     beforeEach(function () {
         configUtils.set('privacy:useGravatar', true);
     });

@@ -2,7 +2,6 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     getImageDimensions = rewire('../../../../server/data/meta/image-dimensions'),
-    getCachedImageSizeFromUrl = rewire('../../../../server/utils/cached-image-size-from-url'),
     sandbox = sinon.sandbox.create();
 
 describe('getImageDimensions', function () {
@@ -14,7 +13,6 @@ describe('getImageDimensions', function () {
 
     afterEach(function () {
         sandbox.restore();
-        getCachedImageSizeFromUrl.__set__('imageSizeCache', {});
     });
 
     it('should return dimension for images', function (done) {
@@ -41,7 +39,7 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
+        getImageDimensions.__set__('imageLib', {imageSizeCache: sizeOfStub});
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -92,7 +90,7 @@ describe('getImageDimensions', function () {
 
         sizeOfStub.returns({});
 
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
+        getImageDimensions.__set__('imageLib', {imageSizeCache: sizeOfStub});
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -136,7 +134,7 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
+        getImageDimensions.__set__('imageLib', {imageSizeCache: sizeOfStub});
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -188,7 +186,7 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('getCachedImageSizeFromUrl', sizeOfStub);
+        getImageDimensions.__set__('imageLib', {imageSizeCache: sizeOfStub});
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
