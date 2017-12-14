@@ -52,8 +52,8 @@ describe('Mail: Utils', function () {
                     logo: 'http://myblog.com/content/images/blog-logo.jpg',
                     title: 'The Ghost Blog',
                     url: 'http://myblog.com',
-                    twitterUrl: 'http://twitter.com/tryghost',
-                    facebookUrl: 'https://www.facebook.com/ghost',
+                    twitter: 'http://twitter.com/tryghost',
+                    facebook: 'https://www.facebook.com/ghost',
                     unsubscribe: 'http://myblog.com/unsubscribe',
                     post: [
                         {
