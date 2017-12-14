@@ -2,7 +2,6 @@
 // Shared helpers for working with the API
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    path = require('path'),
     permissions = require('../services/permissions'),
     validation = require('../data/validation'),
     common = require('../lib/common'),
@@ -322,18 +321,6 @@ utils = {
         }
 
         return Promise.resolve(object);
-    },
-    checkFileExists: function checkFileExists(fileData) {
-        return !!(fileData.mimetype && fileData.path);
-    },
-    checkFileIsValid: function checkFileIsValid(fileData, types, extensions) {
-        var type = fileData.mimetype,
-            ext = path.extname(fileData.name).toLowerCase();
-
-        if (_.includes(types, type) && _.includes(extensions, ext)) {
-            return true;
-        }
-        return false;
     }
 };
 
