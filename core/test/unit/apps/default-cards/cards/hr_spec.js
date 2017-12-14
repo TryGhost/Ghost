@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    card = require('../../../../server/apps/default-cards/cards/hr'),
+    card = require('../../../../../server/apps/default-cards/cards/hr'),
     SimpleDom = require('simple-dom'),
     opts;
 

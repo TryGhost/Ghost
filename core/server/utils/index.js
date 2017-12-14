@@ -111,9 +111,7 @@ utils = {
     readCSV: require('./read-csv'),
     zipFolder: require('./zip-folder'),
     tokens: require('./tokens'),
-    ghostVersion: require('./ghost-version'),
-    mobiledocConverter: require('./mobiledoc-converter'),
-    markdownConverter: require('./markdown-converter')
+    ghostVersion: require('./ghost-version')
 };
 
 module.exports = utils;

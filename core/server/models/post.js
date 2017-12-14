@@ -11,7 +11,7 @@ var _ = require('lodash'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
-    globalUtils = require('../utils'),
+    defaultCardsApp = require('../apps/default-cards'),
     urlService = require('../services/url'),
     Post,
     Posts;
@@ -216,7 +216,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', globalUtils.mobiledocConverter.render(JSON.parse(mobiledoc)));
+            this.set('html', defaultCardsApp.converters.mobiledocConverter.render(JSON.parse(mobiledoc)));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
