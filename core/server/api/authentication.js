@@ -1,15 +1,15 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     validator = require('validator'),
-    pipeline = require('../lib/promise/pipeline'),
-    mail = require('../services/mail'),
-    globalUtils = require('../utils'),
-    urlService = require('../services/url'),
-    localUtils = require('./utils'),
-    models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
     security = require('../lib/security'),
+    constants = require('../lib/constants'),
+    pipeline = require('../lib/promise/pipeline'),
+    mail = require('../services/mail'),
+    urlService = require('../services/url'),
+    localUtils = require('./utils'),
+    models = require('../models'),
     spamPrevention = require('../web/middleware/api/spam-prevention'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
@@ -169,7 +169,7 @@ authentication = {
                     }
 
                     token = security.tokens.resetToken.generateHash({
-                        expires: Date.now() + globalUtils.ONE_DAY_MS,
+                        expires: Date.now() + constants.ONE_DAY_MS,
                         email: email,
                         dbHash: dbHash,
                         password: user.get('password')

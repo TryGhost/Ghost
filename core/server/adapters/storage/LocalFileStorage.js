@@ -10,7 +10,7 @@ var serveStatic = require('express').static,
     moment = require('moment'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    globalUtils = require('../../utils'),
+    constants = require('../../lib/constants'),
     urlService = require('../../services/url'),
     StorageBase = require('ghost-storage-base');
 
@@ -85,7 +85,7 @@ class LocalFileStore extends StorageBase {
             return serveStatic(
                 self.storagePath,
                 {
-                    maxAge: globalUtils.ONE_YEAR_MS,
+                    maxAge: constants.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: function onEnd() {
                         common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');

@@ -1,8 +1,11 @@
-var ghostBookshelf = require('./base'),
-    globalUtils = require('../utils'),
-    crypto = require('crypto'),
+'use strict';
+
+const crypto = require('crypto'),
     _ = require('lodash'),
-    Invite,
+    constants = require('../lib/constants'),
+    ghostBookshelf = require('./base');
+
+let Invite,
     Invites;
 
 Invite = ghostBookshelf.Model.extend({
@@ -49,7 +52,7 @@ Invite = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union(options.withRelated, options.include);
 
-        data.expires = Date.now() + globalUtils.ONE_WEEK_MS;
+        data.expires = Date.now() + constants.ONE_WEEK_MS;
         data.status = 'pending';
 
         // @TODO: call a util fn?

@@ -1,8 +1,8 @@
-var _             = require('lodash'),
-    uuid          = require('uuid'),
-    ObjectId      = require('bson-objectid'),
-    moment        = require('moment'),
-    globalUtils   = require('../../../server/utils'),
+var _ = require('lodash'),
+    uuid = require('uuid'),
+    ObjectId = require('bson-objectid'),
+    moment = require('moment'),
+    constants = require('../../../server/lib/constants'),
     DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -246,23 +246,23 @@ DataGenerator.Content = {
     roles: [
         {
             id: ObjectId.generate(),
-            name:             'Administrator',
-            description:      'Administrators'
+            name: 'Administrator',
+            description: 'Administrators'
         },
         {
             id: ObjectId.generate(),
-            name:             'Editor',
-            description:      'Editors'
+            name: 'Editor',
+            description: 'Editors'
         },
         {
             id: ObjectId.generate(),
-            name:             'Author',
-            description:      'Authors'
+            name: 'Author',
+            description: 'Authors'
         },
         {
             id: ObjectId.generate(),
-            name:             'Owner',
-            description:      'Blog Owner'
+            name: 'Owner',
+            description: 'Blog Owner'
         }
     ],
 
@@ -507,7 +507,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             token: uuid.v4(),
             client_id: clients[0].id,
-            expires: Date.now() + globalUtils.ONE_DAY_MS
+            expires: Date.now() + constants.ONE_DAY_MS
         });
     }
 
@@ -591,10 +591,26 @@ DataGenerator.forKnex = (function () {
     ];
 
     roles_users = [
-        {id: ObjectId.generate(), user_id: DataGenerator.Content.users[0].id, role_id: DataGenerator.Content.roles[3].id},
-        {id: ObjectId.generate(), user_id: DataGenerator.Content.users[1].id, role_id: DataGenerator.Content.roles[0].id},
-        {id: ObjectId.generate(), user_id: DataGenerator.Content.users[2].id, role_id: DataGenerator.Content.roles[1].id},
-        {id: ObjectId.generate(), user_id: DataGenerator.Content.users[3].id, role_id: DataGenerator.Content.roles[2].id}
+        {
+            id: ObjectId.generate(),
+            user_id: DataGenerator.Content.users[0].id,
+            role_id: DataGenerator.Content.roles[3].id
+        },
+        {
+            id: ObjectId.generate(),
+            user_id: DataGenerator.Content.users[1].id,
+            role_id: DataGenerator.Content.roles[0].id
+        },
+        {
+            id: ObjectId.generate(),
+            user_id: DataGenerator.Content.users[2].id,
+            role_id: DataGenerator.Content.roles[1].id
+        },
+        {
+            id: ObjectId.generate(),
+            user_id: DataGenerator.Content.users[3].id,
+            role_id: DataGenerator.Content.roles[2].id
+        }
     ];
 
     // this is not pretty, but the fastest

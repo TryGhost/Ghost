@@ -2,7 +2,7 @@ var should = require('should'), // jshint ignore:line
     path = require('path'),
     fs = require('fs-extra'),
     extract = require('extract-zip'),
-    utils = require('../../../server/utils');
+    zipFolder = require('../../../server/utils/zip-folder');
 
 describe('Utils: zip-folder', function () {
     const symlinkPath = path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink'),
@@ -25,7 +25,7 @@ describe('Utils: zip-folder', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        utils.zipFolder(symlinkPath, zipDestination, function (err) {
+        zipFolder(symlinkPath, zipDestination, function (err) {
             if (err) {
                 return done(err);
             }

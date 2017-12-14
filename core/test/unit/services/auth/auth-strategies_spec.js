@@ -7,8 +7,7 @@ var should = require('should'),
     Models = require('../../../../server/models'),
     common = require('../../../../server/lib/common'),
     security = require('../../../../server/lib/security'),
-    urlService = require('../../../../server/services/url'),
-    globalUtils = require('../../../../server/utils'),
+    constants = require('../../../../server/lib/constants'),
 
     sandbox = sinon.sandbox.create(),
 
@@ -22,13 +21,13 @@ var should = require('should'),
         user_id: 3,
         token: 'valid-token',
         client_id: 1,
-        expires: Date.now() + globalUtils.ONE_DAY_MS
+        expires: Date.now() + constants.ONE_DAY_MS
     },
     fakeInvalidToken = {
         user_id: 3,
         token: 'expired-token',
         client_id: 1,
-        expires: Date.now() - globalUtils.ONE_DAY_MS
+        expires: Date.now() - constants.ONE_DAY_MS
     };
 
 describe('Auth Strategies', function () {

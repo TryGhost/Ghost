@@ -3,7 +3,7 @@ var Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('auth:utils'),
     models = require('../../models'),
     security = require('../../lib/security'),
-    globalUtils = require('../../utils'),
+    constants = require('../../lib/constants'),
     knex = require('../../data/db').knex,
     _private = {};
 
@@ -27,7 +27,7 @@ _private.decreaseOldAccessTokenExpiry = function decreaseOldAccessTokenExpiry(da
             }
 
             return models.Accesstoken.edit({
-                expires: Date.now() + globalUtils.FIVE_MINUTES_MS
+                expires: Date.now() + constants.FIVE_MINUTES_MS
             }, _.merge({id: oldAccessToken.id}, options));
         });
 };
@@ -56,8 +56,8 @@ _private.handleTokenCreation = function handleTokenCreation(data, options) {
         oldRefreshId = data.oldRefreshId,
         newAccessToken = security.identifier.uid(191),
         newRefreshToken = security.identifier.uid(191),
-        accessExpires = Date.now() + globalUtils.ONE_MONTH_MS,
-        refreshExpires = Date.now() + globalUtils.SIX_MONTH_MS,
+        accessExpires = Date.now() + constants.ONE_MONTH_MS,
+        refreshExpires = Date.now() + constants.SIX_MONTH_MS,
         clientId = data.clientId,
         userId = data.userId;
 
@@ -85,7 +85,7 @@ _private.handleTokenCreation = function handleTokenCreation(data, options) {
             return {
                 access_token: newAccessToken,
                 refresh_token: newRefreshToken,
-                expires_in: globalUtils.ONE_MONTH_S
+                expires_in: constants.ONE_MONTH_S
             };
         });
 };

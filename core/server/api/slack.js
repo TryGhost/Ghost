@@ -7,7 +7,7 @@ var Promise = require('bluebird'),
 /**
  * ## Slack API Method
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  * @typedef Slack
  * @param slack
  */
