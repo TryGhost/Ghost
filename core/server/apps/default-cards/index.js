@@ -1,9 +1,19 @@
-var cards = require('./cards'),
-    atoms = require('./atoms');
+'use strict';
+
 module.exports = {
-    cards: cards,
-    atoms: atoms,
-    activate: function () {
+    activate() {
         // needed by ghost
+    },
+
+    get cards() {
+        return require('./cards');
+    },
+
+    get atoms() {
+        return require('./atoms');
+    },
+
+    get converters() {
+        return require('./converters');
     }
 };
