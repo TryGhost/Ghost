@@ -9,6 +9,7 @@ var Promise = require('bluebird'),
     models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
+    security = require('../lib/security'),
     spamPrevention = require('../web/middleware/api/spam-prevention'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
@@ -167,7 +168,7 @@ authentication = {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
 
-                    token = globalUtils.tokens.resetToken.generateHash({
+                    token = security.tokens.resetToken.generateHash({
                         expires: Date.now() + globalUtils.ONE_DAY_MS,
                         email: email,
                         dbHash: dbHash,
@@ -183,7 +184,7 @@ authentication = {
 
         function sendResetNotification(data) {
             var adminUrl = urlService.utils.urlFor('admin', true),
-                resetUrl = urlService.utils.urlJoin(adminUrl, 'reset', globalUtils.encodeBase64URLsafe(data.resetToken), '/');
+                resetUrl = urlService.utils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
 
             return mail.utils.generateContent({
                 data: {
@@ -251,9 +252,9 @@ authentication = {
         }
 
         function extractTokenParts(options) {
-            options.data.passwordreset[0].token = globalUtils.decodeBase64URLsafe(options.data.passwordreset[0].token);
+            options.data.passwordreset[0].token = security.url.decodeBase64(options.data.passwordreset[0].token);
 
-            tokenParts = globalUtils.tokens.resetToken.extract({
+            tokenParts = security.tokens.resetToken.extract({
                 token: options.data.passwordreset[0].token
             });
 
@@ -295,7 +296,7 @@ authentication = {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
 
-                    tokenIsCorrect = globalUtils.tokens.resetToken.compare({
+                    tokenIsCorrect = security.tokens.resetToken.compare({
                         token: resetToken,
                         dbHash: dbHash,
                         password: user.get('password')
@@ -382,7 +383,7 @@ authentication = {
         }
 
         function processInvitation(invitation) {
-            var data = invitation.invitation[0], inviteToken = globalUtils.decodeBase64URLsafe(data.token);
+            var data = invitation.invitation[0], inviteToken = security.url.decodeBase64(data.token);
 
             return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
                 .then(function (_invite) {

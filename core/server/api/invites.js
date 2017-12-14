@@ -2,11 +2,11 @@ var Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     mail = require('../services/mail'),
-    globalUtils = require('../utils'),
     urlService = require('../services/url'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
+    security = require('../lib/security'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     docName = 'invites',
@@ -107,7 +107,7 @@ invites = {
                         invitedByName: loggedInUser.get('name'),
                         invitedByEmail: loggedInUser.get('email'),
                         // @TODO: resetLink sounds weird
-                        resetLink: urlService.utils.urlJoin(adminUrl, 'signup', globalUtils.encodeBase64URLsafe(invite.get('token')), '/')
+                        resetLink: urlService.utils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
                     };
 
                     return mail.utils.generateContent({data: emailData, template: 'invite-user'});

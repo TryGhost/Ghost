@@ -1,4 +1,6 @@
-var crypto = require('crypto');
+'use strict';
+
+const crypto = require('crypto');
 
 exports.resetToken = {
     generateHash: function generateHash(options) {
