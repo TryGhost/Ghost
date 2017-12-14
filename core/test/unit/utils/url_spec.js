@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
     moment = require('moment-timezone'),
     urlService = require('../../../server/services/url'),
-    globalUtils = require('../../../server/utils'),
+    constants = require('../../../server/lib/constants'),
     settingsCache = require('../../../server/services/settings/cache'),
     configUtils = require('../../utils/configUtils'),
     testUtils = require('../../utils'),
@@ -682,7 +682,7 @@ describe('Url', function () {
             res.redirect = function (code, path) {
                 code.should.equal(301);
                 path.should.eql('my/awesome/path');
-                res.set.calledWith({'Cache-Control': 'public, max-age=' + globalUtils.ONE_YEAR_S}).should.be.true();
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + constants.ONE_YEAR_S}).should.be.true();
 
                 done();
             };
@@ -698,7 +698,7 @@ describe('Url', function () {
             res.redirect = function (code, path) {
                 code.should.equal(301);
                 path.should.eql('/ghost/#/my/awesome/path/');
-                res.set.calledWith({'Cache-Control': 'public, max-age=' + globalUtils.ONE_YEAR_S}).should.be.true();
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + constants.ONE_YEAR_S}).should.be.true();
 
                 done();
             };

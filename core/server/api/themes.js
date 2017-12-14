@@ -14,7 +14,7 @@ var debug = require('ghost-ignition').debug('api:themes'),
 /**
  * ## Themes API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 themes = {
     /**

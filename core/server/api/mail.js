@@ -44,7 +44,7 @@ function sendMail(object) {
 /**
  * ## Mail API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  * @typedef Mail
  * @param mail
  */

@@ -3,7 +3,7 @@ var debug = require('ghost-ignition').debug('admin'),
 
     // App requires
     config = require('../../config'),
-    globalUtils = require('../../utils'),
+    constants = require('../../lib/constants'),
     urlService = require('../../services/url'),
 
     // Middleware
@@ -35,7 +35,7 @@ module.exports = function setupAdminApp() {
     configMaxAge = config.get('caching:admin:maxAge');
     adminApp.use('/assets', serveStatic(
         config.get('paths').clientAssets,
-        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : globalUtils.ONE_YEAR_MS, fallthrough: false}
+        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS, fallthrough: false}
     ));
 
     // Service Worker for offline support
