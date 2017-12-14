@@ -6,7 +6,7 @@ var fs = require('fs-extra'),
     debug = require('ghost-ignition').debug('custom-redirects'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    globalUtils = require('../../utils'),
+    validation = require('../../data/validation'),
     customRedirectsRouter,
     _private = {};
 
@@ -18,7 +18,7 @@ _private.registerRoutes = function registerRoutes() {
     try {
         var redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
         redirects = JSON.parse(redirects);
-        globalUtils.validateRedirects(redirects);
+        validation.validateRedirects(redirects);
 
         _.each(redirects, function (redirect) {
             /**
