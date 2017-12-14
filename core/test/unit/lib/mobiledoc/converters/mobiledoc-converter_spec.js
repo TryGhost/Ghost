@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    converter = require('../../../../../server/apps/default-cards/converters/mobiledoc-converter');
+    converter = require('../../../../../server/lib/mobiledoc/converters/mobiledoc-converter');
 
 describe('Convert mobiledoc to HTML ', function () {
     var mobiledoc = {
