@@ -148,7 +148,7 @@ describe('Request', function () {
 
         requestMock = nock('http://nofilehere.com')
             .get('/files/test.txt')
-            .socketDelay(15)
+            .socketDelay(100)
             .reply(408);
 
         result = request(url, options)
