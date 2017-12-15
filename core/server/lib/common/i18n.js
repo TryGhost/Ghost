@@ -36,14 +36,14 @@ I18n = {
      * @returns {string}
      */
     t: function t(path, bindings) {
-        var string, defaultString, msg;
+        var string, defStr, msg;
 
         currentLocale = I18n.locale();
         if (bindings !== undefined) {
-            defaultString = bindings.defaultString;
+            defStr = bindings.defaultString;
             delete bindings.defaultString;
         }
-        string = I18n.findString(path, defaultString);
+        string = I18n.findString(path, {defaultString: defStr});
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -88,7 +88,7 @@ I18n = {
      * @param {string} msgPath Path with in the JSON language file to desired string (ie: "errors.init.jsNotBuilt")
      * @returns {string}
      */
-    findString: function findString(msgPath, defaultString, opts) {
+    findString: function findString(msgPath, opts) {
         var options = _.merge({log: true}, opts || {}),
             candidateString, matchingString, path;
 
@@ -116,7 +116,7 @@ I18n = {
 
         // jp.value is a jsonpath method. Info:
         // https://www.npmjs.com/package/jsonpath
-        candidateString = jp.value(blos, path) || defaultString;
+        candidateString = jp.value(blos, path) || options.defaultString;
         matchingString = candidateString || {};
 
         if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
@@ -133,7 +133,7 @@ I18n = {
     },
 
     doesTranslationKeyExist: function doesTranslationKeyExist(msgPath) {
-        var translation = I18n.findString(msgPath, '', {log: false});
+        var translation = I18n.findString(msgPath, {log: false});
         return translation !== blos.errors.errors.anErrorOccurred;
     },
 
