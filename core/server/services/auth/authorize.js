@@ -29,7 +29,7 @@ authorize = {
     // Requires the authenticated client to match specific client
     requiresAuthorizedClient: function requiresAuthorizedClient(client) {
         return function doAuthorizedClient(req, res, next) {
-            if (!req.client || !req.client.name || req.client.name !== client) {
+            if (client && (!req.client || !req.client.name || req.client.name !== client)) {
                 return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.noPermissionToAction')}));
             }
 
