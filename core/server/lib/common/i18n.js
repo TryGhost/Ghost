@@ -22,7 +22,8 @@ var supportedLocales = ['en'],
     // The corresponding translation files should be at content/themes/mytheme/locales/es.json, etc.
     currentLocale,
     activeTheme,
-    blos,
+    coreStrings,
+    themeStrings,
     I18n;
 
 I18n = {
@@ -35,14 +36,16 @@ I18n = {
      * @returns {string}
      */
     t: function t(path, bindings) {
-        var string, defStr, msg;
+        var string, defStr, theStr, msg;
 
         currentLocale = I18n.locale();
         if (bindings !== undefined) {
             defStr = bindings.defaultString;
+            theStr = bindings.isThemeString;
             delete bindings.defaultString;
+            delete bindings.isThemeString;
         }
-        string = I18n.findString(path, {defaultString: defStr});
+        string = I18n.findString(path, {defaultString: defStr, isThemeString: theStr});
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -58,7 +61,7 @@ I18n = {
                     logging.error(err.message);
 
                     // fallback
-                    m = new MessageFormat(blos.errors.errors.anErrorOccurred, currentLocale);
+                    m = new MessageFormat(coreStrings.errors.errors.anErrorOccurred, currentLocale);
                     m = msg.format();
                 }
 
@@ -73,7 +76,7 @@ I18n = {
                 logging.error(err.message);
 
                 // fallback
-                msg = new MessageFormat(blos.errors.errors.anErrorOccurred, currentLocale);
+                msg = new MessageFormat(coreStrings.errors.errors.anErrorOccurred, currentLocale);
                 msg = msg.format();
             }
         }
@@ -93,30 +96,36 @@ I18n = {
 
         // no path? no string
         if (_.isEmpty(msgPath) || !_.isString(msgPath)) {
-            chalk.yellow('i18n:t() - received an empty path.');
+            chalk.yellow('i18n.t() - received an empty path.');
             return '';
         }
 
-        // If not in memory, load translations for core and theme.
-        if (blos === undefined) {
+        // If not in memory, load translations for core
+        if (coreStrings === undefined) {
             I18n.init();
-            I18n.loadThemeTranslations();
         }
 
-        // Both jsonpath's dot-notation and bracket-notation start with '$'
-        // E.g.: $.store.book.title or $['store']['book']['title']
-        // The {{t}} translation helper passes here the full jsonpath with $
-        // Backend messages use dot-notation, and the $. is added here
-        if (msgPath.substring(0, 1) !== '$') {
-            path = '$.' + msgPath;
+        if (options.isThemeString) {
+            // If not in memory, load translations for theme
+            if (themeStrings === undefined) {
+                I18n.loadThemeTranslations();
+            }
+            // Both jsonpath's dot-notation and bracket-notation start with '$'
+            // E.g.: $.store.book.title or $['store']['book']['title']
+            // The {{t}} translation helper passes here the full jsonpath with '$'
+            // jp.value is a jsonpath method. Info:
+            // https://www.npmjs.com/package/jsonpath
+            candidateString = jp.value(themeStrings, msgPath) || options.defaultString;
+            matchingString = candidateString || {};
         } else {
-            path = msgPath;
+            // Backend messages use dot-notation, without the '$' prefix
+            matchingString = coreStrings;
+            path = msgPath.split('.');
+            path.forEach(function (key) {
+                // reassign matching object, or set to an empty string if there is no match
+                matchingString = matchingString[key] || {};
+            });
         }
-
-        // jp.value is a jsonpath method. Info:
-        // https://www.npmjs.com/package/jsonpath
-        candidateString = jp.value(blos, path) || options.defaultString;
-        matchingString = candidateString || {};
 
         if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
             if (options.log) {
@@ -125,7 +134,7 @@ I18n = {
                 }));
             }
 
-            matchingString = blos.errors.errors.anErrorOccurred;
+            matchingString = coreStrings.errors.errors.anErrorOccurred;
         }
 
         return matchingString;
@@ -133,7 +142,7 @@ I18n = {
 
     doesTranslationKeyExist: function doesTranslationKeyExist(msgPath) {
         var translation = I18n.findString(msgPath, {log: false});
-        return translation !== blos.errors.errors.anErrorOccurred;
+        return translation !== coreStrings.errors.errors.anErrorOccurred;
     },
 
     /**
@@ -150,13 +159,13 @@ I18n = {
         // The English file is always loaded, until back-end translations are enabled in future versions.
         // Before that, see previous tasks on issue #6526 (error codes or identifiers, error message
         // translation at the point of display...)
-        blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
+        coreStrings = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
 
         // if translation file is not valid, you will see an error
         try {
-            blos = JSON.parse(blos);
+            coreStrings = JSON.parse(coreStrings);
         } catch (err) {
-            blos = undefined;
+            coreStrings = undefined;
             throw err;
         }
 
@@ -188,7 +197,7 @@ I18n = {
     loadThemeTranslations: function loadThemeTranslations() {
         // This function is called during theme initialization, and when switching language or theme.
 
-        var blosTheme, hasBuiltInLocaleData, IntlPolyfill;
+        var hasBuiltInLocaleData, IntlPolyfill;
 
         currentLocale = I18n.locale();
         activeTheme = settingsCache.get('active_theme') || '';
@@ -199,21 +208,21 @@ I18n = {
             // Compatibility with both old themes and i18n-capable themes.
             // Preventing missing files.
             try {
-                blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', currentLocale + '.json'));
+                themeStrings = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', currentLocale + '.json'));
             } catch (err) {
-                blosTheme = undefined;
+                themeStrings = undefined;
                 if (err.code === 'ENOENT') {
                     logging.warn('Theme\'s file locales/' + currentLocale + '.json not found.');
                 } else {
                     throw err;
                 }
             }
-            if (blosTheme === undefined && currentLocale !== 'en') {
+            if (themeStrings === undefined && currentLocale !== 'en') {
                 logging.warn('Falling back to locales/en.json.');
                 try {
-                    blosTheme = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', 'en.json'));
+                    themeStrings = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', 'en.json'));
                 } catch (err) {
-                    blosTheme = undefined;
+                    themeStrings = undefined;
                     if (err.code === 'ENOENT') {
                         logging.warn('Theme\'s file locales/en.json not found.');
                     } else {
@@ -221,16 +230,20 @@ I18n = {
                     }
                 }
             }
-            if (blosTheme !== undefined) {
+            if (themeStrings !== undefined) {
                 // if translation file is not valid, you will see an error
                 try {
-                    blosTheme = JSON.parse(blosTheme);
+                    themeStrings = JSON.parse(themeStrings);
                 } catch (err) {
-                    blosTheme = undefined;
+                    themeStrings = undefined;
                     throw err;
                 }
-                blos = _.merge(blos, blosTheme);
             }
+        }
+
+        if (themeStrings === undefined) {
+            // even if empty, themeStrings must be an object for jp.value
+            themeStrings = {};
         }
 
         if (global.Intl) {

@@ -234,9 +234,6 @@ settings = {
                 // We use keyBy to create an object that uses the 'key' as a key for each setting.
                 var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
                 // Reload translations for theme when saving group of settings that includes language.
-                // There is a previous call to common.i18n.init() to reload the blos object when changing the
-                // language of the theme, needed to prevent side effects from language conflicts.
-                common.i18n.init();
                 common.i18n.loadThemeTranslations();
                 return settingsResult(settingsKeyedJSON, type);
             });

@@ -12,20 +12,18 @@
 
 var proxy = require('./proxy'),
     jp = require('jsonpath'),
-    i18n = proxy.i18n,
-    settingsCache = proxy.settingsCache,
-    bindings = {},
-    path;
+    i18n = proxy.i18n;
 
 module.exports = function t(text, options) {
-    var prop, theme;
+    var bindings = {},
+        path, prop;
     for (prop in options.hash) {
         if (options.hash.hasOwnProperty(prop)) {
             bindings[prop] = options.hash[prop];
         }
     }
     bindings.defaultString = text;
-    theme = settingsCache.get('active_theme') || 'casper';
-    path = jp.stringify(['$', 'theme', theme, text]);
+    bindings.isThemeString = true;
+    path = jp.stringify(['$', text]);
     return i18n.t(path, bindings);
 };

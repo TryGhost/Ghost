@@ -71,37 +71,33 @@ An example with [optional features](#optional-advanced-features) (see the relate
 
 ```
 {
-    "theme": {
-        "worldcasper2": {
-            "Back": "Back",
-            "Newer Posts": "Newer Posts",
-            "of": "of",
-            "Older Posts": "Older Posts",
-            "Page": "Page",
-            "Subscribe": "Subscribe",
-            "Subscribe to": "Subscribe to",
-            "Subscribed!": "Subscribed!",
-            "with the email address": "with the email address",
-            "Your email address": "Your email address",
-            "You've successfully subscribed to": "You've successfully subscribed to",
-            "A collection of posts": "A collection of posts",
-            "A collection of 1 post": "A collection of 1 post",
-            "A collection of % posts": "A collection of % posts",
-            "Get the latest posts delivered right to your inbox": "Get the latest posts delivered right to your inbox",
-            "Latest Posts": "Latest Posts",
-            "No posts": "No posts",
-            "Read More": "Read More",
-            "Read <a href='{url}'>more posts</a> by this author": "Read <a href='{url}'>more posts</a> by this author",
-            "See all % posts": "See all % posts",
-            "Share this": "Share this",
-            "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox": "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox",
-            "Subscribe": "Subscribe",
-            "Subscribe to": "Subscribe to",
-            "youremail@example.com": "youremail@example.com",
-            "1 post": "1 post",
-            "% posts": "% posts"
-        }
-    }
+    "Back": "Back",
+    "Newer Posts": "Newer Posts",
+    "of": "of",
+    "Older Posts": "Older Posts",
+    "Page": "Page",
+    "Subscribe": "Subscribe",
+    "Subscribe to": "Subscribe to",
+    "Subscribed!": "Subscribed!",
+    "with the email address": "with the email address",
+    "Your email address": "Your email address",
+    "You've successfully subscribed to": "You've successfully subscribed to",
+    "A collection of posts": "A collection of posts",
+    "A collection of 1 post": "A collection of 1 post",
+    "A collection of % posts": "A collection of % posts",
+    "Get the latest posts delivered right to your inbox": "Get the latest posts delivered right to your inbox",
+    "Latest Posts": "Latest Posts",
+    "No posts": "No posts",
+    "Read More": "Read More",
+    "Read <a href='{url}'>more posts</a> by this author": "Read <a href='{url}'>more posts</a> by this author",
+    "See all % posts": "See all % posts",
+    "Share this": "Share this",
+    "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox": "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox",
+    "Subscribe": "Subscribe",
+    "Subscribe to": "Subscribe to",
+    "youremail@example.com": "youremail@example.com",
+    "1 post": "1 post",
+    "% posts": "% posts"
 }
 ```
 
@@ -109,37 +105,33 @@ And edited to translate for example into Spanish as *es.json*:
 
 ```
 {
-    "theme": {
-        "worldcasper2": {
-            "Back": "Volver",
-            "Newer Posts": "Artículos Siguientes",
-            "of": "de",
-            "Older Posts": "Artículos Anteriores",
-            "Page": "Página",
-            "Subscribe": "Suscríbete",
-            "Subscribe to": "Suscríbete a",
-            "Subscribed!": "¡Suscrito!",
-            "with the email address": "con el correo electrónico",
-            "Your email address": "Tu correo electrónico",
-            "You've successfully subscribed to": "Te has suscrito con éxito a",
-            "A collection of posts": "Una colección de artículos",
-            "A collection of 1 post": "Una colección de 1 artículo",
-            "A collection of % posts": "Una colección de % artículos",
-            "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
-            "Latest Posts": "Últimos Artículos",
-            "No posts": "No hay artículos",
-            "Read More": "Lee Más",
-            "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
-            "See all % posts": "Ver todos los % artículos",
-            "Share this": "Comparte",
-            "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox": "¡Mantente al día! Recibe todos los últimos y mejores artículos directamente en tu buzón",
-            "Subscribe": "Suscríbete",
-            "Subscribe to": "Suscríbete a",
-            "youremail@example.com": "tucorreo@ejemplo.com",
-            "1 post": "1 artículo",
-            "% posts": "% artículos"
-        }
-    }
+    "Back": "Volver",
+    "Newer Posts": "Artículos Siguientes",
+    "of": "de",
+    "Older Posts": "Artículos Anteriores",
+    "Page": "Página",
+    "Subscribe": "Suscríbete",
+    "Subscribe to": "Suscríbete a",
+    "Subscribed!": "¡Suscrito!",
+    "with the email address": "con el correo electrónico",
+    "Your email address": "Tu correo electrónico",
+    "You've successfully subscribed to": "Te has suscrito con éxito a",
+    "A collection of posts": "Una colección de artículos",
+    "A collection of 1 post": "Una colección de 1 artículo",
+    "A collection of % posts": "Una colección de % artículos",
+    "Get the latest posts delivered right to your inbox": "Recibe los últimos artículos directamente en tu buzón",
+    "Latest Posts": "Últimos Artículos",
+    "No posts": "No hay artículos",
+    "Read More": "Lee Más",
+    "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
+    "See all % posts": "Ver todos los % artículos",
+    "Share this": "Comparte",
+    "Stay up to date! Get all the latest & greatest posts delivered straight to your inbox": "¡Mantente al día! Recibe todos los últimos y mejores artículos directamente en tu buzón",
+    "Subscribe": "Suscríbete",
+    "Subscribe to": "Suscríbete a",
+    "youremail@example.com": "tucorreo@ejemplo.com",
+    "1 post": "1 artículo",
+    "% posts": "% artículos"
 }
 ```
 
@@ -198,31 +190,27 @@ To easily start a first translation file, copy the following into it, which incl
 
 ```
 {
-    "theme": {
-        "": {
-            "Back": "",
-            "Newer Posts": "",
-            "of": "",
-            "Older Posts": "",
-            "Page": "",
-            "Subscribe": "",
-            "Subscribe to": "",
-            "Subscribed!": "",
-            "with the email address": "",
-            "Your email address": "",
-            "You've successfully subscribed to": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": ""
-        }
-    }
+    "Back": "",
+    "Newer Posts": "",
+    "of": "",
+    "Older Posts": "",
+    "Page": "",
+    "Subscribe": "",
+    "Subscribe to": "",
+    "Subscribed!": "",
+    "with the email address": "",
+    "Your email address": "",
+    "You've successfully subscribed to": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": "",
+    "": ""
 }
 ```
 
