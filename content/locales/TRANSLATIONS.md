@@ -348,46 +348,6 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 6 artículos
 ```
 
-### CSS content text override
-
-Although Ghost's i18n system (translation helpers) doesn't apply to CSS, sometimes themes include, in style sheets, content text visible to site visitors.
-
-In this case, you can translate it by a normal CSS override. For example for Casper 1.4 and its translatable clone WorldCasper1:
-
-File *en.css* (that can be used as a model to translate)
-```
-.read-next-story .post:before {
-    content: "Read This Next";
-}
-.read-next-story.prev .post:before {
-    content: "You Might Enjoy";
-}
-```
-
-File *es.css* (optional file to translate CSS content text visible to site visitors)
-```
-.read-next-story .post:before {
-    content: "Sigue leyendo";
-}
-.read-next-story.prev .post:before {
-    content: "Te puede gustar";
-}
-```
-
-And, in theme template *default.hbs*, after the rest of style sheets to override
-
-```
-<link rel="stylesheet" type="text/css" href="{{asset "css/{lang}.css" lang=(lang)}}" />
-```
-
-In this line, the {{asset}} helper can be equivalent in this example to
-
-```
-{{asset "css/es.css"}}
-```
-
-That stylesheet line uses the replacement placeholder `{lang}`, and the nested helper `(lang)`.
-
 ## What's Coming Next
 
 A new Ghost wiki to share translation files through public [gist &#x27B6;](https://help.github.com/articles/about-gists/) links, lists of translatable Ghost themes, and any useful internationalization/i18n resources.
