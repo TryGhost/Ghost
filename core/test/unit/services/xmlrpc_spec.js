@@ -73,15 +73,20 @@ describe('XMLRPC', function () {
     describe('ping()', function () {
         var ping = xmlrpc.__get__('ping');
 
-        it('with a post should execute two pings', function () {
+        it('with a post should execute two pings', function (done) {
             var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
                 ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             ping(testPost);
 
-            ping1.isDone().should.be.true();
-            ping2.isDone().should.be.true();
+            (function retry() {
+                if (ping1.isDone() && ping2.isDone()) {
+                    return done();
+                }
+
+                setTimeout(retry, 100);
+            }());
         });
 
         it('with default post should not execute pings', function () {
@@ -121,25 +126,23 @@ describe('XMLRPC', function () {
             ping2.isDone().should.be.false();
         });
 
-        it('captures && logs errors from requests', function () {
+        it('captures && logs errors from requests', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                httpMock = sandbox.stub(http, 'request').returns({
-                    write: function () {
-                    },
-                    end: function () {
-                    },
-                    on: function (eventName, eventDone) {
-                        eventDone(new Error('ping site is down'));
-                    }
-                }),
+                ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(500),
+                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(400),
                 loggingStub = sandbox.stub(common.logging, 'error');
 
             ping(testPost);
 
-            should.exist(httpMock);
-            // pinglist contains 2 endpoints, both return ping site is down
-            loggingStub.calledTwice.should.eql(true);
-            loggingStub.args[0][0].message.should.eql('ping site is down');
+            (function retry() {
+                if (ping1.isDone() && ping2.isDone()) {
+                    loggingStub.calledTwice.should.eql(true);
+                    loggingStub.args[0][0].message.should.containEql('Response code 500');
+                    return done();
+                }
+
+                setTimeout(retry, 100);
+            }());
         });
     });
 });
