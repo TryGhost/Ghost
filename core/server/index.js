@@ -53,16 +53,12 @@ function init() {
         return settings.init();
     }).then(function () {
         debug('Update settings cache done');
-        // Initialize full internationalization for core
-        // if back-end translations are enabled
+        // Full internationalization for core could be here
+        // in a future version with backend translations
         // (settings for language and theme available here;
-        // full internationalization for theme is done
+        // internationalization for theme is done
         // shortly after, when activating the theme)
-        if (common.i18n.locale() !== 'en' && common.i18n.backendTranslations()) {
-            return common.i18n.init();
-        }
-    }).then(function () {
-        debug('Full i18n done for core');
+        //
         // Initialize the permissions actions and objects
         return permissions.init();
     }).then(function () {

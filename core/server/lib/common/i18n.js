@@ -19,8 +19,7 @@ var supportedLocales = ['en'],
     // Language tags in HTML and XML
     // https://www.w3.org/International/articles/language-tags/
     //
-    // The corresponding translation files should be at e.g. content/locales/es.json
-    // and content/themes/mytheme/locales/es.json, etc.
+    // The corresponding translation files should be at content/themes/mytheme/locales/es.json, etc.
     currentLocale,
     activeTheme,
     blos,
@@ -143,34 +142,16 @@ I18n = {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     init: function init() {
-        // This function is called during Ghost's initialization, and if switching backend language.
-        // For the first initialization call, settings for language and theme are not yet available,
-        // and English default is used for core; settings are available shortly after, allowing
-        // full internationalization of core (in future versions) and theme.
+        // This function is called during Ghost's initialization.
 
         var hasBuiltInLocaleData, IntlPolyfill;
 
-        currentLocale = I18n.locale();
-
-        // Reading translation file for core .js files and keeping its content in memory
-        // (during Ghost's initialization, when English is the language in settings, the second call
-        // to i18n.init() doesn't read again the default English file for core if already in memory).
+        // Reading translation file for messages from core .js files and keeping its content in memory
         // The English file is always loaded, until back-end translations are enabled in future versions.
-        if (currentLocale === 'en' || !I18n.backendTranslations()) {
-            blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
-        } else {
-            // Preventing missing file.
-            try {
-                blos = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'locales', currentLocale + '.json'));
-            } catch (err) {
-                if (err.code === 'ENOENT') {
-                    logging.warn('File content/locales/' + currentLocale + '.json not found. Falling back to default core/server/translations/en.json.');
-                    blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
-                } else {
-                    throw err;
-                }
-            }
-        }
+        // Before that, see previous tasks on issue #6526 (error codes or identifiers, error message
+        // translation at the point of display...)
+        blos = fs.readFileSync(path.join(__dirname, '..', '..', 'translations', 'en.json'));
+
         // if translation file is not valid, you will see an error
         try {
             blos = JSON.parse(blos);
@@ -270,17 +251,6 @@ I18n = {
             // No `Intl`, so use and load the polyfill.
             global.Intl = require('intl');
         }
-    },
-
-    /**
-     * Exporting a switch to enable/disable translations of back-end messages from core .js files.
-     * - true: enabled; optional files like content/locales/es.json, etc. are used when available.
-     * - false: disabled; only the default English file core/server/translations/en.json is used.
-     * Before enabling back-end message translations, see previous tasks on issue #6526
-     * (error codes or identifiers, error message translation at the point of display...)
-     */
-    backendTranslations: function backendTranslations() {
-        return false;
     },
 
     /**
