@@ -7,6 +7,8 @@ var should = require('should'),
     TagAPI = require('../../../server/api/tags'),
     UserAPI = require('../../../server/api/users');
 
+// @TODO: merge with public api routing test
+// @TODO: create a general routing tests to e.g. test limit=all
 describe('Advanced Browse', function () {
     // Initialise the DB just once, the tests are fetch-only
     before(testUtils.teardown);
@@ -905,109 +907,6 @@ describe('Advanced Browse', function () {
 
                     done();
                 }).catch(done);
-            });
-        });
-
-        describe('Handling "page" (staticPages)', function () {
-            it('Will return only published posts by default', function (done) {
-                PostAPI.browse({limit: 'all'}).then(function (result) {
-                    var ids, page;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(18);
-
-                    // All posts should be marked as page 'false'
-                    page = _.map(result.posts, 'page');
-                    page.should.matchEach(false);
-
-                    // Match exact items
-                    ids = _.map(result.posts, 'id');
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[19].id,
-                        testUtils.filterData.data.posts[17].id,
-                        testUtils.filterData.data.posts[16].id,
-                        testUtils.filterData.data.posts[15].id,
-                        testUtils.filterData.data.posts[13].id,
-                        testUtils.filterData.data.posts[12].id,
-                        testUtils.filterData.data.posts[11].id,
-                        testUtils.filterData.data.posts[10].id,
-                        testUtils.filterData.data.posts[9].id,
-                        testUtils.filterData.data.posts[8].id,
-                        testUtils.filterData.data.posts[7].id,
-                        testUtils.filterData.data.posts[6].id,
-                        testUtils.filterData.data.posts[5].id,
-                        testUtils.filterData.data.posts[4].id,
-                        testUtils.filterData.data.posts[3].id,
-                        testUtils.filterData.data.posts[2].id,
-                        testUtils.filterData.data.posts[1].id,
-                        testUtils.filterData.data.posts[0].id
-                    ]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql('all');
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(18);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-
-            // @TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
-            it('Will return only pages when requested', function (done) {
-                PostAPI.browse({filter: 'page:true'}).then(function (result) {
-                    var ids, page;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(2);
-
-                    // All posts should be marked as page 'true'
-                    page = _.map(result.posts, 'page');
-                    page.should.matchEach(true);
-
-                    // Match exact items
-                    ids = _.map(result.posts, 'id');
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[20].id,
-                        testUtils.filterData.data.posts[14].id
-                    ]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(2);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-
-            it.skip('Will NOT return both posts and pages from post API', function (done) {
-                done();
             });
         });
 

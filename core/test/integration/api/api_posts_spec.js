@@ -129,64 +129,6 @@ describe('Post API', function () {
             }).catch(done);
         });
 
-        it('can fetch only static posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: true}).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(1);
-                results.posts[0].page.should.eql(true);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can fetch only static posts with string \'true\'', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: 'true'}).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(1);
-                results.posts[0].page.should.eql(true);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can fetch only static posts with string \'1\'', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: '1'}).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(1);
-                results.posts[0].page.should.eql(true);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can exclude static posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: false}).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(4);
-                results.posts[0].page.should.eql(false);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can fetch static and normal posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: 'all'}).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(5);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can fetch static and normal posts (filter version)', function (done) {
-            PostAPI.browse({context: {user: 1}, filter: 'page:[false,true]'}).then(function (results) {
-                // should be the same as the current staticPages: 'all'
-                should.exist(results.posts);
-                results.posts.length.should.eql(5);
-                done();
-            }).catch(done);
-        });
-
         it('can fetch page 1', function (done) {
             PostAPI.browse({context: {user: 1}, page: 1, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);

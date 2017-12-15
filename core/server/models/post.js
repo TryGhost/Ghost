@@ -452,7 +452,7 @@ Post = ghostBookshelf.Model.extend({
         if (options.staticPages && options.staticPages !== 'all') {
             // convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = _.includes(['true', '1'], options.staticPages);
+                options.staticPages = _.includes(['true', '1', 1], options.staticPages);
             }
             options.where.statements.push({prop: 'page', op: '=', value: options.staticPages});
             delete options.staticPages;

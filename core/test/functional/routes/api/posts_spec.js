@@ -22,6 +22,7 @@ describe('Post API', function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
+                    // fixture posts + test posts
                     return testUtils.doAuth(request, 'posts');
                 })
                 .then(function (token) {
@@ -30,7 +31,7 @@ describe('Post API', function () {
         });
 
         describe('Browse', function () {
-            it('retrieves all published posts only by default', function (done) {
+            it('[default] retrieves limited published posts', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -51,8 +52,20 @@ describe('Post API', function () {
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
-                        _.map(jsonResponse.posts, function (post) {
-                            post.status.should.eql('published');
+                        // only published posts
+                        _.map(jsonResponse.posts, 'page').should.matchEach(false);
+
+                        // default order: published by is newest
+                        jsonResponse.posts[0].slug.should.eql('welcome');
+                        jsonResponse.posts[10].slug.should.eql('html-ipsum');
+
+                        jsonResponse.meta.pagination.should.eql({
+                            page: 1,
+                            limit: 15,
+                            pages: 1,
+                            total: 11,
+                            next: null,
+                            prev: null
                         });
 
                         done();
@@ -90,7 +103,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve all published posts and pages', function (done) {
+            it('[deprecated] can retrieve all published posts and pages', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/?staticPages=all'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -106,6 +119,50 @@ describe('Post API', function () {
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(12);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        done();
+                    });
+            });
+
+            it('can retrieve all published posts and pages (use filter)', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/?filter=page:[true,false]'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(12);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        done();
+                    });
+            });
+
+            it('can retrieve static published pages', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/?filter=page:true'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(1);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
@@ -128,28 +185,6 @@ describe('Post API', function () {
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(15);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        done();
-                    });
-            });
-
-            it('can retrieve just published pages', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?staticPages=true'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(1);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
