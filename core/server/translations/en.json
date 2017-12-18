@@ -278,7 +278,7 @@
             },
             "noPermissionToAction": "You do not have permission to perform this action"
         },
-        "update-check": {
+        "updateCheck": {
             "checkingForUpdatesFailed": {
                 "error": "Checking for updates failed, your blog will continue to function.",
                 "help": "If you get this error repeatedly, please seek help from {url}."
