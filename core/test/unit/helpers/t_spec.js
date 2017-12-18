@@ -4,10 +4,10 @@
 var should = require('should'),
     helpers = require('../../../server/helpers'),
     proxy = require('../../../server/helpers/proxy'),
-    i18n = proxy.i18n,
-    locale = i18n.locale();
+    i18n = proxy.i18n;
 
 describe('{{t}} helper', function () {
+    var locale = i18n.locale();
     if (locale.substring(0, 2) === 'en') {
         it('returns correct frontend text string', function () {
             var expected = 'Page',

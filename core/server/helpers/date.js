@@ -6,11 +6,10 @@
 var proxy = require('./proxy'),
     moment = require('moment-timezone'),
     SafeString = proxy.SafeString,
-    i18n = proxy.i18n,
-    locale;
+    i18n = proxy.i18n;
 
 module.exports = function (date, options) {
-    var timezone, format, timeago, timeNow;
+    var timezone, format, timeago, timeNow, locale;
 
     if (!options && date.hasOwnProperty('hash')) {
         options = date;
