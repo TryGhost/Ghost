@@ -116,16 +116,16 @@ I18n = {
             // jp.value is a jsonpath method. Info:
             // https://www.npmjs.com/package/jsonpath
             candidateString = jp.value(themeStrings, msgPath) || options.defaultString;
-            matchingString = candidateString || {};
         } else {
-            // Backend messages use dot-notation, without the '$' prefix
-            matchingString = coreStrings;
-            path = msgPath.split('.');
-            path.forEach(function (key) {
-                // reassign matching object, or set to an empty string if there is no match
-                matchingString = matchingString[key] || {};
-            });
+            // Backend messages use dot-notation, and the '$.' prefix is added here
+            // While bracket-notation allows any Unicode characters in keys for themes,
+            // dot-notation allows only word characters in keys for backend messages
+            // (that is \w or [A-Za-z0-9_] in RegExp)
+            path = '$.' + msgPath;
+            candidateString = jp.value(coreStrings, path);
         }
+
+        matchingString = candidateString || {};
 
         if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
             if (options.log) {
