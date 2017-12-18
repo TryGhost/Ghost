@@ -46,8 +46,8 @@ function updateCheckError(err) {
         internal
     );
 
-    err.context = common.i18n.t('errors.update-check.checkingForUpdatesFailed.error');
-    err.help = common.i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
+    err.context = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
+    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
     common.logging.error(err);
 }
 
