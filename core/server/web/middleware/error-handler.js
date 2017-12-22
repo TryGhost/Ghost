@@ -70,11 +70,18 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { /
     });
 };
 
-// @TODO: differentiate properly between rendering errors for theme templates, and other situations
-_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
+_private.ErrorFallbackMessage = function ErrorFallbackMessage(err) {
+    return '<h1>' + common.common.common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
+    '<p>' + common.common.i18n.t('errors.errors.encounteredError') + '</p>' +
+    '<pre>' + escapeExpression(err.message || err) + '</pre>' +
+    '<br ><p>' + common.i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
+    err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>';
+};
+
+_private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
     // Skip trying to render an HTML error, and move on to the basic error renderer
-    // I looked at doing this with accepts headers, but the internet is a crazy place...
+    // We do this because customised 404 templates could reference the image that's missing
     // A better long term solution might be to do this based on extension
     if (err.code === 'STATIC_FILE_NOT_FOUND') {
         return next(err);
@@ -89,9 +96,6 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
         statusCode: err.statusCode,
         errorDetails: err.errorDetails || []
     };
-
-    // Context
-    // We don't do context for errors?!
 
     // Template
     templates.setTemplate(req, res);
@@ -118,13 +122,28 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {
 
         // And then try to explain things to the user...
         // Cheat and output the error using handlebars escapeExpression
-        return res.status(500).send(
-            '<h1>' + common.common.common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
-            '<p>' + common.common.i18n.t('errors.errors.encounteredError') + '</p>' +
-            '<pre>' + escapeExpression(err.message || err) + '</pre>' +
-            '<br ><p>' + common.i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
-            err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>'
-        );
+        return res.status(500).send(_private.ErrorFallbackMessage(err));
+    });
+};
+
+_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  // eslint-disable-line no-unused-vars
+    var data = {
+        message: err.message,
+        statusCode: err.statusCode,
+        errorDetails: err.errorDetails || []
+    };
+
+    res.render('error', data, function renderResponse(err, html) {
+        if (!err) {
+            return res.send(html);
+        }
+
+        // re-attach new error e.g. error template has syntax error or misusage
+        req.err = err;
+
+        // And then try to explain things to the user...
+        // Cheat and output the error using handlebars escapeExpression
+        return res.status(500).send(_private.ErrorFallbackMessage(err));
     });
 };
 
@@ -154,6 +173,15 @@ errorHandler.handleHTMLResponse = [
     _private.prepareError,
     // Render the error using HTML format
     _private.HTMLErrorRenderer,
+    // Fall back to basic if HTML is not explicitly accepted
+    _private.BasicErorRenderer
+];
+
+errorHandler.handleThemeResponse = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using theme template
+    _private.ThemeErrorRenderer,
     // Fall back to basic if HTML is not explicitly accepted
     _private.BasicErorRenderer
 ];
