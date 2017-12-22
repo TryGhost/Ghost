@@ -127,7 +127,7 @@ module.exports = function setupSiteApp() {
 
     // ### Error handlers
     siteApp.use(errorHandler.pageNotFound);
-    siteApp.use(errorHandler.handleHTMLResponse);
+    siteApp.use(errorHandler.handleThemeResponse);
 
     debug('Site setup end');
 
