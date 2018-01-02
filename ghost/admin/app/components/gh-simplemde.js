@@ -5,9 +5,6 @@ import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 
-// ember-cli-shims doesn't export Ember.testing
-const {testing} = Ember;
-
 export default TextArea.extend({
 
     // Public attributes
@@ -55,7 +52,7 @@ export default TextArea.extend({
 
         // disable spellchecker when testing so that the exterally loaded plugin
         // doesn't fail
-        if (testing) {
+        if (Ember.testing) { // eslint-disable-line
             editorOptions.spellChecker = false;
         }
 

@@ -3,9 +3,6 @@ import Service from '@ember/service';
 import moment from 'moment';
 import {run} from '@ember/runloop';
 
-// ember-cli-shims doesn't export Ember.testing
-const {testing} = Ember;
-
 const ONE_SECOND = 1000;
 
 // Creates a clock service to run intervals.
@@ -28,7 +25,7 @@ export default Service.extend({
             hour:   now.hours()
         });
 
-        if (!testing) {
+        if (!Ember.testing) { // eslint-disable-line
             run.later(() => {
                 this.tick();
             }, ONE_SECOND);

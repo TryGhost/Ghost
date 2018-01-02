@@ -16,9 +16,6 @@ import {mapBy, reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 
-// ember-cli-shims doesn't export Ember.testing
-const {testing} = Ember;
-
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.hasDirtyAttributes`)
 const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
@@ -66,7 +63,7 @@ export default Mixin.create({
     },
 
     _canAutosave: computed('model.isDraft', function () {
-        return !testing && this.get('model.isDraft');
+        return !Ember.testing && this.get('model.isDraft'); // eslint-disable-line
     }),
 
     // save 3 seconds after the last edit
@@ -90,8 +87,7 @@ export default Mixin.create({
             return;
         }
 
-        // eslint-disable-next-line no-constant-condition
-        while (!testing && true) {
+        while (!Ember.testing && true) { // eslint-disable-line
             yield timeout(TIMEDSAVE_TIMEOUT);
             this.get('autosave').perform();
         }
