@@ -369,7 +369,7 @@
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content">
+                        <div class="settings-menu-content settings-menu-content-codeinjection">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="codeinjectionHead"}}
                                     <label for="codeinjection-head">Post Header <code>\{{ghost_head}}</code></label>

@@ -143,6 +143,10 @@
     line-height: 1.3em;
 }
 
+.settings-menu-content .gh-cm-editor-textarea {
+    min-height: 170px;
+}
+
 .settings-menu-content .nav-list {
     margin-top: 3rem;
 }
