@@ -450,6 +450,8 @@
     overflow: visible;
     padding: 0;
     background: transparent;
+    /* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
+    user-select: none;
 }
 
 .gh-editor .CodeMirror-cursor {
