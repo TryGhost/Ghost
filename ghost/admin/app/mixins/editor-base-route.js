@@ -6,7 +6,8 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import {run} from '@ember/runloop';
 
 let generalShortcuts = {};
-generalShortcuts[`${ctrlOrCmd}+alt+p`] = 'publish';
+
+generalShortcuts[`${ctrlOrCmd}+shift+p`] = 'publish';
 
 export default Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
