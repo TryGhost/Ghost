@@ -132,7 +132,7 @@
 @media (max-width: 500px) {
     .apps-card-meta {
         flex-basis: 70%;
-        padding-right: 20px;
+        padding-right: 10px;
     }
 }
 

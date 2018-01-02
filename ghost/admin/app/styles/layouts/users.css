@@ -85,6 +85,15 @@
     margin-left: 0.75em;
 }
 
+@media (max-width: 500px) {
+    .gh-active-users .apps-configured {
+        flex-wrap: nowrap;
+    }
+
+    .gh-active-users .gh-badge:first-child {
+        margin-left: 0;
+    }
+}
 
 /* Role Labels
 /* ---------------------------------------------------------- */
