@@ -133,7 +133,13 @@ export default Component.extend({
         return newOptions;
     }),
 
-    selectOrCreate(selection, select) {
+    selectOrCreate(selection, select, keyboardEvent) {
+        // allow tokens to be created with spaces
+        if (keyboardEvent && keyboardEvent.code === 'Space') {
+            select.actions.search(`${select.searchText} `);
+            return;
+        }
+
         let suggestion = selection.find((option) => {
             return option.__isSuggestion__;
         });
