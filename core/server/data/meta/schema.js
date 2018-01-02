@@ -71,7 +71,9 @@ function getPostSchema(metaData, data) {
 
     schema = {
         '@context': 'https://schema.org',
+        "@id": metaData.url,
         '@type': 'Article',
+        "title": escapeExpression(metaData.metaTitle),
         publisher: {
             '@type': 'Organization',
             name: escapeExpression(metaData.blog.title),
