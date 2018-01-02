@@ -3,9 +3,6 @@ import Ember from 'ember';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
-const {testing} = Ember;
-const INTERVAL = testing ? 20 : 2000;
-
 export default Component.extend({
     ajax: service(),
     ghostPaths: service(),
@@ -27,8 +24,8 @@ export default Component.extend({
 
             this.set('count', count);
 
-            if (!testing) {
-                yield timeout(INTERVAL);
+            if (!Ember.testing) { // eslint-disable-line
+                yield timeout(2000);
                 this.get('_poll').perform();
             }
         } catch (e) {

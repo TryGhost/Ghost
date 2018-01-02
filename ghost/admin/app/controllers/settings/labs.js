@@ -13,7 +13,6 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
-const {testing} = Ember;
 const {Promise} = RSVP;
 
 const IMPORT_MIME_TYPES =  [
@@ -109,7 +108,7 @@ export default Controller.extend({
         this.set('redirectSuccess', success);
         this.set('redirectFailure', !success);
 
-        yield timeout(testing ? 100 : 5000);
+        yield timeout(Ember.testing ? 100 : 5000); // eslint-disable-line
 
         this.set('redirectSuccess', null);
         this.set('redirectFailure', null);

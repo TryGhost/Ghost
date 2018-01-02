@@ -4,11 +4,6 @@ import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
 
-const {testing} = Ember;
-
-// TODO: reduce when in testing mode
-const SAVE_TIMEOUT_MS = testing ? 0 : 3000;
-
 export default Component.extend({
     post: null,
     isNew: reads('post.isNew'),
@@ -37,7 +32,7 @@ export default Component.extend({
 
     showSavingMessage: task(function* () {
         this.set('_isSaving', true);
-        yield timeout(SAVE_TIMEOUT_MS);
+        yield timeout(Ember.testing ? 0 : 3000); // eslint-disable-line
         this.set('_isSaving', false);
     }).drop()
 });

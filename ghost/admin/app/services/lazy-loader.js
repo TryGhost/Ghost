@@ -3,20 +3,22 @@ import Ember from 'ember';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 
-const {testing} = Ember;
-
 export default Service.extend({
     ajax: service(),
     ghostPaths: service(),
 
     // This is needed so we can disable it in unit tests
-    testing,
+    testing: undefined,
 
     scriptPromises: null,
 
     init() {
         this._super(...arguments);
         this.scriptPromises = {};
+
+        if (this.testing === undefined) {
+            this.testing = Ember.testing; // eslint-disable-line
+        }
     },
 
     loadScript(key, url) {
