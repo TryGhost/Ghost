@@ -276,6 +276,14 @@
     line-height: 22px;
 }
 
+.settings-code-editor textarea {
+    width: 100%;
+    max-width: none;
+    min-height: 300px;
+    line-height: 22px;
+    border: none;
+}
+
 .settings-code-editor .CodeMirror {
     padding: 0;
     border: none;

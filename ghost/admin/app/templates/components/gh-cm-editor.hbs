@@ -1,0 +1,4 @@
+{{!-- display a standard textarea whilst waiting for CodeMirror to load/initialize --}}
+{{#if isInitializingCodemirror}}
+    {{gh-textarea class="gh-cm-editor-textarea" value=_value update=(action 'updateFromTextarea')}}
+{{/if}}

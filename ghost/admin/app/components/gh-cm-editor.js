@@ -6,12 +6,14 @@ import {InvokeActionMixin} from 'ember-invoke-action';
 import {assign} from '@ember/polyfills';
 import {bind, once, scheduleOnce} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 const CmEditorComponent =  Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focus'],
 
     _value: boundOneWay('value'), // make sure a value exists
     isFocused: false,
+    isInitializingCodemirror: true,
 
     // options for the editor
     lineNumbers: true,
@@ -31,23 +33,38 @@ const CmEditorComponent =  Component.extend(InvokeActionMixin, {
 
     didInsertElement() {
         this._super(...arguments);
+        this.get('initCodeMirror').perform();
+    },
 
+    actions: {
+        updateFromTextarea(value) {
+            this.invokeAction('update', value);
+        }
+    },
+
+    initCodeMirror: task(function* () {
         let loader = this.get('lazyLoader');
 
-        RSVP.all([
+        yield RSVP.all([
             loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
             loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
-        ]).then(() => {
-            scheduleOnce('afterRender', this, function () {
-                this._initCodeMirror();
-            });
+        ]);
+
+        scheduleOnce('afterRender', this, function () {
+            this._initCodeMirror();
         });
-    },
+    }),
 
     _initCodeMirror() {
         let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme', 'autofocus');
         assign(options, {value: this.get('_value')});
 
+        let textarea = this.element.querySelector('textarea');
+        if (textarea && textarea === document.activeElement) {
+            options.autofocus = true;
+        }
+
+        this.set('isInitializingCodemirror', false);
         this._editor = new CodeMirror(this.element, options);
 
         // by default CodeMirror will place the cursor at the beginning of the
