@@ -107,6 +107,11 @@ input,
     background: color(var(--lightgrey));
 }
 
+.ember-power-select-multiple-trigger {
+    border-color: color(var(--lightgrey));
+    background: color(var(--lightgrey));
+}
+
 .ember-power-select-dropdown {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
@@ -116,6 +121,18 @@ input,
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
     border-color: color(var(--lightgrey));
     background: color(var(--lightgrey));
+}
+
+.ember-basic-dropdown--opened > .ember-power-select-trigger,
+.ember-power-select-trigger[aria-expanded="true"],
+.ember-power-select-search input {
+    border-color: color(var(--lightgrey));
+}
+
+.ember-power-calendar-weekdays,
+.ember-power-calendar-day--selected,
+.ember-power-calendar-day--selected:not([disabled]):hover {
+    color: #e5eff5;
 }
 
 .gh-nav-list svg {
