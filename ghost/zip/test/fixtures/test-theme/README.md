@@ -57,4 +57,4 @@ You can add your own SVG icons in the same manner.
 
 # Copyright & License
 
-Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2018 Ghost Foundation - Released under the [MIT license](LICENSE).
