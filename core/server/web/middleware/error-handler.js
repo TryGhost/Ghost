@@ -147,7 +147,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  //
     });
 };
 
-_private.BasicErorRenderer = function BasicErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
+_private.BasicErrorRenderer = function BasicErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
     return res.send(res.statusCode + ' ' + err.message);
 };
 
@@ -174,7 +174,7 @@ errorHandler.handleHTMLResponse = [
     // Render the error using HTML format
     _private.HTMLErrorRenderer,
     // Fall back to basic if HTML is not explicitly accepted
-    _private.BasicErorRenderer
+    _private.BasicErrorRenderer
 ];
 
 errorHandler.handleThemeResponse = [
@@ -183,7 +183,7 @@ errorHandler.handleThemeResponse = [
     // Render the error using theme template
     _private.ThemeErrorRenderer,
     // Fall back to basic if HTML is not explicitly accepted
-    _private.BasicErorRenderer
+    _private.BasicErrorRenderer
 ];
 
 module.exports = errorHandler;
