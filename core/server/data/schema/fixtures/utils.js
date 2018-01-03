@@ -4,7 +4,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     models = require('../../../models'),
     baseUtils = require('../../../models/base/utils'),
-    sequence = require('../../../utils/sequence'),
+    sequence = require('../../../lib/promise/sequence'),
     moment = require('moment'),
 
     fixtures = require('./fixtures'),

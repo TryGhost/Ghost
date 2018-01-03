@@ -3,14 +3,12 @@ var should = require('should'),
     testUtils = require('../../utils'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     _ = require('lodash'),
     context = testUtils.context,
     common = require('../../../server/lib/common'),
-    globalUtils = require('../../../server/utils'),
-    apiUtils = require('../../../server/api/utils'),
+    fsLib = require('../../../server/lib/fs'),
     SubscribersAPI = require('../../../server/api/subscribers'),
-
     sandbox = sinon.sandbox.create();
 
 describe('Subscribers API', function () {
@@ -275,16 +273,11 @@ describe('Subscribers API', function () {
     });
 
     describe('Read CSV', function () {
-        var scope = {},
-            stub;
+        var scope = {};
 
         beforeEach(function () {
-            sandbox.stub(fs, 'unlink').callsFake(function (path, cb) {
-                cb();
-            });
-            sandbox.stub(apiUtils, 'checkFileExists').returns(true);
-            stub = sandbox.stub(apiUtils, 'checkFileIsValid').returns(true);
-            sandbox.stub(globalUtils, 'readCSV').callsFake(function () {
+            sandbox.stub(fs, 'unlink').resolves();
+            sandbox.stub(fsLib, 'readCSV').value(function () {
                 if (scope.csvError) {
                     return Promise.reject(new Error('csv'));
                 }

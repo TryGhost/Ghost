@@ -6,12 +6,12 @@ var _ = require('lodash'),
     moment = require('moment'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    sequence = require('../utils/sequence'),
+    sequence = require('../lib/promise/sequence'),
     common = require('../lib/common'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
-    globalUtils = require('../utils'),
+    converters = require('../lib/mobiledoc/converters'),
     urlService = require('../services/url'),
     Post,
     Posts;
@@ -216,7 +216,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         if (mobiledoc) {
-            this.set('html', globalUtils.mobiledocConverter.render(JSON.parse(mobiledoc)));
+            this.set('html', converters.mobiledocConverter.render(JSON.parse(mobiledoc)));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {

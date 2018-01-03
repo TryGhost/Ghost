@@ -1,8 +1,8 @@
 var _ = require('lodash'),
     url = require('url'),
     common = require('../lib/common'),
-    safeString = require('../utils').safeString,
-    settingsCache = require('../settings/cache'),
+    security = require('../lib/security'),
+    settingsCache = require('../services/settings/cache'),
 
     // Slightly less ugly temporary hack for location of things
     fetchData = require('./frontend/fetch-data'),
@@ -47,7 +47,7 @@ function getData(channelOpts) {
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
     var pageParam = req.params.page !== undefined ? req.params.page : 1,
-        slugParam = req.params.slug ? safeString(req.params.slug) : undefined,
+        slugParam = req.params.slug ? security.string.safe(req.params.slug) : undefined,
         // Base URL needs to be the URL for the feed without pagination:
         baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam);
 

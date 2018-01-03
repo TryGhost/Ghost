@@ -6,10 +6,10 @@ var _ = require('lodash'),
     ghostBookshelf = require('./base'),
     baseUtils = require('./base/utils'),
     common = require('../lib/common'),
-    utils = require('../utils'),
-    gravatar = require('../utils/gravatar'),
+    security = require('../lib/security'),
+    imageLib = require('../lib/image'),
+    pipeline = require('../lib/promise/pipeline'),
     validation = require('../data/validation'),
-    pipeline = require('../utils/pipeline'),
 
     bcryptGenSalt = Promise.promisify(bcrypt.genSalt),
     bcryptHash = Promise.promisify(bcrypt.hash),
@@ -41,7 +41,7 @@ User = ghostBookshelf.Model.extend({
         var baseDefaults = ghostBookshelf.Model.prototype.defaults.call(this);
 
         return _.merge({
-            password: utils.uid(50)
+            password: security.identifier.uid(50)
         }, baseDefaults);
     },
 
@@ -107,7 +107,7 @@ User = ghostBookshelf.Model.extend({
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
-                return gravatar.lookup({
+                return imageLib.gravatar.lookup({
                     email: self.get('email')
                 }).then(function (response) {
                     if (response && response.image) {
@@ -157,7 +157,7 @@ User = ghostBookshelf.Model.extend({
 
             if (options.importing) {
                 // always set password to a random uid when importing
-                this.set('password', utils.uid(50));
+                this.set('password', security.identifier.uid(50));
 
                 // lock users so they have to follow the password reset flow
                 if (this.get('status') !== 'inactive') {

@@ -1,7 +1,7 @@
-var fs = require('fs'),
+var fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),
-    parsePackageJson = require('../../utils/packages').parsePackageJSON;
+    packageJSON = require('../../lib/fs/package-json');
 
 function AppPermissions(appPath) {
     this.appPath = appPath;
@@ -45,7 +45,7 @@ AppPermissions.prototype.checkPackageContentsExists = function () {
 
 // Get the contents of the package.json in the appPath root
 AppPermissions.prototype.getPackageContents = function () {
-    return parsePackageJson(this.packagePath);
+    return packageJSON.parse(this.packagePath);
 };
 
 // Default permissions for an App.

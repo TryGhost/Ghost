@@ -1,12 +1,12 @@
-var fs = require('fs'),
+var fs = require('fs-extra'),
     session = require('cookie-session'),
     crypto = require('crypto'),
     path = require('path'),
     config = require('../../../config'),
     urlService = require('../../../services/url'),
-    globalUtils = require('../../../utils'),
+    constants = require('../../../lib/constants'),
     common = require('../../../lib/common'),
-    settingsCache = require('../../../settings/cache'),
+    settingsCache = require('../../../services/settings/cache'),
     privateRoute = '/' + config.get('routeKeywords').private + '/',
     privateBlogging;
 
@@ -32,7 +32,7 @@ privateBlogging = {
         res.isPrivateBlog = true;
 
         return session({
-            maxAge: globalUtils.ONE_MONTH_MS,
+            maxAge: constants.ONE_MONTH_MS,
             signed: false
         })(req, res, next);
     },

@@ -12,7 +12,7 @@ var should = require('should'), // jshint ignore:line,
     common = require('../../../server/lib/common'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema').checks,
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create(),
 
@@ -92,68 +92,6 @@ describe('Slack', function () {
         resetSlack();
     });
 
-    describe('makeRequest()', function () {
-        var makeRequest = slack.__get__('makeRequest');
-
-        it('should make request to slack correctly', function () {
-            // set up
-            var reqOptions,
-                pingSlack;
-
-            // fill the options for https request
-            reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
-            reqOptions.method = 'POST';
-            reqOptions.headers = {'Content-type': 'application/json'};
-
-            pingSlack = nock('https://hooks.slack.com/')
-                .post('/services/a-b-c-d', {
-                    text: 'http://myblog.com/mypost',
-                    icon_url: 'http://myblog.com/someImageurl.jpg',
-                    username: 'Ghost'
-                })
-                .reply(200);
-
-            // execute code
-            makeRequest(reqOptions, {
-                text: 'http://myblog.com/mypost',
-                icon_url: 'http://myblog.com/someImageurl.jpg',
-                username: 'Ghost'
-            });
-
-            // assertions
-            pingSlack.isDone().should.be.true();
-        });
-
-        it('can handle an error response correctly', function () {
-            // set up
-            var reqOptions,
-                pingSlack;
-
-            // fill the options for https request
-            reqOptions = url.parse('https://hooks.slack.com/services/a-b-c-d');
-            reqOptions.method = 'POST';
-            reqOptions.headers = {'Content-type': 'application/json'};
-
-            pingSlack = nock('https://hooks.slack.com/')
-                .post('/services/a-b-c-d', {
-                    text: 'http://myblog.com/mypost',
-                    icon_url: 'http://myblog.com/someImageurl.jpg',
-                    username: 'Ghost'
-                })
-                .replyWithError(404);
-
-            // execute code
-            makeRequest(reqOptions, {
-                text: 'http://myblog.com/mypost',
-                icon_url: 'http://myblog.com/someImageurl.jpg',
-                username: 'Ghost'
-            });
-
-            // assertions
-            pingSlack.isDone().should.be.true();
-        });
-    });
-
     describe('ping()', function () {
         var isPostStub,
             urlForSpy,
@@ -168,9 +106,11 @@ describe('Slack', function () {
             urlForSpy = sandbox.spy(urlService.utils, 'urlFor');
 
             settingsCacheStub = sandbox.stub(settingsCache, 'get');
+            sandbox.spy(common.logging, 'error');
 
             makeRequestStub = sandbox.stub();
-            slackReset = slack.__set__('makeRequest', makeRequestStub);
+            slackReset = slack.__set__('request', makeRequestStub);
+            makeRequestStub.resolves();
 
             configUtils.set('url', 'http://myblog.com');
         });
@@ -180,7 +120,7 @@ describe('Slack', function () {
         });
 
         it('makes a request for a post if url is provided', function () {
-            var requestOptions, requestData;
+            var requestUrl, requestData;
 
             isPostStub.returns(true);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
@@ -194,17 +134,18 @@ describe('Slack', function () {
             urlForSpy.calledTwice.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
 
-            requestOptions = makeRequestStub.firstCall.args[0];
-            requestData = makeRequestStub.firstCall.args[1];
+            requestUrl = makeRequestStub.firstCall.args[0];
+            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
-            requestData.should.have.property('text').and.be.equal('http://myblog.com/');
-            requestData.should.have.property('icon_url').and.be.equal('http://myblog.com/favicon.ico');
-            requestData.should.have.property('username').and.be.equal('Ghost');
+            requestUrl.should.equal(slackObjWithUrl[0].url);
+            requestData.text.should.eql('http://myblog.com/');
+            requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
+            requestData.username.should.equal('Ghost');
+            requestData.unfurl_links.should.equal(true);
         });
 
         it('makes a request for a message if url is provided', function () {
-            var requestOptions, requestData;
+            var requestUrl, requestData;
 
             isPostStub.returns(false);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
@@ -220,13 +161,31 @@ describe('Slack', function () {
             urlForSpy.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
 
-            requestOptions = makeRequestStub.firstCall.args[0];
-            requestData = makeRequestStub.firstCall.args[1];
+            requestUrl = makeRequestStub.firstCall.args[0];
+            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestOptions.should.have.property('href').and.be.equal('https://hooks.slack.com/services/a-b-c-d');
-            requestData.should.have.property('text').and.be.equal('Hi!');
-            requestData.should.have.property('icon_url').and.be.equal('https://myblog.com/favicon.ico');
-            requestData.should.have.property('username').and.be.equal('Ghost');
+            requestUrl.should.equal(slackObjWithUrl[0].url);
+            requestData.text.should.eql('Hi!');
+            requestData.icon_url.should.equal('https://myblog.com/favicon.ico');
+            requestData.username.should.equal('Ghost');
+            requestData.unfurl_links.should.equal(true);
+        });
+
+        it('makes a request and errors', function (done) {
+            makeRequestStub.rejects();
+            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+
+            // execute code
+            ping({});
+
+            (function retry() {
+                if (common.logging.error.calledOnce) {
+                    makeRequestStub.calledOnce.should.be.true();
+                    return done();
+                }
+
+                setTimeout(retry, 50);
+            }());
         });
 
         it('does not make a request if post is a page', function () {

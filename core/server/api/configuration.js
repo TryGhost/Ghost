@@ -5,8 +5,8 @@ var Promise = require('bluebird'),
     urlService = require('../services/url'),
     models = require('../models'),
     config = require('../config'),
-    settingsCache = require('../settings/cache'),
-    ghostVersion = require('../utils/ghost-version'),
+    settingsCache = require('../services/settings/cache'),
+    ghostVersion = require('../lib/ghost-version'),
     configuration;
 
 function fetchAvailableTimezones() {
@@ -39,7 +39,7 @@ function getBaseConfig() {
  *
  * We need to load the client credentials dynamically.
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 configuration = {
 

@@ -14,8 +14,9 @@ JSONHandler = {
         // @TODO: Handle multiple JSON files
         var filePath = files[0].path;
 
-        return Promise.promisify(fs.readFile)(filePath).then(function (fileData) {
+        return fs.readFile(filePath).then(function (fileData) {
             var importData;
+
             try {
                 importData = JSON.parse(fileData);
 

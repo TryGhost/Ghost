@@ -1,8 +1,8 @@
 // # Slug API
 // RESTful API for the Slug resource
 var Promise = require('bluebird'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'slugs',
@@ -12,7 +12,7 @@ var Promise = require('bluebird'),
 /**
  * ## Slugs API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 slugs = {
 
@@ -72,8 +72,8 @@ slugs = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: opts, attrs: attrs}),
-            apiUtils.handlePermissions(docName, 'generate'),
+            localUtils.validate(docName, {opts: opts, attrs: attrs}),
+            localUtils.handlePermissions(docName, 'generate'),
             checkAllowedTypes,
             modelQuery
         ];

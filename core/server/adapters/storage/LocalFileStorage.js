@@ -10,7 +10,7 @@ var serveStatic = require('express').static,
     moment = require('moment'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    globalUtils = require('../../utils'),
+    constants = require('../../lib/constants'),
     urlService = require('../../services/url'),
     StorageBase = require('ghost-storage-base');
 
@@ -39,9 +39,9 @@ class LocalFileStore extends StorageBase {
 
         return this.getUniqueFileName(image, targetDir).then(function (filename) {
             targetFilename = filename;
-            return Promise.promisify(fs.mkdirs)(targetDir);
+            return fs.mkdirs(targetDir);
         }).then(function () {
-            return Promise.promisify(fs.copy)(image.path, targetFilename);
+            return fs.copy(image.path, targetFilename);
         }).then(function () {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
@@ -60,12 +60,13 @@ class LocalFileStore extends StorageBase {
     exists(fileName, targetDir) {
         var filePath = path.join(targetDir || this.storagePath, fileName);
 
-        return new Promise(function (resolve) {
-            fs.stat(filePath, function (err) {
-                var exists = !err;
-                resolve(exists);
+        return fs.stat(filePath)
+            .then(function () {
+                return true;
+            })
+            .catch(function () {
+                return false;
             });
-        });
     }
 
     /**
@@ -84,7 +85,7 @@ class LocalFileStore extends StorageBase {
             return serveStatic(
                 self.storagePath,
                 {
-                    maxAge: globalUtils.ONE_YEAR_MS,
+                    maxAge: constants.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: function onEnd() {
                         common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');

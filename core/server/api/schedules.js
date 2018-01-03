@@ -1,8 +1,8 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
     models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
@@ -34,7 +34,7 @@ exports.publishPost = function publishPost(object, options) {
     options.context = {internal: true};
 
     return pipeline([
-        apiUtils.validate('posts', {opts: apiUtils.idDefaultOptions}),
+        localUtils.validate('posts', {opts: localUtils.idDefaultOptions}),
         function (cleanOptions) {
             cleanOptions.status = 'scheduled';
 
@@ -42,7 +42,7 @@ exports.publishPost = function publishPost(object, options) {
                 cleanOptions.transacting = transacting;
                 cleanOptions.forUpdate = true;
 
-                // CASE: extend allowed options, see api/utils.js
+                // CASE: extend allowed options, see api/zip-folder.js
                 cleanOptions.opts = ['forUpdate', 'transacting'];
 
                 return postsAPI.read(cleanOptions)
@@ -79,7 +79,7 @@ exports.getScheduledPosts = function readPosts(options) {
     options.context = {internal: true};
 
     return pipeline([
-        apiUtils.validate('posts', {opts: ['from', 'to']}),
+        localUtils.validate('posts', {opts: ['from', 'to']}),
         function (cleanOptions) {
             cleanOptions.filter = 'status:scheduled';
             cleanOptions.columns = ['id', 'published_at', 'created_at'];

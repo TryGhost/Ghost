@@ -1,11 +1,12 @@
 var should = require('should'),
     supertest = require('supertest'),
+    Promise = require('bluebird'),
     testUtils = require('../../../utils'),
     path = require('path'),
     sinon = require('sinon'),
     config = require('../../../../../core/server/config'),
     models = require('../../../../../core/server/models'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     _ = require('lodash'),
     ghost = testUtils.startGhost,
     request,
@@ -107,7 +108,7 @@ describe('DB API', function () {
 
     it('export can be triggered by backup client', function (done) {
         backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret;
-        fsStub = sandbox.stub(fs, 'writeFile').yields();
+        fsStub = sandbox.stub(fs, 'writeFile').resolves();
         request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
             .expect(200)
@@ -124,7 +125,7 @@ describe('DB API', function () {
 
     it('export can be triggered by backup client', function (done) {
         schedulerQuery = '?client_id=' + schedulerClient.slug + '&client_secret=' + schedulerClient.secret;
-        fsStub = sandbox.stub(fs, 'writeFile').yields();
+        fsStub = sandbox.stub(fs, 'writeFile').resolves();
         request.post(testUtils.API.getApiQuery('db/backup' + schedulerQuery))
             .expect('Content-Type', /json/)
             .expect(403)

@@ -4,7 +4,7 @@ var debug = require('ghost-ignition').debug('blog'),
 
     // App requires
     config = require('../../config'),
-    globalUtils = require('../../utils'),
+    constants = require('../../lib/constants'),
     storage = require('../../adapters/storage'),
     urlService = require('../../services/url'),
 
@@ -30,7 +30,7 @@ var debug = require('ghost-ignition').debug('blog'),
     adminRedirects = require('../middleware/admin-redirects'),
 
     // middleware for themes
-    themeMiddleware = require('../../themes').middleware;
+    themeMiddleware = require('../../services/themes').middleware;
 
 module.exports = function setupSiteApp() {
     debug('Site setup start');
@@ -52,18 +52,18 @@ module.exports = function setupSiteApp() {
     // Favicon
     siteApp.use(serveFavicon());
     // /public/ghost-sdk.js
-    siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', globalUtils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', constants.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_HOUR_S));
     // Serve sitemap.xsl file
-    siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', globalUtils.ONE_DAY_S));
+    siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 
     // Serve stylesheets for default templates
-    siteApp.use(servePublicFile('public/ghost.css', 'text/css', globalUtils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_HOUR_S));
 
     // Serve images for default templates
-    siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', globalUtils.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/404-ghost.png', 'png', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', constants.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/404-ghost.png', 'png', constants.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
     siteApp.use('/' + urlService.utils.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
@@ -87,7 +87,7 @@ module.exports = function setupSiteApp() {
     debug('Static content done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(servePublicFile('robots.txt', 'text/plain', globalUtils.ONE_HOUR_S));
+    siteApp.use(servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
@@ -127,7 +127,7 @@ module.exports = function setupSiteApp() {
 
     // ### Error handlers
     siteApp.use(errorHandler.pageNotFound);
-    siteApp.use(errorHandler.handleHTMLResponse);
+    siteApp.use(errorHandler.handleThemeResponse);
 
     debug('Site setup end');
 

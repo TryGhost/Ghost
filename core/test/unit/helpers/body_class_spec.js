@@ -1,5 +1,5 @@
 var should = require('should'), // jshint ignore:line
-    themeList = require('../../../server/themes').list,
+    themeList = require('../../../server/services/themes').list,
 
 // Stuff we are testing
     helpers = require('../../../server/helpers');

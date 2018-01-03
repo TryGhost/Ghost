@@ -6,7 +6,7 @@ var express = require('express'),
     mw = require('./middleware'),
 
     // API specific
-    auth = require('../../auth'),
+    auth = require('../../services/auth'),
     cors = require('../middleware/api/cors'),
     brute = require('../middleware/brute'),
 
@@ -158,10 +158,11 @@ module.exports = function apiRoutes() {
     apiRouter.post('/authentication/setup', api.http(api.authentication.setup));
     apiRouter.put('/authentication/setup', mw.authenticatePrivate, api.http(api.authentication.updateSetup));
     apiRouter.get('/authentication/setup', api.http(api.authentication.isSetup));
+
     apiRouter.post('/authentication/token',
+        mw.authenticateClient(),
         brute.globalBlock,
         brute.userLogin,
-        auth.authenticate.authenticateClient,
         auth.oauth.generateAccessToken
     );
 
@@ -176,7 +177,7 @@ module.exports = function apiRoutes() {
         api.http(api.uploads.add)
     );
 
-    apiRouter.post('/db/backup',  mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
+    apiRouter.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
     apiRouter.post('/uploads/icon',
         mw.authenticatePrivate,

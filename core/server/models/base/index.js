@@ -13,10 +13,10 @@ var _ = require('lodash'),
     config = require('../../config'),
     db = require('../../data/db'),
     common = require('../../lib/common'),
+    security = require('../../lib/security'),
     filters = require('../../filters'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
-    globalUtils = require('../../utils'),
     validation = require('../../data/validation'),
     plugins = require('../plugins'),
 
@@ -445,11 +445,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * - but Bookshelf is not in our control for this case
      *
      * @IMPORTANT
-     * Before the new client data get's inserted again, the dates get's retransformed into
+     * Before the new client data get's inserted again, the dates get's re-transformed into
      * proper strings, see `format`.
      */
     sanitizeData: function sanitizeData(data) {
-        var tableName = _.result(this.prototype, 'tableName'), dateMoment;
+        var tableName = _.result(this.prototype, 'tableName'), date;
 
         _.each(data, function (value, key) {
             if (value !== null
@@ -457,16 +457,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 && schema.tables[tableName][key].type === 'dateTime'
                 && typeof value === 'string'
             ) {
-                dateMoment = moment(value);
+                date = new Date(value);
 
                 // CASE: client sends `0000-00-00 00:00:00`
-                if (!dateMoment.isValid()) {
+                if (isNaN(date)) {
                     throw new common.errors.ValidationError({
-                        message: common.i18n.t('errors.models.base.invalidDate', {key: key})
+                        message: common.i18n.t('errors.models.base.invalidDate', {key: key}),
+                        code: 'DATE_INVALID'
                     });
                 }
 
-                data[key] = dateMoment.toDate();
+                data[key] = moment(value).toDate();
             }
         });
 
@@ -739,7 +740,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // the slug may never be longer than the allowed limit of 191 chars, but should also
         // take the counter into count. We reduce a too long slug to 185 so we're always on the
         // safe side, also in terms of checking for existing slugs already.
-        slug = globalUtils.safeString(base, options);
+        slug = security.string.safe(base, options);
 
         if (slug.length > 185) {
             // CASE: don't cut the slug on import
@@ -809,8 +810,52 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         });
 
         return result;
-    }
+    },
 
+    /**
+     * All models which have a visibility property, can use this static helper function.
+     * Filter models by visibility.
+     *
+     * @param {Array|Object} items
+     * @param {Array} visibility
+     * @param {Boolean} [explicit]
+     * @param {Function} [fn]
+     * @returns {Array|Object} filtered items
+     */
+    filterByVisibility: function filterByVisibility(items, visibility, explicit, fn) {
+        var memo = _.isArray(items) ? [] : {};
+
+        if (_.includes(visibility, 'all')) {
+            return fn ? _.map(items, fn) : items;
+        }
+
+        // We don't want to change the structure of what is returned
+        return _.reduce(items, function (items, item, key) {
+            if (!item.visibility && !explicit || _.includes(visibility, item.visibility)) {
+                var newItem = fn ? fn(item) : item;
+                if (_.isArray(items)) {
+                    memo.push(newItem);
+                } else {
+                    memo[key] = newItem;
+                }
+            }
+            return memo;
+        }, memo);
+    },
+
+    /**
+     * Returns an Array of visibility values.
+     * e.g. public,all => ['public, 'all']
+     * @param visibility
+     * @returns {*}
+     */
+    parseVisibilityString: function parseVisibilityString(visibility) {
+        if (!visibility) {
+            return ['public'];
+        }
+
+        return _.map(visibility.split(','), _.trim);
+    }
 });
 
 // Export ghostBookshelf for use elsewhere

@@ -2,9 +2,9 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     crypto = require('crypto'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     common = require('../../../../server/lib/common'),
-    settingsCache = require('../../../../server/settings/cache'),
+    settingsCache = require('../../../../server/services/settings/cache'),
     privateBlogging = require('../../../../server/apps/private-blogging/lib/middleware'),
     sandbox = sinon.sandbox.create();
 

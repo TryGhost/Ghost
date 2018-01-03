@@ -2,9 +2,9 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     db = require('../../data/db'),
     commands = require('../schema').commands,
-    globalUtils = require('../../utils'),
-    ghostVersion = require('../../utils/ghost-version'),
+    ghostVersion = require('../../lib/ghost-version'),
     common = require('../../lib/common'),
+    security = require('../../lib/security'),
     models = require('../../models'),
     excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
     modelOptions = {context: {internal: true}},
@@ -23,7 +23,7 @@ exportFileName = function exportFileName(options) {
 
     return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, options)).then(function (result) {
         if (result) {
-            title = globalUtils.safeString(result.get('value')) + '.';
+            title = security.string.safe(result.get('value')) + '.';
         }
 
         return title + 'ghost.' + datetime + '.json';

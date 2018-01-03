@@ -1,9 +1,9 @@
 // # Roles API
 // RESTful API for the Role resource
 var Promise = require('bluebird'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
-    canThis = require('../permissions').canThis,
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
+    canThis = require('../services/permissions').canThis,
     models = require('../models'),
     docName = 'roles',
 
@@ -12,7 +12,7 @@ var Promise = require('bluebird'),
 /**
  * ## Roles API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 roles = {
     /**
@@ -65,8 +65,8 @@ roles = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: permittedOptions}),
-            apiUtils.handlePermissions(docName, 'browse'),
+            localUtils.validate(docName, {opts: permittedOptions}),
+            localUtils.handlePermissions(docName, 'browse'),
             modelQuery
         ];
 

@@ -1,10 +1,10 @@
 var _ = require('lodash'),
-    http = require('http'),
     xml = require('xml'),
     config = require('../config'),
     urlService = require('../services/url'),
     common = require('../lib/common'),
-    settingsCache = require('../settings/cache'),
+    request = require('../lib/request'),
+    settingsCache = require('./settings/cache'),
 
     defaultPostSlugs = [
         'welcome',
@@ -16,13 +16,14 @@ var _ = require('lodash'),
         'themes'
     ],
     // ToDo: Make this configurable
-    pingList = [{
-        host: 'blogsearch.google.com',
-        path: '/ping/RPC2'
-    }, {
-        host: 'rpc.pingomatic.com',
-        path: '/'
-    }];
+    pingList = [
+        {
+            url: 'blogsearch.google.com/ping/RPC2'
+        },
+        {
+            url: 'rpc.pingomatic.com'
+        }
+    ];
 
 function ping(post) {
     var pingXML,
@@ -65,25 +66,19 @@ function ping(post) {
     // Ping each of the defined services.
     _.each(pingList, function (pingHost) {
         var options = {
-                hostname: pingHost.host,
-                path: pingHost.path,
-                method: 'POST'
-            },
-            req;
+            body: pingXML,
+            timeout: 2 * 1000
+        };
 
-        req = http.request(options);
-        req.write(pingXML);
-
-        req.on('error', function handleError(err) {
-            common.logging.error(new common.errors.GhostError({
-                err: err,
-                message: err.message,
-                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
-            }));
-        });
-
-        req.end();
+        request(pingHost.url, options)
+            .catch(function (err) {
+                common.logging.error(new common.errors.GhostError({
+                    err: err,
+                    message: err.message,
+                    context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                    help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+                }));
+            });
     });
 }
 

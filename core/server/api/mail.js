@@ -2,11 +2,11 @@
 // API for sending Mail
 
 var Promise = require('bluebird'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
-    mail = require('../mail'),
+    mail = require('../services/mail'),
     notificationsAPI = require('./notifications'),
     docName = 'mail',
     mailer,
@@ -44,7 +44,7 @@ function sendMail(object) {
 /**
  * ## Mail API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  * @typedef Mail
  * @param mail
  */
@@ -85,7 +85,7 @@ apiMail = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'send'),
+            localUtils.handlePermissions(docName, 'send'),
             send,
             formatResponse
         ];

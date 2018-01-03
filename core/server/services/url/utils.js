@@ -1,11 +1,13 @@
+'use strict';
+
 // Contains all path information to be used throughout the codebase.
 // Assumes that config.url is set, and is valid
-
-var moment = require('moment-timezone'),
+const moment = require('moment-timezone'),
     _ = require('lodash'),
     url = require('url'),
-    config = require('../../config/index'),
-    settingsCache = require('../../settings/cache'),
+    cheerio = require('cheerio'),
+    config = require('../../config'),
+    settingsCache = require('../settings/cache'),
     // @TODO: unify this with the path in server/app.js
     API_PATH = '/ghost/api/v0.1/',
     STATIC_IMAGE_URL_PREFIX = 'content/images';
@@ -365,6 +367,64 @@ function redirectToAdmin(status, res, adminPath) {
     return res.redirect(redirectUrl);
 }
 
+/**
+ * Make absolute URLs
+ * @param {string} html
+ * @param {string} siteUrl (blog URL)
+ * @param {string} itemUrl (URL of current context)
+ * @returns {object} htmlContent
+ * @description Takes html, blog url and item url and converts relative url into
+ * absolute urls. Returns an object. The html string can be accessed by calling `html()` on
+ * the variable that takes the result of this function
+ */
+function makeAbsoluteUrls(html, siteUrl, itemUrl) {
+    var htmlContent = cheerio.load(html, {decodeEntities: false});
+
+    // convert relative resource urls to absolute
+    ['href', 'src'].forEach(function forEach(attributeName) {
+        htmlContent('[' + attributeName + ']').each(function each(ix, el) {
+            var baseUrl,
+                attributeValue,
+                parsed;
+
+            el = htmlContent(el);
+
+            attributeValue = el.attr(attributeName);
+
+            // if URL is absolute move on to the next element
+            try {
+                parsed = url.parse(attributeValue);
+
+                if (parsed.protocol) {
+                    return;
+                }
+
+                // Do not convert protocol relative URLs
+                if (attributeValue.lastIndexOf('//', 0) === 0) {
+                    return;
+                }
+            } catch (e) {
+                return;
+            }
+
+            // CASE: don't convert internal links
+            if (attributeValue[0] === '#') {
+                return;
+            }
+            // compose an absolute URL
+
+            // if the relative URL begins with a '/' use the blog URL (including sub-directory)
+            // as the base URL, otherwise use the post's URL.
+            baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
+            attributeValue = urlJoin(baseUrl, attributeValue);
+            el.attr(attributeName, attributeValue);
+        });
+    });
+
+    return htmlContent;
+}
+
+module.exports.makeAbsoluteUrls = makeAbsoluteUrls;
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
 module.exports.urlJoin = urlJoin;

@@ -1,9 +1,9 @@
-var _       = require('lodash'),
+var _ = require('lodash'),
     express = require('express'),
-    path    = require('path'),
-    config  = require('../../config'),
-    themeUtils = require('../../themes'),
-    utils   = require('../../utils');
+    path = require('path'),
+    config = require('../../config'),
+    constants = require('../../lib/constants'),
+    themeUtils = require('../../services/themes');
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
@@ -25,7 +25,7 @@ function forwardToExpressStatic(req, res, next) {
     var configMaxAge = config.get('caching:theme:maxAge');
 
     express.static(themeUtils.getActive().path,
-        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : utils.ONE_YEAR_MS}
+        {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS}
     )(req, res, next);
 }
 

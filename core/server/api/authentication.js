@@ -1,14 +1,15 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     validator = require('validator'),
-    pipeline = require('../utils/pipeline'),
-    mail = require('./../mail'),
-    globalUtils = require('../utils'),
-    urlService = require('../services/url'),
-    apiUtils = require('./utils'),
-    models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
+    security = require('../lib/security'),
+    constants = require('../lib/constants'),
+    pipeline = require('../lib/promise/pipeline'),
+    mail = require('../services/mail'),
+    urlService = require('../services/url'),
+    localUtils = require('./utils'),
+    models = require('../models'),
     spamPrevention = require('../web/middleware/api/spam-prevention'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
@@ -59,7 +60,7 @@ function setupTasks(setupData) {
     var tasks;
 
     function validateData(setupData) {
-        return apiUtils.checkObject(setupData, 'setup').then(function then(checked) {
+        return localUtils.checkObject(setupData, 'setup').then(function then(checked) {
             var data = checked.setup[0];
 
             return {
@@ -139,7 +140,7 @@ authentication = {
         var tasks;
 
         function validateRequest(object) {
-            return apiUtils.checkObject(object, 'passwordreset').then(function then(data) {
+            return localUtils.checkObject(object, 'passwordreset').then(function then(data) {
                 var email = data.passwordreset[0].email;
 
                 if (typeof email !== 'string' || !validator.isEmail(email)) {
@@ -167,8 +168,8 @@ authentication = {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
 
-                    token = globalUtils.tokens.resetToken.generateHash({
-                        expires: Date.now() + globalUtils.ONE_DAY_MS,
+                    token = security.tokens.resetToken.generateHash({
+                        expires: Date.now() + constants.ONE_DAY_MS,
                         email: email,
                         dbHash: dbHash,
                         password: user.get('password')
@@ -183,7 +184,7 @@ authentication = {
 
         function sendResetNotification(data) {
             var adminUrl = urlService.utils.urlFor('admin', true),
-                resetUrl = urlService.utils.urlJoin(adminUrl, 'reset', globalUtils.encodeBase64URLsafe(data.resetToken), '/');
+                resetUrl = urlService.utils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
 
             return mail.utils.generateContent({
                 data: {
@@ -236,7 +237,7 @@ authentication = {
         var tasks, tokenIsCorrect, dbHash, options = {context: {internal: true}}, tokenParts;
 
         function validateRequest() {
-            return apiUtils.validate('passwordreset')(object, options)
+            return localUtils.validate('passwordreset')(object, options)
                 .then(function (options) {
                     var data = options.data.passwordreset[0];
 
@@ -251,9 +252,9 @@ authentication = {
         }
 
         function extractTokenParts(options) {
-            options.data.passwordreset[0].token = globalUtils.decodeBase64URLsafe(options.data.passwordreset[0].token);
+            options.data.passwordreset[0].token = security.url.decodeBase64(options.data.passwordreset[0].token);
 
-            tokenParts = globalUtils.tokens.resetToken.extract({
+            tokenParts = security.tokens.resetToken.extract({
                 token: options.data.passwordreset[0].token
             });
 
@@ -295,7 +296,7 @@ authentication = {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
 
-                    tokenIsCorrect = globalUtils.tokens.resetToken.compare({
+                    tokenIsCorrect = security.tokens.resetToken.compare({
                         token: resetToken,
                         dbHash: dbHash,
                         password: user.get('password')
@@ -359,7 +360,7 @@ authentication = {
         var tasks, invite, options = {context: {internal: true}};
 
         function validateInvitation(invitation) {
-            return apiUtils.checkObject(invitation, 'invitation')
+            return localUtils.checkObject(invitation, 'invitation')
                 .then(function () {
                     if (!invitation.invitation[0].token) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noTokenProvided')}));
@@ -382,7 +383,7 @@ authentication = {
         }
 
         function processInvitation(invitation) {
-            var data = invitation.invitation[0], inviteToken = globalUtils.decodeBase64URLsafe(data.token);
+            var data = invitation.invitation[0], inviteToken = security.url.decodeBase64(data.token);
 
             return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
                 .then(function (_invite) {

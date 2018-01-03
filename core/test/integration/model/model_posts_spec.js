@@ -4,8 +4,8 @@ var should = require('should'),
     moment = require('moment'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    sequence = require('../../../server/utils/sequence'),
-    settingsCache = require('../../../server/settings/cache'),
+    sequence = require('../../../server/lib/promise/sequence'),
+    settingsCache = require('../../../server/services/settings/cache'),
     ghostBookshelf = require('../../../server/models/base'),
     PostModel = require('../../../server/models/post').Post,
     TagModel = require('../../../server/models/tag').Tag,
@@ -589,13 +589,15 @@ describe('Post Model', function () {
                     post = results.toJSON();
                     post.status.should.equal('draft');
 
+                    // @TODO: add unit test for valid and invalid formats
                     return PostModel.edit({
                         status: 'scheduled',
-                        published_at: '328432423'
+                        published_at: '0000-00-00 00:00:00'
                     }, _.extend({}, context, {id: post.id}));
                 }).catch(function (err) {
                     should.exist(err);
                     (err instanceof common.errors.ValidationError).should.eql(true);
+                    err.code.should.eql('DATE_INVALID');
                     done();
                 });
             });

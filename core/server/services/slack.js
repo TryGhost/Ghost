@@ -1,9 +1,8 @@
-var https = require('https'),
-    url = require('url'),
-    common = require('../lib/common'),
+var common = require('../lib/common'),
+    request = require('../lib/request'),
+    imageLib = require('../lib/image'),
     urlService = require('../services/url'),
-    blogIconUtils = require('../utils/blog-icon'),
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('./settings/cache'),
     schema = require('../data/schema').checks,
     defaultPostSlugs = [
         'welcome',
@@ -22,26 +21,8 @@ function getSlackSettings() {
     return setting ? setting[0] : {};
 }
 
-function makeRequest(reqOptions, reqPayload) {
-    var req = https.request(reqOptions);
-
-    reqPayload = JSON.stringify(reqPayload);
-
-    req.write(reqPayload);
-    req.on('error', function (err) {
-        common.logging.error(new common.errors.GhostError({
-            err: err,
-            context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-            help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
-        }));
-    });
-
-    req.end();
-}
-
 function ping(post) {
     var message,
-        reqOptions,
         slackData = {},
         slackSettings = getSlackSettings();
 
@@ -69,17 +50,22 @@ function ping(post) {
         slackData = {
             text: message,
             unfurl_links: true,
-            icon_url: blogIconUtils.getIconUrl(true),
+            icon_url: imageLib.blogIcon.getIconUrl(true),
             username: 'Ghost'
         };
 
-        // fill the options for https request
-        reqOptions = url.parse(slackSettings.url);
-        reqOptions.method = 'POST';
-        reqOptions.headers = {'Content-type': 'application/json'};
-
-        // with all the data we have, we're doing the request now
-        makeRequest(reqOptions, slackData);
+        return request(slackSettings.url, {
+            body: JSON.stringify(slackData),
+            headers: {
+                'Content-type': 'application/json'
+            }
+        }).catch(function (err) {
+            common.logging.error(new common.errors.GhostError({
+                err: err,
+                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'http://docs.ghost.org'})
+            }));
+        });
     }
 }
 
@@ -95,7 +81,7 @@ function listener(model, options) {
 
 function testPing() {
     ping({
-        message: 'Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'
+        message: 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!'
     });
 }
 

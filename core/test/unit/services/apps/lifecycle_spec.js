@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
 
-    settingsCache = require('../../../../server/settings/cache'),
+    settingsCache = require('../../../../server/services/settings/cache'),
     api = require('../../../../server/api'),
 
     // Stuff we are testing
@@ -47,13 +47,12 @@ describe('Apps', function () {
                 settingsEditStub.callCount.should.eql(0);
 
                 // Test that activate is called 4 times, and install 0 time
-                loaderActivateStub.callCount.should.eql(4);
+                loaderActivateStub.callCount.should.eql(3);
                 loaderInstallStub.callCount.should.eql(0);
 
                 // Test that the 4 internal apps are loaded as expected
-                availableApps.should.be.an.Array().with.lengthOf(4);
+                availableApps.should.be.an.Array().with.lengthOf(3);
                 availableApps.should.containEql('amp');
-                availableApps.should.containEql('default-cards');
                 availableApps.should.containEql('private-blogging');
                 availableApps.should.containEql('subscribers');
 
@@ -81,13 +80,12 @@ describe('Apps', function () {
                 settingsEditStub.firstCall.args[0].settings[0].value.should.eql(['testA', 'testB']);
 
                 // Test that activate is called 6 times, and install only 1 time
-                loaderActivateStub.callCount.should.eql(6);
+                loaderActivateStub.callCount.should.eql(5);
                 loaderInstallStub.callCount.should.eql(1);
 
                 // Test that the 4 internal apps are loaded as expected
-                availableApps.should.be.an.Array().with.lengthOf(6);
+                availableApps.should.be.an.Array().with.lengthOf(5);
                 availableApps.should.containEql('amp');
-                availableApps.should.containEql('default-cards');
                 availableApps.should.containEql('private-blogging');
                 availableApps.should.containEql('subscribers');
                 availableApps.should.containEql('testA');

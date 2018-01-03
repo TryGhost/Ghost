@@ -6,7 +6,7 @@ var should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
-    imageSize = require('../../../server/utils/image-size'),
+    imageLib = require('../../../server/lib/image'),
     proxy = require('../../../server/helpers/proxy'),
     settingsCache = proxy.settingsCache,
     api = proxy.api,
@@ -26,7 +26,7 @@ describe('{{ghost_head}} helper', function () {
          * The image path is e.g. localhost:port/favicon.ico, but no server is running.
          * If we don't mock the image size utility, we run into lot's of timeouts.
          */
-        sandbox.stub(imageSize, 'getImageSizeFromUrl').returns(Promise.resolve());
+        sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
 
         sandbox.stub(api.clients, 'read').returns(Promise.resolve({
             clients: [

@@ -3,7 +3,7 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    permissions = require('../../../server/permissions'),
+    permissions = require('../../../server/services/permissions'),
     common = require('../../../server/lib/common'),
     apiUtils = require('../../../server/api/utils'),
 
@@ -32,9 +32,7 @@ describe('API Utils', function () {
             'prepareFields',
             'prepareFormats',
             'convertOptions',
-            'checkObject',
-            'checkFileExists',
-            'checkFileIsValid'
+            'checkObject'
         ]);
     });
 
@@ -424,39 +422,6 @@ describe('API Utils', function () {
                 data.test[0].should.eql('something');
                 done();
             }).catch(done);
-        });
-    });
-
-    describe('checkFileExists', function () {
-        it('should return true if file exists in input', function () {
-            apiUtils.checkFileExists({mimetype: 'file', path: 'path'}).should.be.true();
-        });
-
-        it('should return false if file does not exist in input', function () {
-            apiUtils.checkFileExists({}).should.be.false();
-        });
-
-        it('should return false if file is incorrectly structured', function () {
-            apiUtils.checkFileExists({type: 'file'}).should.be.false();
-        });
-    });
-
-    describe('checkFileIsValid', function () {
-        it('returns true if file has valid extension and type', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.txt']).should.be.true();
-            apiUtils.checkFileIsValid({
-                name: 'test.jpg',
-                mimetype: 'jpeg'
-            }, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
-        });
-
-        it('returns false if file has invalid extension', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.tar']).should.be.false();
-            apiUtils.checkFileIsValid({name: 'test', mimetype: 'text'}, ['text'], ['.txt']).should.be.false();
-        });
-
-        it('returns false if file has invalid type', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']).should.be.false();
         });
     });
 

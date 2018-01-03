@@ -2,9 +2,9 @@
 // API for DB operations
 var Promise = require('bluebird'),
     path = require('path'),
-    fs = require('fs'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
+    fs = require('fs-extra'),
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
     exporter = require('../data/export'),
     importer = require('../data/importer'),
     backupDatabase = require('../data/db/backup'),
@@ -18,7 +18,7 @@ var Promise = require('bluebird'),
 /**
  * ## DB API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 db = {
     /**
@@ -38,7 +38,7 @@ db = {
             .then(function successMessage(exportResult) {
                 var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
-                return Promise.promisify(fs.writeFile)(filename, JSON.stringify(exportResult.data))
+                return fs.writeFile(filename, JSON.stringify(exportResult.data))
                     .then(function () {
                         return filename;
                     });
@@ -67,7 +67,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'exportContent'),
+            localUtils.handlePermissions(docName, 'exportContent'),
             exportContent
         ];
 
@@ -94,7 +94,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'importContent'),
+            localUtils.handlePermissions(docName, 'importContent'),
             importContent
         ];
 
@@ -129,7 +129,7 @@ db = {
         }
 
         tasks = [
-            apiUtils.handlePermissions(docName, 'deleteAllContent'),
+            localUtils.handlePermissions(docName, 'deleteAllContent'),
             backupDatabase,
             deleteContent
         ];

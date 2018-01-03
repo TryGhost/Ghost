@@ -3,10 +3,10 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     models = require('../models'),
-    canThis = require('../permissions').canThis,
-    apiUtils = require('./utils'),
+    canThis = require('../services/permissions').canThis,
+    localUtils = require('./utils'),
     common = require('../lib/common'),
-    settingsCache = require('../settings/cache'),
+    settingsCache = require('../services/settings/cache'),
     docName = 'settings',
     settings,
     settingsFilter,
@@ -117,7 +117,7 @@ canEditAllSettings = function (settingsInfo, options) {
 /**
  * ## Settings API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 settings = {
 
@@ -225,7 +225,7 @@ settings = {
         });
 
         return canEditAllSettings(object.settings, options).then(function () {
-            return apiUtils.checkObject(object, docName).then(function (checkedData) {
+            return localUtils.checkObject(object, docName).then(function (checkedData) {
                 options.user = self.user;
                 return models.Settings.edit(checkedData.settings, options);
             }).then(function (settingsModelsArray) {

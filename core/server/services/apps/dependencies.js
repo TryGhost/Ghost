@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
     spawn = require('child_process').spawn,

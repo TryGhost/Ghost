@@ -2,9 +2,9 @@
 // RESTful API for the User resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
-    pipeline = require('../utils/pipeline'),
-    apiUtils = require('./utils'),
-    canThis = require('../permissions').canThis,
+    pipeline = require('../lib/promise/pipeline'),
+    localUtils = require('./utils'),
+    canThis = require('../services/permissions').canThis,
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'users',
@@ -15,7 +15,7 @@ var Promise = require('bluebird'),
 /**
  * ### Users API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 users = {
     /**
@@ -26,7 +26,7 @@ users = {
      */
     browse: function browse(options) {
         var extraOptions = ['status'],
-            permittedOptions = apiUtils.browseDefaultOptions.concat(extraOptions),
+            permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
         /**
@@ -41,9 +41,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: permittedOptions}),
-            apiUtils.handlePublicPermissions(docName, 'browse'),
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.validate(docName, {opts: permittedOptions}),
+            localUtils.handlePublicPermissions(docName, 'browse'),
+            localUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -88,9 +88,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {attrs: attrs}),
-            apiUtils.handlePublicPermissions(docName, 'read'),
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.validate(docName, {attrs: attrs}),
+            localUtils.handlePublicPermissions(docName, 'read'),
+            localUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -106,7 +106,7 @@ users = {
      */
     edit: function edit(object, options) {
         var extraOptions = ['editRoles'],
-            permittedOptions = extraOptions.concat(apiUtils.idDefaultOptions),
+            permittedOptions = extraOptions.concat(localUtils.idDefaultOptions),
             tasks;
 
         if (object.users && object.users[0] && object.users[0].roles && object.users[0].roles[0]) {
@@ -212,9 +212,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: permittedOptions}),
+            localUtils.validate(docName, {opts: permittedOptions}),
             handlePermissions,
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -272,9 +272,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate(docName, {opts: apiUtils.idDefaultOptions}),
+            localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
             handlePermissions,
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.convertOptions(allowedIncludes),
             deleteUser
         ];
 
@@ -292,7 +292,7 @@ users = {
         var tasks;
 
         function validateRequest() {
-            return apiUtils.validate('password')(object, options)
+            return localUtils.validate('password')(object, options)
                 .then(function (options) {
                     var data = options.data.password[0];
 
@@ -344,7 +344,7 @@ users = {
         tasks = [
             validateRequest,
             handlePermissions,
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -394,9 +394,9 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            apiUtils.validate('owner'),
+            localUtils.validate('owner'),
             handlePermissions,
-            apiUtils.convertOptions(allowedIncludes),
+            localUtils.convertOptions(allowedIncludes),
             doQuery
         ];
 

@@ -18,11 +18,12 @@ var Promise = require('bluebird'),
     schemaTables = Object.keys(schema),
     models = require('../../server/models'),
     urlService = require('../../server/services/url'),
-    SettingsLib = require('../../server/settings'),
+    SettingsLib = require('../../server/services/settings'),
+    SettingsCache = require('../../server/services/settings/cache'),
     customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
-    permissions = require('../../server/permissions'),
-    sequence = require('../../server/utils/sequence'),
-    themes = require('../../server/themes'),
+    permissions = require('../../server/services/permissions'),
+    sequence = require('../../server/lib/promise/sequence'),
+    themes = require('../../server/services/themes'),
     DataGenerator = require('./fixtures/data-generator'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
@@ -344,10 +345,9 @@ fixtures = {
 
     loadExportFixture: function loadExportFixture(filename, options) {
         options = options || {lts: false};
-        var filePath = this.getExportFixturePath(filename, options),
-            readFile = Promise.promisify(fs.readFile);
+        var filePath = this.getExportFixturePath(filename, options);
 
-        return readFile(filePath).then(function (fileContents) {
+        return fs.readFile(filePath).then(function (fileContents) {
             var data;
 
             // Parse the json data
@@ -503,6 +503,7 @@ toDoList = {
         return fixtures.insertApps();
     },
     settings: function populateSettings() {
+        SettingsCache.shutdown();
         return SettingsLib.init();
     },
     'users:roles': function createUsersWithRoles() {
@@ -873,6 +874,7 @@ startGhost = function startGhost(options) {
                 return knexMigrator.init({only: 2});
             })
             .then(function () {
+                SettingsCache.shutdown();
                 return SettingsLib.init();
             })
             .then(function () {

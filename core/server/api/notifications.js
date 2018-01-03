@@ -3,10 +3,10 @@
 var Promise = require('bluebird'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),
-    pipeline = require('../utils/pipeline'),
-    permissions = require('../permissions'),
+    pipeline = require('../lib/promise/pipeline'),
+    permissions = require('../services/permissions'),
     canThis = permissions.canThis,
-    apiUtils = require('./utils'),
+    localUtils = require('./utils'),
     common = require('../lib/common'),
     settingsAPI = require('./settings'),
     // Holds the persistent notifications
@@ -16,7 +16,7 @@ var Promise = require('bluebird'),
 /**
  * ## Notification API Methods
  *
- * **See:** [API Methods](index.js.html#api%20methods)
+ * **See:** [API Methods](constants.js.html#api%20methods)
  */
 notifications = {
 
@@ -108,7 +108,7 @@ notifications = {
         }
 
         tasks = [
-            apiUtils.validate('notifications'),
+            localUtils.validate('notifications'),
             handlePermissions,
             saveNotifications
         ];
@@ -184,7 +184,7 @@ notifications = {
         }
 
         tasks = [
-            apiUtils.validate('notifications', {opts: apiUtils.idDefaultOptions}),
+            localUtils.validate('notifications', {opts: localUtils.idDefaultOptions}),
             handlePermissions,
             destroyNotification
         ];

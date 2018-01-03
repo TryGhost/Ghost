@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     channelUtils = require('../../utils/channelUtils'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
     rssController = rewire('../../../server/controllers/rss'),
     rssService = require('../../../server/services/rss'),
 

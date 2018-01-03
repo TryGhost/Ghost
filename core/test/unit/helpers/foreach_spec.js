@@ -1,10 +1,8 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     _ = require('lodash'),
-
-// Stuff we are testing
     helpers = require.main.require('core/server/helpers'),
-    handlebars = require.main.require('core/server/themes/engine').handlebars,
+    handlebars = require.main.require('core/server/services/themes/engine').handlebars,
 
     sandbox = sinon.sandbox.create();
 

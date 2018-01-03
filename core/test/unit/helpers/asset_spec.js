@@ -2,7 +2,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
-    settingsCache = require('../../../server/settings/cache'),
+    settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create();
 

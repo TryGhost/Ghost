@@ -1,6 +1,6 @@
-var getCachedImageSizeFromUrl = require('../../utils/cached-image-size-from-url'),
-    Promise = require('bluebird'),
-    _ = require('lodash');
+var Promise = require('bluebird'),
+    _ = require('lodash'),
+    imageLib = require('../../lib/image');
 
 /**
  * Get Image dimensions
@@ -11,10 +11,10 @@ var getCachedImageSizeFromUrl = require('../../utils/cached-image-size-from-url'
  */
 function getImageDimensions(metaData) {
     var fetch = {
-        coverImage: getCachedImageSizeFromUrl(metaData.coverImage.url),
-        authorImage: getCachedImageSizeFromUrl(metaData.authorImage.url),
-        ogImage: getCachedImageSizeFromUrl(metaData.ogImage.url),
-        logo: getCachedImageSizeFromUrl(metaData.blog.logo.url)
+        coverImage: imageLib.imageSizeCache(metaData.coverImage.url),
+        authorImage: imageLib.imageSizeCache(metaData.authorImage.url),
+        ogImage: imageLib.imageSizeCache(metaData.ogImage.url),
+        logo: imageLib.imageSizeCache(metaData.blog.logo.url)
     };
 
     return Promise

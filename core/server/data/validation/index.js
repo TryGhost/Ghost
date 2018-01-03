@@ -5,12 +5,13 @@ var schema = require('../schema').tables,
     assert = require('assert'),
     Promise = require('bluebird'),
     common = require('../../lib/common'),
-    settingsCache = require('../../settings/cache'),
+    settingsCache = require('../../services/settings/cache'),
     urlService = require('../../services/url'),
 
     validatePassword,
     validateSchema,
     validateSettings,
+    validateRedirects,
     validate;
 
 function assertString(input) {
@@ -52,6 +53,7 @@ function characterOccurance(stringToTest) {
 }
 
 // extends has been removed in validator >= 5.0.0, need to monkey-patch it back in
+// @TODO: We modify the global validator dependency here! https://github.com/chriso/validator.js/issues/525#issuecomment-213149570
 validator.extend = function (name, fn) {
     validator[name] = function () {
         var args = Array.prototype.slice.call(arguments);
@@ -328,10 +330,34 @@ validate = function validate(value, key, validations, tableName) {
     return validationErrors;
 };
 
+/**
+ * Redirects are file based at the moment, but they will live in the database in the future.
+ * See V2 of https://github.com/TryGhost/Ghost/issues/7707.
+ */
+validateRedirects = function validateRedirects(redirects) {
+    if (!_.isArray(redirects)) {
+        throw new common.errors.ValidationError({
+            message: common.i18n.t('errors.utils.redirectsWrongFormat'),
+            help: 'https://docs.ghost.org/docs/redirects'
+        });
+    }
+
+    _.each(redirects, function (redirect) {
+        if (!redirect.from || !redirect.to) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.redirectsWrongFormat'),
+                context: JSON.stringify(redirect),
+                help: 'https://docs.ghost.org/docs/redirects'
+            });
+        }
+    });
+};
+
 module.exports = {
     validate: validate,
     validator: validator,
     validatePassword: validatePassword,
     validateSchema: validateSchema,
-    validateSettings: validateSettings
+    validateSettings: validateSettings,
+    validateRedirects: validateRedirects
 };

@@ -1,14 +1,17 @@
-var config = require('../../config'),
-    blogIconUtils = require('../../utils/blog-icon'),
+'use strict';
+
+const crypto = require('crypto'),
+    config = require('../../config'),
+    imageLib = require('../../lib/image'),
     urlService = require('../../services/url'),
-    globalUtils = require('../../utils');
+    packageInfo = require('../../../../package.json');
 
 /**
  * Serve either uploaded favicon or default
  * @return {string}
  */
 function getFaviconUrl() {
-    return blogIconUtils.getIconUrl();
+    return imageLib.blogIcon.getIconUrl();
 }
 
 function getAssetUrl(path, hasMinFile) {
@@ -38,7 +41,7 @@ function getAssetUrl(path, hasMinFile) {
     // Ensure we have an assetHash
     // @TODO rework this!
     if (!config.get('assetHash')) {
-        config.set('assetHash', globalUtils.generateAssetHash());
+        config.set('assetHash', (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10));
     }
 
     // Finally add the asset hash to the output URL

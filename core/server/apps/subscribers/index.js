@@ -3,7 +3,7 @@ var router     = require('./lib/router'),
 
     // Dirty requires
     config = require('../../config'),
-    labs = require('../../utils/labs');
+    labs = require('../../services/labs');
 
 module.exports = {
     activate: function activate(ghost) {

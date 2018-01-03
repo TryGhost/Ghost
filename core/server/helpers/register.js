@@ -1,4 +1,4 @@
-var hbs = require('../themes/engine'),
+var hbs = require('../services/themes/engine'),
     Promise = require('bluebird'),
     config = require('../config'),
     proxy = require('./proxy');

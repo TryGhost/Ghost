@@ -5,7 +5,7 @@ var should = require('should'),
 
     // Stuff we are testing
     exporter = require('../../server/data/export'),
-    globalUtils = require('../../server/utils'),
+    ghostVersion = require('../../server/lib/ghost-version'),
 
     sandbox = sinon.sandbox.create();
 
@@ -29,7 +29,7 @@ describe('Exporter', function () {
             should.exist(exportData.meta);
             should.exist(exportData.data);
 
-            exportData.meta.version.should.equal(globalUtils.ghostVersion.full);
+            exportData.meta.version.should.equal(ghostVersion.full);
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);
