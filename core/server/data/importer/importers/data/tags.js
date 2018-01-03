@@ -31,6 +31,8 @@ class TagsImporter extends BaseImporter {
      *   - the tag model is smart enough to regenerate unique fields
      *   - so if you import a tag name "test" and the same tag name exists, it would add "test-2"
      *   - that's we add a protection here to first find the tag
+     *
+     * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
     doImport(options) {
         debug('doImport', this.modelName, this.dataToImport.length);
