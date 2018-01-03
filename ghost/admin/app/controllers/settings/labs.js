@@ -171,11 +171,11 @@ export default Controller.extend({
                 });
             }).catch((response) => {
                 if (isUnsupportedMediaTypeError(response) || isRequestEntityTooLargeError(response)) {
-                    return this.set('importErrors', [response]);
-                }
-
-                if (response && response.payload.errors && isEmberArray(response.payload.errors)) {
-                    return this.set('importErrors', response.payload.errors);
+                    this.set('importErrors', [response]);
+                } else if (response && response.payload.errors && isEmberArray(response.payload.errors)) {
+                    this.set('importErrors', response.payload.errors);
+                } else {
+                    this.set('importErrors', [{message: 'Import failed due to an unknown error. Check the Web Inspector console and network tabs for errors.'}]);
                 }
 
                 throw response;
