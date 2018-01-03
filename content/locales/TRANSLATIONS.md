@@ -342,4 +342,4 @@ A new Ghost wiki to share translation files through public [gist &#x27B6;](https
 
 ## Copyright & License
 
-Copyright (c) 2013-2017 Ghost Foundation - Released under the [MIT license &#x27B6;](https://github.com/TryGhost/Ghost/blob/master/LICENSE)
+Copyright (c) 2013-2018 Ghost Foundation - Released under the [MIT license &#x27B6;](https://github.com/TryGhost/Ghost/blob/master/LICENSE)
