@@ -42,7 +42,6 @@ DataImporter = {
         if (importOptions && importOptions.importPersistUser) {
             modelOptions.importPersistUser = importOptions.importPersistUser;
         }
-
         this.init(importData);
 
         return models.Base.transaction(function (transacting) {
