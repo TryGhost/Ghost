@@ -29,8 +29,10 @@ module.exports = function reading_time() {// eslint-disable-line camelcase
     wordCount = localUtils.wordCount(html);
     readingTimeSeconds = wordCount / wordsPerSecond;
 
-    // add 12 seconds to reading time for every image
-    readingTimeSeconds += imageCount * 12;
+    for (var i = 12; i > 12 - imageCount; i -= 1) {
+        // add 12 seconds for the first image, 11 for the second, etc. limiting at 3
+        readingTimeSeconds += Math.max(i, 3);
+    }
 
     if (readingTimeSeconds < 60) {
         readingTime = '< 1 min read';
