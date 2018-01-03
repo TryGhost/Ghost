@@ -147,6 +147,26 @@ class PostsImporter extends BaseImporter {
             }
         });
 
+        // NOTE: We only support removing duplicate posts within the file to import.
+        // For any further future duplication detection, see https://github.com/TryGhost/Ghost/issues/8717.
+        let slugs = [];
+        this.dataToImport = _.filter(this.dataToImport, function (post) {
+            if (slugs.indexOf(post.slug) !== -1) {
+                self.problems.push({
+                    message: 'Entry was not imported and ignored. Detected duplicated entry.',
+                    help: self.modelName,
+                    context: JSON.stringify({
+                        post: post
+                    })
+                });
+
+                return false;
+            }
+
+            slugs.push(post.slug);
+            return true;
+        });
+
         // NOTE: do after, because model properties are deleted e.g. post.id
         return super.beforeImport();
     }
