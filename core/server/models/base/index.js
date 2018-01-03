@@ -774,6 +774,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             if (!slug) {
                 slug = baseName;
             }
+
+            // CASE: no slug generation on import, see https://github.com/TryGhost/Ghost/issues/8717
+            if (options.importing) {
+                return slug;
+            }
+
             // Test for duplicate slugs.
             return checkIfSlugExists(slug);
         });

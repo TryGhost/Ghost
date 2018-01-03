@@ -2,6 +2,7 @@
 
 const debug = require('ghost-ignition').debug('importer:base'),
     common = require('../../../../lib/common'),
+    sequence = require('../../../../lib/promise/sequence'),
     models = require('../../../../models'),
     _ = require('lodash'),
     Promise = require('bluebird');
@@ -152,21 +153,29 @@ class Base {
 
         let self = this, ops = [];
 
-        _.each(this.dataToImport, function (obj) {
-            ops.push(models[self.modelName].add(obj, options)
-                .then(function (importedModel) {
-                    obj.model = importedModel.toJSON();
-                    self.importedData.push(obj.model);
-                    return importedModel;
-                })
-                .catch(function (err) {
-                    return self.handleError(err, obj);
-                })
-                .reflect()
-            );
+        _.each(this.dataToImport, function forEachDataToImport(obj) {
+            ops.push(function addModel() {
+                return models[self.modelName].add(obj, options)
+                    .then(function (importedModel) {
+                        obj.model = importedModel.toJSON();
+                        self.importedData.push(obj.model);
+                        return importedModel;
+                    })
+                    .catch(function (err) {
+                        return self.handleError(err, obj);
+                    })
+                    .reflect();
+            });
         });
 
-        return Promise.all(ops);
+        /**
+         * NOTE: Do not run with Promise.all in this case. With a large import file, we run an enormous
+         *       amount of queries in parallel. Node will very fast eat lot's of memory, because all queries start
+         *       at the same time, but memory can only be released if the query finished.
+         *
+         *       Promise.map(.., {concurrency: Int}) was not really improving the end performance for me.
+         */
+        return sequence(ops);
     }
 
     /**
