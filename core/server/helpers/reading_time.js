@@ -25,11 +25,12 @@ module.exports = function reading_time() {// eslint-disable-line camelcase
 
     html = this.html;
     imageCount = this.feature_image ? 1 : 0;
+    imageCount += localUtils.imageCount(html);
     wordCount = localUtils.wordCount(html);
     readingTimeSeconds = wordCount / wordsPerSecond;
 
-    // add 12 seconds to reading time if feature image is present
-    readingTimeSeconds = imageCount ? readingTimeSeconds + 12 : readingTimeSeconds;
+    // add 12 seconds to reading time for every image
+    readingTimeSeconds += imageCount * 12;
 
     if (readingTimeSeconds < 60) {
         readingTime = '< 1 min read';
