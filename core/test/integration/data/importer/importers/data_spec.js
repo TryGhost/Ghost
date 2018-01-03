@@ -387,13 +387,15 @@ describe('Import', function () {
             }).catch(done);
         });
 
-        it('handles database errors nicely: duplicated tag slugs', function (done) {
+        it('handles database errors nicely: duplicated tag and posts slugs', function (done) {
             var exportData;
 
             testUtils.fixtures.loadExportFixture('export-003-dbErrors', {lts:true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
+                importedData.data.posts.length.should.eql(1);
+
                 importedData.problems.length.should.eql(3);
                 importedData.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[0].help.should.eql('Tag');
