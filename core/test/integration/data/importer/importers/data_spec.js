@@ -394,6 +394,8 @@ describe('Import', function () {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
+                importedData.data.posts.length.should.eql(1);
+
                 importedData.problems.length.should.eql(3);
                 importedData.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[0].help.should.eql('Tag');
