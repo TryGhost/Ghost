@@ -36,7 +36,7 @@ SECURITY.md
 .travis.yml
 *.html
 !core/server/web/admin/views/**
-!core/server/mail/templates/**
+!core/server/services/mail/templates/**
 bower_components/**
 .editorconfig
 gulpfile.js
