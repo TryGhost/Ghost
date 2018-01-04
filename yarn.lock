@@ -88,9 +88,9 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
-amperize@0.3.6:
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.6.tgz#3b16888924af9ced28d6f8538d2329b361c9c580"
+amperize@0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.7.tgz#88efb8dc814782dd31b724178a8bf8ed028db395"
   dependencies:
     async "^2.1.4"
     emits "^3.0.0"
