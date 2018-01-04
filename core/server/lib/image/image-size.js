@@ -104,7 +104,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     debug('requested imagePath:', imagePath);
     requestOptions = {
         headers: {
-            'User-Agent': 'Mozilla/5.0'
+            'User-Agent': 'Mozilla/5.0 Safari/537.36'
         },
         timeout: timeout,
         encoding: null
