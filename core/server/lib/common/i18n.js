@@ -1,14 +1,15 @@
 /* global Intl */
 
 var supportedLocales = ['en'],
-    _ = require('lodash'),
-    fs = require('fs-extra'),
-    path = require('path'),
     chalk = require('chalk'),
+    fs = require('fs-extra'),
     MessageFormat = require('intl-messageformat'),
-    logging = require('./logging'),
-    errors = require('./errors'),
     jp = require('jsonpath'),
+    _ = require('lodash'),
+    path = require('path'),
+    errors = require('./errors'),
+    events = require('./events'),
+    logging = require('./logging'),
     settingsCache = require('../../services/settings/cache'),
 
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
@@ -25,6 +26,20 @@ var supportedLocales = ['en'],
     coreStrings,
     themeStrings,
     I18n;
+
+/**
+ * When active theme changes, we reload theme translations
+ */
+events.on('settings.active_theme.edited', function () {
+    I18n.loadThemeTranslations();
+});
+
+/**
+ * When locale changes, we reload theme translations
+ */
+events.on('settings.default_locale.edited', function () {
+    I18n.loadThemeTranslations();
+});
 
 I18n = {
 

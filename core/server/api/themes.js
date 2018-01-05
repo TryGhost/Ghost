@@ -65,11 +65,6 @@ themes = {
                 // We use the model, not the API here, as we don't want to trigger permissions
                 return settingsModel.edit(newSettings, options);
             })
-            // Load theme translations when activating a theme
-            // (when starting Ghost, or when switching themes).
-            .then(function () {
-                return common.i18n.loadThemeTranslations();
-            })
             // Call activate
             .then(function hasEditedSetting() {
                 // Activate! (sort of)

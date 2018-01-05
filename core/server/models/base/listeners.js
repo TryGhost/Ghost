@@ -120,10 +120,3 @@ common.events.on('settings.active_timezone.edited', function (settingModel, opti
             });
     });
 });
-
-/**
- * WHEN locale changes, we reload theme translations
- */
-common.events.on('settings.default_locale.edited', function () {
-    common.i18n.loadThemeTranslations();
-});
