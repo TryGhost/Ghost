@@ -482,6 +482,13 @@
     background: transparent;
 }
 
+.gh-editor .CodeMirror-wrap > div > textarea {
+    top: 0;
+    height: 26px;
+    min-height: 26px;
+    margin-bottom: -26px;
+}
+
 .gh-editor .CodeMirror pre {
     padding: 0;
     color: color(var(--darkgrey) l(+5%));
