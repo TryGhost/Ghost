@@ -51,16 +51,14 @@ I18n = {
      * @returns {string}
      */
     t: function t(path, bindings) {
-        var string, defStr, theStr, msg;
+        var string, isTheme, msg;
 
         currentLocale = I18n.locale();
         if (bindings !== undefined) {
-            defStr = bindings.defaultString;
-            theStr = bindings.isThemeString;
-            delete bindings.defaultString;
+            isTheme = bindings.isThemeString;
             delete bindings.isThemeString;
         }
-        string = I18n.findString(path, {defaultString: defStr, isThemeString: theStr});
+        string = I18n.findString(path, {isThemeString: isTheme});
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -127,10 +125,12 @@ I18n = {
             }
             // Both jsonpath's dot-notation and bracket-notation start with '$'
             // E.g.: $.store.book.title or $['store']['book']['title']
-            // The {{t}} translation helper passes here the full jsonpath with '$'
-            // jp.value is a jsonpath method. Info:
-            // https://www.npmjs.com/package/jsonpath
-            candidateString = jp.value(themeStrings, msgPath) || options.defaultString;
+            // The {{t}} translation helper passes the default English text
+            // The full Unicode jsonpath with '$' is built here
+            // jp.stringify and jp.value are jsonpath methods
+            // Info: https://www.npmjs.com/package/jsonpath
+            path = jp.stringify(['$', msgPath]);
+            candidateString = jp.value(themeStrings, path) || msgPath;
         } else {
             // Backend messages use dot-notation, and the '$.' prefix is added here
             // While bracket-notation allows any Unicode characters in keys for themes,

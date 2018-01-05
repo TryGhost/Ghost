@@ -11,19 +11,16 @@
 // {{tags prefix=(t " on ")}}
 
 var proxy = require('./proxy'),
-    jp = require('jsonpath'),
     i18n = proxy.i18n;
 
 module.exports = function t(text, options) {
     var bindings = {},
-        path, prop;
+        prop;
     for (prop in options.hash) {
         if (options.hash.hasOwnProperty(prop)) {
             bindings[prop] = options.hash[prop];
         }
     }
-    bindings.defaultString = text;
     bindings.isThemeString = true;
-    path = jp.stringify(['$', text]);
-    return i18n.t(path, bindings);
+    return i18n.t(text, bindings);
 };
