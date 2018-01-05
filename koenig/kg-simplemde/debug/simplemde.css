@@ -276,7 +276,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 .CodeMirror-linewidget {
   position: relative;
   z-index: 2;
-  overflow: auto;
+  padding: 0.1px; /* Force widget margins to stay inside of the container */
 }
 
 .CodeMirror-widget {}
@@ -471,8 +471,8 @@ span.CodeMirror-selectedtext { background: none; }
 .editor-toolbar a {
     display: inline-block;
     text-align: center;
-    text-decoration: none!important;
-    color: #2c3e50!important;
+    text-decoration: none !important;
+    color: #2c3e50 !important;
     width: 30px;
     height: 30px;
     margin: 0;
