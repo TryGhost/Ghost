@@ -61,7 +61,7 @@ codemirrorAssets = function () {
 
     // put the files in vendor ready for importing into the test-support file
     if (environment === 'development') {
-        config.vendor =  codemirrorFiles;
+        config.vendor = codemirrorFiles;
     }
 
     return config;
@@ -120,7 +120,7 @@ module.exports = function (defaults) {
                 }
             },
             vendor: {
-                js:  assetLocation('vendor.js'),
+                js: assetLocation('vendor.js'),
                 css: assetLocation('vendor.css')
             }
         },
@@ -152,7 +152,7 @@ module.exports = function (defaults) {
             'password-generator': {
                 import: ['lib/password-generator.js']
             },
-            'simplemde': {
+            simplemde: {
                 srcDir: 'debug',
                 import: ['simplemde.js', 'simplemde.css']
             }

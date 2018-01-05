@@ -16,7 +16,7 @@ export default Component.extend({
     zoom() {},
 
     // avoid "binding style attributes" warnings
-    style: computed('photo.color', 'zoomed', function() {
+    style: computed('photo.color', 'zoomed', function () {
         let styles = [];
         let ratio = this.get('photo.ratio');
         let zoomed = this.get('zoomed');

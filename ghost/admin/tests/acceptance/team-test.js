@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
@@ -547,7 +546,7 @@ describe('Acceptance: Team', function () {
 
                 expect(find('[data-test-website-input]').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
 
-                let testSocialInput = async function(type, input, expectedValue, expectedError = '') {
+                let testSocialInput = async function (type, input, expectedValue, expectedError = '') {
                     await fillIn(`[data-test-${type}-input]`, input);
                     await triggerEvent(`[data-test-${type}-input]`, 'blur');
 
@@ -791,7 +790,7 @@ describe('Acceptance: Team', function () {
                 expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
                 // Leave without saving
-                await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+                await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
 
                 expect(currentURL(), 'currentURL').to.equal('/settings/team');
 

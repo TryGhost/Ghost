@@ -2,8 +2,7 @@
 /* eslint-disable object-shorthand */
 'use strict';
 
-module.exports = function(grunt) {
-
+module.exports = function (grunt) {
     // Find all of the task which start with `grunt-` and load them, rather than explicitly declaring them all
     require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 

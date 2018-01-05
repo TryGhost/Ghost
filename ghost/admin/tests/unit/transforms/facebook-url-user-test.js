@@ -1,9 +1,8 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Transform: facebook-url-user', function() {
+describe('Unit: Transform: facebook-url-user', function () {
     setupTest('transform:facebook-url-user', {});
     it('deserializes facebook url', function () {
         let transform = this.subject();

@@ -2,7 +2,6 @@
 // https://github.com/bustlelabs/mobiledoc-kit#configuring-hot-keys
 
 export default function (editor) {
-
     let softReturnKeyCommand = {
         str: 'SHIFT+ENTER',
 
@@ -14,5 +13,4 @@ export default function (editor) {
         }
     };
     editor.registerKeyCommand(softReturnKeyCommand);
-
 }

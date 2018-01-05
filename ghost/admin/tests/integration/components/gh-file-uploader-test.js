@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import Pretender from 'pretender';
 import Service from '@ember/service';
@@ -35,7 +34,7 @@ const stubFailedUpload = function (server, code, error, delay = 0) {
     }, delay);
 };
 
-describe('Integration: Component: gh-file-uploader', function() {
+describe('Integration: Component: gh-file-uploader', function () {
     setupComponentTest('gh-file-uploader', {
         integration: true
     });
@@ -54,7 +53,7 @@ describe('Integration: Component: gh-file-uploader', function() {
         server.shutdown();
     });
 
-    it('renders', function() {
+    it('renders', function () {
         this.render(hbs`{{gh-file-uploader}}`);
 
         expect(this.$('label').text().trim(), 'default label')

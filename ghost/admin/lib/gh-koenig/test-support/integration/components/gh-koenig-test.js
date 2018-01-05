@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {

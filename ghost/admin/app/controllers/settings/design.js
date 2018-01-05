@@ -203,7 +203,7 @@ export default Controller.extend({
                     // to have a proper grouping of fatal errors and none fatal, we need to check
                     // our errors for the fatal property
                     if (errors.length > 0) {
-                        for (let i = 0; i < errors.length; i++) {
+                        for (let i = 0; i < errors.length; i += 1) {
                             if (errors[i].fatal) {
                                 fatalErrors.push(errors[i]);
                             } else {

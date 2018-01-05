@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
@@ -113,7 +112,7 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
             expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/labs');
 

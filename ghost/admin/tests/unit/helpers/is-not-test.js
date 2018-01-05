@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import {
     describe,
     it

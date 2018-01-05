@@ -86,7 +86,6 @@ export default Service.extend({
             // return the labs key value that we get from the server
             this.notifyPropertyChange(serviceProperty);
             return this.get(`${serviceProperty}.${key}`);
-
         }).catch((error) => {
             model.rollbackAttributes();
             this.notifyPropertyChange(serviceProperty);

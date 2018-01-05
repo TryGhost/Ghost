@@ -27,15 +27,15 @@ export default Component.extend({
         this._setIconStyle();
     },
 
-    showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function() {
+    showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function () {
         return this.get('config.clientExtensions.menu') && this.get('session.user.isOwner');
     }),
 
-    showDropdownExtension: computed('config.clientExtensions.dropdown', 'session.user.isOwner', function() {
+    showDropdownExtension: computed('config.clientExtensions.dropdown', 'session.user.isOwner', function () {
         return this.get('config.clientExtensions.dropdown') && this.get('session.user.isOwner');
     }),
 
-    showScriptExtension: computed('config.clientExtensions.script', 'session.user.isOwner', function() {
+    showScriptExtension: computed('config.clientExtensions.script', 'session.user.isOwner', function () {
         return this.get('config.clientExtensions.script') && this.get('session.user.isOwner');
     }),
 

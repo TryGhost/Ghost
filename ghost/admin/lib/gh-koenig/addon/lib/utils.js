@@ -73,10 +73,9 @@ export function getPositionOnScreenFromRange(editor, holder, range) {
 
         // if getBoundingClientRect doesn't work then create it from the client rects
         if ((!position || (position.left === 0 && position.top === 0)) && range.getClientRects) {
-
             let rects = range.getClientRects();
 
-            for (let i = 0; i < rects.length; i++) {
+            for (let i = 0; i < rects.length; i += 1) {
                 let rect = rects[i];
                 if (position.left === 0 || position.left > rect.left) {
                     position.left = rect.left;
@@ -104,7 +103,7 @@ export function getPositionOnScreenFromRange(editor, holder, range) {
         left: position.left - offset.left,
         right: position.right - offset.left,
         top: position.top - offset.top,
-        bottom: position.bottom  - offset.top,
+        bottom: position.bottom - offset.top,
         width: position.right - position.left,
         height: position.bottom - position.top
     };

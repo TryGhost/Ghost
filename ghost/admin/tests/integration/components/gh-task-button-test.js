@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
@@ -7,7 +6,7 @@ import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 import {task, timeout} from 'ember-concurrency';
 
-describe('Integration: Component: gh-task-button', function() {
+describe('Integration: Component: gh-task-button', function () {
     setupComponentTest('gh-task-button', {
         integration: true
     });

@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
@@ -15,7 +14,7 @@ describe('gh-koenig: Unit: Component: koenig-toolbar', function () {
 
     it('contains tools', function () {
         let component = this.subject();
-         // the standard toolbar tools (strong, em, strikethrough, link)
+        // the standard toolbar tools (strong, em, strikethrough, link)
         expect(component.get('toolbar').length).to.be.greaterThan(0);
         // extended toolbar block bases tools (h1, h2, quote);
         expect(component.get('toolbarBlocks').length).to.be.greaterThan(0);

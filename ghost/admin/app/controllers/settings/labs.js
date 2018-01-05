@@ -15,7 +15,7 @@ import {task, timeout} from 'ember-concurrency';
 
 const {Promise} = RSVP;
 
-const IMPORT_MIME_TYPES =  [
+const IMPORT_MIME_TYPES = [
     'application/json',
     'application/zip',
     'application/x-zip-compressed'
@@ -98,7 +98,6 @@ export default Controller.extend({
             yield this.get('ajax').post(emailUrl);
             notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
             return true;
-
         } catch (error) {
             notifications.showAPIError(error, {key: 'test-email:send'});
         }

@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupModelTest} from 'ember-mocha';
 
-describe('Unit: Model: invite', function() {
+describe('Unit: Model: invite', function () {
     setupModelTest('invite', {
         needs: [
             'model:role',

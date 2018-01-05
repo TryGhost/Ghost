@@ -7,7 +7,7 @@ import {computed} from '@ember/object';
 export default Component.extend({
     layout,
     classNames: ['toolbar-block'],
-    tools: [],
+    tools: null,
     isBlank: false,
 
     toolbar: computed('tools.@each.selected', function () {
@@ -22,7 +22,6 @@ export default Component.extend({
                     postTools.push(tool);
                 }
             }
-
         });
 
         return selectedPostTools.concat(postTools);
@@ -42,7 +41,6 @@ export default Component.extend({
         let $editor = $(this.get('containerSelector')); // TODO this is part of Ghost-Admin
 
         editor.cursorDidChange(() => {
-
             // if there is no cursor:
             if (!editor.range || !editor.range.head.section) {
                 $this.fadeOut();
@@ -66,7 +64,7 @@ export default Component.extend({
 
             this.__state = 'normal';
 
-            let offset =  this.$(element).position();
+            let offset = this.$(element).position();
             let edOffset = $editor.offset();
 
             $this.css('top', offset.top + $editor.scrollTop() - edOffset.top - 5);
@@ -89,7 +87,6 @@ export default Component.extend({
             });
 
             this.propertyDidChange('toolbar');
-
         });
     },
 

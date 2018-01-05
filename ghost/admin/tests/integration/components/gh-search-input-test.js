@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';

@@ -109,7 +109,7 @@ export default Component.extend({
 
         // the counter technique prevents flickering of the drag class when
         // dragging across child elements
-        this._dragCounter++;
+        this._dragCounter += 1;
 
         this.set('isDraggedOver', true);
     },
@@ -118,7 +118,7 @@ export default Component.extend({
         event.preventDefault();
         event.stopPropagation();
 
-        this._dragCounter--;
+        this._dragCounter -= 1;
         if (this._dragCounter === 0) {
             this.set('isDraggedOver', false);
         }

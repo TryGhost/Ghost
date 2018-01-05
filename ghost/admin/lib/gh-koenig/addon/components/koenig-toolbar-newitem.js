@@ -50,7 +50,7 @@ export default Component.extend({
             this.__state = 'normal';
             this.isBlank = true;
 
-            let offset =  this.$(element).position();
+            let offset = this.$(element).position();
             let edOffset = $editor.offset();
 
             $this.css('top', offset.top + $editor.scrollTop() - edOffset.top - 13);

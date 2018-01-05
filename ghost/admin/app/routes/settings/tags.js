@@ -33,9 +33,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     // pausing to show the loading spinner if no tags have been loaded yet
     model() {
         let promise = this.store.query('tag', {limit: 'all', include: 'count.posts'});
-        let filter = this.store.filter('tag', (tag) => {
-            return !tag.get('isNew');
-        });
+        let filter = this.store.filter('tag', tag => !tag.get('isNew'));
 
         if (this.store.peekAll('tag').get('length') === 0) {
             return promise.then(() => filter);

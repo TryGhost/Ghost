@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import Pretender from 'pretender';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

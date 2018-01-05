@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import DS from 'ember-data';
 import EmberObject from '@ember/object';
 import hbs from 'htmlbars-inline-precompile';

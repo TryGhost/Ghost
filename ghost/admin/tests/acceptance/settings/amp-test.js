@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
@@ -14,11 +13,11 @@ import {expect} from 'chai';
 describe('Acceptance: Settings - Apps - AMP', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 
@@ -112,7 +111,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
             expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
 
             expect(currentURL(), 'currentURL').to.equal('/team');
 

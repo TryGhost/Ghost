@@ -7,14 +7,14 @@ import {
 } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Content', function() {
+describe('Acceptance: Content', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 
@@ -37,9 +37,9 @@ describe('Acceptance: Content', function() {
 
             publishedPost = server.create('post', {authorId: admin.id, status: 'published', title: 'Published Post'});
             scheduledPost = server.create('post', {authorId: admin.id, status: 'scheduled', title: 'Scheduled Post'});
-            draftPost     = server.create('post', {authorId: admin.id, status: 'draft', title: 'Draft Post'});
+            draftPost = server.create('post', {authorId: admin.id, status: 'draft', title: 'Draft Post'});
             publishedPage = server.create('post', {authorId: admin.id, status: 'published', page: true, title: 'Published Page'});
-            authorPost    = server.create('post', {authorId: editor.id, status: 'published', title: 'Editor Published Post'});
+            authorPost = server.create('post', {authorId: editor.id, status: 'published', title: 'Editor Published Post'});
 
             return authenticateSession(application);
         });

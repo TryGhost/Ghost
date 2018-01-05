@@ -36,7 +36,6 @@ export default Controller.extend(ValidationEngine, {
             yield RSVP.all(promises);
 
             return authResult;
-
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
                 // we don't get back an ember-data/ember-ajax error object
@@ -81,11 +80,10 @@ export default Controller.extend(ValidationEngine, {
 
             try {
                 yield this._authenticateWithPassword();
-                yield this._sendImage();
+                yield this.get('_sendImage').perform();
             } catch (error) {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
-
         } catch (error) {
             // ValidationEngine throws undefined
             if (!error) {
@@ -128,7 +126,7 @@ export default Controller.extend(ValidationEngine, {
             .authenticate('authenticator:oauth2', email, password);
     },
 
-    _sendImage() {
+    _sendImage: task(function* () {
         let formData = new FormData();
         let imageFile = this.get('profileImage');
         let uploadUrl = this.get('ghostPaths.url').api('uploads');
@@ -136,27 +134,26 @@ export default Controller.extend(ValidationEngine, {
         if (imageFile) {
             formData.append('uploadimage', imageFile, imageFile.name);
 
-            return this.get('session.user').then((user) => {
-                return this.get('ajax').post(uploadUrl, {
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    dataType: 'text'
-                }).then((response) => {
-                    let imageUrl = JSON.parse(response);
-                    let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
-                    // eslint-disable-next-line
-                    user.profile_image = imageUrl;
+            let user = yield this.get('session.user');
+            let response = yield this.get('ajax').post(uploadUrl, {
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'text'
+            });
 
-                    return this.get('ajax').put(usersUrl, {
-                        data: {
-                            users: [user]
-                        }
-                    });
-                });
+            let imageUrl = JSON.parse(response);
+            let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
+
+            user.profile_image = imageUrl;
+
+            return yield this.get('ajax').put(usersUrl, {
+                data: {
+                    users: [user]
+                }
             });
         }
-    },
+    }),
 
     actions: {
         signup() {

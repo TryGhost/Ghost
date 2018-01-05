@@ -1,4 +1,3 @@
-/* jshint expr:true */
 /* global md5 */
 import Pretender from 'pretender';
 import Service from '@ember/service';

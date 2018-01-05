@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

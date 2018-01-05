@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import EditorBaseControllerMixin from 'ghost-admin/mixins/editor-base-controller';
 import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
@@ -11,7 +10,7 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 
-describe('Unit: Mixin: editor-base-controller', function() {
+describe('Unit: Mixin: editor-base-controller', function () {
     describe('generateSlug', function () {
         it('should generate a slug and set it on the model', function (done) {
             let object;

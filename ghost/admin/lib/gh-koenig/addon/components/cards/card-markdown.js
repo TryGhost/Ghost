@@ -20,10 +20,10 @@ import {inject as service} from '@ember/service';
 export default Component.extend({
     layout,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
-    extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    extensions: null,
     ajax: service(),
 
-    preview: computed('value', function() {
+    preview: computed('value', function () {
         return formatMarkdown([this.get('payload').markdown]);
     }),
 
@@ -38,6 +38,7 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+        this.extensions = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
         this.set('value', this.get('payload').markdown);
     },
 
@@ -83,7 +84,11 @@ export default Component.extend({
         let el = this.$('textarea')[0]; // array destructuring on jquery causes ember to throw an error about calling an Object as a Function
 
         el.value = el.value.replace(placeholderText, imageText);
-        this.sendAction('updateValue');
+
+        let action = this.get('updateValue');
+        if (action) {
+            action();
+        }
     },
 
     _validate(file) {
@@ -159,8 +164,8 @@ export default Component.extend({
 
                 // TODO: remove console.logs
                 /* eslint-disable no-console */
-                xhr.addEventListener('error', (event) => console.log('error', event));
-                xhr.upload.addEventListener('error', (event) => console.log('errorupload', event));
+                xhr.addEventListener('error', event => console.log('error', event));
+                xhr.upload.addEventListener('error', event => console.log('errorupload', event));
                 /* eslint-enabled no-console */
 
                 return xhr;

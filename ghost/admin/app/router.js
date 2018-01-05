@@ -31,7 +31,7 @@ Router.map(function () {
     this.route('reset', {path: '/reset/:token'});
     this.route('about', {path: '/about'});
 
-    this.route('posts', {path: '/'}, function() {});
+    this.route('posts', {path: '/'}, function () {});
 
     this.route('editor', function () {
         this.route('new', {path: ''});

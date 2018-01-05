@@ -33,7 +33,7 @@ export default Component.extend({
     // internal properties
     hasRendered: false,
     activeTags: null,
-    tools: [],
+    tools: null,
     isVisible: false,
     tickFullLeft: false,
     tickFullRight: false,
@@ -222,7 +222,7 @@ export default Component.extend({
 
         doLink(range) {
             // if a link is already selected then we remove the links from within the range.
-            let currentLinks = this.get('activeTags').filter((element) => element.tagName === 'a');
+            let currentLinks = this.get('activeTags').filter(element => element.tagName === 'a');
             if (currentLinks.length) {
                 this.get('editor').run((postEditor) => {
                     currentLinks.forEach((link) => {

@@ -1,4 +1,3 @@
-/* jshint expr:true */
 /* eslint-disable camelcase */
 import Mirage from 'ember-cli-mirage';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
@@ -120,7 +119,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await(click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
 

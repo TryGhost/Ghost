@@ -45,10 +45,18 @@ export default Component.extend({
             }
 
             if (this.get('val') !== textContent) {
+                let onChangeAction = this.get('onChange');
+                let updateAction = this.get('update');
+
                 this.set('_cachedVal', textContent);
                 this.set('val', textContent);
-                this.sendAction('onChange', textContent);
-                this.sendAction('update', textContent);
+
+                if (onChangeAction) {
+                    onChangeAction(textContent);
+                }
+                if (updateAction) {
+                    updateAction(textContent);
+                }
             }
         });
 
@@ -111,7 +119,7 @@ export default Component.extend({
                     }
 
                     let offset = title.offset();
-                    let bottomOfHeading =  offset.top + title.height();
+                    let bottomOfHeading = offset.top + title.height();
                     if (cursorPositionOnScreen.bottom > bottomOfHeading - 13) {
                         let editor = this.get('editor');
                         let loc = editor.element.getBoundingClientRect();
@@ -203,7 +211,7 @@ export default Component.extend({
         let len = title.textContent.length;
         let range = document.createRange();
 
-        for (let i = len - 1; i > -1; i--) {
+        for (let i = len - 1; i > -1; i -= 1) {
             range.setStart(title, i);
             range.setEnd(title, i + 1);
             let rect = range.getBoundingClientRect();
@@ -213,7 +221,7 @@ export default Component.extend({
             if (rect.left <= horizontalOffset && rect.right >= horizontalOffset) {
                 // if the horizontalOffset is on the left hand side of the
                 // character then return `i`, if it's on the right return `i + 1`
-                return  i + (horizontalOffset >= (rect.left + rect.right) / 2 ? 1 : 0);
+                return i + (horizontalOffset >= (rect.left + rect.right) / 2 ? 1 : 0);
             }
         }
 
@@ -231,7 +239,7 @@ export default Component.extend({
 
         run.next(() => {
             if (selection.modify) {
-                for (let i = 0; i < offset; i++) {
+                for (let i = 0; i < offset; i += 1) {
                     selection.modify('move', 'forward', 'character');
                 }
             }

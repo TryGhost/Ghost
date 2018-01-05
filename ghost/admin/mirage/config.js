@@ -15,8 +15,8 @@ import mockUsers from './config/users';
 
 export default function () {
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
-    this.namespace = '/ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
-    this.timing = 400;      // delay for each request, automatically set to 0 during testing
+    this.namespace = '/ghost/api/v0.1'; // make this `api`, for example, if your API is namespaced
+    this.timing = 400; // delay for each request, automatically set to 0 during testing
 
     // Mock endpoints here to override real API requests during development, eg...
     // this.put('/posts/:id/', versionMismatchResponse);
@@ -35,7 +35,7 @@ export default function () {
 export function testConfig() {
     this.passthrough('/write-coverage'); // For code coverage
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
-    this.namespace = '/ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
+    this.namespace = '/ghost/api/v0.1'; // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
     // this.logging = true;
 
@@ -66,7 +66,7 @@ export function testConfig() {
 
     let downloadCount = 0;
     this.get('https://count.ghost.org/', function () {
-        downloadCount++;
+        downloadCount += 1;
         return {
             count: downloadCount
         };

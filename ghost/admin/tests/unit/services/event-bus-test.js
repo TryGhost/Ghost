@@ -1,10 +1,9 @@
-/* jshint expr:true */
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Service: event-bus', function() {
+describe('Unit: Service: event-bus', function () {
     setupTest('service:event-bus', {});
     it('works', function () {
         let service = this.subject();

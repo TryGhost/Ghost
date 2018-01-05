@@ -37,10 +37,13 @@ export default Component.extend({
                 };
 
                 tools.push(t);
-                i++;
+                i += 1;
             }
         });
-        this.set('toolsLength', i);
+
+        // TODO: this needs to go away because side effects should not be introduced in CPs
+        this.set('toolsLength', i); // eslint-disable-line
+
         tools.sort((a, b) => a.order > b.order);
 
         let selectedTool = tools[selected];
@@ -181,7 +184,6 @@ export default Component.extend({
                 str: 'ENTER',
                 name: 'slash',
                 run(postEditor) {
-
                     let {range} = postEditor;
 
                     range.head.offset = self.get('range').startOffset - 1;
@@ -223,14 +225,17 @@ export default Component.extend({
                     menu.hide().fadeIn('fast');
                 });
 
-            this.sendAction('menuIsOpen');
+            let action = this.get('menuIsOpen');
+            if (action) {
+                action();
+            }
         },
 
         closeMenu() {
             let editor = this.get('editor');
             // this.get('editor').unregisterKeyCommand('slash'); -- waiting for the next release for this
 
-            for (let i = editor._keyCommands.length - 1; i > -1; i--) {
+            for (let i = editor._keyCommands.length - 1; i > -1; i -= 1) {
                 let keyCommand = editor._keyCommands[i];
                 if (keyCommand.name === 'slash') {
                     editor._keyCommands.splice(i, 1);
@@ -240,7 +245,11 @@ export default Component.extend({
             this.$('.gh-cardmenu').fadeOut('fast', () => {
                 this.set('isOpen', false);
             });
-            this.sendAction('menuIsClosed');
+
+            let action = this.get('menuIsClosed');
+            if (action) {
+                action();
+            }
         },
 
         clickedMenu() {

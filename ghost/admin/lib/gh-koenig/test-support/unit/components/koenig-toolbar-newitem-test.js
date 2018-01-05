@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {editorShim} from '../../utils';
 import {expect} from 'chai';

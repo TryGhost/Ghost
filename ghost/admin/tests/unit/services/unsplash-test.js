@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Service: unsplash', function() {
+describe('Unit: Service: unsplash', function () {
     setupTest('service:unsplash', {
         needs: [
             'service:ajax',

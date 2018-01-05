@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import Mirage from 'ember-cli-mirage';
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
@@ -8,14 +7,14 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Editor', function() {
+describe('Acceptance: Editor', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

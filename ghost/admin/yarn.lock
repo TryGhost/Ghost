@@ -2802,7 +2802,13 @@ diffie-hellman@^5.0.0:
     miller-rabin "^4.0.0"
     randombytes "^2.0.0"
 
-doctrine@^2.0.0, doctrine@^2.0.2:
+doctrine@^2.0.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.1.0.tgz#5cd01fc101621b42c4cd7f5d1a66243716d3f39d"
+  dependencies:
+    esutils "^2.0.2"
+
+doctrine@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.0.2.tgz#68f96ce8efc56cc42651f1faadb4f175273b0075"
   dependencies:
@@ -4050,13 +4056,7 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint-plugin-ember-suave@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember-suave/-/eslint-plugin-ember-suave-1.0.0.tgz#ea7d232a126562dcd8b1ee3aa2700ac3b626e514"
-  dependencies:
-    requireindex "~1.1.0"
-
-eslint-plugin-ember@5.0.3:
+eslint-plugin-ember@^5.0.3:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-5.0.3.tgz#9f5e2048ab3ddc1548d4d17bf318cf1bb5cf37f1"
   dependencies:
@@ -4064,9 +4064,16 @@ eslint-plugin-ember@5.0.3:
     require-folder-tree "^1.4.5"
     snake-case "^2.1.0"
 
-"eslint-plugin-sort-imports-es6-autofix@https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat":
+eslint-plugin-ghost@0.0.21:
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-0.0.21.tgz#468631e8dda556f2d642cc4955fc31e7e46a8267"
+  dependencies:
+    eslint-plugin-ember "^5.0.3"
+    eslint-plugin-sort-imports-es6-autofix "https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat"
+
+"eslint-plugin-sort-imports-es6-autofix@git+https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat":
   version "0.1.1"
-  resolved "https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#8dc6b689903c9363ade94e2e4d21c94813bbbe98"
+  resolved "git+https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#8dc6b689903c9363ade94e2e4d21c94813bbbe98"
   dependencies:
     eslint "^3.15.0"
 
@@ -8148,10 +8155,6 @@ require-uncached@^1.0.2, require-uncached@^1.0.3:
   dependencies:
     caller-path "^0.1.0"
     resolve-from "^1.0.0"
-
-requireindex@~1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.1.0.tgz#e5404b81557ef75db6e49c5a72004893fe03e162"
 
 requires-port@1.x.x:
   version "1.0.0"

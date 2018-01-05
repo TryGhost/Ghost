@@ -101,7 +101,6 @@ export default Component.extend({
                 // wait for fade-in animation to finish before removing placeholder
                 yield timeout(ANIMATION_TIMEOUT);
                 this._setPlaceholderImage('');
-
             } catch (e) {
                 // gravatar doesn't exist so make sure we're still showing the placeholder
                 this._setPlaceholderImage(this._defaultImageUrl);

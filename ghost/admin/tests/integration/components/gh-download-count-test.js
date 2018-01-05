@@ -5,7 +5,7 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-download-count', function() {
+describe('Integration: Component: gh-download-count', function () {
     setupComponentTest('gh-download-count', {
         integration: true
     });

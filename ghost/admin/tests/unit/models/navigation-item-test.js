@@ -1,9 +1,8 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Model: navigation-item', function() {
+describe('Unit: Model: navigation-item', function () {
     setupTest('model:navigation-item', {
         // Specify the other units that are required for this test.
         needs: []

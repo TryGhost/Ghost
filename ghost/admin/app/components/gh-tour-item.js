@@ -13,7 +13,7 @@ let triangleClassPositions = {
         targetAttachment: 'bottom center',
         offset: '0 28px'
     },
-    'top': {
+    top: {
         attachment: 'top center',
         targetAttachment: 'bottom center'
     },
@@ -27,7 +27,7 @@ let triangleClassPositions = {
         targetAttachment: 'middle left',
         offset: '28px 0'
     },
-    'right': {
+    right: {
         attachment: 'middle right',
         targetAttachment: 'middle left'
     },
@@ -41,7 +41,7 @@ let triangleClassPositions = {
         targetAttachment: 'top center',
         offset: '0 -28px'
     },
-    'bottom': {
+    bottom: {
         attachment: 'bottom center',
         targetAttachment: 'top center'
     },
@@ -55,7 +55,7 @@ let triangleClassPositions = {
         targetAttachment: 'middle right',
         offset: '-28px 0'
     },
-    'left': {
+    left: {
         attachment: 'middle left',
         targetAttachment: 'middle right'
     },
@@ -98,7 +98,7 @@ const GhTourItemComponent = Component.extend({
     init() {
         this._super(...arguments);
         // this is a tagless component so we need to generate our own elementId
-        this._elementId = instancesCounter++;
+        this._elementId = instancesCounter += 1;
         this._throbberElementId = `throbber-${this._elementId}`;
         this._throbberElementSelector = `#throbber-${this._elementId}`;
 

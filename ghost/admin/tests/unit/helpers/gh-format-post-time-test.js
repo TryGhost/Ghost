@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import moment from 'moment';
 import sinon from 'sinon';
 import {

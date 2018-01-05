@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
@@ -8,14 +7,14 @@ import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/
 import {expect} from 'chai';
 // import {timeout} from 'ember-concurrency';
 
-describe('Acceptance: Settings - Labs', function() {
+describe('Acceptance: Settings - Labs', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

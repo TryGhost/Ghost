@@ -110,7 +110,5 @@ export function testEditorInputTimeout(input) {
 }
 
 export function waitForRender(selector) {
-    return waitUntil(() => {
-        return find(selector);
-    });
+    return waitUntil(() => find(selector));
 }

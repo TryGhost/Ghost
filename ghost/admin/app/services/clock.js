@@ -10,7 +10,7 @@ const ONE_SECOND = 1000;
 export default Service.extend({
     second: null,
     minute: null,
-    hour:   null,
+    hour: null,
 
     init() {
         this.tick();
@@ -22,7 +22,7 @@ export default Service.extend({
         this.setProperties({
             second: now.seconds(),
             minute: now.minutes(),
-            hour:   now.hours()
+            hour: now.hours()
         });
 
         if (!Ember.testing) { // eslint-disable-line
@@ -30,7 +30,6 @@ export default Service.extend({
                 this.tick();
             }, ONE_SECOND);
         }
-
     }
 
 });

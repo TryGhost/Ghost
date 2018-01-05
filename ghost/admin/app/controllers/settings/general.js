@@ -87,7 +87,6 @@ export default Controller.extend({
             this.send('collectTitleTokens', []);
 
             return model;
-
         } catch (error) {
             if (error) {
                 notifications.showAPIError(error, {key: 'settings.save'});
@@ -223,7 +222,6 @@ export default Controller.extend({
                 run.schedule('afterRender', this, function () {
                     this.set('model.facebook', newUrl);
                 });
-
             } catch (e) {
                 if (e === 'invalid url') {
                     errMessage = 'The URL must be in a format like '
@@ -233,7 +231,6 @@ export default Controller.extend({
                 }
 
                 throw e;
-
             } finally {
                 this.get('model.hasValidated').pushObject('facebook');
             }

@@ -115,7 +115,7 @@ export default Service.extend({
     _addPhotosFromResponse(response) {
         let photos = response.results || response;
 
-        photos.forEach((photo) => this._addPhoto(photo));
+        photos.forEach(photo => this._addPhoto(photo));
     },
 
     _addPhoto(photo) {
@@ -150,7 +150,7 @@ export default Service.extend({
         let columnHeights = [];
 
         // pre-fill column arrays based on columnCount
-        for (let i = 0; i < this.get('columnCount'); i++) {
+        for (let i = 0; i < this.get('columnCount'); i += 1) {
             columns[i] = [];
             columnHeights[i] = 0;
         }
@@ -184,10 +184,10 @@ export default Service.extend({
         headers['X-Unsplash-Cache'] = true;
 
         return fetch(url, {headers})
-            .then((response) => this._checkStatus(response))
-            .then((response) => this._extractPagination(response))
-            .then((response) => response.json())
-            .then((response) => this._addPhotosFromResponse(response))
+            .then(response => this._checkStatus(response))
+            .then(response => this._extractPagination(response))
+            .then(response => response.json())
+            .then(response => this._addPhotosFromResponse(response))
             .catch(() => {
                 // if the error text isn't already set then we've get a connection error from `fetch`
                 if (!options.ignoreErrors && !this.get('error')) {
@@ -206,9 +206,7 @@ export default Service.extend({
         let responseTextPromise = resolve();
 
         if (response.headers.map['content-type'] === 'application/json') {
-            responseTextPromise = response.json().then((json) => {
-                return json.errors[0];
-            });
+            responseTextPromise = response.json().then(json => json.errors[0]);
         } else if (response.headers.map['content-type'] === 'text/xml') {
             responseTextPromise = response.text();
         }

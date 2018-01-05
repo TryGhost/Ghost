@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
@@ -12,7 +11,7 @@ import {
 import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Signin', function() {
+describe('Acceptance: Signin', function () {
     let application;
 
     beforeEach(function () {

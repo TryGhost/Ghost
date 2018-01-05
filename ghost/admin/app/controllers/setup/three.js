@@ -48,9 +48,7 @@ export default Controller.extend({
     invalidUsersArray: computed('usersArray', 'ownerEmail', function () {
         let ownerEmail = this.get('ownerEmail');
 
-        return this.get('usersArray').reject((user) => {
-            return validator.isEmail(user) || user === ownerEmail;
-        });
+        return this.get('usersArray').reject(user => validator.isEmail(user) || user === ownerEmail);
     }),
 
     validationResult: computed('invalidUsersArray', function () {
@@ -131,9 +129,7 @@ export default Controller.extend({
     }),
 
     authorRole: computed(function () {
-        return this.store.findAll('role', {reload: true}).then((roles) => {
-            return roles.findBy('name', 'Author');
-        });
+        return this.store.findAll('role', {reload: true}).then(roles => roles.findBy('name', 'Author'));
     }),
 
     _transitionAfterSubmission() {
@@ -162,7 +158,6 @@ export default Controller.extend({
                 this.send('loadServerNotifications');
                 this._transitionAfterSubmission();
             });
-
         } else if (users.length === 0) {
             this.get('errors').add('users', 'No users to invite');
         }
@@ -183,18 +178,14 @@ export default Controller.extend({
                     role: authorRole
                 });
 
-                return invite.save().then(() => {
-                    return {
-                        email: user,
-                        success: invite.get('status') === 'sent'
-                    };
-                }).catch((error) => {
-                    return {
-                        error,
-                        email: user,
-                        success: false
-                    };
-                });
+                return invite.save().then(() => ({
+                    email: user,
+                    success: invite.get('status') === 'sent'
+                })).catch(error => ({
+                    error,
+                    email: user,
+                    success: false
+                }));
             })
         );
     },
@@ -207,7 +198,7 @@ export default Controller.extend({
 
         invites.forEach((invite) => {
             if (invite.success) {
-                successCount++;
+                successCount += 1;
             } else if (isInvalidError(invite.error)) {
                 message = `${invite.email} was invalid: ${invite.error.payload.errors[0].message}`;
                 notifications.showAlert(message, {type: 'error', delayed: true, key: `signup.send-invitations.${invite.email}`});
@@ -220,7 +211,7 @@ export default Controller.extend({
             invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
             message = `Failed to send ${erroredEmails.length} ${invitationsString}`;
             message += erroredEmails.join(', ');
-            message += ". Please check your email configuration, see <a href='https://docs.ghost.org/v1.0.0/docs/mail-config' target='_blank'>https://docs.ghost.org/v1.0.0/docs/mail-config</a> for instructions";
+            message += '. Please check your email configuration, see <a href=\'https://docs.ghost.org/v1.0.0/docs/mail-config\' target=\'_blank\'>https://docs.ghost.org/v1.0.0/docs/mail-config</a> for instructions';
 
             message = htmlSafe(message);
             notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});

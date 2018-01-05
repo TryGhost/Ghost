@@ -8,7 +8,7 @@ import {bind, once, scheduleOnce} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-const CmEditorComponent =  Component.extend(InvokeActionMixin, {
+const CmEditorComponent = Component.extend(InvokeActionMixin, {
     classNameBindings: ['isFocused:focus'],
 
     _value: boundOneWay('value'), // make sure a value exists

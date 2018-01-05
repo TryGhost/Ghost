@@ -30,11 +30,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
 
             // authors do not have permission to hit the invites or suspended users endpoint
             if (!user.get('isAuthor')) {
-                modelPromises.invites = this.store.query('invite', {limit: 'all'}).then(() => {
-                    return this.store.filter('invite', (invite) => {
-                        return !invite.get('isNew');
-                    });
-                });
+                modelPromises.invites = this.store.query('invite', {limit: 'all'})
+                    .then(() => this.store.filter('invite', invite => !invite.get('isNew')));
 
                 // fetch suspended users separately so that infinite scroll still works
                 modelPromises.suspendedUsers = this.store.query('user', {limit: 'all', filter: 'status:inactive'});
@@ -42,9 +39,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
 
             // we need to load the roles into ember cache
             // invites return role_id only and we do not offer a /role/:id endpoint
-            modelPromises.roles = this.get('store').query('role', {}).then((roles) => {
-                return roles;
-            });
+            modelPromises.roles = this.get('store').query('role', {});
 
             return RSVP.hash(modelPromises);
         });

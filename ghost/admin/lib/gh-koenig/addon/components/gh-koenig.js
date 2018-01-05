@@ -43,7 +43,7 @@ export default Component.extend({
     cards: null,
     atoms: null,
     serializeVersion: MOBILEDOC_VERSION,
-    options: {},
+    options: null,
 
     // exposed properties
     editor: null,
@@ -61,7 +61,7 @@ export default Component.extend({
 
     // merge in named options with the `options` property data-bag
     editorOptions: computed(function () {
-        let options = this.get('options');
+        let options = this.get('options') || {};
         let cards = this.get('cards') || [];
         let atoms = this.get('atoms') || [];
 
@@ -69,7 +69,7 @@ export default Component.extend({
         // with Ghost specific functionality
         // TODO: this also sets the emberCards property - do we need that indirection?
         let createCard = createCardFactory.apply(this, {}); // need to pass the toolbar
-        cards = defaultCards.concat(cards).map((card) => createCard(card));
+        cards = defaultCards.concat(cards).map(card => createCard(card));
 
         // add our default atoms
         atoms.concat([{
@@ -206,17 +206,13 @@ export default Component.extend({
         // events in the cards.
         // TODO: is there a better way to handle this?
         if (!document.onkeydown) {
-            document.onkeydown = (event) => {
-                // if any of the keydown handlers return false then we return false
-                // therefore stopping the event from propogating.
-                return this._keyDownHandler.reduce((returnType, handler) => {
-                    let result = handler(event);
-                    if (returnType !== false) {
-                        return result;
-                    }
-                    return returnType;
-                }, true);
-            };
+            document.onkeydown = event => this._keyDownHandler.reduce((returnType, handler) => {
+                let result = handler(event);
+                if (returnType !== false) {
+                    return result;
+                }
+                return returnType;
+            }, true);
         }
 
         let editor = this.get('editor');
@@ -309,15 +305,25 @@ export default Component.extend({
                 }
             });
         }
-        this.sendAction('wordcountDidChange', wordcount);
+
+        let action = this.get('wordcountDidChange');
+        if (action) {
+            action(wordcount);
+        }
     },
 
     _willCreateEditor() {
-        this.sendAction('willCreateEditor');
+        let action = this.get('willCreateEditor');
+        if (action) {
+            action();
+        }
     },
 
     _didCreateEditor(editor) {
-        this.sendAction('didCreateEditor', editor);
+        let action = this.get('didCreateEditor');
+        if (action) {
+            action(editor);
+        }
     },
 
     willDestroyElement() {
@@ -331,14 +337,23 @@ export default Component.extend({
         // store a cache of the local doc so that we don't need to reinitialise it.
         let serializeVersion = this.get('serializeVersion');
         let updatedMobiledoc = editor.serialize(serializeVersion);
+        let onChangeAction = this.get('onChange');
+        let onFirstChangeAction = this.get('onFirstChange');
+
         this._localMobiledoc = updatedMobiledoc;
-        this.sendAction('onChange', updatedMobiledoc);
+
+        if (onChangeAction) {
+            onChangeAction(updatedMobiledoc);
+        }
 
         // we need to trigger a first-change action so that we can trigger a
         // save and transition from new-> edit
         if (this._localMobiledoc !== BLANK_DOC && !this._hasChanged) {
             this._hasChanged = true;
-            this.sendAction('onFirstChange', this._localMobiledoc);
+
+            if (onFirstChangeAction) {
+                onFirstChangeAction(this._localMobiledoc);
+            }
         }
 
         this.processWordcount();
@@ -360,7 +375,7 @@ export default Component.extend({
                 throw new Error('A selection must include a cardId');
             }
 
-            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let card = this.get('emberCards').find(card => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parent('.kg-card');
             let selectedCard = this.get('selectedCard');
             if (selectedCard && selectedCard !== card) {
@@ -397,7 +412,7 @@ export default Component.extend({
                 return;
             }
 
-            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let card = this.get('emberCards').find(card => card.id === cardId);
             let cardHolder = $(`#${cardId}`).parents('.kg-card');
             let selectedCard = this.get('selectedCard');
             if (selectedCard && selectedCard !== card) {
@@ -476,7 +491,6 @@ export default Component.extend({
                                     postEditor.insertSectionAtEnd(newSection);
                                     postEditor.setRange(newSection.toRange());
                                 });
-
                             }
                             this.send('deselectCard');
                         });
@@ -510,14 +524,14 @@ export default Component.extend({
         },
 
         editCard(cardId) {
-            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let card = this.get('emberCards').find(card => card.id === cardId);
             this.set('editedCard', card);
             this.send('selectCard', cardId);
         },
 
         deleteCard(cardId, forwards = false) {
             let editor = this.get('editor');
-            let card = this.get('emberCards').find((card) => card.id === cardId);
+            let card = this.get('emberCards').find(card => card.id === cardId);
 
             getCardFromDoc(cardId, editor).then(function (section) {
                 let range;
@@ -556,7 +570,7 @@ export default Component.extend({
         dropImage(event) {
             if (event.dataTransfer.files.length) {
                 event.preventDefault();
-                for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                for (let i = 0; i < event.dataTransfer.files.length; i += 1) {
                     let file = [event.dataTransfer.files[i]];
                     this.editor.insertCard('card-image', {pos: 'top', file});
                 }

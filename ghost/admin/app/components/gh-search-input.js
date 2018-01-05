@@ -96,13 +96,11 @@ export default Component.extend({
         let content = this.get('content');
 
         return this.get('ajax').request(postsUrl, {data: postsQuery}).then((posts) => {
-            content.pushObjects(posts.posts.map((post) => {
-                return {
-                    id: `post.${post.id}`,
-                    title: post.title,
-                    category: post.page ? 'Pages' : 'Stories'
-                };
-            }));
+            content.pushObjects(posts.posts.map(post => ({
+                id: `post.${post.id}`,
+                title: post.title,
+                category: post.page ? 'Pages' : 'Stories'
+            })));
         }).catch((error) => {
             this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});
         });
@@ -115,13 +113,11 @@ export default Component.extend({
         let content = this.get('content');
 
         return this.get('ajax').request(usersUrl, {data: usersQuery}).then((users) => {
-            content.pushObjects(users.users.map((user) => {
-                return {
-                    id: `user.${user.slug}`,
-                    title: user.name,
-                    category: 'Users'
-                };
-            }));
+            content.pushObjects(users.users.map(user => ({
+                id: `user.${user.slug}`,
+                title: user.name,
+                category: 'Users'
+            })));
         }).catch((error) => {
             this.get('notifications').showAPIError(error, {key: 'search.loadUsers.error'});
         });
@@ -134,13 +130,11 @@ export default Component.extend({
         let content = this.get('content');
 
         return this.get('ajax').request(tagsUrl, {data: tagsQuery}).then((tags) => {
-            content.pushObjects(tags.tags.map((tag) => {
-                return {
-                    id: `tag.${tag.slug}`,
-                    title: tag.name,
-                    category: 'Tags'
-                };
-            }));
+            content.pushObjects(tags.tags.map(tag => ({
+                id: `tag.${tag.slug}`,
+                title: tag.name,
+                category: 'Tags'
+            })));
         }).catch((error) => {
             this.get('notifications').showAPIError(error, {key: 'search.loadTags.error'});
         });

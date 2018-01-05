@@ -14,7 +14,7 @@ export default function createCardFactory(toolbar) {
     function createCard(cardObject) {
         // if we have an array of cards then we convert them one by one.
         if (cardObject instanceof Array) {
-            return cardObject.map((card) => createCard(card));
+            return cardObject.map(card => createCard(card));
         }
 
         // an ember card doesn't need a render or edit method
@@ -23,7 +23,6 @@ export default function createCardFactory(toolbar) {
         }
 
         cardObject.render = ({env, options, payload: _payload}) => {
-
             // setupUI({env, options, payload});
 
             // TODO: setup non ember UI
@@ -41,7 +40,6 @@ export default function createCardFactory(toolbar) {
         };
 
         cardObject.edit = ({env, options, payload: _payload}) => {
-
             // setupUI({env, options, payload});
             let payload = copy(_payload);
             payload.card_name = env.name;

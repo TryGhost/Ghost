@@ -72,9 +72,7 @@ export default Service.extend(Evented, {
         let viewed = this.get('viewed');
         let throbbers = this.get('throbbers');
 
-        return throbbers.reject((throbber) => {
-            return viewed.includes(throbber.id);
-        });
+        return throbbers.reject(throbber => viewed.includes(throbber.id));
     }),
 
     // retrieve the IDs of the viewed throbbers from the server, always returns

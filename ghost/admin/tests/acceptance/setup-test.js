@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
 import startApp from '../helpers/start-app';
@@ -151,7 +150,7 @@ describe('Acceptance: Setup', function () {
             server.loadFixtures('roles');
 
             server.post('/authentication/setup', function () {
-                postCount++;
+                postCount += 1;
 
                 // validation error
                 if (postCount === 1) {
@@ -241,7 +240,7 @@ describe('Acceptance: Setup', function () {
             server.post('/invites/', function ({invites}) {
                 let attrs = this.normalizedRequestAttrs();
 
-                postCount++;
+                postCount += 1;
 
                 // invalid
                 if (postCount === 1) {
