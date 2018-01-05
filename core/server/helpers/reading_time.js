@@ -9,9 +9,12 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
     localUtils = proxy.localUtils;
 
-module.exports = function reading_time() {// eslint-disable-line camelcase
+module.exports = function reading_time(options) {// eslint-disable-line camelcase
+    options = options || {};
+    options.hash = options.hash || {};
+
     var html,
-        wordsPerMinute = 275,
+        wordsPerMinute = options.hash.wpm || 275,
         wordsPerSecond = wordsPerMinute / 60,
         wordCount,
         imageCount,
