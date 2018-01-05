@@ -19,7 +19,11 @@ export default Component.extend({
 
         editor.range = Range.create(section, startOffset, section, endOffset);
 
-        this.sendAction('clicked');
+        let action = this.get('clicked');
+        if (action) {
+            action();
+        }
+
         this.get('tool').onClick(editor, section);
     }
 });

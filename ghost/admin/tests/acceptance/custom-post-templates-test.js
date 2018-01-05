@@ -9,10 +9,10 @@ import {expect} from 'chai';
 // keyCodes
 const KEY_S = 83;
 
-describe('Acceptance: Custom Post Templates', function() {
+describe('Acceptance: Custom Post Templates', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
 
         server.loadFixtures('settings');
@@ -23,7 +23,7 @@ describe('Acceptance: Custom Post Templates', function() {
         authenticateSession(application);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

@@ -24,7 +24,7 @@ export function fileUpload($element, content, options) {
     $element.trigger(event);
 }
 
-export default registerAsyncHelper('fileUpload', function(app, selector, content, options) {
+export default registerAsyncHelper('fileUpload', function (app, selector, content, options) {
     let file = createFile(content, options);
 
     return triggerEvent(

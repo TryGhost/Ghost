@@ -1,4 +1,3 @@
-/* jshint expr:true */
 /* eslint-disable camelcase */
 import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';

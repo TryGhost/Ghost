@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import RSVP from 'rsvp';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
@@ -7,12 +6,12 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: modal-transfer-owner', function() {
+describe('Integration: Component: modal-transfer-owner', function () {
     setupComponentTest('transfer-owner', {
         integration: true
     });
 
-    it('triggers confirm action', function() {
+    it('triggers confirm action', function () {
         let confirm = sinon.stub();
         let closeModal = sinon.spy();
 

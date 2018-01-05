@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import EmberObject from '@ember/object';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {

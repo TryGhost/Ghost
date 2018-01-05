@@ -253,9 +253,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             model.set('customExcerpt', excerpt);
 
-            return model.validate({property: 'customExcerpt'}).then(() => {
-                return this.get('savePost').perform();
-            });
+            return model.validate({property: 'customExcerpt'}).then(() => this.get('savePost').perform());
         },
 
         setHeaderInjection(code) {
@@ -268,9 +266,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             model.set('codeinjectionHead', code);
 
-            return model.validate({property: 'codeinjectionHead'}).then(() => {
-                return this.get('savePost').perform();
-            });
+            return model.validate({property: 'codeinjectionHead'}).then(() => this.get('savePost').perform());
         },
 
         setFooterInjection(code) {
@@ -283,9 +279,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             model.set('codeinjectionFoot', code);
 
-            return model.validate({property: 'codeinjectionFoot'}).then(() => {
-                return this.get('savePost').perform();
-            });
+            return model.validate({property: 'codeinjectionFoot'}).then(() => this.get('savePost').perform());
         },
 
         setMetaTitle(metaTitle) {

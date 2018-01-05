@@ -1,11 +1,10 @@
-/* jshint expr:true */
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import {describe, it} from 'mocha';
 import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Transform: navigation-settings', function() {
+describe('Unit: Transform: navigation-settings', function () {
     setupTest('transform:navigation-settings', {});
     it('deserializes navigation json', function () {
         let transform = this.subject();

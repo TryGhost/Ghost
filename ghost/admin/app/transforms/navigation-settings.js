@@ -12,9 +12,7 @@ export default Transform.extend({
             settingsArray = [];
         }
 
-        navItems = settingsArray.map((itemDetails) => {
-            return NavigationItem.create(itemDetails);
-        });
+        navItems = settingsArray.map(itemDetails => NavigationItem.create(itemDetails));
 
         return emberA(navItems);
     },

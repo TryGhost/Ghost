@@ -161,9 +161,7 @@ let ajaxService = AjaxService.extend({
         //   huge deal because the session will be invalidated and app reloaded
         //   but it would be nice to be consistent
         if (isAuthenticated && isGhostRequest && !isTokenRequest && isTokenExpired) {
-            return this.get('session').restore().then(() => {
-                return this._makeRequest(hash);
-            });
+            return this.get('session').restore().then(() => this._makeRequest(hash));
         }
 
         return this._super(...arguments);
@@ -202,7 +200,7 @@ let ajaxService = AjaxService.extend({
                     errors = [errors];
                 }
 
-                payload.errors = errors.map(function(error) {
+                payload.errors = errors.map(function (error) {
                     if (typeof error === 'string') {
                         return {message: error};
                     } else {

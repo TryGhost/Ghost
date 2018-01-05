@@ -1,17 +1,16 @@
-/* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
 
-describe('Acceptance: Password Reset', function() {
+describe('Acceptance: Password Reset', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

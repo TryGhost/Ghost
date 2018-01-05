@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import Mirage from 'ember-cli-mirage';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
@@ -15,14 +14,14 @@ let htmlErrorResponse = function () {
     );
 };
 
-describe('Acceptance: Error Handling', function() {
+describe('Acceptance: Error Handling', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

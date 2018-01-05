@@ -38,7 +38,7 @@ export default Authenticator.extend({
 
         let options = {
             data,
-            dataType:    'json',
+            dataType: 'json',
             contentType: 'application/x-www-form-urlencoded'
         };
 
@@ -63,7 +63,7 @@ export default Authenticator.extend({
 
     authenticate(identification, password, scope = [], headers = {}) {
         return new RSVP.Promise((resolve, reject) => {
-            let data                = {'grant_type': 'password', username: identification, password};
+            let data = {grant_type: 'password', username: identification, password};
             let serverTokenEndpoint = this.get('serverTokenEndpoint');
             let scopesString = wrap(scope).join(' ');
             if (!isEmpty(scopesString)) {
@@ -77,7 +77,7 @@ export default Authenticator.extend({
                     /* eslint-enable camelcase */
 
                     if (!isEmpty(expiresAt)) {
-                        response = assign(response, {'expires_at': expiresAt});
+                        response = assign(response, {expires_at: expiresAt});
                     }
 
                     resolve(response);

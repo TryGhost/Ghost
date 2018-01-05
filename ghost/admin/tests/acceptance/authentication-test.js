@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import OAuth2Authenticator from 'ghost-admin/authenticators/oauth2';
 import destroyApp from '../helpers/destroy-app';
@@ -132,13 +131,11 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 401 API response', async function () {
             // return a 401 when attempting to retrieve users
-            server.get('/users/', () => {
-                return new Response(401, {}, {
-                    errors: [
-                        {message: 'Access denied.', errorType: 'UnauthorizedError'}
-                    ]
-                });
-            });
+            server.get('/users/', () => new Response(401, {}, {
+                errors: [
+                    {message: 'Access denied.', errorType: 'UnauthorizedError'}
+                ]
+            }));
 
             await authenticateSession(application);
             await visit('/team');
@@ -242,9 +239,7 @@ describe('Acceptance: Authentication', function () {
         let role = server.create('role', {name: 'Administrator'});
         server.create('user', {roles: [role]});
 
-        server.post('/uploads', (schema, request) => {
-            return request;
-        });
+        server.post('/uploads', (schema, request) => request);
 
         /* eslint-disable camelcase */
         authenticateSession(application, {
@@ -257,7 +252,7 @@ describe('Acceptance: Authentication', function () {
         // necessary to visit a page to fully boot the app in testing
         await visit('/');
 
-        /* eslint-disable ember/jquery-ember-run */
+        /* eslint-disable ghost/ember/jquery-ember-run */
         await $.ajax({
             type: 'POST',
             url: `${Ghost.apiRoot}/uploads/`,
@@ -270,6 +265,6 @@ describe('Acceptance: Authentication', function () {
         }).always(() => {
             done();
         });
-        /* eslint-enable ember/jquery-ember-run */
+        /* eslint-enable ghost/ember/jquery-ember-run */
     });
 });

@@ -1,11 +1,10 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import Pretender from 'pretender';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Integration: Service: lazy-loader', function() {
+describe('Integration: Service: lazy-loader', function () {
     setupTest('service:lazy-loader', {integration: true});
     let server;
     let ghostPaths = {

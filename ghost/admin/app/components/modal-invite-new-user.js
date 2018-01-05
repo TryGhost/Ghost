@@ -51,38 +51,34 @@ export default ModalComponent.extend(ValidationEngine, {
 
         // TODO: either the validator should check the email's existence or
         // the API should return an appropriate error when attempting to save
-        return new Promise((resolve, reject) => {
-            return this._super().then(() => {
-                return RSVP.hash({
-                    users: this.get('store').findAll('user', {reload: true}),
-                    invites: this.get('store').findAll('invite', {reload: true})
-                }).then((data) => {
-                    let existingUser = data.users.findBy('email', email);
-                    let existingInvite = data.invites.findBy('email', email);
+        return new Promise((resolve, reject) => this._super().then(() => RSVP.hash({
+            users: this.get('store').findAll('user', {reload: true}),
+            invites: this.get('store').findAll('invite', {reload: true})
+        }).then((data) => {
+            let existingUser = data.users.findBy('email', email);
+            let existingInvite = data.invites.findBy('email', email);
 
-                    if (existingUser || existingInvite) {
-                        this.get('errors').clear('email');
-                        if (existingUser) {
-                            this.get('errors').add('email', 'A user with that email address already exists.');
-                        } else {
-                            this.get('errors').add('email', 'A user with that email address was already invited.');
-                        }
+            if (existingUser || existingInvite) {
+                this.get('errors').clear('email');
+                if (existingUser) {
+                    this.get('errors').add('email', 'A user with that email address already exists.');
+                } else {
+                    this.get('errors').add('email', 'A user with that email address was already invited.');
+                }
 
-                        // TODO: this shouldn't be needed, ValidationEngine doesn't mark
-                        // properties as validated when validating an entire object
-                        this.get('hasValidated').addObject('email');
-                        reject();
-                    } else {
-                        resolve();
-                    }
-                });
-            }, () => {
                 // TODO: this shouldn't be needed, ValidationEngine doesn't mark
                 // properties as validated when validating an entire object
                 this.get('hasValidated').addObject('email');
                 reject();
-            });
-        });
+            } else {
+                resolve();
+            }
+        }), () => {
+            // TODO: this shouldn't be needed, ValidationEngine doesn't mark
+            // properties as validated when validating an entire object
+            this.get('hasValidated').addObject('email');
+            reject();
+        }));
     },
 
     sendInvitation: task(function* () {

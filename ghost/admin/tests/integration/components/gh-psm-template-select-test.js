@@ -7,7 +7,7 @@ import {find} from 'ember-native-dom-helpers';
 import {setupComponentTest} from 'ember-mocha';
 import {startMirage} from 'ghost-admin/initializers/ember-cli-mirage';
 
-describe('Integration: Component: gh-psm-template-select', function() {
+describe('Integration: Component: gh-psm-template-select', function () {
     setupComponentTest('gh-psm-template-select', {
         integration: true
     });

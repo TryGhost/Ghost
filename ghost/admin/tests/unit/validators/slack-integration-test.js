@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import SlackObject from 'ghost-admin/models/slack-integration';
 import validator from 'ghost-admin/validators/slack-integration';
 import {

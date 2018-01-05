@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import NavItem from 'ghost-admin/models/navigation-item';
 import validator from 'ghost-admin/validators/nav-item';
 import {

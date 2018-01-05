@@ -20,9 +20,7 @@ export default SessionService.extend({
                 this.get('tour').fetchViewed()
             ];
 
-            return RSVP.all(preloadPromises).then(() => {
-                return authResult;
-            });
+            return RSVP.all(preloadPromises).then(() => authResult);
         });
     }
 });

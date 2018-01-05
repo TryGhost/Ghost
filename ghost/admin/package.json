@@ -19,7 +19,7 @@
     "start": "ember server",
     "build": "ember build",
     "test": "ember test",
-    "lint": "ember test --launch phantomjs -f 'ESLint'",
+    "lint:js": "eslint ./*.js app config lib mirage server tests",
     "coverage": "cat ./coverage/lcov.info | coveralls"
   },
   "engines": {
@@ -94,9 +94,7 @@
     "ember-truth-helpers": "2.0.0",
     "ember-wormhole": "0.5.4",
     "emberx-file-input": "1.2.1",
-    "eslint-plugin-ember": "5.0.3",
-    "eslint-plugin-ember-suave": "1.0.0",
-    "eslint-plugin-sort-imports-es6-autofix": "https://github.com/kevinansfield/eslint-plugin-sort-imports-es6-autofix.git#node-4-compat",
+    "eslint-plugin-ghost": "0.0.21",
     "fs-extra": "4.0.3",
     "glob": "7.1.2",
     "grunt": "1.0.1",

@@ -1,4 +1,3 @@
-/* jshint scripturl:true */
 import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
@@ -106,9 +105,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     });
 
     it('adds base url to relative urls on blur', function () {
-        this.on('updateUrl', () => {
-            return null;
-        });
+        this.on('updateUrl', () => null);
         this.render(hbs`
             {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
@@ -125,9 +122,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     });
 
     it('adds "mailto:" to email addresses on blur', function () {
-        this.on('updateUrl', () => {
-            return null;
-        });
+        this.on('updateUrl', () => null);
         this.render(hbs`
             {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
@@ -150,9 +145,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     });
 
     it('doesn\'t add base url to invalid urls on blur', function () {
-        this.on('updateUrl', () => {
-            return null;
-        });
+        this.on('updateUrl', () => null);
         this.render(hbs`
             {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
@@ -172,9 +165,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     });
 
     it('doesn\'t mangle invalid urls on blur', function () {
-        this.on('updateUrl', () => {
-            return null;
-        });
+        this.on('updateUrl', () => null);
         this.render(hbs`
             {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
         `);
@@ -189,9 +180,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     // https://github.com/TryGhost/Ghost/issues/9373
     it('doesn\'t mangle urls when baseUrl has unicode characters', function () {
-        this.on('updateUrl', () => {
-            return null;
-        });
+        this.on('updateUrl', () => null);
 
         this.set('baseUrl', 'http://exämple.com');
 
@@ -210,7 +199,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('triggers "update" action on blur', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
-            changeActionCallCount++;
+            changeActionCallCount += 1;
         });
 
         this.render(hbs `
@@ -226,7 +215,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('triggers "update" action on enter', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
-            changeActionCallCount++;
+            changeActionCallCount += 1;
         });
 
         this.render(hbs `
@@ -248,7 +237,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('triggers "update" action on CMD-S', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
-            changeActionCallCount++;
+            changeActionCallCount += 1;
         });
 
         this.render(hbs `

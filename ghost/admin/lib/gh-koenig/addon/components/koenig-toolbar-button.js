@@ -25,7 +25,7 @@ export default Component.extend({
     }),
 
     // returns "primary" or null
-    visibilityClass: computed('tool.visibility', function() {
+    visibilityClass: computed('tool.visibility', function () {
         return this.get('tool.visibility');
     }),
 
@@ -46,6 +46,5 @@ export default Component.extend({
         if (this.tool.visibility) {
             this.set(this.tool.visibility, true);
         }
-
     }
 });

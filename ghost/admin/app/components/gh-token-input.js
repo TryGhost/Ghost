@@ -81,7 +81,7 @@ export default Component.extend({
     optionsWithoutSelectedTask: task(function* () {
         let options = yield this.get('options');
         let selected = yield this.get('selected');
-        return options.filter((o) => !selected.includes(o));
+        return options.filter(o => !selected.includes(o));
     }),
 
     shouldShowCreateOption(term, options) {
@@ -140,9 +140,7 @@ export default Component.extend({
             return;
         }
 
-        let suggestion = selection.find((option) => {
-            return option.__isSuggestion__;
-        });
+        let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
             this.get('oncreate')(suggestion.__value__, select);

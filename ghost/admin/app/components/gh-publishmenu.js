@@ -40,7 +40,7 @@ export default Component.extend({
         }
     }),
 
-    _runningText:  computed('postState', 'saveType', function() {
+    _runningText: computed('postState', 'saveType', function () {
         let saveType = this.get('saveType');
         let postState = this.get('postState');
         let runningText;
@@ -62,7 +62,7 @@ export default Component.extend({
 
     runningText: null,
 
-    buttonText:  computed('postState', 'saveType', function() {
+    buttonText: computed('postState', 'saveType', function () {
         let saveType = this.get('saveType');
         let postState = this.get('postState');
         let buttonText;
@@ -82,7 +82,7 @@ export default Component.extend({
         return buttonText || 'Publish';
     }),
 
-    successText: computed('_previousStatus', 'postState', function() {
+    successText: computed('_previousStatus', 'postState', function () {
         let postState = this.get('postState');
         let previousStatus = this.get('_previousStatus');
         let buttonText;
@@ -118,7 +118,6 @@ export default Component.extend({
 
             this._cachePublishedAtBlogTZ();
             return post;
-
         } catch (error) {
             // re-throw if we don't have a validation error
             if (error) {

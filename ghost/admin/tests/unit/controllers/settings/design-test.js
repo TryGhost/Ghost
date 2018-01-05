@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import EmberObject from '@ember/object';
 import NavItem from 'ghost-admin/models/navigation-item';
 import {assert, expect} from 'chai';
@@ -57,9 +56,9 @@ describe('Unit: Controller: settings/design', function () {
 
         run(() => {
             ctrl.set('model', EmberObject.create({navigation: [
-                NavItem.create({label: 'First',   url: '/'}),
-                NavItem.create({label: '',        url: '/second'}),
-                NavItem.create({label: 'Third',   url: ''})
+                NavItem.create({label: 'First', url: '/'}),
+                NavItem.create({label: '', url: '/second'}),
+                NavItem.create({label: 'Third', url: ''})
             ]}));
             // blank item won't get added because the last item is incomplete
             expect(ctrl.get('model.navigation.length')).to.equal(3);
@@ -82,8 +81,8 @@ describe('Unit: Controller: settings/design', function () {
 
         run(() => {
             ctrl.set('model', EmberObject.create({navigation: [
-                NavItem.create({label: 'First',   url: '/'}),
-                NavItem.create({label: '',        url: ''})
+                NavItem.create({label: 'First', url: '/'}),
+                NavItem.create({label: '', url: ''})
             ]}));
 
             expect(ctrl.get('model.navigation.length')).to.equal(2);

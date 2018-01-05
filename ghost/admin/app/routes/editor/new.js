@@ -5,11 +5,11 @@ export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
     model() {
-        return this.get('session.user').then((user) => {
-            return this.store.createRecord('post', {
+        return this.get('session.user').then(user => (
+            this.store.createRecord('post', {
                 author: user
-            });
-        });
+            })
+        ));
     },
 
     renderTemplate(controller, model) {

@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import wait from 'ember-test-helpers/wait';
@@ -7,7 +6,7 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-timezone-select', function() {
+describe('Integration: Component: gh-timezone-select', function () {
     setupComponentTest('gh-timezone-select', {
         integration: true
     });

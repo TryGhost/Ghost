@@ -1,4 +1,3 @@
-/* eslint-disable ember-suave/prefer-destructuring, no-unused-vars */
 import {
     replaceWithHeaderSection,
     replaceWithListSection
@@ -9,7 +8,6 @@ import {
 // https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input
 
 export default function (editor) {
-
     // We don't want to run all our content rules on every text entry event,
     // instead we check to see if this text entry event could match a content
     // rule, and only then run the rules. Right now we only want to match
@@ -93,7 +91,7 @@ export default function (editor) {
 
     function matchEmStar(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|[^\*])\*([^\*].*?)\*$/);
+        let matches = text.match(/(^|[^*])\*([^*].*?)\*$/);
         if (matches) {
             let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
@@ -139,16 +137,17 @@ export default function (editor) {
     }
 
     function matchImage(editor, text) {
-        let {range} = editor;
         let matches = text.match(/!\[(.*?)\]\((.*?)\)$/);
         if (matches) {
             let img = matches[2];
             let alt = matches[1];
 
-            range = range.extend(-(matches[0].length));
             editor.run((postEditor) => {
                 let card = postEditor.builder.createCardSection('card-image', {pos: 'top', img, alt});
+
+                editor.range.extend(-(matches[0].length));
                 postEditor.replaceSection(editor.range.headSection, card);
+
                 if (!editor.range.headSection.next) {
                     let newSection = editor.builder.createMarkupSection('p');
                     postEditor.insertSectionAtEnd(newSection);
@@ -172,14 +171,16 @@ export default function (editor) {
     }
 
     function matchMarkdown(editor, text) {
-        let {range} = editor;
         let matches = text.match(/```([\s\S]*?)```$/);
         if (matches) {
             let code = matches[0];
-            range = range.extend(-(matches[0].length));
+
             editor.run((postEditor) => {
                 let card = postEditor.builder.createCardSection('card-markdown', {pos: 'top', markdown: code});
+
+                editor.range.extend(-(matches[0].length));
                 postEditor.replaceSection(editor.range.headSection, card);
+
                 if (!editor.range.headSection.next) {
                     let newSection = editor.builder.createMarkupSection('p');
                     postEditor.insertSectionAtEnd(newSection);

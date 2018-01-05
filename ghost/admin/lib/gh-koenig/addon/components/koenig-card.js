@@ -60,7 +60,6 @@ export default Component.extend({
                         this.send('selectCardHard');
                     }
                 });
-
             }
         );
     },
@@ -79,12 +78,20 @@ export default Component.extend({
         },
 
         selectCard() {
-            this.sendAction('selectCard', this.card.id);
+            let action = this.get('selectCard');
+            if (action) {
+                action(this.card.id);
+            }
         },
 
         deselectCard() {
-            this.sendAction('deselectCard', this.card.id);
+            let action = this.get('deselectCard');
+            if (action) {
+                action(this.card.id);
+            }
+
             this.send('stopEdit');
+
             if (this.get('isNew')) {
                 let mobiledocCard = this.$().parents('.kg-card');
                 mobiledocCard.removeClass('new');
@@ -93,20 +100,32 @@ export default Component.extend({
         },
 
         selectCardHard() {
-            this.sendAction('selectCardHard', this.card.id);
+            let action = this.get('selectCardHard');
+            if (action) {
+                action(this.card.id);
+            }
         },
 
         delete() {
-            this.sendAction('deleteCard', this.card.id);
+            let action = this.get('deleteCard');
+            if (action) {
+                action(this.card.id);
+            }
         },
 
         startEdit() {
-            this.sendAction('edit', this.card.id);
+            let action = this.get('edit');
+            if (action) {
+                action(this.card.id);
+            }
         },
 
         stopEdit() {
             this.send('save');
-            this.sendAction('stopEdit', this.card.id);
+            let action = this.get('stopEdit');
+            if (action) {
+                action(this.card.id);
+            }
         }
     }
 });

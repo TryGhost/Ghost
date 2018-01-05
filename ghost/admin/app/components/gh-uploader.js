@@ -124,7 +124,7 @@ export default Component.extend({
 
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
-        for (let i = 0; i < files.length; i++) {
+        for (let i = 0; i < files.length; i += 1) {
             let file = files[i];
             let result = validate(file);
             if (result === true) {
@@ -174,7 +174,7 @@ export default Component.extend({
 
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of
-        for (let i = 0; i < files.length; i++) {
+        for (let i = 0; i < files.length; i += 1) {
             let file = files[i];
             let tracker = new UploadTracker({file});
 
@@ -233,7 +233,6 @@ export default Component.extend({
             this.onUploadSuccess(result);
 
             return true;
-
         } catch (error) {
             // grab custom error message if present
             let message = error.payload.errors && error.payload.errors[0].message;
@@ -266,14 +265,8 @@ export default Component.extend({
     // computation but that hypothesis needs testing
     _updateProgress() {
         let trackers = this._uploadTrackers;
-
-        let totalSize = trackers.reduce((total, tracker) => {
-            return total + tracker.get('total');
-        }, 0);
-
-        let uploadedSize = trackers.reduce((total, tracker) => {
-            return total + tracker.get('loaded');
-        }, 0);
+        let totalSize = trackers.reduce((total, tracker) => total + tracker.get('total'), 0);
+        let uploadedSize = trackers.reduce((total, tracker) => total + tracker.get('loaded'), 0);
 
         this.set('totalSize', totalSize);
         this.set('uploadedSize', uploadedSize);

@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
@@ -38,7 +37,7 @@ describe('Integration: Component: gh-alerts', function () {
         let expectedCount = 0;
 
         // test double for notify action
-        this.set('notify', (count) => expect(count).to.equal(expectedCount));
+        this.set('notify', count => expect(count).to.equal(expectedCount));
 
         this.render(hbs`{{gh-alerts notify=(action notify)}}`);
 

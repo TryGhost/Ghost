@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import EmberObject from '@ember/object';
 import sinon from 'sinon';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';

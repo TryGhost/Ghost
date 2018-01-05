@@ -43,7 +43,6 @@ export default Controller.extend(ValidationEngine, {
             yield RSVP.all(promises);
 
             return authResult;
-
         } catch (error) {
             if (isVersionMismatchError(error)) {
                 return this.get('notifications').showAPIError(error);
@@ -86,7 +85,6 @@ export default Controller.extend(ValidationEngine, {
             yield this.validate({property: 'signin'});
             return yield this.get('authenticate')
                 .perform(authStrategy, [model.get('identification'), model.get('password')]);
-
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
         }
@@ -109,7 +107,6 @@ export default Controller.extend(ValidationEngine, {
                 {type: 'info', key: 'forgot-password.send.success'}
             );
             return true;
-
         } catch (error) {
             // ValidationEngine throws "undefined" for failed validation
             if (!error) {

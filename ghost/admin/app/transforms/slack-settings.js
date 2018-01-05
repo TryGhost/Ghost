@@ -12,9 +12,7 @@ export default Transform.extend({
             settingsArray = [];
         }
 
-        slackObj = settingsArray.map((itemDetails) => {
-            return SlackObject.create(itemDetails);
-        });
+        slackObj = settingsArray.map(itemDetails => SlackObject.create(itemDetails));
         return emberA(slackObj);
     },
 

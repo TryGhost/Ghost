@@ -26,7 +26,7 @@ const stubFailedUpload = function (server, code, error, delay = 0) {
     }, delay);
 };
 
-describe('Integration: Component: gh-uploader', function() {
+describe('Integration: Component: gh-uploader', function () {
     setupComponentTest('gh-uploader', {
         integration: true
     });
@@ -151,7 +151,7 @@ describe('Integration: Component: gh-uploader', function() {
             this.render(hbs`{{#gh-uploader files=files onComplete=(action uploadsFinished)}}{{/gh-uploader}}`);
             this.set('files', [
                 createFile(['test'], {name: 'file1.png'}), // large - finishes last
-                createFile(['test'], {name: 'file2.png'})  // small - finishes first
+                createFile(['test'], {name: 'file2.png'}) // small - finishes first
             ]);
             await wait();
 

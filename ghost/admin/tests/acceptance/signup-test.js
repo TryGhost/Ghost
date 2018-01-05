@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {
@@ -9,18 +8,18 @@ import {
 } from 'mocha';
 import {expect} from 'chai';
 
-describe('Acceptance: Signup', function() {
+describe('Acceptance: Signup', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 
-    it('can signup successfully', async function() {
+    it('can signup successfully', async function () {
         server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: true}]

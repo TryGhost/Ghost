@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
@@ -6,12 +5,12 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-image-uploader-with-preview', function() {
+describe('Integration: Component: gh-image-uploader-with-preview', function () {
     setupComponentTest('gh-image-uploader-with-preview', {
         integration: true
     });
 
-    it('renders image if provided', function() {
+    it('renders image if provided', function () {
         this.set('image', 'http://example.com/test.png');
 
         this.render(hbs`{{gh-image-uploader-with-preview image=image}}`);

@@ -1,9 +1,8 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupModelTest} from 'ember-mocha';
 
-describe('Unit: Serializer: post', function() {
+describe('Unit: Serializer: post', function () {
     setupModelTest('post', {
         // Specify the other units that are required for this test.
         needs: [
@@ -19,7 +18,7 @@ describe('Unit: Serializer: post', function() {
     });
 
     // Replace this with your real tests.
-    it('serializes records', function() {
+    it('serializes records', function () {
         let record = this.subject();
 
         let serializedRecord = record.serialize();

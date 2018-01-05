@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {afterEach, beforeEach, describe, it} from 'mocha';
@@ -28,30 +27,30 @@ const restoreUserAgent = function () {
     setUserAgent(originalAgent);
 };
 
-describe('Acceptance: Ghost Desktop', function() {
+describe('Acceptance: Ghost Desktop', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 
     describe('update alerts for broken versions', function () {
-        beforeEach(function() {
+        beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
             return authenticateSession(application);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             restoreUserAgent();
         });
 
-        it('displays alert for broken version', async function() {
+        it('displays alert for broken version', async function () {
             setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) ghost-desktop/0.4.0 Chrome/51.0.2704.84 Electron/1.2.2 Safari/537.36');
 
             await visit('/');

@@ -361,18 +361,16 @@ export default Component.extend(ShortcutsMixin, {
     _connectSplitPreview() {
         let cm = this._editor.codemirror;
         let editor = this._editor;
-        /* eslint-disable ember-suave/prefer-destructuring */
         let editorPane = this.$('.gh-markdown-editor-pane')[0];
         let previewPane = this.$('.gh-markdown-editor-preview')[0];
         let previewContent = this.$('.gh-markdown-editor-preview-content')[0];
-        /* eslint-enable ember-suave/prefer-destructuring */
 
         this._editorPane = editorPane;
         this._previewPane = previewPane;
         this._previewContent = previewContent;
 
         // from SimpleMDE -------
-        let sideBySideRenderingFunction = function() {
+        let sideBySideRenderingFunction = function () {
             previewContent.innerHTML = editor.options.previewRender(
                 editor.value(),
                 previewContent
@@ -613,9 +611,7 @@ export default Component.extend(ShortcutsMixin, {
             if (isSplitScreen) {
                 // disable the normal SimpleMDE preview if it's active
                 if (this._editor.isPreviewActive()) {
-                    let preview = this._editor.toolbar.find((button) => {
-                        return button.name === 'preview';
-                    });
+                    let preview = this._editor.toolbar.find(button => button.name === 'preview');
 
                     preview.action(this._editor);
                 }

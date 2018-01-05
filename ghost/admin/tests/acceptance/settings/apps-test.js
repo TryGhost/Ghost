@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
 import {

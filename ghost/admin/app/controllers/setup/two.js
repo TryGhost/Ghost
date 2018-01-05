@@ -42,7 +42,6 @@ export default Controller.extend(ValidationEngine, {
             this.get('errors').remove('session');
 
             return authResult;
-
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
                 if (isVersionMismatchError(error)) {
@@ -158,26 +157,21 @@ export default Controller.extend(ValidationEngine, {
     },
 
     _afterAuthentication(result) {
-        let promises = [];
-
-        promises.pushObject(this.get('settings').fetch());
-        promises.pushObject(this.get('config').fetchPrivate());
+        // fetch settings and private config for synchronous access before transitioning
+        let fetchSettingsAndConfig = RSVP.all([
+            this.get('settings').fetch(),
+            this.get('config').fetchPrivate()
+        ]);
 
         if (this.get('profileImage')) {
             return this._sendImage(result.users[0])
-                .then(() => {
-                    // fetch settings and private config for synchronous access before transitioning
-                    return RSVP.all(promises).then(() => {
-                        return this.transitionToRoute('setup.three');
-                    });
-                }).catch((resp) => {
+                .then(() => (fetchSettingsAndConfig))
+                .then(() => (this.transitionToRoute('setup.three')))
+                .catch((resp) => {
                     this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
                 });
         } else {
-            // fetch settings and private config for synchronous access before transitioning
-            return RSVP.all(promises).then(() => {
-                return this.transitionToRoute('setup.three');
-            });
+            return fetchSettingsAndConfig.then(() => this.transitionToRoute('setup.three'));
         }
     },
 

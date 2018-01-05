@@ -283,7 +283,6 @@ export default Controller.extend({
                 run.schedule('afterRender', this, function () {
                     this.set('user.facebook', newUrl);
                 });
-
             } catch (e) {
                 if (e === 'invalid url') {
                     errMessage = 'The URL must be in a format like '
@@ -293,7 +292,6 @@ export default Controller.extend({
                 }
 
                 throw e;
-
             } finally {
                 this.get('user.hasValidated').pushObject('facebook');
             }

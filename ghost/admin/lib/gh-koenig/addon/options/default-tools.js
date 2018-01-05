@@ -17,7 +17,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'h1').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'h1').length > 0);
             }
         },
         {
@@ -35,7 +35,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'h2').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'h2').length > 0);
             }
         },
         {
@@ -51,7 +51,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'h3').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'h3').length > 0);
             }
         },
         {
@@ -68,7 +68,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'p').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'p').length > 0);
             }
         },
         {
@@ -85,7 +85,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'blockquote').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'blockquote').length > 0);
             }
         },
         {
@@ -102,7 +102,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'ul').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'ul').length > 0);
             }
         },
         {
@@ -119,7 +119,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'ol').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'ol').length > 0);
             }
         },
         {
@@ -154,7 +154,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'em').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'em').length > 0);
             }
         },
         {
@@ -170,7 +170,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 's').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 's').length > 0);
             }
         },
         {
@@ -185,7 +185,7 @@ export default function (editor, toolbar) {
                 toolbar.send('doLink', editor.range);
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'a').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'a').length > 0);
             }
         },
         {
@@ -214,7 +214,7 @@ export default function (editor, toolbar) {
                 });
             },
             checkElements(elements) {
-                set(this, 'selected', elements.filter((element) => element.tagName === 'sup').length > 0);
+                set(this, 'selected', elements.filter(element => element.tagName === 'sup').length > 0);
             }
         },
         {

@@ -1,9 +1,8 @@
-/* jshint expr:true */
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
-describe('Unit: Transform: twitter-url-user', function() {
+describe('Unit: Transform: twitter-url-user', function () {
     setupTest('transform:twitter-url-user', {});
     it('deserializes twitter url', function () {
         let transform = this.subject();

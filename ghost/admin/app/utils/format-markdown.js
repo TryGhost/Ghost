@@ -8,7 +8,7 @@ import markdownitMark from 'npm:markdown-it-mark';
 let slugify = function slugify(inputString, usedHeaders) {
     let slug = inputString.replace(/[^\w]/g, '').toLowerCase();
     if (usedHeaders[slug]) {
-        usedHeaders[slug]++;
+        usedHeaders[slug] += 1;
         slug += usedHeaders[slug];
     }
     return slug;

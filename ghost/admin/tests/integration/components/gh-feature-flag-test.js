@@ -8,7 +8,7 @@ const featureStub = Service.extend({
     testFlag: true
 });
 
-describe('Integration: Component: gh-feature-flag', function() {
+describe('Integration: Component: gh-feature-flag', function () {
     setupComponentTest('gh-feature-flag', {
         integration: true
     });

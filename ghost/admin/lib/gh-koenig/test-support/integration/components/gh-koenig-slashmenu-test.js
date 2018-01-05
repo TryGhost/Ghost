@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import {

@@ -27,7 +27,7 @@ export default Component.extend({
     altText: '',
     saveButton: true,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
-    extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg'],
+    extensions: null,
     validate: null,
 
     dragClass: null,
@@ -38,6 +38,11 @@ export default Component.extend({
 
     ajax: service(),
     notifications: service(),
+
+    init() {
+        this._super(...arguments);
+        this.extensions = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
+    },
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
@@ -75,7 +80,6 @@ export default Component.extend({
         } else if (image.file) {
             this.send('fileSelected', image.file);
             delete image.file;
-
         }
     },
 
@@ -186,8 +190,8 @@ export default Component.extend({
 
                 // TODO: remove console.logs
                 /* eslint-disable no-console */
-                xhr.addEventListener('error', (event) => console.log('error', event));
-                xhr.upload.addEventListener('error', (event) => console.log('errorupload', event));
+                xhr.addEventListener('error', event => console.log('error', event));
+                xhr.upload.addEventListener('error', event => console.log('errorupload', event));
                 /* eslint-enabled no-console */
 
                 return xhr;

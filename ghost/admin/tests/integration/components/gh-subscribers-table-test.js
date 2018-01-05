@@ -1,16 +1,15 @@
-/* jshint expr:true */
 import Table from 'ember-light-table';
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-subscribers-table', function() {
+describe('Integration: Component: gh-subscribers-table', function () {
     setupComponentTest('gh-subscribers-table', {
         integration: true
     });
 
-    it('renders', function() {
+    it('renders', function () {
         this.set('table', new Table([], []));
         this.set('sortByColumn', function () {});
         this.set('delete', function () {});

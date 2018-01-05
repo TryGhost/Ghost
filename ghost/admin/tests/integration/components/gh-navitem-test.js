@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import NavItem from 'ghost-admin/models/navigation-item';
 import hbs from 'htmlbars-inline-precompile';
 import wait from 'ember-test-helpers/wait';
@@ -57,7 +56,7 @@ describe('Integration: Component: gh-navitem', function () {
         let deleteActionCallCount = 0;
         this.on('deleteItem', (navItem) => {
             expect(navItem).to.equal(this.get('navItem'));
-            deleteActionCallCount++;
+            deleteActionCallCount += 1;
         });
 
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl deleteItem=(action "deleteItem")}}`);
@@ -71,7 +70,7 @@ describe('Integration: Component: gh-navitem', function () {
 
         let addActionCallCount = 0;
         this.on('add', () => {
-            addActionCallCount++;
+            addActionCallCount += 1;
         });
 
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl addItem=(action "add")}}`);
@@ -85,7 +84,7 @@ describe('Integration: Component: gh-navitem', function () {
 
         let updateActionCallCount = 0;
         this.on('update', () => {
-            updateActionCallCount++;
+            updateActionCallCount += 1;
         });
 
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl=(action "update")}}`);
@@ -99,7 +98,7 @@ describe('Integration: Component: gh-navitem', function () {
 
         let updateActionCallCount = 0;
         this.on('update', () => {
-            updateActionCallCount++;
+            updateActionCallCount += 1;
         });
 
         this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel=(action "update")}}`);

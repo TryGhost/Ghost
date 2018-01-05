@@ -42,10 +42,13 @@ export default Component.extend({
                 };
 
                 tools.push(t);
-                i++;
+                i += 1;
             }
         });
-        this.set('toolsLength', i);
+
+        // TODO: this needs to go away because side effects should not be introduced in CPs
+        this.set('toolsLength', i); // eslint-disable-line
+
         tools.sort((a, b) => a.order > b.order);
         if (selected > -1) {
             let selectedTool = tools[selected] || tools[0];
@@ -78,7 +81,6 @@ export default Component.extend({
         });
 
         editor.cursorDidChange(() => {
-
             if (!editor.range || !editor.range.head.section) {
                 return;
             }
@@ -138,7 +140,11 @@ export default Component.extend({
                         this.$('.gh-cardmenu-search-input').focus();
                     });
                 });
-            this.sendAction('menuIsOpen');
+
+            let action = this.get('menuIsOpen');
+            if (action) {
+                action();
+            }
         },
 
         closeMenu() {
@@ -146,7 +152,11 @@ export default Component.extend({
             this.$('.gh-cardmenu').fadeOut('fast', () => {
                 this.set('isOpen', false);
             });
-            this.sendAction('menuIsClosed');
+
+            let action = this.get('menuIsClosed');
+            if (action) {
+                action();
+            }
         },
 
         closeMenuKeepButton() {

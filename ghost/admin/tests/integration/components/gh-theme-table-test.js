@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
@@ -7,12 +6,12 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-theme-table', function() {
+describe('Integration: Component: gh-theme-table', function () {
     setupComponentTest('gh-theme-table', {
         integration: true
     });
 
-    it('renders', function() {
+    it('renders', function () {
         this.set('themes', [
             {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
             {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
@@ -31,9 +30,7 @@ describe('Integration: Component: gh-theme-table', function() {
         expect(this.$('[data-test-themes-list]').length, 'themes list is present').to.equal(1);
         expect(this.$('[data-test-theme-id]').length, 'number of rows').to.equal(4);
 
-        let packageNames = this.$('[data-test-theme-title]').map((i, name) => {
-            return $(name).text().trim();
-        }).toArray();
+        let packageNames = this.$('[data-test-theme-title]').map((i, name) => $(name).text().trim()).toArray();
 
         expect(
             packageNames,
@@ -177,9 +174,7 @@ describe('Integration: Component: gh-theme-table', function() {
             deleteTheme=(action actionHandler)
         }}`);
 
-        let packageNames = this.$('[data-test-theme-title]').map((i, name) => {
-            return $(name).text().trim();
-        }).toArray();
+        let packageNames = this.$('[data-test-theme-title]').map((i, name) => $(name).text().trim()).toArray();
 
         expect(
             packageNames,

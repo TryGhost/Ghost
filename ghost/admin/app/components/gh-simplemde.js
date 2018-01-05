@@ -95,7 +95,7 @@ export default TextArea.extend({
         }
     },
 
-    willDestroyElement()    {
+    willDestroyElement() {
         this.onEditorDestroy();
         this._editor.toTextArea();
         delete this._editor;

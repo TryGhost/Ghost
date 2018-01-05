@@ -2,11 +2,11 @@ import {countCharacters} from 'ghost-admin/helpers/gh-count-characters';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
-describe('Unit: Helper: gh-count-characters', function() {
+describe('Unit: Helper: gh-count-characters', function () {
     let defaultStyle = 'color: rgb(115, 138, 148);';
     let errorStyle = 'color: rgb(240, 82, 48);';
 
-    it('counts remaining chars', function() {
+    it('counts remaining chars', function () {
         let result = countCharacters(['test']);
         expect(result.string)
             .to.equal(`<span class="word-count" style="${defaultStyle}">196</span>`);

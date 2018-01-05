@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

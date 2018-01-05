@@ -1,18 +1,17 @@
-/* jshint expr:true */
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Subscribers', function() {
+describe('Acceptance: Subscribers', function () {
     let application;
 
-    beforeEach(function() {
+    beforeEach(function () {
         application = startApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         destroyApp(application);
     });
 

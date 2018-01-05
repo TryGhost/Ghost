@@ -16,7 +16,7 @@ export default function mockThemes(server) {
             }
         };
 
-        themeCount++;
+        themeCount += 1;
 
         theme = themes.create(theme);
 

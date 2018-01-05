@@ -58,7 +58,9 @@ export default Mixin.create({
     init() {
         this._super(...arguments);
         window.onbeforeunload = () => {
-            return this.get('hasDirtyAttributes') ? this.unloadDirtyMessage() : null;
+            if (this.get('hasDirtyAttributes')) {
+                return this.unloadDirtyMessage();
+            }
         };
     },
 
@@ -192,7 +194,6 @@ export default Mixin.create({
             }
 
             return model;
-
         } catch (error) {
             // re-throw if we have a general server error
             if (error && !isInvalidError(error)) {

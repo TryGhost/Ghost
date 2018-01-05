@@ -16,9 +16,7 @@ export default Component.extend({
     }),
 
     availableTagNames: computed('availableTags.@each.name', function () {
-        return this.get('availableTags').map((tag) => {
-            return tag.get('name').toLowerCase();
-        });
+        return this.get('availableTags').map(tag => tag.get('name').toLowerCase());
     }),
 
     actions: {
@@ -46,9 +44,7 @@ export default Component.extend({
 
         createTag(tagName) {
             let currentTags = this.get('post.tags');
-            let currentTagNames = currentTags.map((tag) => {
-                return tag.get('name').toLowerCase();
-            });
+            let currentTagNames = currentTags.map(tag => tag.get('name').toLowerCase());
             let tagToAdd;
 
             tagName = tagName.trim();
@@ -78,10 +74,9 @@ export default Component.extend({
     // methods
 
     _findTagByName(name) {
-        return this.get('availableTags').then((availableTags) => {
-            return availableTags.find((tag) => {
-                return tag.get('name').toLowerCase() === name.toLowerCase();
-            });
-        });
+        let withMatchingName = function (tag) {
+            return tag.get('name').toLowerCase() === name.toLowerCase();
+        };
+        return this.get('availableTags').then(availableTags => availableTags.find(withMatchingName));
     }
 });

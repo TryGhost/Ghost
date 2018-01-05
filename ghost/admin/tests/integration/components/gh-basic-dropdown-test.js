@@ -7,12 +7,12 @@ import {find} from 'ember-native-dom-helpers';
 import {run} from '@ember/runloop';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-basic-dropdown', function() {
+describe('Integration: Component: gh-basic-dropdown', function () {
     setupComponentTest('gh-basic-dropdown', {
         integration: true
     });
 
-    it('closes when dropdown service fires close event', function() {
+    it('closes when dropdown service fires close event', function () {
         let dropdownService = this.container.lookup('service:dropdown');
 
         this.render(hbs`
