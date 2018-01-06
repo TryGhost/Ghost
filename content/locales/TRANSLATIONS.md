@@ -178,7 +178,7 @@ They contain the English text to translate, that is the text visible to site vis
 
 ### 3. Wrap it in {{t}} translation helpers
 
-Just copy and paste `{{t "` to the left, and `"}}` to the rigth.
+Just copy and paste `{{t "` to the left, and `"}}` to the right.
 
 ### 4. Copy and paste each text into the translation file
 
