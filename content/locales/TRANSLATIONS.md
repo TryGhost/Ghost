@@ -143,6 +143,14 @@ Dates, with month names, are automatically translated. You don't need to include
 
 For a translatable clone of the Casper 1.4 theme (versions 1.4 and 2.x have different designs), see [WorldCasper1 &#x27B6;](https://github.com/juan-g/WorldCasper1/tree/i18n-translatable-frontend).
 
+### 4. Reactivate the translation file
+
+After editing a theme translation file, if it was the active file, to make the changes effective go to the admin panel, activate another language/locale -or another theme-, then switch back. In this way the translation file will be reloaded.
+
+### 5. Share the translation file with the theme maintainers
+
+If you send your language file to the maintainers, others can benefit and also help to keep the file updated for next theme versions.
+
 ## How to Make Any Theme Translatable
 
 Ghost's themes use a very simple translation system, just for themes. On the other hand, server side messages for admins have a different system (although back-end translations are not yet enabled for the current versions) and will continue to use code in *.js* files with translation keys, such as `i18n.t('warnings.helpers.pagination.nextPrevValuesMustBeNumeric')`. However, to design and customize themes, just plain English is more user friendly, even when any translation keys can also optionally be used.
@@ -226,9 +234,13 @@ It's advisable to add the HTML `lang` attribute to the `<html>` tag at the start
 
 In this way, when setting a language on the admin panel, `{{lang}}` will be automatically replaced on the site with the corresponding language/locale tag (e.g. `en`, `es`, `fr`, `zh`, `ja`, `en-US`, etc.).
 
-### 6. Share the translatable theme with the theme maintainers
+### 6. Reactivate the theme
 
-If you send the adapted theme and language files to the maintainers, there is a good chance that they will keep the translatability for the next versions.
+After editing a theme template, if it was part of the active theme in production mode, to make the changes effective go to the admin panel, activate another theme, then switch back. In this way the theme will be reloaded.
+
+### 7. Share the translatable theme with the theme maintainers
+
+If you send the adapted theme and language files to the maintainers, in addition to helping others there is a good chance that they will keep the translatability for the next versions.
 
 And more translations mean more users, therefore more improvements and maintenance for the theme.
 
