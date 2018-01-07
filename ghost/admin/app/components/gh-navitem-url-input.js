@@ -3,6 +3,10 @@ import {InvokeActionMixin} from 'ember-invoke-action';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
 
+// URI is attached to the window global as part of the
+// google-caja html-css-sanitizer-bundle
+const {URI} = window;
+
 let joinUrlParts = function (url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {
         path = `/${path}`;
@@ -86,16 +90,25 @@ export default TextField.extend(InvokeActionMixin, {
 
     notifyUrlChanged() {
         let url = this.get('value').trim();
-        let urlParts = document.createElement('a');
+        let urlURI = URI.parse(url);
         let baseUrl = this.get('baseUrl');
-        let baseUrlParts = document.createElement('a');
+        let baseURI = URI.parse(baseUrl);
+
+        function getHost(uri) {
+            let host = uri.getDomain();
+
+            if (uri.getPort()) {
+                host = `${host}:${uri.getPort()}`;
+            }
+
+            return host;
+        }
+
+        let urlHost = getHost(urlURI);
+        let baseHost = getHost(baseURI);
 
         // ensure value property is trimmed
         this.set('value', url);
-
-        // leverage the browser's native URI parsing
-        urlParts.href = url;
-        baseUrlParts.href = baseUrl;
 
         // if we have an email address, add the mailto:
         if (validator.isEmail(url)) {
@@ -110,12 +123,12 @@ export default TextField.extend(InvokeActionMixin, {
         }
 
         // get our baseUrl relativity checks in order
-        let isOnSameHost = urlParts.host === baseUrlParts.host;
+        let isOnSameHost = urlHost === baseHost;
         let isAnchorLink = url.match(/^#/);
-        let isRelativeToBasePath = urlParts.pathname.indexOf(baseUrlParts.pathname) === 0;
+        let isRelativeToBasePath = urlURI.getPath() && urlURI.getPath().indexOf(baseURI.getPath()) === 0;
 
-        // if our pathname is only missing a trailing / mark it as relative
-        if (`${urlParts.pathname}/` === baseUrlParts.pathname) {
+        // if our path is only missing a trailing / mark it as relative
+        if (`${urlURI.getPath()}/` === baseURI.getPath()) {
             isRelativeToBasePath = true;
         }
 
@@ -123,12 +136,12 @@ export default TextField.extend(InvokeActionMixin, {
         if (!isAnchorLink && isOnSameHost && isRelativeToBasePath) {
             url = url.replace(/^[a-zA-Z0-9-]+:/, '');
             url = url.replace(/^\/\//, '');
-            url = url.replace(baseUrlParts.host, '');
-            url = url.replace(baseUrlParts.pathname, '');
+            url = url.replace(baseHost, '');
+            url = url.replace(baseURI.getPath(), '');
 
             // handle case where url path is same as baseUrl path but missing trailing slash
-            if (urlParts.pathname.slice(-1) !== '/') {
-                url = url.replace(baseUrlParts.pathname.slice(0, -1), '');
+            if (urlURI.getPath().slice(-1) !== '/') {
+                url = url.replace(baseURI.getPath().slice(0, -1), '');
             }
 
             if (url !== '' || !this.get('isNew')) {

@@ -187,6 +187,26 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         expect($input.val()).to.equal(`${currentUrl} /test`);
     });
 
+    // https://github.com/TryGhost/Ghost/issues/9373
+    it('doesn\'t mangle urls when baseUrl has unicode characters', function () {
+        this.on('updateUrl', () => {
+            return null;
+        });
+
+        this.set('baseUrl', 'http://exämple.com');
+
+        this.render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        `);
+        let $input = this.$('input');
+
+        run(() => {
+            $input.val(`${currentUrl}/test`).trigger('input').trigger('blur');
+        });
+
+        expect($input.val()).to.equal(`${currentUrl}/test`);
+    });
+
     it('triggers "update" action on blur', function () {
         let changeActionCallCount = 0;
         this.on('updateUrl', () => {
