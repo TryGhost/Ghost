@@ -11,6 +11,7 @@ var supportedLocales = ['en'],
     events = require('./events'),
     logging = require('./logging'),
     settingsCache = require('../../services/settings/cache'),
+    _private = {},
 
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
     // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
@@ -162,14 +163,10 @@ I18n = {
 
     /**
      * Setup i18n support:
-     *  - Load proper language file in to memory
-     *  - Polyfill node.js if it does not have Intl support or support for a particular locale
+     *  - Load proper language file into memory
      */
     init: function init() {
         // This function is called during Ghost's initialization.
-
-        var hasBuiltInLocaleData, IntlPolyfill;
-
         // Reading translation file for messages from core .js files and keeping its content in memory
         // The English file is always loaded, until back-end translations are enabled in future versions.
         // Before that, see previous tasks on issue #6526 (error codes or identifiers, error message
@@ -184,36 +181,15 @@ I18n = {
             throw err;
         }
 
-        if (global.Intl) {
-            // Determine if the built-in `Intl` has the locale data we need.
-            hasBuiltInLocaleData = supportedLocales.every(function (locale) {
-                return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
-                    Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
-            });
-
-            if (!hasBuiltInLocaleData) {
-                // `Intl` exists, but it doesn't have the data we need, so load the
-                // polyfill and replace the constructors with need with the polyfill's.
-                IntlPolyfill = require('intl');
-                Intl.NumberFormat   = IntlPolyfill.NumberFormat;
-                Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
-            }
-        } else {
-            // No `Intl`, so use and load the polyfill.
-            global.Intl = require('intl');
-        }
+        _private.initializeIntl();
     },
 
     /**
      * Setup i18n support for themes:
-     *  - Load proper language file in to memory
-     *  - Polyfill node.js if it does not have Intl support or support for a particular locale
+     *  - Load proper language file into memory
      */
     loadThemeTranslations: function loadThemeTranslations() {
         // This function is called during theme initialization, and when switching language or theme.
-
-        var hasBuiltInLocaleData, IntlPolyfill;
-
         currentLocale = I18n.locale();
         activeTheme = settingsCache.get('active_theme') || '';
 
@@ -261,24 +237,7 @@ I18n = {
             themeStrings = {};
         }
 
-        if (global.Intl) {
-            // Determine if the built-in `Intl` has the locale data we need.
-            hasBuiltInLocaleData = supportedLocales.every(function (locale) {
-                return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
-                    Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
-            });
-
-            if (!hasBuiltInLocaleData) {
-                // `Intl` exists, but it doesn't have the data we need, so load the
-                // polyfill and replace the constructors with need with the polyfill's.
-                IntlPolyfill = require('intl');
-                Intl.NumberFormat = IntlPolyfill.NumberFormat;
-                Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
-            }
-        } else {
-            // No `Intl`, so use and load the polyfill.
-            global.Intl = require('intl');
-        }
+        _private.initializeIntl();
     },
 
     /**
@@ -288,6 +247,32 @@ I18n = {
     locale: function locale() {
         var settingsLocale = settingsCache.get('default_locale') || 'en';
         return settingsLocale;
+    }
+};
+
+/**
+ * Setup i18n support:
+ *  - Polyfill node.js if it does not have Intl support or support for a particular locale
+ */
+_private.initializeIntl = function initializeIntl() {
+    var hasBuiltInLocaleData, IntlPolyfill;
+
+    if (global.Intl) {
+        // Determine if the built-in `Intl` has the locale data we need.
+        hasBuiltInLocaleData = supportedLocales.every(function (locale) {
+            return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
+                Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
+        });
+        if (!hasBuiltInLocaleData) {
+            // `Intl` exists, but it doesn't have the data we need, so load the
+            // polyfill and replace the constructors with need with the polyfill's.
+            IntlPolyfill = require('intl');
+            Intl.NumberFormat = IntlPolyfill.NumberFormat;
+            Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
+        }
+    } else {
+        // No `Intl`, so use and load the polyfill.
+        global.Intl = require('intl');
     }
 };
 
