@@ -304,7 +304,7 @@ which, when translated, is equivalent to
 
 For example:
 
-In theme translaion file *es.json*
+In theme translation file *es.json*
 
 ```
 "Read <a href='{url}'>more posts</a> by this author": "Lee <a href='{url}'>más artículos</a> de este autor",
@@ -327,7 +327,7 @@ In theme translation file *es.json*
 ```
 "No posts": "No hay artículos",
 "1 post": "1 artículo",
-"% posts": "% artículos"
+"% posts": "% artículos",
 ```
 
 To translate several helper's parameters, e.g. in theme template *author.hbs*
@@ -346,6 +346,30 @@ several `(t)` nested translation helpers (instead of normal `{{t}}` helpers) can
 
 ```
 6 artículos
+```
+
+### Reading time helper
+
+For example:
+
+In theme translation file *es.json*
+
+```
+"< 1 min read": "< 1 min de lectura",
+"1 min read": "1 min de lectura",
+"% min read": "% min de lectura",
+```
+
+And in theme template *post.hbs*
+
+```
+{{reading_time seconds=(t "< 1 min read") minute=(t "1 min read") minutes=(t "% min read")}}
+```
+
+`%` is calculated as reading time in minutes, e.g. `3`, giving after translation
+
+```
+3 min de lectura
 ```
 
 ## What's Coming Next
