@@ -65,6 +65,7 @@ export default Controller.extend({
         },
 
         updateURL(value) {
+            value = typeof value === 'string' ? value.trim() : value;
             this.set('model.url', value);
             this.get('model.errors').clear();
         },
