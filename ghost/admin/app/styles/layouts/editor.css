@@ -372,6 +372,7 @@
     z-index: 0;
     width: 100%;
     height: 100vh;
+    overflow-x: hidden;
     overflow-y: auto;
 }
 
@@ -490,6 +491,7 @@
     height: 26px;
     min-height: 26px;
     margin-bottom: -26px;
+    min-width: 0;
 }
 
 .gh-editor .CodeMirror pre {
