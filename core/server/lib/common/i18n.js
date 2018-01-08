@@ -192,7 +192,7 @@ I18n = {
     loadThemeTranslations: function loadThemeTranslations() {
         // This function is called during theme initialization, and when switching language or theme.
         currentLocale = I18n.locale();
-        activeTheme = settingsCache.get('active_theme') || '';
+        activeTheme = settingsCache.get('active_theme');
 
         // Reading file for current locale and active theme and keeping its content in memory
         if (activeTheme) {
@@ -246,8 +246,7 @@ I18n = {
      * such as core/server/helpers/date.js and core/server/helpers/lang.js
      */
     locale: function locale() {
-        var settingsLocale = settingsCache.get('default_locale') || 'en';
-        return settingsLocale;
+        return settingsCache.get('default_locale');
     }
 };
 
