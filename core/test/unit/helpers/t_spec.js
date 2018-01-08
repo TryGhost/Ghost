@@ -1,30 +1,64 @@
-// Test: {{t}} translation helper
-// Compatibility with both old themes and i18n-capable themes
+'use strict';
 
-var should = require('should'),
+const should = require('should'),
+    path = require('path'),
+    settingsCache = require('../../../server/services/settings/cache'),
     helpers = require('../../../server/helpers'),
-    proxy = require('../../../server/helpers/proxy'),
-    i18n = proxy.i18n;
+    common = require('../../../server/lib/common'),
+    configUtils = require('../../utils/configUtils');
 
 describe('{{t}} helper', function () {
-    var locale = i18n.locale();
-    if (locale.substring(0, 2) === 'en') {
-        it('returns correct frontend text string', function () {
-            var expected = 'Page',
-                rendered = helpers.t.call({}, 'Page', {
-                    hash: {
-                    }
-                });
-            should.exist(rendered);
-            rendered.should.equal(expected);
+    beforeEach(function () {
+        settingsCache.set('active_theme', {value: 'casper'});
+        configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures/'));
+    });
+
+    afterEach(function () {
+        configUtils.restore();
+        settingsCache.shutdown();
+    });
+
+    it('theme translation is DE', function () {
+        settingsCache.set('default_locale', {value: 'de'});
+
+        let rendered = helpers.t.call({}, 'Top left Button', {
+            hash: {}
         });
-    } else {
-        it('returns frontend text string translation', function () {
-            var rendered = helpers.t.call({}, 'Page', {
-                    hash: {
-                    }
-                });
-            should.exist(rendered);
+
+        rendered.should.eql('Oben Links.');
+    });
+
+    it('theme translation is EN', function () {
+        settingsCache.set('default_locale', {value: 'en'});
+        common.i18n.loadThemeTranslations();
+
+        let rendered = helpers.t.call({}, 'Top left Button', {
+            hash: {}
         });
-    }
+
+        rendered.should.eql('Left Button on Top');
+    });
+
+    it('[fallback] no theme translation file found for FR', function () {
+        settingsCache.set('default_locale', {value: 'fr'});
+        common.i18n.loadThemeTranslations();
+
+        let rendered = helpers.t.call({}, 'Top left Button', {
+            hash: {}
+        });
+
+        rendered.should.eql('Left Button on Top');
+    });
+
+    it('[fallback] no theme files at all, use key as translation', function () {
+        settingsCache.set('active_theme', {value: 'casper-1.4'});
+        settingsCache.set('default_locale', {value: 'de'});
+        common.i18n.loadThemeTranslations();
+
+        let rendered = helpers.t.call({}, 'Top left Button', {
+            hash: {}
+        });
+
+        rendered.should.eql('Top left Button');
+    });
 });

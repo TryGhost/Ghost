@@ -1,25 +1,23 @@
-// Test: {{lang}} helper
-// {{lang}} gives the current language tag
-// Usage example: <html lang="{{lang}}">
-//
-// Examples of language tags from RFC 5646:
-// de (German)
-// fr (French)
-// ja (Japanese)
-// en-US (English as used in the United States)
-//
-// Standard:
-// Language tags in HTML and XML
-// https://www.w3.org/International/articles/language-tags/
+'use strict';
 
-var should = require('should'),
+const should = require('should'),
+    settingsCache = require('../../../server/services/settings/cache'),
     helpers = require('../../../server/helpers'),
     proxy = require('../../../server/helpers/proxy');
 
 describe('{{lang}} helper', function () {
+    beforeEach(function () {
+        settingsCache.set('default_locale', {value: 'en'});
+    });
+
+    afterEach(function () {
+        settingsCache.shutdown();
+    });
+
     it('returns correct language tag', function () {
-        var expected = proxy.i18n.locale(),
+        let expected = proxy.i18n.locale(),
             rendered = helpers.lang.call();
+
         should.exist(rendered);
         rendered.string.should.equal(expected);
     });
