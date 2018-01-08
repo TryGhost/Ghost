@@ -7,6 +7,7 @@ var supportedLocales = ['en'],
     jp = require('jsonpath'),
     _ = require('lodash'),
     path = require('path'),
+    config = require('../../config'),
     errors = require('./errors'),
     events = require('./events'),
     logging = require('./logging'),
@@ -199,7 +200,7 @@ I18n = {
             // Compatibility with both old themes and i18n-capable themes.
             // Preventing missing files.
             try {
-                themeStrings = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', currentLocale + '.json'));
+                themeStrings = fs.readFileSync(path.join(config.getContentPath('themes'), activeTheme, 'locales', currentLocale + '.json'));
             } catch (err) {
                 themeStrings = undefined;
                 if (err.code === 'ENOENT') {
@@ -211,7 +212,7 @@ I18n = {
             if (themeStrings === undefined && currentLocale !== 'en') {
                 logging.warn('Falling back to locales/en.json.');
                 try {
-                    themeStrings = fs.readFileSync(path.join(__dirname, '..', '..', '..', '..', 'content', 'themes', activeTheme, 'locales', 'en.json'));
+                    themeStrings = fs.readFileSync(path.join(config.getContentPath('themes'), activeTheme, 'locales', 'en.json'));
                 } catch (err) {
                     themeStrings = undefined;
                     if (err.code === 'ENOENT') {
