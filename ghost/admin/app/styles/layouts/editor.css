@@ -450,7 +450,10 @@
     overflow: visible;
     padding: 0;
     background: transparent;
-    /* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
+}
+
+/* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
+.gh-editor .CodeMirror-code:not([contenteditable="true"]) {
     user-select: none;
 }
 
