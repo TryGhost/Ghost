@@ -234,7 +234,14 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     willDestroyElement() {
+        if (this.get('_isSplitScreen')) {
+            this._disconnectSplitPreview();
+        }
+
+        this.removeShortcuts();
+
         this._super(...arguments);
+
         if (this._preventBodyScrollId) {
             window.cancelAnimationFrame(this._preventBodyScrollId);
         }
@@ -474,16 +481,6 @@ export default Component.extend(ShortcutsMixin, {
             htmlSafe(notificationText),
             {key: 'editor.hemingwaymode'}
         );
-    },
-
-    willDestroyElement() {
-        if (this.get('_isSplitScreen')) {
-            this._disconnectSplitPreview();
-        }
-
-        this.removeShortcuts();
-
-        this._super(...arguments);
     },
 
     actions: {
