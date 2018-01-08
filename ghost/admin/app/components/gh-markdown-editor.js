@@ -218,6 +218,47 @@ export default Component.extend(ShortcutsMixin, {
     didInsertElement() {
         this._super(...arguments);
         this.registerShortcuts();
+
+        // HACK: iOS will scroll the body up when activating the keyboard, this
+        // causes problems in the CodeMirror based editor because iOS doesn't
+        // scroll the cursor and other measurement elements which results in
+        // rather unfriendly behaviour with text appearing in seemingly random
+        // places and an inability to select things properly
+        //
+        // To get around this we use a raf loop that constantly makes sure the
+        // body scrollTop is 0 when the editor is on screen
+        let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            this._preventBodyScroll();
+        }
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        if (this._preventBodyScrollId) {
+            window.cancelAnimationFrame(this._preventBodyScrollId);
+        }
+    },
+
+    _preventBodyScroll() {
+        this._preventBodyScrollId = window.requestAnimationFrame(() => {
+            let body = document.querySelector('body');
+
+            // only scroll the editor if the editor is active so that we don't
+            // clobber scroll-to-input behaviour in the PSM
+            if (document.activeElement.closest('.CodeMirror')) {
+                if (body.scrollTop !== 0) {
+                    let editor = document.querySelector('.gh-markdown-editor');
+
+                    // scroll the editor by the same amount the body has been scrolled,
+                    // this should keep the cursor on screen when opening the keyboard
+                    editor.scrollTop += body.scrollTop;
+                    body.scrollTop = 0;
+                }
+            }
+
+            this._preventBodyScroll();
+        });
     },
 
     _insertImages(urls) {
