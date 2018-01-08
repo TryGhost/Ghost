@@ -1,4 +1,19 @@
-module.exports.i18n = require('./i18n');
-module.exports.events = require('./events');
-module.exports.errors = require('./errors');
-module.exports.logging = require('./logging');
+'use strict';
+
+module.exports = {
+    get i18n() {
+        return require('./i18n');
+    },
+
+    get events() {
+        return require('./events');
+    },
+
+    get errors() {
+        return require('./errors');
+    },
+
+    get logging() {
+        return require('./logging');
+    }
+};
