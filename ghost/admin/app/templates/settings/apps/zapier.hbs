@@ -1,0 +1,38 @@
+<section class="gh-canvas">
+    <header class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            {{#link-to "settings.apps.index"}}Apps{{/link-to}}
+            <span>{{inline-svg "arrow-right"}}</span>
+            Zapier
+        </h2>
+        <section class="view-actions">
+            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+        </section>
+    </header>
+
+    <section class="view-container">
+        <br>
+        <section class="app-grid">
+            <div class="app-cell">
+                <img class="app-icon" src="assets/img/zapiericon.png" />
+            </div>
+            <div class="app-cell">
+                <h3>Zapier</h3>
+                <p>Automation for your favourite apps</p>
+            </div>
+        </section>
+
+        <div class="gh-setting-header">Zapier configuration</div>
+        <div class="gh-setting" id="zapier-toggle">
+            <div class="gh-setting-content gh-setting-content--no-action">
+                <div class="gh-setting-title">Zapier Templates</div>
+                <div class="gh-setting-desc">Explore pre-built templates for common automation tasks</div>
+                <div class="gh-setting-content-extended">
+                    <div id="zapier-templates">
+                        <script src="https://zapier.com/apps/embed/widget.js?services=ghost&container=true&limit=10&html_id=zapier-templates"></script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
