@@ -39,9 +39,10 @@ function init() {
 
     var ghostServer, parentApp;
 
-    // Initialize Internationalization
+    // Initialize default internationalization, just for core now
+    // (settings for language and theme not yet available here)
     common.i18n.init();
-    debug('I18n done');
+    debug('Default i18n done for core');
     models.init();
     debug('models done');
 
@@ -52,6 +53,12 @@ function init() {
         return settings.init();
     }).then(function () {
         debug('Update settings cache done');
+        // Full internationalization for core could be here
+        // in a future version with backend translations
+        // (settings for language and theme available here;
+        // internationalization for theme is done
+        // shortly after, when activating the theme)
+        //
         // Initialize the permissions actions and objects
         return permissions.init();
     }).then(function () {
