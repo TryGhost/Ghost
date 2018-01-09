@@ -27,6 +27,7 @@ module.exports = function (date, options) {
 
     format = options.hash.format || 'MMM DD, YYYY';
     timeago = options.hash.timeago;
+    timezone = options.data.blog.timezone;
     timeNow = moment().tz(timezone);
 
     if (timeago) {
