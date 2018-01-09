@@ -41,7 +41,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     lazyLoader: service(),
     notifications: service(),
     settings: service(),
-    upgradeNotification: service(),
     tour: service(),
     ui: service(),
 
@@ -173,10 +172,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     if (!user.get('isAuthor') && !user.get('isEditor')) {
                         this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
                             serverNotifications.forEach((notification) => {
-                                if (notification.get('type') === 'upgrade') {
-                                    this.get('upgradeNotification').set('content', notification.get('message'));
-                                } else {
+                                if (notification.get('top') || notification.get('custom')) {
                                     this.get('notifications').handleNotification(notification, isDelayed);
+                                } else {
+                                    this.get('upgradeStatus').handleUpgradeNotification(notification);
                                 }
                             });
                         });

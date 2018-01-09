@@ -26,12 +26,6 @@ describe('Unit: Service: unsplash', function() {
         server.shutdown();
     });
 
-    // Replace this with your real tests.
-    it('exists', function() {
-        let service = this.subject();
-        expect(service).to.be.ok;
-    });
-
     it('can load new');
     it('can load next page');
 
