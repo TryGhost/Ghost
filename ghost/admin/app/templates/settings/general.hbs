@@ -57,6 +57,24 @@
                 <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if timezoneOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Publication Language</div>
+                <div class="gh-setting-desc">Set the language/locale which is used on your site</div>
+                {{#liquid-if defaultLocaleOpen}}
+                <div class="gh-setting-content-extended">
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="defaultLocale"}}
+                        {{gh-input model.defaultLocale type="text" focusOut=(action "validate" "defaultLocale" target=model) update=(action (mut model.defaultLocale)) data-test-default-locale-input=true}}
+                        {{gh-error-message errors=model.errors property="defaultLocale"}}
+                        <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://themes.ghost.org/v1.20.0/docs/i18n" target="_blank" rel="noopener">any language</a></p>
+                    {{/gh-form-group}}
+                </div>
+                {{/liquid-if}}
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn gh-btn-hover-blue" {{action (toggle "defaultLocaleOpen" this)}} data-test-toggle-default-locale><span>{{if defaultLocaleOpen "Close" "Expand"}}</span></button>
+            </div>
+        </div>
 
         <div class="gh-setting-header">Publication identity</div>
         <div class="gh-setting" data-test-setting="icon">
