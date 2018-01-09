@@ -28,14 +28,12 @@ module.exports = function (date, options) {
 
     format = options.hash.format || 'MMM DD, YYYY';
     timeago = options.hash.timeago;
+    timezone = options.data.blog.timezone;
     timeNow = moment().tz(timezone);
 
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
-    timeago = options.hash.timeago;
-    timezone = options.data.blog.timezone;
-    timeNow = moment().tz(timezone);
     dateMoment = moment(date);
     dateMoment.locale(i18n.locale());
 
