@@ -5,10 +5,11 @@
 
 var proxy = require('./proxy'),
     moment = require('moment-timezone'),
-    SafeString = proxy.SafeString;
+    SafeString = proxy.SafeString,
+    i18n = proxy.i18n;
 
 module.exports = function (date, options) {
-    var timezone, format, timeago, timeNow;
+    var timezone, format, timeago, timeNow, dateMoment;
 
     if (!options && date.hasOwnProperty('hash')) {
         options = date;
@@ -27,12 +28,19 @@ module.exports = function (date, options) {
 
     format = options.hash.format || 'MMM DD, YYYY';
     timeago = options.hash.timeago;
+    timezone = options.data.blog.timezone;
     timeNow = moment().tz(timezone);
 
+    // i18n: Making dates, including month names, translatable to any language.
+    // Documentation: http://momentjs.com/docs/#/i18n/
+    // Locales: https://github.com/moment/moment/tree/develop/locale
+    dateMoment = moment(date);
+    dateMoment.locale(i18n.locale());
+
     if (timeago) {
-        date = timezone ? moment(date).tz(timezone).from(timeNow) : moment(date).fromNow();
+        date = timezone ? dateMoment.tz(timezone).from(timeNow) : dateMoment.fromNow();
     } else {
-        date = timezone ? moment(date).tz(timezone).format(format) : moment(date).format(format);
+        date = timezone ? dateMoment.tz(timezone).format(format) : dateMoment.format(format);
     }
 
     return new SafeString(date);

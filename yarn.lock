@@ -88,9 +88,9 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
-amperize@0.3.6:
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.6.tgz#3b16888924af9ced28d6f8538d2329b361c9c580"
+amperize@0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.3.7.tgz#88efb8dc814782dd31b724178a8bf8ed028db395"
   dependencies:
     async "^2.1.4"
     emits "^3.0.0"
@@ -2667,9 +2667,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.2.3.tgz#0a53809a651287705f25e0436a630f3056ca610f"
+gscan@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.3.0.tgz#2e04e777b51be8f56981a866b7584f872c99ac0c"
   dependencies:
     bluebird "^3.4.6"
     chalk "^1.1.1"
