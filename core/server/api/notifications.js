@@ -1,17 +1,48 @@
+'use strict';
+
 // # Notifications API
 // RESTful API for creating notifications
-var Promise = require('bluebird'),
+
+const Promise = require('bluebird'),
     _ = require('lodash'),
+    moment = require('moment'),
     ObjectId = require('bson-objectid'),
     pipeline = require('../lib/promise/pipeline'),
     permissions = require('../services/permissions'),
-    canThis = permissions.canThis,
     localUtils = require('./utils'),
     common = require('../lib/common'),
-    settingsAPI = require('./settings'),
-    // Holds the persistent notifications
-    notificationsStore = [],
-    notifications;
+    SettingsAPI = require('./settings'),
+    internalContext = {context: {internal: true}},
+    canThis = permissions.canThis;
+
+let notifications,
+    _private = {};
+
+_private.fetchAllNotifications = function fetchAllNotifications() {
+    let allNotifications;
+
+    return SettingsAPI.read(_.merge({key: 'notifications'}, internalContext))
+        .then(function (response) {
+            allNotifications = JSON.parse(response.settings[0].value || []);
+
+            _.each(allNotifications, function (notification) {
+                notification.addedAt = moment(notification.addedAt).toDate();
+            });
+
+            return allNotifications;
+        });
+};
+
+_private.publicResponse = function publicResponse(notificationsToReturn) {
+    _.each(notificationsToReturn, function (notification) {
+        delete notification.seen;
+        delete notification.addedAt;
+    });
+
+    return {
+        notifications: notificationsToReturn
+    };
+};
 
 /**
  * ## Notification API Methods
@@ -27,9 +58,20 @@ notifications = {
      */
     browse: function browse(options) {
         return canThis(options.context).browse.notification().then(function () {
-            return {notifications: notificationsStore};
+            return _private.fetchAllNotifications()
+                .then(function (allNotifications) {
+                    allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
+
+                    allNotifications = allNotifications.filter(function (notification) {
+                        return notification.seen !== true;
+                    });
+
+                    return _private.publicResponse(allNotifications);
+                });
         }, function () {
-            return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToBrowseNotif')}));
+            return Promise.reject(new common.errors.NoPermissionError({
+                message: common.i18n.t('errors.api.notifications.noPermissionToBrowseNotif')
+            }));
         });
     },
 
@@ -69,7 +111,9 @@ notifications = {
             return canThis(options.context).add.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToAddNotif')}));
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.api.notifications.noPermissionToAddNotif')
+                }));
             });
         }
 
@@ -80,31 +124,61 @@ notifications = {
          * @returns {Object} options
          */
         function saveNotifications(options) {
-            var defaults = {
+            let defaults = {
                     dismissible: true,
                     location: 'bottom',
-                    status: 'alert'
-                },
-                addedNotifications = [], existingNotification;
-
-            _.each(options.data.notifications, function (notification) {
-                notification = _.assign(defaults, notification, {
+                    status: 'alert',
                     id: ObjectId.generate()
+                },
+                overrides = {
+                    seen: false,
+                    addedAt: moment().toDate()
+                },
+                notificationsToCheck = options.data.notifications,
+                addedNotifications = [];
+
+            return _private.fetchAllNotifications()
+                .then(function (allNotifications) {
+                    _.each(notificationsToCheck, function (notification) {
+                        let isDuplicate = _.find(allNotifications, {id: notification.id});
+
+                        if (!isDuplicate) {
+                            addedNotifications.push(_.merge({}, defaults, notification, overrides));
+                        }
+                    });
+
+                    let hasReleaseNotification = _.find(notificationsToCheck, {custom: false});
+
+                    // CASE: remove any existing release notifications if a new release notification comes in
+                    if (hasReleaseNotification) {
+                        _.remove(allNotifications, function (el) {
+                            return !el.custom;
+                        });
+                    }
+
+                    // CASE: nothing to add, skip
+                    if (!addedNotifications.length) {
+                        return Promise.resolve();
+                    }
+
+                    let addedReleaseNotifications = _.filter(addedNotifications, {custom: false});
+
+                    // CASE: only latest release notification
+                    if (addedReleaseNotifications.length > 1) {
+                        addedNotifications = _.filter(addedNotifications, {custom: true});
+                        addedNotifications.push(_.orderBy(addedReleaseNotifications, 'created_at', 'desc')[0]);
+                    }
+
+                    return SettingsAPI.edit({
+                        settings: [{
+                            key: 'notifications',
+                            value: allNotifications.concat(addedNotifications)
+                        }]
+                    }, internalContext);
+                })
+                .then(function () {
+                    return _private.publicResponse(addedNotifications);
                 });
-
-                existingNotification = _.find(notificationsStore, {message: notification.message});
-
-                if (!existingNotification) {
-                    notificationsStore.push(notification);
-                    addedNotifications.push(notification);
-                } else {
-                    addedNotifications.push(existingNotification);
-                }
-            });
-
-            return {
-                notifications: addedNotifications
-            };
         }
 
         tasks = [
@@ -124,26 +198,7 @@ notifications = {
      * @returns {Promise}
      */
     destroy: function destroy(options) {
-        var tasks;
-
-        /**
-         * Adds the id of notification to "seen_notifications" array.
-         * @param {Object} notification
-         * @return {*|Promise}
-         */
-        function markAsSeen(notification) {
-            var context = {internal: true};
-            return settingsAPI.read({key: 'seen_notifications', context: context}).then(function then(response) {
-                var seenNotifications = JSON.parse(response.settings[0].value);
-                seenNotifications = _.uniqBy(seenNotifications.concat([notification.id]));
-                return settingsAPI.edit({
-                    settings: [{
-                        key: 'seen_notifications',
-                        value: seenNotifications
-                    }]
-                }, {context: context});
-            });
-        }
+        let tasks;
 
         /**
          * ### Handle Permissions
@@ -155,36 +210,47 @@ notifications = {
             return canThis(options.context).destroy.notification().then(function () {
                 return options;
             }, function () {
-                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')}));
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
+                }));
             });
         }
 
         function destroyNotification(options) {
-            var notification = _.find(notificationsStore, function (element) {
-                return element.id === options.id;
-            });
+            return _private.fetchAllNotifications()
+                .then(function (allNotifications) {
+                    let notificationToMarkAsSeen = _.find(allNotifications, {id: options.id}),
+                        notificationToMarkAsSeenIndex = _.findIndex(allNotifications, {id: options.id});
 
-            if (notification && !notification.dismissible) {
-                return Promise.reject(
-                    new common.errors.NoPermissionError({message: common.i18n.t('errors.api.notifications.noPermissionToDismissNotif')})
-                );
-            }
+                    if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
+                        return Promise.reject(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.notifications.noPermissionToDismissNotif')
+                        }));
+                    }
 
-            if (!notification) {
-                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.notifications.notificationDoesNotExist')}));
-            }
+                    if (notificationToMarkAsSeenIndex < 0) {
+                        return Promise.reject(new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.notifications.notificationDoesNotExist')
+                        }));
+                    }
 
-            notificationsStore = _.reject(notificationsStore, function (element) {
-                return element.id === options.id;
-            });
+                    if (notificationToMarkAsSeen.seen) {
+                        return Promise.resolve();
+                    }
 
-            if (notification.custom) {
-                return markAsSeen(notification);
-            }
+                    allNotifications[notificationToMarkAsSeenIndex].seen = true;
+
+                    return SettingsAPI.edit({
+                        settings: [{
+                            key: 'notifications',
+                            value: allNotifications
+                        }]
+                    }, internalContext);
+                })
+                .return();
         }
 
         tasks = [
-            localUtils.validate('notifications', {opts: localUtils.idDefaultOptions}),
             handlePermissions,
             destroyNotification
         ];
@@ -200,15 +266,28 @@ notifications = {
      * @returns {Promise}
      */
     destroyAll: function destroyAll(options) {
-        return canThis(options.context).destroy.notification().then(function () {
-            notificationsStore = [];
-            return notificationsStore;
-        }, function (err) {
-            return Promise.reject(new common.errors.NoPermissionError({
-                err: err,
-                context: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
-            }));
-        });
+        return canThis(options.context).destroy.notification()
+            .then(function () {
+                return _private.fetchAllNotifications()
+                    .then(function (allNotifications) {
+                        _.each(allNotifications, function (notification) {
+                            notification.seen = true;
+                        });
+
+                        return SettingsAPI.edit({
+                            settings: [{
+                                key: 'notifications',
+                                value: allNotifications
+                            }]
+                        }, internalContext);
+                    })
+                    .return();
+            }, function (err) {
+                return Promise.reject(new common.errors.NoPermissionError({
+                    err: err,
+                    context: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
+                }));
+            });
     }
 };
 
