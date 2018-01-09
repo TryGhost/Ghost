@@ -1,3 +1,5 @@
+'use strict';
+
 // # Update Checking Service
 //
 // Makes a request to Ghost.org to check if there is a new version of Ghost available.
@@ -20,31 +22,34 @@
 // - theme - name of the currently active theme
 // - apps - names of any active apps
 
-var crypto = require('crypto'),
+const crypto = require('crypto'),
     exec = require('child_process').exec,
     moment = require('moment'),
-    semver = require('semver'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     url = require('url'),
+    debug = require('ghost-ignition').debug('update-check'),
     api = require('./api'),
     config = require('./config'),
     urlService = require('./services/url'),
     common = require('./lib/common'),
     request = require('./lib/request'),
-    currentVersion = require('./lib/ghost-version').full,
+    ghostVersion = require('./lib/ghost-version'),
     internal = {context: {internal: true}},
-    checkEndpoint = config.get('updateCheckUrl') || 'https://updates.ghost.org';
+    allowedCheckEnvironments = ['development', 'production'];
+
+function nextCheckTimestamp() {
+    var now = Math.round(new Date().getTime() / 1000);
+    return now + (24 * 3600);
+}
 
 function updateCheckError(err) {
-    if (err.response && err.response.body && typeof err.response.body === 'object') {
-        err = common.errors.utils.deserialize(err.response.body);
-    }
-
-    api.settings.edit(
-        {settings: [{key: 'next_update_check', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
-        internal
-    );
+    api.settings.edit({
+        settings: [{
+            key: 'next_update_check',
+            value: nextCheckTimestamp()
+        }]
+    }, internal);
 
     err.context = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
     err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
@@ -53,40 +58,36 @@ function updateCheckError(err) {
 
 /**
  * If the custom message is intended for current version, create and store a custom notification.
- * @param {Object} message {id: uuid, version: '0.9.x', content: '' }
+ * @param {Object} notification
  * @return {*|Promise}
  */
-function createCustomNotification(message) {
-    if (!semver.satisfies(currentVersion, message.version)) {
+function createCustomNotification(notification) {
+    if (!notification) {
         return Promise.resolve();
     }
 
-    var notification = {
-            status: 'alert',
-            type: 'info',
-            custom: true,
-            uuid: message.id,
-            dismissible: true,
+    return Promise.each(notification.messages, function (message) {
+        let toAdd = {
+            custom: !!notification.custom,
+            createdAt: moment(notification.created_at).toDate(),
+            status: message.status || 'alert',
+            type: message.type || 'info',
+            id: message.id,
+            dismissible: message.hasOwnProperty('dismissible') ? message.dismissible : true,
+            top: !!message.top,
             message: message.content
-        },
-        getAllNotifications = api.notifications.browse({context: {internal: true}}),
-        getSeenNotifications = api.settings.read(_.extend({key: 'seen_notifications'}, internal));
+        };
 
-    return Promise.join(getAllNotifications, getSeenNotifications, function joined(all, seen) {
-        var isSeen = _.includes(JSON.parse(seen.settings[0].value || []), notification.id),
-            isDuplicate = _.some(all.notifications, {message: notification.message});
-
-        if (!isSeen && !isDuplicate) {
-            return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
-        }
+        debug('Add Custom Notification', toAdd);
+        return api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
     });
 }
 
 function updateCheckData() {
-    var data = {},
+    let data = {},
         mailConfig = config.get('mail');
 
-    data.ghost_version = currentVersion;
+    data.ghost_version = ghostVersion.original;
     data.node_version = process.versions.node;
     data.env = config.get('env');
     data.database_type = config.get('database').client;
@@ -134,19 +135,53 @@ function updateCheckData() {
     }).catch(updateCheckError);
 }
 
+/**
+ * With the privacy setting `useUpdateCheck` you can control if you want to expose data from your blog to the
+ * Update Check Service. Enabled or disabled, you will receive the latest notification available from the service.
+ */
 function updateCheckRequest() {
     return updateCheckData()
         .then(function then(reqData) {
-            return request(checkEndpoint, {
-                json: true,
-                body: reqData,
-                headers: {
-                    'Content-Length': Buffer.byteLength(JSON.stringify(reqData))
+            let reqObj = {
+                    timeout: 1000,
+                    headers: {}
                 },
-                timeout: 1000
-            }).then(function (response) {
-                return response.body;
-            });
+                checkEndpoint = config.get('updateCheck:url'),
+                checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
+
+            if (checkMethod === 'POST') {
+                reqObj.json = true;
+                reqObj.body = reqData;
+                reqObj.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(reqData));
+                reqObj.headers['Content-Type'] = 'application/json';
+            } else {
+                reqObj.json = true;
+                reqObj.query = {
+                    ghost_version: reqData.ghost_version
+                };
+            }
+
+            debug('Request Update Check Service', checkEndpoint);
+
+            return request(checkEndpoint, reqObj)
+                .then(function (response) {
+                    return response.body;
+                })
+                .catch(function (err) {
+                    // CASE: no notifications available, ignore
+                    if (err.statusCode === 404) {
+                        return {
+                            next_check: nextCheckTimestamp(),
+                            notifications: []
+                        };
+                    }
+
+                    if (err.response && err.response.body && typeof err.response.body === 'object') {
+                        err = common.errors.utils.deserialize(err.response.body);
+                    }
+
+                    throw err;
+                });
         });
 }
 
@@ -154,65 +189,84 @@ function updateCheckRequest() {
  * Handles the response from the update check
  * Does three things with the information received:
  * 1. Updates the time we can next make a check
- * 2. Checks if the version in the response is new, and updates the notification setting
- * 3. Create custom notifications is response from UpdateCheck as "messages" array which has the following structure:
+ * 2. Create custom notifications is response from UpdateCheck as "messages" array which has the following structure:
  *
  * "messages": [{
  *   "id": ed9dc38c-73e5-4d72-a741-22b11f6e151a,
  *   "version": "0.5.x",
- *   "content": "<p>Hey there! 0.6 is available, visit <a href=\"https://ghost.org/download\">Ghost.org</a> to grab your copy now<!/p>"
+ *   "content": "<p>Hey there! 0.6 is available, visit <a href=\"https://ghost.org/download\">Ghost.org</a> to grab your copy now<!/p>",
+ *   "dismissible": true | false,
+ *   "top": true | false
  * ]}
+ *
+ * Example for grouped custom notifications in config:
+ *
+ * notificationGroups: ['migration', 'something']
+ *
+ * 'all' is a reserved name for general custom notifications.
  *
  * @param {Object} response
  * @return {Promise}
  */
 function updateCheckResponse(response) {
-    return Promise.all([
-        api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal),
-        api.settings.edit({settings: [{key: 'display_update_notification', value: response.version}]}, internal)
-    ]).then(function () {
-        var messages = response.messages || [];
+    let notifications = [],
+        notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
 
-        /**
-         * by default the update check service returns messages: []
-         * but the latest release version get's stored anyway, because we adding the `display_update_notification` ^
-         */
-        return Promise.map(messages, createCustomNotification);
-    });
+    debug('Notification Groups', notificationGroups);
+    debug('Response Update Check Service', response);
+
+    return api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal)
+        .then(function () {
+            // CASE: Update Check Service returns multiple notifications.
+            if (_.isArray(response)) {
+                notifications = response;
+            } else if ((response.hasOwnProperty('notifications') && _.isArray(response.notifications))) {
+                notifications = response.notifications;
+            } else {
+                notifications = [response];
+            }
+
+            // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
+            if (notificationGroups.length) {
+                notifications = notifications.filter(function (notification) {
+                    if (!notification.custom) {
+                        return true;
+                    }
+
+                    return _.includes(notificationGroups.map(function (groupIdentifier) {
+                        if (notification.version.match(new RegExp(groupIdentifier))) {
+                            return true;
+                        }
+
+                        return false;
+                    }), true) === true;
+                });
+            }
+
+            return Promise.each(notifications, createCustomNotification);
+        });
 }
 
 function updateCheck() {
-    if (config.isPrivacyDisabled('useUpdateCheck')) {
+    // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
+    if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         return Promise.resolve();
-    } else {
-        return api.settings.read(_.extend({key: 'next_update_check'}, internal)).then(function then(result) {
+    }
+
+    return api.settings.read(_.extend({key: 'next_update_check'}, internal))
+        .then(function then(result) {
             var nextUpdateCheck = result.settings[0];
 
-            if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
-                // It's not time to check yet
-                return; // eslint-disable-line no-useless-return
-            } else {
-                // We need to do a check
-                return updateCheckRequest()
-                    .then(updateCheckResponse)
-                    .catch(updateCheckError);
+            // CASE: Next update check should happen now?
+            if (!config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
+                return Promise.resolve();
             }
-        }).catch(updateCheckError);
-    }
-}
 
-function showUpdateNotification() {
-    return api.settings.read(_.extend({key: 'display_update_notification'}, internal)).then(function then(response) {
-        var display = response.settings[0];
-
-        // @TODO: We only show minor/major releases. This is a temporary fix. #5071 is coming soon.
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion) && semver.patch(display.value) === 0) {
-            return display.value;
-        }
-
-        return false;
-    });
+            return updateCheckRequest()
+                .then(updateCheckResponse)
+                .catch(updateCheckError);
+        })
+        .catch(updateCheckError);
 }
 
 module.exports = updateCheck;
-module.exports.showUpdateNotification = showUpdateNotification;

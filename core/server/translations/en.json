@@ -544,9 +544,6 @@
         }
     },
     "notices": {
-        "controllers": {
-            "newVersionAvailable": "Ghost {version} is available! Hot Damn. {link} to upgrade."
-        },
         "index": {
             "welcomeToGhost": "Welcome to Ghost.",
             "youAreRunningUnderEnvironment": "You're running under the <strong> {environment} </strong> environment.",

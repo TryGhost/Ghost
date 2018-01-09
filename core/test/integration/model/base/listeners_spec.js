@@ -22,7 +22,7 @@ describe('Models: listeners', function () {
         };
 
     before(testUtils.teardown);
-    beforeEach(testUtils.setup('owner', 'user-token:0'));
+    beforeEach(testUtils.setup('owner', 'user-token:0', 'settings'));
 
     beforeEach(function () {
         sandbox.stub(common.events, 'on').callsFake(function (eventName, callback) {
@@ -359,6 +359,72 @@ describe('Models: listeners', function () {
                     timeout = setTimeout(retry, 500);
                 }).catch(done);
             })();
+        });
+    });
+
+    describe('on notifications changed', function () {
+        it('nothing to delete', function (done) {
+            var notifications = JSON.stringify([
+                {
+                    addedAt: moment().subtract(1, 'week').format(),
+                    seen: true
+                },
+                {
+                    addedAt: moment().subtract(2, 'month').format(),
+                    seen: true
+                },
+                {
+                    addedAt: moment().subtract(1, 'day').format(),
+                    seen: false
+                }
+            ]);
+
+            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
+                .then(function () {
+                    eventsToRemember['settings.notifications.edited']({
+                        attributes: {
+                            value: notifications
+                        }
+                    });
+
+                    return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
+                }).then(function (model) {
+                    JSON.parse(model.get('value')).length.should.eql(3);
+                    done();
+                }).catch(done);
+        });
+
+        it('expect deletion', function (done) {
+            var notifications = JSON.stringify([
+                {
+                    content: 'keep-1',
+                    addedAt: moment().subtract(1, 'week').toDate(),
+                    seen: true
+                },
+                {
+                    content: 'delete-me',
+                    addedAt: moment().subtract(3, 'month').toDate(),
+                    seen: true
+                },
+                {
+                    content: 'keep-2',
+                    addedAt: moment().subtract(1, 'day').toDate(),
+                    seen: false
+                }
+            ]);
+
+            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
+                .then(function () {
+                    setTimeout(function () {
+                        return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal)
+                            .then(function (model) {
+                                JSON.parse(model.get('value')).length.should.eql(2);
+                                done();
+                            })
+                            .catch(done);
+                    }, 1000);
+                })
+                .catch(done);
         });
     });
 });

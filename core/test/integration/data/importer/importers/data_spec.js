@@ -1517,19 +1517,21 @@ describe('Import (new test structure)', function () {
                     users[1].profile_image.should.eql(exportData.data.users[0].image);
                     // Check feature image is correctly mapped for a tag
                     tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+
                     // Check logo image is correctly mapped for a blog
-                    settings[6].key.should.eql('logo');
-                    settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                    settings[5].key.should.eql('logo');
+                    settings[5].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+
                     // Check cover image is correctly mapped for a blog
-                    settings[7].key.should.eql('cover_image');
-                    settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+                    settings[6].key.should.eql('cover_image');
+                    settings[6].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
                     // Check default settings locale is not overwritten by defaultLang
-                    settings[9].key.should.eql('default_locale');
-                    settings[9].value.should.eql('en');
+                    settings[8].key.should.eql('default_locale');
+                    settings[8].value.should.eql('en');
 
-                    settings[18].key.should.eql('labs');
-                    settings[18].value.should.eql('{"publicAPI":true}');
+                    settings[17].key.should.eql('labs');
+                    settings[17].value.should.eql('{"publicAPI":true}');
 
                     // Check post language is null
                     should(firstPost.locale).equal(null);
@@ -1600,15 +1602,15 @@ describe('Import (new test structure)', function () {
                 // Check feature image is correctly mapped for a tag
                 tags[0].feature_image.should.eql(exportData.data.tags[0].image);
                 // Check logo image is correctly mapped for a blog
-                settings[6].key.should.eql('logo');
-                settings[6].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
+                settings[5].key.should.eql('logo');
+                settings[5].value.should.eql('/content/images/2017/05/bloglogo.jpeg');
                 // Check cover image is correctly mapped for a blog
-                settings[7].key.should.eql('cover_image');
-                settings[7].value.should.eql('/content/images/2017/05/blogcover.jpeg');
+                settings[6].key.should.eql('cover_image');
+                settings[6].value.should.eql('/content/images/2017/05/blogcover.jpeg');
 
                 // Check default settings locale is not overwritten by defaultLang
-                settings[9].key.should.eql('default_locale');
-                settings[9].value.should.eql('en');
+                settings[8].key.should.eql('default_locale');
+                settings[8].value.should.eql('en');
 
                 // Check post language is set to null
                 should(firstPost.locale).equal(null);
