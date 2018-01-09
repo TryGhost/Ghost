@@ -2,9 +2,10 @@ import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 
 export default Model.extend({
+    custom: attr('boolean'),
     dismissible: attr('boolean'),
-    status: attr('string'),
-    type: attr('string'),
+    key: attr('string'),
     message: attr('string'),
-    key: attr('string')
+    status: attr('string'),
+    type: attr('string')
 });

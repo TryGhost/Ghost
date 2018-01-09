@@ -3,8 +3,6 @@
         {{inline-svg "ghost-logo" class="gh-logo" alt="Ghost"}}
     </header>
     <section class="view-container">
-        {{gh-upgrade-notification}}
-
         <section class="gh-env-details">
             <ul class="gh-env-list">
                 <li class="gh-env-list-version"><strong>Version</strong> {{model.version}}</li>
@@ -17,6 +15,14 @@
                 <a class="gh-btn" href="https://slack.ghost.org/" target="_blank"><span>Get Help With Ghost</span></a>
             </div>
         </section>
+
+        {{#if upgradeStatus.message}}
+            <section class="gh-upgrade-notification">
+                <p>
+                    <strong>Update available!</strong> {{upgradeStatus.message}}
+                </p>
+            </section>
+        {{/if}}
 
         <section class="gh-credits">
             <h2>The People Who Made it Possible</h2>

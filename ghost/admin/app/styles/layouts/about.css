@@ -120,12 +120,12 @@
 
 /* Upgrade
 /* ---------------------------------------------------------- */
+
 .gh-upgrade-notification {
-    color: var(--red);
+    padding-top: 1em;
 }
 
 .gh-upgrade-notification a {
-    color: var(--red);
     text-decoration: underline;
 }
 

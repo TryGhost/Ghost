@@ -1,14 +1,9 @@
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    updateNotificationCount: 0,
-
-    actions: {
-        updateNotificationChange(count) {
-            this.set('updateNotificationCount', count);
-        }
-    },
+    upgradeStatus: service(),
 
     copyrightYear: computed(function () {
         let date = new Date();
