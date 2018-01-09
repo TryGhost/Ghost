@@ -21,7 +21,7 @@ module.exports.up = function removeSettingKeys(options) {
             }
 
             common.logging.info('Deleted Settings Key `display_update_notification`.');
-            return models.Settings.destroy({id: settingsModel.id}, localOptions);
+            return models.Settings.destroy(_.merge({id: settingsModel.id}, localOptions));
         })
         .then(function () {
             return models.Settings.findOne({key: 'seen_notifications'}, localOptions);
@@ -33,7 +33,7 @@ module.exports.up = function removeSettingKeys(options) {
             }
 
             common.logging.info('Deleted Settings Key `seen_notifications`.');
-            return models.Settings.destroy({id: settingsModel.id}, localOptions);
+            return models.Settings.destroy(_.merge({id: settingsModel.id}, localOptions));
         });
 };
 
