@@ -11,9 +11,11 @@ Some official services for Ghost are enabled by default. These services connect 
 
 ### Automatic Update Checks
 
-When a new session is started, Ghost pings a Ghost.org endpoint to check if the current version of Ghost is the latest version of Ghost. If an update is available, a notification appears inside Ghost to let you know. Ghost.org collects basic anonymised usage statistics from update check requests.
+When a new session is started, Ghost pings a Ghost.org service to check if the current version of Ghost is the latest version of Ghost. If an update is available, a notification on the About Page appears to let you know. 
 
-This service can be disabled at any time. All of the information and code related to this service is available in the [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js) file.
+Ghost will collect basic anonymised usage statistics from your blog before sending the request to the service. You can disable collecting statistics using the [privacy configuration](https://docs.ghost.org/v1/docs/config#section-update-check). You will still receive notifications from the service.
+
+All of the information and code related to this service is available in the [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js) file.
 
 
 ## Third Party Services
