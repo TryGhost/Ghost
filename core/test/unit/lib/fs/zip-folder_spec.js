@@ -40,7 +40,7 @@ describe('lib/fs: read csv', function () {
                         return done(err);
                     }
 
-                    files.length.should.eql(12);
+                    files.length.should.eql(13);
                     done();
                 });
             });

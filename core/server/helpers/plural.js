@@ -1,7 +1,9 @@
 // # Plural Helper
-// Usage: `{{plural 0 empty='No posts' singular='% post' plural='% posts'}}`
+// Usage example: `{{plural ../pagination.total empty='No posts' singular='1 post' plural='% posts'}}`
+// or for translatable themes, with (t) translation helper's subexpressions:
+// `{{plural ../pagination.total empty=(t "No posts") singular=(t "1 post") plural=(t "% posts")}}`
 //
-// pluralises strings depending on item count
+// Pluralises strings depending on item count
 //
 // The 1st argument is the numeric variable which the helper operates on
 // The 2nd argument is the string that will be output if the variable's value is 0
@@ -30,4 +32,3 @@ module.exports = function plural(number, options) {
         return new SafeString(options.hash.plural.replace('%', number));
     }
 };
-
