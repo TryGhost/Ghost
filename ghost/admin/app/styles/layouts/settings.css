@@ -18,6 +18,10 @@
     margin: 0 50px 0 0;
 }
 
+.gh-setting-content--no-action {
+    margin: 0;
+}
+
 .gh-setting-title {
     margin-bottom: 2px;
     font-size: 1.8rem;

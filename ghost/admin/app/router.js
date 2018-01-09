@@ -56,6 +56,7 @@ Router.map(function () {
         this.route('slack', {path: 'slack'});
         this.route('amp', {path: 'amp'});
         this.route('unsplash', {path: 'unsplash'});
+        this.route('zapier', {path: 'zapier'});
     });
 
     this.route('subscribers', function () {

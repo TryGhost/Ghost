@@ -77,6 +77,26 @@
                 </article>
                 {{/link-to}}
             </div>
+
+            <div class="apps-grid-cell" data-test-app="zapier">
+                {{#link-to "settings.apps.zapier" data-test-link="zapier"}}
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:45px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Zapier</h3>
+                            <p class="apps-card-app-desc">Automation for your favourite apps</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            <span data-test-app-status>Configure</span>
+                            {{inline-svg "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                {{/link-to}}
+            </div>
         </div>
         <p class="apps-grid-note">(More coming soon!)</p>
     </section>
