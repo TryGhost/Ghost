@@ -13,13 +13,14 @@ module.exports = function (date, options) {
     if (!options && date.hasOwnProperty('hash')) {
         options = date;
         date = undefined;
-        timezone = options.data.blog.timezone;
+    }
 
-        // set to published_at by default, if it's available
-        // otherwise, this will print the current date
-        if (this.published_at) {
-            date = moment(this.published_at).tz(timezone).format();
-        }
+    timezone = options.data.blog.timezone;
+
+    // set to published_at by default, if it's available
+    // otherwise, this will print the current date
+    if (this.published_at) {
+        date = moment(this.published_at).tz(timezone).format();
     }
 
     // ensure that context is undefined, not null, as that can cause errors
