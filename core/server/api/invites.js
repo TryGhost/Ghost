@@ -221,7 +221,7 @@ invites = {
         }
 
         function fetchLoggedInUser(options) {
-            return models.User.findOne({id: loggedInUser}, _.merge({}, options, {include: ['roles']}))
+            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {include: ['roles']}))
                 .then(function (user) {
                     if (!user) {
                         return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')}));

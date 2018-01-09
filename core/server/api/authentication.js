@@ -285,7 +285,7 @@ authentication = {
                 oldPassword = data.oldPassword,
                 newPassword = data.newPassword;
 
-            return settingsAPI.read(_.merge({key: 'db_hash'}, options))
+            return settingsAPI.read(_.merge({key: 'db_hash'}, _.omit(options, 'data')))
                 .then(function fetchedSettings(response) {
                     dbHash = response.settings[0].value;
 
