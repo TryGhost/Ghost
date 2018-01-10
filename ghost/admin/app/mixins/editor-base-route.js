@@ -36,10 +36,10 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
 
         willTransition(transition) {
             let controller = this.get('controller');
-            let scratch = controller.get('model.scratch');
+            let scratch = controller.get('post.scratch');
             let controllerIsDirty = controller.get('hasDirtyAttributes');
-            let model = controller.get('model');
-            let state = model.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+            let post = controller.get('post');
+            let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
             if (this.get('upgradeStatus.isRequired')) {
                 return this._super(...arguments);
@@ -49,7 +49,7 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
                 && transition.targetName === 'editor.edit'
                 && transition.intent.contexts
                 && transition.intent.contexts[0]
-                && transition.intent.contexts[0].id === model.get('id');
+                && transition.intent.contexts[0].id === post.get('id');
 
             let deletedWithoutChanges = state.isDeleted
                 && (state.isSaving || !state.hasDirtyAttributes);
@@ -60,11 +60,11 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
                 return;
             }
 
-            // The controller may hold model state that will be lost in the
+            // The controller may hold post state that will be lost in the
             // new->edit transition, so we need to apply it now.
             if (fromNewToEdit && controllerIsDirty) {
-                if (scratch !== model.get('mobiledoc')) {
-                    model.set('mobiledoc', scratch);
+                if (scratch !== post.get('mobiledoc')) {
+                    post.set('mobiledoc', scratch);
                 }
             }
 
@@ -75,42 +75,42 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             controller.send('cancelAutosave');
 
             if (state.isNew) {
-                model.deleteRecord();
+                post.deleteRecord();
             }
 
             // since the transition is now certain to complete..
             window.onbeforeunload = null;
 
-            // remove model-related listeners created in editor-base-route
-            this.detachModelHooks(controller, model);
+            // remove post-related listeners created in editor-base-route
+            this.detachModelHooks(controller, post);
         }
     },
 
-    attachModelHooks(controller, model) {
-        // this will allow us to track when the model is saved and update the controller
+    attachModelHooks(controller, post) {
+        // this will allow us to track when the post is saved and update the controller
         // so that we can be sure controller.hasDirtyAttributes is correct, without having to update the
-        // controller on each instance of `model.save()`.
+        // controller on each instance of `post.save()`.
         //
-        // another reason we can't do this on `model.save().then()` is because the post-settings-menu
-        // also saves the model, and passing messages is difficult because we have two
+        // another reason we can't do this on `post.save().then()` is because the post-settings-menu
+        // also saves the post, and passing messages is difficult because we have two
         // types of editor controllers, and the PSM also exists on the posts.post route.
         //
         // The reason we can't just keep this functionality in the editor controller is
         // because we need to remove these handlers on `willTransition` in the editor route.
-        model.on('didCreate', controller, controller.get('modelSaved'));
-        model.on('didUpdate', controller, controller.get('modelSaved'));
+        post.on('didCreate', controller, controller.get('postSaved'));
+        post.on('didUpdate', controller, controller.get('postSaved'));
     },
 
-    detachModelHooks(controller, model) {
-        model.off('didCreate', controller, controller.get('modelSaved'));
-        model.off('didUpdate', controller, controller.get('modelSaved'));
+    detachModelHooks(controller, post) {
+        post.off('didCreate', controller, controller.get('postSaved'));
+        post.off('didUpdate', controller, controller.get('postSaved'));
     },
 
-    setupController(controller, model) {
-        let tags = model.get('tags');
+    setupController(controller, post) {
+        let tags = post.get('tags');
 
-        model.set('scratch', model.get('mobiledoc'));
-        model.set('titleScratch', model.get('title'));
+        post.set('scratch', post.get('mobiledoc'));
+        post.set('titleScratch', post.get('title'));
 
         // reset the leave editor transition so new->edit will still work
         controller.set('leaveEditorTransition', null);
@@ -124,18 +124,18 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
             controller.set('previousTagNames', []);
         }
 
-        // trigger an immediate autosave timeout if model has changed between
+        // trigger an immediate autosave timeout if post has changed between
         // new->edit (typical as first save will only contain the first char)
         // so that leaving the route waits for save instead of showing the
         // "Are you sure you want to leave?" modal unexpectedly
-        if (!model.get('isNew') && model.get('hasDirtyAttributes')) {
+        if (!post.get('isNew') && post.get('hasDirtyAttributes')) {
             controller.get('_autosave').perform();
         }
 
         // reset save-on-first-change (gh-koenig specific)
         // controller._hasChanged = false;
 
-        // attach model-related listeners created in editor-base-route
-        this.attachModelHooks(controller, model);
+        // attach post-related listeners created in editor-base-route
+        this.attachModelHooks(controller, post);
     }
 });

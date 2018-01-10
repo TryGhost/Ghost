@@ -5,8 +5,12 @@ export default Route.extend({
         return this.get('store').createRecord('subscriber');
     },
 
+    setupController(controller, model) {
+        controller.set('subscriber', model);
+    },
+
     deactivate() {
-        let subscriber = this.controller.get('model');
+        let subscriber = this.controller.get('subscriber');
 
         this._super(...arguments);
 
@@ -16,13 +20,13 @@ export default Route.extend({
     },
 
     rollbackModel() {
-        let subscriber = this.controller.get('model');
+        let subscriber = this.controller.get('subscriber');
         subscriber.rollbackAttributes();
     },
 
     actions: {
         save() {
-            let subscriber = this.controller.get('model');
+            let subscriber = this.controller.get('subscriber');
             return subscriber.save().then((saved) => {
                 this.send('addSubscriber', saved);
                 return saved;

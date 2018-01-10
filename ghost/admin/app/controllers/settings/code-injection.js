@@ -1,15 +1,17 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     notifications: service(),
+    settings: service(),
 
     save: task(function* () {
         let notifications = this.get('notifications');
 
         try {
-            return yield this.get('model').save();
+            return yield this.get('settings').save();
         } catch (error) {
             notifications.showAPIError(error, {key: 'code-injection.save'});
             throw error;
@@ -47,14 +49,14 @@ export default Controller.extend({
 
         leaveSettings() {
             let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('model');
+            let settings = this.get('settings');
 
             if (!transition) {
                 this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
-            // roll back changes on model props
+            // roll back changes on settings props
             settings.rollbackAttributes();
 
             return transition.retry();

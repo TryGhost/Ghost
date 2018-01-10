@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
 import {computed} from '@ember/object';
 import {match} from '@ember/object/computed';

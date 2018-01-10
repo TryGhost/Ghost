@@ -28,8 +28,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     setupController(controller, models) {
         // reset the leave setting transition
         controller.set('leaveSettingsTransition', null);
-        controller.set('model', models.settings);
-        controller.set('themes', this.get('store').peekAll('theme'));
         controller.set('availableTimezones', models.availableTimezones);
     },
 
@@ -44,10 +42,10 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
         willTransition(transition) {
             let controller = this.get('controller');
-            let model = controller.get('model');
-            let modelIsDirty = model.get('hasDirtyAttributes');
+            let settings = this.get('settings');
+            let settingsIsDirty = settings.get('hasDirtyAttributes');
 
-            if (modelIsDirty) {
+            if (settingsIsDirty) {
                 transition.abort();
                 controller.send('toggleLeaveSettingsModal', transition);
                 return;

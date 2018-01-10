@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -7,12 +8,12 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    model: alias('settings.amp'),
+    ampSettings: alias('settings.amp'),
 
     leaveSettingsTransition: null,
 
     save: task(function* () {
-        let amp = this.get('model');
+        let amp = this.get('ampSettings');
         let settings = this.get('settings');
 
         settings.set('amp', amp);
@@ -27,7 +28,7 @@ export default Controller.extend({
 
     actions: {
         update(value) {
-            this.set('model', value);
+            this.set('ampSettings', value);
         },
 
         save() {
@@ -67,7 +68,7 @@ export default Controller.extend({
                 return;
             }
 
-            // roll back changes on model props
+            // roll back changes on settings model
             settings.rollbackAttributes();
 
             return transition.retry();

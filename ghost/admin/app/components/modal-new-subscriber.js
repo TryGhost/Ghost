@@ -1,9 +1,12 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import {alias} from '@ember/object/computed';
 import {A as emberA} from '@ember/array';
 import {isInvalidError} from 'ember-ajax/errors';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+
+    subscriber: alias('model'),
 
     addSubscriber: task(function* () {
         try {
@@ -17,8 +20,8 @@ export default ModalComponent.extend({
                 let {message} = firstError;
 
                 if (message && message.match(/email/i)) {
-                    this.get('model.errors').add('email', message);
-                    this.get('model.hasValidated').pushObject('email');
+                    this.get('subscriber.errors').add('email', message);
+                    this.get('subscriber.hasValidated').pushObject('email');
                     return;
                 }
             }
@@ -32,9 +35,9 @@ export default ModalComponent.extend({
 
     actions: {
         updateEmail(newEmail) {
-            this.set('model.email', newEmail);
-            this.set('model.hasValidated', emberA());
-            this.get('model.errors').clear();
+            this.set('subscriber.email', newEmail);
+            this.set('subscriber.hasValidated', emberA());
+            this.get('subscriber.errors').clear();
         },
 
         confirm() {

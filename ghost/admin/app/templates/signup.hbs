@@ -11,13 +11,13 @@
                 <input style="display:none;" type="text" name="fakeusernameremembered"/>
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                {{gh-profile-image email=model.email setImage=(action "setImage")}}
+                {{gh-profile-image email=signupDetails.email setImage=(action "setImage")}}
 
-                {{#gh-form-group}}
+                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
                         {{inline-svg "email"}}
-                        {{gh-input model.email
+                        {{gh-input signupDetails.email
                             type="email"
                             name="email"
                             placeholder="Eg. john@example.com"
@@ -26,11 +26,11 @@
                     </span>
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="name"}}
+                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="name"}}
                     <label for="full-name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
                         {{inline-svg "user-circle"}}
-                        {{gh-trim-focus-input model.name
+                        {{gh-trim-focus-input signupDetails.name
                             tabindex="1"
                             type="text"
                             name="name"
@@ -38,16 +38,16 @@
                             autocorrect="off"
                             onenter=(action "signup")
                             focusOut=(action "validate" "name")
-                            update=(action (mut model.name))}}
+                            update=(action (mut signupDetails.name))}}
                     </span>
-                    {{gh-error-message errors=model.errors property="name"}}
+                    {{gh-error-message errors=signupDetails.errors property="name"}}
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="password"}}
                     <label for="password">Password</label>
                     <span class="gh-input-icon gh-icon-lock">
                         {{inline-svg "lock"}}
-                        {{gh-input model.password
+                        {{gh-input signupDetails.password
                             tabindex="2"
                             type="password"
                             name="password"
@@ -55,9 +55,9 @@
                             onenter=(action "signup")
                             autocorrect="off"
                             focusOut=(action "validate" "password")
-                            update=(action (mut model.password))}}
+                            update=(action (mut signupDetails.password))}}
                     </span>
-                    {{gh-error-message errors=model.errors property="password"}}
+                    {{gh-error-message errors=signupDetails.errors property="password"}}
                 {{/gh-form-group}}
             </form>
 

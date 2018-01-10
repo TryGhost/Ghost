@@ -2,10 +2,10 @@
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
+                {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="identification"}}
                     <span class="gh-input-icon gh-icon-mail">
                         {{inline-svg "email"}}
-                        {{gh-trim-focus-input model.identification
+                        {{gh-trim-focus-input signin.identification
                             class="email"
                             type="email"
                             placeholder="Email Address"
@@ -14,20 +14,20 @@
                             autocorrect="off"
                             tabindex="1"
                             focusOut=(action "validate" "identification")
-                            update=(action (mut model.identification))}}
+                            update=(action (mut signin.identification))}}
                     </span>
                 {{/gh-form-group}}
-                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="password"}}
                     <span class="gh-input-icon gh-icon-lock forgotten-wrap">
                         {{inline-svg "lock"}}
-                        {{gh-input model.password
+                        {{gh-input signin.password
                             class="password"
                             type="password"
                             placeholder="Password"
                             name="password"
                             tabindex="2"
                             autocorrect="off"
-                            update=(action (mut model.password))}}
+                            update=(action (mut signin.password))}}
 
                         {{#gh-task-button
                             task=forgotten

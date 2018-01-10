@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {computed} from '@ember/object';

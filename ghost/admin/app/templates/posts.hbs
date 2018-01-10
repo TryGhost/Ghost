@@ -84,7 +84,7 @@
 
     <section class="content-list">
         <ol class="posts-list">
-            {{#each model as |post|}}
+            {{#each postsInfinityModel as |post|}}
                 {{gh-posts-list-item
                     post=post
                     onDoubleClick=(action "openEditor")
@@ -105,7 +105,7 @@
         </ol>
 
         {{infinity-loader
-            infinityModel=model
+            infinityModel=postsInfinityModel
             scrollable=".gh-main"
             triggerOffset=1000}}
     </section>

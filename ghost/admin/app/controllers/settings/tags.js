@@ -6,13 +6,14 @@ export default Controller.extend({
 
     tagController: controller('settings.tags.tag'),
 
+    tags: alias('model'),
     selectedTag: alias('tagController.tag'),
 
     tagListFocused: equal('keyboardFocus', 'tagList'),
     tagContentFocused: equal('keyboardFocus', 'tagContent'),
 
     // TODO: replace with ordering by page count once supported by the API
-    sortedTags: sort('model', function (a, b) {
+    sortedTags: sort('tags', function (a, b) {
         let idA = +a.get('id');
         let idB = +b.get('id');
 

@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import $ from 'jquery';
 import Controller from '@ember/controller';
 import randomPassword from 'ghost-admin/utils/random-password';
@@ -18,6 +19,7 @@ export default Controller.extend({
     ghostPaths: service(),
     notifications: service(),
     session: service(),
+    settings: service(),
 
     availableTimezones: null,
     iconExtensions: null,
@@ -28,31 +30,31 @@ export default Controller.extend({
     _scratchFacebook: null,
     _scratchTwitter: null,
 
-    isDatedPermalinks: computed('model.permalinks', {
+    isDatedPermalinks: computed('settings.permalinks', {
         set(key, value) {
-            this.set('model.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
+            this.set('settings.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
 
-            let slugForm = this.get('model.permalinks');
+            let slugForm = this.get('settings.permalinks');
             return slugForm !== '/:slug/';
         },
 
         get() {
-            let slugForm = this.get('model.permalinks');
+            let slugForm = this.get('settings.permalinks');
 
             return slugForm !== '/:slug/';
         }
     }),
 
-    generatePassword: observer('model.isPrivate', function () {
-        this.get('model.errors').remove('password');
-        if (this.get('model.isPrivate') && this.get('model.hasDirtyAttributes')) {
-            this.get('model').set('password', randomPassword());
+    generatePassword: observer('settings.isPrivate', function () {
+        this.get('settings.errors').remove('password');
+        if (this.get('settings.isPrivate') && this.get('settings.hasDirtyAttributes')) {
+            this.get('settings').set('password', randomPassword());
         }
     }),
 
-    privateRSSUrl: computed('config.blogUrl', 'model.publicHash', function () {
+    privateRSSUrl: computed('config.blogUrl', 'settings.publicHash', function () {
         let blogUrl = this.get('config.blogUrl');
-        let publicHash = this.get('model.publicHash');
+        let publicHash = this.get('settings.publicHash');
 
         return `${blogUrl}/${publicHash}/rss`;
     }),
@@ -79,14 +81,14 @@ export default Controller.extend({
         let config = this.get('config');
 
         try {
-            let model = yield this.get('model').save();
-            config.set('blogTitle', model.get('title'));
+            let settings = yield this.get('settings').save();
+            config.set('blogTitle', settings.get('title'));
 
             // this forces the document title to recompute after
             // a blog title change
             this.send('collectTitleTokens', []);
 
-            return model;
+            return settings;
         } catch (error) {
             if (error) {
                 notifications.showAPIError(error, {key: 'settings.save'});
@@ -101,16 +103,16 @@ export default Controller.extend({
         },
 
         setTimezone(timezone) {
-            this.set('model.activeTimezone', timezone.name);
+            this.set('settings.activeTimezone', timezone.name);
         },
 
         removeImage(image) {
             // setting `null` here will error as the server treats it as "null"
-            this.get('model').set(image, '');
+            this.get('settings').set(image, '');
         },
 
         updateImage(property, image, resetInput) {
-            this.get('model').set(property, image);
+            this.get('settings').set(property, image);
             resetInput();
         },
 
@@ -131,13 +133,13 @@ export default Controller.extend({
 
         /**
          * Fired after an image upload completes
-         * @param  {string} property - Property name to be set on `this.model`
+         * @param  {string} property - Property name to be set on `this.settings`
          * @param  {UploadResult[]} results - Array of UploadResult objects
-         * @return {string} The URL that was set on `this.model.property`
+         * @return {string} The URL that was set on `this.settings.property`
          */
         imageUploaded(property, results) {
             if (results[0]) {
-                return this.get('model').set(property, results[0].url);
+                return this.get('settings').set(property, results[0].url);
             }
         },
 
@@ -167,31 +169,31 @@ export default Controller.extend({
 
         leaveSettings() {
             let transition = this.get('leaveSettingsTransition');
-            let model = this.get('model');
+            let settings = this.get('settings');
 
             if (!transition) {
                 this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
-            // roll back changes on model props
-            model.rollbackAttributes();
+            // roll back changes on settings props
+            settings.rollbackAttributes();
 
             return transition.retry();
         },
 
         validateFacebookUrl() {
             let newUrl = this.get('_scratchFacebook');
-            let oldUrl = this.get('model.facebook');
+            let oldUrl = this.get('settings.facebook');
             let errMessage = '';
 
             // reset errors and validation
-            this.get('model.errors').remove('facebook');
-            this.get('model.hasValidated').removeObject('facebook');
+            this.get('settings.errors').remove('facebook');
+            this.get('settings.hasValidated').removeObject('facebook');
 
             if (newUrl === '') {
                 // Clear out the Facebook url
-                this.set('model.facebook', '');
+                this.set('settings.facebook', '');
                 return;
             }
 
@@ -218,36 +220,36 @@ export default Controller.extend({
                     throw 'invalid url';
                 }
 
-                this.set('model.facebook', '');
+                this.set('settings.facebook', '');
                 run.schedule('afterRender', this, function () {
-                    this.set('model.facebook', newUrl);
+                    this.set('settings.facebook', newUrl);
                 });
             } catch (e) {
                 if (e === 'invalid url') {
                     errMessage = 'The URL must be in a format like '
                                + 'https://www.facebook.com/yourPage';
-                    this.get('model.errors').add('facebook', errMessage);
+                    this.get('settings.errors').add('facebook', errMessage);
                     return;
                 }
 
                 throw e;
             } finally {
-                this.get('model.hasValidated').pushObject('facebook');
+                this.get('settings.hasValidated').pushObject('facebook');
             }
         },
 
         validateTwitterUrl() {
             let newUrl = this.get('_scratchTwitter');
-            let oldUrl = this.get('model.twitter');
+            let oldUrl = this.get('settings.twitter');
             let errMessage = '';
 
             // reset errors and validation
-            this.get('model.errors').remove('twitter');
-            this.get('model.hasValidated').removeObject('twitter');
+            this.get('settings.errors').remove('twitter');
+            this.get('settings.hasValidated').removeObject('twitter');
 
             if (newUrl === '') {
                 // Clear out the Twitter url
-                this.set('model.twitter', '');
+                this.set('settings.twitter', '');
                 return;
             }
 
@@ -269,24 +271,24 @@ export default Controller.extend({
                 if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
                     errMessage = !username.match(/^[a-z\d._]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
 
-                    this.get('model.errors').add('twitter', errMessage);
-                    this.get('model.hasValidated').pushObject('twitter');
+                    this.get('settings.errors').add('twitter', errMessage);
+                    this.get('settings.hasValidated').pushObject('twitter');
                     return;
                 }
 
                 newUrl = `https://twitter.com/${username}`;
 
-                this.get('model.hasValidated').pushObject('twitter');
+                this.get('settings.hasValidated').pushObject('twitter');
 
-                this.set('model.twitter', '');
+                this.set('settings.twitter', '');
                 run.schedule('afterRender', this, function () {
-                    this.set('model.twitter', newUrl);
+                    this.set('settings.twitter', newUrl);
                 });
             } else {
                 errMessage = 'The URL must be in a format like '
                            + 'https://twitter.com/yourUsername';
-                this.get('model.errors').add('twitter', errMessage);
-                this.get('model.hasValidated').pushObject('twitter');
+                this.get('settings.errors').add('twitter', errMessage);
+                this.get('settings.hasValidated').pushObject('twitter');
                 return;
             }
         }

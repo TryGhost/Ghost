@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -7,14 +8,14 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    model: alias('settings.unsplash'),
+    unsplashSettings: alias('settings.unsplash'),
     dirtyAttributes: null,
     rollbackValue: null,
 
     leaveSettingsTransition: null,
 
     save: task(function* () {
-        let unsplash = this.get('model');
+        let unsplash = this.get('unsplashSettings');
         let settings = this.get('settings');
 
         try {
@@ -37,9 +38,9 @@ export default Controller.extend({
 
         update(value) {
             if (!this.get('dirtyAttributes')) {
-                this.set('rollbackValue', this.get('model.isActive'));
+                this.set('rollbackValue', this.get('unsplashSettings.isActive'));
             }
-            this.set('model.isActive', value);
+            this.set('unsplashSettings.isActive', value);
             this.set('dirtyAttributes', true);
         },
 
@@ -76,7 +77,7 @@ export default Controller.extend({
             }
 
             // roll back changes on model props
-            this.set('model.isActive', this.get('rollbackValue'));
+            this.set('unsplashSettings.isActive', this.get('rollbackValue'));
             this.set('dirtyAttributes', false);
             this.set('rollbackValue', null);
 

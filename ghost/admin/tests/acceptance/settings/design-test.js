@@ -156,7 +156,7 @@ describe('Acceptance: Settings - Design', function () {
 
             expect(
                 find('.gh-blognav-url:last input').val()
-            ).to.equal(`${window.location.protocol}//${window.location.host}/new`);
+            ).to.equal(`${window.location.origin}/new`);
 
             await click('.gh-blognav-add');
 
@@ -173,7 +173,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find('.gh-blognav-url:last input').val(),
                 'new item url value after successful add'
-            ).to.equal(`${window.location.protocol}//${window.location.host}/`);
+            ).to.equal(`${window.location.origin}/`);
 
             expect(
                 find('.gh-blognav-item .response:visible').length,

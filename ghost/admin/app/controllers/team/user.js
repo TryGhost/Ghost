@@ -36,8 +36,8 @@ export default Controller.extend({
     user: alias('model'),
     currentUser: alias('session.user'),
 
-    email: readOnly('model.email'),
-    slugValue: boundOneWay('model.slug'),
+    email: readOnly('user.email'),
+    slugValue: boundOneWay('user.slug'),
 
     canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
     canChangeEmail: not('isAdminUserOnOwnerProfile'),
@@ -170,9 +170,10 @@ export default Controller.extend({
         }
 
         try {
-            let model = yield user.save({format: false});
             let currentPath,
                 newPath;
+
+            user = yield user.save({format: false});
 
             // If the user's slug has changed, change the URL and replace
             // the history so refresh and back button still work
@@ -180,7 +181,7 @@ export default Controller.extend({
                 currentPath = window.location.hash;
 
                 newPath = currentPath.split('/');
-                newPath[newPath.length - 1] = model.get('slug');
+                newPath[newPath.length - 1] = user.get('slug');
                 newPath = newPath.join('/');
 
                 windowProxy.replaceState({path: newPath}, '', newPath);
@@ -189,7 +190,7 @@ export default Controller.extend({
             this.set('dirtyAttributes', false);
             this.get('notifications').closeAlerts('user.update');
 
-            return model;
+            return user;
         } catch (error) {
             // validation engine returns undefined so we have to check
             // before treating the failure as an API error
@@ -415,7 +416,7 @@ export default Controller.extend({
                 return;
             }
 
-            // roll back changes on model props
+            // roll back changes on user props
             user.rollbackAttributes();
             // roll back the slugValue property
             if (this.get('dirtyAttributes')) {

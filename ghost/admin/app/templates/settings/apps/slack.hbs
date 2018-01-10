@@ -36,12 +36,12 @@
                     <div class="gh-setting-title">Webhook URL</div>
                     <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
                     <div class="gh-setting-content-extended">
-                        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
-                            {{gh-input model.url name="slack[url]" update=(action "updateURL") onenter=(action "save") focusOut=(action "triggerDirtyState") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
-                            {{#unless model.errors.url}}
+                        {{#gh-form-group errors=slackSettings.errors hasValidated=slackSettings.hasValidated property="url"}}
+                            {{gh-input slackSettings.url name="slack[url]" update=(action "updateURL") onenter=(action "save") focusOut=(action "triggerDirtyState") placeholder="https://hooks.slack.com/services/..." data-test-slack-url-input=true}}
+                            {{#unless slackSettings.errors.url}}
                                 <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                             {{else}}
-                                {{gh-error-message errors=model.errors property="url"}}
+                                {{gh-error-message errors=slackSettings.errors property="url"}}
                             {{/unless}}
                         {{/gh-form-group}}
                     </div>

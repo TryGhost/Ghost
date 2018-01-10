@@ -27,7 +27,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     },
 
     model(params) {
-        let model = EmberObject.create();
+        let signupDetails = EmberObject.create();
         let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
             tokenText;
@@ -42,9 +42,9 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
             tokenText = atob(params.token);
             email = tokenText.split('|')[1];
 
-            model.set('email', email);
-            model.set('token', params.token);
-            model.set('errors', Errors.create());
+            signupDetails.set('email', email);
+            signupDetails.set('token', params.token);
+            signupDetails.set('errors', Errors.create());
 
             let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
 
@@ -60,14 +60,14 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
                     return resolve(this.transitionTo('signin'));
                 }
 
-                model.set('invitedBy', response.invitation[0].invitedBy);
+                signupDetails.set('invitedBy', response.invitation[0].invitedBy);
 
                 // set blogTitle, so password validation has access to it
-                model.set('blogTitle', this.get('config.blogTitle'));
+                signupDetails.set('blogTitle', this.get('config.blogTitle'));
 
-                resolve(model);
+                resolve(signupDetails);
             }).catch(() => {
-                resolve(model);
+                resolve(signupDetails);
             });
         });
     },
@@ -76,6 +76,6 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
         this._super(...arguments);
 
         // clear the properties that hold the sensitive data from the controller
-        this.controllerFor('signup').setProperties({email: '', password: '', token: ''});
+        this.controllerFor('signup').get('signupDetails').setProperties({email: '', password: '', token: ''});
     }
 });

@@ -2,6 +2,7 @@ import $ from 'jquery';
 import Controller, {inject as controller} from '@ember/controller';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {alias} from '@ember/object/computed';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -21,6 +22,7 @@ export default Controller.extend(ValidationEngine, {
     settings: service(),
 
     flowErrors: '',
+    signin: alias('model'),
 
     // ValidationEngine settings
     validationType: 'signin',
@@ -56,11 +58,11 @@ export default Controller.extend(ValidationEngine, {
                 this.set('flowErrors', error.payload.errors[0].message.string);
 
                 if (error.payload.errors[0].message.string.match(/user with that email/)) {
-                    this.get('model.errors').add('identification', '');
+                    this.get('signin.errors').add('identification', '');
                 }
 
                 if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
-                    this.get('model.errors').add('password', '');
+                    this.get('signin.errors').add('password', '');
                 }
             } else {
                 // Connection errors don't return proper status message, only req.body
@@ -70,7 +72,7 @@ export default Controller.extend(ValidationEngine, {
     }).drop(),
 
     validateAndAuthenticate: task(function* () {
-        let model = this.get('model');
+        let signin = this.get('signin');
         let authStrategy = 'authenticator:oauth2';
 
         this.set('flowErrors', '');
@@ -84,14 +86,14 @@ export default Controller.extend(ValidationEngine, {
         try {
             yield this.validate({property: 'signin'});
             return yield this.get('authenticate')
-                .perform(authStrategy, [model.get('identification'), model.get('password')]);
+                .perform(authStrategy, [signin.get('identification'), signin.get('password')]);
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
         }
     }).drop(),
 
     forgotten: task(function* () {
-        let email = this.get('model.identification');
+        let email = this.get('signin.identification');
         let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
         let notifications = this.get('notifications');
 
@@ -123,7 +125,7 @@ export default Controller.extend(ValidationEngine, {
                 this.set('flowErrors', message);
 
                 if (message.match(/no user with that email/)) {
-                    this.get('model.errors').add('identification', '');
+                    this.get('signin.errors').add('identification', '');
                 }
             } else {
                 notifications.showAPIError(error, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
