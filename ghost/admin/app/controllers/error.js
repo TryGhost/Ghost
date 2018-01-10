@@ -1,19 +1,21 @@
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
+import {readOnly} from '@ember/object/computed';
 
 export default Controller.extend({
 
+    error: readOnly('model'),
     stack: false,
 
-    code: computed('model.status', function () {
-        return this.get('model.status') > 200 ? this.get('model.status') : 500;
+    code: computed('error.status', function () {
+        return this.get('error.status') > 200 ? this.get('error.status') : 500;
     }),
 
-    message: computed('model.statusText', function () {
+    message: computed('error.statusText', function () {
         if (this.get('code') === 404) {
             return 'Page not found';
         }
 
-        return this.get('model.statusText') !== 'error' ? this.get('model.statusText') : 'Internal Server Error';
+        return this.get('error.statusText') !== 'error' ? this.get('error.statusText') : 'Internal Server Error';
     })
 });

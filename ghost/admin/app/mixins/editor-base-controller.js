@@ -5,6 +5,7 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
+import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {htmlSafe} from '@ember/string';
@@ -17,8 +18,8 @@ import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 
 // this array will hold properties we need to watch
-// to know if the model has been changed (`controller.hasDirtyAttributes`)
-const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
+// to know if the post has been changed (`controller.hasDirtyAttributes`)
+const watchedProps = ['post.scratch', 'post.titleScratch', 'post.hasDirtyAttributes', 'post.tags.[]'];
 
 const DEFAULT_TITLE = '(Untitled)';
 
@@ -28,10 +29,12 @@ const AUTOSAVE_TIMEOUT = 3000;
 const TIMEDSAVE_TIMEOUT = 60000;
 
 PostModel.eachAttribute(function (name) {
-    watchedProps.push(`model.${name}`);
+    watchedProps.push(`post.${name}`);
 });
 
 export default Mixin.create({
+
+    post: alias('model'),
 
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
@@ -64,8 +67,8 @@ export default Mixin.create({
         };
     },
 
-    _canAutosave: computed('model.isDraft', function () {
-        return !Ember.testing && this.get('model.isDraft'); // eslint-disable-line
+    _canAutosave: computed('post.isDraft', function () {
+        return !Ember.testing && this.get('post.isDraft'); // eslint-disable-line
     }),
 
     // save 3 seconds after the last edit
@@ -75,7 +78,7 @@ export default Mixin.create({
         }
 
         // force an instant save on first body edit for new posts
-        if (this.get('model.isNew')) {
+        if (this.get('post.isNew')) {
             return this.get('autosave').perform();
         }
 
@@ -122,8 +125,8 @@ export default Mixin.create({
     // save tasks cancels autosave before running, although this cancels the
     // _xSave tasks  that will also cancel the autosave task
     save: task(function* (options = {}) {
-        let prevStatus = this.get('model.status');
-        let isNew = this.get('model.isNew');
+        let prevStatus = this.get('post.status');
+        let isNew = this.get('post.isNew');
         let status;
 
         this.send('cancelAutosave');
@@ -139,9 +142,9 @@ export default Mixin.create({
             if (this.get('post.pastScheduledTime')) {
                 status = (!this.get('willSchedule') && !this.get('willPublish')) ? 'draft' : 'published';
             } else {
-                if (this.get('willPublish') && !this.get('model.isScheduled') && !this.get('statusFreeze')) {
+                if (this.get('willPublish') && !this.get('post.isScheduled') && !this.get('statusFreeze')) {
                     status = 'published';
-                } else if (this.get('willSchedule') && !this.get('model.isPublished') && !this.get('statusFreeze')) {
+                } else if (this.get('willSchedule') && !this.get('post.isPublished') && !this.get('statusFreeze')) {
                     status = 'scheduled';
                 } else {
                     status = 'draft';
@@ -151,49 +154,49 @@ export default Mixin.create({
 
         // Set the properties that are indirected
         // set mobiledoc equal to what's in the editor, minus the image markers.
-        this.set('model.mobiledoc', this.get('model.scratch'));
-        this.set('model.status', status);
+        this.set('post.mobiledoc', this.get('post.scratch'));
+        this.set('post.status', status);
 
         // Set a default title
-        if (!this.get('model.titleScratch').trim()) {
-            this.set('model.titleScratch', DEFAULT_TITLE);
+        if (!this.get('post.titleScratch').trim()) {
+            this.set('post.titleScratch', DEFAULT_TITLE);
         }
 
-        this.set('model.title', this.get('model.titleScratch'));
-        this.set('model.customExcerpt', this.get('model.customExcerptScratch'));
-        this.set('model.footerInjection', this.get('model.footerExcerptScratch'));
-        this.set('model.headerInjection', this.get('model.headerExcerptScratch'));
-        this.set('model.metaTitle', this.get('model.metaTitleScratch'));
-        this.set('model.metaDescription', this.get('model.metaDescriptionScratch'));
-        this.set('model.ogTitle', this.get('model.ogTitleScratch'));
-        this.set('model.ogDescription', this.get('model.ogDescriptionScratch'));
-        this.set('model.twitterTitle', this.get('model.twitterTitleScratch'));
-        this.set('model.twitterDescription', this.get('model.twitterDescriptionScratch'));
+        this.set('post.title', this.get('post.titleScratch'));
+        this.set('post.customExcerpt', this.get('post.customExcerptScratch'));
+        this.set('post.footerInjection', this.get('post.footerExcerptScratch'));
+        this.set('post.headerInjection', this.get('post.headerExcerptScratch'));
+        this.set('post.metaTitle', this.get('post.metaTitleScratch'));
+        this.set('post.metaDescription', this.get('post.metaDescriptionScratch'));
+        this.set('post.ogTitle', this.get('post.ogTitleScratch'));
+        this.set('post.ogDescription', this.get('post.ogDescriptionScratch'));
+        this.set('post.twitterTitle', this.get('post.twitterTitleScratch'));
+        this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
 
-        if (!this.get('model.slug')) {
+        if (!this.get('post.slug')) {
             this.get('saveTitle').cancelAll();
 
             yield this.get('generateSlug').perform();
         }
 
         try {
-            let model = yield this.get('model').save(options);
+            let post = yield this.get('post').save(options);
 
             if (!options.silent) {
-                this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+                this.showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
 
-            this.get('model').set('statusScratch', null);
+            this.get('post').set('statusScratch', null);
 
             // redirect to edit route if saving a new record
-            if (isNew && model.get('id')) {
+            if (isNew && post.get('id')) {
                 if (!this.get('leaveEditorTransition')) {
-                    this.replaceRoute('editor.edit', model);
+                    this.replaceRoute('editor.edit', post);
                 }
                 return true;
             }
 
-            return model;
+            return post;
         } catch (error) {
             // re-throw if we have a general server error
             if (error && !isInvalidError(error)) {
@@ -201,16 +204,16 @@ export default Mixin.create({
                 return;
             }
 
-            this.set('model.status', prevStatus);
+            this.set('post.status', prevStatus);
 
             if (!options.silent) {
-                let errorOrMessages = error || this.get('model.errors.messages');
-                this.showErrorAlert(prevStatus, this.get('model.status'), errorOrMessages);
+                let errorOrMessages = error || this.get('post.errors.messages');
+                this.showErrorAlert(prevStatus, this.get('post.status'), errorOrMessages);
                 // simulate a validation error for upstream tasks
                 throw undefined;
             }
 
-            return this.get('model');
+            return this.get('post');
         }
     }).group('saveTasks'),
 
@@ -218,7 +221,7 @@ export default Mixin.create({
      * triggered by a user manually changing slug
      */
     updateSlug: task(function* (_newSlug) {
-        let slug = this.get('model.slug');
+        let slug = this.get('post.slug');
         let newSlug, serverSlug;
 
         newSlug = _newSlug || slug;
@@ -259,25 +262,25 @@ export default Mixin.create({
             }
         }
 
-        this.set('model.slug', serverSlug);
+        this.set('post.slug', serverSlug);
 
-        // If this is a new post.  Don't save the model.  Defer the save
+        // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button
-        if (this.get('model.isNew')) {
+        if (this.get('post.isNew')) {
             return;
         }
 
-        return yield this.get('model').save();
+        return yield this.get('post').save();
     }).group('saveTasks'),
 
     // used in the PSM so that saves are sequential and don't trigger collision
     // detection errors
     savePost: task(function* () {
         try {
-            return yield this.get('model').save();
+            return yield this.get('post').save();
         } catch (error) {
             if (error) {
-                let status = this.get('model.status');
+                let status = this.get('post.status');
                 this.showErrorAlert(status, status, error);
             }
 
@@ -290,24 +293,24 @@ export default Mixin.create({
      * Only with a user-set value (via setSaveType action)
      * can the post's status change.
      */
-    willPublish: boundOneWay('model.isPublished'),
-    willSchedule: boundOneWay('model.isScheduled'),
+    willPublish: boundOneWay('post.isPublished'),
+    willSchedule: boundOneWay('post.isScheduled'),
 
     // set by the editor route and `hasDirtyAttributes`. useful when checking
     // whether the number of tags has changed for `hasDirtyAttributes`.
     previousTagNames: null,
 
-    tagNames: mapBy('model.tags', 'name'),
+    tagNames: mapBy('post.tags', 'name'),
 
-    postOrPage: computed('model.page', function () {
-        return this.get('model.page') ? 'Page' : 'Post';
+    postOrPage: computed('post.page', function () {
+        return this.get('post.page') ? 'Page' : 'Post';
     }),
 
     // countdown timer to show the time left until publish time for a scheduled post
     // starts 15 minutes before scheduled time
-    scheduleCountdown: computed('model.{publishedAtUTC,isScheduled}', 'clock.second', function () {
-        let isScheduled = this.get('model.isScheduled');
-        let publishTime = this.get('model.publishedAtUTC') || moment.utc();
+    scheduleCountdown: computed('post.{publishedAtUTC,isScheduled}', 'clock.second', function () {
+        let isScheduled = this.get('post.isScheduled');
+        let publishTime = this.get('post.publishedAtUTC') || moment.utc();
         let timeUntilPublished = publishTime.diff(moment.utc(), 'minutes', true);
         let isPublishedSoon = timeUntilPublished > 0 && timeUntilPublished < 15;
 
@@ -343,41 +346,41 @@ export default Mixin.create({
     },
 
     // a hook created in editor-base-route's setupController
-    modelSaved() {
-        let model = this.get('model');
+    postSaved() {
+        let post = this.get('post');
 
         // safer to updateTags on save in one place
         // rather than in all other places save is called
-        model.updateTags();
+        post.updateTags();
 
         // set previousTagNames to current tagNames for hasDirtyAttributes check
         this.set('previousTagNames', this.get('tagNames'));
 
         // `updateTags` triggers `hasDirtyAttributes => true`.
-        // for a saved model it would otherwise be false.
+        // for a saved post it would otherwise be false.
 
-        // if the two "scratch" properties (title and content) match the model, then
+        // if the two "scratch" properties (title and content) match the post, then
         // it's ok to set hasDirtyAttributes to false
-        if (model.get('titleScratch') === model.get('title')
-            && JSON.stringify(model.get('scratch')) === JSON.stringify(model.get('mobiledoc'))) {
+        if (post.get('titleScratch') === post.get('title')
+            && JSON.stringify(post.get('scratch')) === JSON.stringify(post.get('mobiledoc'))) {
             this.set('hasDirtyAttributes', false);
         }
     },
 
-    // an ugly hack, but necessary to watch all the model's properties
+    // an ugly hack, but necessary to watch all the post's properties
     // and more, without having to be explicit and do it manually
     hasDirtyAttributes: computed.apply(Ember, watchedProps.concat({
         get() {
-            let model = this.get('model');
+            let post = this.get('post');
 
-            if (!model) {
+            if (!post) {
                 return false;
             }
 
-            let mobiledoc = JSON.stringify(model.get('mobiledoc'));
-            let scratch = JSON.stringify(model.get('scratch'));
-            let title = model.get('title');
-            let titleScratch = model.get('titleScratch');
+            let mobiledoc = JSON.stringify(post.get('mobiledoc'));
+            let scratch = JSON.stringify(post.get('scratch'));
+            let title = post.get('title');
+            let titleScratch = post.get('titleScratch');
             let changedAttributes;
 
             if (!this.tagNamesEqual()) {
@@ -388,22 +391,22 @@ export default Mixin.create({
                 return true;
             }
 
-            // since `scratch` is not model property, we need to check
-            // it explicitly against the model's mobiledoc attribute
+            // since `scratch` is not post property, we need to check
+            // it explicitly against the post's mobiledoc attribute
             if (mobiledoc !== scratch) {
                 return true;
             }
 
-            // if the Adapter failed to save the model isError will be true
-            // and we should consider the model still dirty.
-            if (model.get('isError')) {
+            // if the Adapter failed to save the post isError will be true
+            // and we should consider the post still dirty.
+            if (post.get('isError')) {
                 return true;
             }
 
-            // models created on the client always return `hasDirtyAttributes: true`,
+            // posts created on the client always return `hasDirtyAttributes: true`,
             // so we need to see which properties have actually changed.
-            if (model.get('isNew')) {
-                changedAttributes = Object.keys(model.changedAttributes());
+            if (post.get('isNew')) {
+                changedAttributes = Object.keys(post.changedAttributes());
 
                 if (changedAttributes.length) {
                     return true;
@@ -413,10 +416,10 @@ export default Mixin.create({
             }
 
             // even though we use the `scratch` prop to show edits,
-            // which does *not* change the model's `hasDirtyAttributes` property,
+            // which does *not* change the post's `hasDirtyAttributes` property,
             // `hasDirtyAttributes` will tell us if the other props have changed,
-            // as long as the model is not new (model.isNew === false).
-            return model.get('hasDirtyAttributes');
+            // as long as the post is not new (post.isNew === false).
+            return post.get('hasDirtyAttributes');
         },
         set(key, value) {
             return value;
@@ -485,10 +488,10 @@ export default Mixin.create({
 
         if (status === 'published') {
             type = this.get('postOrPage');
-            path = this.get('model.absoluteUrl');
+            path = this.get('post.absoluteUrl');
         } else {
             type = 'Preview';
-            path = this.get('model.previewUrl');
+            path = this.get('post.previewUrl');
         }
 
         message += `&nbsp;<a href="${path}" target="_blank">View ${type}</a>`;
@@ -525,9 +528,9 @@ export default Mixin.create({
     },
 
     saveTitle: task(function* () {
-        let model = this.get('model');
-        let currentTitle = model.get('title');
-        let newTitle = model.get('titleScratch').trim();
+        let post = this.get('post');
+        let currentTitle = post.get('title');
+        let newTitle = post.get('titleScratch').trim();
 
         if (currentTitle && newTitle && newTitle === currentTitle) {
             return;
@@ -538,20 +541,20 @@ export default Mixin.create({
 
         // generate a slug if a post is new and doesn't have a title yet or
         // if the title is still '(Untitled)'
-        if ((model.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
+        if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
             yield this.get('generateSlug').perform();
         }
 
-        if (this.get('model.isDraft')) {
+        if (this.get('post.isDraft')) {
             yield this.get('autosave').perform();
         }
     }),
 
     generateSlug: task(function* () {
-        let title = this.get('model.titleScratch');
+        let title = this.get('post.titleScratch');
 
         // Only set an "untitled" slug once per post
-        if (title === DEFAULT_TITLE && this.get('model.slug')) {
+        if (title === DEFAULT_TITLE && this.get('post.slug')) {
             return;
         }
 
@@ -559,7 +562,7 @@ export default Mixin.create({
             let slug = yield this.get('slugGenerator').generateSlug('post', title);
 
             if (!isBlank(slug)) {
-                this.set('model.slug', slug);
+                this.set('post.slug', slug);
             }
         } catch (error) {
             // Nothing to do (would be nice to log this somewhere though),
@@ -573,7 +576,7 @@ export default Mixin.create({
 
     actions: {
         updateScratch(value) {
-            this.set('model.scratch', value);
+            this.set('post.scratch', value);
 
             // save 3 seconds after last edit
             this.get('_autosave').perform();
@@ -639,7 +642,7 @@ export default Mixin.create({
 
         leaveEditor() {
             let transition = this.get('leaveEditorTransition');
-            let model = this.get('model');
+            let post = this.get('post');
 
             if (!transition) {
                 this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
@@ -647,14 +650,14 @@ export default Mixin.create({
             }
 
             // definitely want to clear the data store and post of any unsaved, client-generated tags
-            model.updateTags();
+            post.updateTags();
 
-            if (model.get('isNew')) {
+            if (post.get('isNew')) {
                 // the user doesn't want to save the new, unsaved post, so delete it.
-                model.deleteRecord();
+                post.deleteRecord();
             } else {
-                // roll back changes on model props
-                model.rollbackAttributes();
+                // roll back changes on post props
+                post.rollbackAttributes();
             }
 
             // setting hasDirtyAttributes to false here allows willTransition on the editor route to succeed
@@ -667,11 +670,11 @@ export default Mixin.create({
         },
 
         updateTitle(newTitle) {
-            this.set('model.titleScratch', newTitle);
+            this.set('post.titleScratch', newTitle);
         },
 
         toggleDeletePostModal() {
-            if (!this.get('model.isNew')) {
+            if (!this.get('post.isNew')) {
                 this.toggleProperty('showDeletePostModal');
             }
         },

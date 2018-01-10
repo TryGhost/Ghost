@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {empty} from '@ember/object/computed';
@@ -11,8 +12,8 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    model: boundOneWay('settings.slack.firstObject'),
-    testNotificationDisabled: empty('model.url'),
+    slackSettings: boundOneWay('settings.slack.firstObject'),
+    testNotificationDisabled: empty('slackSettings.url'),
 
     leaveSettingsTransition: null,
     slackArray: null,
@@ -23,7 +24,7 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let slack = this.get('model');
+        let slack = this.get('slackSettings');
         let settings = this.get('settings');
         let slackArray = this.get('slackArray');
 
@@ -66,12 +67,12 @@ export default Controller.extend({
 
         updateURL(value) {
             value = typeof value === 'string' ? value.trim() : value;
-            this.set('model.url', value);
-            this.get('model.errors').clear();
+            this.set('slackSettings.url', value);
+            this.get('slackSettings.errors').clear();
         },
 
         triggerDirtyState() {
-            let slack = this.get('model');
+            let slack = this.get('slackSettings');
             let slackArray = this.get('slackArray');
             let settings = this.get('settings');
 

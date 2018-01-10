@@ -26,7 +26,7 @@ export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
         this._super(...arguments);
 
         // clear the properties that hold the credentials when we're no longer on the signin screen
-        controller.set('model.identification', '');
-        controller.set('model.password', '');
+        controller.set('signin.identification', '');
+        controller.set('signin.password', '');
     }
 });

@@ -5,6 +5,7 @@ import {
     VersionMismatchError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {alias} from '@ember/object/computed';
 import {isArray as isEmberArray} from '@ember/array';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -18,6 +19,7 @@ export default Controller.extend(ValidationEngine, {
     settings: service(),
 
     // ValidationEngine settings
+    signupDetails: alias('model'),
     validationType: 'signup',
 
     flowErrors: '',
@@ -53,11 +55,11 @@ export default Controller.extend(ValidationEngine, {
                 this.set('flowErrors', error.payload.errors[0].message.string);
 
                 if (error.payload.errors[0].message.string.match(/user with that email/)) {
-                    this.get('model.errors').add('identification', '');
+                    this.get('signupDetails.errors').add('email', '');
                 }
 
                 if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
-                    this.get('model.errors').add('password', '');
+                    this.get('signupDetails.errors').add('password', '');
                 }
             } else {
                 // Connection errors don't return proper status message, only req.body
@@ -103,24 +105,24 @@ export default Controller.extend(ValidationEngine, {
 
     _completeInvitation() {
         let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
-        let model = this.get('model');
+        let signupDetails = this.get('signupDetails');
 
         return this.get('ajax').post(authUrl, {
             dataType: 'json',
             data: {
                 invitation: [{
-                    name: model.get('name'),
-                    email: model.get('email'),
-                    password: model.get('password'),
-                    token: model.get('token')
+                    name: signupDetails.get('name'),
+                    email: signupDetails.get('email'),
+                    password: signupDetails.get('password'),
+                    token: signupDetails.get('token')
                 }]
             }
         });
     },
 
     _authenticateWithPassword() {
-        let email = this.get('model.email');
-        let password = this.get('model.password');
+        let email = this.get('signupDetails.email');
+        let password = this.get('signupDetails.password');
 
         return this.get('session')
             .authenticate('authenticator:oauth2', email, password);

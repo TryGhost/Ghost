@@ -22,7 +22,7 @@ export default TextArea.extend({
     _editor: null,
 
     // default SimpleMDE options, see docs for available config:
-    // https://github.com/NextStepWebs/simplemde-markdown-editor#configuration
+    // https://github.com/sparksuite/simplemde-markdown-editor#configuration
     defaultOptions: computed(function () {
         return {
             autofocus: this.get('autofocus'),

@@ -12,7 +12,7 @@ import {task} from 'ember-concurrency';
 
 describe('Unit: Mixin: editor-base-controller', function () {
     describe('generateSlug', function () {
-        it('should generate a slug and set it on the model', function (done) {
+        it('should generate a slug and set it on the post', function (done) {
             let object;
 
             run(() => {
@@ -22,19 +22,19 @@ describe('Unit: Mixin: editor-base-controller', function () {
                             return RSVP.resolve(`${str}-slug`);
                         }
                     }),
-                    model: EmberObject.create({slug: ''})
+                    post: EmberObject.create({slug: ''})
                 }).create();
 
-                object.set('model.titleScratch', 'title');
+                object.set('post.titleScratch', 'title');
 
-                expect(object.get('model.slug')).to.equal('');
+                expect(object.get('post.slug')).to.equal('');
 
                 run(() => {
                     object.get('generateSlug').perform();
                 });
 
                 wait().then(() => {
-                    expect(object.get('model.slug')).to.equal('title-slug');
+                    expect(object.get('post.slug')).to.equal('title-slug');
                     done();
                 });
             });
@@ -50,22 +50,22 @@ describe('Unit: Mixin: editor-base-controller', function () {
                             return RSVP.resolve(`${str}-slug`);
                         }
                     }),
-                    model: EmberObject.create({
+                    post: EmberObject.create({
                         slug: 'whatever'
                     })
                 }).create();
             });
 
-            expect(object.get('model.slug')).to.equal('whatever');
+            expect(object.get('post.slug')).to.equal('whatever');
 
-            object.set('model.titleScratch', '(Untitled)');
+            object.set('post.titleScratch', '(Untitled)');
 
             run(() => {
                 object.get('generateSlug').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.slug')).to.equal('whatever');
+                expect(object.get('post.slug')).to.equal('whatever');
                 done();
             });
         });
@@ -77,26 +77,26 @@ describe('Unit: Mixin: editor-base-controller', function () {
 
             run(() => {
                 object = EmberObject.extend(EditorBaseControllerMixin, {
-                    model: EmberObject.create({isNew: true}),
+                    post: EmberObject.create({isNew: true}),
                     generateSlug: task(function* () {
-                        this.set('model.slug', 'test-slug');
+                        this.set('post.slug', 'test-slug');
                         yield RSVP.resolve();
                     })
                 }).create();
             });
 
-            expect(object.get('model.isNew')).to.be.true;
-            expect(object.get('model.titleScratch')).to.not.be.ok;
+            expect(object.get('post.isNew')).to.be.true;
+            expect(object.get('post.titleScratch')).to.not.be.ok;
 
-            object.set('model.titleScratch', 'test');
+            object.set('post.titleScratch', 'test');
 
             run(() => {
                 object.get('saveTitle').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.titleScratch')).to.equal('test');
-                expect(object.get('model.slug')).to.equal('test-slug');
+                expect(object.get('post.titleScratch')).to.equal('test');
+                expect(object.get('post.slug')).to.equal('test-slug');
                 done();
             });
         });
@@ -106,26 +106,26 @@ describe('Unit: Mixin: editor-base-controller', function () {
 
             run(() => {
                 object = EmberObject.extend(EditorBaseControllerMixin, {
-                    model: EmberObject.create({isNew: false, title: '(Untitled)'}),
+                    post: EmberObject.create({isNew: false, title: '(Untitled)'}),
                     generateSlug: task(function* () {
-                        this.set('model.slug', 'test-slug');
+                        this.set('post.slug', 'test-slug');
                         yield RSVP.resolve();
                     })
                 }).create();
             });
 
-            expect(object.get('model.isNew')).to.be.false;
-            expect(object.get('model.titleScratch')).to.not.be.ok;
+            expect(object.get('post.isNew')).to.be.false;
+            expect(object.get('post.titleScratch')).to.not.be.ok;
 
-            object.set('model.titleScratch', 'New Title');
+            object.set('post.titleScratch', 'New Title');
 
             run(() => {
                 object.get('saveTitle').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.titleScratch')).to.equal('New Title');
-                expect(object.get('model.slug')).to.equal('test-slug');
+                expect(object.get('post.titleScratch')).to.equal('New Title');
+                expect(object.get('post.slug')).to.equal('test-slug');
                 done();
             });
         });
@@ -135,7 +135,7 @@ describe('Unit: Mixin: editor-base-controller', function () {
 
             run(() => {
                 object = EmberObject.extend(EditorBaseControllerMixin, {
-                    model: EmberObject.create({
+                    post: EmberObject.create({
                         isNew: true,
                         title: 'a title'
                     }),
@@ -147,19 +147,19 @@ describe('Unit: Mixin: editor-base-controller', function () {
                 }).create();
             });
 
-            expect(object.get('model.isNew')).to.be.true;
-            expect(object.get('model.title')).to.equal('a title');
-            expect(object.get('model.titleScratch')).to.not.be.ok;
+            expect(object.get('post.isNew')).to.be.true;
+            expect(object.get('post.title')).to.equal('a title');
+            expect(object.get('post.titleScratch')).to.not.be.ok;
 
-            object.set('model.titleScratch', 'test');
+            object.set('post.titleScratch', 'test');
 
             run(() => {
                 object.get('saveTitle').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.titleScratch')).to.equal('test');
-                expect(object.get('model.slug')).to.not.be.ok;
+                expect(object.get('post.titleScratch')).to.equal('test');
+                expect(object.get('post.slug')).to.not.be.ok;
                 done();
             });
         });
@@ -169,7 +169,7 @@ describe('Unit: Mixin: editor-base-controller', function () {
 
             run(() => {
                 object = EmberObject.extend(EditorBaseControllerMixin, {
-                    model: EmberObject.create({isNew: false}),
+                    post: EmberObject.create({isNew: false}),
                     generateSlug: task(function* () {
                         expect(false, 'generateSlug should not be called').to.equal(true);
 
@@ -178,18 +178,18 @@ describe('Unit: Mixin: editor-base-controller', function () {
                 }).create();
             });
 
-            expect(object.get('model.isNew')).to.be.false;
-            expect(object.get('model.title')).to.not.be.ok;
+            expect(object.get('post.isNew')).to.be.false;
+            expect(object.get('post.title')).to.not.be.ok;
 
-            object.set('model.titleScratch', 'title');
+            object.set('post.titleScratch', 'title');
 
             run(() => {
                 object.get('saveTitle').perform();
             });
 
             wait().then(() => {
-                expect(object.get('model.titleScratch')).to.equal('title');
-                expect(object.get('model.slug')).to.not.be.ok;
+                expect(object.get('post.titleScratch')).to.equal('title');
+                expect(object.get('post.slug')).to.not.be.ok;
                 done();
             });
         });

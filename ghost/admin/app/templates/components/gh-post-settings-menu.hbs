@@ -9,7 +9,7 @@
             </div>
             <div class="settings-menu-content">
                 {{gh-image-uploader-with-preview
-                    image=model.featureImage
+                    image=post.featureImage
                     text="Upload post image"
                     allowUnsplash=true
                     update=(action "setCoverImage")
@@ -19,13 +19,13 @@
                 <div class="form-group">
                     <label for="url">Post URL</label>
                     {{!-- new posts don't have a preview link --}}
-                    {{#unless model.isNew}}
-                        {{#if model.isPublished}}
-                        <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
+                    {{#unless post.isNew}}
+                        {{#if post.isPublished}}
+                        <a class="post-view-link" target="_blank" href="{{post.absoluteUrl}}">
                             View post {{inline-svg "external"}}
                         </a>
                         {{else}}
-                        <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
+                        <a class="post-view-link" target="_blank" href="{{post.previewUrl}}">
                             Preview {{inline-svg "external"}}
                         </a>
                         {{/if}}
@@ -45,32 +45,32 @@
                 </div>
 
                 <div class="form-group">
-                    {{#if (or model.isDraft model.isPublished model.pastScheduledTime)}}
+                    {{#if (or post.isDraft post.isPublished post.pastScheduledTime)}}
                         <label>Publish Date</label>
                     {{else}}
                         <label>Scheduled Date</label>
                         <p>Use the publish menu to re-schedule</p>
                     {{/if}}
                     {{gh-date-time-picker
-                        date=model.publishedAtBlogDate
-                        time=model.publishedAtBlogTime
+                        date=post.publishedAtBlogDate
+                        time=post.publishedAtBlogTime
                         setDate=(action "setPublishedAtBlogDate")
                         setTime=(action "setPublishedAtBlogTime")
-                        errors=model.errors
+                        errors=post.errors
                         dateErrorProperty="publishedAtBlogDate"
                         timeErrorProperty="publishedAtBlogTime"
                         maxDate='now'
-                        disabled=model.isScheduled
+                        disabled=post.isScheduled
                         static=true
                     }}
                 </div>
 
                 <div class="form-group">
                     <label for="tag-input">Tags</label>
-                    {{gh-psm-tags-input post=model triggerId="tag-input"}}
+                    {{gh-psm-tags-input post=post triggerId="tag-input"}}
                 </div>
 
-                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="customExcerpt"}}
+                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="customExcerpt"}}
                     <label for="custom-excerpt">Excerpt</label>
                     {{gh-textarea customExcerptScratch
                         class="post-setting-custom-excerpt"
@@ -80,7 +80,7 @@
                         stopEnterKeyDownPropagation="true"
                         update=(action (mut customExcerptScratch))
                         data-test-field="custom-excerpt"}}
-                    {{gh-error-message errors=model.errors property="customExcerpt" data-test-error="custom-excerpt"}}
+                    {{gh-error-message errors=post.errors property="customExcerpt" data-test-error="custom-excerpt"}}
                 {{/gh-form-group}}
 
                 {{#unless session.user.isAuthor}}
@@ -137,11 +137,11 @@
 
                 <div class="form-group for-checkbox">
                     <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                        {{one-way-checkbox model.page
+                        {{one-way-checkbox post.page
                             name="static-page"
                             id="static-page"
                             class="gh-input post-setting-static-page"
-                            update=(action (mut model.page))
+                            update=(action (mut post.page))
                             data-test-checkbox="static-page"
                         }}
                         <span class="input-toggle-component"></span>
@@ -149,11 +149,11 @@
                     </label>
 
                     <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                        {{one-way-checkbox model.featured
+                        {{one-way-checkbox post.featured
                             name="featured"
                             id="featured"
                             class="gh-input post-setting-featured"
-                            update=(action (mut model.featured))
+                            update=(action (mut post.featured))
                             data-test-checkbox="featured"
                         }}
                         <span class="input-toggle-component"></span>
@@ -162,10 +162,10 @@
                 </div>
 
                 {{gh-psm-template-select
-                    post=model
-                    onTemplateSelect=(action (mut model.customTemplate))}}
+                    post=post
+                    onTemplateSelect=(action (mut post.customTemplate))}}
 
-                {{#unless model.isNew}}
+                {{#unless post.isNew}}
                     <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{inline-svg "trash"}} Delete Post</span></button>
                 {{/unless}}
 
@@ -185,7 +185,7 @@
 
                         <div class="settings-menu-content">
                             <form {{action "discardEnter" on="submit"}}>
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaTitle"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaTitle"}}
                                     <label for="meta-title">Meta Title</label>
                                     {{gh-input metaTitleScratch
                                         class="post-setting-meta-title"
@@ -196,10 +196,10 @@
                                         update=(action (mut metaTitleScratch))
                                         data-test-field="meta-title"}}
                                     <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
-                                    {{gh-error-message errors=model.errors property="meta-title"}}
+                                    {{gh-error-message errors=post.errors property="meta-title"}}
                                 {{/gh-form-group}}
 
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="metaDescription"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaDescription"}}
                                     <label for="meta-description">Meta Description</label>
                                     {{gh-textarea metaDescriptionScratch
                                         class="post-setting-meta-description"
@@ -210,7 +210,7 @@
                                         update=(action (mut metaDescriptionScratch))
                                         data-test-field="meta-description"}}
                                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
-                                    {{gh-error-message errors=model.errors property="meta-description"}}
+                                    {{gh-error-message errors=post.errors property="meta-description"}}
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -236,13 +236,13 @@
 
                             <form {{action "discardEnter" on="submit"}}>
                                 {{gh-image-uploader-with-preview
-                                    image=model.twitterImage
+                                    image=post.twitterImage
                                     text="Add Twitter image"
                                     allowUnsplash=true
                                     update=(action "setTwitterImage")
                                     remove=(action "clearTwitterImage")
                                 }}
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitterTitle"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterTitle"}}
                                     <label for="twitter-title">Twitter Title</label>
                                     {{gh-input twitterTitleScratch
                                         class="post-setting-twitter-title"
@@ -253,10 +253,10 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut twitterTitleScratch))
                                         data-test-field="twitter-title"}}
-                                    {{gh-error-message errors=model.errors property="twitterTitle" data-test-error="twitter-title"}}
+                                    {{gh-error-message errors=post.errors property="twitterTitle" data-test-error="twitter-title"}}
                                 {{/gh-form-group}}
 
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitterDescription"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterDescription"}}
                                     <label for="twitter-description">Twitter Description</label>
                                     {{gh-textarea twitterDescriptionScratch
                                         class="post-setting-twitter-description"
@@ -267,7 +267,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut twitterDescriptionScratch))
                                         data-test-field="twitter-description"}}
-                                    {{gh-error-message errors=model.errors property="twitterDescription" data-test-error="twitter-description"}}
+                                    {{gh-error-message errors=post.errors property="twitterDescription" data-test-error="twitter-description"}}
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -304,13 +304,13 @@
                         <div class="settings-menu-content">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{gh-image-uploader-with-preview
-                                    image=model.ogImage
+                                    image=post.ogImage
                                     text="Add Facebook image"
                                     allowUnsplash=true
                                     update=(action "setOgImage")
                                     remove=(action "clearOgImage")
                                 }}
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="ogTitle"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogTitle"}}
                                     <label for="og-title">Facebook Title</label>
                                     {{gh-input ogTitleScratch
                                         class="post-setting-og-title"
@@ -321,10 +321,10 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut ogTitleScratch))
                                         data-test-field="og-title"}}
-                                    {{gh-error-message errors=model.errors property="ogTitle" data-test-error="og-title"}}
+                                    {{gh-error-message errors=post.errors property="ogTitle" data-test-error="og-title"}}
                                 {{/gh-form-group}}
 
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="ogDescription"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogDescription"}}
                                     <label for="og-description">Facebook Description</label>
                                     {{gh-textarea ogDescriptionScratch
                                         class="post-setting-og-description"
@@ -335,7 +335,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut ogDescriptionScratch))
                                         data-test-field="og-description"}}
-                                    {{gh-error-message errors=model.errors property="ogDescription" data-test-error="og-description"}}
+                                    {{gh-error-message errors=post.errors property="ogDescription" data-test-error="og-description"}}
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -349,7 +349,7 @@
                                             <div class="gh-og-preview-description">{{truncate facebookDescription 300}}</div>
                                             <div class="gh-og-preview-footer">
                                                 <div class="gh-og-preview-footer-left">
-                                                    {{config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{model.author.name}}</span>
+                                                    {{config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{post.author.name}}</span>
                                                 </div>
                                                 <div class="gh-og-preview-footer-right">
                                                 </div>
@@ -371,7 +371,7 @@
 
                         <div class="settings-menu-content settings-menu-content-codeinjection">
                             <form {{action "discardEnter" on="submit"}}>
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="codeinjectionHead"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionHead"}}
                                     <label for="codeinjection-head">Post Header <code>\{{ghost_head}}</code></label>
                                     {{gh-cm-editor codeinjectionHeadScratch
                                         id="post-setting-codeinjection-head"
@@ -381,10 +381,10 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut codeinjectionHeadScratch))
                                         data-test-field="codeinjection-head"}}
-                                    {{gh-error-message errors=model.errors property="codeinjectionHead" data-test-error="codeinjection-head"}}
+                                    {{gh-error-message errors=post.errors property="codeinjectionHead" data-test-error="codeinjection-head"}}
                                 {{/gh-form-group}}
 
-                                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="codeinjectionFoot"}}
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionFoot"}}
                                     <label for="codeinjection-foot">Post Footer <code>\{{ghost_foot}}</code></label>
                                     {{gh-cm-editor codeinjectionFootScratch
                                         id="post-setting-codeinjection-foot"
@@ -394,7 +394,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut codeinjectionFootScratch))
                                         data-test-field="codeinjection-foot"}}
-                                    {{gh-error-message errors=model.errors property="codeinjectionFoot" data-test-error="codeinjection-foot"}}
+                                    {{gh-error-message errors=post.errors property="codeinjectionFoot" data-test-error="codeinjection-foot"}}
                                 {{/gh-form-group}}
                             </form>
                         </div>

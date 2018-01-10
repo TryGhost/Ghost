@@ -7,7 +7,7 @@
     <header class="gh-editor-header {{editor.headerClass}}">
         <div class="gh-editor-status">
             {{gh-editor-post-status
-                post=model
+                post=post
                 isSaving=(or autosave.isRunning saveTasks.isRunning)
             }}
         </div>
@@ -17,9 +17,9 @@
             </time>
         {{/if}}
         <section class="view-actions">
-            {{#unless model.isNew}}
+            {{#unless post.isNew}}
                 {{gh-publishmenu
-                    post=model
+                    post=post
                     saveTask=save
                     setSaveType=(action "setSaveType")
                     onOpen=(action "cancelAutosave")}}
@@ -40,7 +40,7 @@
         placeholder="Begin writing your story..."
         autofocus=shouldFocusEditor
         uploadedImageUrls=editor.uploadedImageUrls
-        mobiledoc=(readonly model.scratch)
+        mobiledoc=(readonly post.scratch)
         isFullScreen=editor.isFullScreen
         onChange=(action "updateScratch")
         onFullScreenToggle=(action editor.toggleFullScreen)
@@ -51,7 +51,7 @@
         as |markdown|
     }}
         <div class="gh-markdown-editor-pane">
-            {{gh-textarea model.titleScratch
+            {{gh-textarea post.titleScratch
                 class="gh-editor-title"
                 placeholder="Post Title"
                 tabindex="1"
@@ -69,7 +69,7 @@
 
         {{#if markdown.isSplitScreen}}
             <div class="gh-markdown-editor-preview">
-                <h1 class="gh-markdown-editor-preview-title">{{model.titleScratch}}</h1>
+                <h1 class="gh-markdown-editor-preview-title">{{post.titleScratch}}</h1>
                 <div class="gh-markdown-editor-preview-content"></div>
             </div>
         {{/if}}
@@ -129,7 +129,7 @@
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
-        model=(hash post=model onSuccess=(route-action 'redirectToContentScreen'))
+        model=(hash post=post onSuccess=(route-action 'redirectToContentScreen'))
         close=(action "toggleDeletePostModal")
         modifier="action wide"}}
 {{/if}}
@@ -149,7 +149,7 @@
 
 {{#liquid-wormhole}}
     {{gh-post-settings-menu
-        model=model
+        post=post
         showSettingsMenu=ui.showSettingsMenu
         deletePost=(action "toggleDeletePostModal")
         updateSlug=updateSlug

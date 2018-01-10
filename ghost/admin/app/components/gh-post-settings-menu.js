@@ -25,25 +25,25 @@ export default Component.extend(SettingsMenuMixin, {
     settings: service(),
     ui: service(),
 
-    model: null,
+    post: null,
 
-    customExcerptScratch: alias('model.customExcerptScratch'),
-    codeinjectionFootScratch: alias('model.codeinjectionFootScratch'),
-    codeinjectionHeadScratch: alias('model.codeinjectionHeadScratch'),
-    metaDescriptionScratch: alias('model.metaDescriptionScratch'),
-    metaTitleScratch: alias('model.metaTitleScratch'),
-    ogDescriptionScratch: alias('model.ogDescriptionScratch'),
-    ogTitleScratch: alias('model.ogTitleScratch'),
-    twitterDescriptionScratch: alias('model.twitterDescriptionScratch'),
-    twitterTitleScratch: alias('model.twitterTitleScratch'),
-    slugValue: boundOneWay('model.slug'),
+    customExcerptScratch: alias('post.customExcerptScratch'),
+    codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
+    codeinjectionHeadScratch: alias('post.codeinjectionHeadScratch'),
+    metaDescriptionScratch: alias('post.metaDescriptionScratch'),
+    metaTitleScratch: alias('post.metaTitleScratch'),
+    ogDescriptionScratch: alias('post.ogDescriptionScratch'),
+    ogTitleScratch: alias('post.ogTitleScratch'),
+    twitterDescriptionScratch: alias('post.twitterDescriptionScratch'),
+    twitterTitleScratch: alias('post.twitterTitleScratch'),
+    slugValue: boundOneWay('post.slug'),
 
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
-    facebookImage: or('model.ogImage', 'model.featureImage'),
+    facebookImage: or('post.ogImage', 'post.featureImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
-    seoTitle: or('metaTitleScratch', 'model.titleScratch'),
+    seoTitle: or('metaTitleScratch', 'post.titleScratch'),
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
-    twitterImage: or('model.twitterImage', 'model.featureImage'),
+    twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
     _showSettingsMenu: false,
@@ -63,7 +63,7 @@ export default Component.extend(SettingsMenuMixin, {
             }
         });
 
-        this.get('model.author').then((author) => {
+        this.get('post.author').then((author) => {
             this.set('selectedAuthor', author);
         });
 
@@ -77,7 +77,7 @@ export default Component.extend(SettingsMenuMixin, {
 
         // fired when menu is closed
         if (!this.get('showSettingsMenu') && this._showSettingsMenu) {
-            let post = this.get('model');
+            let post = this.get('post');
             let errors = post.get('errors');
 
             // reset the publish date if it has an error
@@ -108,9 +108,9 @@ export default Component.extend(SettingsMenuMixin, {
         this.set('_showThrobbers', true);
     }).restartable(),
 
-    seoDescription: computed('model.scratch', 'metaDescriptionScratch', function () {
+    seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';
-        let mobiledoc = this.get('model.scratch');
+        let mobiledoc = this.get('post.scratch');
         let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
         let placeholder;
 
@@ -129,9 +129,9 @@ export default Component.extend(SettingsMenuMixin, {
         return placeholder;
     }),
 
-    seoURL: computed('model.slug', 'config.blogUrl', function () {
+    seoURL: computed('post.slug', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
-        let seoSlug = this.get('model.slug') ? this.get('model.slug') : '';
+        let seoSlug = this.get('post.slug') ? this.get('post.slug') : '';
         let seoURL = `${blogUrl}/${seoSlug}`;
 
         // only append a slash to the URL if the slug exists
@@ -175,32 +175,32 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         togglePage() {
-            this.toggleProperty('model.page');
+            this.toggleProperty('post.page');
 
-            // If this is a new post.  Don't save the model.  Defer the save
+            // If this is a new post.  Don't save the post.  Defer the save
             // to the user pressing the save button
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         toggleFeatured() {
-            this.toggleProperty('model.featured');
+            this.toggleProperty('post.featured');
 
-            // If this is a new post.  Don't save the model.  Defer the save
+            // If this is a new post.  Don't save the post.  Defer the save
             // to the user pressing the save button
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
@@ -212,12 +212,12 @@ export default Component.extend(SettingsMenuMixin, {
                 .perform(newSlug)
                 .catch((error) => {
                     this.showError(error);
-                    this.get('model').rollbackAttributes();
+                    this.get('post').rollbackAttributes();
                 });
         },
 
         setPublishedAtBlogDate(date) {
-            let post = this.get('model');
+            let post = this.get('post');
             let dateString = moment(date).format('YYYY-MM-DD');
 
             post.get('errors').remove('publishedAtBlogDate');
@@ -231,7 +231,7 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setPublishedAtBlogTime(time) {
-            let post = this.get('model');
+            let post = this.get('post');
 
             post.get('errors').remove('publishedAtBlogDate');
 
@@ -244,48 +244,48 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setCustomExcerpt(excerpt) {
-            let model = this.get('model');
-            let currentExcerpt = model.get('customExcerpt');
+            let post = this.get('post');
+            let currentExcerpt = post.get('customExcerpt');
 
             if (excerpt === currentExcerpt) {
                 return;
             }
 
-            model.set('customExcerpt', excerpt);
+            post.set('customExcerpt', excerpt);
 
-            return model.validate({property: 'customExcerpt'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'customExcerpt'}).then(() => this.get('savePost').perform());
         },
 
         setHeaderInjection(code) {
-            let model = this.get('model');
-            let currentCode = model.get('codeinjectionHead');
+            let post = this.get('post');
+            let currentCode = post.get('codeinjectionHead');
 
             if (code === currentCode) {
                 return;
             }
 
-            model.set('codeinjectionHead', code);
+            post.set('codeinjectionHead', code);
 
-            return model.validate({property: 'codeinjectionHead'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'codeinjectionHead'}).then(() => this.get('savePost').perform());
         },
 
         setFooterInjection(code) {
-            let model = this.get('model');
-            let currentCode = model.get('codeinjectionFoot');
+            let post = this.get('post');
+            let currentCode = post.get('codeinjectionFoot');
 
             if (code === currentCode) {
                 return;
             }
 
-            model.set('codeinjectionFoot', code);
+            post.set('codeinjectionFoot', code);
 
-            return model.validate({property: 'codeinjectionFoot'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'codeinjectionFoot'}).then(() => this.get('savePost').perform());
         },
 
         setMetaTitle(metaTitle) {
-            // Grab the model and current stored meta title
-            let model = this.get('model');
-            let currentTitle = model.get('metaTitle');
+            // Grab the post and current stored meta title
+            let post = this.get('post');
+            let currentTitle = post.get('metaTitle');
 
             // If the title entered matches the stored meta title, do nothing
             if (currentTitle === metaTitle) {
@@ -293,11 +293,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the title entered is different, set it as the new meta title
-            model.set('metaTitle', metaTitle);
+            post.set('metaTitle', metaTitle);
 
-            // Make sure the meta title is valid and if so, save it into the model
-            return model.validate({property: 'metaTitle'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the meta title is valid and if so, save it into the post
+            return post.validate({property: 'metaTitle'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -306,9 +306,9 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setMetaDescription(metaDescription) {
-            // Grab the model and current stored meta description
-            let model = this.get('model');
-            let currentDescription = model.get('metaDescription');
+            // Grab the post and current stored meta description
+            let post = this.get('post');
+            let currentDescription = post.get('metaDescription');
 
             // If the title entered matches the stored meta title, do nothing
             if (currentDescription === metaDescription) {
@@ -316,11 +316,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the title entered is different, set it as the new meta title
-            model.set('metaDescription', metaDescription);
+            post.set('metaDescription', metaDescription);
 
-            // Make sure the meta title is valid and if so, save it into the model
-            return model.validate({property: 'metaDescription'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the meta title is valid and if so, save it into the post
+            return post.validate({property: 'metaDescription'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -329,9 +329,9 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setOgTitle(ogTitle) {
-            // Grab the model and current stored facebook title
-            let model = this.get('model');
-            let currentTitle = model.get('ogTitle');
+            // Grab the post and current stored facebook title
+            let post = this.get('post');
+            let currentTitle = post.get('ogTitle');
 
             // If the title entered matches the stored facebook title, do nothing
             if (currentTitle === ogTitle) {
@@ -339,11 +339,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the title entered is different, set it as the new facebook title
-            model.set('ogTitle', ogTitle);
+            post.set('ogTitle', ogTitle);
 
-            // Make sure the facebook title is valid and if so, save it into the model
-            return model.validate({property: 'ogTitle'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the facebook title is valid and if so, save it into the post
+            return post.validate({property: 'ogTitle'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -352,9 +352,9 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setOgDescription(ogDescription) {
-            // Grab the model and current stored facebook description
-            let model = this.get('model');
-            let currentDescription = model.get('ogDescription');
+            // Grab the post and current stored facebook description
+            let post = this.get('post');
+            let currentDescription = post.get('ogDescription');
 
             // If the title entered matches the stored facebook description, do nothing
             if (currentDescription === ogDescription) {
@@ -362,11 +362,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the description entered is different, set it as the new facebook description
-            model.set('ogDescription', ogDescription);
+            post.set('ogDescription', ogDescription);
 
-            // Make sure the facebook description is valid and if so, save it into the model
-            return model.validate({property: 'ogDescription'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the facebook description is valid and if so, save it into the post
+            return post.validate({property: 'ogDescription'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -375,9 +375,9 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setTwitterTitle(twitterTitle) {
-            // Grab the model and current stored twitter title
-            let model = this.get('model');
-            let currentTitle = model.get('twitterTitle');
+            // Grab the post and current stored twitter title
+            let post = this.get('post');
+            let currentTitle = post.get('twitterTitle');
 
             // If the title entered matches the stored twitter title, do nothing
             if (currentTitle === twitterTitle) {
@@ -385,11 +385,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the title entered is different, set it as the new twitter title
-            model.set('twitterTitle', twitterTitle);
+            post.set('twitterTitle', twitterTitle);
 
-            // Make sure the twitter title is valid and if so, save it into the model
-            return model.validate({property: 'twitterTitle'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the twitter title is valid and if so, save it into the post
+            return post.validate({property: 'twitterTitle'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -398,9 +398,9 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setTwitterDescription(twitterDescription) {
-            // Grab the model and current stored twitter description
-            let model = this.get('model');
-            let currentDescription = model.get('twitterDescription');
+            // Grab the post and current stored twitter description
+            let post = this.get('post');
+            let currentDescription = post.get('twitterDescription');
 
             // If the description entered matches the stored twitter description, do nothing
             if (currentDescription === twitterDescription) {
@@ -408,11 +408,11 @@ export default Component.extend(SettingsMenuMixin, {
             }
 
             // If the description entered is different, set it as the new twitter description
-            model.set('twitterDescription', twitterDescription);
+            post.set('twitterDescription', twitterDescription);
 
-            // Make sure the twitter description is valid and if so, save it into the model
-            return model.validate({property: 'twitterDescription'}).then(() => {
-                if (model.get('isNew')) {
+            // Make sure the twitter description is valid and if so, save it into the post
+            return post.validate({property: 'twitterDescription'}).then(() => {
+                if (post.get('isNew')) {
                     return;
                 }
 
@@ -421,103 +421,103 @@ export default Component.extend(SettingsMenuMixin, {
         },
 
         setCoverImage(image) {
-            this.set('model.featureImage', image);
+            this.set('post.featureImage', image);
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         clearCoverImage() {
-            this.set('model.featureImage', '');
+            this.set('post.featureImage', '');
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         setOgImage(image) {
-            this.set('model.ogImage', image);
+            this.set('post.ogImage', image);
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         clearOgImage() {
-            this.set('model.ogImage', '');
+            this.set('post.ogImage', '');
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         setTwitterImage(image) {
-            this.set('model.twitterImage', image);
+            this.set('post.twitterImage', image);
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         clearTwitterImage() {
-            this.set('model.twitterImage', '');
+            this.set('post.twitterImage', '');
 
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.get('model').rollbackAttributes();
+                this.get('post').rollbackAttributes();
             });
         },
 
         changeAuthor(newAuthor) {
-            let author = this.get('model.author');
-            let model = this.get('model');
+            let author = this.get('post.author');
+            let post = this.get('post');
 
             // return if nothing changed
             if (newAuthor.get('id') === author.get('id')) {
                 return;
             }
 
-            model.set('author', newAuthor);
+            post.set('author', newAuthor);
 
             // if this is a new post (never been saved before), don't try to save it
-            if (this.get('model.isNew')) {
+            if (this.get('post.isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
                 this.set('selectedAuthor', author);
-                model.rollbackAttributes();
+                post.rollbackAttributes();
             });
         },
 

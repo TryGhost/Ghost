@@ -26,7 +26,8 @@ describe('Unit: Controller: settings/design', function () {
             'service:ghostPaths',
             'service:notifications',
             'service:session',
-            'service:upgrade-status'
+            'service:upgrade-status',
+            'service:settings'
         ]
     });
 
@@ -55,19 +56,19 @@ describe('Unit: Controller: settings/design', function () {
         let ctrl = this.subject();
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: [
+            ctrl.set('settings', EmberObject.create({navigation: [
                 NavItem.create({label: 'First', url: '/'}),
                 NavItem.create({label: '', url: '/second'}),
                 NavItem.create({label: 'Third', url: ''})
             ]}));
             // blank item won't get added because the last item is incomplete
-            expect(ctrl.get('model.navigation.length')).to.equal(3);
+            expect(ctrl.get('settings.navigation.length')).to.equal(3);
 
             ctrl.get('save').perform().then(function passedValidation() {
                 assert(false, 'navigationItems weren\'t validated on save');
                 done();
             }).catch(function failedValidation() {
-                let navItems = ctrl.get('model.navigation');
+                let navItems = ctrl.get('settings.navigation');
                 expect(navItems[0].get('errors').toArray()).to.be.empty;
                 expect(navItems[1].get('errors.firstObject.attribute')).to.equal('label');
                 expect(navItems[2].get('errors.firstObject.attribute')).to.equal('url');
@@ -80,18 +81,18 @@ describe('Unit: Controller: settings/design', function () {
         let ctrl = this.subject();
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: [
+            ctrl.set('settings', EmberObject.create({navigation: [
                 NavItem.create({label: 'First', url: '/'}),
                 NavItem.create({label: '', url: ''})
             ]}));
 
-            expect(ctrl.get('model.navigation.length')).to.equal(2);
+            expect(ctrl.get('settings.navigation.length')).to.equal(2);
 
             ctrl.get('save').perform().then(function passedValidation() {
                 assert(false, 'navigationItems weren\'t validated on save');
                 done();
             }).catch(function failedValidation() {
-                let navItems = ctrl.get('model.navigation');
+                let navItems = ctrl.get('settings.navigation');
                 expect(navItems[0].get('errors').toArray()).to.be.empty;
                 done();
             });
@@ -102,12 +103,12 @@ describe('Unit: Controller: settings/design', function () {
         let ctrl = this.subject();
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: [
+            ctrl.set('settings', EmberObject.create({navigation: [
                 NavItem.create({label: 'First', url: '/first', last: true})
             ]}));
         });
 
-        expect(ctrl.get('model.navigation.length')).to.equal(1);
+        expect(ctrl.get('settings.navigation.length')).to.equal(1);
 
         ctrl.set('newNavItem.label', 'New');
         ctrl.set('newNavItem.url', '/new');
@@ -116,10 +117,10 @@ describe('Unit: Controller: settings/design', function () {
             ctrl.send('addNavItem');
         });
 
-        expect(ctrl.get('model.navigation.length')).to.equal(2);
-        expect(ctrl.get('model.navigation.lastObject.label')).to.equal('New');
-        expect(ctrl.get('model.navigation.lastObject.url')).to.equal('/new');
-        expect(ctrl.get('model.navigation.lastObject.isNew')).to.be.false;
+        expect(ctrl.get('settings.navigation.length')).to.equal(2);
+        expect(ctrl.get('settings.navigation.lastObject.label')).to.equal('New');
+        expect(ctrl.get('settings.navigation.lastObject.url')).to.equal('/new');
+        expect(ctrl.get('settings.navigation.lastObject.isNew')).to.be.false;
         expect(ctrl.get('newNavItem.label')).to.be.blank;
         expect(ctrl.get('newNavItem.url')).to.be.blank;
         expect(ctrl.get('newNavItem.isNew')).to.be.true;
@@ -129,12 +130,12 @@ describe('Unit: Controller: settings/design', function () {
         let ctrl = this.subject();
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: [
+            ctrl.set('settings', EmberObject.create({navigation: [
                 NavItem.create({label: '', url: '', last: true})
             ]}));
-            expect(ctrl.get('model.navigation.length')).to.equal(1);
+            expect(ctrl.get('settings.navigation.length')).to.equal(1);
             ctrl.send('addNavItem');
-            expect(ctrl.get('model.navigation.length')).to.equal(1);
+            expect(ctrl.get('settings.navigation.length')).to.equal(1);
         });
     });
 
@@ -146,10 +147,10 @@ describe('Unit: Controller: settings/design', function () {
         ];
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: navItems}));
-            expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
-            ctrl.send('deleteNavItem', ctrl.get('model.navigation.firstObject'));
-            expect(ctrl.get('model.navigation').mapBy('label')).to.deep.equal(['Second']);
+            ctrl.set('settings', EmberObject.create({navigation: navItems}));
+            expect(ctrl.get('settings.navigation').mapBy('label')).to.deep.equal(['First', 'Second']);
+            ctrl.send('deleteNavItem', ctrl.get('settings.navigation.firstObject'));
+            expect(ctrl.get('settings.navigation').mapBy('label')).to.deep.equal(['Second']);
         });
     });
 
@@ -161,10 +162,10 @@ describe('Unit: Controller: settings/design', function () {
         ];
 
         run(() => {
-            ctrl.set('model', EmberObject.create({navigation: navItems}));
-            expect(ctrl.get('model.navigation').mapBy('url')).to.deep.equal(['/first', '/second']);
-            ctrl.send('updateUrl', '/new', ctrl.get('model.navigation.firstObject'));
-            expect(ctrl.get('model.navigation').mapBy('url')).to.deep.equal(['/new', '/second']);
+            ctrl.set('settings', EmberObject.create({navigation: navItems}));
+            expect(ctrl.get('settings.navigation').mapBy('url')).to.deep.equal(['/first', '/second']);
+            ctrl.send('updateUrl', '/new', ctrl.get('settings.navigation.firstObject'));
+            expect(ctrl.get('settings.navigation').mapBy('url')).to.deep.equal(['/new', '/second']);
         });
     });
 });

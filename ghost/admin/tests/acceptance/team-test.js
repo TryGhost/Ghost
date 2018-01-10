@@ -362,7 +362,7 @@ describe('Acceptance: Team', function () {
             await visit('/team');
             await click(`[data-test-user-id="${suspendedUser.id}"]`);
 
-            expect('[data-test-suspended-badge]').to.exist;
+            expect(find('[data-test-suspended-badge]')).to.exist;
 
             await click('[data-test-user-actions]');
             await click('[data-test-unsuspend-button]');
@@ -376,7 +376,6 @@ describe('Acceptance: Team', function () {
             // });
 
             await click('[data-test-team-link]');
-
             // suspendedUser is now in active list
             expect(
                 find(`[data-test-active-users] [data-test-user-id="${suspendedUser.id}"]`)
@@ -392,8 +391,7 @@ describe('Acceptance: Team', function () {
             await click('[data-test-user-actions]');
             await click('[data-test-suspend-button]');
             await click('[data-test-modal-confirm]');
-
-            expect('[data-test-suspended-badge]').to.exist;
+            expect(find('[data-test-suspended-badge]')).to.exist;
         });
 
         it('can delete users', async function () {

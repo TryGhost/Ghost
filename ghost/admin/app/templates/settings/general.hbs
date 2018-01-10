@@ -22,15 +22,15 @@
                 <div class="gh-setting-desc">The details used to identify your publication around the web</div>
                 {{#liquid-if pubInfoOpen}}
                 <div class="gh-setting-content-extended">
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
-                        {{gh-input model.title type="text" focusOut=(action "validate" "title" target=model) update=(action (mut model.title)) data-test-title-input=true}}
-                        {{gh-error-message errors=model.errors property="title"}}
+                    {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="title"}}
+                        {{gh-input settings.title type="text" focusOut=(action "validate" "title" target=settings) update=(action (mut settings.title)) data-test-title-input=true}}
+                        {{gh-error-message errors=settings.errors property="title"}}
                         <p>The name of your site</p>
                     {{/gh-form-group}}
 
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
-                        {{gh-input model.description type="text" focusOut=(action "validate" "description" target=model) update=(action (mut model.description)) data-test-description-input=true}}
-                        {{gh-error-message errors=model.errors property="description"}}
+                    {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="description" class="description-container"}}
+                        {{gh-input settings.description type="text" focusOut=(action "validate" "description" target=settings) update=(action (mut settings.description)) data-test-description-input=true}}
+                        {{gh-error-message errors=settings.errors property="description"}}
                         <p>Used in your theme, meta data and search results</p>
                     {{/gh-form-group}}
                 </div>
@@ -47,7 +47,7 @@
                 {{#liquid-if timezoneOpen}}
                 <div class="gh-setting-content-extended">
                     {{gh-timezone-select
-                            activeTimezone=model.activeTimezone
+                            activeTimezone=settings.activeTimezone
                             availableTimezones=availableTimezones
                             update=(action "setTimezone")}}
                 </div>
@@ -63,9 +63,9 @@
                 <div class="gh-setting-desc">Set the language/locale which is used on your site</div>
                 {{#liquid-if defaultLocaleOpen}}
                 <div class="gh-setting-content-extended">
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="defaultLocale"}}
-                        {{gh-input model.defaultLocale type="text" focusOut=(action "validate" "defaultLocale" target=model) update=(action (mut model.defaultLocale)) data-test-default-locale-input=true}}
-                        {{gh-error-message errors=model.errors property="defaultLocale"}}
+                    {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="defaultLocale"}}
+                        {{gh-input settings.defaultLocale type="text" focusOut=(action "validate" "defaultLocale" target=settings) update=(action (mut settings.defaultLocale)) data-test-default-locale-input=true}}
+                        {{gh-error-message errors=settings.errors property="defaultLocale"}}
                         <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://themes.ghost.org/v1.20.0/docs/i18n" target="_blank" rel="noopener">any language</a></p>
                     {{/gh-form-group}}
                 </div>
@@ -94,8 +94,8 @@
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if uploader.isUploading}}
                     {{uploader.progressBar}}
-                {{else if model.icon}}
-                    <img class="blog-icon" src="{{model.icon}}" onclick={{action "triggerFileDialog"}} alt="icon" data-test-icon-img>
+                {{else if settings.icon}}
+                    <img class="blog-icon" src="{{settings.icon}}" onclick={{action "triggerFileDialog"}} alt="icon" data-test-icon-img>
                     <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "icon"}} data-test-delete-image="icon">
                         <span>delete</span>
                     </button>
@@ -126,8 +126,8 @@
             <div class="gh-setting-action gh-setting-action-smallimg">
                 {{#if uploader.isUploading}}
                     {{uploader.progressBar}}
-                {{else if model.logo}}
-                    <img class="blog-logo" src="{{model.logo}}"  onclick={{action "triggerFileDialog"}} alt="logo" data-test-logo-img>
+                {{else if settings.logo}}
+                    <img class="blog-logo" src="{{settings.logo}}"  onclick={{action "triggerFileDialog"}} alt="logo" data-test-logo-img>
                     <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "logo"}} data-test-delete-image="logo">
                         <span>delete</span>
                     </button>
@@ -158,8 +158,8 @@
             <div class="gh-setting-action gh-setting-action-largeimg">
                 {{#if uploader.isUploading}}
                     {{uploader.progressBar}}
-                {{else if model.coverImage}}
-                    <img class="blog-cover" src="{{model.coverImage}}"  onclick={{action "triggerFileDialog"}} alt="cover photo" data-test-cover-img>
+                {{else if settings.coverImage}}
+                    <img class="blog-cover" src="{{settings.coverImage}}"  onclick={{action "triggerFileDialog"}} alt="cover photo" data-test-cover-img>
                     <button type="button" class="gh-setting-action-largeimg-delete" {{action "removeImage" "coverImage"}} data-test-delete-image="coverImage">
                         <span>delete</span>
                     </button>
@@ -182,14 +182,14 @@
                 <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
                 {{#liquid-if socialOpen}}
                 <div class="gh-setting-content-extended">
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
-                        <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://www.facebook.com/ghost" autocorrect="off" data-test-facebook-input />
-                        {{gh-error-message errors=model.errors property="facebook" data-test-facebook-error=true}}
+                    {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="facebook"}}
+                        <input value={{settings.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://www.facebook.com/ghost" autocorrect="off" data-test-facebook-input />
+                        {{gh-error-message errors=settings.errors property="facebook" data-test-facebook-error=true}}
                         <p>URL of your publication's Facebook Page</p>
                     {{/gh-form-group}}
-                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
-                        <input value={{model.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://twitter.com/tryghost" autocorrect="off" data-test-twitter-input />
-                        {{gh-error-message errors=model.errors property="twitter" data-test-twitter-error=true}}
+                    {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="twitter"}}
+                        <input value={{settings.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://twitter.com/tryghost" autocorrect="off" data-test-twitter-input />
+                        {{gh-error-message errors=settings.errors property="twitter" data-test-twitter-error=true}}
                         <p>URL of your publication's Twitter profile</p>
                     {{/gh-form-group}}
                 </div>
@@ -221,7 +221,7 @@
                 <div class="gh-setting-desc">
                     Enable protection with simple shared password, All search engine optimization and social features will be disabled.
 
-                    {{#if model.isPrivate}}
+                    {{#if settings.isPrivate}}
                         <span class="avoid-break-out">
                             <br><br>
                             A private RSS feed is available at
@@ -230,11 +230,11 @@
                     {{/if}}
                 </div>
 
-                {{#if model.isPrivate}}
+                {{#if settings.isPrivate}}
                     <div class="gh-setting-content-extended">
-                        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
-                            {{gh-input model.password name="general[password]" type="text" focusOut=(action "validate" "password" target=model) update=(action (mut model.password)) data-test-password-input=true}}
-                            {{gh-error-message errors=model.errors property="password" data-test-password-error=true}}
+                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="password"}}
+                            {{gh-input settings.password name="general[password]" type="text" focusOut=(action "validate" "password" target=settings) update=(action (mut settings.password)) data-test-password-input=true}}
+                            {{gh-error-message errors=settings.errors property="password" data-test-password-error=true}}
                             <p>Set the password for this site</p>
                         {{/gh-form-group}}
                     </div>
@@ -243,7 +243,7 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">
                     <label class="checkbox" for="settings-private">
-                        {{one-way-checkbox model.isPrivate id="settings-private" type="checkbox" update=(action (mut model.isPrivate)) data-test-private-checkbox=true}}
+                        {{one-way-checkbox settings.isPrivate id="settings-private" type="checkbox" update=(action (mut settings.isPrivate)) data-test-private-checkbox=true}}
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>

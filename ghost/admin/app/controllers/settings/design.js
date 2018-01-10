@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import $ from 'jquery';
 import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
@@ -14,6 +15,7 @@ export default Controller.extend({
     ghostPaths: service(),
     notifications: service(),
     session: service(),
+    settings: service(),
 
     newNavItem: null,
 
@@ -35,7 +37,7 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let navItems = this.get('model.navigation');
+        let navItems = this.get('settings.navigation');
         let newNavItem = this.get('newNavItem');
         let notifications = this.get('notifications');
         let validationPromises = [];
@@ -51,7 +53,7 @@ export default Controller.extend({
         try {
             yield RSVP.all(validationPromises);
             this.set('dirtyAttributes', false);
-            return yield this.get('model').save();
+            return yield this.get('settings').save();
         } catch (error) {
             if (error) {
                 notifications.showAPIError(error);
@@ -61,7 +63,7 @@ export default Controller.extend({
     }),
 
     addNewNavItem() {
-        let navItems = this.get('model.navigation');
+        let navItems = this.get('settings.navigation');
         let newNavItem = this.get('newNavItem');
 
         newNavItem.set('isNew', false);
@@ -111,7 +113,7 @@ export default Controller.extend({
                 return;
             }
 
-            let navItems = this.get('model.navigation');
+            let navItems = this.get('settings.navigation');
 
             navItems.removeObject(item);
             this.set('dirtyAttributes', true);
@@ -161,15 +163,15 @@ export default Controller.extend({
 
         leaveSettings() {
             let transition = this.get('leaveSettingsTransition');
-            let model = this.get('model');
+            let settings = this.get('settings');
 
             if (!transition) {
                 this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
-            // roll back changes on model props
-            model.rollbackAttributes();
+            // roll back changes on settings props
+            settings.rollbackAttributes();
             this.set('dirtyAttributes', false);
 
             return transition.retry();

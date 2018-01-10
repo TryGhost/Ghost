@@ -6,6 +6,10 @@ export default AuthenticatedRoute.extend({
         return this.get('store').findAll('theme');
     },
 
+    setupController(controller, model) {
+        controller.set('themes', model);
+    },
+
     actions: {
         cancel() {
             this.transitionTo('settings.design');

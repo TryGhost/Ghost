@@ -1,3 +1,4 @@
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';

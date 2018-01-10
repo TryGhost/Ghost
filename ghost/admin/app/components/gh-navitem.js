@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import ValidationState from 'ghost-admin/mixins/validation-state';
-import {alias, readOnly} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {readOnly} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 
 export default Component.extend(ValidationState, {
@@ -10,7 +10,6 @@ export default Component.extend(ValidationState, {
 
     new: false,
 
-    model: alias('navItem'),
     errors: readOnly('navItem.errors'),
 
     errorClass: computed('hasError', function () {

@@ -5,10 +5,10 @@
 
 <div class="modal-body">
     <fieldset>
-        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="email"}}
+        {{#gh-form-group errors=subscriber.errors hasValidated=subscriber.hasValidated property="email"}}
             <label for="new-subscriber-email">Email Address</label>
             <input type="email"
-                value={{model.email}}
+                value={{subscriber.email}}
                 oninput={{action "updateEmail" value="target.value"}}
                 id="new-subscriber-email"
                 class="gh-input email"
@@ -17,7 +17,7 @@
                 autofocus="autofocus"
                 autocapitalize="off"
                 autocorrect="off">
-            {{gh-error-message errors=model.errors property="email"}}
+            {{gh-error-message errors=subscriber.errors property="email"}}
         {{/gh-form-group}}
 
     </fieldset>

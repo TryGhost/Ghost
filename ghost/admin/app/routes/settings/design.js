@@ -24,10 +24,9 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         });
     },
 
-    setupController(controller, models) {
+    setupController(controller) {
         // reset the leave setting transition
         controller.set('leaveSettingsTransition', null);
-        controller.set('model', models.settings);
         controller.set('themes', this.get('store').peekAll('theme'));
         this.get('controller').send('reset');
     },
