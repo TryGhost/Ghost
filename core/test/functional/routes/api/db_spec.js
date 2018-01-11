@@ -116,7 +116,28 @@ describe('DB API', function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.match(/data/);
+
+                (typeof res.body).should.be.Object;
+                should.exist(res.body.db[0].filename);
+                fsStub.calledOnce.should.eql(true);
+
+                done();
+            });
+    });
+
+    it('export can be triggered and named by backup client', function (done) {
+        backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret + '&filename=test';
+        fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                (typeof res.body).should.be.Object;
+                res.body.db[0].filename.should.match(/test\.json/);
                 fsStub.calledOnce.should.eql(true);
 
                 done();
