@@ -21,6 +21,13 @@ exportFileName = function exportFileName(options) {
     var datetime = (new Date()).toJSON().substring(0, 10),
         title = '';
 
+    options = options || {};
+
+    // custom filename
+    if (options.filename) {
+        return Promise.resolve(options.filename + '.json');
+    }
+
     return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, options)).then(function (result) {
         if (result) {
             title = security.string.safe(result.get('value')) + '.';

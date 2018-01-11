@@ -1,17 +1,13 @@
 // # DB API
 // API for DB operations
 var Promise = require('bluebird'),
-    path = require('path'),
-    fs = require('fs-extra'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     exporter = require('../data/export'),
     importer = require('../data/importer'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
-    config = require('../config'),
     common = require('../lib/common'),
-    urlService = require('../services/url'),
     docName = 'db',
     db;
 
@@ -23,26 +19,26 @@ var Promise = require('bluebird'),
 db = {
     /**
      * ### Archive Content
-     * Generate the JSON to export - for Moya only
+     * Generate the JSON to export
      *
      * @public
      * @returns {Promise} Ghost Export JSON format
      */
-    backupContent: function () {
-        var props = {
-            data: exporter.doExport(),
-            filename: exporter.fileName()
-        };
+    backupContent: function (options) {
+        var tasks;
 
-        return Promise.props(props)
-            .then(function successMessage(exportResult) {
-                var filename = path.resolve(urlService.utils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+        options = options || {};
 
-                return fs.writeFile(filename, JSON.stringify(exportResult.data))
-                    .then(function () {
-                        return filename;
-                    });
-            });
+        function jsonResponse(filename) {
+            return {db: [{filename: filename}]};
+        }
+
+        tasks = [
+            backupDatabase,
+            jsonResponse
+        ];
+
+        return pipeline(tasks, options);
     },
     /**
      * ### Export Content
