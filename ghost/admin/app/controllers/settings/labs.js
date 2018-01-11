@@ -38,6 +38,7 @@ export default Controller.extend({
 
     ajax: service(),
     config: service(),
+    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     session: service(),
@@ -166,6 +167,7 @@ export default Controller.extend({
 
                     // reload settings
                     return this.get('settings').reload().then((settings) => {
+                        this.get('feature').fetch();
                         this.get('config').set('blogTitle', settings.get('title'));
                     });
                 });

@@ -27,6 +27,8 @@ export default Component.extend({
         return formatMarkdown([this.get('payload').markdown]);
     }),
 
+    // TODO: remove observer
+    // eslint-disable-next-line ghost/ember/no-observers
     save: observer('doSave', function () {
         let payload = this.get('payload');
         payload.markdown = this.$('textarea').val();

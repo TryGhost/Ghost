@@ -9,6 +9,8 @@ export default Component.extend({
     layout,
     hasRendered: false,
 
+    // TODO: remove observer
+    // eslint-disable-next-line ghost/ember/no-observers
     save: observer('doSave', function () {
         let payload = this.get('payload');
         payload.wordcount = counter(payload.html);

@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import RSVP from 'rsvp';
@@ -5,7 +6,8 @@ import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
 import {set} from '@ember/object';
 
-export function feature(name, user = false) {
+export function feature(name, options = {}) {
+    let {user, onChange} = options;
     let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`];
 
     return computed.apply(Ember, watchedProps.concat({
@@ -22,6 +24,13 @@ export function feature(name, user = false) {
         },
         set(key, value) {
             this.update(key, value, user);
+
+            if (onChange) {
+                // value must be passed here because the value isn't set until
+                // the setter function returns
+                this.get(onChange).bind(this)(value);
+            }
+
             return value;
         }
     }));
@@ -33,10 +42,11 @@ export default Service.extend({
     session: service(),
     settings: service(),
     notifications: service(),
+    lazyLoader: service(),
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
-    nightShift: feature('nightShift', true),
+    nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
 
     _user: null,
 
@@ -66,8 +76,7 @@ export default Service.extend({
             user: this.get('session.user')
         }).then(({user}) => {
             this.set('_user', user);
-
-            return true;
+            return this._setAdminTheme().then(() => true);
         });
     },
 
@@ -99,6 +108,15 @@ export default Service.extend({
             this.get('notifications').showAPIError(error);
 
             return this.get(`${serviceProperty}.${key}`);
+        });
+    },
+
+    _setAdminTheme(enabled) {
+        let nightShift = enabled || this.get('nightShift');
+
+        return this.get('lazyLoader').loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
+            $('link[title=dark]').prop('disabled', !nightShift);
+            $('link[title=light]').prop('disabled', nightShift);
         });
     }
 });

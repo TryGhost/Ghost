@@ -65,7 +65,7 @@ function stubUser(server, accessibility, validSave = true) {
 function addTestFlag() {
     FeatureService.reopen({
         testFlag: feature('testFlag'),
-        testUserFlag: feature('testUserFlag', true)
+        testUserFlag: feature('testUserFlag', {user: true})
     });
 }
 

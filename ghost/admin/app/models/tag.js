@@ -2,7 +2,6 @@ import Model from 'ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import {equal} from '@ember/object/computed';
-import {observer} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Model.extend(ValidationEngine, {
@@ -27,21 +26,15 @@ export default Model.extend(ValidationEngine, {
 
     feature: service(),
 
-    setVisibility() {
+    updateVisibility() {
         let internalRegex = /^#.?/;
         this.set('visibility', internalRegex.test(this.get('name')) ? 'internal' : 'public');
     },
 
     save() {
         if (this.get('changedAttributes.name') && !this.get('isDeleted')) {
-            this.setVisibility();
+            this.updateVisibility();
         }
         return this._super(...arguments);
-    },
-
-    setVisibilityOnNew: observer('isNew', 'isSaving', 'name', function () {
-        if (this.get('isNew') && !this.get('isSaving')) {
-            this.setVisibility();
-        }
-    }).on('init')
+    }
 });
