@@ -112,6 +112,38 @@ describe('OAuth', function () {
             });
         });
 
+        it('Can\'t generate access token without username.', function (done) {
+            req.body = {};
+
+            req.authInfo = {ip: '127.0.0.1'};
+            req.body.grant_type = 'password';
+            req.body.password = 'password';
+
+            res.setHeader = {};
+            res.end = {};
+
+            oAuth.generateAccessToken(req, res, function (err) {
+                err.errorType.should.eql('BadRequestError');
+                done();
+            });
+        });
+
+        it('Can\'t generate access token without password.', function (done) {
+            req.body = {};
+
+            req.authInfo = {ip: '127.0.0.1'};
+            req.body.grant_type = 'password';
+            req.body.username = 'username';
+
+            res.setHeader = {};
+            res.end = {};
+
+            oAuth.generateAccessToken(req, res, function (err) {
+                err.errorType.should.eql('BadRequestError');
+                done();
+            });
+        });
+
         it('Handles database error.', function (done) {
             req.body = {};
             req.client = {
