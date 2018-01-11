@@ -179,7 +179,13 @@ oauth = {
             accessToken: authUtils.getBearerAutorizationToken(req)
         };
 
-        return oauthServer.token()(req, res, next);
+        return oauthServer.token()(req, res, function (err) {
+            if (err && err.status === 400) {
+                err = new common.errors.BadRequestError({err: err, message: err.message});
+            }
+
+            next(err);
+        });
     }
 };
 
