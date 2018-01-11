@@ -503,6 +503,9 @@ export default Component.extend(ShortcutsMixin, {
             // default to spellchecker being off
             this._editor.codemirror.setOption('mode', 'gfm');
 
+            // add non-breaking space as a special char
+            this._editor.codemirror.setOption('specialChars', /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\xa0]/g);
+
             // HACK: move the toolbar & status bar elements outside of the
             // editor container so that they can be aligned in fixed positions
             let container = this.$().closest('.gh-editor').find('.gh-editor-footer');
