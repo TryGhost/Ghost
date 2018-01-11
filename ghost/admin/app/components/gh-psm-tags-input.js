@@ -63,6 +63,9 @@ export default Component.extend({
                     tagToAdd = this.get('store').createRecord('tag', {
                         name: tagName
                     });
+
+                    // set to public/internal based on the tag name
+                    tagToAdd.updateVisibility();
                 }
 
                 // push tag onto post relationship

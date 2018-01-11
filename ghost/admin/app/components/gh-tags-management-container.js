@@ -2,8 +2,6 @@ import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {equal, reads} from '@ember/object/computed';
 import {isBlank} from '@ember/utils';
-import {observer} from '@ember/object';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -20,7 +18,12 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        run.schedule('actions', this, this.fireMobileChangeActions);
+        this.get('mediaQueries').on('change', this, this._fireMobileChangeActions);
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this.get('mediaQueries').off('change', this, this._fireMobileChangeActions);
     },
 
     displaySettingsPane: computed('isEmpty', 'selectedTag', 'isMobile', function () {
@@ -42,12 +45,15 @@ export default Component.extend({
         return true;
     }),
 
-    fireMobileChangeActions: observer('isMobile', function () {
-        if (!this.get('isMobile')) {
-            let action = this.get('leftMobile');
-            if (action) {
-                action();
+    _fireMobileChangeActions(key, value) {
+        if (key === 'maxWidth600') {
+            let leftMobileAction = this.get('leftMobile');
+
+            this.set('isMobile', value);
+
+            if (!value && leftMobileAction) {
+                leftMobileAction();
             }
         }
-    })
+    }
 });

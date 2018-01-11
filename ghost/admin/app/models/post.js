@@ -223,6 +223,8 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     },
 
+    // TODO: is there a better way to handle this?
+    // eslint-disable-next-line ghost/ember/no-observers
     _setPublishedAtBlogTZ: observer('publishedAtUTC', 'settings.activeTimezone', function () {
         let publishedAtUTC = this.get('publishedAtUTC');
         this._setPublishedAtBlogStrings(publishedAtUTC);

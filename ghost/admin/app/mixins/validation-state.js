@@ -37,6 +37,7 @@ export default Mixin.create({
         this.set('hasError', false);
     },
 
+    // eslint-disable-next-line ghost/ember/no-observers
     hasErrorObserver: observer('errors.[]', 'property', 'hasValidated.[]', function () {
         run.once(this, 'setHasError');
         // this.setHasError();

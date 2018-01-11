@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import RSVP from 'rsvp';
@@ -18,7 +17,6 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
@@ -38,7 +36,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     config: service(),
     feature: service(),
-    lazyLoader: service(),
     notifications: service(),
     settings: service(),
     tour: service(),
@@ -73,12 +70,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
             }
 
-            let featurePromise = this.get('feature').fetch().then(() => {
-                if (this.get('feature.nightShift')) {
-                    return this._setAdminTheme();
-                }
-            });
-
+            let featurePromise = this.get('feature').fetch();
             let settingsPromise = this.get('settings').fetch();
             let privateConfigPromise = this.get('config').fetchPrivate();
             let tourPromise = this.get('tour').fetchViewed();
@@ -124,19 +116,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         }
     },
 
-    _nightShift: observer('feature.nightShift', function () {
-        this._setAdminTheme();
-    }),
-
-    _setAdminTheme() {
-        let nightShift = this.get('feature.nightShift');
-
-        return this.get('lazyLoader').loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
-            $('link[title=dark]').prop('disabled', !nightShift);
-            $('link[title=light]').prop('disabled', nightShift);
-        });
-    },
-
     actions: {
         closeMenus() {
             this.get('ui').closeMenus();
@@ -150,10 +129,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         signedIn() {
             this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
-
-            if (this.get('feature.nightShift')) {
-                this._setAdminTheme();
-            }
         },
 
         invalidateSession() {

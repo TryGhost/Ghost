@@ -243,7 +243,7 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">
                     <label class="checkbox" for="settings-private">
-                        {{one-way-checkbox settings.isPrivate id="settings-private" type="checkbox" update=(action (mut settings.isPrivate)) data-test-private-checkbox=true}}
+                        {{one-way-checkbox settings.isPrivate id="settings-private" type="checkbox" update=(action "toggleIsPrivate") data-test-private-checkbox=true}}
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>

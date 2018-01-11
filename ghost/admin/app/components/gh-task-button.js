@@ -2,7 +2,6 @@ import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
-import {observer} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
 
@@ -39,10 +38,18 @@ const GhTaskButton = Component.extend({
     failureText: 'Retry',
     failureClass: 'gh-btn-red',
 
+    isRunning: reads('task.last.isRunning'),
+
+    init() {
+        this._super(...arguments);
+        this._initialPerformCount = this.get('task.performCount');
+    },
+
     // hasRun is needed so that a newly rendered button does not show the last
     // state of the associated task
-    hasRun: false,
-    isRunning: reads('task.last.isRunning'),
+    hasRun: computed('task.performCount', function () {
+        return this.get('task.performCount') > this._initialPerformCount;
+    }),
 
     isIdleClass: computed('isIdle', function () {
         if (this.get('isIdle')) {
@@ -114,17 +121,6 @@ const GhTaskButton = Component.extend({
         // prevent the click from bubbling and triggering form actions
         return false;
     },
-
-    setSize: observer('isRunning', function () {
-        if (this.get('isRunning')) {
-            this.set('hasRun', true);
-            // this.$().width(this.$().width());
-            // this.$().height(this.$().height());
-        } else {
-            // this.$().width('');
-            // this.$().height('');
-        }
-    }),
 
     // when local validation fails there's no transition from failed->running
     // so we want to restart the retry spinner animation to show something

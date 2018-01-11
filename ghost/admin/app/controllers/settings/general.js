@@ -7,7 +7,6 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
-import {observer} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -42,13 +41,6 @@ export default Controller.extend({
             let slugForm = this.get('settings.permalinks');
 
             return slugForm !== '/:slug/';
-        }
-    }),
-
-    generatePassword: observer('settings.isPrivate', function () {
-        this.get('settings.errors').remove('password');
-        if (this.get('settings.isPrivate') && this.get('settings.hasDirtyAttributes')) {
-            this.get('settings').set('password', randomPassword());
         }
     }),
 
@@ -140,6 +132,16 @@ export default Controller.extend({
         imageUploaded(property, results) {
             if (results[0]) {
                 return this.get('settings').set(property, results[0].url);
+            }
+        },
+
+        toggleIsPrivate(isPrivate) {
+            this.set('settings.isPrivate', isPrivate);
+            this.get('settings.errors').remove('password');
+
+            // set a new random password when isPrivate is enabled
+            if (isPrivate && this.get('settings.hasDirtyAttributes')) {
+                this.get('settings').set('password', randomPassword());
             }
         },
 
