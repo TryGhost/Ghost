@@ -101,7 +101,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     status: attr('string', {defaultValue: 'draft'}),
     title: attr('string', {defaultValue: ''}),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr(),
+    updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
 

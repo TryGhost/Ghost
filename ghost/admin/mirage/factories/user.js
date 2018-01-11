@@ -17,7 +17,7 @@ export default Factory.extend({
     status: 'active',
     tour: null,
     updatedAt: '2015-11-02T16:12:05.000Z',
-    updatedBy: '2015-09-02T13:41:50.000Z',
+    updatedBy: '1',
     website: 'http://example.com',
     roles() { return []; }
 });
