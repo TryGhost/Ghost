@@ -17,6 +17,8 @@ const DEFAULTS = {
 };
 
 export default ModalComponent.extend({
+    eventBus: service(),
+    store: service(),
 
     accept: null,
     extensions: null,
@@ -26,10 +28,8 @@ export default ModalComponent.extend({
     theme: false,
     displayOverwriteWarning: false,
 
-    eventBus: service(),
-    store: service(),
-
     hideUploader: or('theme', 'displayOverwriteWarning'),
+    currentThemeNames: mapBy('model.themes', 'name'),
 
     uploadUrl: computed(function () {
         return `${ghostPaths().apiRoot}/themes/upload/`;
@@ -41,8 +41,6 @@ export default ModalComponent.extend({
 
         return themePackage ? `${themePackage.name} - ${themePackage.version}` : name;
     }),
-
-    currentThemeNames: mapBy('model.themes', 'name'),
 
     fileThemeName: computed('file', function () {
         let file = this.get('file');

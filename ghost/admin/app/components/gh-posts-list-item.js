@@ -19,15 +19,15 @@ export default Component.extend({
     post: null,
     active: false,
 
+    // closure actions
+    onClick() {},
+    onDoubleClick() {},
+
     isFeatured: alias('post.featured'),
     isPage: alias('post.page'),
     isDraft: equal('post.status', 'draft'),
     isPublished: equal('post.status', 'published'),
     isScheduled: equal('post.status', 'scheduled'),
-
-    // closure actions
-    onClick() {},
-    onDoubleClick() {},
 
     authorName: computed('post.author.{name,email}', function () {
         return this.get('post.author.name') || this.get('post.author.email');

@@ -9,6 +9,9 @@ import {task} from 'ember-concurrency';
 const {Promise} = RSVP;
 
 export default ModalComponent.extend(ValidationEngine, {
+    notifications: service(),
+    store: service(),
+
     classNames: 'modal-content invite-new-user',
 
     role: null,
@@ -16,9 +19,6 @@ export default ModalComponent.extend(ValidationEngine, {
     authorRole: null,
 
     validationType: 'inviteUser',
-
-    notifications: service(),
-    store: service(),
 
     init() {
         this._super(...arguments);
@@ -44,6 +44,16 @@ export default ModalComponent.extend(ValidationEngine, {
         // singleton and so it's errors and hasValidated state stick around
         this.get('errors').clear();
         this.set('hasValidated', emberA());
+    },
+
+    actions: {
+        setRole(role) {
+            this.set('role', role);
+        },
+
+        confirm() {
+            this.get('sendInvitation').perform();
+        }
     },
 
     validate() {
@@ -115,15 +125,5 @@ export default ModalComponent.extend(ValidationEngine, {
                 this.send('closeModal');
             }
         }
-    }).drop(),
-
-    actions: {
-        setRole(role) {
-            this.set('role', role);
-        },
-
-        confirm() {
-            this.get('sendInvitation').perform();
-        }
-    }
+    }).drop()
 });

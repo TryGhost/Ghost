@@ -93,6 +93,50 @@ export default Component.extend({
         }
     },
 
+    actions: {
+        fileSelected(fileList, resetInput) {
+            // can't use array destructuring here as FileList is not a strict
+            // array and fails in Safari
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let file = fileList[0];
+            let validationResult = this._validate(file);
+
+            this.set('file', file);
+            invokeAction(this, 'fileSelected', file);
+
+            if (validationResult === true) {
+                run.schedule('actions', this, function () {
+                    this.generateRequest();
+
+                    if (resetInput) {
+                        resetInput();
+                    }
+                });
+            } else {
+                this._uploadFailed(validationResult);
+
+                if (resetInput) {
+                    resetInput();
+                }
+            }
+        },
+
+        addUnsplashPhoto(photo) {
+            this.set('url', photo.urls.regular);
+            this.send('saveUrl');
+        },
+
+        reset() {
+            this.set('file', null);
+            this.set('uploadPercentage', 0);
+        },
+
+        saveUrl() {
+            let url = this.get('url');
+            invokeAction(this, 'update', url);
+        }
+    },
+
     dragOver(event) {
         if (!event.dataTransfer) {
             return;
@@ -228,49 +272,5 @@ export default Component.extend({
         }
 
         return true;
-    },
-
-    actions: {
-        fileSelected(fileList, resetInput) {
-            // can't use array destructuring here as FileList is not a strict
-            // array and fails in Safari
-            // eslint-disable-next-line ember-suave/prefer-destructuring
-            let file = fileList[0];
-            let validationResult = this._validate(file);
-
-            this.set('file', file);
-            invokeAction(this, 'fileSelected', file);
-
-            if (validationResult === true) {
-                run.schedule('actions', this, function () {
-                    this.generateRequest();
-
-                    if (resetInput) {
-                        resetInput();
-                    }
-                });
-            } else {
-                this._uploadFailed(validationResult);
-
-                if (resetInput) {
-                    resetInput();
-                }
-            }
-        },
-
-        addUnsplashPhoto(photo) {
-            this.set('url', photo.urls.regular);
-            this.send('saveUrl');
-        },
-
-        reset() {
-            this.set('file', null);
-            this.set('uploadPercentage', 0);
-        },
-
-        saveUrl() {
-            let url = this.get('url');
-            invokeAction(this, 'update', url);
-        }
     }
 });

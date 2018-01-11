@@ -14,15 +14,16 @@ import {inject as service} from '@ember/service';
     closes the mobile menu
 */
 export default Component.extend({
-    classNames: ['gh-menu-toggle'],
-
     mediaQueries: service(),
-    isMobile: reads('mediaQueries.isMobile'),
+
+    classNames: ['gh-menu-toggle'],
     maximise: false,
 
     // closure actions
     desktopAction() {},
     mobileAction() {},
+
+    isMobile: reads('mediaQueries.isMobile'),
 
     iconClass: computed('maximise', 'isMobile', function () {
         if (this.get('maximise') && !this.get('isMobile')) {

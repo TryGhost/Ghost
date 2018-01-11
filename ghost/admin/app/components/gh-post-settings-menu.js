@@ -13,9 +13,6 @@ import {task, timeout} from 'ember-concurrency';
 const PSM_ANIMATION_LENGTH = 400;
 
 export default Component.extend(SettingsMenuMixin, {
-    selectedAuthor: null,
-    authors: null,
-
     store: service(),
     config: service(),
     ghostPaths: service(),
@@ -25,7 +22,12 @@ export default Component.extend(SettingsMenuMixin, {
     settings: service(),
     ui: service(),
 
+    authors: null,
     post: null,
+    selectedAuthor: null,
+
+    _showSettingsMenu: false,
+    _showThrobbers: false,
 
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
@@ -46,8 +48,49 @@ export default Component.extend(SettingsMenuMixin, {
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
-    _showSettingsMenu: false,
-    _showThrobbers: false,
+    twitterImageStyle: computed('twitterImage', function () {
+        let image = this.get('twitterImage');
+        return htmlSafe(`background-image: url(${image})`);
+    }),
+
+    facebookImageStyle: computed('facebookImage', function () {
+        let image = this.get('facebookImage');
+        return htmlSafe(`background-image: url(${image})`);
+    }),
+
+    seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
+        let metaDescription = this.get('metaDescriptionScratch') || '';
+        let mobiledoc = this.get('post.scratch');
+        let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
+        let placeholder;
+
+        if (metaDescription) {
+            placeholder = metaDescription;
+        } else {
+            let div = document.createElement('div');
+            div.innerHTML = formatMarkdown(markdown, false);
+
+            // Strip HTML
+            placeholder = div.textContent;
+            // Replace new lines and trim
+            placeholder = placeholder.replace(/\n+/g, ' ').trim();
+        }
+
+        return placeholder;
+    }),
+
+    seoURL: computed('post.slug', 'config.blogUrl', function () {
+        let blogUrl = this.get('config.blogUrl');
+        let seoSlug = this.get('post.slug') ? this.get('post.slug') : '';
+        let seoURL = `${blogUrl}/${seoSlug}`;
+
+        // only append a slash to the URL if the slug exists
+        if (seoSlug) {
+            seoURL += '/';
+        }
+
+        return seoURL;
+    }),
 
     init() {
         this._super(...arguments);
@@ -91,62 +134,6 @@ export default Component.extend(SettingsMenuMixin, {
         }
 
         this._showSettingsMenu = this.get('showSettingsMenu');
-    },
-
-    twitterImageStyle: computed('twitterImage', function () {
-        let image = this.get('twitterImage');
-        return htmlSafe(`background-image: url(${image})`);
-    }),
-
-    facebookImageStyle: computed('facebookImage', function () {
-        let image = this.get('facebookImage');
-        return htmlSafe(`background-image: url(${image})`);
-    }),
-
-    showThrobbers: task(function* () {
-        yield timeout(PSM_ANIMATION_LENGTH);
-        this.set('_showThrobbers', true);
-    }).restartable(),
-
-    seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
-        let metaDescription = this.get('metaDescriptionScratch') || '';
-        let mobiledoc = this.get('post.scratch');
-        let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
-        let placeholder;
-
-        if (metaDescription) {
-            placeholder = metaDescription;
-        } else {
-            let div = document.createElement('div');
-            div.innerHTML = formatMarkdown(markdown, false);
-
-            // Strip HTML
-            placeholder = div.textContent;
-            // Replace new lines and trim
-            placeholder = placeholder.replace(/\n+/g, ' ').trim();
-        }
-
-        return placeholder;
-    }),
-
-    seoURL: computed('post.slug', 'config.blogUrl', function () {
-        let blogUrl = this.get('config.blogUrl');
-        let seoSlug = this.get('post.slug') ? this.get('post.slug') : '';
-        let seoURL = `${blogUrl}/${seoSlug}`;
-
-        // only append a slash to the URL if the slug exists
-        if (seoSlug) {
-            seoURL += '/';
-        }
-
-        return seoURL;
-    }),
-
-    showError(error) {
-        // TODO: remove null check once ValidationEngine has been removed
-        if (error) {
-            this.get('notifications').showAPIError(error);
-        }
     },
 
     actions: {
@@ -525,6 +512,18 @@ export default Component.extend(SettingsMenuMixin, {
             if (this.get('deletePost')) {
                 this.get('deletePost')();
             }
+        }
+    },
+
+    showThrobbers: task(function* () {
+        yield timeout(PSM_ANIMATION_LENGTH);
+        this.set('_showThrobbers', true);
+    }).restartable(),
+
+    showError(error) {
+        // TODO: remove null check once ValidationEngine has been removed
+        if (error) {
+            this.get('notifications').showAPIError(error);
         }
     }
 });

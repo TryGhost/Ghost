@@ -9,6 +9,26 @@ export default Component.extend({
 
     _previousKeymasterScope: null,
 
+    didInsertElement() {
+        this._super(...arguments);
+        this._setupShortcuts();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this._removeShortcuts();
+    },
+
+    actions: {
+        confirm() {
+            throw new Error('You must override the "confirm" action in your modal component');
+        },
+
+        closeModal() {
+            invokeAction(this, 'closeModal');
+        }
+    },
+
     _setupShortcuts() {
         run(function () {
             document.activeElement.blur();
@@ -31,25 +51,5 @@ export default Component.extend({
         key.unbind('escape', 'modal');
 
         key.setScope(this._previousKeymasterScope);
-    },
-
-    didInsertElement() {
-        this._super(...arguments);
-        this._setupShortcuts();
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        this._removeShortcuts();
-    },
-
-    actions: {
-        confirm() {
-            throw new Error('You must override the "confirm" action in your modal component');
-        },
-
-        closeModal() {
-            invokeAction(this, 'closeModal');
-        }
     }
 });

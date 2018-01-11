@@ -37,9 +37,14 @@ export default Controller.extend({
     session: service(),
     store: service(),
 
-    postsInfinityModel: alias('model'),
-
     queryParams: ['type', 'author', 'tag', 'order'],
+
+    init() {
+        this._super(...arguments);
+        this.availableTypes = TYPES;
+        this.availableOrders = ORDERS;
+    },
+
     type: null,
     author: null,
     tag: null,
@@ -50,6 +55,8 @@ export default Controller.extend({
 
     availableTypes: null,
     availableOrders: null,
+
+    postsInfinityModel: alias('model'),
 
     showingAll: computed('type', 'author', 'tag', function () {
         let {type, author, tag} = this.getProperties(['type', 'author', 'tag']);
@@ -106,12 +113,6 @@ export default Controller.extend({
 
         return authors.findBy('slug', author);
     }),
-
-    init() {
-        this._super(...arguments);
-        this.availableTypes = TYPES;
-        this.availableOrders = ORDERS;
-    },
 
     actions: {
         changeType(type) {

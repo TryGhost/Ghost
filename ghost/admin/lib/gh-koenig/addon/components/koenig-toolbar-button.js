@@ -33,10 +33,6 @@ export default Component.extend({
         return this.get('tool.label');
     }),
 
-    click() {
-        this.tool.onClick(this.get('editor'));
-    },
-
     willRender() {
         // TODO: "selected" doesn't appear to do anything for toolbar items -
         // it's only used within card menus
@@ -46,5 +42,9 @@ export default Component.extend({
         if (this.tool.visibility) {
             this.set(this.tool.visibility, true);
         }
+    },
+
+    click() {
+        this.tool.onClick(this.get('editor'));
     }
 });

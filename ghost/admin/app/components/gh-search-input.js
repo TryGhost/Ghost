@@ -22,27 +22,85 @@ export function computedGroup(category) {
 }
 
 export default Component.extend({
+    store: service('store'),
+    router: service('router'),
+    ajax: service(),
+    notifications: service(),
 
-    selection: null,
     content: null,
-    isLoading: false,
-    contentExpiry: 10 * 1000,
     contentExpiresAt: false,
+    contentExpiry: 10000,
     currentSearch: '',
+    isLoading: false,
+    selection: null,
 
     posts: computedGroup('Stories'),
     pages: computedGroup('Pages'),
     users: computedGroup('Users'),
     tags: computedGroup('Tags'),
 
-    _store: service('store'),
-    router: service('router'),
-    ajax: service(),
-    notifications: service(),
+    groupedContent: computed('posts', 'pages', 'users', 'tags', function () {
+        let groups = [];
+
+        if (!isEmpty(this.get('posts'))) {
+            groups.pushObject({groupName: 'Stories', options: this.get('posts')});
+        }
+
+        if (!isEmpty(this.get('pages'))) {
+            groups.pushObject({groupName: 'Pages', options: this.get('pages')});
+        }
+
+        if (!isEmpty(this.get('users'))) {
+            groups.pushObject({groupName: 'Users', options: this.get('users')});
+        }
+
+        if (!isEmpty(this.get('tags'))) {
+            groups.pushObject({groupName: 'Tags', options: this.get('tags')});
+        }
+
+        return groups;
+    }),
 
     init() {
         this._super(...arguments);
         this.content = [];
+    },
+
+    actions: {
+        openSelected(selected) {
+            if (!selected) {
+                return;
+            }
+
+            if (selected.category === 'Stories' || selected.category === 'Pages') {
+                let id = selected.id.replace('post.', '');
+                this.get('router').transitionTo('editor.edit', id);
+            }
+
+            if (selected.category === 'Users') {
+                let id = selected.id.replace('user.', '');
+                this.get('router').transitionTo('team.user', id);
+            }
+
+            if (selected.category === 'Tags') {
+                let id = selected.id.replace('tag.', '');
+                this.get('router').transitionTo('settings.tags.tag', id);
+            }
+        },
+
+        onFocus() {
+            this._setKeymasterScope();
+        },
+
+        onBlur() {
+            this._resetKeymasterScope();
+        },
+
+        search(term) {
+            return new RSVP.Promise((resolve, reject) => {
+                run.debounce(this, this._performSearch, term, resolve, reject, 200);
+            });
+        }
     },
 
     refreshContent() {
@@ -67,30 +125,8 @@ export default Component.extend({
         });
     },
 
-    groupedContent: computed('posts', 'pages', 'users', 'tags', function () {
-        let groups = [];
-
-        if (!isEmpty(this.get('posts'))) {
-            groups.pushObject({groupName: 'Stories', options: this.get('posts')});
-        }
-
-        if (!isEmpty(this.get('pages'))) {
-            groups.pushObject({groupName: 'Pages', options: this.get('pages')});
-        }
-
-        if (!isEmpty(this.get('users'))) {
-            groups.pushObject({groupName: 'Users', options: this.get('users')});
-        }
-
-        if (!isEmpty(this.get('tags'))) {
-            groups.pushObject({groupName: 'Tags', options: this.get('tags')});
-        }
-
-        return groups;
-    }),
-
     _loadPosts() {
-        let store = this.get('_store');
+        let store = this.get('store');
         let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
         let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', staticPages: 'all'};
         let content = this.get('content');
@@ -107,7 +143,7 @@ export default Component.extend({
     },
 
     _loadUsers() {
-        let store = this.get('_store');
+        let store = this.get('store');
         let usersUrl = `${store.adapterFor('user').urlForQuery({}, 'user')}/`;
         let usersQuery = {fields: 'name,slug', limit: 'all'};
         let content = this.get('content');
@@ -124,7 +160,7 @@ export default Component.extend({
     },
 
     _loadTags() {
-        let store = this.get('_store');
+        let store = this.get('store');
         let tagsUrl = `${store.adapterFor('tag').urlForQuery({}, 'tag')}/`;
         let tagsQuery = {fields: 'name,slug', limit: 'all'};
         let content = this.get('content');
@@ -163,43 +199,5 @@ export default Component.extend({
     willDestroy() {
         this._super(...arguments);
         this._resetKeymasterScope();
-    },
-
-    actions: {
-        openSelected(selected) {
-            if (!selected) {
-                return;
-            }
-
-            if (selected.category === 'Stories' || selected.category === 'Pages') {
-                let id = selected.id.replace('post.', '');
-                this.get('router').transitionTo('editor.edit', id);
-            }
-
-            if (selected.category === 'Users') {
-                let id = selected.id.replace('user.', '');
-                this.get('router').transitionTo('team.user', id);
-            }
-
-            if (selected.category === 'Tags') {
-                let id = selected.id.replace('tag.', '');
-                this.get('router').transitionTo('settings.tags.tag', id);
-            }
-        },
-
-        onFocus() {
-            this._setKeymasterScope();
-        },
-
-        onBlur() {
-            this._resetKeymasterScope();
-        },
-
-        search(term) {
-            return new RSVP.Promise((resolve, reject) => {
-                run.debounce(this, this._performSearch, term, resolve, reject, 200);
-            });
-        }
     }
-
 });

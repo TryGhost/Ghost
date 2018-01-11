@@ -3,14 +3,14 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
 export default Route.extend(styleBody, {
-    titleToken: 'Setup',
-
-    classNames: ['ghost-setup'],
-
     ghostPaths: service(),
     session: service(),
     ajax: service(),
     config: service(),
+
+    titleToken: 'Setup',
+
+    classNames: ['ghost-setup'],
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.

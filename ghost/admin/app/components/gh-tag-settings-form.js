@@ -11,20 +11,19 @@ import {inject as service} from '@ember/service';
 const {Handlebars} = Ember;
 
 export default Component.extend({
+    feature: service(),
+    config: service(),
+    mediaQueries: service(),
 
     tag: null,
+
+    isViewingSubview: false,
 
     scratchName: boundOneWay('tag.name'),
     scratchSlug: boundOneWay('tag.slug'),
     scratchDescription: boundOneWay('tag.description'),
     scratchMetaTitle: boundOneWay('tag.metaTitle'),
     scratchMetaDescription: boundOneWay('tag.metaDescription'),
-
-    isViewingSubview: false,
-
-    feature: service(),
-    config: service(),
-    mediaQueries: service(),
 
     isMobile: reads('mediaQueries.maxWidth600'),
 
@@ -97,21 +96,6 @@ export default Component.extend({
         this._oldTagId = newTagId;
     },
 
-    reset() {
-        this.set('isViewingSubview', false);
-        if (this.$()) {
-            this.$('.settings-menu-pane').scrollTop(0);
-        }
-    },
-
-    focusIn() {
-        key.setScope('tag-settings-form');
-    },
-
-    focusOut() {
-        key.setScope('default');
-    },
-
     actions: {
         setProperty(property, value) {
             invokeAction(this, 'setProperty', property, value);
@@ -136,6 +120,21 @@ export default Component.extend({
         deleteTag() {
             invokeAction(this, 'showDeleteTagModal');
         }
+    },
+
+    reset() {
+        this.set('isViewingSubview', false);
+        if (this.$()) {
+            this.$('.settings-menu-pane').scrollTop(0);
+        }
+    },
+
+    focusIn() {
+        key.setScope('tag-settings-form');
+    },
+
+    focusOut() {
+        key.setScope('default');
     }
 
 });

@@ -3,11 +3,11 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, {
+    settings: service(),
+
     titleToken: 'Settings - Apps - Slack',
 
     classNames: ['settings-view-apps-slack'],
-
-    settings: service(),
 
     afterModel() {
         return this.get('settings').reload();

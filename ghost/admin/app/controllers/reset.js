@@ -6,6 +6,12 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
+    config: service(),
+
     newPassword: '',
     ne2Password: '',
     token: '',
@@ -13,17 +19,17 @@ export default Controller.extend(ValidationEngine, {
 
     validationType: 'reset',
 
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    ajax: service(),
-    config: service(),
-
     email: computed('token', function () {
         // The token base64 encodes the email (and some other stuff),
         // each section is divided by a '|'. Email comes second.
         return atob(this.get('token')).split('|')[1];
     }),
+
+    actions: {
+        submit() {
+            return this.get('resetPassword').perform();
+        }
+    },
 
     // Used to clear sensitive information
     clearData() {
@@ -68,11 +74,5 @@ export default Controller.extend(ValidationEngine, {
                 throw error;
             }
         }
-    }).drop(),
-
-    actions: {
-        submit() {
-            return this.get('resetPassword').perform();
-        }
-    }
+    }).drop()
 });

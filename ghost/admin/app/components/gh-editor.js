@@ -43,12 +43,6 @@ export default Component.extend({
         };
     },
 
-    didInsertElement() {
-        this._super(...arguments);
-        window.addEventListener('resize', this._onResizeHandler);
-        this._setHeaderClass();
-    },
-
     didReceiveAttrs() {
         let navIsClosed = this.get('navIsClosed');
 
@@ -57,6 +51,51 @@ export default Component.extend({
         }
 
         this._navIsClosed = navIsClosed;
+    },
+
+    didInsertElement() {
+        this._super(...arguments);
+        window.addEventListener('resize', this._onResizeHandler);
+        this._setHeaderClass();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        window.removeEventListener('resize', this._onResizeHandler);
+    },
+
+    actions: {
+        toggleFullScreen(isFullScreen) {
+            this.set('isFullScreen', isFullScreen);
+            this.get('ui').set('isFullScreen', isFullScreen);
+            run.scheduleOnce('afterRender', this, this._setHeaderClass);
+        },
+
+        togglePreview(isPreview) {
+            this.set('isPreview', isPreview);
+        },
+
+        toggleSplitScreen(isSplitScreen) {
+            this.set('isSplitScreen', isSplitScreen);
+            run.scheduleOnce('afterRender', this, this._setHeaderClass);
+        },
+
+        uploadImages(fileList, resetInput) {
+            // convert FileList to an array so that resetting the input doesn't
+            // clear the file references before upload actions can be triggered
+            let files = Array.from(fileList);
+            this.set('droppedFiles', files);
+            resetInput();
+        },
+
+        uploadComplete(uploads) {
+            this.set('uploadedImageUrls', uploads.mapBy('url'));
+            this.set('droppedFiles', null);
+        },
+
+        uploadCancelled() {
+            this.set('droppedFiles', null);
+        }
     },
 
     _setHeaderClass() {
@@ -133,45 +172,6 @@ export default Component.extend({
 
         if (event.dataTransfer.files) {
             this.set('droppedFiles', event.dataTransfer.files);
-        }
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        window.removeEventListener('resize', this._onResizeHandler);
-    },
-
-    actions: {
-        toggleFullScreen(isFullScreen) {
-            this.set('isFullScreen', isFullScreen);
-            this.get('ui').set('isFullScreen', isFullScreen);
-            run.scheduleOnce('afterRender', this, this._setHeaderClass);
-        },
-
-        togglePreview(isPreview) {
-            this.set('isPreview', isPreview);
-        },
-
-        toggleSplitScreen(isSplitScreen) {
-            this.set('isSplitScreen', isSplitScreen);
-            run.scheduleOnce('afterRender', this, this._setHeaderClass);
-        },
-
-        uploadImages(fileList, resetInput) {
-            // convert FileList to an array so that resetting the input doesn't
-            // clear the file references before upload actions can be triggered
-            let files = Array.from(fileList);
-            this.set('droppedFiles', files);
-            resetInput();
-        },
-
-        uploadComplete(uploads) {
-            this.set('uploadedImageUrls', uploads.mapBy('url'));
-            this.set('droppedFiles', null);
-        },
-
-        uploadCancelled() {
-            this.set('droppedFiles', null);
         }
     }
 });

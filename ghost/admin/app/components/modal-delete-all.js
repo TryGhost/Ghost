@@ -9,6 +9,12 @@ export default ModalComponent.extend({
     store: service(),
     ajax: service(),
 
+    actions: {
+        confirm() {
+            this.get('deleteAll').perform();
+        }
+    },
+
     _deleteAll() {
         let deleteUrl = this.get('ghostPaths.url').api('db');
         return this.get('ajax').del(deleteUrl);
@@ -37,11 +43,5 @@ export default ModalComponent.extend({
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('deleteAll').perform();
-        }
-    }
+    }).drop()
 });

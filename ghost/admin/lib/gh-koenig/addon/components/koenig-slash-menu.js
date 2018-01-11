@@ -82,30 +82,6 @@ export default Component.extend({
         });
     },
 
-    cursorChange() {
-        let editor = this.get('editor');
-        let range = this.get('range');
-        let isOpen = this.get('isOpen');
-
-        // if the cursor isn't in the editor then close the menu
-        if (!range || !editor.range.isCollapsed || editor.range.head.section !== range.section || this.editor.range.head.offset < 1 || !this.editor.range.head.section) {
-            // unless we click on a tool because the tool will close the menu.
-            if (isOpen && !$(window.getSelection().anchorNode).parents('.gh-cardmenu').length) {
-                this.send('closeMenu');
-            }
-            return;
-        }
-
-        if (isOpen) {
-            let queryString = editor.range.head.section.text.substring(range.startOffset, editor.range.head.offset);
-            this.set('query', queryString);
-            // if we've typed 5 characters and have no tools then close.
-            if (queryString.length > 5 && !this.get('toolLength')) {
-                this.send('closeMenu');
-            }
-        }
-    },
-
     actions: {
         openMenu() {
             let holder = $(this.get('containerSelector'));
@@ -258,6 +234,30 @@ export default Component.extend({
             editor.range.head.offset = this.get('range').startOffset - 1;
             editor.deleteRange(editor.range);
             this.send('closeMenu');
+        }
+    },
+
+    cursorChange() {
+        let editor = this.get('editor');
+        let range = this.get('range');
+        let isOpen = this.get('isOpen');
+
+        // if the cursor isn't in the editor then close the menu
+        if (!range || !editor.range.isCollapsed || editor.range.head.section !== range.section || this.editor.range.head.offset < 1 || !this.editor.range.head.section) {
+            // unless we click on a tool because the tool will close the menu.
+            if (isOpen && !$(window.getSelection().anchorNode).parents('.gh-cardmenu').length) {
+                this.send('closeMenu');
+            }
+            return;
+        }
+
+        if (isOpen) {
+            let queryString = editor.range.head.section.text.substring(range.startOffset, editor.range.head.offset);
+            this.set('query', queryString);
+            // if we've typed 5 characters and have no tools then close.
+            if (queryString.length > 5 && !this.get('toolLength')) {
+                this.send('closeMenu');
+            }
         }
     }
 });

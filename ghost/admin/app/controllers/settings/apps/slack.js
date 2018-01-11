@@ -12,53 +12,16 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    slackSettings: boundOneWay('settings.slack.firstObject'),
-    testNotificationDisabled: empty('slackSettings.url'),
-
-    leaveSettingsTransition: null,
-    slackArray: null,
-
     init() {
         this._super(...arguments);
         this.slackArray = [];
     },
 
-    save: task(function* () {
-        let slack = this.get('slackSettings');
-        let settings = this.get('settings');
-        let slackArray = this.get('slackArray');
+    leaveSettingsTransition: null,
+    slackArray: null,
 
-        try {
-            yield slack.validate();
-            // clear existing objects in slackArray to make sure we only push the validated one
-            slackArray.clear().pushObject(slack);
-            yield settings.set('slack', slackArray);
-            return yield settings.save();
-        } catch (error) {
-            if (error) {
-                this.get('notifications').showAPIError(error);
-                throw error;
-            }
-        }
-    }).drop(),
-
-    sendTestNotification: task(function* () {
-        let notifications = this.get('notifications');
-        let slackApi = this.get('ghostPaths.url').api('slack', 'test');
-
-        try {
-            yield this.get('save').perform();
-            yield this.get('ajax').post(slackApi);
-            notifications.showNotification('Check your Slack channel for the test message!', {type: 'info', key: 'slack-test.send.success'});
-            return true;
-        } catch (error) {
-            notifications.showAPIError(error, {key: 'slack-test:send'});
-
-            if (!isInvalidError(error)) {
-                throw error;
-            }
-        }
-    }).drop(),
+    slackSettings: boundOneWay('settings.slack.firstObject'),
+    testNotificationDisabled: empty('slackSettings.url'),
 
     actions: {
         save() {
@@ -123,5 +86,42 @@ export default Controller.extend({
 
             return transition.retry();
         }
-    }
+    },
+
+    save: task(function* () {
+        let slack = this.get('slackSettings');
+        let settings = this.get('settings');
+        let slackArray = this.get('slackArray');
+
+        try {
+            yield slack.validate();
+            // clear existing objects in slackArray to make sure we only push the validated one
+            slackArray.clear().pushObject(slack);
+            yield settings.set('slack', slackArray);
+            return yield settings.save();
+        } catch (error) {
+            if (error) {
+                this.get('notifications').showAPIError(error);
+                throw error;
+            }
+        }
+    }).drop(),
+
+    sendTestNotification: task(function* () {
+        let notifications = this.get('notifications');
+        let slackApi = this.get('ghostPaths.url').api('slack', 'test');
+
+        try {
+            yield this.get('save').perform();
+            yield this.get('ajax').post(slackApi);
+            notifications.showNotification('Check your Slack channel for the test message!', {type: 'info', key: 'slack-test.send.success'});
+            return true;
+        } catch (error) {
+            notifications.showAPIError(error, {key: 'slack-test:send'});
+
+            if (!isInvalidError(error)) {
+                throw error;
+            }
+        }
+    }).drop()
 });

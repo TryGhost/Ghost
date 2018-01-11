@@ -7,17 +7,11 @@ export default Component.extend({
     uploadButtonText: 'Text',
     uploadButtonDisabled: true,
 
+    shouldResetForm: true,
+
     // closure actions
     onUpload() {},
     onAdd() {},
-
-    shouldResetForm: true,
-
-    change(event) {
-        this.set('uploadButtonDisabled', false);
-        this.onAdd();
-        this._file = event.target.files[0];
-    },
 
     actions: {
         upload() {
@@ -33,5 +27,11 @@ export default Component.extend({
                 this.$().closest('form')[0].reset();
             }
         }
+    },
+
+    change(event) {
+        this.set('uploadButtonDisabled', false);
+        this.onAdd();
+        this._file = event.target.files[0];
     }
 });

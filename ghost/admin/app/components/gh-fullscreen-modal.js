@@ -8,11 +8,10 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 const FullScreenModalComponent = Component.extend({
+    dropdown: service(),
 
     model: null,
     modifier: null,
-
-    dropdown: service(),
 
     modalPath: computed('modal', function () {
         return `modal-${this.get('modal') || 'unknown'}`;

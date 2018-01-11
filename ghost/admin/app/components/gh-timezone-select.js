@@ -6,12 +6,12 @@ import {mapBy} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    clock: service(),
+
     classNames: ['form-group', 'for-select'],
 
     activeTimezone: null,
     availableTimezones: null,
-
-    clock: service(),
 
     availableTimezoneNames: mapBy('availableTimezones', 'name'),
 

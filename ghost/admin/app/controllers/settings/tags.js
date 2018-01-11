@@ -26,6 +26,17 @@ export default Controller.extend({
         return 0;
     }),
 
+    actions: {
+        leftMobile() {
+            let firstTag = this.get('tags.firstObject');
+            // redirect to first tag if possible so that you're not left with
+            // tag settings blank slate when switching from portrait to landscape
+            if (firstTag && !this.get('tagController.tag')) {
+                this.transitionToRoute('settings.tags.tag', firstTag);
+            }
+        }
+    },
+
     scrollTagIntoView(tag) {
         run.scheduleOnce('afterRender', this, function () {
             let id = `#gh-tag-${tag.get('id')}`;
@@ -48,17 +59,5 @@ export default Controller.extend({
                 }
             }
         });
-    },
-
-    actions: {
-        leftMobile() {
-            let firstTag = this.get('tags.firstObject');
-            // redirect to first tag if possible so that you're not left with
-            // tag settings blank slate when switching from portrait to landscape
-            if (firstTag && !this.get('tagController.tag')) {
-                this.transitionToRoute('settings.tags.tag', firstTag);
-            }
-        }
     }
-
 });

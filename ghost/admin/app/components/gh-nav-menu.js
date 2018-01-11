@@ -19,14 +19,6 @@ export default Component.extend({
     open: false,
     iconStyle: '',
 
-    // the menu has a rendering issue (#8307) when the the world is reloaded
-    // during an import which we have worked around by not binding the icon
-    // style directly. However we still need to keep track of changing icons
-    // so that we can refresh when a new icon is uploaded
-    didReceiveAttrs() {
-        this._setIconStyle();
-    },
-
     showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function () {
         return this.get('config.clientExtensions.menu') && this.get('session.user.isOwner');
     }),
@@ -38,6 +30,14 @@ export default Component.extend({
     showScriptExtension: computed('config.clientExtensions.script', 'session.user.isOwner', function () {
         return this.get('config.clientExtensions.script') && this.get('session.user.isOwner');
     }),
+
+    // the menu has a rendering issue (#8307) when the the world is reloaded
+    // during an import which we have worked around by not binding the icon
+    // style directly. However we still need to keep track of changing icons
+    // so that we can refresh when a new icon is uploaded
+    didReceiveAttrs() {
+        this._setIconStyle();
+    },
 
     // equivalent to "left: auto; right: -20px"
     userDropdownPosition(trigger, dropdown) {

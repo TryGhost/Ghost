@@ -3,11 +3,11 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    tagName: 'article',
-    classNames: ['gh-alert'],
-    classNameBindings: ['typeClass'],
-
     notifications: service(),
+
+    classNameBindings: ['typeClass'],
+    classNames: ['gh-alert'],
+    tagName: 'article',
 
     typeClass: computed('message.type', function () {
         let type = this.get('message.type');

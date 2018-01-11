@@ -116,9 +116,9 @@ describe.skip('Unit: Component: post-settings-menu', function () {
         it('should be the metaTitle if one exists', function () {
             let component = this.subject({
                 post: EmberObject.extend({
+                    titleScratch: 'should not be used',
                     metaTitle: 'a meta-title',
-                    metaTitleScratch: boundOneWay('metaTitle'),
-                    titleScratch: 'should not be used'
+                    metaTitleScratch: boundOneWay('metaTitle')
                 }).create()
             });
 
@@ -138,9 +138,9 @@ describe.skip('Unit: Component: post-settings-menu', function () {
         it('should be the metaTitle if both title and metaTitle exist', function () {
             let component = this.subject({
                 post: EmberObject.extend({
+                    titleScratch: 'a title',
                     metaTitle: 'a meta-title',
-                    metaTitleScratch: boundOneWay('metaTitle'),
-                    titleScratch: 'a title'
+                    metaTitleScratch: boundOneWay('metaTitle')
                 }).create()
             });
 
@@ -150,9 +150,9 @@ describe.skip('Unit: Component: post-settings-menu', function () {
         it('should revert to the title if explicit metaTitle is removed', function () {
             let component = this.subject({
                 post: EmberObject.extend({
+                    titleScratch: 'a title',
                     metaTitle: 'a meta-title',
-                    metaTitleScratch: boundOneWay('metaTitle'),
-                    titleScratch: 'a title'
+                    metaTitleScratch: boundOneWay('metaTitle')
                 }).create()
             });
 
@@ -199,9 +199,9 @@ describe.skip('Unit: Component: post-settings-menu', function () {
         it('should be generated from the rendered mobiledoc if not explicitly set', function () {
             let component = this.subject({
                 post: EmberObject.extend({
-                    author: RSVP.resolve(),
                     metaDescription: null,
                     metaDescriptionScratch: boundOneWay('metaDescription'),
+                    author: RSVP.resolve(),
 
                     init() {
                         this._super(...arguments);

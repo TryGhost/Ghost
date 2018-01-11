@@ -20,6 +20,11 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
+    init() {
+        this._super(...arguments);
+        this.iconExtensions = ICON_EXTENSIONS;
+    },
+
     availableTimezones: null,
     iconExtensions: null,
     iconMimeTypes: 'image/png,image/x-icon',
@@ -49,44 +54,6 @@ export default Controller.extend({
         let publicHash = this.get('settings.publicHash');
 
         return `${blogUrl}/${publicHash}/rss`;
-    }),
-
-    init() {
-        this._super(...arguments);
-        this.iconExtensions = ICON_EXTENSIONS;
-    },
-
-    _deleteTheme() {
-        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
-
-        if (!theme) {
-            return;
-        }
-
-        return theme.destroyRecord().catch((error) => {
-            this.get('notifications').showAPIError(error);
-        });
-    },
-
-    save: task(function* () {
-        let notifications = this.get('notifications');
-        let config = this.get('config');
-
-        try {
-            let settings = yield this.get('settings').save();
-            config.set('blogTitle', settings.get('title'));
-
-            // this forces the document title to recompute after
-            // a blog title change
-            this.send('collectTitleTokens', []);
-
-            return settings;
-        } catch (error) {
-            if (error) {
-                notifications.showAPIError(error, {key: 'settings.save'});
-            }
-            throw error;
-        }
     }),
 
     actions: {
@@ -294,5 +261,38 @@ export default Controller.extend({
                 return;
             }
         }
-    }
+    },
+
+    _deleteTheme() {
+        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
+
+        if (!theme) {
+            return;
+        }
+
+        return theme.destroyRecord().catch((error) => {
+            this.get('notifications').showAPIError(error);
+        });
+    },
+
+    save: task(function* () {
+        let notifications = this.get('notifications');
+        let config = this.get('config');
+
+        try {
+            let settings = yield this.get('settings').save();
+            config.set('blogTitle', settings.get('title'));
+
+            // this forces the document title to recompute after
+            // a blog title change
+            this.send('collectTitleTokens', []);
+
+            return settings;
+        } catch (error) {
+            if (error) {
+                notifications.showAPIError(error, {key: 'settings.save'});
+            }
+            throw error;
+        }
+    })
 });

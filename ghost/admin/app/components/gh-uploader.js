@@ -44,9 +44,9 @@ const UploadTracker = EmberObject.extend({
 });
 
 export default Component.extend({
-    tagName: '',
-
     ajax: service(),
+
+    tagName: '',
 
     // Public attributes
     accept: '',
@@ -96,6 +96,21 @@ export default Component.extend({
         // if we have new files, validate and start an upload
         let files = this.get('files');
         this._setFiles(files);
+    },
+
+    actions: {
+        setFiles(files, resetInput) {
+            this._setFiles(files);
+
+            if (resetInput) {
+                resetInput();
+            }
+        },
+
+        cancel() {
+            this._reset();
+            this.onCancel();
+        }
     },
 
     _setFiles(files) {
@@ -192,6 +207,7 @@ export default Component.extend({
         this.onComplete(this.get('uploadUrls'));
     }).drop(),
 
+    // eslint-disable-next-line ghost/ember/order-in-components
     _uploadFile: task(function* (tracker, file, index) {
         let ajax = this.get('ajax');
         let formData = this._getFormData(file);
@@ -286,20 +302,5 @@ export default Component.extend({
         this.set('uploadPercentage', 0);
         this.set('uploadUrls', []);
         this._uploadTrackers = [];
-    },
-
-    actions: {
-        setFiles(files, resetInput) {
-            this._setFiles(files);
-
-            if (resetInput) {
-                resetInput();
-            }
-        },
-
-        cancel() {
-            this._reset();
-            this.onCancel();
-        }
     }
 });

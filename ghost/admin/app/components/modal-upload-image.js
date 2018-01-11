@@ -6,14 +6,14 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    config: service(),
+    notifications: service(),
+
     model: null,
 
     url: '',
     newUrl: '',
     _isUploading: false,
-
-    config: service(),
-    notifications: service(),
 
     image: computed('model.{model,imageProperty}', {
         get() {
@@ -34,6 +34,26 @@ export default ModalComponent.extend({
         let image = this.get('image');
         this.set('url', image);
         this.set('newUrl', image);
+    },
+
+    actions: {
+        fileUploaded(url) {
+            this.set('url', url);
+            this.set('newUrl', url);
+        },
+
+        removeImage() {
+            this.set('url', '');
+            this.set('newUrl', '');
+        },
+
+        confirm() {
+            this.get('uploadImage').perform();
+        },
+
+        isUploading() {
+            this.toggleProperty('_isUploading');
+        }
     },
 
     // TODO: should validation be handled in the gh-image-uploader component?
@@ -83,25 +103,5 @@ export default ModalComponent.extend({
                 this.send('closeModal');
             }
         }
-    }).drop(),
-
-    actions: {
-        fileUploaded(url) {
-            this.set('url', url);
-            this.set('newUrl', url);
-        },
-
-        removeImage() {
-            this.set('url', '');
-            this.set('newUrl', '');
-        },
-
-        confirm() {
-            this.get('uploadImage').perform();
-        },
-
-        isUploading() {
-            this.toggleProperty('_isUploading');
-        }
-    }
+    }).drop()
 });

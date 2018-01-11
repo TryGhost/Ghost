@@ -8,11 +8,11 @@ import {inject as service} from '@ember/service';
 const {Handlebars} = Ember;
 
 export default Component.extend({
+    ghostPaths: service(),
+
     tagName: '',
 
     user: null,
-
-    ghostPaths: service(),
 
     userDefault: computed('ghostPaths', function () {
         return `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;

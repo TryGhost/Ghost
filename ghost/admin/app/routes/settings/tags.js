@@ -5,9 +5,6 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
-    titleToken: 'Settings - Tags',
-
-    shortcuts: null,
 
     init() {
         this._super(...arguments);
@@ -19,6 +16,10 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
             c: 'newTag'
         };
     },
+
+    titleToken: 'Settings - Tags',
+
+    shortcuts: null,
 
     // authors aren't allowed to manage tags
     beforeModel() {
@@ -45,31 +46,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     deactivate() {
         this._super(...arguments);
         this.send('resetShortcutsScope');
-    },
-
-    stepThroughTags(step) {
-        let currentTag = this.modelFor('settings.tags.tag');
-        let tags = this.get('controller.sortedTags');
-        let length = tags.get('length');
-
-        if (currentTag && length) {
-            let newPosition = tags.indexOf(currentTag) + step;
-
-            if (newPosition >= length) {
-                return;
-            } else if (newPosition < 0) {
-                return;
-            }
-
-            this.transitionTo('settings.tags.tag', tags.objectAt(newPosition));
-        }
-    },
-
-    scrollContent(amount) {
-        let content = $('.tag-settings-pane');
-        let scrolled = content.scrollTop();
-
-        content.scrollTop(scrolled + 50 * amount);
     },
 
     actions: {
@@ -104,5 +80,30 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
         resetShortcutsScope() {
             key.setScope('default');
         }
+    },
+
+    stepThroughTags(step) {
+        let currentTag = this.modelFor('settings.tags.tag');
+        let tags = this.get('controller.sortedTags');
+        let length = tags.get('length');
+
+        if (currentTag && length) {
+            let newPosition = tags.indexOf(currentTag) + step;
+
+            if (newPosition >= length) {
+                return;
+            } else if (newPosition < 0) {
+                return;
+            }
+
+            this.transitionTo('settings.tags.tag', tags.objectAt(newPosition));
+        }
+    },
+
+    scrollContent(amount) {
+        let content = $('.tag-settings-pane');
+        let scrolled = content.scrollTop();
+
+        content.scrollTop(scrolled + 50 * amount);
     }
 });

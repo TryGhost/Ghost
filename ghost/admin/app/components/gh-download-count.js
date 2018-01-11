@@ -10,6 +10,10 @@ export default Component.extend({
     tagName: '',
     count: '',
 
+    didInsertElement() {
+        this.get('_poll').perform();
+    },
+
     _poll: task(function* () {
         let url = this.get('ghostPaths.count');
         let pattern = /(-?\d+)(\d{3})/;
@@ -31,9 +35,5 @@ export default Component.extend({
         } catch (e) {
             // no-op - we don't want to create noise for a failed download count
         }
-    }),
-
-    didInsertElement() {
-        this.get('_poll').perform();
-    }
+    })
 });

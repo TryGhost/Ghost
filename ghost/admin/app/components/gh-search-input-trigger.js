@@ -2,18 +2,6 @@ import Component from '@ember/component';
 import {isBlank} from '@ember/utils';
 
 export default Component.extend({
-    open() {
-        this.get('select.actions').open();
-    },
-
-    close() {
-        this.get('select.actions').close();
-    },
-
-    _focusInput() {
-        this.$('input')[0].focus();
-    },
-
     actions: {
         captureMouseDown(e) {
             e.stopPropagation();
@@ -50,5 +38,17 @@ export default Component.extend({
                 e.stopPropagation();
             }
         }
+    },
+
+    open() {
+        this.get('select.actions').open();
+    },
+
+    close() {
+        this.get('select.actions').close();
+    },
+
+    _focusInput() {
+        this.$('input')[0].focus();
     }
 });

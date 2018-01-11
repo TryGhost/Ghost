@@ -8,28 +8,11 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    unsplashSettings: alias('settings.unsplash'),
     dirtyAttributes: null,
     rollbackValue: null,
-
     leaveSettingsTransition: null,
 
-    save: task(function* () {
-        let unsplash = this.get('unsplashSettings');
-        let settings = this.get('settings');
-
-        try {
-            settings.set('unsplash', unsplash);
-            this.set('dirtyAttributes', false);
-            this.set('rollbackValue', null);
-            return yield settings.save();
-        } catch (error) {
-            if (error) {
-                this.get('notifications').showAPIError(error);
-                throw error;
-            }
-        }
-    }).drop(),
+    unsplashSettings: alias('settings.unsplash'),
 
     actions: {
         save() {
@@ -83,5 +66,22 @@ export default Controller.extend({
 
             return transition.retry();
         }
-    }
+    },
+
+    save: task(function* () {
+        let unsplash = this.get('unsplashSettings');
+        let settings = this.get('settings');
+
+        try {
+            settings.set('unsplash', unsplash);
+            this.set('dirtyAttributes', false);
+            this.set('rollbackValue', null);
+            return yield settings.save();
+        } catch (error) {
+            if (error) {
+                this.get('notifications').showAPIError(error);
+                throw error;
+            }
+        }
+    }).drop()
 });

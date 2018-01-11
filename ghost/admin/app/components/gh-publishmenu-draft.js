@@ -18,12 +18,6 @@ export default Component.extend({
         this.send('setSaveType', 'publish');
     },
 
-    // API only accepts dates at least 2 mins in the future, default the
-    // scheduled date 5 mins in the future to avoid immediate validation errors
-    _getMinDate() {
-        return moment.utc().add(5, 'minutes');
-    },
-
     actions: {
         setSaveType(type) {
             if (this.get('saveType') !== type) {
@@ -70,5 +64,11 @@ export default Component.extend({
             post.set('publishedAtBlogTime', time);
             return post.validate();
         }
+    },
+
+    // API only accepts dates at least 2 mins in the future, default the
+    // scheduled date 5 mins in the future to avoid immediate validation errors
+    _getMinDate() {
+        return moment.utc().add(5, 'minutes');
     }
 });

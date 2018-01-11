@@ -26,16 +26,6 @@ const JSON_EXTENSION = ['json'];
 const JSON_MIME_TYPE = ['application/json'];
 
 export default Controller.extend({
-    importErrors: null,
-    importSuccessful: false,
-    showDeleteAllModal: false,
-    submitting: false,
-    uploadButtonText: 'Import',
-
-    importMimeType: null,
-    jsonExtension: null,
-    jsonMimeType: null,
-
     ajax: service(),
     config: service(),
     feature: service(),
@@ -51,75 +41,15 @@ export default Controller.extend({
         this.jsonMimeType = JSON_MIME_TYPE;
     },
 
-    // TODO: convert to ember-concurrency task
-    _validate(file) {
-        // Windows doesn't have mime-types for json files by default, so we
-        // need to have some additional checking
-        if (file.type === '') {
-            // First check file extension so we can early return
-            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+    importErrors: null,
+    importSuccessful: false,
+    showDeleteAllModal: false,
+    submitting: false,
+    uploadButtonText: 'Import',
 
-            if (!extension || extension.toLowerCase() !== 'json') {
-                return RSVP.reject(new UnsupportedMediaTypeError());
-            }
-
-            return new Promise((resolve, reject) => {
-                // Extension is correct, so check the contents of the file
-                let reader = new FileReader();
-
-                reader.onload = function () {
-                    let {result} = reader;
-
-                    try {
-                        JSON.parse(result);
-
-                        return resolve();
-                    } catch (e) {
-                        return reject(new UnsupportedMediaTypeError());
-                    }
-                };
-
-                reader.readAsText(file);
-            });
-        }
-
-        let accept = this.get('importMimeType');
-
-        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
-            return RSVP.reject(new UnsupportedMediaTypeError());
-        }
-
-        return RSVP.resolve();
-    },
-
-    sendTestEmail: task(function* () {
-        let notifications = this.get('notifications');
-        let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
-
-        try {
-            yield this.get('ajax').post(emailUrl);
-            notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
-            return true;
-        } catch (error) {
-            notifications.showAPIError(error, {key: 'test-email:send'});
-        }
-    }).drop(),
-
-    redirectUploadResult: task(function* (success) {
-        this.set('redirectSuccess', success);
-        this.set('redirectFailure', !success);
-
-        yield timeout(Ember.testing ? 100 : 5000); // eslint-disable-line
-
-        this.set('redirectSuccess', null);
-        this.set('redirectFailure', null);
-        return true;
-    }).drop(),
-
-    reset() {
-        this.set('importErrors', null);
-        this.set('importSuccessful', false);
-    },
+    importMimeType: null,
+    jsonExtension: null,
+    jsonMimeType: null,
 
     actions: {
         onUpload(file) {
@@ -217,5 +147,75 @@ export default Controller.extend({
                 .find('input[type="file"]')
                 .click();
         }
+    },
+
+    // TODO: convert to ember-concurrency task
+    _validate(file) {
+        // Windows doesn't have mime-types for json files by default, so we
+        // need to have some additional checking
+        if (file.type === '') {
+            // First check file extension so we can early return
+            let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
+
+            if (!extension || extension.toLowerCase() !== 'json') {
+                return RSVP.reject(new UnsupportedMediaTypeError());
+            }
+
+            return new Promise((resolve, reject) => {
+                // Extension is correct, so check the contents of the file
+                let reader = new FileReader();
+
+                reader.onload = function () {
+                    let {result} = reader;
+
+                    try {
+                        JSON.parse(result);
+
+                        return resolve();
+                    } catch (e) {
+                        return reject(new UnsupportedMediaTypeError());
+                    }
+                };
+
+                reader.readAsText(file);
+            });
+        }
+
+        let accept = this.get('importMimeType');
+
+        if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
+            return RSVP.reject(new UnsupportedMediaTypeError());
+        }
+
+        return RSVP.resolve();
+    },
+
+    sendTestEmail: task(function* () {
+        let notifications = this.get('notifications');
+        let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
+
+        try {
+            yield this.get('ajax').post(emailUrl);
+            notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
+            return true;
+        } catch (error) {
+            notifications.showAPIError(error, {key: 'test-email:send'});
+        }
+    }).drop(),
+
+    redirectUploadResult: task(function* (success) {
+        this.set('redirectSuccess', success);
+        this.set('redirectFailure', !success);
+
+        yield timeout(Ember.testing ? 100 : 5000); // eslint-disable-line
+
+        this.set('redirectSuccess', null);
+        this.set('redirectFailure', null);
+        return true;
+    }).drop(),
+
+    reset() {
+        this.set('importErrors', null);
+        this.set('importSuccessful', false);
     }
 });

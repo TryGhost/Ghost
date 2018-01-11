@@ -5,11 +5,6 @@ import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 
 export default AuthenticatedRoute.extend(InfinityRoute, {
-    titleToken: 'Content',
-
-    perPage: 30,
-    perPageParam: 'limit',
-    totalPagesParam: 'meta.pagination.pages',
 
     queryParams: {
         type: {
@@ -29,6 +24,12 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
             replace: true
         }
     },
+
+    titleToken: 'Content',
+
+    perPage: 30,
+    perPageParam: 'limit',
+    totalPagesParam: 'meta.pagination.pages',
 
     _type: null,
 
@@ -64,6 +65,40 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
 
             return this.infinityModel('post', paginationSettings);
         });
+    },
+
+    // trigger a background load of all tags and authors for use in the filter dropdowns
+    setupController(controller) {
+        this._super(...arguments);
+
+        if (!controller._hasLoadedTags) {
+            this.get('store').query('tag', {limit: 'all'}).then(() => {
+                controller._hasLoadedTags = true;
+            });
+        }
+
+        this.get('session.user').then((user) => {
+            if (!user.get('isAuthor') && !controller._hasLoadedAuthors) {
+                this.get('store').query('user', {limit: 'all'}).then(() => {
+                    controller._hasLoadedAuthors = true;
+                });
+            }
+        });
+    },
+
+    actions: {
+        willTransition() {
+            if (this.get('controller')) {
+                this.resetController();
+            }
+        },
+
+        queryParamsDidChange() {
+            // scroll back to the top
+            $('.content-list').scrollTop(0);
+
+            this._super(...arguments);
+        }
     },
 
     _typeParams(type) {
@@ -102,39 +137,5 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
                 return `${key}:${filter[key]}`;
             }
         }).compact().join('+');
-    },
-
-    // trigger a background load of all tags and authors for use in the filter dropdowns
-    setupController(controller) {
-        this._super(...arguments);
-
-        if (!controller._hasLoadedTags) {
-            this.get('store').query('tag', {limit: 'all'}).then(() => {
-                controller._hasLoadedTags = true;
-            });
-        }
-
-        this.get('session.user').then((user) => {
-            if (!user.get('isAuthor') && !controller._hasLoadedAuthors) {
-                this.get('store').query('user', {limit: 'all'}).then(() => {
-                    controller._hasLoadedAuthors = true;
-                });
-            }
-        });
-    },
-
-    actions: {
-        willTransition() {
-            if (this.get('controller')) {
-                this.resetController();
-            }
-        },
-
-        queryParamsDidChange() {
-            // scroll back to the top
-            $('.content-list').scrollTop(0);
-
-            this._super(...arguments);
-        }
     }
 });

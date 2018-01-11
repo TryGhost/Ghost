@@ -3,18 +3,12 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const FeatureFlagComponent = Component.extend({
+    feature: service(),
+
     tagName: 'label',
     classNames: 'checkbox',
     attributeBindings: ['for'],
     _flagValue: null,
-
-    feature: service(),
-
-    init() {
-        this._super(...arguments);
-
-        this.set('_flagValue', this.get(`feature.${this.get('flag')}`));
-    },
 
     value: computed('_flagValue', {
         get() {
@@ -31,7 +25,13 @@ const FeatureFlagComponent = Component.extend({
 
     name: computed('flag', function () {
         return `labs[${this.get('flag')}]`;
-    })
+    }),
+
+    init() {
+        this._super(...arguments);
+
+        this.set('_flagValue', this.get(`feature.${this.get('flag')}`));
+    }
 });
 
 FeatureFlagComponent.reopenClass({

@@ -2,14 +2,10 @@ import Component from '@ember/component';
 import {schedule} from '@ember/runloop';
 
 export default Component.extend({
-    tagName: 'li',
-    classNameBindings: ['active'],
     active: false,
+    classNameBindings: ['active'],
     linkClasses: null,
-
-    click() {
-        this.$('a').blur();
-    },
+    tagName: 'li',
 
     actions: {
         setActive(value) {
@@ -17,5 +13,9 @@ export default Component.extend({
                 this.set('active', value);
             });
         }
+    },
+
+    click() {
+        this.$('a').blur();
     }
 });

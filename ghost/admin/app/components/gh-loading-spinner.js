@@ -9,12 +9,12 @@ export default Component.extend({
     // prevents unnecessary flash of spinner
     slowLoadTimeout: 200,
 
+    didInsertElement() {
+        this.get('startSpinnerTimeout').perform();
+    },
+
     startSpinnerTimeout: task(function* () {
         yield timeout(this.get('slowLoadTimeout'));
         this.set('showSpinner', true);
-    }),
-
-    didInsertElement() {
-        this.get('startSpinnerTimeout').perform();
-    }
+    })
 });

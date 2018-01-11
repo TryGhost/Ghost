@@ -7,17 +7,6 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    save: task(function* () {
-        let notifications = this.get('notifications');
-
-        try {
-            return yield this.get('settings').save();
-        } catch (error) {
-            notifications.showAPIError(error, {key: 'code-injection.save'});
-            throw error;
-        }
-    }),
-
     actions: {
         save() {
             this.get('save').perform();
@@ -62,5 +51,16 @@ export default Controller.extend({
             return transition.retry();
         }
 
-    }
+    },
+
+    save: task(function* () {
+        let notifications = this.get('notifications');
+
+        try {
+            return yield this.get('settings').save();
+        } catch (error) {
+            notifications.showAPIError(error, {key: 'code-injection.save'});
+            throw error;
+        }
+    })
 });

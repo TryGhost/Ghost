@@ -12,17 +12,17 @@ export default ModalComponent.extend({
         return this.get('tag.count.posts') > 1 ? 'posts' : 'post';
     }),
 
+    actions: {
+        confirm() {
+            this.get('deleteTag').perform();
+        }
+    },
+
     deleteTag: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('deleteTag').perform();
-        }
-    }
+    }).drop()
 });

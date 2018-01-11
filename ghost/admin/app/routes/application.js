@@ -30,16 +30,16 @@ shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
-    shortcuts,
-
-    routeAfterAuthentication: 'posts',
-
     config: service(),
     feature: service(),
     notifications: service(),
     settings: service(),
     tour: service(),
     ui: service(),
+
+    shortcuts,
+
+    routeAfterAuthentication: 'posts',
 
     beforeModel() {
         return this.get('config').fetch();
@@ -83,36 +83,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 privateConfigPromise,
                 tourPromise
             ]);
-        }
-    },
-
-    title(tokens) {
-        return `${tokens.join(' - ')} - ${this.get('config.blogTitle')}`;
-    },
-
-    sessionAuthenticated() {
-        if (this.get('session.skipAuthSuccessHandler')) {
-            return;
-        }
-
-        // standard ESA post-sign-in redirect
-        this._super(...arguments);
-
-        // trigger post-sign-in background behaviour
-        this.get('session.user').then((user) => {
-            this.send('signedIn', user);
-        });
-    },
-
-    sessionInvalidated() {
-        let transition = this.get('appLoadTransition');
-
-        if (transition) {
-            transition.send('authorizationFailed');
-        } else {
-            run.scheduleOnce('routerTransitions', this, function () {
-                this.send('authorizationFailed');
-            });
         }
     },
 
@@ -232,6 +202,36 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
             // fallback to 500 error page
             return true;
+        }
+    },
+
+    title(tokens) {
+        return `${tokens.join(' - ')} - ${this.get('config.blogTitle')}`;
+    },
+
+    sessionAuthenticated() {
+        if (this.get('session.skipAuthSuccessHandler')) {
+            return;
+        }
+
+        // standard ESA post-sign-in redirect
+        this._super(...arguments);
+
+        // trigger post-sign-in background behaviour
+        this.get('session.user').then((user) => {
+            this.send('signedIn', user);
+        });
+    },
+
+    sessionInvalidated() {
+        let transition = this.get('appLoadTransition');
+
+        if (transition) {
+            transition.send('authorizationFailed');
+        } else {
+            run.scheduleOnce('routerTransitions', this, function () {
+                this.send('authorizationFailed');
+            });
         }
     }
 });

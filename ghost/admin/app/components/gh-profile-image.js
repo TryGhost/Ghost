@@ -22,6 +22,9 @@ const ANIMATION_TIMEOUT = 1000;
  * @property  {String}      imageBackground   String containing the background-image css property with the gravatar url
  */
 export default Component.extend({
+    config: service(),
+    ghostPaths: service(),
+
     email: '',
     size: 180,
     debounce: 300,
@@ -29,16 +32,13 @@ export default Component.extend({
     imageFile: null,
     hasUploadedImage: false,
 
+    _defaultImageUrl: '',
+
     // closure actions
     setImage() {},
 
-    config: service(),
-    ghostPaths: service(),
-
     placeholderStyle: htmlSafe('background-image: url()'),
     avatarStyle: htmlSafe('display: none'),
-
-    _defaultImageUrl: '',
 
     init() {
         this._super(...arguments);
@@ -52,6 +52,38 @@ export default Component.extend({
 
         if (this.get('config.useGravatar')) {
             this.get('setGravatar').perform();
+        }
+    },
+
+    actions: {
+        imageSelected(fileList, resetInput) {
+            // eslint-disable-next-line
+            let imageFile = fileList[0];
+
+            if (imageFile) {
+                let reader = new FileReader();
+
+                this.set('imageFile', imageFile);
+                this.setImage(imageFile);
+
+                reader.addEventListener('load', () => {
+                    let dataURL = reader.result;
+                    this.set('previewDataURL', dataURL);
+                }, false);
+
+                reader.readAsDataURL(imageFile);
+            }
+
+            resetInput();
+        },
+
+        openFileDialog(event) {
+            // simulate click to open file dialog
+            // using jQuery because IE11 doesn't support MouseEvent
+            $(event.target)
+                .closest('figure')
+                .find('input[type="file"]')
+                .click();
         }
     },
 
@@ -127,38 +159,6 @@ export default Component.extend({
             if (action) {
                 action(data);
             }
-        }
-    },
-
-    actions: {
-        imageSelected(fileList, resetInput) {
-            // eslint-disable-next-line
-            let imageFile = fileList[0];
-
-            if (imageFile) {
-                let reader = new FileReader();
-
-                this.set('imageFile', imageFile);
-                this.setImage(imageFile);
-
-                reader.addEventListener('load', () => {
-                    let dataURL = reader.result;
-                    this.set('previewDataURL', dataURL);
-                }, false);
-
-                reader.readAsDataURL(imageFile);
-            }
-
-            resetInput();
-        },
-
-        openFileDialog(event) {
-            // simulate click to open file dialog
-            // using jQuery because IE11 doesn't support MouseEvent
-            $(event.target)
-                .closest('figure')
-                .find('input[type="file"]')
-                .click();
         }
     }
 });

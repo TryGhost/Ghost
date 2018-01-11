@@ -5,13 +5,13 @@ import {isNotFoundError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    notifications: service(),
+    store: service(),
+
     tagName: '',
 
     invite: null,
     isSending: false,
-
-    notifications: service(),
-    store: service(),
 
     createdAt: computed('invite.createdAtUTC', function () {
         let createdAtUTC = this.get('invite.createdAtUTC');

@@ -8,23 +8,9 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    ampSettings: alias('settings.amp'),
-
     leaveSettingsTransition: null,
 
-    save: task(function* () {
-        let amp = this.get('ampSettings');
-        let settings = this.get('settings');
-
-        settings.set('amp', amp);
-
-        try {
-            return yield settings.save();
-        } catch (error) {
-            this.get('notifications').showAPIError(error);
-            throw error;
-        }
-    }).drop(),
+    ampSettings: alias('settings.amp'),
 
     actions: {
         update(value) {
@@ -73,5 +59,19 @@ export default Controller.extend({
 
             return transition.retry();
         }
-    }
+    },
+
+    save: task(function* () {
+        let amp = this.get('ampSettings');
+        let settings = this.get('settings');
+
+        settings.set('amp', amp);
+
+        try {
+            return yield settings.save();
+        } catch (error) {
+            this.get('notifications').showAPIError(error);
+            throw error;
+        }
+    }).drop()
 });

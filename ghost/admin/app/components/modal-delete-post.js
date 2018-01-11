@@ -4,11 +4,16 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    notifications: service(),
 
     post: alias('model.post'),
     onSuccess: alias('model.onSuccess'),
 
-    notifications: service(),
+    actions: {
+        confirm() {
+            this.get('deletePost').perform();
+        }
+    },
 
     _deletePost() {
         let post = this.get('post');
@@ -43,11 +48,5 @@ export default ModalComponent.extend({
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('deletePost').perform();
-        }
-    }
+    }).drop()
 });

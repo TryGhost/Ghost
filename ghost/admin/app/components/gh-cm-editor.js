@@ -9,9 +9,10 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 const CmEditorComponent = Component.extend(InvokeActionMixin, {
+    lazyLoader: service(),
+
     classNameBindings: ['isFocused:focus'],
 
-    _value: boundOneWay('value'), // make sure a value exists
     isFocused: false,
     isInitializingCodemirror: true,
 
@@ -22,8 +23,7 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
     theme: 'xq-light',
 
     _editor: null, // reference to CodeMirror editor
-
-    lazyLoader: service(),
+    _value: boundOneWay('value'), // make sure a value exists
 
     didReceiveAttrs() {
         if (this.get('value') === null || undefined) {
@@ -34,6 +34,19 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
     didInsertElement() {
         this._super(...arguments);
         this.get('initCodeMirror').perform();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+
+        // Ensure the editor exists before trying to destroy it. This fixes
+        // an error that occurs if codemirror hasn't finished loading before
+        // the component is destroyed.
+        if (this._editor) {
+            let editor = this._editor.getWrapperElement();
+            editor.parentNode.removeChild(editor);
+            this._editor = null;
+        }
     },
 
     actions: {
@@ -108,19 +121,6 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
 
     _blur(/* codeMirror, event */) {
         this.set('isFocused', false);
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-
-        // Ensure the editor exists before trying to destroy it. This fixes
-        // an error that occurs if codemirror hasn't finished loading before
-        // the component is destroyed.
-        if (this._editor) {
-            let editor = this._editor.getWrapperElement();
-            editor.parentNode.removeChild(editor);
-            this._editor = null;
-        }
     }
 });
 

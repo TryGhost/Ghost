@@ -17,6 +17,9 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    ajax: service(),
+    notifications: service(),
+
     layout,
     tagName: 'section',
     classNames: ['gh-image-uploader'],
@@ -35,14 +38,6 @@ export default Component.extend({
     file: null,
     url: null,
     uploadPercentage: 0,
-
-    ajax: service(),
-    notifications: service(),
-
-    init() {
-        this._super(...arguments);
-        this.extensions = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
-    },
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
@@ -73,6 +68,11 @@ export default Component.extend({
         return htmlSafe(`width: ${width}`);
     }),
 
+    init() {
+        this._super(...arguments);
+        this.extensions = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
+    },
+
     didReceiveAttrs() {
         let image = this.get('payload');
         if (image.img) {
@@ -80,6 +80,40 @@ export default Component.extend({
         } else if (image.file) {
             this.send('fileSelected', image.file);
             delete image.file;
+        }
+    },
+
+    actions: {
+        fileSelected(fileList) {
+            // can't use array destructuring here as FileList is not a strict
+            // array and fails in Safari
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let file = fileList[0];
+
+            // jscs:enable requireArrayDestructuring
+            let validationResult = this._validate(file);
+
+            this.set('file', file);
+
+            invokeAction(this, 'fileSelected', file);
+
+            if (validationResult === true) {
+                run.schedule('actions', this, function () {
+                    this.generateRequest();
+                });
+            } else {
+                this._uploadFailed(validationResult);
+            }
+        },
+
+        reset() {
+            this.set('file', null);
+            this.set('uploadPercentage', 0);
+        },
+
+        saveUrl() {
+            let url = this.get('url');
+            invokeAction(this, 'update', url);
         }
     },
 
@@ -227,39 +261,5 @@ export default Component.extend({
         }
 
         return true;
-    },
-
-    actions: {
-        fileSelected(fileList) {
-            // can't use array destructuring here as FileList is not a strict
-            // array and fails in Safari
-            // eslint-disable-next-line ember-suave/prefer-destructuring
-            let file = fileList[0];
-
-            // jscs:enable requireArrayDestructuring
-            let validationResult = this._validate(file);
-
-            this.set('file', file);
-
-            invokeAction(this, 'fileSelected', file);
-
-            if (validationResult === true) {
-                run.schedule('actions', this, function () {
-                    this.generateRequest();
-                });
-            } else {
-                this._uploadFailed(validationResult);
-            }
-        },
-
-        reset() {
-            this.set('file', null);
-            this.set('uploadPercentage', 0);
-        },
-
-        saveUrl() {
-            let url = this.get('url');
-            invokeAction(this, 'update', url);
-        }
     }
 });

@@ -10,13 +10,13 @@ const {Promise} = RSVP;
 const {Errors} = DS;
 
 export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
-    classNames: ['ghost-signup'],
-
     ghostPaths: service(),
     notifications: service(),
     session: service(),
     ajax: service(),
     config: service(),
+
+    classNames: ['ghost-signup'],
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {

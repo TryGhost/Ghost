@@ -3,12 +3,12 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, {
+    ghostPaths: service(),
+    ajax: service(),
+
     titleToken: 'About',
 
     classNames: ['view-about'],
-
-    ghostPaths: service(),
-    ajax: service(),
 
     cachedConfig: false,
 

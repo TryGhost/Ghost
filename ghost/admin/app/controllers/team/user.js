@@ -15,6 +15,14 @@ import {task, taskGroup} from 'ember-concurrency';
 const {Handlebars} = Ember;
 
 export default Controller.extend({
+    ajax: service(),
+    config: service(),
+    dropdown: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    slugGenerator: service(),
+
     leaveSettingsTransition: null,
     dirtyAttributes: false,
     showDeleteUserModal: false,
@@ -25,13 +33,7 @@ export default Controller.extend({
     _scratchFacebook: null,
     _scratchTwitter: null,
 
-    ajax: service(),
-    config: service(),
-    dropdown: service(),
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    slugGenerator: service(),
+    saveHandlers: taskGroup().enqueue(),
 
     user: alias('model'),
     currentUser: alias('session.user'),
@@ -48,10 +50,10 @@ export default Controller.extend({
     rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
+    isNotOwnProfile: not('isOwnProfile'),
     isOwnProfile: computed('user.id', 'currentUser.id', function () {
         return this.get('user.id') === this.get('currentUser.id');
     }),
-    isNotOwnProfile: not('isOwnProfile'),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner'))
@@ -92,113 +94,6 @@ export default Controller.extend({
     roles: computed(function () {
         return this.store.query('role', {permissions: 'assign'});
     }),
-
-    _deleteUser() {
-        if (this.get('deleteUserActionIsVisible')) {
-            let user = this.get('user');
-            return user.destroyRecord();
-        }
-    },
-
-    _deleteUserSuccess() {
-        this.get('notifications').closeAlerts('user.delete');
-        this.store.unloadAll('post');
-        this.transitionToRoute('team');
-    },
-
-    _deleteUserFailure() {
-        this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
-    },
-
-    saveHandlers: taskGroup().enqueue(),
-
-    updateSlug: task(function* (newSlug) {
-        let slug = this.get('user.slug');
-
-        newSlug = newSlug || slug;
-        newSlug = newSlug.trim();
-
-        // Ignore unchanged slugs or candidate slugs that are empty
-        if (!newSlug || slug === newSlug) {
-            this.set('slugValue', slug);
-
-            return true;
-        }
-
-        let serverSlug = yield this.get('slugGenerator').generateSlug('user', newSlug);
-
-        // If after getting the sanitized and unique slug back from the API
-        // we end up with a slug that matches the existing slug, abort the change
-        if (serverSlug === slug) {
-            return true;
-        }
-
-        // Because the server transforms the candidate slug by stripping
-        // certain characters and appending a number onto the end of slugs
-        // to enforce uniqueness, there are cases where we can get back a
-        // candidate slug that is a duplicate of the original except for
-        // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
-
-        // get the last token out of the slug candidate and see if it's a number
-        let slugTokens = serverSlug.split('-');
-        let check = Number(slugTokens.pop());
-
-        // if the candidate slug is the same as the existing slug except
-        // for the incrementor then the existing slug should be used
-        if (isNumber(check) && check > 0) {
-            if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                this.set('slugValue', slug);
-
-                return true;
-            }
-        }
-
-        this.set('slugValue', serverSlug);
-        this.set('dirtyAttributes', true);
-
-        return true;
-    }).group('saveHandlers'),
-
-    save: task(function* () {
-        let user = this.get('user');
-        let slugValue = this.get('slugValue');
-        let slugChanged;
-
-        if (user.get('slug') !== slugValue) {
-            slugChanged = true;
-            user.set('slug', slugValue);
-        }
-
-        try {
-            let currentPath,
-                newPath;
-
-            user = yield user.save({format: false});
-
-            // If the user's slug has changed, change the URL and replace
-            // the history so refresh and back button still work
-            if (slugChanged) {
-                currentPath = window.location.hash;
-
-                newPath = currentPath.split('/');
-                newPath[newPath.length - 1] = user.get('slug');
-                newPath = newPath.join('/');
-
-                windowProxy.replaceState({path: newPath}, '', newPath);
-            }
-
-            this.set('dirtyAttributes', false);
-            this.get('notifications').closeAlerts('user.update');
-
-            return user;
-        } catch (error) {
-            // validation engine returns undefined so we have to check
-            // before treating the failure as an API error
-            if (error) {
-                this.get('notifications').showAPIError(error, {key: 'user.update'});
-            }
-        }
-    }).group('saveHandlers'),
 
     actions: {
         changeRole(newRole) {
@@ -460,5 +355,110 @@ export default Controller.extend({
             this.get('user.hasValidated').removeObject('ne2Password');
             this.get('user.errors').remove('ne2Password');
         }
-    }
+    },
+
+    _deleteUser() {
+        if (this.get('deleteUserActionIsVisible')) {
+            let user = this.get('user');
+            return user.destroyRecord();
+        }
+    },
+
+    _deleteUserSuccess() {
+        this.get('notifications').closeAlerts('user.delete');
+        this.store.unloadAll('post');
+        this.transitionToRoute('team');
+    },
+
+    _deleteUserFailure() {
+        this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+    },
+
+    updateSlug: task(function* (newSlug) {
+        let slug = this.get('user.slug');
+
+        newSlug = newSlug || slug;
+        newSlug = newSlug.trim();
+
+        // Ignore unchanged slugs or candidate slugs that are empty
+        if (!newSlug || slug === newSlug) {
+            this.set('slugValue', slug);
+
+            return true;
+        }
+
+        let serverSlug = yield this.get('slugGenerator').generateSlug('user', newSlug);
+
+        // If after getting the sanitized and unique slug back from the API
+        // we end up with a slug that matches the existing slug, abort the change
+        if (serverSlug === slug) {
+            return true;
+        }
+
+        // Because the server transforms the candidate slug by stripping
+        // certain characters and appending a number onto the end of slugs
+        // to enforce uniqueness, there are cases where we can get back a
+        // candidate slug that is a duplicate of the original except for
+        // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+
+        // get the last token out of the slug candidate and see if it's a number
+        let slugTokens = serverSlug.split('-');
+        let check = Number(slugTokens.pop());
+
+        // if the candidate slug is the same as the existing slug except
+        // for the incrementor then the existing slug should be used
+        if (isNumber(check) && check > 0) {
+            if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                this.set('slugValue', slug);
+
+                return true;
+            }
+        }
+
+        this.set('slugValue', serverSlug);
+        this.set('dirtyAttributes', true);
+
+        return true;
+    }).group('saveHandlers'),
+
+    save: task(function* () {
+        let user = this.get('user');
+        let slugValue = this.get('slugValue');
+        let slugChanged;
+
+        if (user.get('slug') !== slugValue) {
+            slugChanged = true;
+            user.set('slug', slugValue);
+        }
+
+        try {
+            let currentPath,
+                newPath;
+
+            user = yield user.save({format: false});
+
+            // If the user's slug has changed, change the URL and replace
+            // the history so refresh and back button still work
+            if (slugChanged) {
+                currentPath = window.location.hash;
+
+                newPath = currentPath.split('/');
+                newPath[newPath.length - 1] = user.get('slug');
+                newPath = newPath.join('/');
+
+                windowProxy.replaceState({path: newPath}, '', newPath);
+            }
+
+            this.set('dirtyAttributes', false);
+            this.get('notifications').closeAlerts('user.update');
+
+            return user;
+        } catch (error) {
+            // validation engine returns undefined so we have to check
+            // before treating the failure as an API error
+            if (error) {
+                this.get('notifications').showAPIError(error, {key: 'user.update'});
+            }
+        }
+    }).group('saveHandlers')
 });

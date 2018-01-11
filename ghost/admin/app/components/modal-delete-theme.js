@@ -8,17 +8,17 @@ export default ModalComponent.extend({
     theme: alias('model.theme'),
     download: alias('model.download'),
 
+    actions: {
+        confirm() {
+            this.get('deleteTheme').perform();
+        }
+    },
+
     deleteTheme: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('deleteTheme').perform();
-        }
-    }
+    }).drop()
 });
