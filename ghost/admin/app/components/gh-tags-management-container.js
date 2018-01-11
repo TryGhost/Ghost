@@ -5,26 +5,16 @@ import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    mediaQueries: service(),
+
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
-
-    mediaQueries: service(),
 
     tags: null,
     selectedTag: null,
 
     isMobile: reads('mediaQueries.maxWidth600'),
     isEmpty: equal('tags.length', 0),
-
-    init() {
-        this._super(...arguments);
-        this.get('mediaQueries').on('change', this, this._fireMobileChangeActions);
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        this.get('mediaQueries').off('change', this, this._fireMobileChangeActions);
-    },
 
     displaySettingsPane: computed('isEmpty', 'selectedTag', 'isMobile', function () {
         let isEmpty = this.get('isEmpty');
@@ -44,6 +34,16 @@ export default Component.extend({
         // default to displaying settings pane
         return true;
     }),
+
+    init() {
+        this._super(...arguments);
+        this.get('mediaQueries').on('change', this, this._fireMobileChangeActions);
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this.get('mediaQueries').off('change', this, this._fireMobileChangeActions);
+    },
 
     _fireMobileChangeActions(key, value) {
         if (key === 'maxWidth600') {

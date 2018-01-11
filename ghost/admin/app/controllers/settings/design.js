@@ -17,6 +17,11 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
+    init() {
+        this._super(...arguments);
+        this.set('newNavItem', NavigationItem.create({isNew: true}));
+    },
+
     newNavItem: null,
 
     dirtyAttributes: false,
@@ -30,65 +35,6 @@ export default Controller.extend({
 
         return url.slice(-1) !== '/' ? `${url}/` : url;
     }),
-
-    init() {
-        this._super(...arguments);
-        this.set('newNavItem', NavigationItem.create({isNew: true}));
-    },
-
-    save: task(function* () {
-        let navItems = this.get('settings.navigation');
-        let newNavItem = this.get('newNavItem');
-        let notifications = this.get('notifications');
-        let validationPromises = [];
-
-        if (!newNavItem.get('isBlank')) {
-            validationPromises.pushObject(this.send('addNavItem'));
-        }
-
-        navItems.map((item) => {
-            validationPromises.pushObject(item.validate());
-        });
-
-        try {
-            yield RSVP.all(validationPromises);
-            this.set('dirtyAttributes', false);
-            return yield this.get('settings').save();
-        } catch (error) {
-            if (error) {
-                notifications.showAPIError(error);
-                throw error;
-            }
-        }
-    }),
-
-    addNewNavItem() {
-        let navItems = this.get('settings.navigation');
-        let newNavItem = this.get('newNavItem');
-
-        newNavItem.set('isNew', false);
-        navItems.pushObject(newNavItem);
-        this.set('dirtyAttributes', true);
-        this.set('newNavItem', NavigationItem.create({isNew: true}));
-        $('.gh-blognav-line:last input:first').focus();
-    },
-
-    _deleteTheme() {
-        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
-
-        if (!theme) {
-            return;
-        }
-
-        return theme.destroyRecord().then(() => {
-            // HACK: this is a private method, we need to unload from the store
-            // here so that uploading another theme with the same "id" doesn't
-            // attempt to update the deleted record
-            theme.unloadRecord();
-        }).catch((error) => {
-            this.get('notifications').showAPIError(error);
-        });
-    },
 
     actions: {
         save() {
@@ -260,5 +206,59 @@ export default Controller.extend({
         reset() {
             this.set('newNavItem', NavigationItem.create({isNew: true}));
         }
+    },
+
+    save: task(function* () {
+        let navItems = this.get('settings.navigation');
+        let newNavItem = this.get('newNavItem');
+        let notifications = this.get('notifications');
+        let validationPromises = [];
+
+        if (!newNavItem.get('isBlank')) {
+            validationPromises.pushObject(this.send('addNavItem'));
+        }
+
+        navItems.map((item) => {
+            validationPromises.pushObject(item.validate());
+        });
+
+        try {
+            yield RSVP.all(validationPromises);
+            this.set('dirtyAttributes', false);
+            return yield this.get('settings').save();
+        } catch (error) {
+            if (error) {
+                notifications.showAPIError(error);
+                throw error;
+            }
+        }
+    }),
+
+    addNewNavItem() {
+        let navItems = this.get('settings.navigation');
+        let newNavItem = this.get('newNavItem');
+
+        newNavItem.set('isNew', false);
+        navItems.pushObject(newNavItem);
+        this.set('dirtyAttributes', true);
+        this.set('newNavItem', NavigationItem.create({isNew: true}));
+        $('.gh-blognav-line:last input:first').focus();
+    },
+
+    _deleteTheme() {
+        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
+
+        if (!theme) {
+            return;
+        }
+
+        return theme.destroyRecord().then(() => {
+            // HACK: this is a private method, we need to unload from the store
+            // here so that uploading another theme with the same "id" doesn't
+            // attempt to update the deleted record
+            theme.unloadRecord();
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error);
+        });
     }
 });

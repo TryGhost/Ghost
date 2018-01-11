@@ -53,6 +53,12 @@ export default Component.extend({
         this.get('loadActiveTheme').perform();
     },
 
+    actions: {
+        selectTemplate(template) {
+            this.onTemplateSelect(template.filename);
+        }
+    },
+
     // tasks
     loadActiveTheme: task(function* () {
         let store = this.get('store');
@@ -65,11 +71,5 @@ export default Component.extend({
         let activeTheme = themes.filterBy('active', true).get('firstObject');
 
         this.set('activeTheme', activeTheme);
-    }),
-
-    actions: {
-        selectTemplate(template) {
-            this.onTemplateSelect(template.filename);
-        }
-    }
+    })
 });

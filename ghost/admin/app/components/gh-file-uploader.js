@@ -19,6 +19,10 @@ const DEFAULTS = {
 };
 
 export default Component.extend({
+    ajax: service(),
+    eventBus: service(),
+    notifications: service(),
+
     tagName: 'section',
     classNames: ['gh-image-uploader'],
     classNameBindings: ['dragClass'],
@@ -36,10 +40,6 @@ export default Component.extend({
     dragClass: null,
     failureMessage: null,
     uploadPercentage: 0,
-
-    ajax: service(),
-    eventBus: service(),
-    notifications: service(),
 
     formData: computed('file', function () {
         let paramName = this.get('paramName');
@@ -99,6 +99,44 @@ export default Component.extend({
 
         if (listenTo) {
             this.get('eventBus').unsubscribe(`${listenTo}:upload`);
+        }
+    },
+
+    actions: {
+        fileSelected(fileList, resetInput) {
+            let [file] = Array.from(fileList);
+            let validationResult = this._validate(file);
+
+            this.set('file', file);
+            invokeAction(this, 'fileSelected', file);
+
+            if (validationResult === true) {
+                run.schedule('actions', this, function () {
+                    this.generateRequest();
+
+                    if (resetInput) {
+                        resetInput();
+                    }
+                });
+            } else {
+                this._uploadFailed(validationResult);
+
+                if (resetInput) {
+                    resetInput();
+                }
+            }
+        },
+
+        upload() {
+            if (this.get('file')) {
+                this.generateRequest();
+            }
+        },
+
+        reset() {
+            this.set('file', null);
+            this.set('uploadPercentage', 0);
+            this.set('failureMessage', null);
         }
     },
 
@@ -215,43 +253,5 @@ export default Component.extend({
         }
 
         return true;
-    },
-
-    actions: {
-        fileSelected(fileList, resetInput) {
-            let [file] = Array.from(fileList);
-            let validationResult = this._validate(file);
-
-            this.set('file', file);
-            invokeAction(this, 'fileSelected', file);
-
-            if (validationResult === true) {
-                run.schedule('actions', this, function () {
-                    this.generateRequest();
-
-                    if (resetInput) {
-                        resetInput();
-                    }
-                });
-            } else {
-                this._uploadFailed(validationResult);
-
-                if (resetInput) {
-                    resetInput();
-                }
-            }
-        },
-
-        upload() {
-            if (this.get('file')) {
-                this.generateRequest();
-            }
-        },
-
-        reset() {
-            this.set('file', null);
-            this.set('uploadPercentage', 0);
-            this.set('failureMessage', null);
-        }
     }
 });

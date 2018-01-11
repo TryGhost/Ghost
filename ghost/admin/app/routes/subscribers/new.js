@@ -19,11 +19,6 @@ export default Route.extend({
         }
     },
 
-    rollbackModel() {
-        let subscriber = this.controller.get('subscriber');
-        subscriber.rollbackAttributes();
-    },
-
     actions: {
         save() {
             let subscriber = this.controller.get('subscriber');
@@ -37,5 +32,10 @@ export default Route.extend({
             this.rollbackModel();
             this.transitionTo('subscribers');
         }
+    },
+
+    rollbackModel() {
+        let subscriber = this.controller.get('subscriber');
+        subscriber.rollbackAttributes();
     }
 });

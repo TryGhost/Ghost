@@ -9,27 +9,33 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
-    submitting: false,
-    loggingIn: false,
-    authProperties: null,
-
-    ajax: service(),
     application: controller(),
+    ajax: service(),
     config: service(),
     ghostPaths: service(),
     notifications: service(),
     session: service(),
     settings: service(),
 
-    flowErrors: '',
-    signin: alias('model'),
-
-    // ValidationEngine settings
-    validationType: 'signin',
-
     init() {
         this._super(...arguments);
         this.authProperties = ['identification', 'password'];
+    },
+
+    submitting: false,
+    loggingIn: false,
+    authProperties: null,
+
+    flowErrors: '',
+    // ValidationEngine settings
+    validationType: 'signin',
+
+    signin: alias('model'),
+
+    actions: {
+        authenticate() {
+            this.get('validateAndAuthenticate').perform();
+        }
     },
 
     authenticate: task(function* (authStrategy, authentication) {
@@ -131,11 +137,5 @@ export default Controller.extend(ValidationEngine, {
                 notifications.showAPIError(error, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
             }
         }
-    }),
-
-    actions: {
-        authenticate() {
-            this.get('validateAndAuthenticate').perform();
-        }
-    }
+    })
 });

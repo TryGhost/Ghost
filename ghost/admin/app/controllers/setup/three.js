@@ -14,12 +14,13 @@ import {task, timeout} from 'ember-concurrency';
 const {Errors} = DS;
 
 export default Controller.extend({
-    notifications: service(),
     two: controller('setup/two'),
+    notifications: service(),
+
+    users: '',
 
     errors: Errors.create(),
     hasValidated: emberA(),
-    users: '',
     ownerEmail: alias('two.email'),
 
     usersArray: computed('users', function () {
@@ -71,31 +72,6 @@ export default Controller.extend({
         }
     }),
 
-    validate() {
-        let errors = this.get('errors');
-        let validationResult = this.get('validationResult');
-        let property = 'users';
-
-        errors.clear();
-
-        // If property isn't in the `hasValidated` array, add it to mark that this field can show a validation result
-        this.get('hasValidated').addObject(property);
-
-        if (validationResult === true) {
-            return true;
-        }
-
-        validationResult.forEach((error) => {
-            // Only one error type here so far, but one day the errors might be more detailed
-            switch (error.error) {
-            case 'email':
-                errors.add(property, `${error.user} is not a valid email.`);
-            }
-        });
-
-        return false;
-    },
-
     buttonText: computed('errors.users', 'validUsersArray', 'invalidUsersArray', function () {
         let usersError = this.get('errors.users.firstObject.message');
         let validNum = this.get('validUsersArray').length;
@@ -132,6 +108,46 @@ export default Controller.extend({
     authorRole: computed(function () {
         return this.store.findAll('role', {reload: true}).then(roles => roles.findBy('name', 'Author'));
     }),
+
+    actions: {
+        validate() {
+            this.validate();
+        },
+
+        invite() {
+            this.get('invite').perform();
+        },
+
+        skipInvite() {
+            this.send('loadServerNotifications');
+            this.transitionToRoute('posts.index');
+        }
+    },
+
+    validate() {
+        let errors = this.get('errors');
+        let validationResult = this.get('validationResult');
+        let property = 'users';
+
+        errors.clear();
+
+        // If property isn't in the `hasValidated` array, add it to mark that this field can show a validation result
+        this.get('hasValidated').addObject(property);
+
+        if (validationResult === true) {
+            return true;
+        }
+
+        validationResult.forEach((error) => {
+            // Only one error type here so far, but one day the errors might be more detailed
+            switch (error.error) {
+            case 'email':
+                errors.add(property, `${error.user} is not a valid email.`);
+            }
+        });
+
+        return false;
+    },
 
     _transitionAfterSubmission() {
         if (!this._hasTransitioned) {
@@ -222,21 +238,6 @@ export default Controller.extend({
             // pluralize
             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
             notifications.showAlert(`${successCount} ${invitationsString} sent!`, {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
-        }
-    },
-
-    actions: {
-        validate() {
-            this.validate();
-        },
-
-        invite() {
-            this.get('invite').perform();
-        },
-
-        skipInvite() {
-            this.send('loadServerNotifications');
-            this.transitionToRoute('posts.index');
         }
     }
 });

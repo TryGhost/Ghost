@@ -8,17 +8,23 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend(ValidationEngine, {
-    validationType: 'signin',
-
-    authenticationError: null,
-
     config: service(),
     notifications: service(),
     session: service(),
 
+    validationType: 'signin',
+
+    authenticationError: null,
+
     identification: computed('session.user.email', function () {
         return this.get('session.user.email');
     }),
+
+    actions: {
+        confirm() {
+            this.get('reauthenticate').perform();
+        }
+    },
 
     _authenticate() {
         let session = this.get('session');
@@ -68,11 +74,5 @@ export default ModalComponent.extend(ValidationEngine, {
 
     reauthenticate: task(function* () {
         return yield this._passwordConfirm();
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('reauthenticate').perform();
-        }
-    }
+    }).drop()
 });

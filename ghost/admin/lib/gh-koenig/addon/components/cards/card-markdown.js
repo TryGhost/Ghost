@@ -18,10 +18,11 @@ import {inject as service} from '@ember/service';
 /* legacyConverter.makeHtml(_.toString(this.get('markdown'))) */
 
 export default Component.extend({
+    ajax: service(),
+
     layout,
     accept: 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml',
     extensions: null,
-    ajax: service(),
 
     preview: computed('value', function () {
         return formatMarkdown([this.get('payload').markdown]);
@@ -51,6 +52,77 @@ export default Component.extend({
             run.next(() => {
                 this.$('textarea').focus();
             });
+        }
+    },
+
+    actions: {
+        fileSelected(fileList) {
+            // can't use array destructuring here as FileList is not a strict
+            // array and fails in Safari
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let file = fileList[0];
+
+            // jscs:enable requireArrayDestructuring
+            let validationResult = this._validate(file);
+
+            this.set('file', file);
+
+            invokeAction(this, 'fileSelected', file);
+
+            if (validationResult === true) {
+                run.schedule('actions', this, function () {
+                    this.generateRequest();
+                });
+            } else {
+                this._uploadFailed(validationResult);
+            }
+        },
+
+        reset() {
+            this.set('file', null);
+            this.set('uploadPercentage', 0);
+        },
+
+        saveUrl() {
+            let url = this.get('url');
+            invokeAction(this, 'update', url);
+        },
+
+        selectCard() {
+            invokeAction(this, 'selectCard');
+        },
+
+        didDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let el = this.$('textarea')[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
+
+            let start = el.selectionStart;
+
+            let end = el.selectionEnd;
+
+            let {files} = event.dataTransfer;
+            let combinedLength = 0;
+
+            // eslint-disable-next-line ember-suave/prefer-destructuring
+            let file = files[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
+            let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
+            el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
+            combinedLength += placeholderText.length;
+
+            el.selectionStart = start;
+            el.selectionEnd = end + combinedLength;
+
+            this.send('fileSelected', event.dataTransfer.files);
+        },
+
+        didDragOver() {
+            this.$('textarea').addClass('dragOver');
+        },
+
+        didDragLeave() {
+            this.$('textarea').removeClass('dragOver');
         }
     },
 
@@ -180,77 +252,5 @@ export default Component.extend({
         }).finally(() => {
             this._uploadFinished();
         });
-    },
-
-    actions: {
-
-        fileSelected(fileList) {
-            // can't use array destructuring here as FileList is not a strict
-            // array and fails in Safari
-            // eslint-disable-next-line ember-suave/prefer-destructuring
-            let file = fileList[0];
-
-            // jscs:enable requireArrayDestructuring
-            let validationResult = this._validate(file);
-
-            this.set('file', file);
-
-            invokeAction(this, 'fileSelected', file);
-
-            if (validationResult === true) {
-                run.schedule('actions', this, function () {
-                    this.generateRequest();
-                });
-            } else {
-                this._uploadFailed(validationResult);
-            }
-        },
-
-        reset() {
-            this.set('file', null);
-            this.set('uploadPercentage', 0);
-        },
-
-        saveUrl() {
-            let url = this.get('url');
-            invokeAction(this, 'update', url);
-        },
-
-        selectCard() {
-            invokeAction(this, 'selectCard');
-        },
-
-        didDrop(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            // eslint-disable-next-line ember-suave/prefer-destructuring
-            let el = this.$('textarea')[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
-
-            let start = el.selectionStart;
-
-            let end = el.selectionEnd;
-
-            let {files} = event.dataTransfer;
-            let combinedLength = 0;
-
-            // eslint-disable-next-line ember-suave/prefer-destructuring
-            let file = files[0]; // array destructuring here causes ember to throw an error about calling an Object as a Function
-            let placeholderText = `\r\n![uploading:${file.name}]()\r\n`;
-            el.value = el.value.substring(0, start) + placeholderText + el.value.substring(end, el.value.length);
-            combinedLength += placeholderText.length;
-
-            el.selectionStart = start;
-            el.selectionEnd = end + combinedLength;
-
-            this.send('fileSelected', event.dataTransfer.files);
-        },
-
-        didDragOver() {
-            this.$('textarea').addClass('dragOver');
-        },
-
-        didDragLeave() {
-            this.$('textarea').removeClass('dragOver');
-        }
     }
 });

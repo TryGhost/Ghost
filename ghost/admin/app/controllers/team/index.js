@@ -4,8 +4,13 @@ import {inject as service} from '@ember/service';
 import {sort} from '@ember/object/computed';
 
 export default Controller.extend({
-
     session: service(),
+
+    init() {
+        this._super(...arguments);
+        this.inviteOrder = ['email'];
+        this.userOrder = ['name', 'email'];
+    },
 
     showInviteUserModal: false,
 
@@ -19,12 +24,6 @@ export default Controller.extend({
     sortedInvites: sort('invites', 'inviteOrder'),
     sortedActiveUsers: sort('activeUsers', 'userOrder'),
     sortedSuspendedUsers: sort('suspendedUsers', 'userOrder'),
-
-    init() {
-        this._super(...arguments);
-        this.inviteOrder = ['email'];
-        this.userOrder = ['name', 'email'];
-    },
 
     actions: {
         toggleInviteUserModal() {

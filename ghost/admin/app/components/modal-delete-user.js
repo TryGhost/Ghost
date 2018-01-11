@@ -7,17 +7,17 @@ export default ModalComponent.extend({
 
     user: alias('model'),
 
+    actions: {
+        confirm() {
+            this.get('deleteUser').perform();
+        }
+    },
+
     deleteUser: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            this.get('deleteUser').perform();
-        }
-    }
+    }).drop()
 });

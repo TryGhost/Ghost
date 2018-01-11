@@ -5,6 +5,8 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default Component.extend(DropdownMixin, {
+    dropdown: service(),
+
     classNames: 'dropdown',
     classNameBindings: ['fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed'],
 
@@ -22,7 +24,23 @@ export default Component.extend(DropdownMixin, {
         return this.get('isOpen') && !this.get('closing');
     }),
 
-    dropdown: service(),
+    didInsertElement() {
+        let dropdownService = this.get('dropdown');
+
+        this._super(...arguments);
+
+        dropdownService.on('close', this, this.close);
+        dropdownService.on('toggle', this, this.toggle);
+    },
+
+    willDestroyElement() {
+        let dropdownService = this.get('dropdown');
+
+        this._super(...arguments);
+
+        dropdownService.off('close', this, this.close);
+        dropdownService.off('toggle', this, this.toggle);
+    },
 
     open() {
         this.set('isOpen', true);
@@ -74,23 +92,5 @@ export default Component.extend(DropdownMixin, {
         if (this.get('closeOnClick')) {
             return this.close();
         }
-    },
-
-    didInsertElement() {
-        let dropdownService = this.get('dropdown');
-
-        this._super(...arguments);
-
-        dropdownService.on('close', this, this.close);
-        dropdownService.on('toggle', this, this.toggle);
-    },
-
-    willDestroyElement() {
-        let dropdownService = this.get('dropdown');
-
-        this._super(...arguments);
-
-        dropdownService.off('close', this, this.close);
-        dropdownService.off('toggle', this, this.toggle);
     }
 });

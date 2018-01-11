@@ -18,12 +18,22 @@ export default Controller.extend(ValidationEngine, {
     session: service(),
     settings: service(),
 
-    // ValidationEngine settings
-    signupDetails: alias('model'),
-    validationType: 'signup',
-
     flowErrors: '',
     profileImage: null,
+
+    // ValidationEngine settings
+    validationType: 'signup',
+    signupDetails: alias('model'),
+
+    actions: {
+        signup() {
+            this.get('signup').perform();
+        },
+
+        setImage(image) {
+            this.set('profileImage', image);
+        }
+    },
 
     authenticate: task(function* (authStrategy, authentication) {
         try {
@@ -155,15 +165,5 @@ export default Controller.extend(ValidationEngine, {
                 }
             });
         }
-    }),
-
-    actions: {
-        signup() {
-            this.get('signup').perform();
-        },
-
-        setImage(image) {
-            this.set('profileImage', image);
-        }
-    }
+    })
 });

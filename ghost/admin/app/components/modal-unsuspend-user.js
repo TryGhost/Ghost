@@ -7,17 +7,17 @@ export default ModalComponent.extend({
 
     user: alias('model'),
 
+    actions: {
+        confirm() {
+            return this.get('unsuspendUser').perform();
+        }
+    },
+
     unsuspendUser: task(function* () {
         try {
             yield invokeAction(this, 'confirm');
         } finally {
             this.send('closeModal');
         }
-    }).drop(),
-
-    actions: {
-        confirm() {
-            return this.get('unsuspendUser').perform();
-        }
-    }
+    }).drop()
 });

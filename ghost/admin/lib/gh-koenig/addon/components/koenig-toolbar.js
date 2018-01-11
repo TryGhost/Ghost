@@ -104,6 +104,59 @@ export default Component.extend({
         this.editor.destroy();
     },
 
+    actions: {
+        linkKeyDown(event) {
+            // if escape close link
+            if (event.keyCode === 27) {
+                this.send('closeLink');
+            }
+        },
+
+        linkKeyPress(event) {
+            // if enter run link
+            if (event.keyCode === 13) {
+                let url = event.target.value;
+                if (!cajaSanitizers.url(url)) {
+                    url = `http://${url}`;
+                }
+                this.send('closeLink');
+                this.set('isVisible', false);
+                this.editor.run((postEditor) => {
+                    let markup = postEditor.builder.createMarkup('a', {href: url});
+                    postEditor.addMarkupToRange(this.get('linkRange'), markup);
+                });
+
+                this.set('linkRange', null);
+                event.stopPropagation();
+            }
+        },
+
+        doLink(range) {
+            // if a link is already selected then we remove the links from within the range.
+            let currentLinks = this.get('activeTags').filter(element => element.tagName === 'a');
+            if (currentLinks.length) {
+                this.get('editor').run((postEditor) => {
+                    currentLinks.forEach((link) => {
+                        postEditor.removeMarkupFromRange(range, link);
+                    });
+                });
+
+                return;
+            }
+            this.set('isLink', true);
+            this.set('linkRange', range);
+            run.schedule('afterRender', this,
+                () => {
+                    this.$('input').focus();
+                }
+            );
+        },
+
+        closeLink() {
+            this.set('isLink', false);
+        }
+    },
+
     // update the location of the toolbar and display it if the range is visible.
     updateToolbarToRange(toolbar, holder, isMouseDown) {
         // if there is no cursor:
@@ -191,58 +244,5 @@ export default Component.extend({
         positions.forEach((position) => {
             this.set(position, position === tickPosition);
         });
-    },
-
-    actions: {
-        linkKeyDown(event) {
-            // if escape close link
-            if (event.keyCode === 27) {
-                this.send('closeLink');
-            }
-        },
-
-        linkKeyPress(event) {
-            // if enter run link
-            if (event.keyCode === 13) {
-                let url = event.target.value;
-                if (!cajaSanitizers.url(url)) {
-                    url = `http://${url}`;
-                }
-                this.send('closeLink');
-                this.set('isVisible', false);
-                this.editor.run((postEditor) => {
-                    let markup = postEditor.builder.createMarkup('a', {href: url});
-                    postEditor.addMarkupToRange(this.get('linkRange'), markup);
-                });
-
-                this.set('linkRange', null);
-                event.stopPropagation();
-            }
-        },
-
-        doLink(range) {
-            // if a link is already selected then we remove the links from within the range.
-            let currentLinks = this.get('activeTags').filter(element => element.tagName === 'a');
-            if (currentLinks.length) {
-                this.get('editor').run((postEditor) => {
-                    currentLinks.forEach((link) => {
-                        postEditor.removeMarkupFromRange(range, link);
-                    });
-                });
-
-                return;
-            }
-            this.set('isLink', true);
-            this.set('linkRange', range);
-            run.schedule('afterRender', this,
-                () => {
-                    this.$('input').focus();
-                }
-            );
-        },
-
-        closeLink() {
-            this.set('isLink', false);
-        }
     }
 });

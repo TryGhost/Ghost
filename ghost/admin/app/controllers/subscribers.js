@@ -9,6 +9,7 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend(PaginationMixin, {
+    session: service(),
 
     queryParams: ['order', 'direction'],
     order: 'created_at',
@@ -19,8 +20,6 @@ export default Controller.extend(PaginationMixin, {
     total: 0,
     table: null,
     subscriberToDelete: null,
-
-    session: service(),
 
     // paginationSettings is replaced by the pagination mixin so we need a
     // getter/setter CP here so that we don't lose the dynamic order param
@@ -80,17 +79,6 @@ export default Controller.extend(PaginationMixin, {
             cellClassNames: ['gh-subscribers-table-delete-cell']
         }];
     }),
-
-    initializeTable() {
-        this.set('table', new Table(this.get('columns'), this.get('subscribers')));
-    },
-
-    // capture the total from the server any time we fetch a new page
-    didReceivePaginationMeta(meta) {
-        if (meta && meta.pagination) {
-            this.set('total', meta.pagination.total);
-        }
-    },
 
     actions: {
         loadFirstPage() {
@@ -163,6 +151,17 @@ export default Controller.extend(PaginationMixin, {
             }
 
             iframe.attr('src', downloadURL);
+        }
+    },
+
+    initializeTable() {
+        this.set('table', new Table(this.get('columns'), this.get('subscribers')));
+    },
+
+    // capture the total from the server any time we fetch a new page
+    didReceivePaginationMeta(meta) {
+        if (meta && meta.pagination) {
+            this.set('total', meta.pagination.total);
         }
     }
 });

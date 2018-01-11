@@ -7,11 +7,11 @@ Example usage:
 {{gh-url-preview prefix="tag" slug=theSlugValue tagName="p" classNames="description"}}
 */
 export default Component.extend({
+    config: service(),
+
     classNames: 'ghost-url-preview',
     prefix: null,
     slug: null,
-
-    config: service(),
 
     url: computed('slug', function () {
         // Get the blog URL and strip the scheme

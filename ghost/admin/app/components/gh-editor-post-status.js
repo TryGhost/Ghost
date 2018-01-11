@@ -6,13 +6,14 @@ import {task, timeout} from 'ember-concurrency';
 
 export default Component.extend({
     post: null,
-    isNew: reads('post.isNew'),
-    isScheduled: reads('post.isScheduled'),
     isSaving: false,
 
     'data-test-editor-post-status': true,
 
     _isSaving: false,
+
+    isNew: reads('post.isNew'),
+    isScheduled: reads('post.isScheduled'),
 
     isPublished: computed('post.{isPublished,pastScheduledTime}', function () {
         let isPublished = this.get('post.isPublished');

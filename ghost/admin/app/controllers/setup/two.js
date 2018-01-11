@@ -8,8 +8,8 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend(ValidationEngine, {
-    ajax: service(),
     application: controller(),
+    ajax: service(),
     config: service(),
     ghostPaths: service(),
     notifications: service(),
@@ -26,6 +26,23 @@ export default Controller.extend(ValidationEngine, {
     profileImage: null,
     name: null,
     password: null,
+
+    actions: {
+        setup() {
+            this.get('setup').perform();
+        },
+
+        preValidate(model) {
+            // Only triggers validation if a value has been entered, preventing empty errors on focusOut
+            if (this.get(model)) {
+                return this.validate({property: model});
+            }
+        },
+
+        setImage(image) {
+            this.set('profileImage', image);
+        }
+    },
 
     setup: task(function* () {
         return yield this._passwordSetup();
@@ -172,23 +189,6 @@ export default Controller.extend(ValidationEngine, {
                 });
         } else {
             return fetchSettingsAndConfig.then(() => this.transitionToRoute('setup.three'));
-        }
-    },
-
-    actions: {
-        setup() {
-            this.get('setup').perform();
-        },
-
-        preValidate(model) {
-            // Only triggers validation if a value has been entered, preventing empty errors on focusOut
-            if (this.get(model)) {
-                return this.validate({property: model});
-            }
-        },
-
-        setImage(image) {
-            this.set('profileImage', image);
         }
     }
 });

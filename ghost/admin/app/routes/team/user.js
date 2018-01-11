@@ -12,10 +12,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         return this.store.queryRecord('user', {slug: params.user_slug, include: 'count.posts'});
     },
 
-    serialize(model) {
-        return {user_slug: model.get('slug')};
-    },
-
     afterModel(user) {
         this._super(...arguments);
 
@@ -30,6 +26,10 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
                 this.transitionTo('team');
             }
         });
+    },
+
+    serialize(model) {
+        return {user_slug: model.get('slug')};
     },
 
     actions: {

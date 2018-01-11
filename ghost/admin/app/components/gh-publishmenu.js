@@ -11,8 +11,10 @@ export default Component.extend({
     classNames: 'gh-publishmenu',
     post: null,
     saveTask: null,
+    runningText: null,
 
     _publishedAtBlogTZ: null,
+    _previousStatus: null,
 
     isClosing: null,
 
@@ -60,8 +62,6 @@ export default Component.extend({
         return runningText || 'Publishing';
     }),
 
-    runningText: null,
-
     buttonText: computed('postState', 'saveType', function () {
         let saveType = this.get('saveType');
         let postState = this.get('postState');
@@ -101,42 +101,6 @@ export default Component.extend({
 
         return buttonText;
     }),
-
-    save: task(function* () {
-        // runningText needs to be declared before the other states change during the
-        // save action.
-        this.set('runningText', this.get('_runningText'));
-        this.set('_previousStatus', this.get('post.status'));
-        this.get('setSaveType')(this.get('saveType'));
-
-        try {
-            // validate publishedAtBlog first to avoid an alert for displayed errors
-            yield this.get('post').validate({property: 'publishedAtBlog'});
-
-            // actual save will show alert for other failed validations
-            let post = yield this.get('saveTask').perform();
-
-            this._cachePublishedAtBlogTZ();
-            return post;
-        } catch (error) {
-            // re-throw if we don't have a validation error
-            if (error) {
-                throw error;
-            }
-        }
-    }),
-
-    _previousStatus: null,
-
-    _cachePublishedAtBlogTZ() {
-        this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');
-    },
-
-    // when closing the menu we reset the publishedAtBlogTZ date so that the
-    // unsaved changes made to the scheduled date aren't reflected in the PSM
-    _resetPublishedAtBlogTZ() {
-        this.get('post').set('publishedAtBlogTZ', this._publishedAtBlogTZ);
-    },
 
     actions: {
         setSaveType(saveType) {
@@ -183,5 +147,39 @@ export default Component.extend({
 
             return true;
         }
+    },
+
+    save: task(function* () {
+        // runningText needs to be declared before the other states change during the
+        // save action.
+        this.set('runningText', this.get('_runningText'));
+        this.set('_previousStatus', this.get('post.status'));
+        this.get('setSaveType')(this.get('saveType'));
+
+        try {
+            // validate publishedAtBlog first to avoid an alert for displayed errors
+            yield this.get('post').validate({property: 'publishedAtBlog'});
+
+            // actual save will show alert for other failed validations
+            let post = yield this.get('saveTask').perform();
+
+            this._cachePublishedAtBlogTZ();
+            return post;
+        } catch (error) {
+            // re-throw if we don't have a validation error
+            if (error) {
+                throw error;
+            }
+        }
+    }),
+
+    _cachePublishedAtBlogTZ() {
+        this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');
+    },
+
+    // when closing the menu we reset the publishedAtBlogTZ date so that the
+    // unsaved changes made to the scheduled date aren't reflected in the PSM
+    _resetPublishedAtBlogTZ() {
+        this.get('post').set('publishedAtBlogTZ', this._publishedAtBlogTZ);
     }
 });

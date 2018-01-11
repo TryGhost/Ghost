@@ -3,9 +3,9 @@ import RSVP from 'rsvp';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
-    titleToken: 'Subscribers',
-
     feature: service(),
+
+    titleToken: 'Subscribers',
 
     // redirect if subscribers is disabled or user isn't owner/admin
     beforeModel() {

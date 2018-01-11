@@ -4,10 +4,10 @@ import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    settings: service(),
+
     titleToken: 'Settings - Code injection',
     classNames: ['settings-view-code'],
-
-    settings: service(),
 
     beforeModel() {
         this._super(...arguments);

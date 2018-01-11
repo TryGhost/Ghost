@@ -7,11 +7,11 @@ import {inject as service} from '@ember/service';
 const {canInvoke} = Ember;
 
 export default AuthenticatedRoute.extend(styleBody, {
+    notifications: service(),
+
     titleToken: 'Sign Out',
 
     classNames: ['ghost-signout'],
-
-    notifications: service(),
 
     afterModel(model, transition) {
         this.get('notifications').clearAll();

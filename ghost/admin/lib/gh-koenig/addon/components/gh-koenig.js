@@ -248,122 +248,11 @@ export default Component.extend({
         this.processWordcount();
     },
 
-    // makes sure the cursor is on screen except when selection is happening in
-    // which case the browser mostly ensures it. there is an issue with keyboard
-    // selection on some browsers though so the next step may be to record mouse
-    // and touch events.
-    cursorMoved() {
-        let editor = this.get('editor');
-
-        if (editor.range.isCollapsed) {
-            let scrollBuffer = 33; // the extra buffer to scroll.
-
-            let position = getPositionOnScreenFromRange(editor, $(this.get('containerSelector')));
-
-            if (!position) {
-                return;
-            }
-
-            let windowHeight = window.innerHeight;
-
-            if (position.bottom > windowHeight) {
-                this._domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
-            } else if (position.top < 0) {
-                this._domContainer.scrollTop += position.top - scrollBuffer;
-            }
-
-            if (editor.range && editor.range.headSection && editor.range.headSection.isCardSection) {
-                let id = $(editor.range.headSection.renderNode.element).find('.kg-card > div').attr('id');
-                // let id = card.find('div').attr('id');
-                window.getSelection().removeAllRanges();
-                // if the element is first and we create a card with the '/' menu then the cursor moves before
-                // element is placed in the dom properly. So we figure it out another way.
-                if (!id) {
-                    id = editor.range.headSection.renderNode.element.children[0].children[0].id;
-                }
-
-                this.send('selectCardHard', id);
-            } else {
-                this.send('deselectCard');
-            }
-        } else {
-            this.send('deselectCard');
-        }
-    },
-
-    // NOTE: This wordcount function doesn't count words that have been entered in cards.
-    // We should either allow cards to report their own wordcount or use the DOM
-    // (innerText) to calculate the wordcount.
-    processWordcount() {
-        let wordcount = 0;
-        if (this.editor.post.sections.length) {
-            this.editor.post.sections.forEach((section) => {
-                if (section.isMarkerable && section.text.length) {
-                    wordcount += counter(section.text);
-                } else if (section.isCardSection && section.payload.wordcount) {
-                    wordcount += Number(section.payload.wordcount);
-                }
-            });
-        }
-
-        let action = this.get('wordcountDidChange');
-        if (action) {
-            action(wordcount);
-        }
-    },
-
-    _willCreateEditor() {
-        let action = this.get('willCreateEditor');
-        if (action) {
-            action();
-        }
-    },
-
-    _didCreateEditor(editor) {
-        let action = this.get('didCreateEditor');
-        if (action) {
-            action(editor);
-        }
-    },
-
     willDestroyElement() {
         this.editor.destroy();
         this.send('deselectCard');
         // TODO: should we be killing all global onkeydown event handlers?
         document.onkeydown = null;
-    },
-
-    postDidChange(editor) {
-        // store a cache of the local doc so that we don't need to reinitialise it.
-        let serializeVersion = this.get('serializeVersion');
-        let updatedMobiledoc = editor.serialize(serializeVersion);
-        let onChangeAction = this.get('onChange');
-        let onFirstChangeAction = this.get('onFirstChange');
-
-        this._localMobiledoc = updatedMobiledoc;
-
-        if (onChangeAction) {
-            onChangeAction(updatedMobiledoc);
-        }
-
-        // we need to trigger a first-change action so that we can trigger a
-        // save and transition from new-> edit
-        if (this._localMobiledoc !== BLANK_DOC && !this._hasChanged) {
-            this._hasChanged = true;
-
-            if (onFirstChangeAction) {
-                onFirstChangeAction(this._localMobiledoc);
-            }
-        }
-
-        this.processWordcount();
-    },
-
-    _setExpandoProperty(editor) {
-        // Store a reference to the editor for the acceptance test helpers
-        if (this.element && testing) {
-            this.element[TESTING_EXPANDO_PROPERTY] = editor;
-        }
     },
 
     actions: {
@@ -581,6 +470,116 @@ export default Component.extend({
             // required for drop events to fire on markdown cards in firefox.
             event.preventDefault();
         }
-    }
+    },
 
+    // makes sure the cursor is on screen except when selection is happening in
+    // which case the browser mostly ensures it. there is an issue with keyboard
+    // selection on some browsers though so the next step may be to record mouse
+    // and touch events.
+    cursorMoved() {
+        let editor = this.get('editor');
+
+        if (editor.range.isCollapsed) {
+            let scrollBuffer = 33; // the extra buffer to scroll.
+
+            let position = getPositionOnScreenFromRange(editor, $(this.get('containerSelector')));
+
+            if (!position) {
+                return;
+            }
+
+            let windowHeight = window.innerHeight;
+
+            if (position.bottom > windowHeight) {
+                this._domContainer.scrollTop += position.bottom - windowHeight + scrollBuffer;
+            } else if (position.top < 0) {
+                this._domContainer.scrollTop += position.top - scrollBuffer;
+            }
+
+            if (editor.range && editor.range.headSection && editor.range.headSection.isCardSection) {
+                let id = $(editor.range.headSection.renderNode.element).find('.kg-card > div').attr('id');
+                // let id = card.find('div').attr('id');
+                window.getSelection().removeAllRanges();
+                // if the element is first and we create a card with the '/' menu then the cursor moves before
+                // element is placed in the dom properly. So we figure it out another way.
+                if (!id) {
+                    id = editor.range.headSection.renderNode.element.children[0].children[0].id;
+                }
+
+                this.send('selectCardHard', id);
+            } else {
+                this.send('deselectCard');
+            }
+        } else {
+            this.send('deselectCard');
+        }
+    },
+
+    // NOTE: This wordcount function doesn't count words that have been entered in cards.
+    // We should either allow cards to report their own wordcount or use the DOM
+    // (innerText) to calculate the wordcount.
+    processWordcount() {
+        let wordcount = 0;
+        if (this.editor.post.sections.length) {
+            this.editor.post.sections.forEach((section) => {
+                if (section.isMarkerable && section.text.length) {
+                    wordcount += counter(section.text);
+                } else if (section.isCardSection && section.payload.wordcount) {
+                    wordcount += Number(section.payload.wordcount);
+                }
+            });
+        }
+
+        let action = this.get('wordcountDidChange');
+        if (action) {
+            action(wordcount);
+        }
+    },
+
+    _willCreateEditor() {
+        let action = this.get('willCreateEditor');
+        if (action) {
+            action();
+        }
+    },
+
+    _didCreateEditor(editor) {
+        let action = this.get('didCreateEditor');
+        if (action) {
+            action(editor);
+        }
+    },
+
+    postDidChange(editor) {
+        // store a cache of the local doc so that we don't need to reinitialise it.
+        let serializeVersion = this.get('serializeVersion');
+        let updatedMobiledoc = editor.serialize(serializeVersion);
+        let onChangeAction = this.get('onChange');
+        let onFirstChangeAction = this.get('onFirstChange');
+
+        this._localMobiledoc = updatedMobiledoc;
+
+        if (onChangeAction) {
+            onChangeAction(updatedMobiledoc);
+        }
+
+        // we need to trigger a first-change action so that we can trigger a
+        // save and transition from new-> edit
+        if (this._localMobiledoc !== BLANK_DOC && !this._hasChanged) {
+            this._hasChanged = true;
+
+            if (onFirstChangeAction) {
+                onFirstChangeAction(this._localMobiledoc);
+            }
+        }
+
+        this.processWordcount();
+    },
+
+    _setExpandoProperty(editor) {
+        // Store a reference to the editor for the acceptance test helpers
+        if (this.element && testing) {
+            this.element[TESTING_EXPANDO_PROPERTY] = editor;
+        }
+    }
 });

@@ -10,12 +10,12 @@ export default OneWayTextarea.extend(TextInputMixin, {
 
     autoExpand: false,
 
-    willInsertElement() {
+    didReceiveAttrs() {
         this._super(...arguments);
 
-        // disable the draggable resize element that browsers add to textareas
+        // trigger auto-expand any time the value changes
         if (this.get('autoExpand')) {
-            this.element.style.resize = 'none';
+            run.scheduleOnce('afterRender', this, this._autoExpand);
         }
     },
 
@@ -29,18 +29,18 @@ export default OneWayTextarea.extend(TextInputMixin, {
         }
     },
 
-    didReceiveAttrs() {
-        this._super(...arguments);
-
-        // trigger auto-expand any time the value changes
-        if (this.get('autoExpand')) {
-            run.scheduleOnce('afterRender', this, this._autoExpand);
-        }
-    },
-
     willDestroyElement() {
         this._teardownAutoExpand();
         this._super(...arguments);
+    },
+
+    willInsertElement() {
+        this._super(...arguments);
+
+        // disable the draggable resize element that browsers add to textareas
+        if (this.get('autoExpand')) {
+            this.element.style.resize = 'none';
+        }
     },
 
     _autoExpand() {

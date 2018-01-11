@@ -127,20 +127,6 @@ const GhTourItemComponent = Component.extend({
         this._super(...arguments);
     },
 
-    _removeIfViewed(id) {
-        if (id === this.get('throbberId')) {
-            this._remove();
-        }
-    },
-
-    _remove() {
-        this.set('_throbber', null);
-    },
-
-    _close() {
-        this.set('isOpen', false);
-    },
-
     actions: {
         open() {
             this.set('isOpen', true);
@@ -162,6 +148,20 @@ const GhTourItemComponent = Component.extend({
             this.set('_throbber', null);
             this._close();
         }
+    },
+
+    _removeIfViewed(id) {
+        if (id === this.get('throbberId')) {
+            this._remove();
+        }
+    },
+
+    _remove() {
+        this.set('_throbber', null);
+    },
+
+    _close() {
+        this.set('isOpen', false);
     }
 });
 

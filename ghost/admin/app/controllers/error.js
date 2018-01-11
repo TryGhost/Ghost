@@ -4,8 +4,8 @@ import {readOnly} from '@ember/object/computed';
 
 export default Controller.extend({
 
-    error: readOnly('model'),
     stack: false,
+    error: readOnly('model'),
 
     code: computed('error.status', function () {
         return this.get('error.status') > 200 ? this.get('error.status') : 500;

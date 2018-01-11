@@ -7,13 +7,13 @@ export default ModalComponent.extend({
 
     subscriber: alias('model'),
 
-    deleteSubscriber: task(function* () {
-        yield invokeAction(this, 'confirm');
-    }).drop(),
-
     actions: {
         confirm() {
             this.get('deleteSubscriber').perform();
         }
-    }
+    },
+
+    deleteSubscriber: task(function* () {
+        yield invokeAction(this, 'confirm');
+    }).drop()
 });

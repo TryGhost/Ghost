@@ -8,6 +8,18 @@ export default ModalComponent.extend({
 
     subscriber: alias('model'),
 
+    actions: {
+        updateEmail(newEmail) {
+            this.set('subscriber.email', newEmail);
+            this.set('subscriber.hasValidated', emberA());
+            this.get('subscriber.errors').clear();
+        },
+
+        confirm() {
+            this.get('addSubscriber').perform();
+        }
+    },
+
     addSubscriber: task(function* () {
         try {
             yield this.get('confirm')();
@@ -31,17 +43,5 @@ export default ModalComponent.extend({
                 throw error;
             }
         }
-    }).drop(),
-
-    actions: {
-        updateEmail(newEmail) {
-            this.set('subscriber.email', newEmail);
-            this.set('subscriber.hasValidated', emberA());
-            this.get('subscriber.errors').clear();
-        },
-
-        confirm() {
-            this.get('addSubscriber').perform();
-        }
-    }
+    }).drop()
 });

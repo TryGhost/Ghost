@@ -30,7 +30,6 @@ const GhTaskButton = Component.extend({
     task: null,
     disabled: false,
     buttonText: 'Save',
-    runningText: reads('buttonText'),
     idleClass: '',
     runningClass: '',
     successText: 'Saved',
@@ -39,11 +38,7 @@ const GhTaskButton = Component.extend({
     failureClass: 'gh-btn-red',
 
     isRunning: reads('task.last.isRunning'),
-
-    init() {
-        this._super(...arguments);
-        this._initialPerformCount = this.get('task.performCount');
-    },
+    runningText: reads('buttonText'),
 
     // hasRun is needed so that a newly rendered button does not show the last
     // state of the associated task
@@ -95,6 +90,11 @@ const GhTaskButton = Component.extend({
     isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {
         return !this.get('isRunning') && !this.get('isSuccess') && !this.get('isFailure');
     }),
+
+    init() {
+        this._super(...arguments);
+        this._initialPerformCount = this.get('task.performCount');
+    },
 
     click() {
         // do nothing if disabled externally

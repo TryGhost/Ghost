@@ -9,14 +9,6 @@ export default Component.extend({
     layout,
     hasRendered: false,
 
-    // TODO: remove observer
-    // eslint-disable-next-line ghost/ember/no-observers
-    save: observer('doSave', function () {
-        let payload = this.get('payload');
-        payload.wordcount = counter(payload.html);
-        this.get('env').save(payload, false);
-    }),
-
     value: computed('payload', {
         get() {
             return this.get('payload').html || '';
@@ -26,6 +18,14 @@ export default Component.extend({
             this.get('env').save(this.get('payload'), false);
             return this.get('payload').html;
         }
+    }),
+
+    // TODO: remove observer
+    // eslint-disable-next-line ghost/ember/no-observers
+    save: observer('doSave', function () {
+        let payload = this.get('payload');
+        payload.wordcount = counter(payload.html);
+        this.get('env').save(payload, false);
     }),
 
     actions: {

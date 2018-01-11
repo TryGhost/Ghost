@@ -3,15 +3,28 @@ import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
+    applicationController: controller('application'),
+    tagsController: controller('settings.tags'),
+    notifications: service(),
 
     showDeleteTagModal: false,
 
     tag: alias('model'),
     isMobile: alias('tagsController.isMobile'),
 
-    applicationController: controller('application'),
-    tagsController: controller('settings.tags'),
-    notifications: service(),
+    actions: {
+        setProperty(propKey, value) {
+            this._saveTagProperty(propKey, value);
+        },
+
+        toggleDeleteTagModal() {
+            this.toggleProperty('showDeleteTagModal');
+        },
+
+        deleteTag() {
+            return this._deleteTag();
+        }
+    },
 
     _saveTagProperty(propKey, newValue) {
         let tag = this.get('tag');
@@ -60,19 +73,5 @@ export default Controller.extend({
 
     _deleteTagFailure(error) {
         this.get('notifications').showAPIError(error, {key: 'tag.delete'});
-    },
-
-    actions: {
-        setProperty(propKey, value) {
-            this._saveTagProperty(propKey, value);
-        },
-
-        toggleDeleteTagModal() {
-            this.toggleProperty('showDeleteTagModal');
-        },
-
-        deleteTag() {
-            return this._deleteTag();
-        }
     }
 });

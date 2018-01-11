@@ -18,16 +18,6 @@ export default Component.extend(ValidationState, {
         }
     }),
 
-    keyPress(event) {
-        // enter key
-        if (event.keyCode === 13 && this.get('navItem.isNew')) {
-            event.preventDefault();
-            run.scheduleOnce('actions', this, function () {
-                this.send('addItem');
-            });
-        }
-    },
-
     actions: {
         addItem() {
             let action = this.get('addItem');
@@ -63,6 +53,16 @@ export default Component.extend(ValidationState, {
 
         clearUrlErrors() {
             this.get('navItem.errors').remove('url');
+        }
+    },
+
+    keyPress(event) {
+        // enter key
+        if (event.keyCode === 13 && this.get('navItem.isNew')) {
+            event.preventDefault();
+            run.scheduleOnce('actions', this, function () {
+                this.send('addItem');
+            });
         }
     }
 });

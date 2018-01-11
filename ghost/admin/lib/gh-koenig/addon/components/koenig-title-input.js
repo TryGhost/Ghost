@@ -16,54 +16,6 @@ export default Component.extend({
     editorKeyDownListener: null,
     _hasSetupEventListeners: false,
 
-    didInsertElement() {
-        this._super(...arguments);
-
-        let title = this.$('.kg-title-input');
-
-        // setup mutation observer
-        let mutationObserver = new MutationObserver(() => {
-            // on mutate we update.
-            if (title[0].textContent !== '') {
-                title.removeClass('no-content');
-            } else {
-                title.addClass('no-content');
-            }
-
-            // there is no consistency in how characters like nbsp and zwd are handled across browsers
-            // so we replace every whitespace character with a ' '
-            // note: this means that we can't have tabs in the title.
-            let textContent = title[0].textContent.replace(/\s/g, ' ');
-            let innerHTML = title[0].innerHTML.replace(/(&nbsp;|\s)/g, ' ');
-
-            // sanity check if there is formatting reset it.
-            if (innerHTML && innerHTML !== textContent) {
-                // run in next runloop so that we don't get stuck in infinite loops.
-                run.next(() => {
-                    title[0].innerHTML = textContent;
-                });
-            }
-
-            if (this.get('val') !== textContent) {
-                let onChangeAction = this.get('onChange');
-                let updateAction = this.get('update');
-
-                this.set('_cachedVal', textContent);
-                this.set('val', textContent);
-
-                if (onChangeAction) {
-                    onChangeAction(textContent);
-                }
-                if (updateAction) {
-                    updateAction(textContent);
-                }
-            }
-        });
-
-        mutationObserver.observe(title[0], {childList: true, characterData: true, subtree: true});
-        this.set('_mutationObserver', mutationObserver);
-    },
-
     didReceiveAttrs() {
         if (this.get('editorHasRendered') && !this._hasSetupEventListeners) {
             let editor = this.get('editor');
@@ -145,6 +97,54 @@ export default Component.extend({
 
             this._hasSetupEventListeners = true;
         }
+    },
+
+    didInsertElement() {
+        this._super(...arguments);
+
+        let title = this.$('.kg-title-input');
+
+        // setup mutation observer
+        let mutationObserver = new MutationObserver(() => {
+            // on mutate we update.
+            if (title[0].textContent !== '') {
+                title.removeClass('no-content');
+            } else {
+                title.addClass('no-content');
+            }
+
+            // there is no consistency in how characters like nbsp and zwd are handled across browsers
+            // so we replace every whitespace character with a ' '
+            // note: this means that we can't have tabs in the title.
+            let textContent = title[0].textContent.replace(/\s/g, ' ');
+            let innerHTML = title[0].innerHTML.replace(/(&nbsp;|\s)/g, ' ');
+
+            // sanity check if there is formatting reset it.
+            if (innerHTML && innerHTML !== textContent) {
+                // run in next runloop so that we don't get stuck in infinite loops.
+                run.next(() => {
+                    title[0].innerHTML = textContent;
+                });
+            }
+
+            if (this.get('val') !== textContent) {
+                let onChangeAction = this.get('onChange');
+                let updateAction = this.get('update');
+
+                this.set('_cachedVal', textContent);
+                this.set('val', textContent);
+
+                if (onChangeAction) {
+                    onChangeAction(textContent);
+                }
+                if (updateAction) {
+                    updateAction(textContent);
+                }
+            }
+        });
+
+        mutationObserver.observe(title[0], {childList: true, characterData: true, subtree: true});
+        this.set('_mutationObserver', mutationObserver);
     },
 
     didRender() {
