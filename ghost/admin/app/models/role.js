@@ -8,8 +8,8 @@ export default Model.extend({
     description: attr('string'),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc'),
-    createdBy: attr(),
-    updatedBy: attr(),
+    createdBy: attr('number'),
+    updatedBy: attr('number'),
 
     lowerCaseName: computed('name', function () {
         return this.get('name').toLocaleLowerCase();

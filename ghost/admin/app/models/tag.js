@@ -11,15 +11,15 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     slug: attr('string'),
     description: attr('string'),
-    parent: attr(),
+    parent: attr('string'), // unused
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     featureImage: attr('string'),
     visibility: attr('string', {defaultValue: 'public'}),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc'),
-    createdBy: attr(),
-    updatedBy: attr(),
+    createdBy: attr('number'),
+    updatedBy: attr('number'),
     count: attr('raw'),
 
     isInternal: equal('visibility', 'internal'),
