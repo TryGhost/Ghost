@@ -84,6 +84,7 @@ module.exports = {
         // Use the two theme objects to set the current active theme
         try {
             active.set(loadedTheme, checkedTheme, error);
+            common.events.emit('services.themes.activated');
         } catch (err) {
             common.logging.error(new common.errors.InternalServerError({
                 message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),

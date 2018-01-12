@@ -115,7 +115,6 @@ themes = {
                 }
             })
             .then(function storeNewTheme() {
-                common.events.emit('theme.uploaded', zip.shortName);
                 // store extracted theme
                 return themeUtils.storage.save({
                     name: zip.shortName,
@@ -172,7 +171,6 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(function sendTheme() {
-                common.events.emit('theme.downloaded', themeName);
                 return themeUtils.storage.serve({
                     name: themeName
                 });
@@ -212,7 +210,6 @@ themes = {
             // And some extra stuff to maintain state here
             .then(function deleteTheme() {
                 themeList.del(themeName);
-                common.events.emit('theme.deleted', themeName);
                 // Delete returns an empty 204 response
             });
     }

@@ -31,8 +31,11 @@ var supportedLocales = ['en'],
 
 /**
  * When active theme changes, we reload theme translations
+ * We listen on the service event, because of the following known case:
+ *  1. you override a theme, which is already active
+ *  2. The data has not changed, no event is triggered.
  */
-events.on('settings.active_theme.edited', function () {
+events.on('services.themes.activated', function () {
     I18n.loadThemeTranslations();
 });
 
