@@ -82,8 +82,13 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 settingsPromise,
                 privateConfigPromise,
                 tourPromise
-            ]);
+            ]).then((results) => {
+                this._appLoaded = true;
+                return results;
+            });
         }
+
+        this._appLoaded = true;
     },
 
     actions: {
@@ -180,7 +185,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
 
                 this.get('upgradeStatus').requireUpgrade();
-                return false;
+
+                if (this._appLoaded) {
+                    return false;
+                }
             }
 
             if (isMaintenanceError(error)) {
@@ -189,7 +197,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
 
                 this.get('upgradeStatus').maintenanceAlert();
-                return false;
+
+                if (this._appLoaded) {
+                    return false;
+                }
             }
 
             if (isAjaxError(error) || error && error.payload && isEmberArray(error.payload.errors)) {
