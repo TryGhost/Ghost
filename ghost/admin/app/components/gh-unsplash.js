@@ -1,3 +1,4 @@
+/* global key */
 import Component from '@ember/component';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import {bind} from '@ember/runloop';
@@ -26,7 +27,7 @@ export default Component.extend(ShortcutsMixin, {
         this._super(...arguments);
 
         this.shortcuts = {
-            escape: 'handleEscape'
+            escape: {action: 'handleEscape', scope: 'all'}
         };
     },
 
@@ -38,9 +39,10 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     willDestroyElement() {
-        this._super(...arguments);
         this.get('resizeDetector').teardown('.gh-unsplash', this._resizeCallback);
         this.removeShortcuts();
+        this.send('resetKeyScope');
+        this._super(...arguments);
     },
 
     actions: {
@@ -68,6 +70,14 @@ export default Component.extend(ShortcutsMixin, {
 
         retry() {
             this.get('unsplash').retryLastRequest();
+        },
+
+        setKeyScope() {
+            key.setScope('unsplash');
+        },
+
+        resetKeyScope() {
+            key.setScope('default');
         },
 
         handleEscape() {

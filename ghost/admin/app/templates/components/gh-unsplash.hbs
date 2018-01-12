@@ -17,6 +17,8 @@
                             placeholder="Search free high-resolution photos"
                             tabindex="1"
                             autocorrect="off"
+                            focusIn=(action "setKeyScope")
+                            focusOut=(action "resetKeyScope")
                             update=(action "updateSearch" target=unsplash)
                         }}
                     </span>
