@@ -156,7 +156,7 @@ describe('Subscribers API', function () {
                     done(new Error('Edit subscriber as contributor should have no access.'));
                 })
                 .catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.NoPermissionError).should.eql(true);
                     done();
                 });
         });

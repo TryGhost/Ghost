@@ -944,7 +944,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -960,7 +960,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -976,7 +976,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -992,7 +992,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -1008,7 +1008,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
 
@@ -1024,7 +1024,7 @@ describe('Users API', function () {
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        (err instanceof common.errors.NoPermissionError).should.eql(true);
                     });
                 });
             });
