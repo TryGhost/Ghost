@@ -661,5 +661,29 @@ describe('API Utils', function () {
                 })
                 .catch(done);
         });
+
+        it('should strip disallowedFields from data if permissions function returns them', function () {
+            var testStub = sandbox.stub().resolves({disallowedFields: ['foo']}),
+                permsStub = sandbox.stub(permissions, 'canThis').returns({
+                    testing: {
+                        test: testStub
+                    }
+                }),
+                permsFunc = apiUtils.handlePermissions('tests', 'testing'),
+                testObj = {data: {tests: [{id: 5, name: 'testing', foo: 'bar'}]}, id: 5};
+
+            return permsFunc(testObj).then(function (res) {
+                permsStub.calledOnce.should.be.true();
+                testStub.calledOnce.should.be.true();
+                testStub.calledWithExactly(5, {}).should.be.true();
+
+                should(res).deepEqual({
+                    data: {
+                        tests: [{id: 5, name: 'testing'}]
+                    },
+                    id: 5
+                });
+            });
+        });
     });
 });

@@ -209,7 +209,13 @@ utils = {
             var unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
-            return permsPromise.then(function permissionGranted() {
+            return permsPromise.then(function permissionGranted(result) {
+                // Allow the permissions function to return a list of disallowed fields.
+                // If it does, omit those fields from the data passed through
+                if (result && result.disallowedFields && _.has(options, 'data.[' + docName + '][0]')) {
+                    options.data[docName][0] = _.omit(options.data[docName][0], result.disallowedFields);
+                }
+
                 return options;
             }).catch(function handleNoPermissionError(err) {
                 if (err instanceof common.errors.NoPermissionError) {

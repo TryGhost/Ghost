@@ -1714,6 +1714,40 @@ describe('Post API', function () {
                     });
             });
 
+            it('CANNOT add a post with tags', function (done) {
+                var post = {
+                    title: 'Freshly added',
+                    slug: 'freshly-added',
+                    status: 'draft',
+                    author_id: contributor.id,
+                    tags: ['Testing']
+                };
+
+                request.post(testUtils.API.getApiQuery('posts/?include=tags'))
+                    .set('Authorization', 'Bearer ' + contributorAccessToken)
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(201)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var postBody = res.body;
+                        res.headers['x-cache-invalidate'].should.eql('/p/' + postBody.posts[0].uuid + '/');
+                        should.exist(postBody);
+
+                        testUtils.API.checkResponse(postBody.posts[0], 'post', ['tags']);
+
+                        // Tags should be an empty array and primary_tag should be null
+                        should(postBody.posts[0].tags).have.length(0);
+                        should(postBody.posts[0].primary_tag).be.null();
+
+                        done();
+                    });
+            });
+
             it('CANNOT add post with other author ID', function (done) {
                 var post = {
                     title: 'Freshly added',
@@ -1742,7 +1776,8 @@ describe('Post API', function () {
                 var post = {
                     title: 'Freshly added',
                     slug: 'freshly-added',
-                    status: 'published'
+                    status: 'published',
+                    author_id: contributor.id
                 };
 
                 request.post(testUtils.API.getApiQuery('posts/'))
@@ -1993,6 +2028,55 @@ describe('Post API', function () {
                             done();
                         });
                 });
+            });
+
+            it('CANNOT edit tags of a post', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + contributorPostId + '/?include=tags&status=draft'))
+                    .set('Authorization', 'Bearer ' + contributorAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body,
+                            changedTitle = 'My new Title',
+                            changedSlug = 'my-new-slug';
+
+                        should.exist(jsonResponse.posts[0]);
+                        should(jsonResponse.posts[0].tags).have.length(0);
+
+                        jsonResponse.posts[0].title = changedTitle;
+                        jsonResponse.posts[0].slug = changedSlug;
+                        jsonResponse.posts[0].tags = ['New Tag'];
+
+                        request.put(testUtils.API.getApiQuery('posts/' + contributorPostId + '/?include=tags'))
+                            .set('Authorization', 'Bearer ' + contributorAccessToken)
+                            .send(jsonResponse)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                var putBody = res.body;
+                                should.exist(putBody);
+                                res.headers['x-cache-invalidate'].should.eql('/p/' + putBody.posts[0].uuid + '/');
+                                putBody.posts[0].title.should.eql(changedTitle);
+                                putBody.posts[0].slug.should.eql(changedSlug);
+
+                                testUtils.API.checkResponse(putBody.posts[0], 'post', ['tags']);
+                                // Tags should be an empty array and primary_tag should be null
+                                should(putBody.posts[0].tags).have.length(0);
+                                should(putBody.posts[0].primary_tag).be.null();
+
+                                done();
+                            });
+                    });
             });
         });
 

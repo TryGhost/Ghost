@@ -656,7 +656,8 @@ Post = ghostBookshelf.Model.extend({
     permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,
             postModel = postModelOrId,
-            origArgs;
+            result = {},
+            origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy;
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
@@ -681,22 +682,49 @@ Post = ghostBookshelf.Model.extend({
             return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
         }
 
-        if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'edit' && (isChanging('status') || postModel.get('status') !== 'draft')) {
-            // Contributors ONLY have permission to edit a post if they're not changing the status AND the post is a draft post
-            hasUserPermission = false;
-        } else if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'destroy' && postModel.get('status') !== 'draft') {
-            // Don't allow contributor to delete published posts
-            hasUserPermission = false;
-        } else if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor']) && action === 'edit' && isChanging('author_id')) {
-            hasUserPermission = false;
-        } else if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor']) && action === 'add') {
+        function isCurrentOwner() {
+            return context.user === postModel.get('author_id');
+        }
+
+        function isPublished() {
+            return unsafeAttrs.status && unsafeAttrs.status !== 'draft';
+        }
+
+        function isDraft() {
+            return postModel.get('status') === 'draft';
+        }
+
+        isContributor = baseUtils.actorIs(loadedPermissions.user, 'Contributor');
+        isAuthor = baseUtils.actorIs(loadedPermissions.user, 'Author');
+        isEdit = (action === 'edit');
+        isAdd = (action === 'add');
+        isDestroy = (action === 'destroy');
+
+        if (isContributor && isEdit) {
+            // Only allow contributor edit if neither status or author id are changing, and the post is a draft post
+            hasUserPermission = !isChanging('status') && !isChanging('author_id') && isDraft();
+        } else if (isContributor && isAdd) {
+            // If adding, make sure it's a draft post and has the correct ownership
+            hasUserPermission = !isPublished() && isOwner();
+        } else if (isContributor && isDestroy) {
+            // If destroying, only allow contributor to destroy their own draft posts
+            hasUserPermission = isCurrentOwner() && isDraft();
+        } else if (isAuthor && isEdit) {
+            // Don't allow author to change author ids
+            hasUserPermission = !isChanging('author_id');
+        } else if (isAuthor && isAdd) {
+            // Make sure new post is authored by the current user
             hasUserPermission = isOwner();
         } else if (postModel) {
-            hasUserPermission = hasUserPermission || context.user === postModel.get('author_id');
+            hasUserPermission = hasUserPermission || isCurrentOwner();
+        }
+
+        if (isContributor) {
+            result.disallowedFields = ['tags'];
         }
 
         if (hasUserPermission && hasAppPermission) {
-            return Promise.resolve();
+            return Promise.resolve(result);
         }
 
         return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.post.notEnoughPermission')}));
