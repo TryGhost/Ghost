@@ -681,7 +681,11 @@ Post = ghostBookshelf.Model.extend({
             return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
         }
 
-        if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'edit' && isChanging('status')) {
+        if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'edit' && (isChanging('status') || postModel.get('status') !== 'draft')) {
+            // Contributors ONLY have permission to edit a post if they're not changing the status AND the post is a draft post
+            hasUserPermission = false;
+        } else if (baseUtils.actorIs(loadedPermissions.user, 'Contributor') && action === 'destroy' && postModel.get('status') !== 'draft') {
+            // Don't allow contributor to delete published posts
             hasUserPermission = false;
         } else if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor']) && action === 'edit' && isChanging('author_id')) {
             hasUserPermission = false;

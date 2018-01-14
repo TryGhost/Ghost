@@ -1582,38 +1582,106 @@ describe('Post API', function () {
                     });
             });
         });
+
+        describe('Delete', function () {
+            it('can delete own draft post', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Author\'s test post for deletion',
+                        slug: 'author-delete-post',
+                        author_id: author.id,
+                        status: 'draft'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + authorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(204)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.should.be.empty();
+
+                            done();
+                        });
+                });
+            });
+
+            it('can delete own published post', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Author\'s test post for deletion',
+                        slug: 'author-delete-post-published',
+                        author_id: author.id,
+                        status: 'published'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + authorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(204)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.should.be.empty();
+
+                            done();
+                        });
+                });
+            });
+
+            it('can\'t delete post with different author', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Author\'s test post for deletion',
+                        slug: 'author-delete-post-published',
+                        author_id: ObjectId.generate(),
+                        status: 'draft'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + authorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            should.exist(res.body.errors);
+                            res.body.errors[0].errorType.should.eql('NoPermissionError');
+                            done();
+                        });
+                });
+            });
+        });
     });
 
     describe('As Contributor', function () {
         var contributorAccessToken, contributor;
 
-        before(function (done) {
-            // starting ghost automatically populates the db
-            // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-            ghost().then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                return ghostServer.start();
-            }).then(function () {
-                request = supertest.agent(config.get('url'));
-            }).then(function () {
-                // create contributor
-                return testUtils.createUser({
-                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[4]
-                });
-            }).then(function (_contributor) {
-                request.user = contributor = _contributor;
-                return testUtils.doAuth(request, 'posts');
-            }).then(function (token) {
-                contributorAccessToken = token;
-                done();
-            }).catch(done);
-        });
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
 
-        after(function () {
-            return testUtils.clearData()
-                .then(function () {
-                    return ghostServer.stop();
+                    // create contributor
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[4]
+                    });
+                })
+                .then(function (_contributor) {
+                    request.user = contributor = _contributor;
+                    return testUtils.doAuth(request, 'posts');
+                })
+                .then(function (token) {
+                    contributorAccessToken = token;
                 });
         });
 
@@ -1701,8 +1769,8 @@ describe('Post API', function () {
             before(function () {
                 return testUtils.createPost({
                         post: {
-                            title: 'Author\'s test post',
-                            slug: 'author-post',
+                            title: 'Contributor\'s test post',
+                            slug: 'contributor-post',
                             author_id: contributor.id,
                             status: 'draft'
                         }
@@ -1896,6 +1964,112 @@ describe('Post API', function () {
                                 done();
                             });
                     });
+            });
+
+            it('CANNOT edit a published post', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Contributor published post',
+                        slug: 'contrib-published-post',
+                        author_id: contributor.id,
+                        status: 'published'
+                    }
+                }).then(function (post) {
+                    post.title = 'New Title';
+
+                    request.put(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + contributorAccessToken)
+                        .send({posts: [post]})
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            should.exist(res.body.errors);
+                            res.body.errors[0].errorType.should.eql('NoPermissionError');
+                            done();
+                        });
+                });
+            });
+        });
+
+        describe('Delete', function () {
+            it('can delete own draft post', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Contrbutor\'s test post for deletion',
+                        slug: 'contributor-delete-post',
+                        author_id: contributor.id,
+                        status: 'draft'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + contributorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(204)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            res.body.should.be.empty();
+
+                            done();
+                        });
+                });
+            });
+
+            it('can\'t delete own published post', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Contributor\'s test post for deletion',
+                        slug: 'contributor-delete-post-published',
+                        author_id: contributor.id,
+                        status: 'published'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + contributorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            should.exist(res.body.errors);
+                            res.body.errors[0].errorType.should.eql('NoPermissionError');
+                            done();
+                        });
+                });
+            });
+
+            it('can\'t delete post with different author', function (done) {
+                testUtils.createPost({
+                    post: {
+                        title: 'Author\'s test post for deletion',
+                        slug: 'author-delete-post-published',
+                        author_id: ObjectId.generate(),
+                        status: 'draft'
+                    }
+                }).then(function (post) {
+                    request.del(testUtils.API.getApiQuery('posts/' + post.id + '/'))
+                        .set('Authorization', 'Bearer ' + contributorAccessToken)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            should.exist(res.body.errors);
+                            res.body.errors[0].errorType.should.eql('NoPermissionError');
+                            done();
+                        });
+                });
             });
         });
     });
