@@ -711,7 +711,7 @@ Post = ghostBookshelf.Model.extend({
             hasUserPermission = isCurrentOwner() && isDraft();
         } else if (isAuthor && isEdit) {
             // Don't allow author to change author ids
-            hasUserPermission = !isChanging('author_id');
+            hasUserPermission = isCurrentOwner() && !isChanging('author_id');
         } else if (isAuthor && isAdd) {
             // Make sure new post is authored by the current user
             hasUserPermission = isOwner();
@@ -720,7 +720,10 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (isContributor) {
-            result.disallowedFields = ['tags'];
+            // Note: at the moment primary_tag is a computed field,
+            // meaning we don't add it to this list. However, if the primary_tag
+            // ever becomes a db field rather than a computed field, add it to this list
+            result.excludedAttrs = ['tags'];
         }
 
         if (hasUserPermission && hasAppPermission) {

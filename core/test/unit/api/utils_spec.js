@@ -662,8 +662,8 @@ describe('API Utils', function () {
                 .catch(done);
         });
 
-        it('should strip disallowedFields from data if permissions function returns them', function () {
-            var testStub = sandbox.stub().resolves({disallowedFields: ['foo']}),
+        it('should strip excludedAttrs from data if permissions function returns them', function () {
+            var testStub = sandbox.stub().resolves({excludedAttrs: ['foo']}),
                 permsStub = sandbox.stub(permissions, 'canThis').returns({
                     testing: {
                         test: testStub

@@ -210,10 +210,12 @@ utils = {
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
             return permsPromise.then(function permissionGranted(result) {
-                // Allow the permissions function to return a list of disallowed fields.
-                // If it does, omit those fields from the data passed through
-                if (result && result.disallowedFields && _.has(options, 'data.[' + docName + '][0]')) {
-                    options.data[docName][0] = _.omit(options.data[docName][0], result.disallowedFields);
+                // Allow the permissions function to return a list of excluded attributes.
+                // If it does, omit those attrs from the data passed through
+                // NOTE: excludedAttrs differ from unsafeAttrs in that they're determined by the model's permissible function,
+                // and the attributes are simply excluded rather than throwing a NoPermission exception
+                if (result && result.excludedAttrs && _.has(options, 'data.[' + docName + '][0]')) {
+                    options.data[docName][0] = _.omit(options.data[docName][0], result.excludedAttrs);
                 }
 
                 return options;
