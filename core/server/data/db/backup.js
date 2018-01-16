@@ -35,6 +35,7 @@ backup = function backup(options) {
         .then(writeExportFile)
         .then(function successMessage(filename) {
             common.logging.info('Database backup written to: ' + filename);
+            return filename;
         });
 };
 
