@@ -53,13 +53,13 @@ module.exports = function setupSiteApp() {
     siteApp.use(serveFavicon());
     // /public/ghost-sdk.js
     siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', constants.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_YEAR_S));
     // Serve sitemap.xsl file
     siteApp.use(servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 
     // Serve stylesheets for default templates
     siteApp.use(servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
-    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_HOUR_S));
+    siteApp.use(servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
     // Serve images for default templates
     siteApp.use(servePublicFile('public/404-ghost@2x.png', 'png', constants.ONE_HOUR_S));
