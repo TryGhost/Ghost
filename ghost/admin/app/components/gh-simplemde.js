@@ -76,8 +76,12 @@ export default TextArea.extend({
         this._editor = new SimpleMDE(editorOptions);
         this._editor.value(this.get('value') || '');
 
-        this._editor.codemirror.on('change', () => {
-            this.onChange(this._editor.value());
+        this._editor.codemirror.on('change', (instance, changeObj) => {
+            // avoid a "modified x twice in a single render" error that occurs
+            // when the underlying value is completely swapped out
+            if (changeObj.origin !== 'setValue') {
+                this.onChange(this._editor.value());
+            }
         });
 
         this._editor.codemirror.on('focus', () => {
