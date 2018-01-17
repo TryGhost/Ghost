@@ -1,37 +1,21 @@
-/* eslint-disable camelcase */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import base from 'ghost-admin/mixins/editor-base-route';
 
-export default AuthenticatedRoute.extend(base, {
-    titleToken: 'Editor',
-
-    beforeModel(transition) {
-        this.set('_transitionedFromNew', transition.data.fromNew);
-
-        this._super(...arguments);
-    },
-
+export default AuthenticatedRoute.extend({
     model(params) {
-        /* eslint-disable camelcase */
         let query = {
             id: params.post_id,
             status: 'all',
             staticPages: 'all',
             formats: 'mobiledoc,plaintext'
         };
-        /* eslint-enable camelcase */
 
-        return this.store.query('post', query).then((records) => {
-            let post = records.get('firstObject');
-
-            if (post) {
-                return post;
-            }
-
-            return this.replaceWith('posts.index');
-        });
+        return this.store.query('post', query)
+            .then(records => records.get('firstObject'));
     },
 
+    // the API will return a post even if the logged in user doesn't have
+    // permission to edit it (all posts are public) so we need to do our
+    // own permissions check and redirect if necessary
     afterModel(post) {
         this._super(...arguments);
 
@@ -42,18 +26,10 @@ export default AuthenticatedRoute.extend(base, {
         });
     },
 
-    setupController(controller) {
-        this._super(...arguments);
-        controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
-    },
-
-    actions: {
-        authorizationFailed() {
-            this.get('controller').send('toggleReAuthenticateModal');
-        },
-
-        redirectToContentScreen() {
-            this.transitionTo('posts');
-        }
+    // there's no specific controller for this route, instead all editor
+    // handling is done on the editor route/controler
+    setupController(controller, post) {
+        let editor = this.controllerFor('editor');
+        editor.setPost(post);
     }
 });

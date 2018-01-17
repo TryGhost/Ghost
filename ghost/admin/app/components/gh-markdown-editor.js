@@ -204,6 +204,13 @@ export default Component.extend(ShortcutsMixin, {
         let markdown = mobiledoc.cards[0][1].markdown;
         this.set('markdown', markdown);
 
+        // focus the editor when the markdown value changes, this is necessary
+        // because both the autofocus and markdown values can change without a
+        // re-render, eg. navigating from edit->new
+        if (this._editor && markdown !== this._editor.value() && this.get('autofocus')) {
+            this.send('focusEditor');
+        }
+
         // use internal values to avoid updating bound values
         if (!isEmpty(this.get('isFullScreen'))) {
             this.set('_isFullScreen', this.get('isFullScreen'));
