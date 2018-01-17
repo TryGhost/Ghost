@@ -71,8 +71,8 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { /
 };
 
 _private.ErrorFallbackMessage = function ErrorFallbackMessage(err) {
-    return '<h1>' + common.common.common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
-    '<p>' + common.common.i18n.t('errors.errors.encounteredError') + '</p>' +
+    return '<h1>' + common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
+    '<p>' + common.i18n.t('errors.errors.encounteredError') + '</p>' +
     '<pre>' + escapeExpression(err.message || err) + '</pre>' +
     '<br ><p>' + common.i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
     err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>';
