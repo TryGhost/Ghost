@@ -25,7 +25,8 @@ describe('Notifications API', function () {
     describe('Add', function () {
         var newNotification = {
             type: 'info',
-            message: 'test notification'
+            message: 'test notification',
+            custom: true
         };
 
         it('creates a new notification', function (done) {
@@ -59,7 +60,8 @@ describe('Notifications API', function () {
         var newNotification = {
             type: 'info',
             message: 'test notification',
-            status: 'alert'
+            status: 'alert',
+            custom: true
         };
 
         it('deletes a notification', function (done) {
