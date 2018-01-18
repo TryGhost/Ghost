@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
     name: 'card-html',
     type: 'dom',
