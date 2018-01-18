@@ -9,10 +9,13 @@ describe('Unit: Model: post', function () {
             'model:user',
             'model:tag',
             'model:role',
+            'service:ajax',
             'service:clock',
             'service:config',
             'service:feature',
             'service:ghostPaths',
+            'service:lazyLoader',
+            'service:notifications',
             'service:session',
             'service:settings'
         ]

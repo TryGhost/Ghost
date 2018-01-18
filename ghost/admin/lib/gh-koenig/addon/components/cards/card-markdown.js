@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import counter from 'ghost-admin/utils/word-count';
+import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../../templates/components/card-markdown';
 import {
     UnsupportedMediaTypeError,
@@ -8,7 +9,6 @@ import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
-import {formatMarkdown} from '../../lib/format-markdown';
 import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -25,7 +25,7 @@ export default Component.extend({
     extensions: null,
 
     preview: computed('value', function () {
-        return formatMarkdown([this.get('payload').markdown]);
+        return formatMarkdown(this.get('payload').markdown);
     }),
 
     // TODO: remove observer
@@ -47,7 +47,7 @@ export default Component.extend({
 
     didReceiveAttrs() {
         if (!this.get('isEditing')) {
-            this.set('preview', formatMarkdown([this.get('payload').markdown]));
+            this.set('preview', formatMarkdown(this.get('payload').markdown));
         } else {
             run.next(() => {
                 this.$('textarea').focus();

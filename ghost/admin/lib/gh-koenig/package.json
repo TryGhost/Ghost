@@ -6,7 +6,7 @@
   ],
   "readmeFilename": "README.md",
   "dependencies": {
-    "ember-cli-babel": "5.2.4",
-    "ember-cli-htmlbars": "1.1.1"
+    "ember-cli-babel": "^6.11.0",
+    "ember-cli-htmlbars": "^2.0.3"
   }
 }

@@ -185,7 +185,7 @@ export default Component.extend({
 
             // if the current paragraph is empty then the position is 0
             if (!cursorPositionOnScreen || cursorPositionOnScreen.top === 0) {
-                if (editor.activeSection.renderNode) {
+                if (editor.activeSection && editor.activeSection.renderNode) {
                     cursorPositionOnScreen = editor.activeSection.renderNode.element.getBoundingClientRect();
                 } else {
                     this.setCursorAtOffset(0);

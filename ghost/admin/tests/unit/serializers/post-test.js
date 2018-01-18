@@ -10,9 +10,14 @@ describe('Unit: Serializer: post', function () {
             'transform:json-string',
             'model:user',
             'model:tag',
+            'service:ajax',
             'service:clock',
             'service:config',
+            'service:feature',
             'service:ghostPaths',
+            'service:lazyLoader',
+            'service:notifications',
+            'service:session',
             'service:settings'
         ]
     });

@@ -6835,6 +6835,21 @@ mktemp@~0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/mktemp/-/mktemp-0.4.0.tgz#6d0515611c8a8c84e484aa2000129b98e981ff0b"
 
+mobiledoc-dom-renderer@0.6.5:
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.6.5.tgz#56c0302c4f9c30840ab5b9b20dfe905aed1e437b"
+
+mobiledoc-kit@0.10.20:
+  version "0.10.20"
+  resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.20.tgz#2925a6223bac2a1eeb3468a4a94d992618089312"
+  dependencies:
+    mobiledoc-dom-renderer "0.6.5"
+    mobiledoc-text-renderer "0.3.2"
+
+mobiledoc-text-renderer@0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.3.2.tgz#126a167a6cf8b6cd7e58c85feb18043603834580"
+
 mocha@^2.5.3:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-2.5.3.tgz#161be5bdeb496771eb9b35745050b622b5aefc58"

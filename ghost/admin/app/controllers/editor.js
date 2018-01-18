@@ -77,6 +77,7 @@ const messageMap = {
 
 export default Controller.extend({
     application: controller(),
+    feature: service(),
     notifications: service(),
     router: service(),
     slugGenerator: service(),
@@ -89,6 +90,10 @@ export default Controller.extend({
     showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
+    useKoenig: false,
+
+    // koenig related properties
+    wordcount: 0,
 
     /* private properties ----------------------------------------------------*/
 
@@ -240,6 +245,11 @@ export default Controller.extend({
 
         toggleReAuthenticateModal() {
             this.toggleProperty('showReAuthenticateModal');
+        },
+
+        // TODO: this should be part of the koenig component
+        setWordcount(count) {
+            this.set('wordcount', count);
         }
     },
 
@@ -472,7 +482,27 @@ export default Controller.extend({
 
     // called by the new/edit routes to change the post model
     setPost(post) {
-        // don't do anything if the post is the same
+        // switch between markdown/koenig depending on feature flag and post
+        // compatibility
+        let koenigEnabled = this.get('feature.koenigEditor');
+        let postIsMarkdownCompatible = post.isCompatibleWithMarkdownEditor();
+        if (koenigEnabled || !postIsMarkdownCompatible) {
+            this.set('useKoenig', true);
+
+            // display an alert if koenig is disabled but we use it anyway
+            // because the post is incompatible with the markdown editor
+            if (!koenigEnabled) {
+                alert('This post will be opened with the Koenig editor because it\'s not compatible with the markdown editor');
+            }
+        } else {
+            this.set('useKoenig', false);
+        }
+
+        // autofocus the editor if we have a new post, this also acts as a
+        // change signal to the persistent editor on new->edit
+        this.set('shouldFocusEditor', post.get('isNew'));
+
+        // don't do anything else if we're setting the same post
         if (post === this.get('post')) {
             return;
         }
@@ -481,9 +511,6 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
-
-        // only autofocus the editor if we have a new post
-        this.set('shouldFocusEditor', post.get('isNew'));
 
         // need to set scratch values because they won't be present on first
         // edit of the post
@@ -641,10 +668,16 @@ export default Controller.extend({
         }
 
         // scratch isn't an attr so needs a manual dirty check
-        let mobiledoc = JSON.stringify(post.get('mobiledoc'));
-        let scratch = JSON.stringify(post.get('scratch'));
-        if (scratch !== mobiledoc) {
-            return true;
+        let mobiledoc = post.get('mobiledoc');
+        let scratch = post.get('scratch');
+        // additional guard in case we are trying to compare null with undefined
+        if (scratch || mobiledoc) {
+            let mobiledocJSON = JSON.stringify(mobiledoc);
+            let scratchJSON = JSON.stringify(scratch);
+
+            if (scratchJSON !== mobiledocJSON) {
+                return true;
+            }
         }
 
         // new+unsaved posts always return `hasDirtyAttributes: true`

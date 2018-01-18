@@ -11,6 +11,7 @@ describe('Unit: Controller: editor', function () {
     setupTest('controller:editor', {
         needs: [
             'controller:application',
+            'service:feature',
             'service:notifications',
             // 'service:router',
             'service:slugGenerator',
