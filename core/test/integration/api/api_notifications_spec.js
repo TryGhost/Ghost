@@ -108,7 +108,8 @@ describe('Notifications API', function () {
     it('can browse (internal)', function (done) {
         var msg = {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
-            message: 'This is an error' // A string. Should fit in one line.
+            message: 'This is an error', // A string. Should fit in one line.
+            custom: true
         };
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function () {
             NotificationsAPI.browse(testUtils.context.internal).then(function (results) {
@@ -124,7 +125,8 @@ describe('Notifications API', function () {
     it('can browse (owner)', function (done) {
         var msg = {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
-            message: 'This is an error' // A string. Should fit in one line.
+            message: 'This is an error', // A string. Should fit in one line.
+            custom: true
         };
         NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function () {
             NotificationsAPI.browse(testUtils.context.owner).then(function (results) {

@@ -5,8 +5,10 @@
 
 const Promise = require('bluebird'),
     _ = require('lodash'),
+    semver = require('semver'),
     moment = require('moment'),
     ObjectId = require('bson-objectid'),
+    ghostVersion = require('../lib/ghost-version'),
     pipeline = require('../lib/promise/pipeline'),
     permissions = require('../services/permissions'),
     localUtils = require('./utils'),
@@ -63,6 +65,18 @@ notifications = {
                     allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
 
                     allNotifications = allNotifications.filter(function (notification) {
+                        // CASE: do not return old release notification
+                        if (!notification.custom && notification.message) {
+                            let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
+                            let blogVersion = ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
+
+                            if (notificationVersion && blogVersion && semver.gt(notificationVersion[0], blogVersion[0])) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+
                         return notification.seen !== true;
                     });
 
