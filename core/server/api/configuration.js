@@ -30,7 +30,8 @@ function getBaseConfig() {
         blogUrl: urlService.utils.urlFor('home', true),
         blogTitle: settingsCache.get('title'),
         routeKeywords: config.get('routeKeywords'),
-        clientExtensions: config.get('clientExtensions')
+        clientExtensions: config.get('clientExtensions'),
+        enableDeveloperExperiments: config.get('enableDeveloperExperiments')
     };
 }
 
