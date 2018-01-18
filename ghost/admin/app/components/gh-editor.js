@@ -99,7 +99,7 @@ export default Component.extend({
     },
 
     _setHeaderClass() {
-        let $editorTitle = this.$('.gh-editor-title');
+        let $editorTitle = this.$('.gh-editor-title, .kg-title-input');
         let smallHeaderClass = 'gh-editor-header-small';
 
         if (this.get('isSplitScreen')) {

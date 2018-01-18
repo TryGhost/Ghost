@@ -1,6 +1,6 @@
 @import "koenig-toolbar.css";
 @import "koenig-menu.css";
-@import "../ghost-editor/cardmenu.css";
+@import "koenig-cardmenu.css";
 
 .gh-koenig-container {
     height: 100%;

@@ -4,7 +4,8 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
-import {BLANK_DOC} from 'ghost-admin/components/gh-markdown-editor';
+import {BLANK_DOC as BLANK_MARKDOWN} from 'ghost-admin/components/gh-markdown-editor';
+import {BLANK_DOC as BLANK_MOBILEDOC} from 'gh-koenig/components/gh-koenig';
 import {belongsTo, hasMany} from 'ember-data/relationships';
 import {compare} from '@ember/utils';
 import {computed} from '@ember/object';
@@ -69,6 +70,7 @@ function publishedAtCompare(postA, postB) {
 
 export default Model.extend(Comparable, ValidationEngine, {
     config: service(),
+    feature: service(),
     ghostPaths: service(),
     clock: service(),
     settings: service(),
@@ -93,7 +95,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     locale: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string', {defaultValue: () => BLANK_DOC}),
+    mobiledoc: attr('json-string'),
     page: attr('boolean', {defaultValue: false}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
@@ -112,6 +114,28 @@ export default Model.extend(Comparable, ValidationEngine, {
         embedded: 'always',
         async: false
     }),
+
+    init() {
+        // we can't use the defaultValue property on the attr because it won't
+        // have access to `this` for the feature check so we do it manually here.
+        if (!this.get('mobiledoc')) {
+            let defaultValue;
+
+            if (this.get('feature.koenigEditor')) {
+                defaultValue = BLANK_MOBILEDOC;
+            } else {
+                defaultValue = BLANK_MARKDOWN;
+            }
+
+            // using this.set() adds the property to the changedAttributes list
+            // which means the editor always sees new posts as dirty. Assigning
+            // the value directly works around that so you can exit the editor
+            // without a warning
+            this.mobiledoc = defaultValue;
+        }
+
+        this._super(...arguments);
+    },
 
     scratch: null,
     titleScratch: null,
@@ -313,5 +337,25 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtBlogTZ = this.get('publishedAtBlogTZ');
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
+    },
+
+    // the markdown editor expects a very specific mobiledoc format, if it
+    // doesn't match then we'll need to handle it by forcing Koenig
+    isCompatibleWithMarkdownEditor() {
+        let mobiledoc = this.get('mobiledoc');
+
+        if (
+            mobiledoc.markups.length === 0
+            && mobiledoc.cards.length === 1
+            && mobiledoc.cards[0][0] === 'card-markdown'
+            && mobiledoc.sections.length === 1
+            && mobiledoc.sections[0].length === 2
+            && mobiledoc.sections[0][0] === 10
+            && mobiledoc.sections[0][1] === 0
+        ) {
+            return true;
+        }
+
+        return false;
     }
 });

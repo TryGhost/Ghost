@@ -126,7 +126,7 @@ describe('Acceptance: Editor', function () {
             await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime);
 
             // hide psm
-            await click('[data-test-psm-trigger]');
+            await click('[data-test-close-settings-menu]');
 
             // checking the flow of the saving button for a draft
             expect(

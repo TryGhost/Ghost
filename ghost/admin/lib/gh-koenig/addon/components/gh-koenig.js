@@ -72,7 +72,7 @@ export default Component.extend({
         cards = defaultCards.concat(cards).map(card => createCard(card));
 
         // add our default atoms
-        atoms.concat([{
+        atoms = atoms.concat([{
             name: 'soft-return',
             type: 'dom',
             render() {
@@ -115,6 +115,15 @@ export default Component.extend({
         this.set('isTouch', 'ontouchstart' in document.documentElement);
 
         this._startedRunLoop = false;
+    },
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        if (this.get('autofocus') !== this._autofocus) {
+            this._autofocus = this.get('autofocus');
+            this._hasAutofocused = false;
+        }
     },
 
     willRender() {
@@ -235,7 +244,7 @@ export default Component.extend({
         // the first lot of content is entered and we expect the caret to be at
         // the end of the document.
         // TODO: can this be removed if we refactor the new/edit screens to not re-render?
-        if (this.get('autofocus')) {
+        if (this._autofocus && !this._hasAutofocused) {
             let range = document.createRange();
             range.selectNodeContents(this.editor.element);
             range.collapse(false);
@@ -243,6 +252,10 @@ export default Component.extend({
             sel.removeAllRanges();
             sel.addRange(range);
             editor._ensureFocus(); // PRIVATE API
+
+            // ensure we don't run the autofocus more than once between
+            // `autofocus` attr changes
+            this._hasAutofocused = true;
         }
 
         this.processWordcount();

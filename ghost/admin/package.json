@@ -110,6 +110,7 @@
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "2.0.0",
     "matchdep": "2.0.0",
+    "mobiledoc-kit": "0.10.20",
     "password-generator": "2.2.0",
     "postcss-color-function": "4.0.1",
     "postcss-custom-properties": "6.2.0",
@@ -121,7 +122,8 @@
   },
   "ember-addon": {
     "paths": [
-      "lib/asset-delivery"
+      "lib/asset-delivery",
+      "lib/gh-koenig"
     ]
   }
 }
