@@ -225,6 +225,28 @@ var config = require('./core/server/config'),
             // ### grunt-shell
             // Command line tools where it's easier to run a command directly than configure a grunt plugin
             shell: {
+                submodules: {
+                    command: function () {
+                        grunt.log.writeln('SUBBY');
+
+                        var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
+                        var update = 'git submodule update --init';
+
+                        grunt.log.writeln('Updating git submodules: ' + upstream);
+
+                        // `git submodule update` will clone repos as origin,
+                        // we need to change this to whatever the user uses as upstream (probably "upstream")
+                        if (upstream !== 'origin') {
+                            grunt.log.writeln('Changing remote to: ' + upstream);
+                            update += '; cd core/client; git remote rename origin upstream; ' +
+                            'git remote set-url upstream git@github.com:TryGhost/Ghost-Admin.git; ' +
+                            'cd ../../content/themes/casper; git remote rename origin upstream; ' +
+                            'git remote set-url upstream git@github.com:TryGhost/Casper.git';
+                        }
+
+                        return update;
+                    }
+                },
                 master: {
                     command: function () {
                         var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
@@ -656,7 +678,7 @@ var config = require('./core/server/config'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
+            ['shell:submodules', 'subgrunt:init', 'clean:tmp', 'default']);
 
         // ### Build assets
         // `grunt build` - will build client assets (without updating the submodule)
