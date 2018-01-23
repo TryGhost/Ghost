@@ -431,7 +431,7 @@ describe('Acceptance: Team', function () {
             await click('button.delete');
             // user has  posts so should warn about post deletion
             expect(
-                find('.fullscreen-modal .modal-content:contains("is the author of 1 post")').length,
+                find('.fullscreen-modal .modal-content:contains("1 post created by this user")').length,
                 'deleting user with posts has post count'
             ).to.equal(1);
 
