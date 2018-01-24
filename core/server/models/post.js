@@ -702,7 +702,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (isContributor && isEdit) {
             // Only allow contributor edit if neither status or author id are changing, and the post is a draft post
-            hasUserPermission = !isChanging('status') && !isChanging('author_id') && isDraft();
+            hasUserPermission = !isChanging('status') && !isChanging('author_id') && isDraft() && isCurrentOwner();
         } else if (isContributor && isAdd) {
             // If adding, make sure it's a draft post and has the correct ownership
             hasUserPermission = !isPublished() && isOwner();

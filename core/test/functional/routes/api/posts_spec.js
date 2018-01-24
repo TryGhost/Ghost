@@ -1857,6 +1857,41 @@ describe('Post API', function () {
                     });
             });
 
+            it('CANNOT edit another\'s post', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/?include=tags&status=draft'))
+                    .set('Authorization', 'Bearer ' + contributorAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var jsonResponse = res.body,
+                            changedTitle = 'My new Title';
+
+                        should.exist(jsonResponse.posts[0]);
+                        jsonResponse.posts[0].title = changedTitle;
+
+                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/'))
+                            .set('Authorization', 'Bearer ' + contributorAccessToken)
+                            .send(jsonResponse)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(403)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                should.exist(res.body.errors);
+                                res.body.errors[0].errorType.should.eql('NoPermissionError');
+                                done();
+                            });
+                    });
+            });
+
             it('CANNOT change author of own post', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/' + contributorPostId + '/?include=tags&status=draft'))
                     .set('Authorization', 'Bearer ' + contributorAccessToken)
