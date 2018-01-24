@@ -73,6 +73,7 @@ slugs = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: opts, attrs: attrs}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'generate'),
             checkAllowedTypes,
             modelQuery
