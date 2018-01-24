@@ -75,7 +75,7 @@ function handleSource(req, res, next) {
                 req.body.post_id = result.post.id;
                 return next();
             }
-            
+
             next(new Error('Oops, something went wrong!'));
         })
         .catch(function (err) {
