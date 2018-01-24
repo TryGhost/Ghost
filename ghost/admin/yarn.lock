@@ -4054,16 +4054,16 @@ eslint-plugin-ember@^5.0.3:
     require-folder-tree "^1.4.5"
     snake-case "^2.1.0"
 
-eslint-plugin-ghost@0.0.22:
-  version "0.0.22"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-0.0.22.tgz#6952be5adf1661e567e54683127b1df357623c77"
+eslint-plugin-ghost@0.0.23:
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-0.0.23.tgz#26057775c28ca06c8a3c5eff40d43c44524e3ff5"
   dependencies:
     eslint-plugin-ember "^5.0.3"
-    eslint-plugin-sort-imports-es6-autofix "^0.2.1"
+    eslint-plugin-sort-imports-es6-autofix "0.2.2"
 
-eslint-plugin-sort-imports-es6-autofix@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-sort-imports-es6-autofix/-/eslint-plugin-sort-imports-es6-autofix-0.2.1.tgz#52513b72c571621d84739d9dcc59688ed8af2b8f"
+eslint-plugin-sort-imports-es6-autofix@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-sort-imports-es6-autofix/-/eslint-plugin-sort-imports-es6-autofix-0.2.2.tgz#6d8512bde75142c188a0695db55d442d7f7e011d"
   dependencies:
     eslint "^4.15.0"
 
@@ -4078,9 +4078,9 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@4.15.0, eslint@^4.0.0:
-  version "4.15.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.15.0.tgz#89ab38c12713eec3d13afac14e4a89e75ef08145"
+eslint@4.16.0, eslint@^4.15.0:
+  version "4.16.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.16.0.tgz#934ada9e98715e1d7bbfd6f6f0519ed2fab35cc1"
   dependencies:
     ajv "^5.3.0"
     babel-code-frame "^6.22.0"
@@ -4088,7 +4088,7 @@ eslint@4.15.0, eslint@^4.0.0:
     concat-stream "^1.6.0"
     cross-spawn "^5.1.0"
     debug "^3.1.0"
-    doctrine "^2.0.2"
+    doctrine "^2.1.0"
     eslint-scope "^3.7.1"
     eslint-visitor-keys "^1.0.0"
     espree "^3.5.2"
@@ -4120,9 +4120,9 @@ eslint@4.15.0, eslint@^4.0.0:
     table "^4.0.1"
     text-table "~0.2.0"
 
-eslint@^4.15.0:
-  version "4.16.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.16.0.tgz#934ada9e98715e1d7bbfd6f6f0519ed2fab35cc1"
+eslint@^4.0.0:
+  version "4.15.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.15.0.tgz#89ab38c12713eec3d13afac14e4a89e75ef08145"
   dependencies:
     ajv "^5.3.0"
     babel-code-frame "^6.22.0"
@@ -4130,7 +4130,7 @@ eslint@^4.15.0:
     concat-stream "^1.6.0"
     cross-spawn "^5.1.0"
     debug "^3.1.0"
-    doctrine "^2.1.0"
+    doctrine "^2.0.2"
     eslint-scope "^3.7.1"
     eslint-visitor-keys "^1.0.0"
     espree "^3.5.2"
