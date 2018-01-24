@@ -1044,10 +1044,11 @@ describe('Post API', function () {
                         }
 
                         var jsonResponse = res.body,
-                            changedValue = 'My new Title';
+                            changedValue = 'A title.';
+
                         should.exist(jsonResponse);
-                        jsonResponse.title = changedValue;
-                        jsonResponse.published_at = null;
+                        jsonResponse.posts[0].title = changedValue;
+                        jsonResponse.posts[0].published_at = null;
 
                         request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
                             .set('Authorization', 'Bearer ' + ownerAccessToken)
