@@ -153,7 +153,7 @@ users = {
                     editedUserId = options.id;
 
                 return models.User.findOne(
-                    {id: options.context.user, status: 'all'}, {include: ['roles']}
+                    {id: options.context.user, status: 'all'}, {withRelated: ['roles']}
                 ).then(function (contextUser) {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
