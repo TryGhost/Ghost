@@ -498,12 +498,10 @@ export default Controller.extend({
             this.set('useKoenig', false);
         }
 
-        // autofocus the editor if we have a new post, this also acts as a
-        // change signal to the persistent editor on new->edit
-        this.set('shouldFocusEditor', post.get('isNew'));
-
         // don't do anything else if we're setting the same post
         if (post === this.get('post')) {
+            // set autofocus as change signal to the persistent editor on new->edit
+            this.set('shouldFocusEditor', post.get('isNew'));
             return;
         }
 
@@ -511,6 +509,9 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
+
+        // autofocus the editor if we have a new post
+        this.set('shouldFocusEditor', post.get('isNew'));
 
         // need to set scratch values because they won't be present on first
         // edit of the post
