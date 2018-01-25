@@ -63,6 +63,9 @@ function santizeUrl(url) {
 function handleSource(req, res, next) {
     req.body.subscribed_url = santizeUrl(req.body.location);
     req.body.subscribed_referrer = santizeUrl(req.body.referrer);
+    if (validator.isEmpty(req.body.subscribed_referrer)) {
+        return next(new Error('Oops, something went wrong!'));
+    }
     delete req.body.location;
     delete req.body.referrer;
 
@@ -70,9 +73,10 @@ function handleSource(req, res, next) {
         .then(function (result) {
             if (result && result.post) {
                 req.body.post_id = result.post.id;
+                return next();
             }
 
-            next();
+            next(new Error('Oops, something went wrong!'));
         })
         .catch(function (err) {
             if (err instanceof common.errors.NotFoundError) {
