@@ -559,16 +559,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (options.order) {
-            options.order = self.parseOrderOption(options.order, options.withRelated);
-        } else if (self.orderDefaultRaw) {
-            options.orderRaw = self.orderDefaultRaw();
+            options.order = this.parseOrderOption(options.order, options.withRelated);
+        } else if (this.orderDefaultRaw) {
+            options.orderRaw = this.orderDefaultRaw();
         } else {
-            options.order = self.orderDefaultOptions();
+            options.order = this.orderDefaultOptions();
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
             var data = {},
-                models = [];
+                models;
 
             options.columns = requestedColumns;
             models = response.collection.toJSON(options);
@@ -578,6 +578,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             data[tableName] = _.map(models, function transform(model) {
                 return options.columns ? _.pick(model, options.columns) : model;
             });
+
             data.meta = {pagination: response.pagination};
             return data;
         });
