@@ -51,8 +51,8 @@ module.exports = function (Bookshelf) {
 
             var tableName = _.result(this, 'tableName');
 
-            if (options.include && options.include.indexOf('count.posts') > -1) {
-                // remove post_count from withRelated and include
+            if (options.withRelated && options.withRelated.indexOf('count.posts') > -1) {
+                // remove post_count from withRelated
                 options.withRelated = _.pull([].concat(options.withRelated), 'count.posts');
 
                 // Call the query builder
