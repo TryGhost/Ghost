@@ -391,7 +391,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
-        return ['context', 'include', 'transacting', 'importing', 'forUpdate'];
+        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate'];
     },
 
     /**
