@@ -9,7 +9,7 @@ module.exports = function (Bookshelf) {
 
     countQueryBuilder = {
         tags: {
-            posts: function addPostCountToTags(model) {
+            posts: function addPostCountToTags(model, options) {
                 model.query('columns', 'tags.*', function (qb) {
                     qb.count('posts.id')
                         .from('posts')
@@ -17,7 +17,7 @@ module.exports = function (Bookshelf) {
                         .whereRaw('posts_tags.tag_id = tags.id')
                         .as('count__posts');
 
-                    if (model.isPublicContext()) {
+                    if (options.context && options.context.public) {
                         // @TODO use the filter behavior for posts
                         qb.andWhere('posts.page', '=', false);
                         qb.andWhere('posts.status', '=', 'published');
@@ -26,14 +26,14 @@ module.exports = function (Bookshelf) {
             }
         },
         users: {
-            posts: function addPostCountToTags(model) {
+            posts: function addPostCountToTags(model, options) {
                 model.query('columns', 'users.*', function (qb) {
                     qb.count('posts.id')
                         .from('posts')
                         .whereRaw('posts.author_id = users.id')
                         .as('count__posts');
 
-                    if (model.isPublicContext()) {
+                    if (options.context && options.context.public) {
                         // @TODO use the filter behavior for posts
                         qb.andWhere('posts.page', '=', false);
                         qb.andWhere('posts.status', '=', 'published');
@@ -56,7 +56,7 @@ module.exports = function (Bookshelf) {
                 options.withRelated = _.pull([].concat(options.withRelated), 'count.posts');
 
                 // Call the query builder
-                countQueryBuilder[tableName].posts(this);
+                countQueryBuilder[tableName].posts(this, options);
             }
         },
         fetch: function () {
