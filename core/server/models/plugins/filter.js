@@ -145,8 +145,8 @@ filter = function filter(Bookshelf) {
             options = options || {};
 
             this._filters = filterUtils.combineFilters(
-                this.enforcedFilters(),
-                this.defaultFilters(),
+                this.enforcedFilters(options),
+                this.defaultFilters(options),
                 options.filter,
                 options.where
             );

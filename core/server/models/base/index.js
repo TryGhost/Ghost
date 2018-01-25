@@ -30,9 +30,6 @@ ghostBookshelf = bookshelf(db.knex);
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
-// Load the Ghost access rules plugin, which handles passing permissions/context through the model layer
-ghostBookshelf.plugin(plugins.accessRules);
-
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
