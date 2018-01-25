@@ -26,16 +26,6 @@ Invite = ghostBookshelf.Model.extend({
         return options;
     },
 
-    findOne: function findOne(data, options) {
-        options = options || {};
-
-        options = this.filterOptions(options, 'findOne');
-        data = this.filterData(data, 'findOne');
-
-        var invite = this.forge(data);
-        return invite.fetch(options);
-    },
-
     add: function add(data, options) {
         var hash = crypto.createHash('sha256'),
             text = '';
@@ -48,6 +38,7 @@ Invite = ghostBookshelf.Model.extend({
         hash.update(data.email.toLocaleLowerCase());
         text += [data.expires, data.email, hash.digest('base64')].join('|');
         data.token = new Buffer(text).toString('base64');
+
         return ghostBookshelf.Model.add.call(this, data, options);
     }
 });
