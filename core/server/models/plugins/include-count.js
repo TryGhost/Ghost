@@ -84,8 +84,10 @@ module.exports = function (Bookshelf) {
             return modelProto.fetchAll.apply(this, arguments);
         },
 
-        finalize: function (attrs) {
-            var countRegex = /^(count)(__)(.*)$/;
+        serialize: function serialize(options) {
+            var attrs = modelProto.serialize.call(this, options),
+                countRegex = /^(count)(__)(.*)$/;
+
             _.forOwn(attrs, function (value, key) {
                 var match = key.match(countRegex);
                 if (match) {
