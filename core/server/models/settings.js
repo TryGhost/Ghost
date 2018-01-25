@@ -98,9 +98,9 @@ Settings = ghostBookshelf.Model.extend({
         return Promise.resolve(ghostBookshelf.Model.findOne.call(this, data, options));
     },
 
-    edit: function (data, options) {
-        var self = this;
-        options = this.filterOptions(options, 'edit');
+    edit: function (data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'edit'),
+            self = this;
 
         if (!Array.isArray(data)) {
             data = [data];
@@ -146,10 +146,13 @@ Settings = ghostBookshelf.Model.extend({
         });
     },
 
-    populateDefaults: function populateDefaults(options) {
-        var self = this;
+    populateDefaults: function populateDefaults(unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'populateDefaults'),
+            self = this;
 
-        options = _.merge({}, options || {}, internalContext);
+        if (!options.context) {
+            options.context = internalContext.context;
+        }
 
         return this
             .findAll(options)

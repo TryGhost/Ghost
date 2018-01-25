@@ -322,14 +322,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *
      * `toJSON` calls `serialize`.
      *
-     * @param options
+     * @param unfilteredOptions
      * @returns {*}
      */
-    toJSON: function toJSON(options) {
-        var opts = _.cloneDeep(options || {});
-        opts.omitPivot = true;
+    toJSON: function toJSON(unfilteredOptions) {
+        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
+        options.omitPivot = true;
 
-        return proto.toJSON.call(this, opts);
+        return proto.toJSON.call(this, options);
     },
 
     // Get attributes that have been updated (values before a .save() call)
@@ -389,7 +389,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *
      * @return {Object} Keys allowed in the `options` hash of every model's method.
      */
-    permittedOptions: function permittedOptions() {
+    permittedOptions: function permittedOptions(methodName) {
+        if (methodName === 'toJSON') {
+            return ['shallow', 'withRelated', 'context', 'columns'];
+        }
+
         // terms to whitelist for all methods.
         return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate'];
     },
@@ -485,13 +489,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Find All
      * Fetches all the data for a particular model
-     * @param {Object} options (optional)
+     * @param {Object} unfilteredOptions (optional)
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
-    findAll: function findAll(options) {
-        options = this.filterOptions(options, 'findAll');
-
-        var itemCollection = this.forge();
+    findAll: function findAll(unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'findAll'),
+            itemCollection = this.forge();
 
         // transforms fictive keywords like 'all' (status:all) into correct allowed values
         if (this.processOptions) {
@@ -529,21 +532,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *     total: __
      *     }
      *
-     * @param {Object} options
+     * @param {Object} unfilteredOptions
      */
-    findPage: function findPage(options) {
-        options = options || {};
-
-        var self = this,
+    findPage: function findPage(unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'findPage'),
             itemCollection = this.forge(),
             tableName = _.result(this.prototype, 'tableName'),
             requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && config.get('env') !== 'production';
-
-        // Filter options so that only permitted ones remain
-        options = this.filterOptions(options, 'findPage');
 
         // This applies default properties like 'staticPages' and 'status'
         // And then converts them to 'where' options... this behaviour is effectively deprecated in favour
@@ -589,13 +587,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * ### Find One
      * Naive find one where data determines what to match on
      * @param {Object} data
-     * @param {Object} options (optional)
+     * @param {Object} unfilteredOptions (optional)
      * @return {Promise(ghostBookshelf.Model)} Single Model
      */
-    findOne: function findOne(data, options) {
+    findOne: function findOne(data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'findOne');
         data = this.filterData(data);
-        options = this.filterOptions(options, 'findOne');
-
         return this.forge(data).fetch(options);
     },
 
@@ -607,15 +604,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
      *
      * @param {Object} data
-     * @param {Object} options (optional)
+     * @param {Object} unfilteredOptions (optional)
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
-    edit: function edit(data, options) {
-        var id = options.id,
+    edit: function edit(data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'edit', {extraAllowedProperties: ['id']}),
+            id = options.id,
             model = this.forge({id: id});
 
         data = this.filterData(data);
-        options = this.filterOptions(options, 'edit');
 
         // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
         if (options.importing) {
@@ -633,13 +630,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * ### Add
      * Naive add
      * @param {Object} data
-     * @param {Object} options (optional)
+     * @param {Object} unfilteredOptions (optional)
      * @return {Promise(ghostBookshelf.Model)} Newly Added Model
      */
-    add: function add(data, options) {
+    add: function add(data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'add'),
+            model;
+
         data = this.filterData(data);
-        options = this.filterOptions(options, 'add');
-        var model = this.forge(data);
+        model = this.forge(data);
 
         // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
         // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696
@@ -656,17 +655,19 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Destroy
      * Naive destroy
-     * @param {Object} options (optional)
+     * @param {Object} unfilteredOptions (optional)
      * @return {Promise(ghostBookshelf.Model)} Empty Model
      */
-    destroy: function destroy(options) {
-        var id = options.id;
-        options = this.filterOptions(options, 'destroy');
+    destroy: function destroy(unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']}),
+            id = options.id;
 
         // Fetch the object before destroying it, so that the changed data is available to events
-        return this.forge({id: id}).fetch(options).then(function then(obj) {
-            return obj.destroy(options);
-        });
+        return this.forge({id: id})
+            .fetch(options)
+            .then(function then(obj) {
+                return obj.destroy(options);
+            });
     },
 
     /**

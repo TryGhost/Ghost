@@ -1,7 +1,6 @@
 'use strict';
 
 const crypto = require('crypto'),
-    _ = require('lodash'),
     constants = require('../lib/constants'),
     ghostBookshelf = require('./base');
 
@@ -11,10 +10,10 @@ let Invite,
 Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
-    toJSON: function (options) {
-        options = options || {};
+    toJSON: function (unfilteredOptions) {
+        var options = Invite.filterOptions(unfilteredOptions, 'toJSON'),
+            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         delete attrs.token;
         return attrs;
     }
@@ -40,8 +39,6 @@ Invite = ghostBookshelf.Model.extend({
     add: function add(data, options) {
         var hash = crypto.createHash('sha256'),
             text = '';
-
-        options = this.filterOptions(options, 'add');
 
         data.expires = Date.now() + constants.ONE_WEEK_MS;
         data.status = 'pending';
