@@ -455,15 +455,29 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
-     * @param {Object} options Represents options to filter in order to be passed to the Bookshelf query.
+     * @param {Object} unfilteredOptions Represents options to filter in order to be passed to the Bookshelf query.
      * @param {String} methodName The name of the method to check valid options for.
      * @return {Object} The filtered results of `options`.
      */
-    filterOptions: function filterOptions(options, methodName) {
-        var permittedOptions = this.permittedOptions(methodName, options),
-            filteredOptions = _.pick(options, permittedOptions);
+    filterOptions: function filterOptions(unfilteredOptions, methodName, filterConfig) {
+        unfilteredOptions = unfilteredOptions || {};
+        filterConfig = filterConfig || {};
 
-        return filteredOptions;
+        if (unfilteredOptions.hasOwnProperty('include')) {
+            throw new common.errors.IncorrectUsageError({
+                message: 'The model layer expects using `withRelated`.'
+            });
+        }
+
+        var options = _.cloneDeep(unfilteredOptions),
+            extraAllowedProperties = filterConfig.extraAllowedProperties || [],
+            permittedOptions;
+
+        permittedOptions = this.permittedOptions(methodName, options);
+        permittedOptions = _.union(permittedOptions, extraAllowedProperties);
+        options = _.pick(options, permittedOptions);
+
+        return options;
     },
 
     // ## Model Data Functions
