@@ -593,7 +593,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     destroy: function destroy(unfilteredOptions) {
-        let options = this.filterOptions(unfilteredOptions, 'destroy');
+        let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
 
         const destroyPost = () => {
             return ghostBookshelf.Model.destroy.call(this, options);
