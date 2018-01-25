@@ -496,7 +496,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findAll');
         options.withRelated = _.union(options.withRelated, options.include);
 
-        var itemCollection = this.forge(null, {context: options.context});
+        var itemCollection = this.forge();
 
         // transforms fictive keywords like 'all' (status:all) into correct allowed values
         if (this.processOptions) {
@@ -540,7 +540,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = options || {};
 
         var self = this,
-            itemCollection = this.forge(null, {context: options.context}),
+            itemCollection = this.forge(),
             tableName = _.result(this.prototype, 'tableName'),
             requestedColumns = options.columns;
 
