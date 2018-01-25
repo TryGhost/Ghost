@@ -106,9 +106,6 @@ Tag = ghostBookshelf.Model.extend({
 
         var tag = this.forge(data);
 
-        // Add related objects
-        options.withRelated = _.union(options.withRelated, options.include);
-
         return tag.fetch(options);
     },
 

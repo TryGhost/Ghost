@@ -530,8 +530,6 @@ Post = ghostBookshelf.Model.extend({
             delete data.status;
         }
 
-        options.withRelated = _.union(options.withRelated, options.include);
-
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },
 

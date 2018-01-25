@@ -27,19 +27,11 @@ Invite = ghostBookshelf.Model.extend({
         return options;
     },
 
-    /**
-     * @TODO: can't use base class, because:
-     * options.withRelated = _.union(options.withRelated, options.include); is missing
-     * there are some weird self implementations in each model
-     * so adding this line, will destroy other models, because they rely on something else
-     * FIX ME!!!!!
-     */
     findOne: function findOne(data, options) {
         options = options || {};
 
         options = this.filterOptions(options, 'findOne');
         data = this.filterData(data, 'findOne');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         var invite = this.forge(data);
         return invite.fetch(options);
@@ -50,7 +42,6 @@ Invite = ghostBookshelf.Model.extend({
             text = '';
 
         options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         data.expires = Date.now() + constants.ONE_WEEK_MS;
         data.status = 'pending';

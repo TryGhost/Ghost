@@ -341,11 +341,11 @@ User = ghostBookshelf.Model.extend({
             permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
         }
 
-        // CASE: The `include` parameter is allowed when using the public API, but not the `roles` value.
+        // CASE: The `withRelated` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
         if (options && options.context && options.context.public) {
-            if (options.include && options.include.indexOf('roles') !== -1) {
-                options.include.splice(options.include.indexOf('roles'), 1);
+            if (options.withRelated && options.withRelated.indexOf('roles') !== -1) {
+                options.withRelated.splice(options.withRelated.indexOf('roles'), 1);
             }
         }
 
@@ -358,7 +358,7 @@ User = ghostBookshelf.Model.extend({
      * We have to clone the data, because we remove values from this object.
      * This is not expected from outside!
      *
-     * @extends ghostBookshelf.Model.findOne to include roles
+     * @extends ghostBookshelf.Model.findOne to fetch roles
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
     findOne: function findOne(dataToClone, options) {
@@ -377,12 +377,10 @@ User = ghostBookshelf.Model.extend({
 
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
         if (lookupRole) {
             options.withRelated = _.union(options.withRelated, ['roles']);
-            options.include = _.union(options.include, ['roles']);
 
             query = this.forge(data);
             query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
@@ -420,7 +418,6 @@ User = ghostBookshelf.Model.extend({
         }
 
         options = options || {};
-        options.withRelated = _.union(options.withRelated, options.include);
 
         if (data.email) {
             ops.push(function checkForDuplicateEmail() {
@@ -487,7 +484,6 @@ User = ghostBookshelf.Model.extend({
             roles;
 
         options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
@@ -568,7 +564,6 @@ User = ghostBookshelf.Model.extend({
         }
 
         options = this.filterOptions(options, 'setup');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         userData.slug = null;
         return self.edit(userData, options);
@@ -624,7 +619,7 @@ User = ghostBookshelf.Model.extend({
             return this.findOne({
                 id: userModelOrId,
                 status: 'all'
-            }, {include: ['roles']}).then(function then(foundUserModel) {
+            }, {withRelated: ['roles']}).then(function then(foundUserModel) {
                 if (!foundUserModel) {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.userNotFound')
@@ -785,7 +780,7 @@ User = ghostBookshelf.Model.extend({
 
         return Promise.join(
             ghostBookshelf.model('Role').findOne({name: 'Owner'}),
-            User.findOne({id: options.context.user}, {include: ['roles']})
+            User.findOne({id: options.context.user}, {withRelated: ['roles']})
         )
             .then(function then(results) {
                 ownerRole = results[0];
@@ -798,7 +793,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
-                    User.findOne({id: object.id}, {include: ['roles']}));
+                    User.findOne({id: object.id}, {withRelated: ['roles']}));
             })
             .then(function then(results) {
                 var adminRole = results[0],
@@ -820,7 +815,7 @@ User = ghostBookshelf.Model.extend({
                     .fetch({withRelated: ['roles']});
             })
             .then(function then(users) {
-                options.include = ['roles'];
+                options.withRelated = ['roles'];
                 return users.toJSON(options);
             });
     },
