@@ -401,15 +401,15 @@ Post = ghostBookshelf.Model.extend({
 
         return attrs;
     },
-    enforcedFilters: function enforcedFilters() {
-        return this.isPublicContext() ? 'status:published' : null;
+    enforcedFilters: function enforcedFilters(options) {
+        return options.context && options.context.public ? 'status:published' : null;
     },
-    defaultFilters: function defaultFilters() {
-        if (this.isInternalContext()) {
+    defaultFilters: function defaultFilters(options) {
+        if (options.context && options.context.internal) {
             return null;
         }
 
-        return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
+        return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
     }
 }, {
     allowedFormats: ['mobiledoc', 'html', 'plaintext', 'amp'],

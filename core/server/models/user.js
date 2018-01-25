@@ -261,20 +261,20 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    enforcedFilters: function enforcedFilters() {
-        if (this.isInternalContext()) {
+    enforcedFilters: function enforcedFilters(options) {
+        if (options.context && options.context.internal) {
             return null;
         }
 
-        return this.isPublicContext() ? 'status:[' + allStates.join(',') + ']' : null;
+        return options.context && options.context.public ? 'status:[' + allStates.join(',') + ']' : null;
     },
 
-    defaultFilters: function defaultFilters() {
-        if (this.isInternalContext()) {
+    defaultFilters: function defaultFilters(options) {
+        if (options.context && options.context.internal) {
             return null;
         }
 
-        return this.isPublicContext() ? null : 'status:[' + allStates.join(',') + ']';
+        return options.context && options.context.public ? null : 'status:[' + allStates.join(',') + ']';
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
