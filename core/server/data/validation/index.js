@@ -169,11 +169,13 @@ validateSchema = function validateSchema(tableName, model) {
 
     _.each(columns, function each(columnKey) {
         var message = '',
-            strVal = _.toString(model[columnKey]);
+            strVal = _.toString(model.get(columnKey));
 
         // check nullable
-        if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
-            && schema[tableName][columnKey].nullable !== true) {
+        if (schema[tableName][columnKey].hasOwnProperty('nullable') &&
+            schema[tableName][columnKey].nullable !== true &&
+            !schema[tableName][columnKey].hasOwnProperty('defaultTo')
+        ) {
             if (validator.empty(strVal)) {
                 message = common.i18n.t('notices.data.validation.index.valueCannotBeBlank', {
                     tableName: tableName,
@@ -187,7 +189,7 @@ validateSchema = function validateSchema(tableName, model) {
         }
 
         // validate boolean columns
-        if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('type')
+        if (schema[tableName][columnKey].hasOwnProperty('type')
             && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
                 message = common.i18n.t('notices.data.validation.index.valueMustBeBoolean', {
@@ -202,7 +204,7 @@ validateSchema = function validateSchema(tableName, model) {
         }
 
         // TODO: check if mandatory values should be enforced
-        if (model[columnKey] !== null && model[columnKey] !== undefined) {
+        if (model.get(columnKey) !== null && model.get(columnKey) !== undefined) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {

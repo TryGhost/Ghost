@@ -488,13 +488,10 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of invalid post data'));
             }).catch(function (response) {
-                response.length.should.equal(2, response);
+                response.length.should.equal(1, response);
 
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [posts.title] cannot be blank.');
-
-                response[1].errorType.should.equal('ValidationError');
-                response[1].message.should.eql('Value in [posts.status] cannot be blank.');
 
                 done();
             }).catch(done);

@@ -136,8 +136,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         proto.initialize.call(this);
     },
 
+    /**
+     * Do not call `toJSON`. This can remove properties e.g. password.
+     * @returns {*}
+     */
     onValidate: function onValidate() {
-        return validation.validateSchema(this.tableName, this.toJSON());
+        return validation.validateSchema(this.tableName, this);
     },
 
     /**
