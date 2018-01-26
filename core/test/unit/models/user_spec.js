@@ -8,7 +8,7 @@ const should = require('should'),
     testUtils = require('../../utils'),
     sandbox = sinon.sandbox.create();
 
-describe('Models: User', function () {
+describe('Unit: models/user', function () {
     let knexMock;
 
     before(function () {
@@ -63,6 +63,35 @@ describe('Models: User', function () {
                     .then(function (user) {
                         user.get('slug').should.eql('joe-bloggs');
                         user.get('password').should.not.eql(oldPassword);
+                    });
+            });
+        });
+
+        describe('blank', function () {
+            it('name cannot be blank', function () {
+                return models.User.add({email: 'test@ghost.org'})
+                    .then(function () {
+                        throw new Error('expected ValidationError');
+                    })
+                    .catch(function (err) {
+                        (err instanceof common.errors.ValidationError).should.be.true;
+                        err.message.should.match(/users\.name/);
+                    });
+            });
+
+            it('email cannot be blank', function () {
+                let data = {name: 'name'};
+                sandbox.stub(models.User, 'findOne').resolves(null);
+
+                return models.User.add(data)
+                    .then(function () {
+                        throw new Error('expected ValidationError');
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                        err.should.be.an.Array();
+                        (err[0] instanceof common.errors.ValidationError).should.eql.true;
+                        err[0].message.should.match(/users\.email/);
                     });
             });
         });

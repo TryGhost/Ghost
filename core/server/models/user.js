@@ -90,6 +90,22 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
+        /**
+         * Bookshelf call order:
+         *   - onSaving
+         *   - onValidate (validates the model against the schema)
+         *
+         * Before we can generate a slug, we have to ensure that the name is not blank.
+         */
+        if (!this.get('name')) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('notices.data.validation.index.valueCannotBeBlank', {
+                    tableName: this.tableName,
+                    columnKey: 'name'
+                })
+            });
+        }
+
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
