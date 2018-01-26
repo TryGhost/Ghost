@@ -24,11 +24,9 @@ User = ghostBookshelf.Model.extend({
     tableName: 'users',
 
     defaults: function defaults() {
-        var baseDefaults = ghostBookshelf.Model.prototype.defaults.call(this);
-
-        return _.merge({
+        return {
             password: security.identifier.uid(50)
-        }, baseDefaults);
+        };
     },
 
     emitChange: function emitChange(event, options) {

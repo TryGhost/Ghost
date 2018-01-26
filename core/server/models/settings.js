@@ -51,7 +51,12 @@ Settings = ghostBookshelf.Model.extend({
 
     tableName: 'settings',
 
-    defaults: function defaults() {
+    /**
+     * @TODO:
+     * - `defaultTo` does not work for this table. Works for all other tables. Why?
+     * - might be a bug in knex
+     */
+    defaults: function () {
         return {
             type: 'core'
         };

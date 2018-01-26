@@ -20,6 +20,12 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    defaults: function defaults() {
+        return {
+            uuid: uuid.v4()
+        };
+    },
+
     relationships: ['tags'],
 
     /**
@@ -47,13 +53,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         common.events.emit(resourceType + '.' + event, this, options);
-    },
-
-    defaults: function defaults() {
-        return {
-            uuid: uuid.v4(),
-            status: 'draft'
-        };
     },
 
     /**

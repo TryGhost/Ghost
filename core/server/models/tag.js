@@ -7,12 +7,6 @@ Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
-    defaults: function defaults() {
-        return {
-            visibility: 'public'
-        };
-    },
-
     emitChange: function emitChange(event) {
         common.events.emit('tag' + '.' + event, this);
     },

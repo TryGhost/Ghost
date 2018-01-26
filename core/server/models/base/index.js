@@ -78,11 +78,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return _.keys(schema.tables[this.tableName]);
     },
 
-    // Bookshelf `defaults` - default values setup on every model creation
-    defaults: function defaults() {
-        return {};
-    },
-
     // When loading an instance, subclasses can specify default to fetch
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return [];
