@@ -187,18 +187,13 @@ User = ghostBookshelf.Model.extend({
     // This is used to bypass validation during the credential check, and must never be done with user-provided data
     // Should be removed when #3691 is done
     onValidate: function validate() {
-        var opts = arguments[1],
-            userData;
+        var opts = arguments[1];
 
         if (opts && _.has(opts, 'validate') && opts.validate === false) {
             return;
         }
 
-        // use the base toJSON since this model's overridden toJSON
-        // removes fields and we want everything to run through the validator.
-        userData = ghostBookshelf.Model.prototype.toJSON.call(this);
-
-        return validation.validateSchema(this.tableName, userData);
+        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments);
     },
 
     toJSON: function toJSON(unfilteredOptions) {
