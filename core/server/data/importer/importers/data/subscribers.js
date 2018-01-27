@@ -1,16 +1,14 @@
 'use strict';
 
 const debug = require('ghost-ignition').debug('importer:subscribers'),
-    _ = require('lodash'),
     BaseImporter = require('./base');
 
 class SubscribersImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Subscriber',
-            dataKeyToImport: 'subscribers',
-            requiredData: []
-        }));
+            dataKeyToImport: 'subscribers'
+        });
     }
 
     beforeImport() {

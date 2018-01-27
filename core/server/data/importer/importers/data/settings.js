@@ -9,12 +9,11 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
 class SettingsImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Settings',
-            dataKeyToImport: 'settings',
-            requiredData: []
-        }));
+            dataKeyToImport: 'settings'
+        });
 
         this.errorConfig = {
             allowDuplicates: true,
