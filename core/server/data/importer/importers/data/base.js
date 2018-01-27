@@ -8,9 +8,10 @@ const debug = require('ghost-ignition').debug('importer:base'),
     Promise = require('bluebird');
 
 class Base {
-    constructor(options) {
+    constructor(allDataFromFile, options) {
         let self = this;
 
+        this.options = options;
         this.modelName = options.modelName;
 
         this.problems = [];
@@ -29,19 +30,20 @@ class Base {
         };
 
         this.dataKeyToImport = options.dataKeyToImport;
-        this.dataToImport = _.cloneDeep(options[this.dataKeyToImport] || []);
+        this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
         this.importedData = [];
 
-        // NOTE: e.g. properties are removed or properties are added/changed before importing
-        _.each(options, function (obj, key) {
-            if (options.requiredData.indexOf(key) !== -1) {
-                self[key] = _.cloneDeep(obj);
-            }
-        });
+        this.requiredFromFile = {};
 
-        if (!this.users) {
-            this.users = _.cloneDeep(options.users);
+        if (!this.options.requiredFromFile) {
+            this.options.requiredFromFile = ['users'];
+        } else {
+            this.options.requiredFromFile.push('users');
         }
+
+        _.each(this.options.requiredFromFile, (key) => {
+            this.requiredFromFile[key] = _.cloneDeep(allDataFromFile[key]);
+        });
     }
 
     /**
@@ -204,7 +206,7 @@ class Base {
                             return Promise.resolve();
                         }
 
-                        oldUser = _.find(self.users, {id: obj[key]});
+                        oldUser = _.find(self.requiredFromFile.users, {id: obj[key]});
 
                         if (!oldUser) {
                             self.problems.push({

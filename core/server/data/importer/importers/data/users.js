@@ -5,12 +5,12 @@ const debug = require('ghost-ignition').debug('importer:users'),
     BaseImporter = require('./base');
 
 class UsersImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'User',
             dataKeyToImport: 'users',
-            requiredData: ['roles', 'roles_users']
-        }));
+            requiredFromFile: ['roles', 'roles_users']
+        });
 
         // Map legacy keys
         this.legacyKeys = {
@@ -41,7 +41,7 @@ class UsersImporter extends BaseImporter {
         this.dataToImport = this.dataToImport.map(self.legacyMapper);
 
         // NOTE: sort out duplicated roles based on incremental id
-        _.each(this.roles_users, function (attachedRole) {
+        _.each(this.requiredFromFile.roles_users, function (attachedRole) {
             if (lookup.hasOwnProperty(attachedRole.user_id)) {
                 if (lookup[attachedRole.user_id].id < attachedRole.id) {
                     lookup[attachedRole.user_id] = attachedRole;
@@ -51,10 +51,10 @@ class UsersImporter extends BaseImporter {
             }
         });
 
-        this.roles_users = _.toArray(lookup);
+        this.requiredFromFile.roles_users = _.toArray(lookup);
 
-        _.each(this.roles_users, function (attachedRole) {
-            role = _.find(self.roles, function (role) {
+        _.each(this.requiredFromFile.roles_users, function (attachedRole) {
+            role = _.find(self.requiredFromFile.roles, function (role) {
                 if (attachedRole.role_id === role.id) {
                     return role;
                 }
