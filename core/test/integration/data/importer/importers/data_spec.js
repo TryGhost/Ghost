@@ -39,7 +39,7 @@ describe('Import', function () {
         it('import results have data and problems', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -54,7 +54,7 @@ describe('Import', function () {
         it('removes duplicate posts', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -69,7 +69,7 @@ describe('Import', function () {
         it('removes duplicate tags and updates associations', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -97,7 +97,7 @@ describe('Import', function () {
         it('cares about invalid dates', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importResult) {
@@ -121,7 +121,7 @@ describe('Import', function () {
         it('imports data from 000', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-000', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-000', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -167,7 +167,7 @@ describe('Import', function () {
         it('safely imports data, from 001', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -224,7 +224,7 @@ describe('Import', function () {
         it('doesn\'t import invalid settings data from 001', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001-invalid-setting', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001-invalid-setting', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -265,7 +265,7 @@ describe('Import', function () {
         it('safely imports data from 002', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-002', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-002', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -327,7 +327,7 @@ describe('Import', function () {
         it('safely imports data from 003 (single user)', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -366,7 +366,7 @@ describe('Import', function () {
         it('handles validation errors nicely', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-badValidation', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-badValidation', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -390,7 +390,7 @@ describe('Import', function () {
         it('handles database errors nicely: duplicated tag and posts slugs', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-dbErrors', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-dbErrors', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
@@ -410,14 +410,15 @@ describe('Import', function () {
         it('does import posts with an invalid author', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function (importedData) {
                 // NOTE: we detect invalid author references as warnings, because ember can handle this
                 // The owner can simply update the author reference in the UI
                 importedData.problems.length.should.eql(3);
-                importedData.problems[2].message.should.eql('Entry was imported, but we were not able to update user reference field: published_by');
+                importedData.problems[2].message.should.eql('Entry was imported, but we were not able to ' +
+                    'update user reference field: published_by. The user does not exist, fallback to owner user.');
                 importedData.problems[2].help.should.eql('Post');
 
                 // Grab the data from tables
@@ -446,9 +447,9 @@ describe('Import', function () {
                 // test posts
                 posts.length.should.equal(1, 'Wrong number of posts');
 
-                // this is just a string and ember can handle unknown authors
-                // the blog owner is able to simply set a new author
-                posts[0].author_id.should.eql('2');
+                // we fallback to owner user
+                // NOTE: ember can handle unknown authors, but still a fallback to an existing user is better.
+                posts[0].author_id.should.eql('1');
 
                 // test tags
                 tags.length.should.equal(0, 'no tags');
@@ -460,7 +461,7 @@ describe('Import', function () {
         it('doesn\'t import invalid tags data from 003', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullTags', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-nullTags', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -478,7 +479,7 @@ describe('Import', function () {
         it('doesn\'t import invalid posts data from 003', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-nullPosts', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-nullPosts', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -499,7 +500,7 @@ describe('Import', function () {
         it('correctly sanitizes incorrect UUIDs', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003-wrongUUID', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-wrongUUID', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -523,7 +524,7 @@ describe('Import', function () {
         it('ensure post tag order is correct', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-004', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-004', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
@@ -571,7 +572,7 @@ describe('Import', function () {
         it('doesn\'t import a title which is too long', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
 
                 // change title to 300 characters  (soft limit is 255)
@@ -612,7 +613,7 @@ describe('Import', function () {
         it('doesn\'t import a tag when meta title too long', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
 
                 // change meta_title to 305 characters  (soft limit is 300)
@@ -652,7 +653,7 @@ describe('Import', function () {
         it('doesn\'t import a user user when bio too long', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-001', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
 
                 // change bio to 300 characters (soft limit is 200)
@@ -700,7 +701,7 @@ describe('Import (new test structure)', function () {
 
         before(function doImport(done) {
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts:true});
+                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -947,7 +948,7 @@ describe('Import (new test structure)', function () {
 
         before(function doImport(done) {
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner', {lts:true});
+                return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1167,7 +1168,7 @@ describe('Import (new test structure)', function () {
         before(function doImport(done) {
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts:true});
+                return testUtils.fixtures.loadExportFixture('export-003-mu', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
@@ -1671,7 +1672,7 @@ describe('Import (new test structure)', function () {
         after(testUtils.teardown);
 
         it('provides error message and does not import where lts email address is longer that 1.0.0 constraint', function (done) {
-            testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email', {lts:true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData);
             }).then(function () {
