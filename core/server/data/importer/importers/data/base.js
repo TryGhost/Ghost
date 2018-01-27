@@ -208,12 +208,15 @@ class Base {
 
                         if (!oldUser) {
                             self.problems.push({
-                                message: 'Entry was imported, but we were not able to update user reference field: ' + key,
+                                message: 'Entry was imported, but we were not able to update user reference field: ' +
+                                key + '. The user does not exist, fallback to owner user.',
                                 help: self.modelName,
                                 context: JSON.stringify(obj)
                             });
 
-                            return;
+                            oldUser = {
+                                email: ownerUser.get('email')
+                            };
                         }
 
                         return models.User.findOne({
