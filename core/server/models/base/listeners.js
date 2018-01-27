@@ -31,9 +31,9 @@ common.events.on('user.deactivated', function (userModel, options) {
         return;
     }
 
-    models.Accesstoken.destroyByUser(options)
+    models.Accesstoken.destroyByUser(_.omit(options, 'transacting'))
         .then(function () {
-            return models.Refreshtoken.destroyByUser(options);
+            return models.Refreshtoken.destroyByUser(_.omit(options, 'transacting'));
         })
         .catch(function (err) {
             common.logging.error(new common.errors.GhostError({
