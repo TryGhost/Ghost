@@ -7,12 +7,12 @@ const debug = require('ghost-ignition').debug('importer:posts'),
     validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredData: ['tags', 'posts_tags']
-        }));
+            requiredFromFile: ['tags', 'posts_tags']
+        });
 
         this.legacyKeys = {
             image: 'feature_image'
@@ -33,7 +33,7 @@ class PostsImporter extends BaseImporter {
      * ...because we add tags by unique name.
      */
     addTagsToPosts() {
-        let postTags = this.posts_tags,
+        let postTags = this.requiredFromFile.posts_tags,
             postsWithTags = new Map(),
             self = this,
             duplicatedTagsPerPost = {},
@@ -62,7 +62,7 @@ class PostsImporter extends BaseImporter {
             tagsToAttach = [];
 
             _.each(tagIds, function (tagId) {
-                foundOriginalTag = _.find(self.tags, {id: tagId});
+                foundOriginalTag = _.find(self.requiredFromFile.tags, {id: tagId});
 
                 if (!foundOriginalTag) {
                     return;
@@ -83,7 +83,7 @@ class PostsImporter extends BaseImporter {
                                 message: 'Detected duplicated tags for: ' + obj.title || obj.slug,
                                 help: self.modelName,
                                 context: JSON.stringify({
-                                    tags: _.map(_.filter(self.tags, function (tag) {
+                                    tags: _.map(_.filter(self.requiredFromFile.tags, function (tag) {
                                         return _.indexOf(duplicatedTagsPerPost[postId], tag.id) !== -1;
                                     }), function (value) {
                                         return value.slug || value.name;

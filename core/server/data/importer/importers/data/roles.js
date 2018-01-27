@@ -1,16 +1,14 @@
 'use strict';
 
 const debug = require('ghost-ignition').debug('importer:roles'),
-    _ = require('lodash'),
     BaseImporter = require('./base');
 
 class RolesImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Role',
-            dataKeyToImport: 'roles',
-            requiredData: []
-        }));
+            dataKeyToImport: 'roles'
+        });
 
         this.errorConfig.returnDuplicates = false;
     }

@@ -7,12 +7,11 @@ const debug = require('ghost-ignition').debug('importer:tags'),
     models = require('../../../../models');
 
 class TagsImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Tag',
-            dataKeyToImport: 'tags',
-            requiredData: []
-        }));
+            dataKeyToImport: 'tags'
+        });
 
         // Map legacy keys
         this.legacyKeys = {
