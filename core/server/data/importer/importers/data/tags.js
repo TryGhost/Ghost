@@ -36,32 +36,33 @@ class TagsImporter extends BaseImporter {
     doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
-        let self = this, ops = [];
+        let ops = [];
 
-        this.dataToImport = this.dataToImport.map(self.legacyMapper);
+        this.dataToImport = this.dataToImport.map(this.legacyMapper);
 
-        _.each(this.dataToImport, function (obj) {
-            ops.push(models[self.modelName].findOne({name: obj.name}, options).then(function (tag) {
-                if (tag) {
-                    return Promise.resolve();
-                }
+        _.each(this.dataToImport, (obj) => {
+            ops.push(models[this.modelName].findOne({name: obj.name}, options)
+                .then((tag) => {
+                    if (tag) {
+                        return Promise.resolve();
+                    }
 
-                return models[self.modelName].add(obj, options)
-                    .then(function (importedModel) {
-                        obj.model = {
-                            id: importedModel.id
-                        };
+                    return models[this.modelName].add(obj, options)
+                        .then((importedModel) => {
+                            obj.model = {
+                                id: importedModel.id
+                            };
 
-                        if (importOptions.returnImportedData) {
-                            self.importedDataToReturn.push(importedModel.toJSON());
-                        }
+                            if (importOptions.returnImportedData) {
+                                this.importedDataToReturn.push(importedModel.toJSON());
+                            }
 
-                        return importedModel;
-                    })
-                    .catch(function (err) {
-                        return self.handleError(err, obj);
-                    });
-            }).reflect());
+                            return importedModel;
+                        })
+                        .catch((err) => {
+                            return this.handleError(err, obj);
+                        });
+                }).reflect());
         });
 
         return Promise.all(ops);
