@@ -211,7 +211,7 @@ Post = ghostBookshelf.Model.extend({
             //  and deduplicate upper/lowercase tags
             _.each(this.get('tags'), function each(item) {
                 for (i = 0; i < tagsToSave.length; i = i + 1) {
-                    if (tagsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    if (tagsToSave[i].name && item.name && tagsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
                         return;
                     }
                 }
