@@ -31,7 +31,7 @@ class Base {
 
         this.dataKeyToImport = options.dataKeyToImport;
         this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
-        this.importedData = [];
+        this.importedDataToReturn = [];
 
         this.requiredFromFile = {};
 
@@ -61,11 +61,11 @@ class Base {
      * Clean invalid values.
      */
     sanitizeValues() {
-        let temporaryDate, self = this;
+        let self = this;
 
         _.each(this.dataToImport, function (obj) {
             _.each(_.pick(obj, ['updated_at', 'created_at', 'published_at']), function (value, key) {
-                temporaryDate = new Date(value);
+                let temporaryDate = new Date(value);
 
                 if (isNaN(temporaryDate)) {
                     self.problems.push({
@@ -150,7 +150,7 @@ class Base {
         return Promise.reject(errorsToReject);
     }
 
-    doImport(options) {
+    doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
         let self = this, ops = [];
@@ -159,8 +159,14 @@ class Base {
             ops.push(function addModel() {
                 return models[self.modelName].add(obj, options)
                     .then(function (importedModel) {
-                        obj.model = importedModel.toJSON();
-                        self.importedData.push(obj.model);
+                        obj.model = {
+                            id: importedModel.id
+                        };
+
+                        if (importOptions.returnImportedData) {
+                            self.importedDataToReturn.push(importedModel.toJSON());
+                        }
+
                         return importedModel;
                     })
                     .catch(function (err) {
@@ -189,7 +195,7 @@ class Base {
      *  - we update all fields after the import (!)
      */
     afterImport(options) {
-        let self = this, dataToEdit = {}, oldUser, context;
+        let self = this;
 
         debug('afterImport', this.modelName);
 
@@ -206,7 +212,7 @@ class Base {
                             return Promise.resolve();
                         }
 
-                        oldUser = _.find(self.requiredFromFile.users, {id: obj[key]});
+                        let oldUser = _.find(self.requiredFromFile.users, {id: obj[key]});
 
                         if (!oldUser) {
                             self.problems.push({
@@ -232,8 +238,10 @@ class Base {
                                 };
                             }
 
-                            dataToEdit = {};
+                            let dataToEdit = {};
                             dataToEdit[key] = userModel.id;
+
+                            let context;
 
                             // CASE: updated_by is taken from the context object
                             if (key === 'updated_by') {

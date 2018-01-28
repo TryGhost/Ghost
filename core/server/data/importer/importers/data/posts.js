@@ -171,8 +171,8 @@ class PostsImporter extends BaseImporter {
         return super.beforeImport();
     }
 
-    doImport(options) {
-        return super.doImport(options);
+    doImport(options, importOptions) {
+        return super.doImport(options, importOptions);
     }
 }
 

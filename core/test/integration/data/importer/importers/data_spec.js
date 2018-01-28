@@ -13,6 +13,9 @@ var should = require('should'),
     exporter = require('../../../../../server/data/export'),
     importer = require('../../../../../server/data/importer'),
     dataImporter = importer.importers[1],
+    importOptions = {
+        returnImportedData: true
+    },
 
     knex = db.knex,
     sandbox = sinon.sandbox.create();
@@ -41,7 +44,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importResult) {
                 should.exist(importResult);
                 should.exist(importResult.data);
@@ -56,7 +59,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
                 importResult.data.posts.length.should.equal(1);
@@ -71,7 +74,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-duplicate-tags', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importResult) {
                 should.exist(importResult.data.tags);
                 should.exist(importResult.originalData.posts_tags);
@@ -99,7 +102,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
                 importResult.data.posts.length.should.equal(1);
@@ -123,7 +126,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-000', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -169,7 +172,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -226,7 +229,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-001-invalid-setting', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
@@ -267,7 +270,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-002', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -329,7 +332,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -368,7 +371,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-badValidation', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
@@ -392,7 +395,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-dbErrors', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importedData) {
                 importedData.data.posts.length.should.eql(1);
 
@@ -412,7 +415,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function (importedData) {
                 // NOTE: we detect invalid author references as warnings, because ember can handle this
                 // The owner can simply update the author reference in the UI
@@ -463,7 +466,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-nullTags', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
@@ -481,7 +484,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-nullPosts', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done(new Error('Allowed import of invalid post data'));
             }).catch(function (response) {
@@ -502,7 +505,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-wrongUUID', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 return knex('posts').select();
@@ -526,7 +529,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-004', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 // Grab the data from tables
                 // NOTE: we have to return sorted data, sqlite can insert the posts in a different order
@@ -578,7 +581,7 @@ describe('Import', function () {
                 // change title to 300 characters  (soft limit is 255)
                 exportData.data.posts[0].title = new Array(300).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
@@ -618,7 +621,7 @@ describe('Import', function () {
 
                 // change meta_title to 305 characters  (soft limit is 300)
                 exportData.data.tags[0].meta_title = new Array(305).join('a');
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
@@ -658,7 +661,7 @@ describe('Import', function () {
 
                 // change bio to 300 characters (soft limit is 200)
                 exportData.data.users[0].bio = new Array(300).join('a');
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
@@ -704,7 +707,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -951,7 +954,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1171,7 +1174,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1407,7 +1410,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1478,7 +1481,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-lts-legacy-fields', {lts: true});
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1560,7 +1563,7 @@ describe('Import (new test structure)', function () {
                 );
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1674,7 +1677,7 @@ describe('Import (new test structure)', function () {
         it('provides error message and does not import where lts email address is longer that 1.0.0 constraint', function (done) {
             testUtils.fixtures.loadExportFixture('export-lts-style-user-long-email', {lts: true}).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }).catch(function (error) {
@@ -1704,7 +1707,7 @@ describe('Import (new test structure)', function () {
                 );
             }).then(function (exported) {
                 exportData = exported;
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1756,7 +1759,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-basic-test');
             }).then(function (exported) {
                 exportData = exported.db[0];
-                return dataImporter.doImport(exportData);
+                return dataImporter.doImport(exportData, importOptions);
             });
         });
 
