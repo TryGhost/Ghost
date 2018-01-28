@@ -34,12 +34,21 @@ class Base {
         this.importedDataToReturn = [];
         this.importedData = [];
 
-        this.options.requiredImportedData = ['users'];
-        this.options.requiredExistingData = ['users'];
-
         this.requiredFromFile = {};
         this.requiredImportedData = {};
         this.requiredExistingData = {};
+
+        if (!this.options.requiredImportedData) {
+            this.options.requiredImportedData = ['users'];
+        } else {
+            this.options.requiredImportedData.push('users');
+        }
+
+        if (!this.options.requiredExistingData) {
+            this.options.requiredExistingData = ['users'];
+        } else {
+            this.options.requiredExistingData.push('users');
+        }
 
         if (!this.options.requiredFromFile) {
             this.options.requiredFromFile = ['users'];

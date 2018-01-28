@@ -11,7 +11,9 @@ class PostsImporter extends BaseImporter {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['tags', 'posts_tags']
+            requiredFromFile: ['posts', 'tags', 'posts_tags'],
+            requiredImportedData: ['tags'],
+            requiredExistingData: ['tags']
         });
 
         this.legacyKeys = {
@@ -28,76 +30,93 @@ class PostsImporter extends BaseImporter {
     }
 
     /**
-     * We don't have to worry about existing tag id's.
-     * e.g. you import a tag, which exists (doesn't get imported)
-     * ...because we add tags by unique name.
+     * Naive function to attach related tags.
+     * Target tags should not be created. We add the relation by foreign key.
      */
-    addTagsToPosts() {
-        let postTags = this.requiredFromFile.posts_tags,
-            postsWithTags = new Map(),
-            duplicatedTagsPerPost = {},
-            tagsToAttach = [],
-            foundOriginalTag;
+    addNestedRelations() {
+        this.requiredFromFile.posts_tags = _.orderBy(this.requiredFromFile.posts_tags, ['post_id', 'sort_order'], ['asc', 'asc']);
 
-        postTags = _.orderBy(postTags, ['post_id', 'sort_order'], ['asc', 'asc']);
-
-        _.each(postTags, (postTag) => {
-            if (!postsWithTags.get(postTag.post_id)) {
-                postsWithTags.set(postTag.post_id, []);
+        /**
+         * {post_id: 1, tag_id: 2}
+         */
+        _.each(this.requiredFromFile.posts_tags, (postTagRelation) => {
+            if (!postTagRelation.post_id) {
+                return;
             }
 
-            if (postsWithTags.get(postTag.post_id).indexOf(postTag.tag_id) !== -1) {
-                if (!duplicatedTagsPerPost.hasOwnProperty(postTag.post_id)) {
-                    duplicatedTagsPerPost[postTag.post_id] = [];
+            let postToImport = _.find(this.dataToImport, {id: postTagRelation.post_id});
+
+            // CASE: we won't import a relation when the target post does not exist
+            if (!postToImport) {
+                return;
+            }
+
+            if (!postToImport.tags || !_.isArray(postToImport.tags)) {
+                postToImport.tags = [];
+            }
+
+            // CASE: duplicate relation?
+            if (!_.find(postToImport.tags, {tag_id: postTagRelation.tag_id})) {
+                postToImport.tags.push({
+                    tag_id: postTagRelation.tag_id
+                });
+            }
+        });
+    }
+
+    /**
+     * Replace all `tag_id` references.
+     */
+    replaceIdentifiers() {
+        /**
+         * {post_id: 1, tag_id: 2}
+         */
+        _.each(this.dataToImport, (postToImport, postIndex) => {
+            if (!postToImport.tags || !postToImport.tags.length) {
+                return;
+            }
+
+            let indexesToRemove = [];
+            _.each(postToImport.tags, (tag, tagIndex) => {
+                let tagInFile = _.find(this.requiredFromFile.tags, {id: tag.tag_id});
+
+                if (!tagInFile) {
+                    let existingTag = _.find(this.requiredExistingData.tags, {id: tag.tag_id});
+
+                    // CASE: tag is not in file, tag is not in db
+                    if (!existingTag) {
+                        indexesToRemove.push(tagIndex);
+                        return;
+                    } else {
+                        this.dataToImport[postIndex].tags[tagIndex].tag_id = existingTag.id;
+                        return;
+                    }
                 }
 
-                duplicatedTagsPerPost[postTag.post_id].push(postTag.tag_id);
-            }
+                // CASE: search through imported data
+                let importedTag = _.find(this.requiredImportedData.tags, {slug: tagInFile.slug});
 
-            postsWithTags.get(postTag.post_id).push(postTag.tag_id);
-        });
-
-        postsWithTags.forEach((tagIds, postId) => {
-            tagsToAttach = [];
-
-            _.each(tagIds, (tagId) => {
-                foundOriginalTag = _.find(this.requiredFromFile.tags, {id: tagId});
-
-                if (!foundOriginalTag) {
+                if (importedTag) {
+                    this.dataToImport[postIndex].tags[tagIndex].tag_id = importedTag.id;
                     return;
                 }
 
-                tagsToAttach.push(foundOriginalTag);
+                // CASE: search through existing data
+                let existingTag = _.find(this.requiredExistingData.tags, {slug: tagInFile.slug});
+
+                if (existingTag) {
+                    this.dataToImport[postIndex].tags[tagIndex].tag_id = existingTag.id;
+                } else {
+                    indexesToRemove.push(tagIndex);
+                }
             });
 
-            _.each(tagsToAttach, (tag) => {
-                _.each(this.dataToImport, (obj) => {
-                    if (obj.id === postId) {
-                        if (!_.isArray(obj.tags)) {
-                            obj.tags = [];
-                        }
-
-                        if (duplicatedTagsPerPost.hasOwnProperty(postId) && duplicatedTagsPerPost[postId].length) {
-                            this.problems.push({
-                                message: 'Detected duplicated tags for: ' + obj.title || obj.slug,
-                                help: this.modelName,
-                                context: JSON.stringify({
-                                    tags: _.map(_.filter(this.requiredFromFile.tags, (tag) => {
-                                        return _.indexOf(duplicatedTagsPerPost[postId], tag.id) !== -1;
-                                    }), (value) => {
-                                        return value.slug || value.name;
-                                    })
-                                })
-                            });
-                        }
-
-                        obj.tags.push({
-                            name: tag.name
-                        });
-                    }
-                });
-            });
+            this.dataToImport[postIndex].tags = _.filter(this.dataToImport[postIndex].tags, ((tag, index) => {
+                return indexesToRemove.indexOf(index) === -1;
+            }));
         });
+
+        return super.replaceIdentifiers();
     }
 
     beforeImport() {
@@ -105,7 +124,7 @@ class PostsImporter extends BaseImporter {
         let mobileDocContent;
 
         this.sanitizeAttributes();
-        this.addTagsToPosts();
+        this.addNestedRelations();
 
         // Remove legacy field language
         this.dataToImport = _.filter(this.dataToImport, (data) => {
