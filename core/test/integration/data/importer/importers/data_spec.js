@@ -427,8 +427,10 @@ describe('Import', function () {
                 // NOTE: a duplicated tag.slug is a warning
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [tags.name] cannot be blank.');
+
                 response[1].errorType.should.equal('ValidationError');
                 response[1].message.should.eql('Value in [posts.title] cannot be blank.');
+
                 response[2].errorType.should.equal('ValidationError');
                 response[2].message.should.eql('Value in [settings.key] cannot be blank.');
 
@@ -480,6 +482,7 @@ describe('Import', function () {
 
                 importedData.problems[2].message.should.eql('Entry was imported, but we were not able to ' +
                     'resolve the following user references: author_id, published_by. The user does not exist, fallback to owner user.');
+                importedData.problems[2].help.should.eql('Post');
 
                 // Grab the data from tables
                 return Promise.all([
@@ -527,11 +530,9 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
-                response.length.should.equal(2);
+                response.length.should.equal(1);
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [tags.name] cannot be blank.');
-                response[1].errorType.should.equal('ValidationError');
-                response[1].message.should.eql('Value in [tags.name] cannot be blank.');
                 done();
             }).catch(done);
         });
