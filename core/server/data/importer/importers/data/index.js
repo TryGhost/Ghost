@@ -20,9 +20,9 @@ DataImporter = {
     },
 
     init: function init(importData) {
+        importers.users = new UsersImporter(importData.data);
         importers.roles = new RolesImporter(importData.data);
         importers.tags = new TagsImporter(importData.data);
-        importers.users = new UsersImporter(importData.data);
         importers.subscribers = new SubscribersImporter(importData.data);
         importers.posts = new PostsImporter(importData.data);
         importers.settings = new SettingsImporter(importData.data);
@@ -48,6 +48,7 @@ DataImporter = {
         if (importOptions.importPersistUser) {
             modelOptions.importPersistUser = importOptions.importPersistUser;
         }
+
         this.init(importData);
 
         return models.Base.transaction(function (transacting) {
@@ -55,19 +56,31 @@ DataImporter = {
 
             _.each(importers, function (importer) {
                 ops.push(function doModelImport() {
-                    return importer.beforeImport(modelOptions, importOptions)
+                    return importer.fetchExisting(modelOptions, importOptions)
+                        .then(function () {
+                            return importer.beforeImport(modelOptions, importOptions);
+                        })
+                        .then(function () {
+                            if (importer.options.requiredImportedData.length) {
+                                _.each(importer.options.requiredImportedData, (key) => {
+                                    importer.requiredImportedData[key] = importers[key].importedData;
+                                });
+                            }
+
+                            if (importer.options.requiredExistingData.length) {
+                                _.each(importer.options.requiredExistingData, (key) => {
+                                    importer.requiredExistingData[key] = importers[key].existingData;
+                                });
+                            }
+
+                            return importer.replaceIdentifiers(modelOptions, importOptions);
+                        })
                         .then(function () {
                             return importer.doImport(modelOptions, importOptions)
                                 .then(function (_results) {
                                     results = results.concat(_results);
                                 });
                         });
-                });
-            });
-
-            _.each(importers, function (importer) {
-                ops.push(function afterImport() {
-                    return importer.afterImport(modelOptions);
                 });
             });
 

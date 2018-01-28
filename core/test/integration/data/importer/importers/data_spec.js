@@ -54,7 +54,7 @@ describe('Import', function () {
             }).catch(done);
         });
 
-        it('removes duplicate posts', function (done) {
+        it('removes duplicate posts, cares about invalid dates', function (done) {
             var exportData;
 
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
@@ -63,7 +63,26 @@ describe('Import', function () {
             }).then(function (importResult) {
                 should.exist(importResult.data.posts);
                 importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(3);
+                importResult.problems.length.should.eql(4);
+
+                importResult.problems[0].message.should.eql('Entry was imported, but we were not able to ' +
+                    'resolve the following user references: updated_by. The user does not exist, fallback to owner user.');
+                importResult.problems[0].help.should.eql('User');
+
+                importResult.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importResult.problems[1].help.should.eql('User');
+
+                importResult.problems[2].message.should.eql('Date is in a wrong format and invalid. ' +
+                    'It was replaced with the current timestamp.');
+                importResult.problems[2].help.should.eql('Post');
+
+                importResult.problems[3].message.should.eql('Theme not imported, please upload in Settings - Design');
+                importResult.problems[3].help.should.eql('Settings');
+
+                moment(importResult.data.posts[0].created_at).isValid().should.eql(true);
+                moment(importResult.data.posts[0].updated_at).format().should.eql('2013-10-18T23:58:44Z');
+                moment(importResult.data.posts[0].published_at).format().should.eql('2013-12-29T11:58:30Z');
+                moment(importResult.data.tags[0].updated_at).format().should.eql('2016-07-17T12:02:54Z');
 
                 done();
             }).catch(done);
@@ -91,6 +110,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-duplicate-tags', {lts: true}).then(function (exported) {
                 exportData = exported;
+
                 return dataImporter.doImport(exportData, importOptions);
             }).then(function (importResult) {
                 should.exist(importResult.data.tags);
@@ -106,30 +126,40 @@ describe('Import', function () {
                     return postTag.tag_id !== 2;
                 });
 
-                importResult.problems.length.should.equal(3);
+                importResult.problems.length.should.equal(4);
 
-                importResult.problems[2].message.should.equal('Theme not imported, please upload in Settings - Design');
+                importResult.problems[0].message.should.eql('Entry was imported, but we were not able to ' +
+                    'resolve the following user references: updated_by. The user does not exist, fallback to owner user.');
+                importResult.problems[0].help.should.eql('User');
+
+                importResult.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importResult.problems[1].help.should.eql('User');
+
+                importResult.problems[2].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importResult.problems[2].help.should.eql('Tag');
+
+                importResult.problems[3].message.should.eql('Theme not imported, please upload in Settings - Design');
+                importResult.problems[3].help.should.eql('Settings');
 
                 done();
             }).catch(done);
         });
 
-        it('cares about invalid dates', function (done) {
+        it('removes broken tags from post (not in db, not in file)', function (done) {
             var exportData;
 
-            testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
+            testUtils.fixtures.loadExportFixture('export-003-broken-tags', {lts: true}).then(function (exported) {
                 exportData = exported;
+
                 return dataImporter.doImport(exportData, importOptions);
-            }).then(function (importResult) {
-                should.exist(importResult.data.posts);
-                importResult.data.posts.length.should.equal(1);
-                importResult.problems.length.should.eql(3);
-
-                moment(importResult.data.posts[0].created_at).isValid().should.eql(true);
-                moment(importResult.data.posts[0].updated_at).format().should.eql('2013-10-18T23:58:44Z');
-                moment(importResult.data.posts[0].published_at).format().should.eql('2013-12-29T11:58:30Z');
-                moment(importResult.data.tags[0].updated_at).format().should.eql('2016-07-17T12:02:54Z');
-
+            }).then(function () {
+                return Promise.all([
+                    models.Post.findPage({withRelated: ['tags']})
+                ]);
+            }).then(function (data) {
+                data[0].posts.length.should.eql(1);
+                data[0].posts[0].slug.should.eql('welcome-to-ghost-2');
+                data[0].posts[0].tags.length.should.eql(0);
                 done();
             }).catch(done);
         });
@@ -392,7 +422,7 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
-                response.length.should.equal(4);
+                response.length.should.equal(3);
 
                 // NOTE: a duplicated tag.slug is a warning
                 response[0].errorType.should.equal('ValidationError');
@@ -400,9 +430,8 @@ describe('Import', function () {
                 response[1].errorType.should.equal('ValidationError');
                 response[1].message.should.eql('Value in [posts.title] cannot be blank.');
                 response[2].errorType.should.equal('ValidationError');
-                response[2].message.should.eql('Value in [tags.name] cannot be blank.');
-                response[3].errorType.should.equal('ValidationError');
-                response[3].message.should.eql('Value in [settings.key] cannot be blank.');
+                response[2].message.should.eql('Value in [settings.key] cannot be blank.');
+
                 done();
             }).catch(done);
         });
@@ -416,13 +445,17 @@ describe('Import', function () {
             }).then(function (importedData) {
                 importedData.data.posts.length.should.eql(1);
 
-                importedData.problems.length.should.eql(3);
-                importedData.problems[0].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
-                importedData.problems[0].help.should.eql('Tag');
+                importedData.problems.length.should.eql(4);
+
+                importedData.problems[0].message.should.eql('Entry was imported, but we were not able to ' +
+                    'resolve the following user references: updated_by. The user does not exist, fallback to owner user.');
+                importedData.problems[0].help.should.eql('User');
                 importedData.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[1].help.should.eql('Tag');
                 importedData.problems[2].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
-                importedData.problems[2].help.should.eql('Post');
+                importedData.problems[2].help.should.eql('Tag');
+                importedData.problems[3].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importedData.problems[3].help.should.eql('Post');
                 done();
             }).catch(done);
         });
@@ -437,9 +470,16 @@ describe('Import', function () {
                 // NOTE: we detect invalid author references as warnings, because ember can handle this
                 // The owner can simply update the author reference in the UI
                 importedData.problems.length.should.eql(3);
+
+                importedData.problems[0].message.should.eql('Entry was imported, but we were not able to resolve the ' +
+                    'following user references: updated_by. The user does not exist, fallback to owner user.');
+                importedData.problems[0].help.should.eql('User');
+
+                importedData.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+                importedData.problems[1].help.should.eql('User');
+
                 importedData.problems[2].message.should.eql('Entry was imported, but we were not able to ' +
-                    'update user reference field: published_by. The user does not exist, fallback to owner user.');
-                importedData.problems[2].help.should.eql('Post');
+                    'resolve the following user references: author_id, published_by. The user does not exist, fallback to owner user.');
 
                 // Grab the data from tables
                 return Promise.all([
@@ -1530,11 +1570,15 @@ describe('Import (new test structure)', function () {
 
                     // Check feature image is correctly mapped for a post
                     firstPost.feature_image.should.eql('/content/images/2017/05/post-image.jpg');
+
                     // Check logo and cover images are correctly mapped for a user
                     users[1].cover_image.should.eql(exportData.data.users[0].cover);
                     users[1].profile_image.should.eql(exportData.data.users[0].image);
                     // Check feature image is correctly mapped for a tag
                     tags[0].feature_image.should.eql(exportData.data.tags[0].image);
+
+                    // updated_by: 2 could not be resolved, fallback to owner
+                    settings[5].updated_by.should.eql(users[0].id);
 
                     // Check logo image is correctly mapped for a blog
                     settings[5].key.should.eql('logo');

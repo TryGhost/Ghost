@@ -66,6 +66,10 @@ class SettingsImporter extends BaseImporter {
         return super.beforeImport();
     }
 
+    generateIdentifier() {
+        return Promise.resolve();
+    }
+
     doImport(options) {
         debug('doImport', this.dataToImport.length);
 

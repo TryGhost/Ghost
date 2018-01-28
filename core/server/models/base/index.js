@@ -44,7 +44,7 @@ ghostBookshelf.plugin(plugins.collision);
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
-    allowedOptions: ['context'],
+    allowedOptions: ['context', 'importing'],
     unsetRelations: true,
     hooks: {
         belongsToMany: {
@@ -179,7 +179,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        this.set('updated_by', this.contextUser(options));
+        if (!options.importing) {
+            this.set('updated_by', this.contextUser(options));
+        }
 
         if (!newObj.get('created_at')) {
             newObj.set('created_at', new Date());
@@ -210,7 +212,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *   - if no context
      */
     onUpdating: function onUpdating(newObj, attr, options) {
-        this.set('updated_by', this.contextUser(options));
+        if (!options.importing) {
+            this.set('updated_by', this.contextUser(options));
+        }
 
         if (options && options.context && !options.internal && !options.importing) {
             if (newObj.hasDateChanged('created_at', {beforeWrite: true})) {

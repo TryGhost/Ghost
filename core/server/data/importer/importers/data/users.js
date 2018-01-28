@@ -2,7 +2,8 @@
 
 const debug = require('ghost-ignition').debug('importer:users'),
     _ = require('lodash'),
-    BaseImporter = require('./base');
+    BaseImporter = require('./base'),
+    models = require('../../../../models');
 
 class UsersImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -18,6 +19,13 @@ class UsersImporter extends BaseImporter {
             cover: 'cover_image',
             last_login: 'last_seen'
         };
+    }
+
+    fetchExisting(modelOptions) {
+        return models.User.findAll(_.merge({columns: ['id', 'slug', 'email'], withRelated: ['roles']}, modelOptions))
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
     }
 
     /**
