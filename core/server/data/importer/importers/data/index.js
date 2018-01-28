@@ -32,6 +32,8 @@ DataImporter = {
 
     // Allow importing with an options object that is passed through the importer
     doImport: function doImport(importData, importOptions) {
+        importOptions = importOptions || {};
+
         var ops = [], errors = [], results = [], modelOptions = {
             importing: true,
             context: {
@@ -39,7 +41,11 @@ DataImporter = {
             }
         };
 
-        if (importOptions && importOptions.importPersistUser) {
+        if (!importOptions.hasOwnProperty('returnImportedData')) {
+            importOptions.returnImportedData = false;
+        }
+
+        if (importOptions.importPersistUser) {
             modelOptions.importPersistUser = importOptions.importPersistUser;
         }
         this.init(importData);
@@ -51,7 +57,7 @@ DataImporter = {
                 ops.push(function doModelImport() {
                     return importer.beforeImport(modelOptions, importOptions)
                         .then(function () {
-                            return importer.doImport(modelOptions)
+                            return importer.doImport(modelOptions, importOptions)
                                 .then(function (_results) {
                                     results = results.concat(_results);
                                 });
@@ -93,7 +99,10 @@ DataImporter = {
 
             _.each(importers, function (importer) {
                 toReturn.problems = toReturn.problems.concat(importer.problems);
-                toReturn.data[importer.dataKeyToImport] = importer.importedData;
+
+                if (importOptions.returnImportedData) {
+                    toReturn.data[importer.dataKeyToImport] = importer.importedDataToReturn;
+                }
             });
 
             return toReturn;

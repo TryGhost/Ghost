@@ -33,7 +33,7 @@ class TagsImporter extends BaseImporter {
      *
      * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
-    doImport(options) {
+    doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
         let self = this, ops = [];
@@ -47,10 +47,16 @@ class TagsImporter extends BaseImporter {
                 }
 
                 return models[self.modelName].add(obj, options)
-                    .then(function (newModel) {
-                        obj.model = newModel.toJSON();
-                        self.importedData.push(obj.model);
-                        return newModel;
+                    .then(function (importedModel) {
+                        obj.model = {
+                            id: importedModel.id
+                        };
+
+                        if (importOptions.returnImportedData) {
+                            self.importedDataToReturn.push(importedModel.toJSON());
+                        }
+
+                        return importedModel;
                     })
                     .catch(function (err) {
                         return self.handleError(err, obj);
