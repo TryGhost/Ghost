@@ -35,7 +35,7 @@
     "bluebird": "3.5.1",
     "body-parser": "1.18.2",
     "bookshelf": "0.10.3",
-    "bookshelf-relations": "0.1.5",
+    "bookshelf-relations": "0.1.10",
     "brute-knex": "https://github.com/cobbspur/brute-knex/tarball/8979834383c7d3ee868d9e18d9ee6f71976dfec4",
     "bson-objectid": "1.2.2",
     "chalk": "1.1.3",
