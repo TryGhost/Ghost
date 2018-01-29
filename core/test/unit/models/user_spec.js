@@ -308,4 +308,42 @@ describe('Unit: models/user', function () {
             });
         });
     });
+
+    describe('onValidate', function () {
+        let knexMock;
+
+        before(function () {
+            models.init();
+        });
+
+        after(function () {
+            sandbox.restore();
+        });
+
+        before(function () {
+            knexMock = new testUtils.mocks.knex();
+            knexMock.mock();
+        });
+
+        after(function () {
+            knexMock.unmock();
+        });
+
+        describe('edit', function () {
+            it('resets given empty value to null', function () {
+                return models.User.findOne({slug: 'joe-bloggs'})
+                    .then(function (user) {
+                        user.get('slug').should.eql('joe-bloggs');
+                        user.get('profile_image').should.eql('https://example.com/super_photo.jpg');
+                        user.set('profile_image', '');
+                        user.set('bio', '');
+                        return user.save();
+                    })
+                    .then(function (user) {
+                        should(user.get('profile_image')).be.null();
+                        user.get('bio').should.eql('');
+                    });
+            });
+        });
+    });
 });

@@ -211,10 +211,10 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // For the user model ONLY it is possible to disable validations.
-    // This is used to bypass validation during the credential check, and must never be done with user-provided data
-    // Should be removed when #3691 is done
     onValidate: function validate() {
+        // CASE: the client might send empty image properties with "" instead of setting them to null.
+        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
+        // See https://github.com/TryGhost/GQL/issues/24
         var affectedProps = ['profile_image', 'cover_image'];
 
         ghostBookshelf.Model.prototype.setEmptyValuesToNull.call(this, affectedProps);
