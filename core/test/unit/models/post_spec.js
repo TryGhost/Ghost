@@ -11,22 +11,305 @@ describe('Models: Post', function () {
     });
 
     describe('Permissible', function () {
-        var author = {user: {roles: [{name: 'Author'}]}};
-
         describe('As Contributor', function () {
             var contributor = {user: {roles: [{name: 'Contributor'}]}};
 
-            it('rejects if editing, changing status', function (done) {
+            describe('Editing', function () {
+                it('rejects if changing status', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'published'};
+
+                    mockPostObj.get.withArgs('status').returns('draft');
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledOnce).be.true();
+                        done();
+                    });
+                });
+
+                it('rejects if changing author id', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'draft', author_id: 2};
+
+                    mockPostObj.get.withArgs('status').returns('draft');
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledTwice).be.true();
+                        done();
+                    });
+                });
+
+                it('rejects if post is not draft', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'published', author_id: 1};
+
+                    mockPostObj.get.withArgs('status').returns('published');
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledThrice).be.true();
+                        done();
+                    });
+                });
+
+                it('rejects if contributor is not author of post', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'draft', author_id: 2};
+
+                    mockPostObj.get.withArgs('status').returns('draft');
+                    mockPostObj.get.withArgs('author_id').returns(2);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.callCount).eql(4);
+                        done();
+                    });
+                });
+
+                it('resolves if none of the above cases are true', function () {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'draft', author_id: 1};
+
+                    mockPostObj.get.withArgs('status').returns('draft');
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then((result) => {
+                        should.exist(result);
+                        should(result.excludedAttrs).deepEqual(['tags']);
+                        should(mockPostObj.get.callCount).eql(4);
+                    });
+                });
+            });
+
+            describe('Adding', function () {
+                it('rejects if "published" status', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'published', author_id: 1};
+
+                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.called).be.false();
+                        done();
+                    });
+                });
+
+                it('rejects if different author id', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'draft', author_id: 2};
+
+                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.called).be.false();
+                        done();
+                    });
+                });
+
+                it('resolves if none of the above cases are true', function () {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {status: 'draft', author_id: 1};
+
+                    return models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then((result) => {
+                        should.exist(result);
+                        should(result.excludedAttrs).deepEqual(['tags']);
+                        should(mockPostObj.get.called).be.false();
+                    });
+                });
+            });
+
+            describe('Destroying', function () {
+                it('rejects if destroying another author\'s post', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1};
+
+                    mockPostObj.get.withArgs('author_id').returns(2);
+
+                    models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledOnce).be.true();
+                        done();
+                    });
+                });
+
+                it('rejects if destroying a published post', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1};
+
+                    mockPostObj.get.withArgs('author_id').returns(1);
+                    mockPostObj.get.withArgs('status').returns('published');
+
+                    models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledTwice).be.true();
+                        done();
+                    });
+                });
+
+                it('resolves if none of the above cases are true', function () {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1};
+
+                    mockPostObj.get.withArgs('status').returns('draft');
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    return models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then((result) => {
+                        should.exist(result);
+                        should(result.excludedAttrs).deepEqual(['tags']);
+                        should(mockPostObj.get.calledTwice).be.true();
+                    });
+                });
+            });
+        });
+
+        describe('As Author', function () {
+            var author = {user: {roles: [{name: 'Author'}]}};
+
+            describe('Editing', function () {
+                it('rejects if editing another\'s post', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {author_id: 2};
+
+                    mockPostObj.get.withArgs('author_id').returns(2);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledOnce).be.true();
+                        done();
+                    });
+                });
+
+                it('rejects if changing author', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {author_id: 2};
+
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.calledTwice).be.true();
+                        done();
+                    });
+                });
+
+                it('resolves if none of the above cases are true', function () {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {author_id: 1};
+
+                    mockPostObj.get.withArgs('author_id').returns(1);
+
+                    return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                        should(mockPostObj.get.calledTwice).be.true();
+                    });
+                });
+            });
+
+            describe('Adding', function () {
+                it('rejects if different author id', function (done) {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {author_id: 2};
+
+                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, author, false, true).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.called).be.false();
+                        done();
+                    });
+                });
+
+                it('resolves if none of the above cases are true', function () {
+                    var mockPostObj = {
+                            get: sandbox.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {author_id: 1};
+
+                    return models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, author, false, true).then(() => {
+                        should(mockPostObj.get.called).be.false();
+                    });
+                });
+            });
+        });
+
+        describe('Everyone Else', function () {
+            var editor = {user: {roles: [{name: 'Editor'}]}};
+
+            it('rejects if hasUserPermissions is false and not current owner', function (done) {
                 var mockPostObj = {
                         get: sandbox.stub()
                     },
                     context = {user: 1},
-                    unsafeAttrs = {status: 'published'};
+                    unsafeAttrs = {author_id: 2};
 
-                mockPostObj.get.withArgs('status').returns('draft');
-                mockPostObj.get.withArgs('author_id').returns(1);
+                mockPostObj.get.withArgs('author_id').returns(2);
 
-                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
+                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, editor, false, true).then(() => {
                     done(new Error('Permissible function should have rejected.'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -35,109 +318,17 @@ describe('Models: Post', function () {
                 });
             });
 
-            it('rejects if editing, changing author id', function (done) {
+            it('resolves if hasUserPermission is true', function () {
                 var mockPostObj = {
                         get: sandbox.stub()
                     },
                     context = {user: 1},
-                    unsafeAttrs = {status: 'draft', author_id: 2};
-
-                mockPostObj.get.withArgs('status').returns('draft');
-                mockPostObj.get.withArgs('author_id').returns(1);
-
-                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.calledTwice).be.true();
-                    done();
-                });
-            });
-
-            it('rejects if editing & post is not draft', function (done) {
-                var mockPostObj = {
-                        get: sandbox.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {status: 'published', author_id: 1};
-
-                mockPostObj.get.withArgs('status').returns('published');
-                mockPostObj.get.withArgs('author_id').returns(1);
-
-                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.calledThrice).be.true();
-                    done();
-                });
-            });
-
-            it('rejects if editing & contributor is not author of post', function (done) {
-                var mockPostObj = {
-                        get: sandbox.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {status: 'draft', author_id: 2};
-
-                mockPostObj.get.withArgs('status').returns('draft');
-                mockPostObj.get.withArgs('author_id').returns(2);
-
-                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.callCount).eql(4);
-                    done();
-                });
-            });
-
-            it('rejects if adding with "published" status', function (done) {
-                var mockPostObj = {
-                        get: sandbox.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {status: 'published', author_id: 1};
-
-                models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.called).be.false();
-                    done();
-                });
-            });
-
-            it('rejects if adding with a different author id', function (done) {
-                var mockPostObj = {
-                        get: sandbox.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {status: 'draft', author_id: 2};
-
-                models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.called).be.false();
-                    done();
-                });
-            });
-
-            it('rejects if destroying another author\'s post', function (done) {
-                var mockPostObj = {
-                        get: sandbox.stub()
-                    },
-                    context = {user: 1};
+                    unsafeAttrs = {author_id: 2};
 
                 mockPostObj.get.withArgs('author_id').returns(2);
 
-                models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, false).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(common.errors.NoPermissionError);
-                    should(mockPostObj.get.calledOnce).be.true();
-                    done();
+                return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, editor, true, true).then(() => {
+                    should(mockPostObj.get.called).be.false();
                 });
             });
         });
