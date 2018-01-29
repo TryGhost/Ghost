@@ -9,14 +9,14 @@ describe('Models: Utils', function () {
         });
 
         it('returns correctly when passed a single role', function () {
-            const user = {roles: [{name: 'Author'}]};
+            var user = {roles: [{name: 'Author'}]};
 
             should(utils.actorIs(user, 'Author')).be.true();
             should(utils.actorIs(user, 'Editor')).be.false();
         });
 
         it('returns correctly when passed multiple roles', function () {
-            const user = {roles: [{name: 'Author'}]};
+            var user = {roles: [{name: 'Author'}]};
 
             should(utils.actorIs(user, ['Author', 'Editor'])).be.true();
             should(utils.actorIs(user, ['Editor', 'Administrator'])).be.false();

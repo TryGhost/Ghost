@@ -2,6 +2,7 @@ var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
+    utils = require('../../utils'),
 
     sandbox = sinon.sandbox.create();
 
@@ -12,8 +13,6 @@ describe('Models: Post', function () {
 
     describe('Permissible', function () {
         describe('As Contributor', function () {
-            var contributor = {user: {roles: [{name: 'Contributor'}]}};
-
             describe('Editing', function () {
                 it('rejects if changing status', function (done) {
                     var mockPostObj = {
@@ -25,7 +24,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, false).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        false
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -44,7 +51,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -63,7 +78,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('published');
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -82,7 +105,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(2);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -101,7 +132,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, contributor, false, true).then((result) => {
+                    return models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['tags']);
                         should(mockPostObj.get.callCount).eql(4);
@@ -117,7 +156,15 @@ describe('Models: Post', function () {
                         context = {user: 1},
                         unsafeAttrs = {status: 'published', author_id: 1};
 
-                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'add',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -133,7 +180,15 @@ describe('Models: Post', function () {
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 2};
 
-                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'add',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -149,7 +204,15 @@ describe('Models: Post', function () {
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 1};
 
-                    return models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, contributor, false, true).then((result) => {
+                    return models.Post.permissible(
+                        mockPostObj,
+                        'add',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['tags']);
                         should(mockPostObj.get.called).be.false();
@@ -166,7 +229,15 @@ describe('Models: Post', function () {
 
                     mockPostObj.get.withArgs('author_id').returns(2);
 
-                    models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'destroy',
+                        context,
+                        {},
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -184,7 +255,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.get.withArgs('status').returns('published');
 
-                    models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'destroy',
+                        context,
+                        {},
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -202,7 +281,15 @@ describe('Models: Post', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    return models.Post.permissible(mockPostObj, 'destroy', context, {}, contributor, false, true).then((result) => {
+                    return models.Post.permissible(
+                        mockPostObj,
+                        'destroy',
+                        context,
+                        {},
+                        utils.permissions.contributor,
+                        false,
+                        true
+                    ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['tags']);
                         should(mockPostObj.get.calledTwice).be.true();
@@ -212,8 +299,6 @@ describe('Models: Post', function () {
         });
 
         describe('As Author', function () {
-            var author = {user: {roles: [{name: 'Author'}]}};
-
             describe('Editing', function () {
                 it('rejects if editing another\'s post', function (done) {
                     var mockPostObj = {
@@ -224,7 +309,15 @@ describe('Models: Post', function () {
 
                     mockPostObj.get.withArgs('author_id').returns(2);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.author,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -242,7 +335,15 @@ describe('Models: Post', function () {
 
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.author,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -260,7 +361,15 @@ describe('Models: Post', function () {
 
                     mockPostObj.get.withArgs('author_id').returns(1);
 
-                    return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, author, false, true).then(() => {
+                    return models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.author,
+                        false,
+                        true
+                    ).then(() => {
                         should(mockPostObj.get.calledTwice).be.true();
                     });
                 });
@@ -274,7 +383,15 @@ describe('Models: Post', function () {
                         context = {user: 1},
                         unsafeAttrs = {author_id: 2};
 
-                    models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, author, false, true).then(() => {
+                    models.Post.permissible(
+                        mockPostObj,
+                        'add',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.author,
+                        false,
+                        true
+                    ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -290,7 +407,15 @@ describe('Models: Post', function () {
                         context = {user: 1},
                         unsafeAttrs = {author_id: 1};
 
-                    return models.Post.permissible(mockPostObj, 'add', context, unsafeAttrs, author, false, true).then(() => {
+                    return models.Post.permissible(
+                        mockPostObj,
+                        'add',
+                        context,
+                        unsafeAttrs,
+                        utils.permissions.author,
+                        false,
+                        true
+                    ).then(() => {
                         should(mockPostObj.get.called).be.false();
                     });
                 });
@@ -298,8 +423,6 @@ describe('Models: Post', function () {
         });
 
         describe('Everyone Else', function () {
-            var editor = {user: {roles: [{name: 'Editor'}]}};
-
             it('rejects if hasUserPermissions is false and not current owner', function (done) {
                 var mockPostObj = {
                         get: sandbox.stub()
@@ -309,7 +432,15 @@ describe('Models: Post', function () {
 
                 mockPostObj.get.withArgs('author_id').returns(2);
 
-                models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, editor, false, true).then(() => {
+                models.Post.permissible(
+                    mockPostObj,
+                    'edit',
+                    context,
+                    unsafeAttrs,
+                    utils.permissions.editor,
+                    false,
+                    true
+                ).then(() => {
                     done(new Error('Permissible function should have rejected.'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -327,7 +458,15 @@ describe('Models: Post', function () {
 
                 mockPostObj.get.withArgs('author_id').returns(2);
 
-                return models.Post.permissible(mockPostObj, 'edit', context, unsafeAttrs, editor, true, true).then(() => {
+                return models.Post.permissible(
+                    mockPostObj,
+                    'edit',
+                    context,
+                    unsafeAttrs,
+                    utils.permissions.editor,
+                    true,
+                    true
+                ).then(() => {
                     should(mockPostObj.get.called).be.false();
                 });
             });

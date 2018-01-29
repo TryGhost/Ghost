@@ -641,39 +641,31 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'edit') {
-            // Owner can only be edited by owner
-            if (loadedPermissions.user && userModel.hasRole('Owner')) {
-                hasUserPermission = baseUtils.actorIs(loadedPermissions.user, 'Owner');
-            }
-            // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
+            // Users with the role 'Editor', 'Author', and 'Contributor' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (baseUtils.actorIs(loadedPermissions.user, ['Author', 'Contributor'])) {
-                // If this is the same user that requests the operation allow it.
-                hasUserPermission = hasUserPermission || context.user === userModel.get('id');
-            }
 
-            if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
+            if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
-                hasUserPermission = context.user === userModel.get('id');
-
-                // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = hasUserPermission || userModel.hasRole('Author') || userModel.hasRole('Contributor');
+                hasUserPermission = true;
+            } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
+                // Owner can only be edited by owner
+                hasUserPermission = baseUtils.actorIs(loadedPermissions.user, 'Owner');
+            } else if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
+                // If the user we are trying to edit is an Author or Contributor, allow it
+                hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 
         if (action === 'destroy') {
-            // Owner cannot be deleted EVER
-            if (loadedPermissions.user && userModel.hasRole('Owner')) {
+            // Owner cannot be deleted EVER & user cannot delete themselves
+            if (userModel.hasRole('Owner') || context.user === userModel.get('id')) {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
             if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
-                // If this is the same user that requests the operation allow it.
-                hasUserPermission = context.user === userModel.get('id');
-
                 // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = hasUserPermission || userModel.hasRole('Author');
+                hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 

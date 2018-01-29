@@ -981,6 +981,13 @@ module.exports = {
         author: {context: {user: DataGenerator.Content.users[3].id}},
         contributor: {context: {user: DataGenerator.Content.users[7].id}}
     },
+    permissions: {
+        owner: {user: {roles: [DataGenerator.Content.roles[3]]}},
+        admin: {user: {roles: [DataGenerator.Content.roles[0]]}},
+        editor: {user: {roles: [DataGenerator.Content.roles[1]]}},
+        author: {user: {roles: [DataGenerator.Content.roles[2]]}},
+        contributor: {user: {roles: [DataGenerator.Content.roles[4]]}},
+    },
     users: {
         ids: {
             owner: DataGenerator.Content.users[0].id,
@@ -1003,7 +1010,6 @@ module.exports = {
             contributor: DataGenerator.Content.roles[4].id
         }
     },
-
     cacheRules: {
         public: 'public, max-age=0',
         hour: 'public, max-age=' + 3600,
