@@ -1,12 +1,15 @@
-var _ = require('lodash'),
+'use strict';
+
+const _ = require('lodash'),
     express = require('express'),
     path = require('path'),
     config = require('../../config'),
     constants = require('../../lib/constants'),
-    themeUtils = require('../../services/themes');
+    themeUtils = require('../../services/themes'),
+    settingsCache = require('../../services/settings/cache');
 
 function isBlackListedFileType(file) {
-    var blackListedFileTypes = ['.hbs', '.md', '.json'],
+    var blackListedFileTypes = ['.hbs', '.md', '.json', ''],
         ext = path.extname(file);
     return _.includes(blackListedFileTypes, ext);
 }
@@ -22,7 +25,11 @@ function forwardToExpressStatic(req, res, next) {
         return next();
     }
 
-    var configMaxAge = config.get('caching:theme:maxAge');
+    const configMaxAge = config.get('caching:theme:maxAge'),
+        revPath = require('rev-path');
+
+    // CASE: rewrite url, ensure we always read the un-hashed file from disk
+    req.url = revPath.revert(req.path, settingsCache.get('theme_hash'));
 
     express.static(themeUtils.getActive().path,
         {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS}

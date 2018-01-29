@@ -1,48 +1,32 @@
-var crypto = require('crypto'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    config = require('../../config'),
-    urlService = require('../../services/url');
+'use strict';
 
-// ### servePublicFile Middleware
-// Handles requests to robots.txt and favicon.ico (and caches them)
+const crypto = require('crypto'),
+    fileCache = require('../../services/file/cache');
+
+// Handles requests to any public Ghost asset
 function servePublicFile(file, type, maxAge) {
-    var content,
-        publicFilePath = config.get('paths').publicFilePath,
-        filePath,
-        blogRegex = /(\{\{blog-url\}\})/g,
-        apiRegex = /(\{\{api-url\}\})/g;
-
-    filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file);
-
     return function servePublicFile(req, res, next) {
-        if (req.path === '/' + file) {
-            if (content) {
-                res.writeHead(200, content.headers);
-                res.end(content.body);
-            } else {
-                fs.readFile(filePath, function readFile(err, buf) {
-                    if (err) {
-                        return next(err);
-                    }
+        const revPath = require('rev-path'),
+            hash = fileCache.public.getHash(file);
 
-                    if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
-                        buf = buf.toString().replace(blogRegex, urlService.utils.urlFor('home', true).replace(/\/$/, ''));
-                        buf = buf.toString().replace(apiRegex, urlService.utils.urlFor('api', {cors: true}, true));
-                    }
-                    content = {
-                        headers: {
-                            'Content-Type': type,
-                            'Content-Length': buf.length,
-                            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-                            'Cache-Control': 'public, max-age=' + maxAge
-                        },
-                        body: buf
-                    };
-                    res.writeHead(200, content.headers);
-                    res.end(content.body);
-                });
-            }
+        let filePath;
+
+        // @TODO: what if you send an old asset hash???
+        if (hash) {
+            filePath = revPath.revert(req.path, hash);
+        }
+
+        if (hash && filePath === '/' + file) {
+            let cachedFile = fileCache.public.get(file);
+
+            res.writeHead(200, {
+                'Content-Type': type,
+                'Content-Length': cachedFile.length,
+                ETag: '"' + crypto.createHash('md5').update(cachedFile, 'utf8').digest('hex') + '"',
+                'Cache-Control': 'public, max-age=' + maxAge
+            });
+
+            res.end(cachedFile);
         } else {
             return next();
         }

@@ -5,10 +5,9 @@ var Settings,
     crypto = require('crypto'),
     ghostBookshelf = require('./base'),
     common = require('../lib/common'),
+    security = require('../lib/security'),
     validation = require('../data/validation'),
-
     internalContext = {context: {internal: true}},
-
     defaultSettings;
 
 // For neatness, the defaults file is split into categories.
@@ -19,6 +18,7 @@ function parseDefaultSettings() {
         defaultSettingsFlattened = {},
         dynamicDefault = {
             db_hash: uuid.v4(),
+            theme_hash: security.crypto.md5({value: Date.now().toString(), len: 10}),
             public_hash: crypto.randomBytes(15).toString('hex')
         };
 
@@ -111,38 +111,57 @@ Settings = ghostBookshelf.Model.extend({
             if (item.toJSON) {
                 item = item.toJSON();
             }
+
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.settings.valueCannotBeBlank')}));
+                throw new common.errors.ValidationError({
+                    message: common.i18n.t('errors.models.settings.valueCannotBeBlank')
+                });
             }
 
             item = self.filterData(item);
 
-            return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {
-                if (setting) {
+            return Settings.forge({key: item.key})
+                .fetch(options)
+                .then(function then(setting) {
+                    if (!setting) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})
+                        });
+                    }
+
                     // it's allowed to edit all attributes in case of importing/migrating
                     if (options.importing) {
                         return setting.save(item, options);
-                    } else {
-                        // If we have a value, set it.
-                        if (item.hasOwnProperty('value')) {
-                            setting.set('value', item.value);
-                        }
-                        // Internal context can overwrite type (for fixture migrations)
-                        if (options.context && options.context.internal && item.hasOwnProperty('type')) {
-                            setting.set('type', item.type);
-                        }
+                    }
 
-                        // If anything has changed, save the updated model
-                        if (setting.hasChanged()) {
-                            return setting.save(null, options);
-                        }
+                    // If we have a value, set it.
+                    if (item.hasOwnProperty('value')) {
+                        setting.set('value', item.value);
+                    }
 
+                    // Internal context can overwrite type (for fixture migrations)
+                    if (options.context && options.context.internal && item.hasOwnProperty('type')) {
+                        setting.set('type', item.type);
+                    }
+
+                    // Skip if setting has no change
+                    if (!setting.hasChanged()) {
                         return setting;
                     }
-                }
 
-                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
-            });
+                    return setting.save(null, options)
+                        .then(function (savedSetting) {
+                            // CASE: Reset theme hash
+                            if (savedSetting.get('key') !== 'active_theme') {
+                                return savedSetting;
+                            }
+
+                            return Settings.edit({
+                                key: 'theme_hash',
+                                value: security.crypto.md5({value: Date.now().toString(), len: 10})
+                            }, options).return(savedSetting);
+                        });
+                });
         });
     },
 

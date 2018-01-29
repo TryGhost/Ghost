@@ -7,6 +7,8 @@ var should = require('should'), // jshint ignore:line
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     imageLib = require('../../../server/lib/image'),
+    models = require('../../../server/models'),
+    fileCache = require('../../../server/services/file/cache'),
     proxy = require('../../../server/helpers/proxy'),
     settingsCache = proxy.settingsCache,
     api = proxy.api,
@@ -15,6 +17,10 @@ var should = require('should'), // jshint ignore:line
     sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
@@ -1516,10 +1522,16 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Ajax Helper', function () {
+        let originalGhostHash;
+
         before(function () {
             configUtils.set({
                 url: 'http://localhost:65530/'
             });
+        });
+
+        beforeEach(function () {
+            sandbox.stub(fileCache.public, 'getHash').withArgs('public/ghost-sdk.js').returns('1234');
         });
 
         it('renders script tag with src', function (done) {
@@ -1534,7 +1546,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script type="text\/javascript" src="\/public\/ghost-sdk\.js\?v=/);
+                rendered.string.should.match(/<script type="text\/javascript" src="\/public\/ghost-sdk-1234\.js/);
 
                 done();
             });

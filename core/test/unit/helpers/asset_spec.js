@@ -3,17 +3,31 @@ var should = require('should'), // jshint ignore:line
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
     settingsCache = require('../../../server/services/settings/cache'),
-
+    fileCache = require('../../../server/services/file/cache'),
     sandbox = sinon.sandbox.create();
 
 describe('{{asset}} helper', function () {
-    var rendered, localSettingsCache = {};
+    var rendered, localSettingsCache = {}, originalGhostHash, originalThemeHash, publicAssetHash = 'def',
+        themeAssetHash = 'abc';
+
+    const returnPublicHashedPath = (path) => {
+        return path.replace(/\.([js|css])/, '-' + publicAssetHash + '.' + '$1');
+    };
+
+    const returnThemeHashedPath = (path) => {
+        return path.replace(/\.([js|css])/, '-' + themeAssetHash + '.' + '$1');
+    };
 
     before(function () {
-        configUtils.set({assetHash: 'abc'});
+        sandbox.stub(fileCache.public, 'getHash').returns(publicAssetHash);
+
         configUtils.set({useMinFiles: true});
 
         sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+            if (key === 'theme_hash') {
+                return themeAssetHash;
+            }
+
             return localSettingsCache[key];
         });
     });
@@ -33,7 +47,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = helpers.asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/public/ghost.css?v=abc');
+            String(rendered).should.equal(returnPublicHashedPath('/public/ghost.css'));
         });
 
         it('handles custom favicon correctly', function () {
@@ -57,19 +71,19 @@ describe('{{asset}} helper', function () {
 
             rendered = helpers.asset('public/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/public/asset.js?v=abc');
+            String(rendered).should.equal(returnPublicHashedPath('/public/asset.js'));
         });
 
         it('handles theme assets correctly', function () {
             rendered = helpers.asset('js/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/assets/js/asset.js?v=abc');
+            String(rendered).should.equal(returnThemeHashedPath('/assets/js/asset.js'));
         });
 
         it('handles hasMinFile assets correctly', function () {
             rendered = helpers.asset('js/asset.js', {hash: {hasMinFile: true}});
             should.exist(rendered);
-            String(rendered).should.equal('/assets/js/asset.min.js?v=abc');
+            String(rendered).should.equal(returnThemeHashedPath('/assets/js/asset.min.js'));
         });
     });
 
@@ -87,7 +101,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = helpers.asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/public/ghost.css?v=abc');
+            String(rendered).should.equal(returnPublicHashedPath('/blog/public/ghost.css'));
         });
 
         it('handles custom favicon correctly', function () {
@@ -109,19 +123,19 @@ describe('{{asset}} helper', function () {
         it('handles public assets correctly', function () {
             rendered = helpers.asset('public/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/public/asset.js?v=abc');
+            String(rendered).should.equal(returnPublicHashedPath('/blog/public/asset.js'));
         });
 
         it('handles theme assets correctly', function () {
             rendered = helpers.asset('js/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/blog/assets/js/asset.js?v=abc');
+            String(rendered).should.equal(returnThemeHashedPath('/blog/assets/js/asset.js'));
         });
 
         it('handles hasMinFile assets correctly', function () {
             rendered = helpers.asset('js/asset.js', {hash: {hasMinFile: true}});
             should.exist(rendered);
-            String(rendered).should.equal('/blog/assets/js/asset.min.js?v=abc');
+            String(rendered).should.equal(returnThemeHashedPath('/blog/assets/js/asset.min.js'));
         });
 
         configUtils.restore();

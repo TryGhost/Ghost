@@ -31,6 +31,7 @@ var debug = require('ghost-ignition').debug('boot:init'),
     apps = require('./services/apps'),
     xmlrpc = require('./services/xmlrpc'),
     slack = require('./services/slack'),
+    fileCache = require('./services/file/cache'),
     webhooks = require('./services/webhooks');
 
 // ## Initialise Ghost

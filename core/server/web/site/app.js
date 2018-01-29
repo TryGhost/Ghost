@@ -56,6 +56,7 @@ module.exports = function setupSiteApp() {
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
     siteApp.use(serveFavicon());
+
     // /public/ghost-sdk.js
     siteApp.use(servePublicFile('public/ghost-sdk.js', 'application/javascript', constants.ONE_HOUR_S));
     siteApp.use(servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_YEAR_S));

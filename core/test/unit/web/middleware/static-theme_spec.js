@@ -1,10 +1,9 @@
 var should = require('should'),
     sinon = require('sinon'),
-
     express = require('express'),
     themeUtils = require('../../../../server/services/themes'),
+    settingsCache = require('../../../../server/services/settings/cache'),
     staticTheme = require('../../../../server/web/middleware/static-theme'),
-
     sandbox = sinon.sandbox.create();
 
 describe('staticTheme', function () {
@@ -18,11 +17,24 @@ describe('staticTheme', function () {
             path: 'my/fake/path'
         });
 
+        sandbox.stub(settingsCache, 'get').withArgs('theme_hash').returns('888');
+
         expressStaticStub = sandbox.spy(express, 'static');
     });
 
     afterEach(function () {
         sandbox.restore();
+    });
+
+    it('should skip for no file type', function (done) {
+        req.path = '/';
+
+        staticTheme()(req, res, function next() {
+            activeThemeStub.called.should.be.false();
+            expressStaticStub.called.should.be.false();
+
+            done();
+        });
     });
 
     it('should skip for .hbs file', function (done) {
@@ -70,6 +82,24 @@ describe('staticTheme', function () {
             should.exist(expressStaticStub.firstCall.args);
             expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
             expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+            done();
+        });
+    });
+
+    it('can handle hashed files', function (done) {
+        req.path = 'myvalidfile-888.css';
+
+        staticTheme()(req, res, function next() {
+            // Specifically gets called twice
+            activeThemeStub.calledTwice.should.be.true();
+            expressStaticStub.called.should.be.true();
+
+            // Check that express static gets called with the theme path + maxAge
+            should.exist(expressStaticStub.firstCall.args);
+            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+            req.url.should.eql('myvalidfile.css');
 
             done();
         });

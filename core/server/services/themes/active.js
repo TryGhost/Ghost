@@ -18,7 +18,6 @@
  */
 var join = require('path').join,
     themeConfig = require('./config'),
-    config = require('../../config'),
     engine = require('./engine'),
     // Current instance of ActiveTheme
     currentActiveTheme;
@@ -39,7 +38,7 @@ class ActiveTheme {
 
         // @TODO: get gscan to return validated, useful package.json fields for us!
         this._packageInfo = loadedTheme['package.json'];
-        this._partials =  checkedTheme.partials;
+        this._partials = checkedTheme.partials;
 
         // all custom .hbs templates (e.g. custom-about)
         this._customTemplates = checkedTheme.templates.custom;
@@ -84,9 +83,6 @@ class ActiveTheme {
     }
 
     mount(siteApp) {
-        // reset the asset hash
-        // @TODO: set this on the theme instead of globally, or use proper file-based hash
-        config.set('assetHash', null);
         // clear the view cache
         siteApp.cache = {};
         // Set the views and engine

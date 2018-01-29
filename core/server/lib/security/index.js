@@ -19,5 +19,9 @@ module.exports = {
 
     get password() {
         return require('./password');
+    },
+
+    get crypto() {
+        return require('./crypto');
     }
 };
