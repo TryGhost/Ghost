@@ -62,7 +62,7 @@
     "ember-cli-postcss": "3.7.1",
     "ember-cli-pretender": "1.0.1",
     "ember-cli-shims": "1.2.0",
-    "ember-cli-string-helpers": "1.6.0",
+    "ember-cli-string-helpers": "https://github.com/kevinansfield/ember-cli-string-helpers.git#9fda91b34a00e3365833527605b44399f36432d5",
     "ember-cli-test-loader": "2.2.0",
     "ember-cli-uglify": "2.0.0",
     "ember-composable-helpers": "2.1.0",

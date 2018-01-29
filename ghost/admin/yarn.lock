@@ -3240,6 +3240,13 @@ ember-cli-string-helpers@1.6.0:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^6.6.0"
 
+"ember-cli-string-helpers@https://github.com/kevinansfield/ember-cli-string-helpers.git#9fda91b34a00e3365833527605b44399f36432d5":
+  version "1.6.0"
+  resolved "https://github.com/kevinansfield/ember-cli-string-helpers.git#9fda91b34a00e3365833527605b44399f36432d5"
+  dependencies:
+    broccoli-funnel "^1.0.1"
+    ember-cli-babel "^6.6.0"
+
 ember-cli-string-utils@^1.0.0, ember-cli-string-utils@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-string-utils/-/ember-cli-string-utils-1.1.0.tgz#39b677fc2805f55173735376fcef278eaa4452a1"
