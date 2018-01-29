@@ -32,13 +32,6 @@ Tag = ghostBookshelf.Model.extend({
     onSaving: function onSaving(newTag, attr, options) {
         var self = this;
 
-        // CASE: the client might send empty image properties with "" instead of setting them to null.
-        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
-        // See https://github.com/TryGhost/GQL/issues/24
-        if (this.get('feature_image') === '' && this.previous('feature_image')) {
-            this.set('feature_image', null);
-        }
-
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         // name: #later slug: hash-later
@@ -54,6 +47,17 @@ Tag = ghostBookshelf.Model.extend({
                     self.set({slug: slug});
                 });
         }
+    },
+
+    onValidate: function onValidate() {
+        // CASE: the client might send empty image properties with "" instead of setting them to null.
+        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
+        // See https://github.com/TryGhost/GQL/issues/24
+        var affectedProps = ['feature_image'];
+
+        ghostBookshelf.Model.prototype.setEmptyValuesToNull.call(this, affectedProps);
+
+        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments);
     },
 
     posts: function posts() {

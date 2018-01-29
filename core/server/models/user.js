@@ -86,17 +86,6 @@ User = ghostBookshelf.Model.extend({
             tasks = [],
             passwordValidation = {};
 
-        // CASE: the client might send empty image properties with "" instead of setting them to null.
-        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
-        // See https://github.com/TryGhost/GQL/issues/24
-        if (this.get('profile_image') === '' && this.previous('profile_image')) {
-            this.set('profile_image', null);
-        }
-
-        if (this.get('cover_image') === '' && this.previous('cover_image')) {
-            this.set('cover_image', null);
-        }
-
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         /**
@@ -220,6 +209,17 @@ User = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+
+    // For the user model ONLY it is possible to disable validations.
+    // This is used to bypass validation during the credential check, and must never be done with user-provided data
+    // Should be removed when #3691 is done
+    onValidate: function validate() {
+        var affectedProps = ['profile_image', 'cover_image'];
+
+        ghostBookshelf.Model.prototype.setEmptyValuesToNull.call(this, affectedProps);
+
+        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments);
     },
 
     format: function format(options) {

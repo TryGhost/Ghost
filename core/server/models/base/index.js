@@ -288,6 +288,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    // Sets given values to `null`
+    setEmptyValuesToNull: function setEmptyValuesToNull(attr) {
+        var self = this;
+
+        _.each(attr, function (value) {
+            if (self.get(value) === '') {
+                self.set(value, null);
+            }
+        });
+    },
+
     // Get the user from the options object
     contextUser: function contextUser(options) {
         options = options || {};
