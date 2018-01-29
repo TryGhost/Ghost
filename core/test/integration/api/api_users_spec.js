@@ -415,56 +415,12 @@ describe('Users API', function () {
             }).catch(done);
         });
 
-        it('Editor CANNOT edit Owner, Admin or Editor roles', function (done) {
-            // Cannot edit Owner
-            UserAPI.edit(
-                {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.owner})
-            ).then(function () {
-                done(new Error('Editor should not be able to edit owner account'));
-            }).catch(function (error) {
-                error.errorType.should.eql('NoPermissionError');
-            }).finally(function () {
-                // Cannot edit Admin
-                UserAPI.edit(
-                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.admin})
-                ).then(function () {
-                    done(new Error('Editor should not be able to edit admin account'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                }).finally(function () {
-                    // Cannot edit Editor
-                    UserAPI.edit(
-                        {users: [{name: newName}]}, _.extend({}, context.editor, {id: testUtils.DataGenerator.Content.extraUsers[1].id})
-                    ).then(function () {
-                        done(new Error('Editor should not be able to edit other editor account'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
-                });
-            });
-        });
-
-        it('Editor can edit self, Author, or Contributor role', function (done) {
-            // Can edit self
-            UserAPI.edit(
+        it('Editor can edit self', function () {
+            return UserAPI.edit(
                 {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.editor})
             ).then(function (response) {
                 checkEditResponse(response);
-                // Can edit Author
-                return UserAPI.edit(
-                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.author})
-                );
-            }).then(function (response) {
-                checkEditResponse(response);
-                // Can edit Contributor
-                return UserAPI.edit(
-                    {users: [{name: newName}]}, _.extend({}, context.editor, {id: userIdFor.contributor})
-                );
-            }).then(function (response) {
-                checkEditResponse(response);
-                done();
-            }).catch(done);
+            });
         });
 
         it('Author CANNOT edit all roles', function (done) {
@@ -536,77 +492,10 @@ describe('Users API', function () {
             }).catch(done);
         });
 
-        it('Contributor CANNOT edit all roles', function (done) {
-            // Cannot edit owner
-            UserAPI.edit(
-                {users: [{name: newName}]}, _.extend({}, context.contributor, {id: userIdFor.owner})
-            ).then(function () {
-                done(new Error('Contributor should not be able to edit owner account'));
-            }).catch(function (error) {
-                error.errorType.should.eql('NoPermissionError');
-            }).finally(function () {
-                // Cannot edit admin
-                UserAPI.edit(
-                    {users: [{name: newName}]}, _.extend({}, context.contributor, {id: userIdFor.admin})
-                ).then(function () {
-                    done(new Error('Contributor should not be able to edit admin account'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                }).finally(function () {
-                    UserAPI.edit(
-                        {users: [{name: newName}]}, _.extend({}, context.contributor, {id: userIdFor.author})
-                    ).then(function () {
-                        done(new Error('Contributor should not be able to edit author account'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                    }).finally(function () {
-                        UserAPI.edit(
-                            {users: [{name: newName}]}, _.extend({}, context.contributor, testUtils.DataGenerator.Content.extraUsers[3].id)
-                        ).then(function () {
-                            done(new Error('Contributor should not be able to edit contributor account which is not their own'));
-                        }).catch(function (error) {
-                            error.errorType.should.eql('NoPermissionError');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-
         it('Contributor can edit self', function (done) {
             // Next test that contributor CAN edit self
             UserAPI.edit(
                 {users: [{name: newName}]}, _.extend({}, context.contributor, {id: userIdFor.contributor})
-            ).then(function (response) {
-                checkEditResponse(response);
-                done();
-            }).catch(done);
-        });
-
-        it('Contributor can edit self with role set', function (done) {
-            // Next test that contributor CAN edit self
-            UserAPI.edit(
-                {
-                    users: [{
-                        name: newName,
-                        roles: [roleIdFor.contributor]
-                    }]
-                }, _.extend({}, context.contributor, {id: userIdFor.contributor})
-            ).then(function (response) {
-                checkEditResponse(response);
-                done();
-            }).catch(done);
-        });
-
-        it('Contributor can edit self with role set as string', function (done) {
-            // Next test that contributor CAN edit self
-            UserAPI.edit(
-                {
-                    users: [{
-                        name: newName,
-                        roles: [roleIdFor.contributor.toString()]
-                    }]
-                }, _.extend({}, context.contributor, {id: userIdFor.contributor})
             ).then(function (response) {
                 checkEditResponse(response);
                 done();
@@ -932,22 +821,6 @@ describe('Users API', function () {
             });
 
             describe('as contributor', function () {
-                it('[failure] can\'t change status to inactive for owner', function () {
-                    return UserAPI.edit(
-                        {
-                            users: [
-                                {
-                                    status: 'inactive'
-                                }
-                            ]
-                        }, _.extend({}, context.contributor, {id: userIdFor.owner})
-                    ).then(function () {
-                        throw new Error('this is not allowed');
-                    }).catch(function (err) {
-                        (err instanceof common.errors.NoPermissionError).should.eql(true);
-                    });
-                });
-
                 it('[failure] can\' change my own status to inactive', function () {
                     return UserAPI.edit(
                         {
@@ -957,70 +830,6 @@ describe('Users API', function () {
                                 }
                             ]
                         }, _.extend({}, context.contributor, {id: userIdFor.contributor})
-                    ).then(function () {
-                        throw new Error('this is not allowed');
-                    }).catch(function (err) {
-                        (err instanceof common.errors.NoPermissionError).should.eql(true);
-                    });
-                });
-
-                it('[failure] can\'t change status to inactive for admin', function () {
-                    return UserAPI.edit(
-                        {
-                            users: [
-                                {
-                                    status: 'inactive'
-                                }
-                            ]
-                        }, _.extend({}, context.contributor, {id: userIdFor.admin})
-                    ).then(function () {
-                        throw new Error('this is not allowed');
-                    }).catch(function (err) {
-                        (err instanceof common.errors.NoPermissionError).should.eql(true);
-                    });
-                });
-
-                it('[failure] can\'t change status to inactive for editor', function () {
-                    return UserAPI.edit(
-                        {
-                            users: [
-                                {
-                                    status: 'inactive'
-                                }
-                            ]
-                        }, _.extend({}, context.contributor, {id: userIdFor.editor})
-                    ).then(function () {
-                        throw new Error('this is not allowed');
-                    }).catch(function (err) {
-                        (err instanceof common.errors.NoPermissionError).should.eql(true);
-                    });
-                });
-
-                it('[failure] can\'t change status to inactive for author', function () {
-                    return UserAPI.edit(
-                        {
-                            users: [
-                                {
-                                    status: 'inactive'
-                                }
-                            ]
-                        }, _.extend({}, context.contributor, {id: userIdFor.author})
-                    ).then(function () {
-                        throw new Error('this is not allowed');
-                    }).catch(function (err) {
-                        (err instanceof common.errors.NoPermissionError).should.eql(true);
-                    });
-                });
-
-                it('[failure] can\'t change status to inactive for contributor', function () {
-                    return UserAPI.edit(
-                        {
-                            users: [
-                                {
-                                    status: 'inactive'
-                                }
-                            ]
-                        }, _.extend({}, context.contributor, {id: userIdFor.contributor2})
                     ).then(function () {
                         throw new Error('this is not allowed');
                     }).catch(function (err) {
