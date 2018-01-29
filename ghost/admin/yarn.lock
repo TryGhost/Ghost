@@ -6875,8 +6875,8 @@ negotiator@0.6.1:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
 
 nise@^1.0.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/nise/-/nise-1.2.1.tgz#460855eb68dffd54115d6a525f40c7938ec5a992"
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/nise/-/nise-1.2.2.tgz#9aa5edb500da38035884106e3c571341bc68b2c1"
   dependencies:
     formatio "^1.2.0"
     just-extend "^1.1.26"
