@@ -388,6 +388,27 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('sets deleted image properties to null when empty', function (done) {
+            var userId = testUtils.DataGenerator.Content.users[3].id;
+
+            UserModel.findOne({id: userId}).then(function (results) {
+                should.exist(results);
+                var user = results.toJSON();
+                user.id.should.equal(userId);
+                user.profile_image.should.not.equal("");
+                user.cover_image.should.not.equal("");
+                return UserModel.edit({
+                    profile_image: "",
+                    cover_image: ""
+                }, _.extend({}, context, {id: userId}));
+            }).then(function (edited) {
+                should.exist(edited);
+                should.equal(edited.get('profile_image'), null);
+                should.equal(edited.get('cover_image'), null);
+                done();
+            }).catch(done);
+        });
+
         it('can NOT set an invalid email address', function (done) {
             var firstUser = testUtils.DataGenerator.Content.users[0].id;
 

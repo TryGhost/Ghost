@@ -1,6 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
+    _ = require('lodash'),
 
     // Stuff we are testing
     ModelsTag = require('../../../server/models/tag'),
@@ -51,6 +52,25 @@ describe('Tag Model', function () {
                 should.exist(tag);
                 tag.toJSON().count.posts.should.equal(2);
 
+                done();
+            }).catch(done);
+        });
+    });
+
+    it('sets deleted feature_image to null when empty', function (done) {
+        var context = testUtils.context.owner;
+        var tagId = testUtils.DataGenerator.Content.tags[1].id;
+
+        testUtils.fixtures.insertPostsAndTags().then(function () {
+            TagModel.findOne({id: tagId}).then(function (results) {
+                should.exist(results);
+                var tag = results.toJSON();
+                tag.id.should.equal(tagId);
+                tag.feature_image.should.not.equal("");
+                return TagModel.edit({feature_image: ""}, _.extend({}, context, {id: tagId}));
+            }).then(function (edited) {
+                should.exist(edited);
+                should.equal(edited.get('feature_image'), null);
                 done();
             }).catch(done);
         });

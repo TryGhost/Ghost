@@ -498,6 +498,30 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('sets deleted image properties to null when empty', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[2].id;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    var post = results.toJSON();
+                    post.id.should.equal(postId);
+                    post.feature_image.should.not.equal("");
+                    post.og_image.should.not.equal("");
+                    post.twitter_image.should.not.equal("");
+                    return PostModel.edit({
+                        feature_image: "",
+                        og_image: "",
+                        twitter_image: ""
+                    }, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    should.equal(edited.get('feature_image'), null);
+                    should.equal(edited.get('og_image'), null);
+                    should.equal(edited.get('twitter_image'), null);
+                    done();
+                }).catch(done);
+            });
+
             it('converts html to plaintext', function (done) {
                 var postId = testUtils.DataGenerator.Content.posts[0].id;
 

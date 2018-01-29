@@ -50,7 +50,9 @@ DataGenerator.Content = {
             feature_image: "http://placekitten.com/500/200",
             meta_description: "test stuff",
             published_at: new Date("2015-01-03"),
-            uuid: "2ac6b4f6-e1f3-406c-9247-c94a0496d39d"
+            uuid: "2ac6b4f6-e1f3-406c-9247-c94a0496d39d",
+            og_image: "https://sometwitterimage.com/bird.jpg",
+            twitter_image: "https://somefacebookimage.com/zucky.jpg"
         },
         {
             id: ObjectId.generate(),
@@ -101,7 +103,8 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             name: "bacon",
-            slug: "bacon"
+            slug: "bacon",
+            feature_image: "http://reallygoodimage.com/taggy.jpg"
         },
         {
             id: ObjectId.generate(),
@@ -152,7 +155,9 @@ DataGenerator.Content = {
             name: 'Slimer McEctoplasm',
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
+            profile_image: "http://ghostbusters.com/profile.jpg",
+            cover_image: "http://ghostbusters.com/cover.jpg"
         },
         {
             // editor 2

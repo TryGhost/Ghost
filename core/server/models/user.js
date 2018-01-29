@@ -86,6 +86,17 @@ User = ghostBookshelf.Model.extend({
             tasks = [],
             passwordValidation = {};
 
+        // CASE: the client might send empty image properties with "" instead of setting them to null.
+        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
+        // See https://github.com/TryGhost/GQL/issues/24
+        if (this.get('profile_image') === '' && this.previous('profile_image')) {
+            this.set('profile_image', null);
+        }
+
+        if (this.get('cover_image') === '' && this.previous('cover_image')) {
+            this.set('cover_image', null);
+        }
+
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         /**

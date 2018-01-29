@@ -172,6 +172,21 @@ Post = ghostBookshelf.Model.extend({
             tagsToSave,
             ops = [];
 
+        // CASE: the client might send empty image properties with "" instead of setting them to null.
+        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
+        // See https://github.com/TryGhost/GQL/issues/24
+        if (this.get('feature_image') === '' && this.previous('feature_image')) {
+            this.set('feature_image', null);
+        }
+
+        if (this.get('og_image') === '' && this.previous('og_image')) {
+            this.set('og_image', null);
+        }
+
+        if (this.get('twitter_image') === '' && this.previous('twitter_image')) {
+            this.set('twitter_image', null);
+        }
+
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
