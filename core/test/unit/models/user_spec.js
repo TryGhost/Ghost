@@ -37,20 +37,6 @@ describe('Models: User', function () {
             });
         });
 
-        it('cannot delete self', function (done) {
-            var mockUser = getUserModel(2, 'Administrator'),
-                context = {user: 2};
-
-            models.User.permissible(mockUser, 'destroy', context, {}, utils.permissions.admin, true, true).then(() => {
-                done(new Error('Permissible function should have errored'));
-            }).catch((error) => {
-                error.should.be.an.instanceof(common.errors.NoPermissionError);
-                should(mockUser.hasRole.calledOnce).be.true();
-                should(mockUser.get.calledOnce).be.true();
-                done();
-            });
-        });
-
         it('can always edit self', function () {
             var mockUser = getUserModel(3, 'Contributor'),
                 context = {user: 3};
@@ -104,6 +90,16 @@ describe('Models: User', function () {
                     context = {user: 2};
 
                 return models.User.permissible(mockUser, 'edit', context, {}, utils.permissions.editor, true, true).then(() => {
+                    should(mockUser.hasRole.called).be.true();
+                    should(mockUser.get.calledOnce).be.true();
+                });
+            });
+
+            it('can destroy self', function () {
+                var mockUser = getUserModel(3, 'Editor'),
+                    context = {user: 3};
+
+                return models.User.permissible(mockUser, 'destroy', context, {}, utils.permissions.editor, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });

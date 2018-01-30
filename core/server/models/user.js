@@ -657,15 +657,15 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'destroy') {
-            // Owner cannot be deleted EVER & user cannot delete themselves
-            if (userModel.hasRole('Owner') || context.user === userModel.get('id')) {
+            // Owner cannot be deleted EVER
+            if (userModel.hasRole('Owner')) {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
             if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
+                hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 
