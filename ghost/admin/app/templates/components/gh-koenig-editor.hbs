@@ -1,25 +1,22 @@
-{{!-- scrollable container --}}
-<div class="gh-koenig-editor">
-    {{!-- full height content pane --}}
-    <div class="gh-koenig-editor-pane" onclick={{action "focusEditor"}}>
-        {{gh-textarea title
-            class="gh-editor-title"
-            placeholder=titlePlaceholder
-            tabindex="1"
-            autoExpand=".gh-koenig-editor"
-            update=(action "onTitleChange")
-            focusOut=(action "onTitleFocusOut")
-            keyDown=(action "onTitleKeydown")
-            didCreateTextarea=(action "onTitleCreated")
-        }}
+{{!-- full height content pane --}}
+<div class="gh-koenig-editor-pane" onclick={{action "focusEditor"}}>
+    {{gh-textarea title
+        class="gh-editor-title"
+        placeholder=titlePlaceholder
+        tabindex="1"
+        autoExpand=".gh-koenig-editor"
+        update=(action "onTitleChange")
+        focusOut=(action "onTitleFocusOut")
+        keyDown=(action "onTitleKeydown")
+        didCreateTextarea=(action "onTitleCreated")
+    }}
 
-        {{koenig-editor
-            mobiledoc=body
-            placeholder=bodyPlaceholder
-            autofocus=bodyAutofocus
-            spellcheck=true
-            onChange=(action "onBodyChange")
-            didCreateEditor=(action "onEditorCreated")
-        }}
-    </div>
+    {{koenig-editor
+        mobiledoc=body
+        placeholder=bodyPlaceholder
+        autofocus=bodyAutofocus
+        spellcheck=true
+        onChange=(action "onBodyChange")
+        didCreateEditor=(action "onEditorCreated")
+    }}
 </div>
