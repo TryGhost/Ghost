@@ -277,13 +277,13 @@
     max-width: 100%;
 }
 
+.__mobiledoc-editor hr {
+    margin: 0.5em 0;
+}
+
 /**
  * Cards
  */
-
-.__mobiledoc-card {
-    display: inline-block;
-}
 
 /**
  * Tooltips

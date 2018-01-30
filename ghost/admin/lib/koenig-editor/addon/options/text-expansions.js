@@ -64,6 +64,38 @@ export default function (editor) {
         }
     });
 
+    editor.onTextInput({
+        name: 'md_hr',
+        match: /^---$/,
+        run(editor) {
+            let {range: {head, head: {section}}} = editor;
+
+            // Skip if cursor is not at end of section
+            if (!head.isTail()) {
+                return;
+            }
+
+            // Skip if section is a list item
+            if (section.isListItem) {
+                return;
+            }
+
+            editor.run((postEditor) => {
+                let card = postEditor.builder.createCardSection('koenig-card-hr');
+                let needsTrailingParagraph = !section.next;
+
+                postEditor.replaceSection(section, card);
+
+                // add an empty paragraph after if necessary so writing can continue
+                if (needsTrailingParagraph) {
+                    let newSection = postEditor.builder.createMarkupSection('p');
+                    postEditor.insertSectionAtEnd(newSection);
+                    postEditor.setRange(newSection.tailPosition());
+                }
+            });
+        }
+    });
+
     /* inline markdown ------------------------------------------------------ */
 
     function matchStrongStar(editor, text) {
