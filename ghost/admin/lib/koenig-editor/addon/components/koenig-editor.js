@@ -6,7 +6,9 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import Ember from 'ember';
+import defaultAtoms from '../options/atoms';
 import layout from '../templates/components/koenig-editor';
+import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
@@ -79,11 +81,17 @@ export default Component.extend({
     // merge in named options with the `options` property data-bag
     editorOptions: computed(function () {
         let options = this.get('options') || {};
+        let atoms = this.get('atoms') || [];
+
+        // add our default atoms, we want the defaults to be first so that they
+        // can be overridden by any passed-in atoms
+        atoms = Array.concat(defaultAtoms, atoms);
 
         return assign({
             placeholder: this.get('placeholder'),
             spellcheck: this.get('spellcheck'),
-            autofocus: this.get('autofocus')
+            autofocus: this.get('autofocus'),
+            atoms
         }, options);
     }),
 
@@ -136,6 +144,9 @@ export default Component.extend({
         editor = new Editor(editorOptions);
 
         // set up key commands and text expansions (MD conversion)
+        // TODO: this will override any passed in options, we should allow the
+        // default behaviour to be overridden by addon consumers
+        registerKeyCommands(editor);
         registerTextExpansions(editor);
 
         // set up editor hooks
