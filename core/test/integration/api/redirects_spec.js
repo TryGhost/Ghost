@@ -108,29 +108,5 @@ describe('Redirects API', function () {
                     });
             });
         });
-
-        describe('Contributor', function () {
-            it('Can\'t upload', function (done) {
-                RedirectsAPI.upload(testUtils.context.contributor)
-                    .then(function () {
-                        done(new Error('Contributor is not allowed to upload redirects.'));
-                    })
-                    .catch(function (err) {
-                        err.statusCode.should.eql(403);
-                        done();
-                    });
-            });
-
-            it('Can\'t download', function (done) {
-                RedirectsAPI.upload(testUtils.context.contributor)
-                    .then(function () {
-                        done(new Error('Contributor is not allowed to download redirects.'));
-                    })
-                    .catch(function (err) {
-                        err.statusCode.should.eql(403);
-                        done();
-                    });
-            });
-        });
     });
 });

@@ -140,15 +140,6 @@ describe('Tags API', function () {
             }).catch(done);
         });
 
-        it('CANNOT edit a tag (contributor)', function (done) {
-            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.contributor, {id: firstTag}))
-            .then(function () {
-                done(new Error('Add tag is not denied for contributor.'));
-            }, function () {
-                done();
-            }).catch(done);
-        });
-
         it('No-auth CANNOT edit tag', function (done) {
             TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, {id: firstTag}))
                 .then(function () {
@@ -267,18 +258,6 @@ describe('Tags API', function () {
 
         it('can browse (author)', function (done) {
             TagAPI.browse(testUtils.context.author).then(function (results) {
-                should.exist(results);
-                should.exist(results.tags);
-                results.tags.length.should.be.above(0);
-                testUtils.API.checkResponse(results.tags[0], 'tag');
-                results.tags[0].created_at.should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can browse (contributor)', function (done) {
-            TagAPI.browse(testUtils.context.contributor).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);

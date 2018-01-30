@@ -39,10 +39,10 @@ describe('User API', function () {
             .then(function (_user2) {
                 author = _user2;
 
-                // create contributor
+                // create inactive user
                 return testUtils.createUser({
-                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+4@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[4]
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
+                    role: testUtils.DataGenerator.Content.roles[2]
                 });
             })
             .then(function (_user3) {

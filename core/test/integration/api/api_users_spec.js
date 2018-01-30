@@ -1081,34 +1081,6 @@ describe('Users API', function () {
                     }).catch(checkForErrorType('NoPermissionError', done));
             });
 
-            it('CANNOT destroy admin', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.admin}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete admin'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy editor', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.editor}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete editor'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy author', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.author}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete author'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy other contributor', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: testUtils.DataGenerator.Content.extraUsers[3].id}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete other contributor'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
             it('CANNOT destroy self', function (done) {
                 UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.contributor}))
                     .then(function () {

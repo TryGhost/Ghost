@@ -99,18 +99,6 @@ describe('Themes API', function () {
             })
             .then(function (token) {
                 scope.authorAccessToken = token;
-
-                return testUtils.createUser({
-                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+contributor@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[4]
-                });
-            }).then(function (user) {
-                scope.contributor = user;
-
-                request.user = scope.contributor;
-                return testUtils.doAuth(request);
-            }).then(function (token) {
-                scope.contributorAccessToken = token;
             });
     });
 
@@ -677,77 +665,6 @@ describe('Themes API', function () {
             it('no permissions to download theme', function (done) {
                 request.get(testUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.authorAccessToken)
-                    .expect(403)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.exist(res.body.errors);
-                        res.body.errors.should.be.an.Array().with.lengthOf(1);
-                        res.body.errors[0].errorType.should.eql('NoPermissionError');
-                        res.body.errors[0].message.should.eql('You do not have permission to read themes');
-
-                        done();
-                    });
-            });
-        });
-
-        describe('As Contributor', function () {
-            it('can browse themes', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/'))
-                    .set('Authorization', 'Bearer ' + scope.contributorAccessToken)
-                    .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
-            });
-
-            it('no permissions to upload theme', function (done) {
-                scope.uploadTheme({
-                    themePath: path.join(__dirname, '/../../../utils/fixtures/themes/valid.zip'),
-                    accessToken: scope.contributorAccessToken
-                }).end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    res.statusCode.should.eql(403);
-
-                    should.exist(res.body.errors);
-                    res.body.errors.should.be.an.Array().with.lengthOf(1);
-                    res.body.errors[0].errorType.should.eql('NoPermissionError');
-                    res.body.errors[0].message.should.eql('You do not have permission to add themes');
-
-                    done();
-                });
-            });
-
-            it('no permissions to delete theme', function (done) {
-                request.del(testUtils.API.getApiQuery('themes/test'))
-                    .set('Authorization', 'Bearer ' + scope.contributorAccessToken)
-                    .expect(403)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.exist(res.body.errors);
-                        res.body.errors.should.be.an.Array().with.lengthOf(1);
-                        res.body.errors[0].errorType.should.eql('NoPermissionError');
-                        res.body.errors[0].message.should.eql('You do not have permission to destroy themes');
-
-                        done();
-                    });
-            });
-
-            it('no permissions to download theme', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/casper/download/'))
-                    .set('Authorization', 'Bearer ' + scope.contributorAccessToken)
                     .expect(403)
                     .end(function (err, res) {
                         if (err) {

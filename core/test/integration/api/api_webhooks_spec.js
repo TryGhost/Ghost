@@ -143,21 +143,5 @@ describe('Webhooks API', function () {
                     }).catch(checkForErrorType('NoPermissionError', done));
              });
         });
-
-        describe('Contributor', function () {
-            it('CANNOT add', function (done) {
-                WebhookAPI.add({webhooks: [newWebhook]}, testUtils.context.contributor)
-                    .then(function () {
-                        done(new Error('Contributor should not be able to add a webhook'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT delete', function (done) {
-                WebhookAPI.destroy(_.extend({}, testUtils.context.contributor, {id: firstWebhook}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete a webhook'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-             });
-        });
     });
 });
