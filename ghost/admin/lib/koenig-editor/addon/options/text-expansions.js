@@ -34,6 +34,7 @@ export default function (editor) {
                 break;
             case ')':
                 matchLink(postEditor, text);
+                matchImage(postEditor, text);
                 break;
             case '~':
                 matchStrikethrough(postEditor, text);
@@ -169,6 +170,41 @@ export default function (editor) {
                 let a = postEditor.builder.createMarkup('a', {href: url});
                 let nextPosition = postEditor.insertTextWithMarkup(position, text, [a]);
                 postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
+            });
+        }
+    }
+
+    function matchImage(editor, text) {
+        let matches = text.match(/^!\[(.*?)\]\((.*?)\)$/);
+        if (matches) {
+            let {range: {head, head: {section}}} = editor;
+            let src = matches[2];
+            let alt = matches[1];
+
+            // skip if cursor is not at end of section
+            if (!head.isTail()) {
+                return;
+            }
+
+            // mobiledoc lists don't support cards
+            if (section.isListItem) {
+                return;
+            }
+
+            editor.run((postEditor) => {
+                let card = postEditor.builder.createCardSection('koenig-card-image', {src, alt});
+                // need to check the section before replacing else it will always
+                // add a trailing paragraph
+                let needsTrailingParagraph = !section.next;
+
+                editor.range.extend(-(matches[0].length));
+                postEditor.replaceSection(editor.range.headSection, card);
+
+                if (needsTrailingParagraph) {
+                    let newSection = editor.builder.createMarkupSection('p');
+                    postEditor.insertSectionAtEnd(newSection);
+                    postEditor.setRange(newSection.tailPosition());
+                }
             });
         }
     }
