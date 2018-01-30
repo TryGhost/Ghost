@@ -34,6 +34,7 @@
 @import "components/popovers.css";
 @import "components/tour.css";
 @import "components/unsplash.css";
+@import "components/koenig";
 
 
 /* Layouts: Groups of Components
@@ -52,11 +53,6 @@
 @import "layouts/apps.css";
 @import "layouts/packages.css";
 @import "layouts/subscribers.css";
-
-
-/* Addons: gh-koenig
-/* ---------------------------------------------------------- */
-@import "addons/gh-koenig/gh-koenig.css";
 
 
 /* ---------------------------✈️----------------------------- */

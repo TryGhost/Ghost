@@ -1,0 +1,345 @@
+/* TODO: move these back into the editor.css layout? */
+
+/* scrollable container */
+.gh-koenig-editor {
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* padded container housing title + editor canvas, scrollable content */
+.gh-koenig-editor-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 10vw 4vw;
+}
+
+@media (max-width: 500px) {
+    .gh-koenig-editor-pane {
+        padding: 15vw 4vw;
+    }
+}
+
+/* use flex-grow to fill the available vertical space so clicks outside the
+   editor content can trigger focus */
+.gh-koenig-editor-pane .koenig-editor {
+    width: 100%;
+    flex-grow: 1;
+    cursor: text;
+}
+
+/* NOTE: everything from this point should be Koenig addon specific */
+
+/* Editor canvas layout ----------------------------------------------------- */
+
+.koenig-editor {
+    position: relative; /* necessary to position toolbar etc */
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+/* Formatting Toolbar ------------------------------------------------------- */
+
+.koenig-toolbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+    color: color(var(--lightgrey) l(-10%));
+    background: linear-gradient(
+        color(var(--darkgrey) l(-3%)),
+        color(var(--darkgrey) l(-8%))
+    );
+    border-radius: 5px;
+    box-shadow: 0 0 0 1px color(var(--darkgrey) l(-10%)), 0 8px 16px rgba(26,39,49,0.16), rgba(255,255,255,0.09) 0 1px 0 0 inset;
+    z-index:110; /* places it above the title */
+    pointer-events: none !important; /* no interactivity when hidden */
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 300ms;
+}
+
+.koenig-toolbar--visible {
+    pointer-events: auto !important; /* make sure the buttons work */
+    opacity: 1;
+}
+
+.koenig-toolbar:after {
+    display: block;
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    margin-left: -10px;
+    width: 0;
+    height: 0;
+    border-left: transparent 10px solid;
+    border-right: transparent 10px solid;
+    border-top: color(var(--darkgrey) l(-10%)) 8px solid;
+    transition-property: left;
+    transition-duration: 100ms;
+}
+.koenig-toolbar.tick-above:after {
+    border: none;
+}
+
+.koenig-toolbar.is-link {
+    width: 263px;
+    height: 40px;
+}
+.koenig-toolbar.is-link input {
+    width: 100%;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    padding:5px;
+}
+.koenig-toolbar.is-touch {
+    position: fixed !important;
+    top: 70px;
+    right: 40px;
+}
+
+.koenig-toolbar.is-touch:after {
+    border: none;
+}
+
+.koenig-toolbar-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 32px;
+    font-size: 1.6rem;
+    line-height: 40px;
+    transition: text-shadow 0.3s ease;
+}
+
+.koenig-toolbar-btn:first-child {
+    width: 43px;
+    padding-left: 8px;
+}
+.koenig-toolbar-btn:last-child {
+    width: 43px;
+    padding-right: 8px;
+}
+
+.koenig-toolbar-btn svg {
+    height: 1.4rem;
+}
+
+.koenig-toolbar-btn svg g {
+    stroke-width: 2px;
+    stroke: color(var(--lightgrey) l(-10%));
+}
+
+.koenig-toolbar-btn:hover,
+.koenig-toolbar-btn.selected {
+    color: #fff;
+    cursor: pointer;
+    text-shadow: #000 0 1px 6px;
+}
+
+.koenig-toolbar-btn:hover svg g {
+    stroke: #fff;
+}
+
+.koenig-toolbar-btn-bold {
+    font-weight: 700;
+}
+
+.koenig-toolbar-btn-italic {
+    width: 31px;
+    font-size: 1.7rem;
+    text-indent: -1px;
+    font-style: italic;
+    font-family: Georgia, Times, serif;
+    font-weight: 500;
+}
+
+.koenig-toolbar-btn-strike {
+    text-decoration: line-through;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+}
+
+.koenig-toolbar-btn-h1 {
+    font-variant: small-caps;
+    font-weight: 700;
+    -webkit-font-smoothing: antialiased;
+}
+
+.koenig-toolbar-btn-h2 {
+    font-weight: 700;
+    font-size: 0.9em;
+    font-variant: small-caps;
+    line-height: 42px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.koenig-toolbar-btn-quote {
+    font-size: 4rem;
+    line-height: 62px;
+    font-family: Georgia, Times, serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.koenig-toolbar-divider {
+    height: 40px;
+    width: 1px;
+    margin: 0 9px 0 8px;
+    background: color(var(--darkgrey) l(-10%));
+    box-shadow: rgba(255,255,255,0.04) 1px 0 0 0;
+}
+
+/* ⨁ menu ------------------------------------------------------------------ */
+
+/* Slash shortcut menu ------------------------------------------------------ */
+
+/* Menu items --------------------------------------------------------------- */
+
+/* mobiledoc-kit base styles ------------------------------------------------
+ * NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
+ */
+
+/**
+ * Editor
+ */
+
+/* TODO: update to match Ghost styles */
+.__mobiledoc-editor {
+    position: relative;
+    font-family: var(--font-family);
+    font-size: 1.7rem;
+    resize: none;
+    font-weight: 200;
+    letter-spacing: 0.1px;
+    min-height: 1em;
+}
+
+.__mobiledoc-editor:focus {
+    outline: none;
+}
+
+.__mobiledoc-editor > * {
+    position: relative;
+}
+
+.__mobiledoc-editor.__has-no-content:after {
+    content: attr(data-placeholder);
+    color: #bbb;
+    cursor: text;
+    position: absolute;
+    top: 0;
+}
+
+.__mobiledoc-editor a {
+    color: #0b8bff;
+    white-space: nowrap;
+}
+
+/* override of global.css block display */
+.__mobiledoc-editor i {
+    display: inline;
+}
+
+.__mobiledoc-editor h1,
+.__mobiledoc-editor h2,
+.__mobiledoc-editor h3,
+.__mobiledoc-editor h4,
+.__mobiledoc-editor h5,
+.__mobiledoc-editor h6 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.__mobiledoc-editor blockquote {
+    border-left: 4px solid #0b8bff;
+    margin: 1em 0 1em -1.2em;
+    padding-left: 1.05em;
+    color: #a0a0a0;
+}
+
+.__mobiledoc-editor img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.__mobiledoc-editor div,
+.__mobiledoc-editor iframe {
+    max-width: 100%;
+}
+
+/**
+ * Cards
+ */
+
+.__mobiledoc-card {
+    display: inline-block;
+}
+
+/**
+ * Tooltips
+ */
+
+@-webkit-keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.__mobiledoc-tooltip {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.7em;
+    white-space: nowrap;
+    position: absolute;
+    background-color: rgba(43,43,43,0.9);
+    border-radius: 3px;
+    line-height: 1em;
+    padding: 0.7em 0.9em;
+    color: #FFF;
+    -webkit-animation: fade-in 0.2s;
+            animation: fade-in 0.2s;
+}
+
+.__mobiledoc-tooltip:before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 0.4em solid transparent;
+    border-right: 0.4em solid transparent;
+    border-bottom: 0.4em solid rgba(43,43,43,0.9);
+    top: -0.4em;
+    margin-left: -0.4em;
+}
+
+/* help keeps mouseover state when moving from link to tooltip */
+.__mobiledoc-tooltip:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -0.4em;
+    height: 0.4em;
+}
+
+.__mobiledoc-tooltip a {
+    color: #FFF;
+    text-decoration: none;
+}
+
+.__mobiledoc-tooltip a:hover {
+    text-decoration: underline;
+}
