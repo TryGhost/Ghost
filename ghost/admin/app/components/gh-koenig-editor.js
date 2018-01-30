@@ -3,7 +3,7 @@ import Component from '@ember/component';
 export default Component.extend({
 
     // public attrs
-    tagName: '',
+    classNames: ['gh-koenig-editor'],
     title: '',
     titlePlaceholder: '',
     body: null,
@@ -35,6 +35,9 @@ export default Component.extend({
                 this._editor.run((postEditor) => {
                     postEditor.setRange(range.tail.section.tailPosition());
                 });
+
+                // ensure we're scrolled to the bottom
+                this.element.scrollTop = this.element.scrollHeight;
             }
         },
 
