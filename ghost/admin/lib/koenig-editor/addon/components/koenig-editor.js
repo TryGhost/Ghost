@@ -6,15 +6,22 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import Ember from 'ember';
+import EmberObject from '@ember/object';
 import defaultAtoms from '../options/atoms';
+import defaultCards from '../options/cards';
 import layout from '../templates/components/koenig-editor';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
+import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {computed} from '@ember/object';
+import {copy} from '@ember/object/internals';
 import {run} from '@ember/runloop';
+
+export const ADD_CARD_HOOK = 'addComponent';
+export const REMOVE_CARD_HOOK = 'removeComponent';
 
 // used in test helpers to grab a reference to the underlying mobiledoc editor
 export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
@@ -63,6 +70,7 @@ export default Component.extend({
     activeMarkupTagNames: null,
     activeSectionTagNames: null,
     selectedRange: null,
+    componentCards: null,
 
     // private properties
     _localMobiledoc: null,
@@ -79,19 +87,24 @@ export default Component.extend({
     /* computed properties -------------------------------------------------- */
 
     // merge in named options with the `options` property data-bag
+    // TODO: what is the `options` property data-bag and when/where does it get set?
     editorOptions: computed(function () {
         let options = this.get('options') || {};
         let atoms = this.get('atoms') || [];
+        let cards = this.get('cards') || [];
 
-        // add our default atoms, we want the defaults to be first so that they
-        // can be overridden by any passed-in atoms
+        // add our default atoms and cards, we want the defaults to be first so
+        // that they can be overridden by any passed-in atoms or cards.
+        // Use Array.concat to avoid modifying any passed in array references
         atoms = Array.concat(defaultAtoms, atoms);
+        cards = Array.concat(defaultCards, cards);
 
         return assign({
             placeholder: this.get('placeholder'),
             spellcheck: this.get('spellcheck'),
             autofocus: this.get('autofocus'),
-            atoms
+            atoms,
+            cards
         }, options);
     }),
 
@@ -106,6 +119,10 @@ export default Component.extend({
             mobiledoc = BLANK_DOC;
             this.set('mobiledoc', mobiledoc);
         }
+
+        this.set('componentCards', A([]));
+        this.set('activeMarkupTagNames', {});
+        this.set('activeSectionTagNames', {});
 
         this._startedRunLoop = false;
     },
@@ -141,6 +158,51 @@ export default Component.extend({
         // create a new editor
         let editorOptions = this.get('editorOptions');
         editorOptions.mobiledoc = mobiledoc;
+
+        let componentHooks = {
+            // triggered when a card section is added to the mobiledoc
+            [ADD_CARD_HOOK]: ({env, options, payload}) => {
+                let cardId = Ember.uuid();
+                let cardName = env.name;
+
+                // the desination element is the container that gets rendered
+                // inside the editor, once rendered we use {{-in-element}} to
+                // wormhole in the actual ember component
+                let destinationElementId = `koenig-editor-card-${cardId}`;
+                let destinationElement = document.createElement('div');
+                destinationElement.id = destinationElementId;
+
+                // the payload must be copied to avoid sharing the reference
+                payload = copy(payload, true);
+
+                // all of the properties that will be possed through to the
+                // component cards via the template
+                let card = EmberObject.create({
+                    destinationElement,
+                    destinationElementId,
+                    cardName,
+                    payload,
+                    env,
+                    options,
+                    editor,
+                    postModel: env.postModel
+                });
+
+                // after render we render the full ember card via {{-in-element}}
+                run.schedule('afterRender', () => {
+                    this.get('componentCards').pushObject(card);
+                });
+
+                // render the destination element inside the editor
+                return {card, element: destinationElement};
+            },
+            // triggered when a card section is removed from the mobiledoc
+            [REMOVE_CARD_HOOK]: (card) => {
+                this.get('componentCards').removeObject(card);
+            }
+        };
+        editorOptions.cardOptions = componentHooks;
+
         editor = new Editor(editorOptions);
 
         // set up key commands and text expansions (MD conversion)

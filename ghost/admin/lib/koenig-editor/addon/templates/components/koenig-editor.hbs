@@ -65,3 +65,24 @@
         &ldquo;
     </button>
 {{/koenig-toolbar}}
+
+{{#each componentCards as |card|}}
+    {{!--
+        TODO: move to the public {{in-element}} API when it's available
+        https://github.com/cibernox/rfcs/blob/make-in-element-public/text/0000-promote-in-element-to-public-api.md
+    --}}
+    {{#-in-element card.destinationElement}}
+        {{component card.cardName
+            editor=editor
+            postModel=card.postModel
+            cardName=card.cardName
+            payload=card.payload
+            env=card.env
+            options=card.options
+            editCard=(action card.env.edit)
+            saveCard=(action card.env.save)
+            cancelCard=(action card.env.cancel)
+            removeCard=(action card.env.remove)
+        }}
+    {{/-in-element}}
+{{/each}}
