@@ -123,7 +123,7 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/gh-koenig"
+      "lib/koenig-editor"
     ]
   }
 }

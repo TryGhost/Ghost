@@ -5,7 +5,7 @@ import attr from 'ember-data/attr';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {BLANK_DOC as BLANK_MARKDOWN} from 'ghost-admin/components/gh-markdown-editor';
-import {BLANK_DOC as BLANK_MOBILEDOC} from 'gh-koenig/components/gh-koenig';
+import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {belongsTo, hasMany} from 'ember-data/relationships';
 import {compare} from '@ember/utils';
 import {computed} from '@ember/object';
@@ -344,8 +344,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     isCompatibleWithMarkdownEditor() {
         let mobiledoc = this.get('mobiledoc');
 
-        if (
-            mobiledoc.markups.length === 0
+        if (mobiledoc
+            && mobiledoc.markups.length === 0
             && mobiledoc.cards.length === 1
             && mobiledoc.cards[0][0] === 'card-markdown'
             && mobiledoc.sections.length === 1

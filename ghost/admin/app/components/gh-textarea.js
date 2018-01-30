@@ -27,6 +27,10 @@ export default OneWayTextarea.extend(TextInputMixin, {
         if (this.get('autoExpand')) {
             run.scheduleOnce('afterRender', this, this._setupAutoExpand);
         }
+
+        if (this.get('didCreateTextarea')) {
+            this.get('didCreateTextarea')(this.element);
+        }
     },
 
     willDestroyElement() {

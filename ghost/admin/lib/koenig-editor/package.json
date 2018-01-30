@@ -1,0 +1,17 @@
+{
+  "name": "koenig-editor",
+  "version": "0.0.1",
+  "description": "A mobiledoc-kit based editor for Ghost.",
+  "author": "Ghost Foundation",
+  "homepage": "http://ghost.org",
+  "bugs": "https://github.com/TryGhost/Ghost/issues",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "ember-cli-babel": "^6.11.0",
+    "ember-cli-htmlbars": "^2.0.3"
+  }
+}
