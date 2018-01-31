@@ -162,7 +162,8 @@ module.exports = function (defaults) {
         },
         svg: {
             paths: [
-                'public/assets/icons'
+                'public/assets/icons',
+                'lib/koenig-editor/public/icons'
             ],
             optimize: {
                 plugins: [
