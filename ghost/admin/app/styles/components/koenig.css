@@ -204,6 +204,12 @@
 
 /* Menu items --------------------------------------------------------------- */
 
+/* Cards -------------------------------------------------------------------- */
+
+textarea.koenig-card-markdown {
+    max-width: 100%;
+}
+
 /* mobiledoc-kit base styles ------------------------------------------------
  * NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
  */
@@ -284,6 +290,7 @@
 /**
  * Cards
  */
+
 
 /**
  * Tooltips
