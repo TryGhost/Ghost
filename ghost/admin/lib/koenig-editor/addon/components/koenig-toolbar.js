@@ -21,7 +21,7 @@ export default Component.extend({
     // public attrs
     classNames: ['koenig-toolbar'],
     classNameBindings: ['showToolbar:koenig-toolbar--visible'],
-    selectedRange: null,
+    editorRange: null,
 
     // internal properties
     showToolbar: false,

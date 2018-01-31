@@ -1,0 +1,43 @@
+{{#if showButton}}
+    <button class="koenig-plus-menu-button" {{action "openMenu"}}>{{inline-svg "plus"}}</button>
+{{/if}}
+
+{{#if showMenu}}
+    <div class="koenig-cardmenu">
+        <div class="koenig-cardmenu-search">
+            <svg version="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.854 23.146l-9.009-9.009A8.455 8.455 0 0 0 17 8.5C17 3.813 13.187 0 8.5 0S0 3.813 0 8.5 3.813 17 8.5 17a8.45 8.45 0 0 0 5.637-2.156l9.009 9.009a.5.5 0 1 0 .708-.707zM1 8.5C1 4.364 4.364 1 8.5 1S16 4.364 16 8.5 12.636 16 8.5 16 1 12.636 1 8.5z"></path></svg>
+            <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
+        </div>
+        <div class="koenig-cardmenu-divider">
+            Primary
+        </div>
+        <div class="koenig-cardmenu-card" {{action "closeMenu" on="click"}}>
+            <div class="koenig-cardmenu-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.979 22.5l-7-20.5L2 22.5m2.383-7h9.207M.5 22.5h3.021m10.958 0H17.5m5.001 0L17.903 9.035l-2.36 6.932M16.92 17.5h3.768m.828 5H23.5" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"></path></svg></div>
+            <div class="koenig-cardmenu-label">Text</div>
+        </div>
+        <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "koenig-card-markdown" on="click"}}>
+            <div class="koenig-cardmenu-icon"><svg viewBox="0 0 43 34" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><rect stroke="#000" stroke-width="2" x="2" y="2" width="39" height="30" rx="2"></rect><path fill="#000" d="M19.566 12.613l-.049-.01L14.917 24h-1.279l-4.6-11.387-.048.01.195 5.752v4.121l1.592.274V24H5.669v-1.23l1.592-.274V11.295L5.67 11.02v-1.24h4.053l4.531 11.553h.059l4.521-11.553h4.063v1.24l-1.592.274v11.201l1.592.274V24h-5.107v-1.23l1.591-.274v-4.121z"></path><path d="M36.077 18.501l-5.039 5.039L26 18.5m5.038 5.039v-13.1" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg></div>
+            <div class="koenig-cardmenu-label">Markdown</div>
+        </div>
+        <div class="koenig-cardmenu-card">
+            <div class="koenig-cardmenu-icon"><svg version="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 18.5v-17a.5.5 0 0 0-.5-.5h-17a.5.5 0 0 0-.5.5v17a.5.5 0 0 0 .5.5h17a.5.5 0 0 0 .5-.5zM18 2v13h-2.161l-2.874-7.186a.5.5 0 0 0-.453-.314.529.529 0 0 0-.467.293l-2.17 4.775-1.99-2.389a.502.502 0 0 0-.813.063L4.217 15H2V2h16zm-3.238 13H5.383l2.183-3.639 2.049 2.46a.5.5 0 0 0 .839-.114l2.016-4.434L14.762 15zM2 18v-2h16v2H2zM22.884 7.242a.5.5 0 0 0-.339-.178l-1.992-.181a.5.5 0 0 0-.09.996l1.494.135-1.272 13.942-14.44-1.317a.502.502 0 0 0-.09.997l14.937 1.363.045.001a.501.501 0 0 0 .498-.455l1.363-14.939a.497.497 0 0 0-.114-.364zM6 8c1.103 0 2-.897 2-2s-.897-2-2-2-2 .897-2 2 .897 2 2 2zm0-3c.551 0 1 .449 1 1s-.449 1-1 1-1-.449-1-1 .449-1 1-1z"></path></svg></div>
+            <div class="koenig-cardmenu-label">Image</div>
+        </div>
+        <div class="koenig-cardmenu-card">
+            <div class="koenig-cardmenu-icon"><svg version="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.354 3.147a.5.5 0 0 0-.707 0l-8.5 8.5a.5.5 0 0 0 0 .707l8.5 8.5a.498.498 0 0 0 .707 0 .5.5 0 0 0 0-.707L1.207 12l8.147-8.146a.5.5 0 0 0 0-.707zm14.5 8.499l-8.5-8.5a.5.5 0 0 0-.707.707L22.793 12l-8.146 8.146a.5.5 0 0 0 .707.708l8.5-8.5a.502.502 0 0 0 0-.708z"></path></svg></div>
+            <div class="koenig-cardmenu-label">Embed</div>
+        </div>
+        <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "koenig-card-hr" on="click"}}>
+            <div class="koenig-cardmenu-icon"><svg viewBox="0 0 42 4" xmlns="http://www.w3.org/2000/svg"><path d="M1 2h40" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="square"></path></svg></div>
+            <div class="koenig-cardmenu-label">Divider</div>
+        </div>
+        <div class="koenig-cardmenu-card" {{action "replaceWithListSection" "ul" on="click"}}>
+            <div class="koenig-cardmenu-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"><circle cx="2.5" cy="4.5" r="2"></circle><path d="M8.569 4.428H23.5"></path><circle cx="2.5" cy="12.5" r="2"></circle><path d="M8.569 12.428H23.5"></path><circle cx="2.5" cy="20.5" r="2"></circle><path d="M8.569 20.427H23.5"></path></g></svg></div>
+            <div class="koenig-cardmenu-label">Bullet list</div>
+        </div>
+        <div class="koenig-cardmenu-card" {{action "replaceWithListSection" "ol" on="click"}}>
+            <div class="koenig-cardmenu-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 4.5h17m-17 8h17m-17 8h17M2 6.5V2.573L.5 4.037M2.569 14.5H.5c1.48-2 2-1.836 2-2.963a.986.986 0 0 0-1-.982.948.948 0 0 0-.965.974M.5 18.5h1.931l-1 1.537c.826 0 1 .481 1 .981s-.174.982-1 .982H.5" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"></path></svg></div>
+            <div class="koenig-cardmenu-label">Number list</div>
+        </div>
+    </div>
+{{/if}}
