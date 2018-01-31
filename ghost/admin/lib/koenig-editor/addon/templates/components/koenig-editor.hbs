@@ -66,6 +66,12 @@
     </button>
 {{/koenig-toolbar}}
 
+{{!-- (+) icon and pop-up menu --}}
+{{koenig-plus-menu
+    editorRange=selectedRange
+    editor=editor
+}}
+
 {{#each componentCards as |card|}}
     {{!--
         TODO: move to the public {{in-element}} API when it's available
