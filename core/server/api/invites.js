@@ -1,5 +1,6 @@
-var Promise = require('bluebird'),
-    _ = require('lodash'),
+'use strict';
+
+const _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     mail = require('../services/mail'),
     urlService = require('../services/url'),
@@ -10,8 +11,10 @@ var Promise = require('bluebird'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     docName = 'invites',
-    allowedIncludes = ['created_by', 'updated_by'],
-    invites;
+    unsafeAttrs = ['role_id'],
+    allowedIncludes = ['created_by', 'updated_by'];
+
+let invites;
 
 invites = {
     browse: function browse(options) {
@@ -39,9 +42,9 @@ invites = {
             return models.Invite.findOne(options.data, _.omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
-                        return Promise.reject(new common.errors.NotFoundError({
+                        throw new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.invites.inviteNotFound')
-                        }));
+                        });
                     }
 
                     return {
@@ -67,7 +70,9 @@ invites = {
             return models.Invite.findOne({id: options.id}, _.omit(options, ['data']))
                 .then(function (invite) {
                     if (!invite) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.inviteNotFound')
+                        });
                     }
 
                     return invite.destroy(options).return(null);
@@ -89,6 +94,65 @@ invites = {
             loggedInUser = options.context.user,
             emailData,
             invite;
+
+        function customValidation(options) {
+            if (!options.data.invites[0].email) {
+                throw new common.errors.ValidationError({
+                    message: common.i18n.t('errors.api.invites.emailIsRequired')
+                });
+            }
+
+            if (!options.data.invites[0].role_id) {
+                throw new common.errors.ValidationError({
+                    message: common.i18n.t('errors.api.invites.roleIsRequired')
+                });
+            }
+
+            return options;
+        }
+
+        function fetchLoggedInUser(options) {
+            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {include: ['roles']}))
+                .then(function (user) {
+                    if (!user) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.users.userNotFound')
+                        });
+                    }
+
+                    loggedInUser = user;
+                    return options;
+                });
+        }
+
+        function checkIfUserToInviteExists(options) {
+            return models.User.findOne({email: options.data.invites[0].email}, options)
+                .then(function (user) {
+                    if (user) {
+                        throw new common.errors.ValidationError({
+                            message: common.i18n.t('errors.api.users.userAlreadyRegistered')
+                        });
+                    }
+
+                    return options;
+                });
+        }
+
+        function destroyOldInvite(options) {
+            var data = options.data;
+
+            return models.Invite.findOne({email: data.invites[0].email}, _.omit(options, 'data'))
+                .then(function (invite) {
+                    if (!invite) {
+                        return options;
+                    }
+
+                    return invite.destroy(options);
+                })
+                .then(function () {
+                    return options;
+                });
+        }
 
         function addInvite(options) {
             var data = options.data;
@@ -145,100 +209,17 @@ invites = {
                         common.logging.warn(error.message);
                     }
 
-                    return Promise.reject(error);
-                });
-        }
-
-        function destroyOldInvite(options) {
-            var data = options.data;
-
-            return models.Invite.findOne({email: data.invites[0].email}, _.omit(options, 'data'))
-                .then(function (invite) {
-                    if (!invite) {
-                        return Promise.resolve(options);
-                    }
-
-                    return invite.destroy(options);
-                })
-                .then(function () {
-                    return options;
-                });
-        }
-
-        function validation(options) {
-            if (!options.data.invites[0].email) {
-                return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.invites.emailIsRequired')}));
-            }
-
-            if (!options.data.invites[0].role_id) {
-                return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.invites.roleIsRequired')}));
-            }
-
-            // @TODO remove when we have a new permission unit
-            // Make sure user is allowed to add a user with this role
-            // We cannot use permissible because we don't have access to the role_id!!!
-            // Adding a permissible function to the invite model, doesn't give us much context of the invite we would like to add
-            // As we are looking forward to replace the permission system completely, we do not add a hack here
-            return models.Role.findOne({id: options.data.invites[0].role_id}).then(function (roleToInvite) {
-                if (!roleToInvite) {
-                    return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.roleNotFound')}));
-                }
-
-                if (roleToInvite.get('name') === 'Owner') {
-                    return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
-                }
-
-                var loggedInUserRole = loggedInUser.related('roles').models[0].get('name'),
-                    allowed = [];
-
-                if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
-                    allowed = ['Administrator', 'Editor', 'Author'];
-                } else if (loggedInUserRole === 'Editor') {
-                    allowed = ['Author'];
-                }
-
-                if (allowed.indexOf(roleToInvite.get('name')) === -1) {
-                    return Promise.reject(new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.api.invites.notAllowedToInvite')
-                    }));
-                }
-            }).then(function () {
-                return options;
-            });
-        }
-
-        function checkIfUserExists(options) {
-            return models.User.findOne({email: options.data.invites[0].email}, options)
-                .then(function (user) {
-                    if (user) {
-                        return Promise.reject(new common.errors.ValidationError({
-                            message: common.i18n.t('errors.api.users.userAlreadyRegistered')
-                        }));
-                    }
-
-                    return options;
-                });
-        }
-
-        function fetchLoggedInUser(options) {
-            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {include: ['roles']}))
-                .then(function (user) {
-                    if (!user) {
-                        return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')}));
-                    }
-
-                    loggedInUser = user;
-                    return options;
+                    throw error;
                 });
         }
 
         tasks = [
             localUtils.validate(docName, {opts: ['email']}),
-            localUtils.handlePermissions(docName, 'add'),
+            customValidation,
+            localUtils.handlePermissions(docName, 'add', unsafeAttrs),
             localUtils.convertOptions(allowedIncludes),
             fetchLoggedInUser,
-            validation,
-            checkIfUserExists,
+            checkIfUserToInviteExists,
             destroyOldInvite,
             addInvite
         ];
