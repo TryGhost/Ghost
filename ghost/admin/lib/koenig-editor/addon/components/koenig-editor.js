@@ -40,6 +40,14 @@ export const BLANK_DOC = {
     ]
 };
 
+// map card names to component names
+export const CARD_COMPONENT_MAP = {
+    hr: 'koenig-card-hr',
+    image: 'koenig-card-image',
+    markdown: 'koenig-card-markdown',
+    'card-markdown': 'koenig-card-markdown' // backwards-compat with markdown editor
+};
+
 function arrayToMap(array) {
     let map = Object.create(null);
     array.forEach((key) => {
@@ -164,6 +172,7 @@ export default Component.extend({
             [ADD_CARD_HOOK]: ({env, options, payload}) => {
                 let cardId = Ember.uuid();
                 let cardName = env.name;
+                let componentName = CARD_COMPONENT_MAP[cardName];
 
                 // the desination element is the container that gets rendered
                 // inside the editor, once rendered we use {{-in-element}} to
@@ -175,12 +184,13 @@ export default Component.extend({
                 // the payload must be copied to avoid sharing the reference
                 payload = copy(payload, true);
 
-                // all of the properties that will be possed through to the
+                // all of the properties that will be passed through to the
                 // component cards via the template
                 let card = EmberObject.create({
                     destinationElement,
                     destinationElementId,
                     cardName,
+                    componentName,
                     payload,
                     env,
                     options,
