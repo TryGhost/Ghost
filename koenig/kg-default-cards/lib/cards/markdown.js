@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'card-markdown',
+    name: 'markdown',
     type: 'dom',
     render: function (opts) {
         var converters = require('../converters'),

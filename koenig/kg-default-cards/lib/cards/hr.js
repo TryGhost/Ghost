@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'card-hr',
+    name: 'hr',
     type: 'dom',
     render(opts) {
         return opts.env.dom.createElement('hr');
