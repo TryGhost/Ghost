@@ -62,7 +62,7 @@ export default Component.extend({
         this._super(...arguments);
         run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onWindowMousedownHandler);
-        window.removeEventListener('resize', this.this._onResizeHandler);
+        window.removeEventListener('resize', this._onResizeHandler);
     },
 
     actions: {
