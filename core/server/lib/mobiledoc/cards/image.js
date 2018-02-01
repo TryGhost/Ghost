@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'card-image',
+    name: 'image',
     type: 'dom',
     render(opts) {
         var img = opts.env.dom.createElement('img');
