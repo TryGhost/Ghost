@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import layout from '../templates/components/koenig-toolbar';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {run} from '@ember/runloop';
 import {task, timeout} from 'ember-concurrency';
 
 // initially rendered offscreen with opacity 0 so that sizing is available
@@ -31,9 +32,10 @@ export default Component.extend({
 
     // private properties
     _isMouseDown: false,
-    _onMousedownHandler: false,
-    _onMouseupHandler: false,
     _hasSelectedRange: false,
+    _onMousedownHandler: null,
+    _onMouseupHandler: null,
+    _onResizeHandler: null,
 
     /* computed properties -------------------------------------------------- */
 
@@ -56,20 +58,12 @@ export default Component.extend({
         // track mousedown/mouseup on the window so that we're sure to get the
         // events even when they start outside of this component or end outside
         // the window
-        this._onMousedownHandler = (event) => {
-            // we only care about the left mouse button
-            if (event.which === 1) {
-                this._isMouseDown = true;
-            }
-        };
-        this._onMouseupHandler = (event) => {
-            if (event.which === 1) {
-                this._isMouseDown = false;
-                this.get('_toggleVisibility').perform();
-            }
-        };
+        this._onMousedownHandler = run.bind(this, this._handleMousedown);
         window.addEventListener('mousedown', this._onMousedownHandler);
+        this._onMouseupHandler = run.bind(this, this._handleMouseup);
         window.addEventListener('mouseup', this._onMouseupHandler);
+        this._onResizeHandler = run.bind(this, this._handleResize);
+        window.addEventListener('resize', this._onResizeHandler);
     },
 
     didReceiveAttrs() {
@@ -88,8 +82,10 @@ export default Component.extend({
     willDestroyElement() {
         this._super(...arguments);
         this._removeStyleElement();
+        run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('mouseup', this._onMouseupHandler);
+        window.removeEventListener('resize', this._onResizeHandler);
     },
 
     _toggleVisibility: task(function* () {
@@ -107,66 +103,95 @@ export default Component.extend({
 
         // if we have a range, show the toolbnar once the mouse is lifted
         if (this._hasSelectedRange && !this._isMouseDown) {
-            let containerRect = this.element.parentNode.getBoundingClientRect();
-            let range = window.getSelection().getRangeAt(0);
-            let rangeRect = range.getBoundingClientRect();
-            let {width, height} = this.element.getBoundingClientRect();
-            let newPosition = {};
-
-            // rangeRect is relative to the viewport so we need to subtract the
-            // container measurements to get a position relative to the container
-            newPosition = {
-                top: rangeRect.top - containerRect.top - height - TOOLBAR_TOP_MARGIN,
-                left: rangeRect.left - containerRect.left + rangeRect.width / 2 - width / 2,
-                right: null
-            };
-
-            let tickPosition = 50;
-            // don't overflow left boundary
-            if (newPosition.left < 0) {
-                newPosition.left = 0;
-
-                // calculate the tick percentage position
-                let absTickPosition = rangeRect.left - containerRect.left + rangeRect.width / 2;
-                tickPosition = absTickPosition / width * 100;
-                if (tickPosition < 5) {
-                    tickPosition = 5;
-                }
-            }
-            // same for right boundary
-            if (newPosition.left + width > containerRect.width) {
-                newPosition.left = null;
-                newPosition.right = 0;
-
-                // calculate the tick percentage position
-                let absTickPosition = rangeRect.right - containerRect.right - rangeRect.width / 2;
-                tickPosition = 100 + absTickPosition / width * 100;
-                if (tickPosition > 95) {
-                    tickPosition = 95;
-                }
-            }
-
-            // the tick is a pseudo-element so we the only way we can affect it's
-            // style is by adding a style element to the head
-            this._removeStyleElement(); // reset to base styles
-            if (tickPosition !== 50) {
-                this._addStyleElement(`left: ${tickPosition}%`);
-            }
-
-            // update the toolbar position and show it
-            this.setProperties(newPosition);
-
-            // show the toolbar
-            this.set('showToolbar', true);
-
-            // track displayed range so that we don't re-position unnecessarily
-            this._lastRange = this.get('editorRange');
+            this._showToolbar();
         } else {
-            // hide the toolbar
-            this.set('showToolbar', false);
-            this._lastRange = null;
+            this._hideToolbar();
         }
     }).restartable(),
+
+    _handleMousedown(event) {
+        // we only care about the left mouse button
+        if (event.which === 1) {
+            this._isMouseDown = true;
+        }
+    },
+
+    _handleMouseup(event) {
+        if (event.which === 1) {
+            this._isMouseDown = false;
+            this.get('_toggleVisibility').perform();
+        }
+    },
+
+    _handleResize() {
+        if (this.get('showToolbar')) {
+            this._throttleResize = run.throttle(this, this._positionToolbar, 100);
+        }
+    },
+
+    _showToolbar() {
+        this._positionToolbar();
+        this.set('showToolbar', true);
+
+        // track displayed range so that we don't re-position unnecessarily
+        this._lastRange = this.get('editorRange');
+    },
+
+    _hideToolbar() {
+        this.set('showToolbar', false);
+        this._lastRange = null;
+    },
+
+    _positionToolbar() {
+        let containerRect = this.element.parentNode.getBoundingClientRect();
+        let range = window.getSelection().getRangeAt(0);
+        let rangeRect = range.getBoundingClientRect();
+        let {width, height} = this.element.getBoundingClientRect();
+        let newPosition = {};
+
+        // rangeRect is relative to the viewport so we need to subtract the
+        // container measurements to get a position relative to the container
+        newPosition = {
+            top: rangeRect.top - containerRect.top - height - TOOLBAR_TOP_MARGIN,
+            left: rangeRect.left - containerRect.left + rangeRect.width / 2 - width / 2,
+            right: null
+        };
+
+        let tickPosition = 50;
+        // don't overflow left boundary
+        if (newPosition.left < 0) {
+            newPosition.left = 0;
+
+            // calculate the tick percentage position
+            let absTickPosition = rangeRect.left - containerRect.left + rangeRect.width / 2;
+            tickPosition = absTickPosition / width * 100;
+            if (tickPosition < 5) {
+                tickPosition = 5;
+            }
+        }
+        // same for right boundary
+        if (newPosition.left + width > containerRect.width) {
+            newPosition.left = null;
+            newPosition.right = 0;
+
+            // calculate the tick percentage position
+            let absTickPosition = rangeRect.right - containerRect.right - rangeRect.width / 2;
+            tickPosition = 100 + absTickPosition / width * 100;
+            if (tickPosition > 95) {
+                tickPosition = 95;
+            }
+        }
+
+        // the tick is a pseudo-element so we the only way we can affect it's
+        // style is by adding a style element to the head
+        this._removeStyleElement(); // reset to base styles
+        if (tickPosition !== 50) {
+            this._addStyleElement(`left: ${tickPosition}%`);
+        }
+
+        // update the toolbar position
+        this.setProperties(newPosition);
+    },
 
     _addStyleElement(styles) {
         let styleElement = document.createElement('style');

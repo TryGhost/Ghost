@@ -4,16 +4,6 @@ import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 
-// clicking on anything in the menu will change the selection because the click
-// event propagates, this then closes the menu
-
-// focusing the search input removes the selection in the editor, again closing
-// the menu
-
-// when the menu is open we want to:
-// - close if clicked outside the menu
-// - keep the selected range around in case it gets changed
-
 export default Component.extend({
     layout,
 
@@ -28,9 +18,20 @@ export default Component.extend({
     showMenu: false,
     top: 0,
 
+    // private properties
+    _onResizeHandler: null,
+    _onWindowMousedownHandler: null,
+
     style: computed('top', function () {
         return htmlSafe(`top: ${this.get('top')}px`);
     }),
+
+    init() {
+        this._super(...arguments);
+
+        this._onResizeHandler = run.bind(this, this._handleResize);
+        window.addEventListener('resize', this._onResizeHandler);
+    },
 
     didReceiveAttrs() {
         this._super(...arguments);
@@ -48,16 +49,7 @@ export default Component.extend({
 
             // show the button if the cursor is at the beginning of a blank paragraph
             if (editorRange && editorRange.isCollapsed && section && !section.isListItem && (section.isBlank || section.text === '')) {
-                // find the "top" position by grabbing the current sections
-                // render node and querying it's bounding rect. Setting "top"
-                // positions the button+menu container element .koenig-plus-menu
-                let containerRect = this.element.parentNode.getBoundingClientRect();
-                let selectedElement = editorRange.head.section.renderNode.element;
-                let selectedElementRect = selectedElement.getBoundingClientRect();
-                let top = selectedElementRect.top - containerRect.top;
-
-                this.set('top', top);
-                this.set('showButton', true);
+                this._showButton();
                 this._hideMenu();
             } else {
                 this.set('showButton', false);
@@ -68,7 +60,9 @@ export default Component.extend({
 
     willDestroyElement() {
         this._super(...arguments);
-        window.removeEventListener('mousedown', this._bodyMousedownHandler);
+        run.cancel(this._throttleResize);
+        window.removeEventListener('mousedown', this._onWindowMousedownHandler);
+        window.removeEventListener('resize', this.this._onResizeHandler);
     },
 
     actions: {
@@ -119,6 +113,29 @@ export default Component.extend({
         }
     },
 
+    _showButton() {
+        this._positionMenu();
+        this.set('showButton', true);
+    },
+
+    // find the "top" position by grabbing the current sections
+    // render node and querying it's bounding rect. Setting "top"
+    // positions the button+menu container element .koenig-plus-menu
+    _positionMenu() {
+        // use the cached range if available because `editorRange` may have been
+        // lost due to clicks on the open menu
+        let {head: {section}} = this._editorRange || this.get('editorRange');
+
+        if (section) {
+            let containerRect = this.element.parentNode.getBoundingClientRect();
+            let selectedElement = section.renderNode.element;
+            let selectedElementRect = selectedElement.getBoundingClientRect();
+            let top = selectedElementRect.top - containerRect.top;
+
+            this.set('top', top);
+        }
+    },
+
     _showMenu() {
         this.set('showMenu', true);
 
@@ -129,10 +146,10 @@ export default Component.extend({
 
         // watch the window for mousedown events so that we can close the menu
         // when we detect a click outside
-        this._bodyMousedownHandler = run.bind(this, (event) => {
-            this._handleBodyMousedown(event);
+        this._onWindowMousedownHandler = run.bind(this, (event) => {
+            this._handleWindowMousedown(event);
         });
-        window.addEventListener('mousedown', this._bodyMousedownHandler);
+        window.addEventListener('mousedown', this._onWindowMousedownHandler);
 
         // store a reference to our range because it will change underneath
         // us as editor focus is lost
@@ -145,7 +162,7 @@ export default Component.extend({
             this._editorRange = null;
 
             // stop watching the body for clicks
-            window.removeEventListener('mousedown', this._bodyMousedownHandler);
+            window.removeEventListener('mousedown', this._onWindowMousedownHandler);
 
             // hide the menu
             this.set('showMenu', false);
@@ -159,9 +176,15 @@ export default Component.extend({
         }
     },
 
-    _handleBodyMousedown(event) {
+    _handleWindowMousedown(event) {
         if (!event.target.closest(`#${this.elementId}`)) {
             this._hideMenu();
+        }
+    },
+
+    _handleResize() {
+        if (this.get('showButton')) {
+            this._throttleResize = run.throttle(this, this._positionMenu, 100);
         }
     }
 
