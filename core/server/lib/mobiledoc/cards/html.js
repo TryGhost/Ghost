@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    name: 'card-html',
+    name: 'html',
     type: 'dom',
     render(opts) {
         let html = `<div class="kg-card-html">${opts.payload.html}</div>`;
