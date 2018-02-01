@@ -82,7 +82,7 @@ export default function (editor) {
             }
 
             editor.run((postEditor) => {
-                let card = postEditor.builder.createCardSection('koenig-card-hr');
+                let card = postEditor.builder.createCardSection('hr');
                 let needsTrailingParagraph = !section.next;
 
                 postEditor.replaceSection(section, card);
@@ -192,7 +192,7 @@ export default function (editor) {
             }
 
             editor.run((postEditor) => {
-                let card = postEditor.builder.createCardSection('koenig-card-image', {src, alt});
+                let card = postEditor.builder.createCardSection('image', {src, alt});
                 // need to check the section before replacing else it will always
                 // add a trailing paragraph
                 let needsTrailingParagraph = !section.next;
