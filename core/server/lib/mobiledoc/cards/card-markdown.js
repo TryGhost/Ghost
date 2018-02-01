@@ -4,4 +4,4 @@
 // our markdown-only editor was using the `card-markdown` card name
 const markdownCard = require('./markdown');
 
-module.exports = Object.assign(markdownCard, {name: 'card-markdown'});
+module.exports = Object.assign({}, markdownCard, {name: 'card-markdown'});

@@ -6,16 +6,16 @@ describe('Convert mobiledoc to HTML ', function () {
         version: '0.3.1',
         atoms: [],
         cards: [
-            ['card-markdown',
+            ['markdown',
                 {
                     pos: 'top',
-                    card_name: 'card-markdown',
+                    card_name: 'markdown',
                     markdown: '#heading\n\n- list one\n- list two\n- list three'
                 }
             ],
-            ['card-html', {
+            ['html', {
                 pos: 'top',
-                card_name: 'card-html',
+                card_name: 'html',
                 html: '<p>HTML CARD</p>'
             }]
         ],

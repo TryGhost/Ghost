@@ -11,8 +11,8 @@ DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
         markups: [],
         atoms: [],
         cards: [
-            ['card-markdown', {
-                cardName: 'card-markdown',
+            ['markdown', {
+                cardName: 'markdown',
                 markdown: content || ''
             }]
         ],
