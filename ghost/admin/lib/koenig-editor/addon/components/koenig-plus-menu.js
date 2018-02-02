@@ -21,6 +21,9 @@ export default Component.extend({
     // private properties
     _onResizeHandler: null,
     _onWindowMousedownHandler: null,
+    _lastEditorRange: null,
+    _hasCursorButton: false,
+    _onMousemoveHandler: null,
 
     style: computed('top', function () {
         return htmlSafe(`top: ${this.get('top')}px`);
@@ -31,31 +34,29 @@ export default Component.extend({
 
         this._onResizeHandler = run.bind(this, this._handleResize);
         window.addEventListener('resize', this._onResizeHandler);
+
+        this._onMousemoveHandler = run.bind(this, this._mousemoveRaf);
+        window.addEventListener('mousemove', this._onMousemoveHandler);
     },
 
     didReceiveAttrs() {
         this._super(...arguments);
 
-        if (!this.get('showMenu')) {
-            let editorRange = this.get('editorRange');
+        let editorRange = this.get('editorRange');
 
-            if (!editorRange) {
-                this.set('showButton', false);
-                this._hideMenu();
-                return;
-            }
-
-            let {head: {section}} = editorRange;
-
-            // show the button if the cursor is at the beginning of a blank paragraph
-            if (editorRange && editorRange.isCollapsed && section && !section.isListItem && (section.isBlank || section.text === '')) {
-                this._showButton();
-                this._hideMenu();
-            } else {
-                this.set('showButton', false);
-                this._hideMenu();
-            }
+        // show the (+) button when the cursor as on a blank P tag
+        if (!this.get('showMenu') && editorRange !== this._lastEditorRange) {
+            this._showOrHideButton(editorRange);
+            this._hasCursorButton = this.get('showButton');
         }
+
+        // re-position again on next runloop, prevents incorrect position after
+        // adding a card at the bottom of the doc
+        if (this.get('showButton')) {
+            run.next(this, this._positionMenu);
+        }
+
+        this._lastEditorRange = editorRange;
     },
 
     willDestroyElement() {
@@ -63,6 +64,7 @@ export default Component.extend({
         run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onWindowMousedownHandler);
         window.removeEventListener('resize', this._onResizeHandler);
+        window.removeEventListener('mousemove', this._onMousemoveHandler);
     },
 
     actions: {
@@ -92,6 +94,7 @@ export default Component.extend({
                     postEditor.setRange(newSection.tailPosition());
                 }
 
+                this._hideButton();
                 this._hideMenu();
             });
         },
@@ -113,9 +116,33 @@ export default Component.extend({
         }
     },
 
+    _showOrHideButton(editorRange) {
+        if (!editorRange) {
+            this._hideButton();
+            this._hideMenu();
+            return;
+        }
+
+        let {head: {section}} = editorRange;
+
+        // show the button if the range is a blank paragraph
+        if (editorRange && editorRange.isCollapsed && section && !section.isListItem && (section.isBlank || section.text === '')) {
+            this._editorRange = editorRange;
+            this._showButton();
+            this._hideMenu();
+        } else {
+            this._hideButton();
+            this._hideMenu();
+        }
+    },
+
     _showButton() {
         this._positionMenu();
         this.set('showButton', true);
+    },
+
+    _hideButton() {
+        this.set('showButton', false);
     },
 
     // find the "top" position by grabbing the current sections
@@ -139,6 +166,15 @@ export default Component.extend({
     _showMenu() {
         this.set('showMenu', true);
 
+        // move the cursor to the blank paragraph, ensures any selected card
+        // gets inserted in the correct place because editorRange will be
+        // wherever the cursor currently is if the menu was opened via a
+        // mouseover button
+        this.set('editorRange', this._editorRange);
+        this.get('editor').run((postEditor) => {
+            postEditor.setRange(this._editorRange);
+        });
+
         // focus the search immediately so that you can filter immediately
         run.schedule('afterRender', this, function () {
             this._focusSearch();
@@ -150,10 +186,6 @@ export default Component.extend({
             this._handleWindowMousedown(event);
         });
         window.addEventListener('mousedown', this._onWindowMousedownHandler);
-
-        // store a reference to our range because it will change underneath
-        // us as editor focus is lost
-        this._editorRange = this.get('editorRange');
     },
 
     _hideMenu() {
@@ -180,6 +212,46 @@ export default Component.extend({
         if (!event.target.closest(`#${this.elementId}`)) {
             this._hideMenu();
         }
+    },
+
+    _mousemoveRaf(event) {
+        if (!this._mousemoveTicking) {
+            requestAnimationFrame(run.bind(this, this._handleMousemove, event));
+        }
+        this._mousemoveTicking = true;
+    },
+
+    // show the (+) button when the mouse is over a blank P tag
+    _handleMousemove(event) {
+        if (!this.get('showMenu')) {
+            let {pageX, pageY} = event;
+            let editor = this.get('editor');
+
+            // add a horizontal buffer to the pointer position so that the
+            // (+) button doesn't disappear when the mouse hovers over it due
+            // to it being outside of the editor canvas
+            let containerRect = this.element.parentNode.getBoundingClientRect();
+            if (pageX < containerRect.left) {
+                pageX = pageX + 40;
+            }
+
+            // grab a range from the editor position under the pointer. We can
+            // rely on the same show/hide behaviour of our cursor implementation
+            let position = editor.positionAtPoint(pageX, pageY);
+            if (position) {
+                let pointerRange = position.toRange();
+                this._showOrHideButton(pointerRange);
+            }
+
+            // if the button is hidden due to the pointer not being over a blank
+            // P but we have a valid cursor position then fall back to the cursor
+            // positioning
+            if (!this.get('showButton') && this._hasCursorButton) {
+                this._showOrHideButton(this.get('editorRange'));
+            }
+        }
+
+        this._mousemoveTicking = false;
     },
 
     _handleResize() {
