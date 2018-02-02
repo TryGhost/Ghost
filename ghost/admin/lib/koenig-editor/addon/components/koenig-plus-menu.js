@@ -25,6 +25,10 @@ export default Component.extend({
     _hasCursorButton: false,
     _onMousemoveHandler: null,
 
+    // closure actions
+    replaceWithCardSection() {},
+    replaceWithListSection() {},
+
     style: computed('top', function () {
         return htmlSafe(`top: ${this.get('top')}px`);
     }),
@@ -77,42 +81,20 @@ export default Component.extend({
         },
 
         replaceWithCardSection(cardName) {
-            let editor = this.get('editor');
             let range = this._editorRange;
-            let {head: {section}} = range;
 
-            editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let card = builder.createCardSection(cardName);
-                let needsTrailingParagraph = !section.next;
+            this.replaceWithCardSection(cardName, range);
 
-                postEditor.replaceSection(section, card);
-
-                if (needsTrailingParagraph) {
-                    let newSection = postEditor.builder.createMarkupSection('p');
-                    postEditor.insertSectionAtEnd(newSection);
-                    postEditor.setRange(newSection.tailPosition());
-                }
-
-                this._hideButton();
-                this._hideMenu();
-            });
+            this._hideButton();
+            this._hideMenu();
         },
 
         replaceWithListSection(listType) {
-            let editor = this.get('editor');
             let range = this._editorRange;
-            let {head: {section}} = range;
 
-            editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let item = builder.createListItem();
-                let listSection = builder.createListSection(listType, [item]);
+            this.replaceWithListSection(listType, range);
 
-                postEditor.replaceSection(section, listSection);
-                postEditor.setRange(listSection.headPosition());
-                this._hideMenu();
-            });
+            this._hideMenu();
         }
     },
 

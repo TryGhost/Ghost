@@ -297,6 +297,39 @@ export default Component.extend({
         toggleSection(sectionTagName) {
             let editor = this.get('editor');
             editor.toggleSection(sectionTagName);
+        },
+
+        replaceWithCardSection(cardName, range) {
+            let editor = this.get('editor');
+            let {head: {section}} = range;
+
+            editor.run((postEditor) => {
+                let {builder} = postEditor;
+                let card = builder.createCardSection(cardName);
+                let needsTrailingParagraph = !section.next;
+
+                postEditor.replaceSection(section, card);
+
+                if (needsTrailingParagraph) {
+                    let newSection = postEditor.builder.createMarkupSection('p');
+                    postEditor.insertSectionAtEnd(newSection);
+                    postEditor.setRange(newSection.tailPosition());
+                }
+            });
+        },
+
+        replaceWithListSection(listType, range) {
+            let editor = this.get('editor');
+            let {head: {section}} = range;
+
+            editor.run((postEditor) => {
+                let {builder} = postEditor;
+                let item = builder.createListItem();
+                let listSection = builder.createListSection(listType, [item]);
+
+                postEditor.replaceSection(section, listSection);
+                postEditor.setRange(listSection.headPosition());
+            });
         }
     },
 

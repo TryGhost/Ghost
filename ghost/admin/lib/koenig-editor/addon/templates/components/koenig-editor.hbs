@@ -68,8 +68,11 @@
 
 {{!-- (+) icon and pop-up menu --}}
 {{koenig-plus-menu
-    editorRange=selectedRange
     editor=editor
+    editorRange=selectedRange
+    replaceWithCardSection=(action "replaceWithCardSection")
+    replaceWithListSection=(action "replaceWithListSection")
+}}
 }}
 
 {{#each componentCards as |card|}}
