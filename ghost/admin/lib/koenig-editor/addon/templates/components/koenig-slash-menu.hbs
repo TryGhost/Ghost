@@ -1,0 +1,10 @@
+{{#if showMenu}}
+    <div class="koenig-cardmenu">
+        {{#each items as |item|}}
+            <div class="koenig-cardmenu-card {{if item.selected "selected"}}" {{action "itemClicked" item on="click"}}>
+                <div class="koenig-cardmenu-icon">{{inline-svg item.icon}}</div>
+                <div class="koenig-cardmenu-label">{{item.label}}</div>
+            </div>
+        {{/each}}
+    </div>
+{{/if}}
