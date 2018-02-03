@@ -45,7 +45,8 @@ export const CARD_COMPONENT_MAP = {
     hr: 'koenig-card-hr',
     image: 'koenig-card-image',
     markdown: 'koenig-card-markdown',
-    'card-markdown': 'koenig-card-markdown' // backwards-compat with markdown editor
+    'card-markdown': 'koenig-card-markdown', // backwards-compat with markdown editor
+    html: 'koenig-card-html'
 };
 
 function arrayToMap(array) {
