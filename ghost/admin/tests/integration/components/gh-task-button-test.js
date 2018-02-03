@@ -38,7 +38,7 @@ describe('Integration: Component: gh-task-button', function () {
         expect(this.$('button')).to.have.attr('tabindex', '-1');
     });
 
-    it('shows spinner whilst running', function (done) {
+    it('shows spinner whilst running', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
@@ -51,10 +51,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.have.descendants('svg');
         }, 20);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('shows running text when passed whilst running', function (done) {
+    it('shows running text when passed whilst running', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
@@ -68,10 +68,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Running');
         }, 20);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('appears disabled whilst running', function (done) {
+    it('appears disabled whilst running', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
@@ -89,10 +89,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button'), 'ended class').to.not.have.class('appear-disabled');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('shows success on success', function (done) {
+    it('shows success on success', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return true;
@@ -107,10 +107,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Saved');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('assigns specified success class on success', function (done) {
+    it('assigns specified success class on success', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return true;
@@ -126,10 +126,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Saved');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('shows failure when task errors', function (done) {
+    it('shows failure when task errors', function () {
         this.set('myTask', task(function* () {
             try {
                 yield timeout(50);
@@ -148,10 +148,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Retry');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('shows failure on falsy response', function (done) {
+    it('shows failure on falsy response', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return false;
@@ -166,10 +166,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Retry');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('assigns specified failure class on failure', function (done) {
+    it('assigns specified failure class on failure', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return false;
@@ -185,10 +185,10 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button')).to.contain('Retry');
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 
-    it('performs task on click', function (done) {
+    it('performs task on click', function () {
         let taskCount = 0;
 
         this.set('myTask', task(function* () {
@@ -199,13 +199,12 @@ describe('Integration: Component: gh-task-button', function () {
         this.render(hbs`{{gh-task-button task=myTask}}`);
         this.$('button').click();
 
-        wait().then(() => {
+        return wait().then(() => {
             expect(taskCount, 'taskCount').to.equal(1);
-            done();
         });
     });
 
-    it.skip('keeps button size when showing spinner', function (done) {
+    it.skip('keeps button size when showing spinner', function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
@@ -234,6 +233,6 @@ describe('Integration: Component: gh-task-button', function () {
             expect(this.$('button').attr('style')).to.be.blank;
         }, 100);
 
-        wait().then(done);
+        return wait();
     });
 });
