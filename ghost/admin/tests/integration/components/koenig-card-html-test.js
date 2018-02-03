@@ -3,8 +3,8 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
-describe('Integration: Component: koenig-slash-menu', function () {
-    setupComponentTest('koenig-slash-menu', {
+describe('Integration: Component: koenig-card-html', function () {
+    setupComponentTest('koenig-card-html', {
         integration: true
     });
 
@@ -13,12 +13,12 @@ describe('Integration: Component: koenig-slash-menu', function () {
         // Handle any actions with this.on('myAction', function(val) { ... });
         // Template block usage:
         // this.render(hbs`
-        //   {{#koenig-slash-menu}}
+        //   {{#koenig-card-html}}
         //     template content
-        //   {{/koenig-slash-menu}}
+        //   {{/koenig-card-html}}
         // `);
 
-        this.render(hbs`{{koenig-slash-menu}}`);
+        this.render(hbs`{{koenig-card-html}}`);
         expect(this.$()).to.have.length(1);
     });
 });

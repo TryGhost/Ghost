@@ -279,7 +279,7 @@ input,
     background: #263238;
 }
 
-.gh-editor .CodeMirror-cursor {
+.gh-markdown-editor .CodeMirror-cursor {
     border-color: #fff;
 }
 

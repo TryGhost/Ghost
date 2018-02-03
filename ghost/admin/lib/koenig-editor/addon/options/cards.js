@@ -4,5 +4,6 @@ export default [
     createComponentCard('hr'),
     createComponentCard('image'),
     createComponentCard('markdown'),
-    createComponentCard('card-markdown') // backwards-compat with markdown editor
+    createComponentCard('card-markdown'), // backwards-compat with markdown editor
+    createComponentCard('html')
 ];
