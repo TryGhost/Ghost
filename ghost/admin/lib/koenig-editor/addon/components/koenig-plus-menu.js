@@ -48,7 +48,7 @@ export default Component.extend({
 
         let editorRange = this.get('editorRange');
 
-        // show the (+) button when the cursor as on a blank P tag
+        // show the (+) button when the cursor is on a blank P tag
         if (!this.get('showMenu') && editorRange !== this._lastEditorRange) {
             this._showOrHideButton(editorRange);
             this._hasCursorButton = this.get('showButton');

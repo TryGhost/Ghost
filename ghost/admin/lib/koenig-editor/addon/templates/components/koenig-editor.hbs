@@ -73,8 +73,16 @@
     replaceWithCardSection=(action "replaceWithCardSection")
     replaceWithListSection=(action "replaceWithListSection")
 }}
+
+{{!-- slash menu popup --}}
+{{koenig-slash-menu
+    editor=editor
+    editorRange=selectedRange
+    replaceWithCardSection=(action "replaceWithCardSection")
+    replaceWithListSection=(action "replaceWithListSection")
 }}
 
+{{!-- all component cards wormholed into the editor canvas --}}
 {{#each componentCards as |card|}}
     {{!--
         TODO: move to the public {{in-element}} API when it's available
