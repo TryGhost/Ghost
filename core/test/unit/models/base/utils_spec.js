@@ -1,6 +1,7 @@
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    utils = require('../../../../server/models/base/utils');
+    utils = require('../../../../server/models/base/utils'),
+    testUtils = require('../../../utils');
 
 describe('Models: Utils', function () {
     describe('actorIs', function () {
@@ -9,17 +10,17 @@ describe('Models: Utils', function () {
         });
 
         it('returns correctly when passed a single role', function () {
-            var user = {roles: [{name: 'Author'}]};
+            var permissions = testUtils.permissions.author;
 
-            should(utils.actorIs(user, 'Author')).be.true();
-            should(utils.actorIs(user, 'Editor')).be.false();
+            should(utils.actorIs(permissions.user, 'Author')).be.true();
+            should(utils.actorIs(permissions.user, 'Editor')).be.false();
         });
 
         it('returns correctly when passed multiple roles', function () {
-            var user = {roles: [{name: 'Author'}]};
+            var permissions = testUtils.permissions.author;
 
-            should(utils.actorIs(user, ['Author', 'Editor'])).be.true();
-            should(utils.actorIs(user, ['Editor', 'Administrator'])).be.false();
+            should(utils.actorIs(permissions.user, ['Author', 'Editor'])).be.true();
+            should(utils.actorIs(permissions.user, ['Editor', 'Administrator'])).be.false();
         });
     });
 });
