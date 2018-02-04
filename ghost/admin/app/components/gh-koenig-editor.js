@@ -20,6 +20,10 @@ export default Component.extend({
     onBodyChange() {},
 
     actions: {
+        focusTitle() {
+            this._title.focus();
+        },
+
         // triggered when a click is registered on .gh-koenig-editor-pane
         focusEditor(event) {
             // if a click occurs on the editor canvas, focus the editor and put
@@ -65,7 +69,7 @@ export default Component.extend({
             if (
                 event.key === 'Enter' ||
                 event.key === 'Tab' ||
-                (event.key === 'ArrowDown' && (!value || selectionStart === value.length))
+                ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && (!value || selectionStart === value.length))
             ) {
                 event.preventDefault();
                 this._editor.focus();
@@ -92,30 +96,11 @@ export default Component.extend({
 
         this._editor = editor;
 
-        // focus the title when pressing UP if cursor is at the beginning of doc
-        editor.registerKeyCommand({
-            str: 'UP',
-            run(editor) {
-                let cursorHead = editor.cursor.offsets.head;
-
-                if (
-                    editor.hasCursor()
-                    && cursorHead.offset === 0
-                    && (!cursorHead.section || !cursorHead.section.prev)
-                ) {
-                    component._title.focus();
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
         // focus the title when pressing SHIFT+TAB
         editor.registerKeyCommand({
             str: 'SHIFT+TAB',
             run() {
-                component._title.focus();
+                component.send('focusTitle');
                 return true;
             }
         });
