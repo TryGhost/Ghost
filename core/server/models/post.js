@@ -722,6 +722,8 @@ Post = ghostBookshelf.Model.extend({
             // Note: at the moment primary_tag is a computed field,
             // meaning we don't add it to this list. However, if the primary_tag
             // ever becomes a db field rather than a computed field, add it to this list
+            //
+            // TODO: once contribitors are able to edit existing tags, this can be removed
             result.excludedAttrs = ['tags'];
         }
 
