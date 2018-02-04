@@ -2,6 +2,8 @@
 
 const crypto = require('crypto'),
     _ = require('lodash'),
+    Promise = require('bluebird'),
+    common = require('../lib/common'),
     constants = require('../lib/constants'),
     ghostBookshelf = require('./base');
 
@@ -61,6 +63,43 @@ Invite = ghostBookshelf.Model.extend({
         text += [data.expires, data.email, hash.digest('base64')].join('|');
         data.token = new Buffer(text).toString('base64');
         return ghostBookshelf.Model.add.call(this, data, options);
+    },
+
+    permissible: function permissible(inviteModelOrId, action, context, unsafeAttrs, loadedPermissions) {
+        if (action === 'add') {
+            return ghostBookshelf.model('Role')
+                .findOne({id: unsafeAttrs.role_id})
+                .then(function (roleToInvite) {
+                    if (!roleToInvite) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.api.invites.roleNotFound')
+                        });
+                    }
+
+                    if (roleToInvite.get('name') === 'Owner') {
+                        throw new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')
+                        });
+                    }
+
+                    let allowed = [];
+
+                    if (_.some(loadedPermissions.user.roles, {name: 'Owner'}) ||
+                        _.some(loadedPermissions.user.roles, {name: 'Administrator'})) {
+                        allowed = ['Administrator', 'Editor', 'Author'];
+                    } else if (_.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                        allowed = ['Author'];
+                    }
+
+                    if (allowed.indexOf(roleToInvite.get('name')) === -1) {
+                        throw new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.invites.notAllowedToInvite')
+                        });
+                    }
+                });
+        }
+
+        return Promise.resolve();
     }
 });
 
