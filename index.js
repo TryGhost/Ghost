@@ -37,10 +37,11 @@ ghost().then(function (ghostServer) {
         err = new common.errors.GhostError({err: err});
     }
 
+    common.logging.error(err);
+
     if (process.send) {
         process.send({started: false, error: err.message});
     }
 
-    common.logging.error(err);
     process.exit(-1);
 });
