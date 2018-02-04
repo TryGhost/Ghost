@@ -6,7 +6,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
     common = require('../../lib/common'),
-    attach, detach, actorIs;
+    attach, detach;
 
 /**
  * Attach wrapper (please never call attach manual!)
@@ -94,16 +94,5 @@ detach = function detach(Model, effectedModelId, relation, modelsToAttach, optio
         });
 };
 
-/**
- * Utility function used by the various model permission hooks
- * to determine whether or not a user has a particular role
- */
-actorIs = function actorIs(user, roles) {
-    return user && _.some(user.roles, _.isArray(roles) ? function (role) {
-        return _.includes(roles, role.name);
-    } : ['name', roles]);
-};
-
 module.exports.attach = attach;
 module.exports.detach = detach;
-module.exports.actorIs = actorIs;

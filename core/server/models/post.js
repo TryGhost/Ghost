@@ -8,7 +8,6 @@ var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     sequence = require('../lib/promise/sequence'),
     common = require('../lib/common'),
-    baseUtils = require('./base/utils'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
@@ -694,8 +693,8 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = baseUtils.actorIs(loadedPermissions.user, 'Contributor');
-        isAuthor = baseUtils.actorIs(loadedPermissions.user, 'Author');
+        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
+        isAuthor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'});
         isEdit = (action === 'edit');
         isAdd = (action === 'add');
         isDestroy = (action === 'destroy');

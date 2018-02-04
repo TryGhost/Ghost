@@ -649,8 +649,8 @@ User = ghostBookshelf.Model.extend({
                 hasUserPermission = true;
             } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
-                hasUserPermission = baseUtils.actorIs(loadedPermissions.user, 'Owner');
-            } else if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
+                hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
+            } else if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -663,7 +663,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (baseUtils.actorIs(loadedPermissions.user, 'Editor')) {
+            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
