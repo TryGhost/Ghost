@@ -28,8 +28,7 @@ function sendMail(object) {
                         type: 'warn',
                         message: [
                             common.i18n.t('warnings.index.unableToSendEmail'),
-                            common.i18n.t('common.seeLinkForInstructions',
-                                {link: '<a href=\'https://docs.ghost.org/v1/docs/mail-config\' target=\'_blank\'>Checkout our mail configuration docs!</a>'})
+                            common.i18n.t('common.seeLinkForInstructions', {link: 'https://docs.ghost.org/v1/docs/mail-config'})
                         ].join(' ')
                     }]
                 },
