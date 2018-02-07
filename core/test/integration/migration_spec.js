@@ -56,33 +56,33 @@ describe('Database Migration (special functions)', function () {
 
             // Posts
             permissions[7].name.should.eql('Browse posts');
-            permissions[7].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[7].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[8].name.should.eql('Read posts');
-            permissions[8].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[8].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[9].name.should.eql('Edit posts');
             permissions[9].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[10].name.should.eql('Add posts');
-            permissions[10].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[10].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[11].name.should.eql('Delete posts');
             permissions[11].should.be.AssignedToRoles(['Administrator', 'Editor']);
 
             // Settings
             permissions[12].name.should.eql('Browse settings');
-            permissions[12].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[12].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[13].name.should.eql('Read settings');
-            permissions[13].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[13].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[14].name.should.eql('Edit settings');
             permissions[14].should.be.AssignedToRoles(['Administrator']);
 
             // Slugs
             permissions[15].name.should.eql('Generate slugs');
-            permissions[15].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[15].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
 
             // Tags
             permissions[16].name.should.eql('Browse tags');
-            permissions[16].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[16].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[17].name.should.eql('Read tags');
-            permissions[17].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[17].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[18].name.should.eql('Edit tags');
             permissions[18].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[19].name.should.eql('Add tags');
@@ -92,7 +92,7 @@ describe('Database Migration (special functions)', function () {
 
             // Themes
             permissions[21].name.should.eql('Browse themes');
-            permissions[21].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[21].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[22].name.should.eql('Edit themes');
             permissions[22].should.be.AssignedToRoles(['Administrator']);
             permissions[23].name.should.eql('Activate themes');
@@ -106,9 +106,9 @@ describe('Database Migration (special functions)', function () {
 
             // Users
             permissions[27].name.should.eql('Browse users');
-            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[28].name.should.eql('Read users');
-            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[29].name.should.eql('Edit users');
             permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[30].name.should.eql('Add users');
@@ -120,19 +120,19 @@ describe('Database Migration (special functions)', function () {
             permissions[32].name.should.eql('Assign a role');
             permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[33].name.should.eql('Browse roles');
-            permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
 
             // Clients
             permissions[34].name.should.eql('Browse clients');
-            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[35].name.should.eql('Read clients');
-            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[36].name.should.eql('Edit clients');
-            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[37].name.should.eql('Add clients');
-            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[38].name.should.eql('Delete clients');
-            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
 
             // Subscribers
             permissions[39].name.should.eql('Browse subscribers');
@@ -142,7 +142,7 @@ describe('Database Migration (special functions)', function () {
             permissions[41].name.should.eql('Edit subscribers');
             permissions[41].should.be.AssignedToRoles(['Administrator']);
             permissions[42].name.should.eql('Add subscribers');
-            permissions[42].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[42].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
             permissions[43].name.should.eql('Delete subscribers');
             permissions[43].should.be.AssignedToRoles(['Administrator']);
 
@@ -217,11 +217,12 @@ describe('Database Migration (special functions)', function () {
 
                     // Roles
                     should.exist(result.roles);
-                    result.roles.length.should.eql(4);
+                    result.roles.length.should.eql(5);
                     result.roles.at(0).get('name').should.eql('Administrator');
                     result.roles.at(1).get('name').should.eql('Editor');
                     result.roles.at(2).get('name').should.eql('Author');
-                    result.roles.at(3).get('name').should.eql('Owner');
+                    result.roles.at(3).get('name').should.eql('Contributor');
+                    result.roles.at(4).get('name').should.eql('Owner');
 
                     // Permissions
                     result.permissions.length.should.eql(53);

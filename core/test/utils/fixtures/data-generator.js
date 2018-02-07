@@ -177,6 +177,22 @@ DataGenerator.Content = {
             slug: 'ad-2',
             email: 'info3@ghost.org',
             password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+        },
+        {
+            // contributor
+            id: ObjectId.generate(),
+            name: 'Contributor',
+            slug: 'contributor',
+            email: 'contributor@ghost.org',
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+        },
+        {
+            // contributor
+            id: ObjectId.generate(),
+            name: 'contributor2',
+            slug: 'contrib-2',
+            email: 'contributor2@ghost.org',
+            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
         }
     ],
 
@@ -263,6 +279,11 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Owner',
             description: 'Blog Owner'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Contributor',
+            description: 'Contributors'
         }
     ],
 
@@ -573,14 +594,16 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[0]),
         createBasic(DataGenerator.Content.roles[1]),
         createBasic(DataGenerator.Content.roles[2]),
-        createBasic(DataGenerator.Content.roles[3])
+        createBasic(DataGenerator.Content.roles[3]),
+        createBasic(DataGenerator.Content.roles[4])
     ];
 
     users = [
         createUser(DataGenerator.Content.users[0]),
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
-        createUser(DataGenerator.Content.users[3])
+        createUser(DataGenerator.Content.users[3]),
+        createUser(DataGenerator.Content.users[7])
     ];
 
     clients = [
@@ -610,6 +633,11 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             user_id: DataGenerator.Content.users[3].id,
             role_id: DataGenerator.Content.roles[2].id
+        },
+        {
+            id: ObjectId.generate(),
+            user_id: DataGenerator.Content.users[7].id,
+            role_id: DataGenerator.Content.roles[4].id
         }
     ];
 

@@ -209,7 +209,21 @@ utils = {
             var unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
-            return permsPromise.then(function permissionGranted() {
+            return permsPromise.then(function permissionGranted(result) {
+                /*
+                 * Allow the permissions function to return a list of excluded attributes.
+                 * If it does, omit those attrs from the data passed through
+                 *
+                 * NOTE: excludedAttrs differ from unsafeAttrs in that they're determined by the model's permissible function,
+                 * and the attributes are simply excluded rather than throwing a NoPermission exception
+                 *
+                 * TODO: This is currently only needed because of the posts model and the contributor role. Once we extend the
+                 * contributor role to be able to edit existing tags, this concept can be removed.
+                 */
+                if (result && result.excludedAttrs && _.has(options, 'data.[' + docName + '][0]')) {
+                    options.data[docName][0] = _.omit(options.data[docName][0], result.excludedAttrs);
+                }
+
                 return options;
             }).catch(function handleNoPermissionError(err) {
                 if (err instanceof common.errors.NoPermissionError) {
