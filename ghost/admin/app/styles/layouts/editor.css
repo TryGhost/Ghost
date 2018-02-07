@@ -55,6 +55,11 @@
     text-align: right;
 }
 
+.contributor-save-button {
+    position: relative;
+    z-index: 1000;
+}
+
 .post-settings {
     position: relative;
     z-index: 1000;

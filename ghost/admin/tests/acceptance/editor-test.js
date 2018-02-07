@@ -28,6 +28,17 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
+    it('does not redirect to team page when authenticated as contributor', async function () {
+        let role = server.create('role', {name: 'Contributor'});
+        server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post');
+
+        authenticateSession(application);
+        await visit('/editor/1');
+
+        expect(currentURL(), 'currentURL').to.equal('/editor/1');
+    });
+
     it('does not redirect to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});
@@ -59,6 +70,45 @@ describe('Acceptance: Editor', function () {
 
         expect(currentPath()).to.equal('error404');
         expect(currentURL()).to.equal('/editor/1');
+    });
+
+    describe('when logged in as contributor', function () {
+        beforeEach(function () {
+            let role = server.create('role', {name: 'Contributor'});
+            server.create('user', {roles: [role]});
+            server.loadFixtures('settings');
+
+            return authenticateSession(application);
+        });
+
+        it('renders a save button instead of a publish menu & hides tags input', async function () {
+            server.createList('post', 2);
+
+            // post id 1 is a draft, checking for draft behaviour now
+            await visit('/editor/1');
+
+            expect(currentURL(), 'currentURL').to.equal('/editor/1');
+
+            // Expect publish menu to not exist
+            expect(
+                find('[data-test-publishmenu-trigger]'),
+                'publish menu trigger'
+            ).to.not.exist;
+
+            // Open post settings menu
+            await click('[data-test-psm-trigger]');
+
+            // Check to make sure that tags input doesn't exist
+            expect(
+                find('[data-test-token-input]'),
+                'tags input'
+            ).to.not.exist;
+
+            // post id 2 is published, we should be redirected to index
+            await visit('/editor/2');
+
+            expect(currentURL(), 'currentURL').to.equal('/');
+        });
     });
 
     describe('when logged in', function () {

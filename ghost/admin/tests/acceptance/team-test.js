@@ -27,6 +27,18 @@ describe('Acceptance: Team', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
+    it('redirects correctly when authenticated as contributor', async function () {
+        let role = server.create('role', {name: 'Contributor'});
+        server.create('user', {roles: [role], slug: 'test-user'});
+
+        server.create('user', {slug: 'no-access'});
+
+        authenticateSession(application);
+        await visit('/team/no-access');
+
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+    });
+
     it('redirects correctly when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});

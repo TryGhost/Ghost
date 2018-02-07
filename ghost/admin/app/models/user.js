@@ -3,7 +3,7 @@ import Model from 'ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import {computed} from '@ember/object';
-import {equal} from '@ember/object/computed';
+import {equal, or} from '@ember/object/computed';
 import {hasMany} from 'ember-data/relationships';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -46,10 +46,14 @@ export default Model.extend(ValidationEngine, {
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
+    isContributor: equal('role.name', 'Contributor'),
     isAuthor: equal('role.name', 'Author'),
     isEditor: equal('role.name', 'Editor'),
     isAdmin: equal('role.name', 'Administrator'),
     isOwner: equal('role.name', 'Owner'),
+
+    // This is used in enough places that it's useful to throw it here
+    isAuthorOrContributor: or('isAuthor', 'isContributor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {
         return this.get('id') === this.get('session.user.id');

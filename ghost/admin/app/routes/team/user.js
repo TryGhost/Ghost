@@ -17,12 +17,12 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
         return this.get('session.user').then((currentUser) => {
             let isOwnProfile = user.get('id') === currentUser.get('id');
-            let isAuthor = currentUser.get('isAuthor');
+            let isAuthorOrContributor = currentUser.get('isAuthorOrContributor');
             let isEditor = currentUser.get('isEditor');
 
-            if (isAuthor && !isOwnProfile) {
+            if (isAuthorOrContributor && !isOwnProfile) {
                 this.transitionTo('team.user', currentUser);
-            } else if (isEditor && !isOwnProfile && !user.get('isAuthor')) {
+            } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
                 this.transitionTo('team');
             }
         });

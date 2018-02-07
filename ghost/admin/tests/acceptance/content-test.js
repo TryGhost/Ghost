@@ -158,4 +158,42 @@ describe('Acceptance: Content', function () {
             expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
         });
     });
+
+    describe('as contributor', function () {
+        let contributor, contributorPost;
+
+        beforeEach(function () {
+            let contributorRole = server.create('role', {name: 'Contributor'});
+            contributor = server.create('user', {roles: [contributorRole]});
+            let adminRole = server.create('role', {name: 'Administrator'});
+            let admin = server.create('user', {roles: [adminRole]});
+
+            // Create posts
+            contributorPost = server.create('post', {authorId: contributor.id, status: 'draft', title: 'Contributor Post Draft'});
+            server.create('post', {authorId: contributor.id, status: 'published', title: 'Contributor Published Post'});
+            server.create('post', {authorId: admin.id, status: 'scheduled', title: 'Admin Post'});
+
+            return authenticateSession(application);
+        });
+
+        it('only fetches the contributor\'s draft posts', async function () {
+            await visit('/');
+
+            // Ensure the type, tag, and author selectors don't exist
+            expect(find('[data-test-type-select]'), 'type selector').to.not.exist;
+            expect(find('[data-test-tag-select]'), 'tag selector').to.not.exist;
+            expect(find('[data-test-author-select]'), 'author selector').to.not.exist;
+
+            // Trigger a sort request
+            await selectChoose('[data-test-order-select]', 'Oldest');
+
+            // API request includes author filter
+            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter).to.equal(`author:${contributor.slug}`);
+
+            // only contributor's post is shown
+            expect(find('[data-test-post-id]').length, 'post count').to.equal(1);
+            expect(find(`[data-test-post-id="${contributorPost.id}"]`), 'author post').to.exist;
+        });
+    });
 });

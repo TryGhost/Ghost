@@ -81,6 +81,7 @@ export default Controller.extend({
     notifications: service(),
     router: service(),
     slugGenerator: service(),
+    session: service(),
     ui: service(),
 
     /* public properties -----------------------------------------------------*/
