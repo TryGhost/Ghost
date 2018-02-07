@@ -2,6 +2,7 @@
 // Standalone file which can be required to help with advanced operations on the fixtures.json file
 var _ = require('lodash'),
     Promise = require('bluebird'),
+    common = require('../../../lib/common'),
     models = require('../../../models'),
     baseUtils = require('../../../models/base/utils'),
     sequence = require('../../../lib/promise/sequence'),
@@ -139,6 +140,14 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture, option
     return fetchRelationData(relationFixture, options).then(function getRelationOps(data) {
         _.each(relationFixture.entries, function processEntries(entry, key) {
             var fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
+
+            // CASE: You add new fixtures e.g. a new role in a new release.
+            // As soon as an **older** migration script wants to add permissions for any resource, it iterates over the
+            // permissions for each role. But if the role does not exist yet, it won't find the matching db entry and breaks.
+            if (!fromItem) {
+                common.logging.warn('Skip: Target database entry not found for key: ' + key);
+                return Promise.resolve();
+            }
 
             _.each(entry, function processEntryValues(value, key) {
                 var toItems = data.to.filter(matchFunc(relationFixture.to.match, key, value));
