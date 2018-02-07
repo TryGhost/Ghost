@@ -51,6 +51,17 @@ describe('Invites API', function () {
                     }).catch(done);
             });
 
+            it('add invite 3', function (done) {
+                InvitesAPI.add({
+                    invites: [{email: 'test3@example.com', role_id: testUtils.roles.ids.contributor}]
+                }, testUtils.context.owner)
+                    .then(function (response) {
+                        response.invites.length.should.eql(1);
+                        response.invites[0].role_id.should.eql(testUtils.roles.ids.contributor);
+                        done();
+                    }).catch(done);
+            });
+
             it('add invite: empty invites object', function (done) {
                 InvitesAPI.add({invites: []}, testUtils.context.owner)
                     .then(function () {
@@ -253,6 +264,21 @@ describe('Invites API', function () {
                 }).catch(done);
             });
 
+            it('Can invite a Contributor', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.contributor
+                        }
+                    ]
+                }, testUtils.context.owner).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.contributor);
+                    done();
+                }).catch(done);
+            });
+
             it('Can invite with role set as string', function (done) {
                 InvitesAPI.add({
                     invites: [
@@ -327,6 +353,21 @@ describe('Invites API', function () {
                     done();
                 }).catch(done);
             });
+
+            it('Can invite a Contributor', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.contributor
+                        }
+                    ]
+                }, testUtils.context.admin).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.contributor);
+                    done();
+                }).catch(done);
+            });
         });
 
         describe('Editor', function () {
@@ -383,33 +424,20 @@ describe('Invites API', function () {
                     done();
                 }).catch(done);
             });
-        });
 
-        describe('Author', function () {
-            it('CANNOT invite an Owner', function (done) {
+            it('Can invite a Contributor', function (done) {
                 InvitesAPI.add({
                     invites: [
                         {
                             email: 'test@example.com',
-                            role_id: testUtils.roles.ids.owner
+                            role_id: testUtils.roles.ids.contributor
                         }
                     ]
-                }, context.author).then(function () {
-                    done(new Error('Author should not be able to add an owner'));
-                }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT invite an Author', function (done) {
-                InvitesAPI.add({
-                    invites: [
-                        {
-                            email: 'test@example.com',
-                            role_id: testUtils.roles.ids.author
-                        }
-                    ]
-                }, context.author).then(function () {
-                    done(new Error('Author should not be able to add an Author'));
-                }).catch(checkForErrorType('NoPermissionError', done));
+                }, context.editor).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.contributor);
+                    done();
+                }).catch(done);
             });
         });
     });

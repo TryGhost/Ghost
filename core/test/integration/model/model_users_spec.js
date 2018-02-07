@@ -215,7 +215,7 @@ describe('User Model', function run() {
         it('can findAll', function (done) {
             UserModel.findAll().then(function (results) {
                 should.exist(results);
-                results.length.should.equal(4);
+                results.length.should.equal(5);
 
                 done();
             }).catch(done);
@@ -228,7 +228,7 @@ describe('User Model', function run() {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal(15);
                 results.meta.pagination.pages.should.equal(1);
-                results.users.length.should.equal(4);
+                results.users.length.should.equal(5);
 
                 done();
             }).catch(done);
@@ -274,7 +274,7 @@ describe('User Model', function run() {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal('all');
                 results.meta.pagination.pages.should.equal(1);
-                results.users.length.should.equal(7);
+                results.users.length.should.equal(9);
             });
         });
 

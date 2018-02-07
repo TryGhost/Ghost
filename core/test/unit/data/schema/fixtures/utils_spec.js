@@ -151,19 +151,19 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 34);
-                result.should.have.property('done', 34);
+                result.should.have.property('expected', 43);
+                result.should.have.property('done', 43);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(34);
-                dataMethodStub.find.callCount.should.eql(3);
-                baseUtilAttachStub.callCount.should.eql(34);
+                dataMethodStub.filter.callCount.should.eql(43);
+                dataMethodStub.find.callCount.should.eql(4);
+                baseUtilAttachStub.callCount.should.eql(43);
 
-                fromItem.related.callCount.should.eql(34);
-                fromItem.findWhere.callCount.should.eql(34);
-                toItem[0].get.callCount.should.eql(68);
+                fromItem.related.callCount.should.eql(43);
+                fromItem.findWhere.callCount.should.eql(43);
+                toItem[0].get.callCount.should.eql(86);
 
                 done();
             }).catch(done);

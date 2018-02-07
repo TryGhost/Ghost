@@ -159,6 +159,10 @@
                     "description":      "Authors"
                 },
                 {
+                    "name":             "Contributor",
+                    "description":      "Contributors"
+                },
+                {
                     "name":             "Owner",
                     "description":      "Blog Owner"
                 }
@@ -502,6 +506,17 @@
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "client": "all",
+                    "subscriber": ["add"],
+                    "theme": ["browse"]
+                },
+                "Contributor": {
+                    "post": ["browse", "read", "add"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
                     "client": "all",

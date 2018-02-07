@@ -1259,8 +1259,8 @@ describe('Import (new test structure)', function () {
                 users = importedData[0];
                 rolesUsers = importedData[1];
 
-                // we imported 3 users, there were already 3 users, only one of the imported users is new
-                users.length.should.equal(6, 'There should only be 6 users');
+                // we imported 3 users, there were already 4 users
+                users.length.should.equal(7, 'There should only be 7 users');
 
                 // the original owner user is first
                 ownerUser = users[0];
@@ -1292,7 +1292,7 @@ describe('Import (new test structure)', function () {
                 newUser.updated_by.should.equal(ownerUser.id);
                 newUser.updated_at.should.not.equal(exportData.data.users[1].updated_at);
 
-                rolesUsers.length.should.equal(6, 'There should be 6 role relations');
+                rolesUsers.length.should.equal(7, 'There should be 7 role relations');
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === ownerUser.id) {
@@ -1450,10 +1450,10 @@ describe('Import (new test structure)', function () {
                     return user.name === exportData.data.users[2].name;
                 });
 
-                // we imported 3 users, there were already 4 users, only one of the imported users is new
-                users.length.should.equal(5, 'There should only be three users');
+                // we imported 3 users, there were already 5 users, only one of the imported users is new
+                users.length.should.equal(6, 'There should only be three users');
 
-                rolesUsers.length.should.equal(5, 'There should be 5 role relations');
+                rolesUsers.length.should.equal(6, 'There should be 6 role relations');
 
                 _.each(rolesUsers, function (roleUser) {
                     if (roleUser.user_id === ownerUser.id) {

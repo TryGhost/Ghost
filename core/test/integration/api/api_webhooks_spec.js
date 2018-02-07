@@ -139,7 +139,7 @@ describe('Webhooks API', function () {
             it('CANNOT delete', function (done) {
                 WebhookAPI.destroy(_.extend({}, testUtils.context.author, {id: firstWebhook}))
                     .then(function () {
-                        done(new Error('Editor should not be able to delete a webhook'));
+                        done(new Error('Author should not be able to delete a webhook'));
                     }).catch(checkForErrorType('NoPermissionError', done));
              });
         });

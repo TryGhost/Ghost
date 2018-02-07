@@ -50,6 +50,17 @@ describe('Tags API', function () {
                 }).catch(done);
         });
 
+        it('can add a tag (author)', function (done) {
+            TagAPI.add({tags: [newTag]}, testUtils.context.author)
+            .then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+                results.tags[0].visibility.should.eql('public');
+                done();
+            }).catch(done);
+        });
+
         it('add internal tag', function (done) {
             TagAPI
                 .add({tags: [{name: '#test'}]}, testUtils.context.editor)
@@ -62,6 +73,15 @@ describe('Tags API', function () {
                     results.tags[0].slug.should.eql('hash-test');
                     done();
                 }).catch(done);
+        });
+
+        it('CANNOT add tag (contributor)', function (done) {
+            TagAPI.add({tags: [newTag]}, testUtils.context.contributor)
+            .then(function () {
+                done(new Error('Add tag is not denied for contributor.'));
+            }, function () {
+                done();
+            }).catch(done);
         });
 
         it('No-auth CANNOT add tag', function (done) {
@@ -109,6 +129,15 @@ describe('Tags API', function () {
                     results.tags.length.should.be.above(0);
                     done();
                 }).catch(done);
+        });
+
+        it('CANNOT edit a tag (author)', function (done) {
+            TagAPI.edit({tags: [{name: newTagName}]}, _.extend({}, context.author, {id: firstTag}))
+            .then(function () {
+                done(new Error('Add tag is not denied for author.'));
+            }, function () {
+                done();
+            }).catch(done);
         });
 
         it('No-auth CANNOT edit tag', function (done) {
