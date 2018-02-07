@@ -261,20 +261,20 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    enforcedFilters: function enforcedFilters() {
-        if (this.isInternalContext()) {
+    enforcedFilters: function enforcedFilters(options) {
+        if (options.context && options.context.internal) {
             return null;
         }
 
-        return this.isPublicContext() ? 'status:[' + allStates.join(',') + ']' : null;
+        return options.context && options.context.public ? 'status:[' + allStates.join(',') + ']' : null;
     },
 
-    defaultFilters: function defaultFilters() {
-        if (this.isInternalContext()) {
+    defaultFilters: function defaultFilters(options) {
+        if (options.context && options.context.internal) {
             return null;
         }
 
-        return this.isPublicContext() ? null : 'status:[' + allStates.join(',') + ']';
+        return options.context && options.context.public ? null : 'status:[' + allStates.join(',') + ']';
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
@@ -641,39 +641,31 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'edit') {
-            // Owner can only be edited by owner
-            if (loadedPermissions.user && userModel.hasRole('Owner')) {
-                hasUserPermission = _.some(loadedPermissions.user.roles, {name: 'Owner'});
-            }
-            // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
+            // Users with the role 'Editor', 'Author', and 'Contributor' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'})) {
-                // If this is the same user that requests the operation allow it.
-                hasUserPermission = hasUserPermission || context.user === userModel.get('id');
-            }
 
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
-                hasUserPermission = context.user === userModel.get('id');
-
-                // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = hasUserPermission || userModel.hasRole('Author');
+                hasUserPermission = true;
+            } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
+                // Owner can only be edited by owner
+                hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
+            } else if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                // If the user we are trying to edit is an Author or Contributor, allow it
+                hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
-            if (loadedPermissions.user && userModel.hasRole('Owner')) {
+            if (userModel.hasRole('Owner')) {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
             if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
-                // If this is the same user that requests the operation allow it.
-                hasUserPermission = context.user === userModel.get('id');
-
                 // Alternatively, if the user we are trying to edit is an Author, allow it
-                hasUserPermission = hasUserPermission || userModel.hasRole('Author');
+                hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
         }
 

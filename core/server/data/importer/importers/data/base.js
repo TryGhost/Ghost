@@ -8,9 +8,8 @@ const debug = require('ghost-ignition').debug('importer:base'),
     Promise = require('bluebird');
 
 class Base {
-    constructor(options) {
-        let self = this;
-
+    constructor(allDataFromFile, options) {
+        this.options = options;
         this.modelName = options.modelName;
 
         this.problems = [];
@@ -22,34 +21,35 @@ class Base {
         };
 
         this.legacyKeys = {};
-        this.legacyMapper = function legacyMapper(item) {
-            return _.mapKeys(item, function matchLegacyKey(value, key) {
-                return self.legacyKeys[key] || key;
+        this.legacyMapper = (item) => {
+            return _.mapKeys(item, (value, key) => {
+                return this.legacyKeys[key] || key;
             });
         };
 
         this.dataKeyToImport = options.dataKeyToImport;
-        this.dataToImport = _.cloneDeep(options[this.dataKeyToImport] || []);
-        this.importedData = [];
+        this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
+        this.importedDataToReturn = [];
 
-        // NOTE: e.g. properties are removed or properties are added/changed before importing
-        _.each(options, function (obj, key) {
-            if (options.requiredData.indexOf(key) !== -1) {
-                self[key] = _.cloneDeep(obj);
-            }
-        });
+        this.requiredFromFile = {};
 
-        if (!this.users) {
-            this.users = _.cloneDeep(options.users);
+        if (!this.options.requiredFromFile) {
+            this.options.requiredFromFile = ['users'];
+        } else {
+            this.options.requiredFromFile.push('users');
         }
+
+        _.each(this.options.requiredFromFile, (key) => {
+            this.requiredFromFile[key] = _.cloneDeep(allDataFromFile[key]);
+        });
     }
 
     /**
      * Never ever import these attributes!
      */
     stripProperties(properties) {
-        _.each(this.dataToImport, function (obj) {
-            _.each(properties, function (property) {
+        _.each(this.dataToImport, (obj) => {
+            _.each(properties, (property) => {
                 delete obj[property];
             });
         });
@@ -59,16 +59,14 @@ class Base {
      * Clean invalid values.
      */
     sanitizeValues() {
-        let temporaryDate, self = this;
-
-        _.each(this.dataToImport, function (obj) {
-            _.each(_.pick(obj, ['updated_at', 'created_at', 'published_at']), function (value, key) {
-                temporaryDate = new Date(value);
+        _.each(this.dataToImport, (obj) => {
+            _.each(_.pick(obj, ['updated_at', 'created_at', 'published_at']), (value, key) => {
+                let temporaryDate = new Date(value);
 
                 if (isNaN(temporaryDate)) {
-                    self.problems.push({
+                    this.problems.push({
                         message: 'Date is in a wrong format and invalid. It was replaced with the current timestamp.',
-                        help: self.modelName,
+                        help: this.modelName,
                         context: JSON.stringify(obj)
                     });
 
@@ -85,20 +83,20 @@ class Base {
     }
 
     handleError(errs, obj) {
-        let self = this, errorsToReject = [], problems = [];
+        let errorsToReject = [], problems = [];
 
         // CASE: validation errors, see models/base/events.js onValidate
         if (!_.isArray(errs)) {
             errs = [errs];
         }
 
-        _.each(errs, function (err) {
+        _.each(errs, (err) => {
             if (err.code && err.message.toLowerCase().indexOf('unique') !== -1) {
-                if (self.errorConfig.allowDuplicates) {
-                    if (self.errorConfig.returnDuplicates) {
+                if (this.errorConfig.allowDuplicates) {
+                    if (this.errorConfig.returnDuplicates) {
                         problems.push({
                             message: 'Entry was not imported and ignored. Detected duplicated entry.',
-                            help: self.modelName,
+                            help: this.modelName,
                             context: JSON.stringify(obj),
                             err: err
                         });
@@ -106,16 +104,16 @@ class Base {
                 } else {
                     errorsToReject.push(new common.errors.DataImportError({
                         message: 'Detected duplicated entry.',
-                        help: self.modelName,
+                        help: this.modelName,
                         context: JSON.stringify(obj),
                         err: err
                     }));
                 }
             } else if (err instanceof common.errors.NotFoundError) {
-                if (self.showNotFoundWarning) {
+                if (this.errorConfig.showNotFoundWarning) {
                     problems.push({
                         message: 'Entry was not imported and ignored. Could not find entry.',
-                        help: self.modelName,
+                        help: this.modelName,
                         context: JSON.stringify(obj),
                         err: err
                     });
@@ -125,7 +123,7 @@ class Base {
                     err = new common.errors.DataImportError({
                         message: err.message,
                         context: JSON.stringify(obj),
-                        help: self.modelName,
+                        help: this.modelName,
                         errorType: err.errorType,
                         err: err
                     });
@@ -148,21 +146,27 @@ class Base {
         return Promise.reject(errorsToReject);
     }
 
-    doImport(options) {
+    doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
-        let self = this, ops = [];
+        let ops = [];
 
-        _.each(this.dataToImport, function forEachDataToImport(obj) {
-            ops.push(function addModel() {
-                return models[self.modelName].add(obj, options)
-                    .then(function (importedModel) {
-                        obj.model = importedModel.toJSON();
-                        self.importedData.push(obj.model);
+        _.each(this.dataToImport, (obj) => {
+            ops.push(() => {
+                return models[this.modelName].add(obj, options)
+                    .then((importedModel) => {
+                        obj.model = {
+                            id: importedModel.id
+                        };
+
+                        if (importOptions.returnImportedData) {
+                            this.importedDataToReturn.push(importedModel.toJSON());
+                        }
+
                         return importedModel;
                     })
-                    .catch(function (err) {
-                        return self.handleError(err, obj);
+                    .catch((err) => {
+                        return this.handleError(err, obj);
                     })
                     .reflect();
             });
@@ -187,39 +191,40 @@ class Base {
      *  - we update all fields after the import (!)
      */
     afterImport(options) {
-        let self = this, dataToEdit = {}, oldUser, context;
-
         debug('afterImport', this.modelName);
 
         return models.User.getOwnerUser(options)
-            .then(function (ownerUser) {
-                return Promise.each(self.dataToImport, function (obj) {
+            .then((ownerUser) => {
+                return Promise.each(this.dataToImport, (obj) => {
                     if (!obj.model) {
                         return;
                     }
 
-                    return Promise.each(['author_id', 'published_by', 'created_by', 'updated_by'], function (key) {
+                    return Promise.each(['author_id', 'published_by', 'created_by', 'updated_by'], (key) => {
                         // CASE: not all fields exist on each model, skip them if so
                         if (!obj[key]) {
                             return Promise.resolve();
                         }
 
-                        oldUser = _.find(self.users, {id: obj[key]});
+                        let oldUser = _.find(this.requiredFromFile.users, {id: obj[key]});
 
                         if (!oldUser) {
-                            self.problems.push({
-                                message: 'Entry was imported, but we were not able to update user reference field: ' + key,
-                                help: self.modelName,
+                            this.problems.push({
+                                message: 'Entry was imported, but we were not able to update user reference field: ' +
+                                key + '. The user does not exist, fallback to owner user.',
+                                help: this.modelName,
                                 context: JSON.stringify(obj)
                             });
 
-                            return;
+                            oldUser = {
+                                email: ownerUser.get('email')
+                            };
                         }
 
                         return models.User.findOne({
                             email: oldUser.email,
                             status: 'all'
-                        }, options).then(function (userModel) {
+                        }, options).then((userModel) => {
                             // CASE: user could not be imported e.g. multiple roles attached
                             if (!userModel) {
                                 userModel = {
@@ -227,8 +232,10 @@ class Base {
                                 };
                             }
 
-                            dataToEdit = {};
+                            let dataToEdit = {};
                             dataToEdit[key] = userModel.id;
+
+                            let context;
 
                             // CASE: updated_by is taken from the context object
                             if (key === 'updated_by') {
@@ -237,7 +244,7 @@ class Base {
                                 context = {};
                             }
 
-                            return models[self.modelName].edit(dataToEdit, _.merge({}, options, {id: obj.model.id}, context));
+                            return models[this.modelName].edit(dataToEdit, _.merge({}, options, {id: obj.model.id}, context));
                         });
                     });
                 });

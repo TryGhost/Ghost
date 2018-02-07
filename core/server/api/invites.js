@@ -192,9 +192,9 @@ invites = {
                     allowed = [];
 
                 if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
-                    allowed = ['Administrator', 'Editor', 'Author'];
+                    allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
                 } else if (loggedInUserRole === 'Editor') {
-                    allowed = ['Author'];
+                    allowed = ['Author', 'Contributor'];
                 }
 
                 if (allowed.indexOf(roleToInvite.get('name')) === -1) {

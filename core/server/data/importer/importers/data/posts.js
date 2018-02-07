@@ -7,12 +7,12 @@ const debug = require('ghost-ignition').debug('importer:posts'),
     validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredData: ['tags', 'posts_tags']
-        }));
+            requiredFromFile: ['tags', 'posts_tags']
+        });
 
         this.legacyKeys = {
             image: 'feature_image'
@@ -20,7 +20,7 @@ class PostsImporter extends BaseImporter {
     }
 
     sanitizeAttributes() {
-        _.each(this.dataToImport, function (obj) {
+        _.each(this.dataToImport, (obj) => {
             if (!validation.validator.isUUID(obj.uuid || '')) {
                 obj.uuid = uuid.v4();
             }
@@ -33,16 +33,15 @@ class PostsImporter extends BaseImporter {
      * ...because we add tags by unique name.
      */
     addTagsToPosts() {
-        let postTags = this.posts_tags,
+        let postTags = this.requiredFromFile.posts_tags,
             postsWithTags = new Map(),
-            self = this,
             duplicatedTagsPerPost = {},
             tagsToAttach = [],
             foundOriginalTag;
 
         postTags = _.orderBy(postTags, ['post_id', 'sort_order'], ['asc', 'asc']);
 
-        _.each(postTags, function (postTag) {
+        _.each(postTags, (postTag) => {
             if (!postsWithTags.get(postTag.post_id)) {
                 postsWithTags.set(postTag.post_id, []);
             }
@@ -58,11 +57,11 @@ class PostsImporter extends BaseImporter {
             postsWithTags.get(postTag.post_id).push(postTag.tag_id);
         });
 
-        postsWithTags.forEach(function (tagIds, postId) {
+        postsWithTags.forEach((tagIds, postId) => {
             tagsToAttach = [];
 
-            _.each(tagIds, function (tagId) {
-                foundOriginalTag = _.find(self.tags, {id: tagId});
+            _.each(tagIds, (tagId) => {
+                foundOriginalTag = _.find(this.requiredFromFile.tags, {id: tagId});
 
                 if (!foundOriginalTag) {
                     return;
@@ -71,21 +70,21 @@ class PostsImporter extends BaseImporter {
                 tagsToAttach.push(foundOriginalTag);
             });
 
-            _.each(tagsToAttach, function (tag) {
-                _.each(self.dataToImport, function (obj) {
+            _.each(tagsToAttach, (tag) => {
+                _.each(this.dataToImport, (obj) => {
                     if (obj.id === postId) {
                         if (!_.isArray(obj.tags)) {
                             obj.tags = [];
                         }
 
                         if (duplicatedTagsPerPost.hasOwnProperty(postId) && duplicatedTagsPerPost[postId].length) {
-                            self.problems.push({
+                            this.problems.push({
                                 message: 'Detected duplicated tags for: ' + obj.title || obj.slug,
-                                help: self.modelName,
+                                help: this.modelName,
                                 context: JSON.stringify({
-                                    tags: _.map(_.filter(self.tags, function (tag) {
+                                    tags: _.map(_.filter(this.requiredFromFile.tags, (tag) => {
                                         return _.indexOf(duplicatedTagsPerPost[postId], tag.id) !== -1;
-                                    }), function (value) {
+                                    }), (value) => {
                                         return value.slug || value.name;
                                     })
                                 })
@@ -103,21 +102,21 @@ class PostsImporter extends BaseImporter {
 
     beforeImport() {
         debug('beforeImport');
-        let mobileDocContent, self = this;
+        let mobileDocContent;
 
         this.sanitizeAttributes();
         this.addTagsToPosts();
 
         // Remove legacy field language
-        this.dataToImport = _.filter(this.dataToImport, function (data) {
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
             return _.omit(data, 'language');
         });
 
-        this.dataToImport = this.dataToImport.map(self.legacyMapper);
+        this.dataToImport = this.dataToImport.map(this.legacyMapper);
 
         // For legacy imports/custom imports with only html we can parse the markdown or html into a mobile doc card
         // For now we can hardcode the version
-        _.each(this.dataToImport, function (model) {
+        _.each(this.dataToImport, (model) => {
             if (!model.mobiledoc) {
                 if (model.markdown && model.markdown.length > 0) {
                     mobileDocContent = model.markdown;
@@ -150,11 +149,11 @@ class PostsImporter extends BaseImporter {
         // NOTE: We only support removing duplicate posts within the file to import.
         // For any further future duplication detection, see https://github.com/TryGhost/Ghost/issues/8717.
         let slugs = [];
-        this.dataToImport = _.filter(this.dataToImport, function (post) {
+        this.dataToImport = _.filter(this.dataToImport, (post) => {
             if (slugs.indexOf(post.slug) !== -1) {
-                self.problems.push({
+                this.problems.push({
                     message: 'Entry was not imported and ignored. Detected duplicated entry.',
-                    help: self.modelName,
+                    help: this.modelName,
                     context: JSON.stringify({
                         post: post
                     })
@@ -171,8 +170,8 @@ class PostsImporter extends BaseImporter {
         return super.beforeImport();
     }
 
-    doImport(options) {
-        return super.doImport(options);
+    doImport(options, importOptions) {
+        return super.doImport(options, importOptions);
     }
 }
 

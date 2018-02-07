@@ -53,7 +53,7 @@ describe('DB API', function () {
         });
     });
 
-    it('delete all content is denied (editor, author & without authentication)', function () {
+    it('delete all content is denied (editor, author, contributor & without authentication)', function () {
         return dbAPI.deleteAllContent(testUtils.context.editor).then(function () {
             throw new Error('Delete all content is not denied for editor.');
         }, function (error) {
@@ -61,6 +61,11 @@ describe('DB API', function () {
             return dbAPI.deleteAllContent(testUtils.context.author);
         }).then(function () {
             throw new Error('Delete all content is not denied for author.');
+        }, function (error) {
+            error.errorType.should.eql('NoPermissionError');
+            return dbAPI.deleteAllContent(testUtils.context.contributor);
+        }).then(function () {
+            throw new Error('Delete all content is not denied for contributor.');
         }, function (error) {
             error.errorType.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent();
@@ -71,7 +76,7 @@ describe('DB API', function () {
         });
     });
 
-    it('export content is denied (editor, author & without authentication)', function () {
+    it('export content is denied (editor, author, contributor & without authentication)', function () {
         return dbAPI.exportContent(testUtils.context.editor).then(function () {
             throw new Error('Export content is not denied for editor.');
         }, function (error) {
@@ -79,6 +84,11 @@ describe('DB API', function () {
             return dbAPI.exportContent(testUtils.context.author);
         }).then(function () {
             throw new Error('Export content is not denied for author.');
+        }, function (error) {
+            error.errorType.should.eql('NoPermissionError');
+            return dbAPI.exportContent(testUtils.context.contributor);
+        }).then(function () {
+            throw new Error('Export content is not denied for contributor.');
         }, function (error) {
             error.errorType.should.eql('NoPermissionError');
             return dbAPI.exportContent();
@@ -89,7 +99,7 @@ describe('DB API', function () {
         });
     });
 
-    it('import content is denied (editor, author & without authentication)', function () {
+    it('import content is denied (editor, author, contributor & without authentication)', function () {
         var file = {
             originalname: 'myFile.json',
             path: '/my/path/myFile.json',
@@ -103,6 +113,11 @@ describe('DB API', function () {
             return dbAPI.importContent(_.extend(testUtils.context.author, file));
         }).then(function () {
             throw new Error('Import content is not denied for author.');
+        }, function (error) {
+            error.errorType.should.eql('NoPermissionError');
+            return dbAPI.importContent(_.extend(testUtils.context.contributor, file));
+        }).then(function () {
+            throw new Error('Import content is not denied for contributor.');
         }, function (error) {
             error.errorType.should.eql('NoPermissionError');
             return dbAPI.importContent(file);

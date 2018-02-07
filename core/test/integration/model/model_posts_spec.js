@@ -1681,12 +1681,12 @@ describe('Post Model', function () {
                 found.length.should.equal(50);
                 return PostModel.destroyByAuthor(authorData);
             }).then(function (results) {
-                // User 1 has 13 posts in the database
-                results.length.should.equal(13);
+                // User 1 has 10 posts in the database
+                results.length.should.equal(10);
                 return PostModel.findAll({context: {internal: true}});
             }).then(function (found) {
-                // Only 37 should remain
-                found.length.should.equal(37);
+                // Only 40 should remain
+                found.length.should.equal(40);
                 done();
             }).catch(done);
         });

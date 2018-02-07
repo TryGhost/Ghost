@@ -9,12 +9,11 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
 class SettingsImporter extends BaseImporter {
-    constructor(options) {
-        super(_.extend(options, {
+    constructor(allDataFromFile) {
+        super(allDataFromFile, {
             modelName: 'Settings',
-            dataKeyToImport: 'settings',
-            requiredData: []
-        }));
+            dataKeyToImport: 'settings'
+        });
 
         this.errorConfig = {
             allowDuplicates: true,
@@ -38,25 +37,24 @@ class SettingsImporter extends BaseImporter {
     beforeImport() {
         debug('beforeImport');
 
-        let self = this,
-            ltsActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
+        let ltsActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
 
         // If there is an lts we want to warn user that theme is not imported
         if (ltsActiveTheme) {
-            self.problems.push({
+            this.problems.push({
                 message: 'Theme not imported, please upload in Settings - Design',
-                help: self.modelName,
+                help: this.modelName,
                 context: JSON.stringify(ltsActiveTheme)
             });
         }
 
         // Remove core and theme data types
-        this.dataToImport = _.filter(this.dataToImport, function (data) {
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
-        _.each(this.dataToImport, function (obj) {
-            obj.key = self.legacySettingsKeyValues[obj.key] || obj.key;
+        _.each(this.dataToImport, (obj) => {
+            obj.key = this.legacySettingsKeyValues[obj.key] || obj.key;
 
             if (obj.key === 'labs' && obj.value) {
                 // Overwrite the labs setting with our current defaults
@@ -71,13 +69,13 @@ class SettingsImporter extends BaseImporter {
     doImport(options) {
         debug('doImport', this.dataToImport.length);
 
-        let self = this, ops = [];
+        let ops = [];
 
-        _.each(this.dataToImport, function (model) {
+        _.each(this.dataToImport, (model) => {
             ops.push(
                 models.Settings.edit(model, options)
-                    .catch(function (err) {
-                        return self.handleError(err, model);
+                    .catch((err) => {
+                        return this.handleError(err, model);
                     })
                     .reflect()
             );
