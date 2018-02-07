@@ -226,7 +226,7 @@ describe('Acceptance: Setup', function () {
                 .to.equal(0);
             // we should show an error message
             expect(find('.main-error').text(), 'error text')
-                .to.equal('Access Denied from url: unknown.com. Please use the url configured in config.js.');
+                .to.have.string('Access Denied from url: unknown.com. Please use the url configured in config.js.');
         });
 
         it('handles validation errors in step 3', async function () {
