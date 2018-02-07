@@ -65,10 +65,12 @@
                     }}
                 </div>
 
+                {{#unless session.user.isContributor}}
                 <div class="form-group">
                     <label for="tag-input">Tags</label>
                     {{gh-psm-tags-input post=post triggerId="tag-input"}}
                 </div>
+                {{/unless}}
 
                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="customExcerpt"}}
                     <label for="custom-excerpt">Excerpt</label>
@@ -83,7 +85,7 @@
                     {{gh-error-message errors=post.errors property="customExcerpt" data-test-error="custom-excerpt"}}
                 {{/gh-form-group}}
 
-                {{#unless session.user.isAuthor}}
+                {{#unless session.user.isAuthorOrContributor}}
                 <div class="form-group for-select">
                     <label for="author-list">Author</label>
                     <span class="gh-input-icon gh-icon-user">

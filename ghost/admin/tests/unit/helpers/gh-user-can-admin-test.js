@@ -37,7 +37,7 @@ describe('Unit: Helper: gh-user-can-admin', function () {
         });
     });
 
-    describe('Editor and Author roles', function () {
+    describe('Editor, Author & Contributor roles', function () {
         let user = {
             get(role) {
                 if (role === 'isOwner') {

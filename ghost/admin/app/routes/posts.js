@@ -45,6 +45,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
             if (user.get('isAuthor')) {
                 // authors can only view their own posts
                 filterParams.author = user.get('slug');
+            } else if (user.get('isContributor')) {
+                // Contributors can only view their own draft posts
+                filterParams.author = user.get('slug');
+                queryParams.status = 'draft';
             } else if (params.author) {
                 filterParams.author = params.author;
             }
@@ -78,7 +82,7 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
         }
 
         this.get('session.user').then((user) => {
-            if (!user.get('isAuthor') && !controller._hasLoadedAuthors) {
+            if (!user.get('isAuthorOrContributor') && !controller._hasLoadedAuthors) {
                 this.get('store').query('user', {limit: 'all'}).then(() => {
                     controller._hasLoadedAuthors = true;
                 });

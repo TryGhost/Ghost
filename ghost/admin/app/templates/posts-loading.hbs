@@ -25,7 +25,7 @@
                 {{type.name}}
             {{/power-select}}
 
-            {{#unless session.user.isAuthor}}
+            {{#unless session.user.isAuthorOrContributor}}
             {{#power-select
                 placeholder="All authors"
                 selected=selectedAuthor

@@ -26,6 +26,16 @@ describe('Acceptance: Settings - Design', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
+    it('redirects to team page when authenticated as contributor', async function () {
+        let role = server.create('role', {name: 'Contributor'});
+        server.create('user', {roles: [role], slug: 'test-user'});
+
+        authenticateSession(application);
+        await visit('/settings/design');
+
+        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+    });
+
     it('redirects to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
         server.create('user', {roles: [role], slug: 'test-user'});

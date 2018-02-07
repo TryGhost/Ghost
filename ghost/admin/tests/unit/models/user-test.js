@@ -61,6 +61,21 @@ describe('Unit: Model: user', function () {
         expect(model.get('role.name')).to.equal('Editor');
     });
 
+    it('isContributor property is correct', function () {
+        let model = this.subject();
+
+        run(() => {
+            let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Contributor'}}});
+            model.set('role', role);
+        });
+        expect(model.get('isContributor')).to.be.ok;
+        expect(model.get('isAuthorOrContributor')).to.be.ok;
+        expect(model.get('isAuthor')).to.not.be.ok;
+        expect(model.get('isEditor')).to.not.be.ok;
+        expect(model.get('isAdmin')).to.not.be.ok;
+        expect(model.get('isOwner')).to.not.be.ok;
+    });
+
     it('isAuthor property is correct', function () {
         let model = this.subject();
 
@@ -69,6 +84,8 @@ describe('Unit: Model: user', function () {
             model.set('role', role);
         });
         expect(model.get('isAuthor')).to.be.ok;
+        expect(model.get('isContributor')).to.not.be.ok;
+        expect(model.get('isAuthorOrContributor')).to.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('isAdmin')).to.not.be.ok;
         expect(model.get('isOwner')).to.not.be.ok;
@@ -83,6 +100,8 @@ describe('Unit: Model: user', function () {
         });
         expect(model.get('isEditor')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
+        expect(model.get('isContributor')).to.not.be.ok;
+        expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isAdmin')).to.not.be.ok;
         expect(model.get('isOwner')).to.not.be.ok;
     });
@@ -96,6 +115,8 @@ describe('Unit: Model: user', function () {
         });
         expect(model.get('isAdmin')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
+        expect(model.get('isContributor')).to.not.be.ok;
+        expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('isOwner')).to.not.be.ok;
     });
@@ -109,6 +130,8 @@ describe('Unit: Model: user', function () {
         });
         expect(model.get('isOwner')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
+        expect(model.get('isContributor')).to.not.be.ok;
+        expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isAdmin')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
     });

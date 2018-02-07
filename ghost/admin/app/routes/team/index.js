@@ -29,7 +29,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
             };
 
             // authors do not have permission to hit the invites or suspended users endpoint
-            if (!user.get('isAuthor')) {
+            if (!user.get('isAuthorOrContributor')) {
                 modelPromises.invites = this.store.query('invite', {limit: 'all'})
                     .then(() => this.store.filter('invite', invite => !invite.get('isNew')));
 

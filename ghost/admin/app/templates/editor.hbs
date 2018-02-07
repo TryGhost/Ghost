@@ -19,11 +19,19 @@
             {{/gh-scheduled-post-countdown}}
             <section class="view-actions">
                 {{#unless post.isNew}}
-                    {{gh-publishmenu
-                        post=post
-                        saveTask=save
-                        setSaveType=(action "setSaveType")
-                        onOpen=(action "cancelAutosave")}}
+                    {{#if session.user.isContributor}}
+                        {{gh-task-button "Save"
+                            task=save
+                            runningText="Saving"
+                            class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
+                            data-test-contributor-save=true}}
+                    {{else}}
+                        {{gh-publishmenu
+                            post=post
+                            saveTask=save
+                            setSaveType=(action "setSaveType")
+                            onOpen=(action "cancelAutosave")}}
+                    {{/if}}
                 {{/unless}}
 
                 <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=ui}} data-test-psm-trigger>

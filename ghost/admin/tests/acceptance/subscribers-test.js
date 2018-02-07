@@ -46,6 +46,18 @@ describe('Acceptance: Subscribers', function () {
             .to.equal(0);
     });
 
+    it('redirects contributors to posts', async function () {
+        let role = server.create('role', {name: 'Contributor'});
+        server.create('user', {roles: [role]});
+
+        authenticateSession(application);
+        await visit('/subscribers');
+
+        expect(currentURL()).to.equal('/');
+        expect(find('.gh-nav-main a:contains("Subscribers")').length, 'sidebar link is visible')
+            .to.equal(0);
+    });
+
     describe('an admin', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});

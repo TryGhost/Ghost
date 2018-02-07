@@ -3,7 +3,7 @@ import Mixin from '@ember/object/mixin';
 export default Mixin.create({
     transitionAuthor() {
         return (user) => {
-            if (user.get('isAuthor')) {
+            if (user.get('isAuthorOrContributor')) {
                 return this.transitionTo('team.user', user);
             }
 

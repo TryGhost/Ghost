@@ -58,7 +58,7 @@ export default Controller.extend({
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner'))
             || (this.get('currentUser.isEditor') && (this.get('isNotOwnProfile')
-            || this.get('user.isAuthor')))) {
+            || this.get('user.isAuthorOrContributor')))) {
             return true;
         }
     }),
