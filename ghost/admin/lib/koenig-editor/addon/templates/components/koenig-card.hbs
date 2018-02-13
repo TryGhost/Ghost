@@ -1,0 +1,14 @@
+<div class="koenig-card-icon">{{inline-svg icon}}</div>
+<div class="koenig-card-content">
+    {{yield}}
+</div>
+
+{{#if toolbar}}
+    <div class="koenig-card-toolbar koenig-toolbar {{if showToolbar "koenig-toolbar--visible"}}" style={{toolbarStyle}}>
+        {{#each toolbar.items as |item|}}
+            <button type="button" title={{item.title}} class="koenig-toolbar-btn" onmousedown={{action item.action}}>
+                {{inline-svg item.icon}}
+            </button>
+        {{/each}}
+    </div>
+{{/if}}

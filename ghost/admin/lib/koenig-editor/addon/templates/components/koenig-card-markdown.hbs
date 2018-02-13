@@ -1,5 +1,19 @@
-{{gh-textarea
-    class="koenig-card-markdown"
-    value=payload.markdown
-    update=(action "updateMarkdown")
-    autoExpand=".gh-koenig-editor"}}
+{{#koenig-card
+    icon="koenig/markdown"
+    toolbar=toolbar
+    isSelected=isSelected
+    isEditing=isEditing
+    onEnterEdit=(action "enterEditMode")
+    selectCard=(action selectCard)
+    editCard=(action editCard)
+}}
+    {{#if isEditing}}
+        {{gh-textarea
+            class="koenig-card-markdown"
+            value=payload.markdown
+            update=(action "updateMarkdown")
+            autoExpand=".gh-koenig-editor"}}
+    {{else}}
+        {{renderedMarkdown}}
+    {{/if}}
+{{/koenig-card}}
