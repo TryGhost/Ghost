@@ -42,7 +42,7 @@
     margin: 0 auto;
 }
 
-/* Formatting Toolbar ------------------------------------------------------- */
+/* Formatting / Container Card Toolbar -------------------------------------- */
 
 .koenig-toolbar {
     position: absolute;
@@ -372,6 +372,41 @@
 
 /* Cards -------------------------------------------------------------------- */
 
+/* generic containers... */
+
+.koenig-card {
+    position: relative;
+    display: flex;
+    border: 2px solid  color(var(--blue) alpha(-85%));
+    flex-direction: row;
+    border-radius: 4px;
+    padding: 10px;
+    width: calc(100% + 60px);
+    margin-left: -50px;
+    max-width: none;
+    cursor: pointer;
+    caret-color: auto; /* override hidden cursors around cards */
+}
+
+.koenig-card:hover {
+    border-color: color(var(--blue) alpha(-25%));
+}
+
+.koenig-card--selected {
+    border-color: var(--blue);
+}
+
+.koenig-card-icon {
+    width: 30px;
+    margin-right: 10px;
+}
+
+.koenig-card-content {
+    flex-grow: 1;
+}
+
+/* specific cards... */
+
 textarea.koenig-card-markdown {
     max-width: 100%;
 }
@@ -459,11 +494,6 @@ textarea.koenig-card-markdown {
     display: block;
     max-width: 100%;
     margin: 0 auto;
-}
-
-.__mobiledoc-editor div,
-.__mobiledoc-editor iframe {
-    max-width: 100%;
 }
 
 .__mobiledoc-editor hr {

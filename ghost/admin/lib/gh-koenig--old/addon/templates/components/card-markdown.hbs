@@ -1,10 +1,17 @@
-{{#if isEditing}}
-    <textarea
-        onfocus={{action "selectCard"}}
-        ondrop={{action "didDrop"}}
-        ondragover={{action "didDragOver"}}
-        ondragleave={{action "didDragLeave"}}
-    >{{value}}</textarea>
-{{else}}
-    {{{preview}}}
-{{/if}}
+{{#koenig-card
+    isSelected=isSelected
+    isEditing=isEditing
+    toolbar=toolbar
+    onEnterEdit=(action "enterEditMode")
+}}
+    {{#if isEditing}}
+        <textarea
+            onfocus={{action "selectCard"}}
+            ondrop={{action "didDrop"}}
+            ondragover={{action "didDragOver"}}
+            ondragleave={{action "didDragLeave"}}
+        >{{value}}</textarea>
+    {{else}}
+        {{{preview}}}
+    {{/if}}
+{{/koenig-card}}

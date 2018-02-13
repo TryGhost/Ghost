@@ -202,7 +202,9 @@ export default Component.extend({
                     env,
                     options,
                     editor,
-                    postModel: env.postModel
+                    postModel: env.postModel,
+                    isSelected: false,
+                    isEditing: false
                 });
 
                 // after render we render the full ember card via {{-in-element}}
@@ -252,6 +254,11 @@ export default Component.extend({
         editor.registerKeyCommand({
             str: 'LEFT',
             run: run.bind(this, this.handleLeftKey)
+        });
+
+        editor.registerKeyCommand({
+            str: 'META+ENTER',
+            run: run.bind(this, this.handleCmdEnter)
         });
 
         // set up editor hooks
@@ -349,6 +356,15 @@ export default Component.extend({
                     postEditor.setRange(newSection.tailPosition());
                 }
             });
+
+            // cards are pushed on to the `componentCards` array so we can
+            // assume that the last card in the list is the one we want to
+            // select. Needs to be scheduled afterRender so that the new card
+            // is actually present
+            run.schedule('afterRender', this, function () {
+                let card = this.get('componentCards.lastObject');
+                this.editCard(card);
+            });
         },
 
         replaceWithListSection(listType, range) {
@@ -366,36 +382,15 @@ export default Component.extend({
         },
 
         selectCard(card) {
-            // no-op if card is already selected
-            if (card === this._selectedCard) {
-                return;
-            }
+            this.selectCard(card);
+        },
 
-            // deselect any already selected card
-            if (this._selectedCard) {
-                this.send('deselectCard', this._selectedCard);
-            }
-
-            // setting a card as selected trigger's the cards didReceiveAttrs
-            // hook where the actual selection state change happens
-            card.set('isSelected', true);
-            this._selectedCard = card;
-
-            // hide the cursor and place it after the card so that ENTER can
-            // create a new paragraph and cursorDidExitAtTop gets fired on LEFT
-            // if the card is at the top of the document
-            this._hideCursor();
-            let section = this._getSectionFromCard(card);
-            this.editor.run((postEditor) => {
-                let range = section.tailPosition().toRange();
-                postEditor.setRange(range);
-            });
+        editCard(card) {
+            this.editCard(card);
         },
 
         deselectCard(card) {
-            card.set('isSelected', false);
-            this._selectedCard = null;
-            this._showCursor();
+            this.deselectCard(card);
         }
     },
 
@@ -411,12 +406,20 @@ export default Component.extend({
     },
 
     cursorDidChange(editor) {
+        // sometimes we perform a programatic edit that causes a cursor change
+        // but we actually want to skip the default behaviour because we've
+        // already handled it, e.g. on card insertion, manual card selection
+        if (this._skipCursorChange) {
+            this._skipCursorChange = false;
+            return;
+        }
+
         let {head, isCollapsed, head: {section}} = editor.range;
 
         // if we have a selected card but cursor has moved to the left then
         // deselect and move cursor to end of the previous section
         if (this._selectedCard && section && isCollapsed && section.type === 'card-section' && head.offset === 0) {
-            this.send('deselectCard', this._selectedCard);
+            this.deselectCard(this._selectedCard);
 
             if (section.prev) {
                 editor.run((postEditor) => {
@@ -436,7 +439,7 @@ export default Component.extend({
         if (section && isCollapsed && section.type === 'card-section') {
             if (head.offset === 0 || head.offset === 1) {
                 let card = this._getCardFromSection(section);
-                this.send('selectCard', card);
+                this.selectCard(card);
                 this.set('selectedRange', editor.range);
                 return;
             }
@@ -444,7 +447,7 @@ export default Component.extend({
 
         // deselect any selected card because the cursor is no longer on a card
         if (this._selectedCard) {
-            this.send('deselectCard', this._selectedCard);
+            this.deselectCard(this._selectedCard);
         }
 
         // pass the selected range through to the toolbar + menu components
@@ -493,7 +496,7 @@ export default Component.extend({
         // actually delete the card rather than selecting it
         if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section') {
             let card = this._getCardFromSection(section.prev);
-            this._deleteCard(card, CURSOR_BEFORE);
+            this._deleteCard(card, CURSOR_AFTER);
             return;
         }
 
@@ -512,7 +515,7 @@ export default Component.extend({
             this._deleteCard(this._selectedCard, CURSOR_AFTER);
 
             if (selectNextCard) {
-                this.send('selectCard', nextCard);
+                this.selectCard(nextCard);
             }
             return;
         }
@@ -547,6 +550,69 @@ export default Component.extend({
         }
 
         return false;
+    },
+
+    handleCmdEnter() {
+        if (this._selectedCard) {
+            this.editCard(this._selectedCard);
+            return;
+        }
+
+        return false;
+    },
+
+    selectCard(card, isEditing = false) {
+        // no-op if card is already selected
+        if (card === this._selectedCard && isEditing === card.isEditing) {
+            return;
+        }
+
+        // deselect any already selected card
+        if (this._selectedCard && card !== this._selectedCard) {
+            this.deselectCard(this._selectedCard);
+        }
+
+        // setting a card as selected trigger's the cards didReceiveAttrs
+        // hook where the actual selection state change happens. Put into edit
+        // mode if necessary
+        card.setProperties({
+            isEditing,
+            isSelected: true
+        });
+        this._selectedCard = card;
+
+        // hide the cursor and place it after the card so that ENTER can
+        // create a new paragraph and cursorDidExitAtTop gets fired on LEFT
+        // if the card is at the top of the document
+        this._hideCursor();
+        let section = this._getSectionFromCard(card);
+        this.editor.run((postEditor) => {
+            let range = section.tailPosition().toRange();
+
+            // don't trigger another cursor change selection after selecting
+            if (!range.isEqual(this.editor.range)) {
+                this._skipCursorChange = true;
+            }
+
+            postEditor.setRange(range);
+        });
+    },
+
+    editCard(card) {
+        // no-op if card is already being edited
+        if (card === this._selectedCard && card.isEditing) {
+            return;
+        }
+
+        // select the card with edit mode
+        this.selectCard(card, true);
+    },
+
+    deselectCard(card) {
+        card.set('isEditing', false);
+        card.set('isSelected', false);
+        this._selectedCard = null;
+        this._showCursor();
     },
 
     /* internal methods ----------------------------------------------------- */

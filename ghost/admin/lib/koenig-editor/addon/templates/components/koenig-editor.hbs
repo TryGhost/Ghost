@@ -96,12 +96,13 @@
             payload=card.payload
             env=card.env
             options=card.options
-            editCard=(action card.env.edit)
             saveCard=(action card.env.save)
             cancelCard=(action card.env.cancel)
             removeCard=(action card.env.remove)
             isSelected=card.isSelected
-            selectCard=(action "selectCard")
+            selectCard=(action "selectCard" card)
+            isEditing=card.isEditing
+            editCard=(action "editCard" card)
         }}
     {{/-in-element}}
 {{/each}}
