@@ -61,10 +61,17 @@ function resolvePaths(data, value) {
         // Handle Handlebars .[] style arrays
         path = path.replace(/\.\[/g, '[');
 
-        // Do the query, and convert from array to string
-        result = jsonpath.query(data, path).join(',');
+        // Do the query, which always returns an array of matches
+        result = jsonpath.query(data, path);
 
-        return result;
+        // Handle the case where the single data property we return is a Date
+        // Data.toString() is not DB compatible, so use `toISOString()` instead
+        if (_.isDate(result[0])) {
+            result[0] = result[0].toISOString();
+        }
+
+        // Concatenate the results with a comma, handles common case of multiple tag slugs
+        return result.join(',');
     });
 
     return value;
