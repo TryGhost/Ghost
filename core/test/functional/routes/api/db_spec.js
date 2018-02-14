@@ -111,7 +111,7 @@ describe('DB API', function () {
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
         request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
-            .expect(200)
+            .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -130,7 +130,7 @@ describe('DB API', function () {
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
         request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
-            .expect(200)
+            .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);

@@ -597,7 +597,6 @@ describe('Post API', function () {
                         }
 
                         var draftPost = res.body;
-                        res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
                         should.exist(draftPost.posts);
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);
@@ -694,7 +693,6 @@ describe('Post API', function () {
                         }
 
                         var response = res.body;
-                        res.headers.location.should.equal('/ghost/api/v0.1/posts/' + response.posts[0].id + '/?status=draft');
                         should.exist(response.posts);
                         response.posts.length.should.be.above(0);
 
@@ -783,7 +781,6 @@ describe('Post API', function () {
                         }
 
                         var draftPost = res.body;
-                        res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
                         should.exist(draftPost.posts);
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);
@@ -835,7 +832,6 @@ describe('Post API', function () {
                         }
 
                         var draftPost = res.body;
-                        res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=published');
                         should.exist(draftPost.posts);
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);

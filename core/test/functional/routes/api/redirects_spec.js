@@ -117,7 +117,7 @@ describe('Redirects API', function () {
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.json'))
                             .expect('Content-Type', /application\/json/)
-                            .expect(200);
+                            .expect(201);
                     })
                     .then(function (res) {
                         res.headers['x-cache-invalidate'].should.eql('/*');
@@ -159,7 +159,7 @@ describe('Redirects API', function () {
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
                             .expect('Content-Type', /application\/json/)
-                            .expect(200);
+                            .expect(201);
                     })
                     .then(function (res) {
                         res.headers['x-cache-invalidate'].should.eql('/*');
@@ -200,7 +200,7 @@ describe('Redirects API', function () {
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
                             .expect('Content-Type', /application\/json/)
-                            .expect(200);
+                            .expect(201);
                     })
                     .then(function () {
                         var dataFiles = fs.readdirSync(config.getContentPath('data'));

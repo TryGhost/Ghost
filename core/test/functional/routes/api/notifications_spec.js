@@ -77,15 +77,16 @@ describe('Notifications API', function () {
                         return done(err);
                     }
 
-                    var location = res.headers.location,
-                        jsonResponse = res.body;
+                    should.exist(res.body.notifications);
+                    var createdNotification = res.body.notifications[0];
 
-                    should.exist(jsonResponse.notifications);
-                    testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
+                    testUtils.API.checkResponse(createdNotification, 'notification');
 
-                    jsonResponse.notifications[0].type.should.equal(newNotification.type);
-                    jsonResponse.notifications[0].message.should.equal(newNotification.message);
-                    jsonResponse.notifications[0].status.should.equal(newNotification.status);
+                    createdNotification.type.should.equal(newNotification.type);
+                    createdNotification.message.should.equal(newNotification.message);
+                    createdNotification.status.should.equal(newNotification.status);
+
+                    var location = testUtils.API.getApiQuery('notifications/') + createdNotification.id;
 
                     // begin delete test
                     request.del(location)
