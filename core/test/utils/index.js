@@ -935,7 +935,7 @@ configureGhost = function configureGhost(sandbox) {
 
     configUtils.set('times:getImageSizeTimeoutInMS', 1);
 
-    return themes.init({noChecks: true});
+    return themes.init();
 };
 
 module.exports = {
