@@ -8,7 +8,7 @@ const should = require('should'), // jshint ignore:line
     models = require('../../server/models'),
     sandbox = sinon.sandbox.create();
 
-describe('Unit - Components - Site', function () {
+describe('Integration - Web - Site', function () {
     let app;
 
     beforeEach(function () {
