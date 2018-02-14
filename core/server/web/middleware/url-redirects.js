@@ -1,4 +1,5 @@
 var url = require('url'),
+    path = require('path'),
     debug = require('ghost-ignition').debug('url-redirects'),
     urlService = require('../../services/url'),
     urlRedirects,
@@ -6,21 +7,22 @@ var url = require('url'),
 
 _private.redirectUrl = function redirectUrl(options) {
     var redirectTo = options.redirectTo,
-        path = options.path,
+        pathname = options.path,
         query = options.query,
         parts = url.parse(redirectTo);
 
     // CASE: ensure we always add a trailing slash to reduce the number of redirects
     // e.g. you are redirected from example.com/ghost to admin.example.com/ghost and Ghost would detect a missing slash and redirect you to /ghost/
-    if (!path.match(/\/$/)) {
-        path += '/';
+    // Exceptions: asset requests
+    if (!pathname.match(/\/$/) && !path.extname(pathname)) {
+        pathname += '/';
     }
 
     return url.format({
         protocol: parts.protocol,
         hostname: parts.hostname,
         port: parts.port,
-        pathname: path,
+        pathname: pathname,
         query: query
     });
 };

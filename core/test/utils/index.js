@@ -47,6 +47,7 @@ var Promise = require('bluebird'),
     login,
     togglePermalinks,
     startGhost,
+    configureGhost,
 
     initFixtures,
     initData,
@@ -918,8 +919,28 @@ startGhost = function startGhost(options) {
         });
 };
 
+/**
+ * Minimal configuration to start integration/unit tests.
+ */
+configureGhost = function configureGhost(sandbox) {
+    models.init();
+
+    const cacheStub = sandbox.stub(SettingsCache, 'get');
+
+    cacheStub.withArgs('active_theme').returns('casper');
+    cacheStub.withArgs('active_timezone').returns('Etc/UTC');
+    cacheStub.withArgs('permalinks').returns('/:slug/');
+
+    configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+
+    configUtils.set('times:getImageSizeTimeoutInMS', 1);
+
+    return themes.init();
+};
+
 module.exports = {
     startGhost: startGhost,
+    configureGhost: configureGhost,
     teardown: teardown,
     setup: setup,
     doAuth: doAuth,
