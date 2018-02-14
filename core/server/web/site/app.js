@@ -48,8 +48,8 @@ module.exports = function setupSiteApp() {
     // More redirects
     siteApp.use(adminRedirects());
 
-    // Force SSL if required
-    // must happen BEFORE serving assets and BEFORE routing
+    // force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
+    // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
     siteApp.use(urlRedirects);
 
     // Static content/assets

@@ -150,6 +150,23 @@ describe('Integration - Web - Site', function () {
                 const req = {
                     secure: false,
                     method: 'GET',
+                    url: '/favicon.png',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                        response.headers.location.should.eql('https://example.com/favicon.png');
+                    });
+            });
+
+            it('blog is https, request is http', function () {
+                configUtils.set('url', 'https://example.com');
+
+                const req = {
+                    secure: false,
+                    method: 'GET',
                     url: '/assets/css/main.css',
                     host: 'example.com'
                 };
