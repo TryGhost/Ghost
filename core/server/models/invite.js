@@ -41,7 +41,7 @@ Invite = ghostBookshelf.Model.extend({
         data = this.filterData(data, 'findOne');
         options.withRelated = _.union(options.withRelated, options.include);
 
-        var invite = this.forge(data, {include: options.include});
+        var invite = this.forge(data);
         return invite.fetch(options);
     },
 
