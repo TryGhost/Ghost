@@ -44,8 +44,13 @@ module.exports = function setupSiteApp() {
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     customRedirects.use(siteApp);
+
     // More redirects
     siteApp.use(adminRedirects());
+
+    // force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
+    // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
+    siteApp.use(urlRedirects);
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
@@ -104,10 +109,6 @@ module.exports = function setupSiteApp() {
 
     // send 503 error page in case of maintenance
     siteApp.use(maintenance);
-
-    // Force SSL if required
-    // must happen AFTER asset loading and BEFORE routing
-    siteApp.use(urlRedirects);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
