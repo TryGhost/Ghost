@@ -300,9 +300,11 @@ describe('{{#get}} helper', function () {
     });
 
     describe('path resolution', function () {
-        var browseStub, readStub, data = {
-            post: {id: 3, title: 'Test 3', author: {slug: 'cameron'}, tags: [{slug: 'test'}, {slug: 'magic'}]}
-        };
+        var browseStub, readStub,
+            pubDate = new Date(),
+            data = {
+                post: {id: 3, title: 'Test 3', author: {slug: 'cameron'}, tags: [{slug: 'test'}, {slug: 'magic'}], published_at: pubDate}
+            };
 
         beforeEach(function () {
             browseStub = sandbox.stub(api.posts, 'browse').returns(new Promise.resolve());
@@ -360,6 +362,20 @@ describe('{{#get}} helper', function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('tags:test');
+
+                done();
+            }).catch(done);
+        });
+
+        it('should handle dates', function (done) {
+            helpers.get.call(
+                data,
+                'posts',
+                {hash: {filter: "published_at:<='{{post.published_at}}'"}, fn: fn, inverse: inverse}
+            ).then(function () {
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
+                browseStub.firstCall.args[0].filter.should.eql(`published_at:<='${pubDate.toISOString()}'`);
 
                 done();
             }).catch(done);
