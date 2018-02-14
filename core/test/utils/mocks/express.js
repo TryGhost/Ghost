@@ -10,6 +10,10 @@ module.exports = {
             method: reqParams.method
         });
 
+        res.end = function () {
+            this.emit('finish');
+        };
+
         req.connection = {
             encrypted: reqParams.secure
         };
@@ -20,17 +24,13 @@ module.exports = {
             host: reqParams.host
         };
 
-        // @TODO: how to get a mocked connection
         res.connection = {
             _httpMessage: res,
             writable: true,
             destroyed: false,
-            cork: function () {
-            },
-            uncork: function () {
-            },
-            write: function () {
-            }
+            cork: function () {},
+            uncork: function () {},
+            write: function () {}
         };
 
         return new Promise(function (resolve) {
@@ -45,9 +45,6 @@ module.exports = {
             });
 
             res.once('finish', onFinish);
-            // res.end() does not trigger "finish" event somehow
-            res.once('prefinish', onFinish);
-
             app(req, res);
         });
     }
