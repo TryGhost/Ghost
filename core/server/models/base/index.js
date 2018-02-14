@@ -90,13 +90,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
-        var self = this,
-            options = arguments[1] || {};
-
-        // make options include available for toJSON()
-        if (options.include) {
-            this.include = _.clone(options.include);
-        }
+        var self = this;
 
         [
             'fetching',
@@ -322,32 +316,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return this.fixBools(this.fixDatesWhenFetch(attrs));
     },
 
+    /**
+     * `shallow`    - won't return relations
+     * `omitPivot`  - won't return pivot fields
+     *
+     * `toJSON` calls `serialize`.
+     *
+     * @param options
+     * @returns {*}
+     */
     toJSON: function toJSON(options) {
-        var attrs = _.extend({}, this.attributes),
-            self = this;
-        options = options || {};
-        options = _.pick(options, ['shallow', 'baseKey', 'include', 'context']);
+        var opts = _.cloneDeep(options || {});
+        opts.omitPivot = true;
 
-        if (options && options.shallow) {
-            return attrs;
-        }
-
-        if (options && options.include) {
-            this.include = _.union(this.include, options.include);
-        }
-
-        _.each(this.relations, function each(relation, key) {
-            if (key.substring(0, 7) !== '_pivot_') {
-                // if include is set, expand to full object
-                var fullKey = _.isEmpty(options.baseKey) ? key : options.baseKey + '.' + key;
-                if (_.includes(self.include, fullKey)) {
-                    attrs[key] = relation.toJSON(_.extend({}, options, {baseKey: fullKey, include: self.include}));
-                }
-            }
-        });
-
-        // @TODO upgrade bookshelf & knex and use serialize & toJSON to do this in a neater way (see #6103)
-        return proto.finalize.call(this, attrs);
+        return proto.toJSON.call(this, opts);
     },
 
     // Get attributes that have been updated (values before a .save() call)
@@ -605,8 +587,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
 
-        // We pass include to forge so that toJSON has access
-        return this.forge(data, {include: options.include}).fetch(options);
+        return this.forge(data).fetch(options);
     },
 
     /**
