@@ -1,4 +1,17 @@
-{{gh-cm-editor payload.html
-    class="koenig-card-html--editor"
-    update=(action "updateHtml")
+{{#koenig-card
+    icon="koenig/embed"
+    isSelected=isSelected
+    isEditing=isEditing
+    selectCard=(action selectCard)
+    editCard=(action editCard)
 }}
+    {{#if isEditing}}
+        {{gh-cm-editor payload.html
+            class="koenig-card-html--editor"
+            autofocus=true
+            update=(action "updateHtml")
+        }}
+    {{else}}
+        {{{payload.html}}}
+    {{/if}}
+{{/koenig-card}}

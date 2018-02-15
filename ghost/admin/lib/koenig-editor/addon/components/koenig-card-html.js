@@ -3,10 +3,14 @@ import layout from '../templates/components/koenig-card-html';
 import {set} from '@ember/object';
 
 export default Component.extend({
-    tagName: '',
     layout,
 
+    // attrs
     payload: null,
+    isSelected: false,
+    isEditing: false,
+
+    // closure actions
     saveCard: null,
 
     init() {
