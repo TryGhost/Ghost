@@ -11,8 +11,6 @@ import {inject as service} from '@ember/service';
 // should be able to replace the duplicated upload logic in:
 // - gh-image-uploader
 // - gh-file-uploader
-// - gh-koenig/cards/card-image
-// - gh-koenig/cards/card-markdown
 //
 // In order to support the above components we'll need to introduce an
 // "allowMultiple" attribute so that single-image uploads don't allow multiple

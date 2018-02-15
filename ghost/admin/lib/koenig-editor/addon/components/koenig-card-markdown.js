@@ -25,6 +25,17 @@ export default Component.extend({
         return htmlSafe(formatMarkdown(this.get('payload.markdown')));
     }),
 
+    init() {
+        this._super(...arguments);
+        this.set('toolbar', {
+            items: [{
+                icon: 'trash',
+                title: 'Delete',
+                action: () => {}
+            }]
+        });
+    },
+
     actions: {
         enterEditMode() {
             // this action is called before the component is rendered so we
