@@ -3690,6 +3690,10 @@ lodash@^3.10.1, lodash@~3.10.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
 
+lodash@^4.14.2:
+  version "4.17.5"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
+
 lodash@~0.9.2:
   version "0.9.2"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-0.9.2.tgz#8f3499c5245d346d682e5b0d3b40767e09f1a92c"
@@ -4040,6 +4044,14 @@ mocha@^3.1.2:
     lodash.create "3.1.1"
     mkdirp "0.5.1"
     supports-color "3.1.2"
+
+mock-knex@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.0.tgz#32c4ed97ff7cf9c86eca2400902f34e1f7f88de1"
+  dependencies:
+    bluebird "^3.4.1"
+    lodash "^4.14.2"
+    semver "^5.3.0"
 
 moment-timezone@0.5.14:
   version "0.5.14"
