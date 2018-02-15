@@ -411,6 +411,7 @@ export default Component.extend({
         // already handled it, e.g. on card insertion, manual card selection
         if (this._skipCursorChange) {
             this._skipCursorChange = false;
+            this.set('selectedRange', editor.range);
             return;
         }
 
