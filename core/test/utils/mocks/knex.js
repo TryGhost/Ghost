@@ -43,9 +43,10 @@ class KnexMock {
 
         if (options.autoMock) {
             this.tracker.on('query', (query) => {
+                query.sql = query.sql.replace(/`/g, '"');
+
                 if (query.method === 'select') {
                     if (query.bindings.length && query.sql.match(/where/)) {
-                        query.sql = query.sql.replace(/`/g, '"');
 
                         const tableName = query.sql.match(/from\s\"(\w+)\"/)[1],
                             where = query.sql.match(/\"(\w+)\"\s\=\s\?/)[1],
@@ -66,8 +67,6 @@ class KnexMock {
                         query.response(this.db[tableName]);
                     }
                 } else if (query.method === 'insert') {
-                    query.sql = query.sql.replace(/`/g, '"');
-
                     const tableName = query.sql.match(/into\s\"(\w+)\"/)[1];
                     let keys = query.sql.match(/\(([^)]+)\)/)[1],
                         entry = {};
@@ -87,8 +86,6 @@ class KnexMock {
                     this.db[tableName].push(entry);
                     query.response(entry);
                 } else if (query.method === 'update') {
-                    query.sql = query.sql.replace(/`/g, '"');
-
                     const tableName = query.sql.match(/update\s\"(\w+)\"/)[1],
                         where = query.sql.match(/where\s\"(\w+)\"\s\=\s\?/)[1],
                         value = query.bindings.slice(-1)[0],
