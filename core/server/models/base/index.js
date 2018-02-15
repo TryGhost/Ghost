@@ -78,11 +78,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return _.keys(schema.tables[this.tableName]);
     },
 
-    // Bookshelf `defaults` - default values setup on every model creation
-    defaults: function defaults() {
-        return {};
-    },
-
     // When loading an instance, subclasses can specify default to fetch
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return [];
@@ -136,8 +131,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         proto.initialize.call(this);
     },
 
-    onValidate: function onValidate() {
-        return validation.validateSchema(this.tableName, this.toJSON());
+    /**
+     * Do not call `toJSON`. This can remove properties e.g. password.
+     * @returns {*}
+     */
+    onValidate: function onValidate(model, columns, options) {
+        return validation.validateSchema(this.tableName, this, options);
     },
 
     /**

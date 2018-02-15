@@ -161,19 +161,40 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     return validationResult;
 };
 
-// Validation against schema attributes
-// values are checked against the validation objects from schema.js
-validateSchema = function validateSchema(tableName, model) {
+/**
+ * Validate model against schema.
+ *
+ * ## on model update
+ * - only validate changed fields
+ * - otherwise we could throw errors which the user is out of control
+ * - e.g.
+ *   - we add a new field without proper validation, release goes out
+ *   - we add proper validation for a single field
+ * - if you call `user.save()` the default fallback in bookshelf is `options.method=update`.
+ * - we set `options.method` explicit for adding resources (because otherwise bookshelf uses `update`)
+ *
+ * ## on model add
+ * - validate everything to catch required fields
+ */
+validateSchema = function validateSchema(tableName, model, options) {
+    options = options || {};
+
     var columns = _.keys(schema[tableName]),
         validationErrors = [];
 
     _.each(columns, function each(columnKey) {
         var message = '',
-            strVal = _.toString(model[columnKey]);
+            strVal = _.toString(model.get(columnKey)); // KEEP: Validator.js only validates strings.
+
+        if (options.method !== 'insert' && !_.has(model.changed, columnKey)) {
+            return;
+        }
 
         // check nullable
-        if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
-            && schema[tableName][columnKey].nullable !== true) {
+        if (schema[tableName][columnKey].hasOwnProperty('nullable') &&
+            schema[tableName][columnKey].nullable !== true &&
+            !schema[tableName][columnKey].hasOwnProperty('defaultTo')
+        ) {
             if (validator.empty(strVal)) {
                 message = common.i18n.t('notices.data.validation.index.valueCannotBeBlank', {
                     tableName: tableName,
@@ -187,7 +208,7 @@ validateSchema = function validateSchema(tableName, model) {
         }
 
         // validate boolean columns
-        if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('type')
+        if (schema[tableName][columnKey].hasOwnProperty('type')
             && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
                 message = common.i18n.t('notices.data.validation.index.valueMustBeBoolean', {
@@ -202,7 +223,7 @@ validateSchema = function validateSchema(tableName, model) {
         }
 
         // TODO: check if mandatory values should be enforced
-        if (model[columnKey] !== null && model[columnKey] !== undefined) {
+        if (model.get(columnKey) !== null && model.get(columnKey) !== undefined) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
