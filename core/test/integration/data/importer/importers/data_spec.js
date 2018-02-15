@@ -69,6 +69,23 @@ describe('Import', function () {
             }).catch(done);
         });
 
+        it('can import user with missing allowed fields', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-missing-allowed-fields', {lts: true}).then(function (exported) {
+                exportData = exported;
+                return dataImporter.doImport(exportData, importOptions);
+            }).then(function (importResult) {
+                importResult.data.users[0].hasOwnProperty('website');
+                importResult.data.users[0].hasOwnProperty('bio');
+                importResult.data.users[0].hasOwnProperty('accessibility');
+                importResult.data.users[0].hasOwnProperty('cover_image');
+                importResult.problems.length.should.eql(1);
+
+                done();
+            }).catch(done);
+        });
+
         it('removes duplicate tags and updates associations', function (done) {
             var exportData;
 
@@ -488,13 +505,10 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of invalid post data'));
             }).catch(function (response) {
-                response.length.should.equal(2, response);
+                response.length.should.equal(1, response);
 
                 response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [posts.title] cannot be blank.');
-
-                response[1].errorType.should.equal('ValidationError');
-                response[1].message.should.eql('Value in [posts.status] cannot be blank.');
 
                 done();
             }).catch(done);
