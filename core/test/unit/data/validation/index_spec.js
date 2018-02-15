@@ -32,7 +32,7 @@ describe('Validation', function () {
         describe('models.add', function () {
             it('blank model', function () {
                 // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
-                return validation.validateSchema('posts', models.Post.forge())
+                return validation.validateSchema('posts', models.Post.forge(), {method: 'insert'})
                     .then(function () {
                         throw new Error('Expected ValidationError.');
                     })
@@ -60,7 +60,7 @@ describe('Validation', function () {
                     slug: 'test'
                 }));
 
-                return validation.validateSchema('posts', postModel)
+                return validation.validateSchema('posts', postModel, {method: 'insert'})
                     .then(function () {
                         throw new Error('Expected ValidationError.');
                     })
@@ -75,7 +75,11 @@ describe('Validation', function () {
             });
 
             it('should pass', function () {
-                return validation.validateSchema('posts', models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'title'})));
+                return validation.validateSchema(
+                    'posts',
+                    models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'title'})),
+                    {method: 'insert'}
+                );
             });
         });
 
@@ -85,7 +89,7 @@ describe('Validation', function () {
 
                 postModel.changed = {uuid: postModel.get('uuid')};
 
-                return validation.validateSchema('posts', postModel, {method: 'update'})
+                return validation.validateSchema('posts', postModel)
                     .then(function () {
                         throw new Error('Expected ValidationError.');
                     })
@@ -104,7 +108,7 @@ describe('Validation', function () {
 
                 postModel.changed = {created_at: postModel.get('updated_at')};
 
-                return validation.validateSchema('posts', postModel, {method: 'update'})
+                return validation.validateSchema('posts', postModel)
                     .then(function () {
                         throw new Error('Expected ValidationError.');
                     })

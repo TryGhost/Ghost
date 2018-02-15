@@ -167,7 +167,9 @@ validatePassword = function validatePassword(password, email, blogTitle) {
  * ## on model update
  * - only validate changed fields
  * - otherwise we could throw errors which the user is out of control
- * - e.g. we change the validation for a single field, but the migration script didn't catch everything
+ * - e.g.
+ *   - we add a new field without proper validation, release goes out
+ *   - we add proper validation for a single field
  * - if you call `user.save()` the default fallback in bookshelf is `options.method=update`.
  * - we set `options.method` explicit for adding resources (because otherwise bookshelf uses `update`)
  *
