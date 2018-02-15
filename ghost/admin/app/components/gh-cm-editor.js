@@ -21,6 +21,7 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
     indentUnit: 4,
     mode: 'htmlmixed',
     theme: 'xq-light',
+    autofocus: false,
 
     _editor: null, // reference to CodeMirror editor
     _value: boundOneWay('value'), // make sure a value exists

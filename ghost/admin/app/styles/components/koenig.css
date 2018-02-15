@@ -384,7 +384,7 @@
     width: calc(100% + 60px);
     margin-left: -50px;
     max-width: none;
-    cursor: pointer;
+    cursor: default;
     caret-color: auto; /* override hidden cursors around cards */
 }
 
