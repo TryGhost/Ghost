@@ -1,6 +1,5 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    bcrypt = require('bcryptjs'),
     validator = require('validator'),
     ObjectId = require('bson-objectid'),
     ghostBookshelf = require('./base'),
@@ -10,10 +9,6 @@ var _ = require('lodash'),
     imageLib = require('../lib/image'),
     pipeline = require('../lib/promise/pipeline'),
     validation = require('../data/validation'),
-
-    bcryptGenSalt = Promise.promisify(bcrypt.genSalt),
-    bcryptHash = Promise.promisify(bcrypt.hash),
-    bcryptCompare = Promise.promisify(bcrypt.compare),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
@@ -23,15 +18,6 @@ var _ = require('lodash'),
     allStates = activeStates.concat(inactiveStates),
     User,
     Users;
-
-/**
- * generate a random salt and then hash the password with that salt
- */
-function generatePasswordHash(password) {
-    return bcryptGenSalt().then(function (salt) {
-        return bcryptHash(password, salt);
-    });
-}
 
 User = ghostBookshelf.Model.extend({
 
@@ -173,7 +159,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             tasks.hashPassword = (function hashPassword() {
-                return generatePasswordHash(self.get('password'))
+                return security.password.hash(self.get('password'))
                     .then(function (hash) {
                         self.set('password', hash);
                     });
@@ -728,7 +714,7 @@ User = ghostBookshelf.Model.extend({
             }));
         }
 
-        return bcryptCompare(plainPassword, hashedPassword)
+        return security.password.compare(plainPassword, hashedPassword)
             .then(function (matched) {
                 if (matched) {
                     return;
