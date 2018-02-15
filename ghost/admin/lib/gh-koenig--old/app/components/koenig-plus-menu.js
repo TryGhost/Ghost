@@ -1,1 +1,0 @@
-export {default} from 'gh-koenig/components/koenig-plus-menu';
