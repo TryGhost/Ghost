@@ -47,7 +47,6 @@ class KnexMock {
 
                 if (query.method === 'select') {
                     if (query.bindings.length && query.sql.match(/where/)) {
-
                         const tableName = query.sql.match(/from\s\"(\w+)\"/)[1],
                             where = query.sql.match(/\"(\w+)\"\s\=\s\?/)[1],
                             value = query.bindings[0],
