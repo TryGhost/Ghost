@@ -377,11 +377,11 @@
 .koenig-card {
     position: relative;
     display: flex;
+    width: calc(100% + 60px);
     border: 2px solid  color(var(--blue) alpha(-85%));
     flex-direction: row;
     border-radius: 4px;
     padding: 10px;
-    width: calc(100% + 60px);
     margin-left: -50px;
     max-width: none;
     cursor: default;
@@ -403,6 +403,16 @@
 
 .koenig-card-content {
     flex-grow: 1;
+    max-width: calc(100% - 40px);
+}
+
+.koenig-card-click-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 400;
 }
 
 /* specific cards... */
