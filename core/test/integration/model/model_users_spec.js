@@ -117,20 +117,6 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can set password of only numbers', function () {
-            var userData = testUtils.DataGenerator.forModel.users[0];
-
-            // avoid side-effects!
-            userData = _.cloneDeep(userData);
-            userData.password = 109674836589;
-
-            // mocha supports promises
-            return UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
-                // cannot validate password
-            });
-        });
-
         it('can find by email and is case insensitive', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 email = testUtils.DataGenerator.forModel.users[2].email;
