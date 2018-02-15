@@ -20,6 +20,22 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    /**
+     * ## NOTE:
+     * We define the defaults on the schema (db) and model level.
+     * When inserting resources, the defaults are available **after** calling `.save`.
+     * But they are available when the model hooks are triggered (e.g. onSaving).
+     * It might be useful to keep them in the model layer for any connected logic.
+     *
+     * e.g. if `model.get('status') === draft; do something;
+     */
+    defaults: function defaults() {
+        return {
+            uuid: uuid.v4(),
+            status: 'draft'
+        };
+    },
+
     relationships: ['tags'],
 
     /**
@@ -47,13 +63,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         common.events.emit(resourceType + '.' + event, this, options);
-    },
-
-    defaults: function defaults() {
-        return {
-            uuid: uuid.v4(),
-            status: 'draft'
-        };
     },
 
     /**

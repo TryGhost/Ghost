@@ -77,12 +77,12 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     onValidate: function onValidate() {
-        var self = this,
-            setting = this.toJSON();
+        var self = this;
 
-        return validation.validateSchema(self.tableName, setting).then(function then() {
-            return validation.validateSettings(getDefaultSettings(), self);
-        });
+        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments)
+            .then(function then() {
+                return validation.validateSettings(getDefaultSettings(), self);
+            });
     }
 }, {
     findOne: function (data, options) {
