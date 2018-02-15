@@ -406,6 +406,9 @@ export default Component.extend({
     },
 
     cursorDidChange(editor) {
+        let {head, isCollapsed, head: {section}} = editor.range;
+        let selectedRange = this.get('selectedRange');
+
         // sometimes we perform a programatic edit that causes a cursor change
         // but we actually want to skip the default behaviour because we've
         // already handled it, e.g. on card insertion, manual card selection
@@ -415,7 +418,14 @@ export default Component.extend({
             return;
         }
 
-        let {head, isCollapsed, head: {section}} = editor.range;
+        // skip everything if the cursor is just moving from the end of a card
+        // section to the beginning whilst a card is in edit mode, this prevents
+        // clicks within a card causing the card to be deselected. Only applies
+        // when a card is in edit mode otherwise it's necessary to press LEFT
+        // twice to cycle up through cards
+        if (this._selectedCard && this._selectedCard.isEditing && selectedRange && isCollapsed && editor.range.headSection === selectedRange.headSection && editor.range.head.offset === 0 && selectedRange.head.offset === 1) {
+            return;
+        }
 
         // if we have a selected card but cursor has moved to the left then
         // deselect and move cursor to end of the previous section
