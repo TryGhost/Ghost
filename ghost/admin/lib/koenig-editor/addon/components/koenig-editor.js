@@ -504,8 +504,11 @@ export default Component.extend({
         }
 
         // if the section about to be deleted by a backspace is a card then
-        // actually delete the card rather than selecting it
-        if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section') {
+        // actually delete the card rather than selecting it.
+        // However, if the current paragraph is blank then delete the paragraph
+        // instead - allows blank paragraphs between cards to be deleted and
+        // feels more natural
+        if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section' && !section.isBlank) {
             let card = this._getCardFromSection(section.prev);
             this._deleteCard(card, CURSOR_AFTER);
             return;
