@@ -51,7 +51,7 @@ Settings = ghostBookshelf.Model.extend({
 
     tableName: 'settings',
 
-    defaults: function () {
+    defaults: function defaults() {
         return {
             type: 'core'
         };
