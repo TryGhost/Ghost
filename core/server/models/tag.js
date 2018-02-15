@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    ghostBookshelf = require('./base'),
+var ghostBookshelf = require('./base'),
     common = require('../lib/common'),
     Tag,
     Tags;
@@ -54,10 +53,9 @@ Tag = ghostBookshelf.Model.extend({
         return this.belongsToMany('Post');
     },
 
-    toJSON: function toJSON(options) {
-        options = options || {};
-
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+    toJSON: function toJSON(unfilteredOptions) {
+        var options = Tag.filterOptions(unfilteredOptions, 'toJSON'),
+            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
@@ -94,29 +92,11 @@ Tag = ghostBookshelf.Model.extend({
         return options;
     },
 
-    /**
-     * ### Find One
-     * @overrides ghostBookshelf.Model.findOne
-     */
-    findOne: function findOne(data, options) {
-        options = options || {};
+    destroy: function destroy(unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+        options.withRelated = ['posts'];
 
-        options = this.filterOptions(options, 'findOne');
-        data = this.filterData(data, 'findOne');
-
-        var tag = this.forge(data);
-
-        // Add related objects
-        options.withRelated = _.union(options.withRelated, options.include);
-
-        return tag.fetch(options);
-    },
-
-    destroy: function destroy(options) {
-        var id = options.id;
-        options = this.filterOptions(options, 'destroy');
-
-        return this.forge({id: id}).fetch({withRelated: ['posts']}).then(function destroyTagsAndPost(tag) {
+        return this.forge({id: options.id}).fetch(options).then(function destroyTagsAndPost(tag) {
             return tag.related('posts').detach().then(function destroyTags() {
                 return tag.destroy(options);
             });

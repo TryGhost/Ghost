@@ -534,7 +534,7 @@ describe('Import', function () {
                 // Grab the data from tables
                 // NOTE: we have to return sorted data, sqlite can insert the posts in a different order
                 return Promise.all([
-                    models.Post.findPage({include: ['tags']}),
+                    models.Post.findPage({withRelated: ['tags']}),
                     models.Tag.findAll()
                 ]);
             }).then(function (importedData) {

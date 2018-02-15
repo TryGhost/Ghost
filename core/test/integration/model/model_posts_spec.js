@@ -105,7 +105,7 @@ describe('Post Model', function () {
             });
 
             it('can findAll, returning all related data', function (done) {
-                PostModel.findAll({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findAll({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
@@ -123,7 +123,7 @@ describe('Post Model', function () {
             it('can findAll, use formats option', function (done) {
                 var options = {
                     formats: ['mobiledoc', 'plaintext'],
-                    include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
+                    withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
                 };
 
                 PostModel.findAll(options)
@@ -165,7 +165,7 @@ describe('Post Model', function () {
             });
 
             it('can findPage, returning all related data', function (done) {
-                PostModel.findPage({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findPage({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
 
@@ -361,7 +361,7 @@ describe('Post Model', function () {
             it('can findOne, returning all related data', function (done) {
                 var firstPost;
 
-                PostModel.findOne({}, {include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findOne({}, {withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (result) {
                         should.exist(result);
                         firstPost = result.toJSON();
@@ -1417,7 +1417,7 @@ describe('Post Model', function () {
                 var firstItemData = {id: testUtils.DataGenerator.Content.posts[0].id};
 
                 // Test that we have the post we expect, with exactly one tag
-                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                PostModel.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     var post;
                     should.exist(results);
                     post = results.toJSON();
@@ -1456,7 +1456,7 @@ describe('Post Model', function () {
                 var firstItemData = {id: testUtils.DataGenerator.Content.posts[3].id, status: 'draft'};
 
                 // Test that we have the post we expect, with exactly one tag
-                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                PostModel.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     var post;
                     should.exist(results);
                     post = results.toJSON();
@@ -1493,7 +1493,7 @@ describe('Post Model', function () {
                 var firstItemData = {id: testUtils.DataGenerator.Content.posts[5].id};
 
                 // Test that we have the post we expect, with exactly one tag
-                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                PostModel.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     var page;
                     should.exist(results);
                     page = results.toJSON();
@@ -1531,7 +1531,7 @@ describe('Post Model', function () {
                 var firstItemData = {id: testUtils.DataGenerator.Content.posts[6].id, status: 'draft'};
 
                 // Test that we have the post we expect, with exactly one tag
-                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                PostModel.findOne(firstItemData, {withRelated: ['tags']}).then(function (results) {
                     var page;
                     should.exist(results);
                     page = results.toJSON();
@@ -1724,7 +1724,7 @@ describe('Post Model', function () {
                 tag2: TagModel.add(extraTags[1], context),
                 tag3: TagModel.add(extraTags[2], context)
             }).then(function (result) {
-                postJSON = result.post.toJSON({include: ['tags']});
+                postJSON = result.post.toJSON({withRelated: ['tags']});
                 tagJSON.push(result.tag1.toJSON());
                 tagJSON.push(result.tag2.toJSON());
                 tagJSON.push(result.tag3.toJSON());
@@ -1765,7 +1765,7 @@ describe('Post Model', function () {
 
             // Edit the post
             return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                updatedPost = updatedPost.toJSON({include: ['tags']});
+                updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(1);
                 updatedPost.tags[0].name.should.eql(postJSON.tags[0].name);
@@ -1793,7 +1793,7 @@ describe('Post Model', function () {
                     return PostModel.edit(newJSON, editOptions);
                 })
                 .then(function (updatedPost) {
-                    updatedPost = updatedPost.toJSON({include: ['tags']});
+                    updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                     updatedPost.tags.should.have.lengthOf(1);
                     updatedPost.tags[0].should.have.properties({
@@ -1823,7 +1823,7 @@ describe('Post Model', function () {
 
             // Edit the post
             return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                updatedPost = updatedPost.toJSON({include: ['tags']});
+                updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(3);
                 updatedPost.tags[0].should.have.properties({
@@ -1853,7 +1853,7 @@ describe('Post Model', function () {
 
             // Edit the post
             return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                updatedPost = updatedPost.toJSON({include: ['tags']});
+                updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(3);
 
@@ -1873,7 +1873,7 @@ describe('Post Model', function () {
 
             // Edit the post
             return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
-                updatedPost = updatedPost.toJSON({include: ['tags']});
+                updatedPost = updatedPost.toJSON({withRelated: ['tags']});
 
                 updatedPost.tags.should.have.lengthOf(1);
             });

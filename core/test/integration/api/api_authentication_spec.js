@@ -286,7 +286,7 @@ describe('Authentication API', function () {
                         should.not.exist(_invite);
                         return models.User.findOne({
                             email: invite.get('email')
-                        }, _.merge({include: ['roles']}, context.internal));
+                        }, _.merge({withRelated: ['roles']}, context.internal));
                     })
                     .then(function (user) {
                         user.toJSON().roles.length.should.eql(1);

@@ -66,6 +66,7 @@ roles = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'browse'),
             modelQuery
         ];

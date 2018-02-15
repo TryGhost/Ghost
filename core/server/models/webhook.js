@@ -25,21 +25,20 @@ Webhook = ghostBookshelf.Model.extend({
         model.emitChange('deleted', options);
     }
 }, {
-    findAllByEvent: function findAllByEvent(event, options) {
-        var webhooksCollection = Webhooks.forge();
-
-        options = this.filterOptions(options, 'findAll');
+    findAllByEvent: function findAllByEvent(event, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'findAll'),
+            webhooksCollection = Webhooks.forge();
 
         return webhooksCollection
             .query('where', 'event', '=', event)
             .fetch(options);
     },
 
-    getByEventAndTarget: function getByEventAndTarget(event, targetUrl, options) {
-        options = options || {};
+    getByEventAndTarget: function getByEventAndTarget(event, targetUrl, unfilteredOptions) {
+        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEventAndTarget');
         options.require = true;
 
-        return Webhooks.forge(options).fetch(options).then(function then(webhooks) {
+        return Webhooks.forge().fetch(options).then(function then(webhooks) {
             var webhookWithEventAndTarget = webhooks.find(function findWebhook(webhook) {
                 return webhook.get('event').toLowerCase() === event.toLowerCase()
                     && webhook.get('target_url').toLowerCase() === targetUrl.toLowerCase();
