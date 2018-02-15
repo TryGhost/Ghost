@@ -127,7 +127,7 @@ describe('Permission Model', function () {
     //             return testUser.permissions().attach(testPermission);
     //         });
     //     }).then(function () {
-    //         return Models.User.findOne({id: 1}, { include: ['permissions']});
+    //         return Models.User.findOne({id: 1}, { withRelated: ['permissions']});
     //     }).then(function (updatedUser) {
     //         should.exist(updatedUser);
 

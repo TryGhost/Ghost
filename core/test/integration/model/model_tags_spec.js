@@ -47,7 +47,7 @@ describe('Tag Model', function () {
 
     it('returns count.posts if include count.posts', function (done) {
         testUtils.fixtures.insertPostsAndTags().then(function () {
-            TagModel.findOne({slug: 'kitchen-sink'}, {include: 'count.posts'}).then(function (tag) {
+            TagModel.findOne({slug: 'kitchen-sink'}, {withRelated: ['count.posts']}).then(function (tag) {
                 should.exist(tag);
                 tag.toJSON().count.posts.should.equal(2);
 
@@ -75,7 +75,7 @@ describe('Tag Model', function () {
         });
 
         it('with include count.posts', function (done) {
-            TagModel.findPage({limit: 'all', include: 'count.posts'}).then(function (results) {
+            TagModel.findPage({limit: 'all', withRelated: ['count.posts']}).then(function (results) {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal('all');
                 results.meta.pagination.pages.should.equal(1);

@@ -42,8 +42,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
-            localUtils.handlePublicPermissions(docName, 'browse'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'browse'),
             doQuery
         ];
 
@@ -89,8 +89,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {attrs: attrs}),
-            localUtils.handlePublicPermissions(docName, 'read'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'read'),
             doQuery
         ];
 
@@ -153,7 +153,7 @@ users = {
                     editedUserId = options.id;
 
                 return models.User.findOne(
-                    {id: options.context.user, status: 'all'}, {include: ['roles']}
+                    {id: options.context.user, status: 'all'}, {withRelated: ['roles']}
                 ).then(function (contextUser) {
                     var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
@@ -213,8 +213,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
-            handlePermissions,
             localUtils.convertOptions(allowedIncludes),
+            handlePermissions,
             doQuery
         ];
 
@@ -273,8 +273,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
-            handlePermissions,
             localUtils.convertOptions(allowedIncludes),
+            handlePermissions,
             deleteUser
         ];
 
@@ -343,8 +343,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             validateRequest,
-            handlePermissions,
             localUtils.convertOptions(allowedIncludes),
+            handlePermissions,
             doQuery
         ];
 
@@ -395,8 +395,8 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate('owner'),
-            handlePermissions,
             localUtils.convertOptions(allowedIncludes),
+            handlePermissions,
             doQuery
         ];
 

@@ -19,7 +19,7 @@ strategies = {
         return models.Client.findOne({slug: clientId}, {withRelated: ['trustedDomains']})
             .then(function then(model) {
                 if (model) {
-                    var client = model.toJSON({include: ['trustedDomains']});
+                    var client = model.toJSON({withRelated: ['trustedDomains']});
                     if (client.status === 'enabled' && client.secret === clientSecret) {
                         return done(null, client);
                     }

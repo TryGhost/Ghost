@@ -48,8 +48,9 @@ describe('Permission Providers', function () {
                     roles: fakeAdminRole,
                     permissions: fakeAdminRolePermissions
                 };
+
                 // We use this inside toJSON.
-                fakeUser.include = ['roles', 'permissions', 'roles.permissions'];
+                fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
 
                 return Promise.resolve(fakeUser);
             });
@@ -96,7 +97,7 @@ describe('Permission Providers', function () {
                     roles: fakeAdminRole
                 };
                 // We use this inside toJSON.
-                fakeUser.include = ['roles', 'permissions', 'roles.permissions'];
+                fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
 
                 return Promise.resolve(fakeUser);
             });
@@ -144,7 +145,7 @@ describe('Permission Providers', function () {
                     permissions: fakeAdminRolePermissions
                 };
                 // We use this inside toJSON.
-                fakeUser.include = ['roles', 'permissions', 'roles.permissions'];
+                fakeUser.withRelated = ['roles', 'permissions', 'roles.permissions'];
 
                 return Promise.resolve(fakeUser);
             });

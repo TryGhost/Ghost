@@ -201,10 +201,9 @@ User = ghostBookshelf.Model.extend({
         return validation.validateSchema(this.tableName, userData);
     },
 
-    toJSON: function toJSON(options) {
-        options = options || {};
-
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+    toJSON: function toJSON(unfilteredOptions) {
+        var options = User.filterOptions(unfilteredOptions, 'toJSON'),
+            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         // remove password hash for security reasons
         delete attrs.password;
@@ -341,11 +340,11 @@ User = ghostBookshelf.Model.extend({
             permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
         }
 
-        // CASE: The `include` parameter is allowed when using the public API, but not the `roles` value.
+        // CASE: The `withRelated` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
         if (options && options.context && options.context.public) {
-            if (options.include && options.include.indexOf('roles') !== -1) {
-                options.include.splice(options.include.indexOf('roles'), 1);
+            if (options.withRelated && options.withRelated.indexOf('roles') !== -1) {
+                options.withRelated.splice(options.withRelated.indexOf('roles'), 1);
             }
         }
 
@@ -358,11 +357,14 @@ User = ghostBookshelf.Model.extend({
      * We have to clone the data, because we remove values from this object.
      * This is not expected from outside!
      *
+     * @TODO: use base class
+     *
      * @extends ghostBookshelf.Model.findOne to include roles
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
-    findOne: function findOne(dataToClone, options) {
-        var query,
+    findOne: function findOne(dataToClone, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'findOne'),
+            query,
             status,
             data = _.cloneDeep(dataToClone),
             lookupRole = data.role;
@@ -376,15 +378,12 @@ User = ghostBookshelf.Model.extend({
         delete data.status;
 
         data = this.filterData(data);
-        options = this.filterOptions(options, 'findOne');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
         if (lookupRole) {
             options.withRelated = _.union(options.withRelated, ['roles']);
-            options.include = _.union(options.include, ['roles']);
-
             query = this.forge(data);
+
             query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
             query.query('join', 'roles', 'roles_users.role_id', '=', 'roles.id');
             query.query('where', 'roles.name', '=', lookupRole);
@@ -409,8 +408,9 @@ User = ghostBookshelf.Model.extend({
      * @extends ghostBookshelf.Model.edit to handle returning the full object
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
-    edit: function edit(data, options) {
-        var self = this,
+    edit: function edit(data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'edit'),
+            self = this,
             ops = [];
 
         if (data.roles && data.roles.length > 1) {
@@ -418,9 +418,6 @@ User = ghostBookshelf.Model.extend({
                 new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')})
             );
         }
-
-        options = options || {};
-        options.withRelated = _.union(options.withRelated, options.include);
 
         if (data.email) {
             ops.push(function checkForDuplicateEmail() {
@@ -476,18 +473,16 @@ User = ghostBookshelf.Model.extend({
      * This is not expected from outside!
      *
      * @param {object} dataToClone
-     * @param {object} options
+     * @param {object} unfilteredOptions
      * @extends ghostBookshelf.Model.add to manage all aspects of user signup
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
-    add: function add(dataToClone, options) {
-        var self = this,
+    add: function add(dataToClone, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'add'),
+            self = this,
             data = _.cloneDeep(dataToClone),
             userData = this.filterData(data),
             roles;
-
-        options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
@@ -556,8 +551,9 @@ User = ghostBookshelf.Model.extend({
      * Owner already has a slug -> force setting a new one by setting slug to null
      * @TODO: kill setup function?
      */
-    setup: function setup(data, options) {
-        var self = this,
+    setup: function setup(data, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'setup'),
+            self = this,
             userData = this.filterData(data),
             passwordValidation = {};
 
@@ -566,9 +562,6 @@ User = ghostBookshelf.Model.extend({
         if (!passwordValidation.isValid) {
             return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
         }
-
-        options = this.filterOptions(options, 'setup');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         userData.slug = null;
         return self.edit(userData, options);
@@ -624,7 +617,7 @@ User = ghostBookshelf.Model.extend({
             return this.findOne({
                 id: userModelOrId,
                 status: 'all'
-            }, {include: ['roles']}).then(function then(foundUserModel) {
+            }, {withRelated: ['roles']}).then(function then(foundUserModel) {
                 if (!foundUserModel) {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.userNotFound')
@@ -753,17 +746,20 @@ User = ghostBookshelf.Model.extend({
     /**
      * Naive change password method
      * @param {Object} object
-     * @param {Object} options
+     * @param {Object} unfilteredOptions
      */
-    changePassword: function changePassword(object, options) {
-        var self = this,
+    changePassword: function changePassword(object, unfilteredOptions) {
+        var options = this.filterOptions(unfilteredOptions, 'changePassword'),
+            self = this,
             newPassword = object.newPassword,
             userId = object.user_id,
             oldPassword = object.oldPassword,
             isLoggedInUser = userId === options.context.user,
             user;
 
-        return self.forge({id: userId}).fetch({require: true})
+        options.require = true;
+
+        return self.forge({id: userId}).fetch(options)
             .then(function then(_user) {
                 user = _user;
 
@@ -779,13 +775,14 @@ User = ghostBookshelf.Model.extend({
             });
     },
 
-    transferOwnership: function transferOwnership(object, options) {
-        var ownerRole,
+    transferOwnership: function transferOwnership(object, unfilteredOptions) {
+        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'transferOwnership'),
+            ownerRole,
             contextUser;
 
         return Promise.join(
             ghostBookshelf.model('Role').findOne({name: 'Owner'}),
-            User.findOne({id: options.context.user}, {include: ['roles']})
+            User.findOne({id: options.context.user}, {withRelated: ['roles']})
         )
             .then(function then(results) {
                 ownerRole = results[0];
@@ -798,7 +795,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
-                    User.findOne({id: object.id}, {include: ['roles']}));
+                    User.findOne({id: object.id}, {withRelated: ['roles']}));
             })
             .then(function then(results) {
                 var adminRole = results[0],
@@ -820,7 +817,7 @@ User = ghostBookshelf.Model.extend({
                     .fetch({withRelated: ['roles']});
             })
             .then(function then(users) {
-                options.include = ['roles'];
+                options.withRelated = ['roles'];
                 return users.toJSON(options);
             });
     },
@@ -828,15 +825,16 @@ User = ghostBookshelf.Model.extend({
     // Get the user by email address, enforces case insensitivity rejects if the user is not found
     // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
     // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
-    getByEmail: function getByEmail(email, options) {
-        options = options || {};
+    getByEmail: function getByEmail(email, unfilteredOptions) {
+        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEmail');
+
         // We fetch all users and process them in JS as there is no easy way to make this query across all DBs
         // Although they all support `lower()`, sqlite can't case transform unicode characters
         // This is somewhat mute, as validator.isEmail() also doesn't support unicode, but this is much easier / more
         // likely to be fixed in the near future.
         options.require = true;
 
-        return Users.forge(options).fetch(options).then(function then(users) {
+        return Users.forge().fetch(options).then(function then(users) {
             var userWithEmail = users.find(function findUser(user) {
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });

@@ -23,8 +23,8 @@ invites = {
 
         tasks = [
             localUtils.validate(docName, {opts: localUtils.browseDefaultOptions}),
-            localUtils.handlePublicPermissions(docName, 'browse'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'browse'),
             modelQuery
         ];
 
@@ -52,8 +52,8 @@ invites = {
 
         tasks = [
             localUtils.validate(docName, {attrs: attrs}),
-            localUtils.handlePublicPermissions(docName, 'read'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'read'),
             modelQuery
         ];
 
@@ -76,8 +76,8 @@ invites = {
 
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
-            localUtils.handlePermissions(docName, 'destroy'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePermissions(docName, 'destroy'),
             modelQuery
         ];
 
@@ -221,7 +221,7 @@ invites = {
         }
 
         function fetchLoggedInUser(options) {
-            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {include: ['roles']}))
+            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {withRelated: ['roles']}))
                 .then(function (user) {
                     if (!user) {
                         return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')}));
@@ -234,8 +234,8 @@ invites = {
 
         tasks = [
             localUtils.validate(docName, {opts: ['email']}),
-            localUtils.handlePermissions(docName, 'add'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePermissions(docName, 'add'),
             fetchLoggedInUser,
             validation,
             checkIfUserExists,

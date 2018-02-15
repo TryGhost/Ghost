@@ -75,11 +75,11 @@ Subscriber = ghostBookshelf.Model.extend({
     },
 
     // TODO: This is a copy paste of models/user.js!
-    getByEmail: function getByEmail(email, options) {
-        options = options || {};
+    getByEmail: function getByEmail(email, unfilteredOptions) {
+        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEmail');
         options.require = true;
 
-        return Subscribers.forge(options).fetch(options).then(function then(subscribers) {
+        return Subscribers.forge().fetch(options).then(function then(subscribers) {
             var subscriberWithEmail = subscribers.find(function findSubscriber(subscriber) {
                 return subscriber.get('email').toLowerCase() === email.toLowerCase();
             });

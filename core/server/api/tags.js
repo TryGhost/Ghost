@@ -37,8 +37,8 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.browseDefaultOptions}),
-            localUtils.handlePublicPermissions(docName, 'browse'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'browse'),
             doQuery
         ];
 
@@ -79,8 +79,8 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {attrs: attrs}),
-            localUtils.handlePublicPermissions(docName, 'read'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePublicPermissions(docName, 'read'),
             doQuery
         ];
 
@@ -114,8 +114,8 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName),
-            localUtils.handlePermissions(docName, 'add'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
 
@@ -157,8 +157,8 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
-            localUtils.handlePermissions(docName, 'edit'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePermissions(docName, 'edit'),
             doQuery
         ];
 
@@ -188,8 +188,8 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
-            localUtils.handlePermissions(docName, 'destroy'),
             localUtils.convertOptions(allowedIncludes),
+            localUtils.handlePermissions(docName, 'destroy'),
             deleteTag
         ];
 
