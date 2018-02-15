@@ -277,7 +277,8 @@ utils = {
          */
         return function doConversion(options) {
             if (options.include) {
-                options.include = utils.prepareInclude(options.include, allowedIncludes);
+                options.withRelated = utils.prepareInclude(options.include, allowedIncludes);
+                delete options.include;
             }
 
             if (options.fields) {

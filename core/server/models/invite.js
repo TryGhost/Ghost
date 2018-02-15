@@ -1,7 +1,6 @@
 'use strict';
 
 const crypto = require('crypto'),
-    _ = require('lodash'),
     constants = require('../lib/constants'),
     ghostBookshelf = require('./base');
 
@@ -11,10 +10,10 @@ let Invite,
 Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
-    toJSON: function (options) {
-        options = options || {};
+    toJSON: function (unfilteredOptions) {
+        var options = Invite.filterOptions(unfilteredOptions, 'toJSON'),
+            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
-        var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         delete attrs.token;
         return attrs;
     }
@@ -27,30 +26,9 @@ Invite = ghostBookshelf.Model.extend({
         return options;
     },
 
-    /**
-     * @TODO: can't use base class, because:
-     * options.withRelated = _.union(options.withRelated, options.include); is missing
-     * there are some weird self implementations in each model
-     * so adding this line, will destroy other models, because they rely on something else
-     * FIX ME!!!!!
-     */
-    findOne: function findOne(data, options) {
-        options = options || {};
-
-        options = this.filterOptions(options, 'findOne');
-        data = this.filterData(data, 'findOne');
-        options.withRelated = _.union(options.withRelated, options.include);
-
-        var invite = this.forge(data);
-        return invite.fetch(options);
-    },
-
     add: function add(data, options) {
         var hash = crypto.createHash('sha256'),
             text = '';
-
-        options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(options.withRelated, options.include);
 
         data.expires = Date.now() + constants.ONE_WEEK_MS;
         data.status = 'pending';
@@ -60,6 +38,7 @@ Invite = ghostBookshelf.Model.extend({
         hash.update(data.email.toLocaleLowerCase());
         text += [data.expires, data.email, hash.digest('base64')].join('|');
         data.token = new Buffer(text).toString('base64');
+
         return ghostBookshelf.Model.add.call(this, data, options);
     }
 });

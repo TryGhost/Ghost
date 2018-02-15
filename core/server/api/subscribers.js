@@ -38,6 +38,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.browseDefaultOptions}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'browse'),
             doQuery
         ];
@@ -79,6 +80,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {attrs: attrs}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'read'),
             doQuery
         ];
@@ -129,6 +131,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
@@ -171,6 +174,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'edit'),
             doQuery
         ];
@@ -224,6 +228,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: ['id', 'email']}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'destroy'),
             getSubscriberByEmail,
             doQuery
@@ -279,6 +284,7 @@ subscribers = {
         }
 
         tasks = [
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'browse'),
             exportSubscribers
         ];
@@ -341,6 +347,7 @@ subscribers = {
         }
 
         tasks = [
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'add'),
             importCSV
         ];

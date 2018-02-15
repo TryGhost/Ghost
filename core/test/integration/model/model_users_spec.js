@@ -348,7 +348,7 @@ describe('User Model', function run() {
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
 
-                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
+                return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
@@ -371,7 +371,7 @@ describe('User Model', function run() {
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
 
-                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
+                return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function () {
                 done(new Error('User was created with an invalid email address'));
             }).catch(function () {
