@@ -61,6 +61,9 @@ class KnexMock {
                         } else {
                             query.response([]);
                         }
+                    } else {
+                        const tableName = query.sql.match(/from\s\"(\w+)\"/)[1];
+                        query.response(this.db[tableName]);
                     }
                 } else if (query.method === 'insert') {
                     query.sql = query.sql.replace(/`/g, '"');
