@@ -15,5 +15,9 @@ module.exports = {
 
     get identifier() {
         return require('./identifier');
+    },
+
+    get password() {
+        return require('./password');
     }
 };
