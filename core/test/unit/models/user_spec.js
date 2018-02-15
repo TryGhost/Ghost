@@ -128,7 +128,7 @@ describe('Unit: models/user', function () {
                     validation.validateSchema.restore();
 
                     return models.User.check({email: model.get('email'), password: 'test'});
-                })
+                });
         });
 
         it('user status is active', function () {
