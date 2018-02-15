@@ -16,9 +16,9 @@ Client = ghostBookshelf.Model.extend({
 
         return {
             uuid: uuid.v4(),
+            secret: secret,
             status: 'development',
-            type: 'ua',
-            secret: secret
+            type: 'ua'
         };
     },
 
