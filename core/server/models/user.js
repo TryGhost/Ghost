@@ -654,50 +654,41 @@ User = ghostBookshelf.Model.extend({
     check: function check(object) {
         var self = this;
 
-        return this.getByEmail(object.email).then(function then(user) {
-            if (!user) {
-                return Promise.reject(new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
-                }));
-            }
+        return this.getByEmail(object.email)
+            .then(function then(user) {
+                if (!user) {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
+                    });
+                }
 
-            if (user.isLocked()) {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.user.accountLocked')
-                }));
-            }
+                if (user.isLocked()) {
+                    throw new common.errors.NoPermissionError({
+                        message: common.i18n.t('errors.models.user.accountLocked')
+                    });
+                }
 
-            if (user.isInactive()) {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.user.accountSuspended')
-                }));
-            }
+                if (user.isInactive()) {
+                    throw new common.errors.NoPermissionError({
+                        message: common.i18n.t('errors.models.user.accountSuspended')
+                    });
+                }
 
-            return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
-                .then(function then() {
-                    return Promise.resolve(user.set({status: 'active', last_seen: new Date()}).save())
-                        .catch(function handleError(err) {
-                            // If we get a validation or other error during this save, catch it and log it, but don't
-                            // cause a login error because of it. The user validation is not important here.
-                            common.logging.error(new common.errors.GhostError({
-                                err: err,
-                                context: common.i18n.t('errors.models.user.userUpdateError.context'),
-                                help: common.i18n.t('errors.models.user.userUpdateError.help')
-                            }));
+                return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
+                    .then(function then() {
+                        user.set({status: 'active', last_seen: new Date()});
+                        return user.save();
+                    });
+            })
+            .catch(function (err) {
+                if (err.message === 'NotFound' || err.message === 'EmptyResponse') {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
+                    });
+                }
 
-                            return user;
-                        });
-                })
-                .catch(function onError(err) {
-                    return Promise.reject(err);
-                });
-        }, function handleError(error) {
-            if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
-                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')}));
-            }
-
-            return Promise.reject(error);
-        });
+                throw err;
+            });
     },
 
     isPasswordCorrect: function isPasswordCorrect(object) {
