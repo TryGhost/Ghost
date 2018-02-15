@@ -407,6 +407,8 @@ DataGenerator.forKnex = (function () {
     }
 
     function createPost(overrides) {
+        overrides = overrides || {};
+
         var newObj = _.cloneDeep(overrides),
             mobiledoc = JSON.parse(overrides.mobiledoc || '{}');
 

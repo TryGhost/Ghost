@@ -135,8 +135,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Do not call `toJSON`. This can remove properties e.g. password.
      * @returns {*}
      */
-    onValidate: function onValidate() {
-        return validation.validateSchema(this.tableName, this);
+    onValidate: function onValidate(model, columns, options) {
+        return validation.validateSchema(this.tableName, this, options);
     },
 
     /**

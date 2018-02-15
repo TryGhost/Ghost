@@ -161,15 +161,32 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     return validationResult;
 };
 
-// Validation against schema attributes
-// values are checked against the validation objects from schema.js
-validateSchema = function validateSchema(tableName, model) {
+/**
+ * Validate model against schema.
+ *
+ * ## on model update
+ * - only validate changed fields
+ * - otherwise we could throw errors which the user is out of control
+ * - e.g. we change the validation for a single field, but the migration script didn't catch everything
+ * - if you call `user.save()` the default fallback in bookshelf is `options.method=update`.
+ * - we set `options.method` explicit for adding resources (because otherwise bookshelf uses `update`)
+ *
+ * ## on model add
+ * - validate everything to catch required fields
+ */
+validateSchema = function validateSchema(tableName, model, options) {
+    options = options || {};
+
     var columns = _.keys(schema[tableName]),
         validationErrors = [];
 
     _.each(columns, function each(columnKey) {
         var message = '',
-            strVal = _.toString(model.get(columnKey));
+            strVal = _.toString(model.get(columnKey)); // KEEP: Validator.js only validates strings.
+
+        if (options.method !== 'insert' && !_.has(model.changed, columnKey)) {
+            return;
+        }
 
         // check nullable
         if (schema[tableName][columnKey].hasOwnProperty('nullable') &&

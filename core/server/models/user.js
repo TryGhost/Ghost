@@ -183,19 +183,6 @@ User = ghostBookshelf.Model.extend({
         return Promise.props(tasks);
     },
 
-    // For the user model ONLY it is possible to disable validations.
-    // This is used to bypass validation during the credential check, and must never be done with user-provided data
-    // Should be removed when #3691 is done
-    onValidate: function validate() {
-        var opts = arguments[1];
-
-        if (opts && _.has(opts, 'validate') && opts.validate === false) {
-            return;
-        }
-
-        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments);
-    },
-
     toJSON: function toJSON(unfilteredOptions) {
         var options = User.filterOptions(unfilteredOptions, 'toJSON'),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
@@ -688,7 +675,7 @@ User = ghostBookshelf.Model.extend({
 
             return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
                 .then(function then() {
-                    return Promise.resolve(user.set({status: 'active', last_seen: new Date()}).save({validate: false}))
+                    return Promise.resolve(user.set({status: 'active', last_seen: new Date()}).save())
                         .catch(function handleError(err) {
                             // If we get a validation or other error during this save, catch it and log it, but don't
                             // cause a login error because of it. The user validation is not important here.

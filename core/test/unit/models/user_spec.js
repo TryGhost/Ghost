@@ -88,7 +88,6 @@ describe('Unit: models/user', function () {
                         throw new Error('expected ValidationError');
                     })
                     .catch(function (err) {
-                        console.log(err);
                         err.should.be.an.Array();
                         (err[0] instanceof common.errors.ValidationError).should.eql.true;
                         err[0].message.should.match(/users\.email/);
