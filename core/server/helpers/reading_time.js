@@ -14,7 +14,7 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
     options.hash = options.hash || {};
 
     var html,
-        wordsPerMinute = options.hash.wpm || 275,
+        wordsPerMinute = 275,
         wordsPerSecond = wordsPerMinute / 60,
         wordCount,
         imageCount,

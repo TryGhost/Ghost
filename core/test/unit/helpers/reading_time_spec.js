@@ -73,28 +73,6 @@ describe('{{reading_time}} helper', function () {
         String(result).should.equal('1 min read');
     });
 
-    it('[success] adjusts to slower read speed', function () {
-        var data = {
-            html: articleHtml,
-            title: 'Test',
-            slug: 'slug'
-            },
-            result = helpers.reading_time.call(data, {hash: {wpm: 125}});
-
-        String(result).should.equal('2 min read');
-    });
-
-    it('[success] adjusts to faster read speed', function () {
-        var data = {
-            html: articleHtml + articleHtml,
-            title: 'Test',
-            slug: 'slug'
-            },
-            result = helpers.reading_time.call(data, {hash: {wpm: 450}});
-
-        String(result).should.equal('1 min read');
-    });
-
     it('[failure] does not render reading time when not post', function () {
         var data = {
                 author: {
