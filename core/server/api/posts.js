@@ -54,6 +54,7 @@ posts = {
          */
         function modelQuery(options) {
             options.response = models.Post.findPage(options);
+            return options.response;
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -65,7 +66,7 @@ posts = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        pipeline(tasks, options);
+        return pipeline(tasks, options);
     },
 
     /**
