@@ -267,20 +267,20 @@ http = function http(apiMethod) {
 
         return apiMethod(object, options).tap(function onSuccess(response) {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
-            return addHeaders(apiMethod, req, res, (response || {}));
+            return addHeaders(apiMethod, req, res, (options.response || {}));
         }).then(function then(response) {
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
             // Keep CSV header and formatting
             if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
-                return res.status(200).send(response);
+                return res.status(200).send(options.response);
             }
 
             // CASE: api method response wants to handle the express response
             // example: serve files (stream)
-            if (_.isFunction(response)) {
-                return response(req, res, next);
+            if (_.isFunction(options.response)) {
+                return options.response(req, res, next);
             }
 
             // Send a properly formatting HTTP response containing the data with correct headers
