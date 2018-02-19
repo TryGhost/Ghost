@@ -98,9 +98,10 @@ posts = {
                         }));
                     }
 
-                    return {
+                    options.response = {
                         posts: [model.toJSON(options)]
                     };
+                    return options.response;
                 });
         }
 
@@ -154,9 +155,10 @@ posts = {
                         post.statusChanged = true;
                     }
 
-                    return {
+                    options.response = {
                         posts: [post]
                     };
+                    return options.response;
                 });
         }
 
@@ -200,7 +202,8 @@ posts = {
                         post.statusChanged = true;
                     }
 
-                    return {posts: [post]};
+                    options.response = {posts: [post]};
+                    return options.response;
                 });
         }
 
@@ -236,11 +239,12 @@ posts = {
                 data = _.defaults({status: 'all'}, options),
                 fetchOpts = _.defaults({require: true, columns: 'id'}, options);
 
-            return Post.findOne(data, fetchOpts).then(function () {
+            options.response = Post.findOne(data, fetchOpts).then(function () {
                 return Post.destroy(options).return(null);
             }).catch(Post.NotFoundError, function () {
                 throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.posts.postNotFound')});
             });
+            return options.response;
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
