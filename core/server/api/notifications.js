@@ -59,7 +59,7 @@ notifications = {
      * @returns {Promise(Notifications)}
      */
     browse: function browse(options) {
-        return canThis(options.context).browse.notification().then(function () {
+        options.response = canThis(options.context).browse.notification().then(function () {
             return _private.fetchAllNotifications()
                 .then(function (allNotifications) {
                     allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
@@ -87,6 +87,7 @@ notifications = {
                 message: common.i18n.t('errors.api.notifications.noPermissionToBrowseNotif')
             }));
         });
+        return options.response;
     },
 
     /**
@@ -151,7 +152,7 @@ notifications = {
                 notificationsToCheck = options.data.notifications,
                 addedNotifications = [];
 
-            return _private.fetchAllNotifications()
+            options.response = _private.fetchAllNotifications()
                 .then(function (allNotifications) {
                     _.each(notificationsToCheck, function (notification) {
                         let isDuplicate = _.find(allNotifications, {id: notification.id});
@@ -193,6 +194,7 @@ notifications = {
                 .then(function () {
                     return _private.publicResponse(addedNotifications);
                 });
+                return options.response;
         }
 
         tasks = [
@@ -231,7 +233,7 @@ notifications = {
         }
 
         function destroyNotification(options) {
-            return _private.fetchAllNotifications()
+            options.response = _private.fetchAllNotifications()
                 .then(function (allNotifications) {
                     let notificationToMarkAsSeen = _.find(allNotifications, {id: options.id}),
                         notificationToMarkAsSeenIndex = _.findIndex(allNotifications, {id: options.id});
@@ -262,6 +264,7 @@ notifications = {
                     }, internalContext);
                 })
                 .return();
+            return options.response;
         }
 
         tasks = [
@@ -280,7 +283,7 @@ notifications = {
      * @returns {Promise}
      */
     destroyAll: function destroyAll(options) {
-        return canThis(options.context).destroy.notification()
+        options.response = canThis(options.context).destroy.notification()
             .then(function () {
                 return _private.fetchAllNotifications()
                     .then(function (allNotifications) {
@@ -302,6 +305,7 @@ notifications = {
                     context: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
                 }));
             });
+        return options.response;
     }
 };
 
