@@ -1,10 +1,3 @@
-/*
-
-   LINKS
-   Docs: http://tachyons.io/docs/elements/links/
-
-*/
-
 .link {
   text-decoration: none;
   transition: color .15s ease-in;
@@ -24,4 +17,3 @@
   transition: color .15s ease-in;
   outline: 1px dotted currentColor;
 }
-
