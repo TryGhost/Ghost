@@ -418,12 +418,20 @@ export default Component.extend({
             return;
         }
 
-        // skip everything if the cursor is just moving from the end of a card
-        // section to the beginning whilst a card is in edit mode, this prevents
+        // skip everything if the cursor is just moving from one end of a card
+        // section to another whilst a card is in edit mode, this prevents
         // clicks within a card causing the card to be deselected. Only applies
         // when a card is in edit mode otherwise it's necessary to press LEFT
         // twice to cycle up through cards
-        if (this._selectedCard && this._selectedCard.isEditing && selectedRange && isCollapsed && editor.range.headSection === selectedRange.headSection && editor.range.head.offset === 0 && selectedRange.head.offset === 1) {
+        if (
+            this._selectedCard
+            && this._selectedCard.isEditing
+            && selectedRange
+            && isCollapsed
+            && editor.range.headSection === selectedRange.headSection
+            && (editor.range.head.offset === 0 || editor.range.head.offset === 1)
+            && selectedRange.head.offset === 1
+        ) {
             return;
         }
 
@@ -545,6 +553,9 @@ export default Component.extend({
         return false;
     },
 
+    // trigger a closure action to indicate that the caret "left" the top of
+    // the editor canvas when pressing UP with the caret at the beginning of
+    // the doc
     handleUpKey(editor) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
@@ -555,6 +566,9 @@ export default Component.extend({
         return false;
     },
 
+    // trigger a closure action to indicate that the caret "left" the top of
+    // the editor canvas when pressing LEFT with the caret at the beginning of
+    // the doc
     handleLeftKey(editor) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
@@ -566,6 +580,8 @@ export default Component.extend({
         return false;
     },
 
+    // CMD+ENTER is our keyboard shortcut for putting a selected card into
+    // edit mode
     handleCmdEnter() {
         if (this._selectedCard) {
             this.editCard(this._selectedCard);
