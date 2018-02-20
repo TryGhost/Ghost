@@ -1,0 +1,24 @@
+/*
+
+  TABLES
+  Docs: http://tachyons.io/docs/elements/tables/
+
+*/
+
+.collapse {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.striped:nth-child(odd) {
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.striped:nth-child(even) {
+    background-color: var(--whitegrey-p2);
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+th, td {
+    vertical-align: top;
+}

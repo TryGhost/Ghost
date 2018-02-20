@@ -517,7 +517,6 @@ textarea.koenig-card-markdown {
 .__mobiledoc-card {
     display: inline-block;
     width: 100%;
-    margin: 0 0 1.7em 0; /* match P margin */
 }
 
 /**

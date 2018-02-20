@@ -1,0 +1,106 @@
+/*
+
+   MAX WIDTHS
+   Docs: http://tachyons.io/docs/layout/min-widths/
+
+   Base:
+     mw = min-width
+
+   Modifiers
+     1 = 1st step in width scale
+     2 = 2nd step in width scale
+     3 = 3rd step in width scale
+     4 = 4th step in width scale
+     5 = 5th step in width scale
+     6 = 6st step in width scale
+     7 = 7nd step in width scale
+     8 = 8rd step in width scale
+     9 = 9th step in width scale
+     10 = 10th step in width scale
+
+     -100 = literal value 100%
+
+     -none  = string value none
+
+
+   Media Query Extensions:
+     -ns = not-small
+     -m  = medium
+     -l  = large
+
+*/
+
+/* Max Width Percentages */
+
+.miw-70   { min-width: 70%; }
+.miw-80   { min-width: 80%; }
+.miw-90   { min-width: 90%; }
+.miw-100  { min-width: 100%; }
+
+/* Max Width Scale */
+
+.miw1  {  min-width: 1rem; }
+.miw2  {  min-width: 2rem; }
+.miw3  {  min-width: 4rem; }
+.miw4  {  min-width: 8rem; }
+.miw5  {  min-width: 16rem; }
+.miw6  {  min-width: 32rem; }
+.miw7  {  min-width: 48rem; }
+.miw8  {  min-width: 64rem; }
+.miw9  {  min-width: 96rem; }
+.miw10 {  min-width: 114rem; }
+
+/* Max Width String Properties */
+
+.miw-none { min-width: none; }
+
+@media (--breakpoint-not-small) {
+  .miw-100-ns  { min-width: 100%; }
+
+  .miw1-ns  {  min-width: 1rem; }
+  .miw2-ns  {  min-width: 2rem; }
+  .miw3-ns  {  min-width: 4rem; }
+  .miw4-ns  {  min-width: 8rem; }
+  .miw5-ns  {  min-width: 16rem; }
+  .miw6-ns  {  min-width: 32rem; }
+  .miw7-ns  {  min-width: 48rem; }
+  .miw8-ns  {  min-width: 64rem; }
+  .miw9-ns  {  min-width: 96rem; }
+  .miw10-ns {  min-width: 114rem; }
+
+  .miw-none-ns { min-width: none; }
+}
+
+@media (--breakpoint-medium) {
+  .miw-100-m  { min-width: 100%; }
+
+  .miw1-m  {  min-width: 1rem; }
+  .miw2-m  {  min-width: 2rem; }
+  .miw3-m  {  min-width: 4rem; }
+  .miw4-m  {  min-width: 8rem; }
+  .miw5-m  {  min-width: 16rem; }
+  .miw6-m  {  min-width: 32rem; }
+  .miw7-m  {  min-width: 48rem; }
+  .miw8-m  {  min-width: 64rem; }
+  .miw9-m  {  min-width: 96rem; }
+  .miw10-m {  min-width: 114rem; }
+
+  .miw-none-m { min-width: none; }
+}
+
+@media (--breakpoint-large) {
+  .miw-100-l  { min-width: 100%; }
+
+  .miw1-l  {  min-width: 1rem; }
+  .miw2-l  {  min-width: 2rem; }
+  .miw3-l  {  min-width: 4rem; }
+  .miw4-l  {  min-width: 8rem; }
+  .miw5-l  {  min-width: 16rem; }
+  .miw6-l  {  min-width: 32rem; }
+  .miw7-l  {  min-width: 48rem; }
+  .miw8-l  {  min-width: 64rem; }
+  .miw9-l  {  min-width: 96rem; }
+  .miw10-l {  min-width: 114rem; }
+
+  .miw-none-l { min-width: none; }
+}

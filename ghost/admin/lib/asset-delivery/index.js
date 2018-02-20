@@ -15,6 +15,7 @@ module.exports = {
             return `
                 <link rel="stylesheet" href="assets/vendor${min}.css">
                 <link rel="stylesheet" href="assets/ghost${min}.css" title="light">
+                <link rel="stylesheet" href="assets/spirit${min}.css">
             `;
         }
 

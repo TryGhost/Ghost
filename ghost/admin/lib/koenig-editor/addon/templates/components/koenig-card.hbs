@@ -1,7 +1,6 @@
-<div class="koenig-card-icon">{{inline-svg icon}}</div>
-<div class="koenig-card-content">
-    {{yield}}
-</div>
+{{#if icon}}{{inline-svg icon class=iconClass}}{{/if}}
+
+{{yield}}
 
 {{#if toolbar}}
     <div class="koenig-card-toolbar koenig-toolbar {{if showToolbar "koenig-toolbar--visible"}}" style={{toolbarStyle}}>

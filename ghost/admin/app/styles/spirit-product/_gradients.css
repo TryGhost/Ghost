@@ -1,0 +1,83 @@
+.bg-lgr-blue {
+    background: linear-gradient(color(var(--blue-p3)), color(var(--blue)));
+}
+.bg-rgr-blue {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--blue-p3)) 0%, color(var(--blue))) 100%;
+}
+
+.bg-lgr-green {
+    background: linear-gradient(color(var(--green-p3)), color(var(--green)));
+}
+.bg-rgr-green {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--green-p3)) 0%, color(var(--green))) 100%;
+}
+
+.bg-lgr-purple {
+    background: linear-gradient(color(var(--purple-p3)), color(var(--purple)));
+}
+.bg-rgr-purple {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--purple-p3)) 0%, color(var(--purple))) 100%;
+}
+
+.bg-lgr-yellow {
+    background: linear-gradient(color(var(--yellow-p3)), color(var(--yellow)));
+}
+.bg-rgr-yellow {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--yellow-p3)) 0%, color(var(--yellow))) 100%;
+}
+
+.bg-lgr-red {
+    background: linear-gradient(color(var(--red-p3)), color(var(--red)));
+}
+.bg-rgr-red {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--red-p3)) 0%, color(var(--red))) 100%;
+}
+
+.bg-lgr-pink {
+    background: linear-gradient(color(var(--pink-p3)), color(var(--pink)));
+}
+.bg-rgr-pink {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--pink-p3)) 0%, color(var(--pink))) 100%;
+}
+
+.bg-lgr-whitegrey {
+    background: linear-gradient(color(var(--whitegrey-p2)), color(var(--whitegrey)));
+}
+.bg-rgr-whitegrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--whitegrey-p2)) 0%, color(var(--whitegrey))) 100%;
+}
+
+.bg-lgr-lightgrey {
+    background: linear-gradient(color(var(--lightgrey-p2)), color(var(--lightgrey)));
+}
+.bg-rgr-lightgrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--lightgrey-p2)) 0%, color(var(--lightgrey))) 100%;
+}
+
+.bg-lgr-midlightgrey {
+    background: linear-gradient(color(var(--midlightgrey-p2)), color(var(--midlightgrey)));
+}
+.bg-rgr-midlightgrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--midlightgrey-p2)) 0%, color(var(--midlightgrey))) 100%;
+}
+
+.bg-lgr-midgrey {
+    background: linear-gradient(color(var(--midgrey-p2)), color(var(--midgrey-m1)));
+}
+.bg-rgr-midgrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--midgrey-p2)) 0%, color(var(--midgrey-m1))) 100%;
+}
+
+.bg-lgr-middarkgrey {
+    background: linear-gradient(color(var(--middarkgrey-p2)), color(var(--middarkgrey-m1)));
+}
+.bg-rgr-middarkgrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--middarkgrey-p2)) 0%, color(var(--middarkgrey-m1))) 100%;
+}
+
+.bg-lgr-darkgrey {
+    background: linear-gradient(color(var(--darkgrey-p2)), color(var(--darkgrey-m2)));
+}
+.bg-rgr-darkgrey {
+    background: radial-gradient(circle farthest-corner at left bottom, color(var(--darkgrey-p2)) 0%, color(var(--darkgrey-m2))) 100%;
+}

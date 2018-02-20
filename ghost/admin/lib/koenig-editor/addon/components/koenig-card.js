@@ -8,11 +8,12 @@ const TICK_HEIGHT = 8;
 
 export default Component.extend({
     layout,
-    classNames: ['koenig-card'],
-    classNameBindings: ['isSelected:koenig-card--selected'],
+    attributeBindings: ['style'],
+    classNameBindings: ['isSelected:kg-card-selected'],
 
     // attrs
     icon: null,
+    iconClass: 'ih2 absolute fill-lightgrey mt2 nl10 kg-icon',
     toolbar: null,
     isSelected: false,
     isEditing: false,
@@ -30,6 +31,13 @@ export default Component.extend({
     onDeselect() {},
     onEnterEdit() {},
     onLeaveEdit() {},
+
+    // TODO: replace with Spirit classes
+    style: computed(function () {
+        let baseStyles = 'min-height: calc(.4rem * 10); cursor: default; caret-color: auto;';
+
+        return htmlSafe(baseStyles);
+    }),
 
     toolbarStyle: computed('toolbarWidth', 'toolbarHeight', function () {
         let width = this.get('toolbarWidth');
