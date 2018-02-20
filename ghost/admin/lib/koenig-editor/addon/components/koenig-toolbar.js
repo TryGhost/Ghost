@@ -23,6 +23,8 @@ export default Component.extend({
     classNames: ['koenig-toolbar'],
     classNameBindings: ['showToolbar:koenig-toolbar--visible'],
     editorRange: null,
+    activeMarkupTagNames: null,
+    activeSectionTagNames: null,
 
     // internal properties
     showToolbar: false,
@@ -36,6 +38,10 @@ export default Component.extend({
     _onMousedownHandler: null,
     _onMouseupHandler: null,
     _onResizeHandler: null,
+
+    // closure actions
+    toggleMarkup() {},
+    toggleSection() {},
 
     /* computed properties -------------------------------------------------- */
 
@@ -86,6 +92,16 @@ export default Component.extend({
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('mouseup', this._onMouseupHandler);
         window.removeEventListener('resize', this._onResizeHandler);
+    },
+
+    actions: {
+        toggleMarkup(markupName) {
+            this.toggleMarkup(markupName);
+        },
+
+        toggleSection(sectionName) {
+            this.toggleSection(sectionName);
+        }
     },
 
     _toggleVisibility: task(function* () {

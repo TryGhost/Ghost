@@ -1,1 +1,60 @@
-{{yield}}
+{{!-- markup buttons --}}
+<button
+    type="button"
+    title="Bold"
+    class="koenig-toolbar-btn koenig-toolbar-btn-bold {{if activeMarkupTagNames.isB "selected"}}"
+    {{action "toggleMarkup" "b"}}
+>
+    B
+</button>
+<button
+    type="button"
+    title="Italic"
+    class="koenig-toolbar-btn koenig-toolbar-btn-italic {{if activeMarkupTagNames.isI "selected"}}"
+    {{action "toggleMarkup" "i"}}
+>
+    I
+</button>
+<button
+    type="button"
+    title="Strike"
+    class="koenig-toolbar-btn koenig-toolbar-btn-strike {{if activeMarkupTagNames.isS "selected"}}"
+    {{action "toggleMarkup" "s"}}
+>
+    S
+</button>
+<button
+    type="button"
+    title="Link"
+    class="koenig-toolbar-btn koenig-toolbar-btn-link"
+>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"><path d="M14.5 12.5l.086.086c.781.781 2.047.781 2.828 0l3.965-3.964c1.166-1.167 1.166-3.075 0-4.243l-1.758-1.757c-1.166-1.167-3.076-1.167-4.242 0l-3.965 3.964c-.781.781-.781 2.047 0 2.829l.086.085M9.5 11.5l-.086-.085c-.781-.781-2.047-.781-2.828 0l-3.965 3.964c-1.166 1.167-1.166 3.076 0 4.243l1.758 1.757c1.166 1.167 3.076 1.167 4.242 0l3.965-3.964c.781-.781.781-2.047 0-2.829l-.086-.086M8.111 15.889l7.778-7.778"/></g></svg>
+</button>
+
+<div class="koenig-toolbar-divider" role="presentation"></div>
+
+{{!-- block buttons --}}
+<button
+    type="button"
+    title="Heading One"
+    class="koenig-toolbar-btn koenig-toolbar-btn-h1 {{if activeSectionTagNames.isH1 "selected"}}"
+    {{action "toggleSection" "h1"}}
+>
+    H1
+</button>
+<button
+    type="button"
+    title="Heading Two"
+    class="koenig-toolbar-btn koenig-toolbar-btn-h2 {{if activeSectionTagNames.isH2 "selected"}}"
+    {{action "toggleSection" "h2"}}
+>
+    H2
+</button>
+<button
+    type="button"
+    title="Quote"
+    class="koenig-toolbar-btn koenig-toolbar-btn-quote {{if activeSectionTagNames.isBlockquote "selected"}}"
+    {{action "toggleSection" "blockquote"}}
+>
+    &ldquo;
+</button>
