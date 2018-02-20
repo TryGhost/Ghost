@@ -23,13 +23,21 @@ export default Component.extend({
 
     actions: {
         updateHtml(html) {
-            let payload = this.get('payload');
-            let save = this.get('saveCard');
+            this._updatePayloadAttr('html', html);
+        },
 
-            set(payload, 'html', html);
-
-            // update the mobiledoc and stay in edit mode
-            save(payload, false);
+        updateCaption(caption) {
+            this._updatePayloadAttr('caption', caption);
         }
+    },
+
+    _updatePayloadAttr(attr, value) {
+        let payload = this.get('payload');
+        let save = this.get('saveCard');
+
+        set(payload, attr, value);
+
+        // update the mobiledoc and stay in edit mode
+        save(payload, false);
     }
 });
