@@ -1,0 +1,124 @@
+/*
+
+   Tachyons
+   COLOR VARIABLES
+
+   Grayscale
+   - Solids
+   - Transparencies
+   Colors
+
+*/
+
+:root {
+    /* Base colors */
+    --blue: #3eb0ef;
+    --green: #a4d037;
+    --purple: #ad26b4;
+    --yellow: #fecd35;
+    --red: #f05230;
+    --pink: #fa3a57;
+    --white: #ffffff;
+
+    --white-10: rgba(255, 255, 255, 0.1);
+    --white-20: rgba(255, 255, 255, 0.2);
+    --white-30: rgba(255, 255, 255, 0.3);
+    --white-40: rgba(255, 255, 255, 0.4);
+    --white-50: rgba(255, 255, 255, 0.5);
+    --white-60: rgba(255, 255, 255, 0.6);
+    --white-70: rgba(255, 255, 255, 0.7);
+    --white-80: rgba(255, 255, 255, 0.8);
+    --white-90: rgba(255, 255, 255, 0.9);
+
+    --black-10: rgba(40, 48, 52, 0.1);
+    --black-20: rgba(40, 48, 52, 0.2);
+    --black-30: rgba(40, 48, 52, 0.3);
+    --black-40: rgba(40, 48, 52, 0.4);
+    --black-50: rgba(40, 48, 52, 0.5);
+    --black-60: rgba(40, 48, 52, 0.6);
+    --black-70: rgba(40, 48, 52, 0.7);
+    --black-80: rgba(40, 48, 52, 0.8);
+    --black-90: rgba(40, 48, 52, 0.9);
+
+    --darkgrey: #343f44;
+    --middarkgrey: #54666D;
+    --midgrey: #738a94;
+    --midlightgrey: #9BAEB8;
+    --lightgrey: #c5d2d9;
+    --whitegrey: #e5eff5;
+
+    --transparent:transparent;
+
+    /* Tone variations */
+    --blue-p3: color(var(--blue) l(+15%));
+    --blue-p2: color(var(--blue) l(+10%));
+    --blue-p1: color(var(--blue) l(+5%));
+    --blue-m1: color(var(--blue) l(-5%));
+    --blue-m2: color(var(--blue) l(-10%));
+    --blue-m3: color(var(--blue) l(-15%));
+
+    --green-p3: color(var(--green) l(+15%));
+    --green-p2: color(var(--green) l(+10%));
+    --green-p1: color(var(--green) l(+5%));
+    --green-m1: color(var(--green) l(-5%));
+    --green-m2: color(var(--green) l(-10%));
+    --green-m3: color(var(--green) l(-15%));
+
+    --purple-p3: color(var(--purple) l(+15%));
+    --purple-p2: color(var(--purple) l(+10%));
+    --purple-p1: color(var(--purple) l(+5%));
+    --purple-m1: color(var(--purple) l(-5%));
+    --purple-m2: color(var(--purple) l(-10%));
+    --purple-m3: color(var(--purple) l(-15%));
+
+    --yellow-p3: color(var(--yellow) l(+15%));
+    --yellow-p2: color(var(--yellow) l(+10%));
+    --yellow-p1: color(var(--yellow) l(+5%));
+    --yellow-m1: color(var(--yellow) l(-5%));
+    --yellow-m2: color(var(--yellow) l(-10%));
+    --yellow-m3: color(var(--yellow) l(-13%));
+
+    --red-p3: color(var(--red) l(+15%));
+    --red-p2: color(var(--red) l(+10%));
+    --red-p1: color(var(--red) l(+5%));
+    --red-m1: color(var(--red) l(-5%));
+    --red-m2: color(var(--red) l(-10%));
+    --red-m3: color(var(--red) l(-15%));
+
+    --pink-p3: color(var(--pink) l(+15%));
+    --pink-p2: color(var(--pink) l(+10%));
+    --pink-p1: color(var(--pink) l(+5%));
+    --pink-m1: color(var(--pink) l(-5%));
+    --pink-m2: color(var(--pink) l(-10%));
+    --pink-m3: color(var(--pink) l(-15%));
+
+    --darkgrey-p2: color(var(--darkgrey) h(-1) l(+7%));
+    --darkgrey-p1: color(var(--darkgrey) h(+1) l(+3%));
+    --darkgrey-m1: color(var(--darkgrey) l(-3%));
+    --darkgrey-m2: color(var(--darkgrey) l(-6%));
+
+    --middarkgrey-p2: color(var(--middarkgrey) h(+1%) l(+7%));
+    --middarkgrey-p1: color(var(--middarkgrey) h(+2%) l(+4%));
+    --middarkgrey-m1: color(var(--middarkgrey) h(+2%) l(-3%));
+    --middarkgrey-m2: color(var(--middarkgrey) h(+1%) l(-7%));
+
+    --midgrey-p2: color(var(--midgrey) h(+2%) s(+2%) l(+7%));
+    --midgrey-p1: color(var(--midgrey) h(+1%) s(+1%) l(+4%));
+    --midgrey-m1: color(var(--midgrey) h(+1%) l(-3%));
+    --midgrey-m2: color(var(--midgrey) l(-7%));
+
+    --midlightgrey-p2: color(var(--midlightgrey) h(-3%) s(+2%) l(+8%));
+    --midlightgrey-p1: color(var(--midlightgrey) h(-1%) s(+1%) l(+4%));
+    --midlightgrey-m1: color(var(--midlightgrey) h(+1%) s(-1%) l(-3%));
+    --midlightgrey-m2: color(var(--midlightgrey) h(-3%) s(-2%) l(-7%));
+
+    --lightgrey-p2: color(var(--lightgrey) h(+1%) s(+14%) l(+8%));
+    --lightgrey-p1: color(var(--lightgrey) h(+1%) s(+12%) l(+6%));
+    --lightgrey-m1: color(var(--lightgrey) s(-1%) l(-4%));
+    --lightgrey-m2: color(var(--lightgrey) h(-2%) s(-2%) l(-7%));
+
+    --whitegrey-p2: color(var(--whitegrey) h(+7%) s(-4%) l(+5%));
+    --whitegrey-p1: color(var(--whitegrey) h(+1%) s(-2%) l(+2%));
+    --whitegrey-m1: color(var(--whitegrey) h(-1%) s(-7%) l(-3%));
+    --whitegrey-m2: color(var(--whitegrey) h(-1%) s(-11%) l(-6%));
+}

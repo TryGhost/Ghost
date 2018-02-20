@@ -1,0 +1,61 @@
+.h1 {    height: calc(var(--grid-size) * 1); }
+.h2 {    height: calc(var(--grid-size) * 2); }
+.h3 {    height: calc(var(--grid-size) * 3); }
+.h4 {    height: calc(var(--grid-size) * 4); }
+.h5 {    height: calc(var(--grid-size) * 5); }
+.h6 {    height: calc(var(--grid-size) * 6); }
+.h7 {    height: calc(var(--grid-size) * 7); }
+.h8 {    height: calc(var(--grid-size) * 8); }
+.h9 {    height: calc(var(--grid-size) * 9); }
+.h10 {    height: calc(var(--grid-size) * 10); }
+.h11 {    height: calc(var(--grid-size) * 11); }
+.h12 {    height: calc(var(--grid-size) * 12); }
+.h13 {    height: calc(var(--grid-size) * 13); }
+.h14 {    height: calc(var(--grid-size) * 14); }
+.h15 {    height: calc(var(--grid-size) * 15); }
+.h16 {    height: calc(var(--grid-size) * 16); }
+.h17 {    height: calc(var(--grid-size) * 17); }
+.h18 {    height: calc(var(--grid-size) * 18); }
+.h19 {    height: calc(var(--grid-size) * 19); }
+.h20 {    height: calc(var(--grid-size) * 20); }
+.h25 {    height: calc(var(--grid-size) * 25); }
+.h30 {    height: calc(var(--grid-size) * 30); }
+.h40 {    height: calc(var(--grid-size) * 40); }
+.h50 {    height: calc(var(--grid-size) * 50); }
+.h70 {    height: calc(var(--grid-size) * 70); }
+
+/* Height Percentages - Based off of height of parent */
+
+.h-25 {  height:  25%; }
+.h-50 {  height:  50%; }
+.h-75 {  height:  75%; }
+.h-100 { height: 100%; }
+
+.min-h-100 { min-height: 100%; }
+
+/* Screen Height Percentage */
+
+.vh-25 {  height:  25vh; }
+.vh-50 {  height:  50vh; }
+.vh-75 {  height:  75vh; }
+.vh-100 { height: 100vh; }
+
+.min-vh-100 { min-height: 100vh; }
+
+
+/* String Properties */
+
+.h-auto {     height: auto; }
+.h-inherit {  height: inherit; }
+
+@media (--breakpoint-not-small) {
+
+}
+
+@media (--breakpoint-medium) {
+
+}
+
+@media (--breakpoint-large) {
+
+}
