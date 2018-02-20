@@ -1,1 +1,1 @@
-export { default, kgStyle } from 'koenig-editor/helpers/kg-style';
+export {default, kgStyle} from 'koenig-editor/helpers/kg-style';
