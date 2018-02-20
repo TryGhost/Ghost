@@ -1,24 +1,4 @@
-/*
-
-   SKINS:PSEUDO
-
-   Customize the color of an element when
-   it is focused or hovered over.
-
- */
-
- /*
-
-    SKINS
-    Docs: http://tachyons.io/docs/themes/skins/
-
-    Classes for setting foreground and background colors on elements.
-    If you haven't declared a border color, but set border on an element, it will
-    be set to the current text color.
-
- */
-
- /* Text colors */
+/* Text colors */
 
 .hover-blue:hover,
 .hover-blue:focus { color: var(--blue); }

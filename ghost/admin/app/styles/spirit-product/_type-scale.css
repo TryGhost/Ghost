@@ -9,9 +9,10 @@
     --ts-3: 2.0rem;
     --ts-4: 1.9rem;
     --ts-5: 1.75rem;
-    --ts-6: 1.4rem;
-    --ts-7: 1.3rem;
-    --ts-8: 1.2rem;
+    --ts-6: 1.6rem;
+    --ts-7: 1.4rem;
+    --ts-8: 1.3rem;
+    --ts-small: 1.2rem;
     --ts-supersmall: 1.1rem;
  }
 
@@ -25,8 +26,9 @@
 .f4             { font-size: var(--ts-4); }
 .f5             { font-size: var(--ts-5); }
 .f6             { font-size: var(--ts-6); }
-.f7, .f-default { font-size: var(--ts-7); }
-.f8             { font-size: var(--ts-8); }
+.f7             { font-size: var(--ts-7); }
+.f8, .f-default { font-size: var(--ts-8); }
+.f-small        { font-size: var(--ts-small); }
 .f-supersmall   { font-size: var(--ts-supersmall); }
 
 
@@ -40,8 +42,9 @@
     .f4-ns                  { font-size: var(--ts-4); }
     .f5-ns                  { font-size: var(--ts-5); }
     .f6-ns                  { font-size: var(--ts-6); }
-    .f7-ns, .f-default-ns   { font-size: var(--ts-7); }
-    .f8-ns                  { font-size: var(--ts-8); }
+    .f7-ns                  { font-size: var(--ts-7); }
+    .f8-ns, .f-default-ns   { font-size: var(--ts-8); }
+    .fsmall-ns              { font-size: var(--ts-small); }
     .f-supersmall-ns        { font-size: var(--ts-supersmall); }
 }
 
@@ -55,8 +58,9 @@
     .f4-m                  { font-size: var(--ts-4); }
     .f5-m                  { font-size: var(--ts-5); }
     .f6-m                  { font-size: var(--ts-6); }
-    .f7-m, .f-default-m   { font-size: var(--ts-7); }
-    .f8-m                  { font-size: var(--ts-8); }
+    .f7-m                  { font-size: var(--ts-7); }
+    .f8-m, .f-default-m   { font-size: var(--ts-8); }
+    .fsmall-m              { font-size: var(--ts-small); }
     .f-supersmall-m        { font-size: var(--ts-supersmall); }
 }
 
@@ -70,7 +74,8 @@
     .f4-l                  { font-size: var(--ts-4); }
     .f5-l                  { font-size: var(--ts-5); }
     .f6-l                  { font-size: var(--ts-6); }
-    .f7-l, .f-default-l   { font-size: var(--ts-7); }
-    .f8-l                  { font-size: var(--ts-8); }
+    .f7-l                  { font-size: var(--ts-7); }
+    .f8-l, .f-default-l   { font-size: var(--ts-8); }
+    .fsmall-l              { font-size: var(--ts-small); }
     .f-supersmall-l        { font-size: var(--ts-supersmall); }
 }

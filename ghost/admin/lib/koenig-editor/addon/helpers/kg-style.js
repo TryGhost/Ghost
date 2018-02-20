@@ -5,13 +5,13 @@ export function kgStyle(params/*, hash*/) {
     let [style] = params;
     let cssClass = '';
 
-    let atFontStyle = 'sans-serif f-headline fw7 tracked-2 lh-heading darkgrey-m2';
-    let h1FontStyle = 'sans-serif f-subheadline fw7 tracked-2 lh-heading darkgrey-m2';
-    let h2FontStyle = 'sans-serif f1 fw7 tracked-2 lh-title darkgrey-m2';
-    let h3FontStyle = 'sans-serif f2 fw7 tracked-2 lh-title darkgrey-m2';
-    let h4FontStyle = 'sans-serif f3 fw7 tracked-3 lh-title darkgrey-m2';
-    let h5FontStyle = 'sans-serif f4 fw7 tracked-2 lh-copy darkgrey-m2';
-    let h6FontStyle = 'sans-serif f5 fw7 tracked-3 lh-copy darkgrey-m2';
+    let atFontStyle = 'sans-serif f-headline fw7 tracked-2 lh-heading';
+    let h1FontStyle = 'sans-serif f-subheadline fw7 tracked-2 lh-heading';
+    let h2FontStyle = 'sans-serif f1 fw7 tracked-2 lh-title';
+    let h3FontStyle = 'sans-serif f2 fw7 tracked-2 lh-title';
+    let h4FontStyle = 'sans-serif f3 fw7 tracked-3 lh-title';
+    let h5FontStyle = 'sans-serif f4 fw7 tracked-2 lh-copy';
+    let h6FontStyle = 'sans-serif f5 fw7 tracked-3 lh-copy';
     let pFontStyle = 'f3 fw3 lh-copy tracked-1 serif';
 
     let cardBorderStyle = 'pt1 pb1 pl14 nl14 pr2 nr2 ba b--whitegrey br3 relative kg-card-hover';
@@ -289,13 +289,13 @@ export function kgStyle(params/*, hash*/) {
 
     // Media styles & figure caption
     case 'image-wide':
-        cssClass = 'mw10 center db';
+        cssClass = 'mw-l center db';
         break;
     case 'image-normal':
         cssClass = 'center db';
         break;
     case 'figcaption':
-        cssClass = 'db pa2 pb0 mw7 center lh-title sans-serif fw4 f6 middarkgrey tracked-2 tc';
+        cssClass = 'db pa2 pb0 mw-s center lh-title sans-serif fw4 f7 middarkgrey tracked-2 tc';
         break;
 
     // Forms

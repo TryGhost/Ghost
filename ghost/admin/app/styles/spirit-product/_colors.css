@@ -118,7 +118,7 @@
     --lightgrey-m2: color(var(--lightgrey) h(-2%) s(-2%) l(-7%));
 
     --whitegrey-p2: color(var(--whitegrey) h(+7%) s(-4%) l(+5%));
-    --whitegrey-p1: color(var(--whitegrey) h(+1%) s(-2%) l(+2%));
+    --whitegrey-p1: color(var(--whitegrey) h(+1%) s(-2%) l(+3%));
     --whitegrey-m1: color(var(--whitegrey) h(-1%) s(-7%) l(-3%));
     --whitegrey-m2: color(var(--whitegrey) h(-1%) s(-11%) l(-6%));
 }

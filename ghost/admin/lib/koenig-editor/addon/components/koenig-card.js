@@ -9,6 +9,7 @@ const TICK_HEIGHT = 8;
 export default Component.extend({
     layout,
     attributeBindings: ['style'],
+    classNames: 'mih10', // TODO: move to kgStyle('container-card')?
     classNameBindings: ['isSelected:kg-card-selected'],
 
     // attrs
@@ -34,7 +35,7 @@ export default Component.extend({
 
     // TODO: replace with Spirit classes
     style: computed(function () {
-        let baseStyles = 'min-height: calc(.4rem * 10); cursor: default; caret-color: auto;';
+        let baseStyles = 'cursor: default; caret-color: auto;';
 
         return htmlSafe(baseStyles);
     }),
