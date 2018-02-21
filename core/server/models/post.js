@@ -668,12 +668,19 @@ Post = ghostBookshelf.Model.extend({
             origArgs = _.toArray(arguments).slice(1);
 
             // Get the actual post model
-            return this.findOne({id: postModelOrId, status: 'all'}).then(function then(foundPostModel) {
-                // Build up the original args but substitute with actual model
-                var newArgs = [foundPostModel].concat(origArgs);
+            return this.findOne({id: postModelOrId, status: 'all'})
+                .then(function then(foundPostModel) {
+                    if (!foundPostModel) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.posts.postNotFound')
+                        });
+                    }
 
-                return self.permissible.apply(self, newArgs);
-            });
+                    // Build up the original args but substitute with actual model
+                    var newArgs = [foundPostModel].concat(origArgs);
+
+                    return self.permissible.apply(self, newArgs);
+                });
         }
 
         function isChanging(attr) {

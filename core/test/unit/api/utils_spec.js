@@ -506,7 +506,7 @@ describe('API Utils', function () {
         });
 
         it('should handle an unknown rejection', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.reject()),
+            var testStub = sandbox.stub().returns(new Promise.reject(new Error('not found'))),
                 permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
