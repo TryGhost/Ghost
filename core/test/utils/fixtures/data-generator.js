@@ -410,14 +410,22 @@ DataGenerator.forKnex = (function () {
         overrides = overrides || {};
 
         var newObj = _.cloneDeep(overrides),
-            mobiledoc = JSON.parse(overrides.mobiledoc || '{}');
+            mobiledocObj;
+
+        if (!newObj.mobiledoc) {
+            newObj.mobiledoc = DataGenerator.markdownToMobiledoc('## markdown');
+        }
+
+        if (!newObj.html) {
+            mobiledocObj = JSON.parse(newObj.mobiledoc);
+            newObj.html = mobiledocObj.cards && mobiledocObj.cards[0][1].markdown;
+        }
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             uuid: uuid.v4(),
             title: 'title',
             status: 'published',
-            html: mobiledoc.cards && mobiledoc.cards[0][1].markdown,
             featured: true,
             page: false,
             author_id: DataGenerator.Content.users[0].id,
