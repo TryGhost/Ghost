@@ -19,6 +19,13 @@ class TagsImporter extends BaseImporter {
         };
     }
 
+    fetchExisting(modelOptions) {
+        return models.Tag.findAll(_.merge({columns: ['id', 'slug']}, modelOptions))
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
+    }
+
     beforeImport() {
         debug('beforeImport');
         return super.beforeImport();
@@ -28,8 +35,8 @@ class TagsImporter extends BaseImporter {
      * Find tag before adding.
      * Background:
      *   - the tag model is smart enough to regenerate unique fields
-     *   - so if you import a tag name "test" and the same tag name exists, it would add "test-2"
-     *   - that's we add a protection here to first find the tag
+     *   - so if you import a tag slug "test" and the same tag slug exists, it would add "test-2"
+     *   - that's why we add a protection here to first find the tag
      *
      * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
@@ -56,6 +63,12 @@ class TagsImporter extends BaseImporter {
                             if (importOptions.returnImportedData) {
                                 this.importedDataToReturn.push(importedModel.toJSON());
                             }
+
+                            // for identifier lookup
+                            this.importedData.push({
+                                id: importedModel.id,
+                                slug: importedModel.get('slug')
+                            });
 
                             return importedModel;
                         })

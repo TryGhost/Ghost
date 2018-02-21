@@ -92,6 +92,7 @@ webhooks = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'add'),
             doQuery
         ];
@@ -122,6 +123,7 @@ webhooks = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
+            localUtils.convertOptions(),
             localUtils.handlePermissions(docName, 'destroy'),
             doQuery
         ];

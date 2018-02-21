@@ -117,20 +117,6 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can set password of only numbers', function () {
-            var userData = testUtils.DataGenerator.forModel.users[0];
-
-            // avoid side-effects!
-            userData = _.cloneDeep(userData);
-            userData.password = 109674836589;
-
-            // mocha supports promises
-            return UserModel.add(userData, context).then(function (createdUser) {
-                should.exist(createdUser);
-                // cannot validate password
-            });
-        });
-
         it('can find by email and is case insensitive', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2],
                 email = testUtils.DataGenerator.forModel.users[2].email;
@@ -348,7 +334,7 @@ describe('User Model', function run() {
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
 
-                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
+                return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
@@ -371,7 +357,7 @@ describe('User Model', function run() {
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
 
-                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
+                return UserModel.add(userData, _.extend({}, context, {withRelated: ['roles']}));
             }).then(function () {
                 done(new Error('User was created with an invalid email address'));
             }).catch(function () {

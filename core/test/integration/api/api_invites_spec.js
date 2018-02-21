@@ -317,7 +317,7 @@ describe('Invites API', function () {
                             role_id: testUtils.roles.ids.admin
                         }
                     ]
-                }, _.merge({}, {include: ['roles']}, testUtils.context.admin)).then(function (response) {
+                }, _.merge({}, {include: 'roles'}, testUtils.context.admin)).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].role_id.should.equal(testUtils.roles.ids.admin);
                     done();
