@@ -214,8 +214,8 @@ describe('Post Model', function () {
             });
 
             it('can findPage, with various options', function (done) {
-                testUtils.fixtures.insertMorePosts().then(function () {
-                    return testUtils.fixtures.insertMorePostsTags();
+                testUtils.fixtures.insertExtraPosts().then(function () {
+                    return testUtils.fixtures.insertExtraPostsTags();
                 }).then(function () {
                     return PostModel.findPage({page: 2});
                 }).then(function (paginationResult) {
@@ -286,8 +286,8 @@ describe('Post Model', function () {
             });
 
             it('can findPage for tag, with various options', function (done) {
-                testUtils.fixtures.insertMorePosts().then(function () {
-                    return testUtils.fixtures.insertMorePostsTags();
+                testUtils.fixtures.insertExtraPosts().then(function () {
+                    return testUtils.fixtures.insertExtraPostsTags();
                 }).then(function () {
                     // Test tag filter
                     return PostModel.findPage({page: 1, filter: 'tags:bacon'});

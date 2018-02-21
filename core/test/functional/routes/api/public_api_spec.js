@@ -18,7 +18,7 @@ describe('Public API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request, 'posts', 'tags', 'client:trusted-domain');
+                return testUtils.doAuth(request, 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 
