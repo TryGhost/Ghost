@@ -31,27 +31,26 @@ class LocalFileStore extends StorageBase {
      * @returns {*}
      */
     save(image, targetDir) {
-        var targetFilename,
-            self = this;
+        var targetRelativeFilename,
+            targetAbsoluteFilename;
 
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
 
-        return this.getUniqueFileName(image, targetDir).then(function (filename) {
-            targetFilename = filename;
+        return Promise.all([
+            this.getUniqueFileName(image, targetDir, {useRelativePath: true}),
+            this.getUniqueFileName(image, targetDir, {useRelativePath: false})
+        ]).spread(function (relativeFilename, absoluteFilename) {
+            // This might look like 'content/images/2018/02/foo.jpg'
+            targetRelativeFilename = relativeFilename;
+            // This might look like '/blog/content/images/2018/02/foo.jpg' (i.e., it’s an URL)
+            targetAbsoluteFilename = absoluteFilename;
+
             return fs.mkdirs(targetDir);
         }).then(function () {
-            return fs.copy(image.path, targetFilename);
+            return fs.copy(image.path, targetRelativeFilename);
         }).then(function () {
-            // The src for the image must be in URI format, not a file system path, which in Windows uses \
-            // For local file system storage can use relative path so add a slash
-            var fullUrl = (
-                urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
-                    urlService.utils.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(self.storagePath, targetFilename))
-            ).replace(new RegExp('\\' + path.sep, 'g'), '/');
-
-            return fullUrl;
+            return targetAbsoluteFilename;
         }).catch(function (e) {
             return Promise.reject(e);
         });
@@ -150,6 +149,29 @@ class LocalFileStore extends StorageBase {
                 resolve(bytes);
             });
         });
+    }
+
+    getUniqueFileName(image, targetDir, options) {
+        options = options || {};
+        const useRelativePath = options.useRelativePath || false;
+
+        return super.getUniqueFileName(image, targetDir)
+            .then((relativePath) => {
+                if (useRelativePath) {
+                    return relativePath;
+                } else {
+                    // The src for the image must be in URI format, not a file system path, which in Windows uses \
+                    // For local file system storage can use relative path so add a slash
+                    return urlService.utils
+                        .urlJoin(
+                            '/',
+                            urlService.utils.getSubdir(),
+                            urlService.utils.STATIC_IMAGE_URL_PREFIX,
+                            path.relative(this.storagePath, relativePath)
+                        )
+                        .replace(new RegExp('\\' + path.sep, 'g'), '/');
+                }
+            });
     }
 }
 

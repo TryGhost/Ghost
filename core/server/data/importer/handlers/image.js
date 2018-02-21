@@ -37,9 +37,7 @@ ImageHandler = {
 
         return Promise.map(files, function (image) {
             return store.getUniqueFileName(image, image.targetDir).then(function (targetFilename) {
-                image.newPath = urlService.utils.urlJoin('/', urlService.utils.getSubdir(), urlService.utils.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(config.getContentPath('images'), targetFilename));
-
+                image.newPath = targetFilename;
                 return image;
             });
         });
