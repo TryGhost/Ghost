@@ -36,6 +36,7 @@ module.exports = {
         return new Promise(function (resolve) {
             const onFinish = (() => {
                 resolve({
+                    err: res.req.err,
                     statusCode: res.statusCode,
                     headers: res._headers,
                     template: res._template,
