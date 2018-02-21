@@ -37,7 +37,7 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags'],
+    relationships: ['tags', 'authors'],
 
     /**
      * The base model keeps only the columns, which are defined in the schema.
@@ -328,6 +328,12 @@ Post = ghostBookshelf.Model.extend({
 
     published_by: function publishedBy() {
         return this.belongsTo('User', 'published_by');
+    },
+
+    authors: function authors() {
+        return this.belongsToMany('User', 'posts_authors', 'post_id', 'author_id')
+            .withPivot('sort_order')
+            .query('orderBy', 'sort_order', 'ASC');
     },
 
     tags: function tags() {
