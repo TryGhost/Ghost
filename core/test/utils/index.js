@@ -130,7 +130,7 @@ fixtures = {
         });
     },
 
-    insertMorePosts: function insertMorePosts(max) {
+    insertExtraPosts: function insertExtraPosts(max) {
         var lang,
             status,
             posts = [],
@@ -160,7 +160,11 @@ fixtures = {
         }));
     },
 
-    insertMoreTags: function insertMoreTags(max) {
+    insertTags: function insertTags() {
+        return db.knex('tags').insert(DataGenerator.forKnex.tags);
+    },
+
+    insertExtraTags: function insertExtraTags(max) {
         max = max || 50;
         var tags = [],
             tagName,
@@ -178,7 +182,7 @@ fixtures = {
         }));
     },
 
-    insertMorePostsTags: function insertMorePostsTags(max) {
+    insertExtraPostsTags: function insertExtraPostsTags(max) {
         max = max || 50;
 
         return Promise.all([
@@ -499,8 +503,11 @@ toDoList = {
     'posts:mu': function insertMultiAuthorPosts() {
         return fixtures.insertMultiAuthorPosts();
     },
-    tags: function insertMoreTags() {
-        return fixtures.insertMoreTags();
+    tags: function insertTags() {
+        return fixtures.insertTags();
+    },
+    'tags:extra': function insertExtraTags() {
+        return fixtures.insertExtraTags();
     },
     apps: function insertApps() {
         return fixtures.insertApps();
@@ -515,7 +522,7 @@ toDoList = {
     'users:no-owner': function createUsersWithoutOwner() {
         return fixtures.createUsersWithoutOwner();
     },
-    users: function createExtraUsers() {
+    'users:extra': function createExtraUsers() {
         return fixtures.createExtraUsers();
     },
     'user-token': function createTokensForUser(index) {

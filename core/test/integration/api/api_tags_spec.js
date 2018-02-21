@@ -177,7 +177,7 @@ describe('Tags API', function () {
 
     describe('Browse', function () {
         beforeEach(function (done) {
-            testUtils.fixtures.insertMoreTags().then(function () {
+            testUtils.fixtures.insertExtraTags().then(function () {
                 done();
             });
         });

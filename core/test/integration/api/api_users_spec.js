@@ -32,7 +32,7 @@ describe('Users API', function () {
     });
 
     beforeEach(testUtils.setup(
-        'users:roles', 'users', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+        'users:roles', 'users:extra', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
     ));
 
     afterEach(function () {
