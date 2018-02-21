@@ -16,6 +16,7 @@ module.exports = {
         visibility: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'public', validations: {isIn: [['public']]}},
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
+        // NOTE: keep, because you can easier query post.author_id than posts_authors[*].sort_order
         author_id: {type: 'string', maxlength: 24, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
@@ -61,6 +62,12 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    posts_authors: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
+        author_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     roles: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
