@@ -234,6 +234,10 @@ utils = {
                     return Promise.reject(err);
                 }
 
+                if (common.errors.utils.isIgnitionError(err)) {
+                    return Promise.reject(err);
+                }
+
                 return Promise.reject(new common.errors.GhostError({
                     err: err
                 }));

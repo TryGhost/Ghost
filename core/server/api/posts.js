@@ -238,7 +238,9 @@ posts = {
             return Post.findOne(data, fetchOpts).then(function () {
                 return Post.destroy(options).return(null);
             }).catch(Post.NotFoundError, function () {
-                throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.posts.postNotFound')});
+                throw new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.api.posts.postNotFound')
+                });
             });
         }
 
