@@ -13,6 +13,7 @@ var _ = require('lodash'),
     config = require('../config'),
     converters = require('../lib/mobiledoc/converters'),
     urlService = require('../services/url'),
+    relations = require('./relations'),
     Post,
     Posts;
 
@@ -317,22 +318,6 @@ Post = ghostBookshelf.Model.extend({
         return ['feature_image', 'og_image', 'twitter_image'];
     },
 
-    onCreating: function onCreating(model, attr, options) {
-        options = options || {};
-
-        // set any dynamic default properties
-        if (!this.get('author_id')) {
-            this.set('author_id', this.contextUser(options));
-        }
-
-        return ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
-    },
-
-    // Relations
-    author: function author() {
-        return this.belongsTo('User', 'author_id');
-    },
-
     created_by: function createdBy() {
         return this.belongsTo('User', 'created_by');
     },
@@ -384,10 +369,6 @@ Post = ghostBookshelf.Model.extend({
 
         attrs = this.formatsToJSON(attrs, options);
 
-        if (!options.columns || (options.columns && options.columns.indexOf('author') > -1)) {
-            attrs.author = attrs.author || attrs.author_id;
-            delete attrs.author_id;
-        }
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
             // ... attach a computed property of primary_tag which is the first tag if it is public, else null
@@ -635,79 +616,14 @@ Post = ghostBookshelf.Model.extend({
         return destroyPost();
     },
 
-    /**
-     * ### destroyByAuthor
-     * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
-     */
-    destroyByAuthor: function destroyByAuthor(unfilteredOptions) {
-        let options = this.filterOptions(unfilteredOptions, 'destroyByAuthor', {extraAllowedProperties: ['id']}),
-            postCollection = Posts.forge(),
-            authorId = options.id;
+    // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
+    permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, result) {
+        let isContributor, isEdit, isAdd, isDestroy;
 
-        if (!authorId) {
-            throw new common.errors.NotFoundError({
-                message: common.i18n.t('errors.models.post.noUserFound')
-            });
-        }
-
-        const destroyPost = (() => {
-            return postCollection
-                .query('where', 'author_id', '=', authorId)
-                .fetch(options)
-                .call('invokeThen', 'destroy', options)
-                .catch((err) => {
-                    throw new common.errors.GhostError({err: err});
-                });
-        });
-
-        if (!options.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                options.transacting = transacting;
-                return destroyPost();
-            });
-        }
-
-        return destroyPost();
-    },
-
-    permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
-        var self = this,
-            postModel = postModelOrId,
-            result = {},
-            origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy;
-
-        // If we passed in an id instead of a model, get the model
-        // then check the permissions
-        if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
-            // Grab the original args without the first one
-            origArgs = _.toArray(arguments).slice(1);
-
-            // Get the actual post model
-            return this.findOne({id: postModelOrId, status: 'all'})
-                .then(function then(foundPostModel) {
-                    if (!foundPostModel) {
-                        throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.models.post.postNotFound')
-                        });
-                    }
-
-                    // Build up the original args but substitute with actual model
-                    var newArgs = [foundPostModel].concat(origArgs);
-
-                    return self.permissible.apply(self, newArgs);
-                });
-        }
+        result = result || {};
 
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
-        }
-
-        function isOwner() {
-            return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
-        }
-
-        function isCurrentOwner() {
-            return context.user === postModel.get('author_id');
         }
 
         function isPublished() {
@@ -719,50 +635,50 @@ Post = ghostBookshelf.Model.extend({
         }
 
         isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isAuthor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Author'});
         isEdit = (action === 'edit');
         isAdd = (action === 'add');
         isDestroy = (action === 'destroy');
 
         if (isContributor && isEdit) {
-            // Only allow contributor edit if neither status or author id are changing, and the post is a draft post
-            hasUserPermission = !isChanging('status') && !isChanging('author_id') && isDraft() && isCurrentOwner();
+            // Only allow contributor edit if status is changing, and the post is a draft post
+            hasUserPermission = !isChanging('status') && isDraft();
         } else if (isContributor && isAdd) {
             // If adding, make sure it's a draft post and has the correct ownership
-            hasUserPermission = !isPublished() && isOwner();
+            hasUserPermission = !isPublished();
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
-            hasUserPermission = isCurrentOwner() && isDraft();
-        } else if (isAuthor && isEdit) {
-            // Don't allow author to change author ids
-            hasUserPermission = isCurrentOwner() && !isChanging('author_id');
-        } else if (isAuthor && isAdd) {
-            // Make sure new post is authored by the current user
-            hasUserPermission = isOwner();
-        } else if (postModel) {
-            hasUserPermission = hasUserPermission || isCurrentOwner();
+            hasUserPermission = isDraft();
         }
 
         if (isContributor) {
             // Note: at the moment primary_tag is a computed field,
             // meaning we don't add it to this list. However, if the primary_tag
             // ever becomes a db field rather than a computed field, add it to this list
-            //
-            // TODO: once contribitors are able to edit existing tags, this can be removed
-            result.excludedAttrs = ['tags'];
+            // TODO: once contributors are able to edit existing tags, this can be removed
+            // @TODO: we need a concept for making a diff between incoming tags and existing tags
+            if (result.excludedAttrs) {
+                result.excludedAttrs.push('tags');
+            } else {
+                result.excludedAttrs = ['tags'];
+            }
         }
 
         if (hasUserPermission && hasAppPermission) {
             return Promise.resolve(result);
         }
 
-        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.post.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({
+            message: common.i18n.t('errors.models.post.notEnoughPermission')
+        }));
     }
 });
 
 Posts = ghostBookshelf.Collection.extend({
     model: Post
 });
+
+// Extension for handling the logic for author + multiple authors
+Post = relations.authors.extendModel(Post, Posts, ghostBookshelf);
 
 module.exports = {
     Post: ghostBookshelf.model('Post', Post),
