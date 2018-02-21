@@ -205,6 +205,7 @@
                 "notEnoughPermission": "You do not have permission to perform this action"
             },
             "post": {
+                "postNotFound": "Post not found.",
                 "untitled": "(Untitled)",
                 "valueCannotBeBlank": "Value in {key} cannot be blank.",
                 "isAlreadyPublished": "Your post is already published, please reload your page.",
@@ -217,6 +218,7 @@
                 }
             },
             "role": {
+                "roleNotFound": "Role not found",
                 "notEnoughPermission": "You do not have permission to perform this action"
             },
             "settings": {
