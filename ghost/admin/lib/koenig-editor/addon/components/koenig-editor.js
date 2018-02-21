@@ -407,7 +407,6 @@ export default Component.extend({
 
     cursorDidChange(editor) {
         let {head, isCollapsed, head: {section}} = editor.range;
-        let selectedRange = this.get('selectedRange');
 
         // sometimes we perform a programatic edit that causes a cursor change
         // but we actually want to skip the default behaviour because we've
@@ -418,39 +417,11 @@ export default Component.extend({
             return;
         }
 
-        // skip everything if the cursor is just moving from one end of a card
-        // section to another whilst a card is in edit mode, this prevents
-        // clicks within a card causing the card to be deselected. Only applies
-        // when a card is in edit mode otherwise it's necessary to press LEFT
-        // twice to cycle up through cards
-        if (
-            this._selectedCard
-            && this._selectedCard.isEditing
-            && selectedRange
-            && isCollapsed
-            && editor.range.headSection === selectedRange.headSection
-            && (editor.range.head.offset === 0 || editor.range.head.offset === 1)
-            && selectedRange.head.offset === 1
-        ) {
-            return;
-        }
-
-        // if we have a selected card but cursor has moved to the left then
-        // deselect and move cursor to end of the previous section
-        if (this._selectedCard && section && isCollapsed && section.type === 'card-section' && head.offset === 0) {
-            this.deselectCard(this._selectedCard);
-
-            if (section.prev) {
-                editor.run((postEditor) => {
-                    postEditor.setRange(section.prev.tailPosition().toRange());
-                });
-            } else {
-                // card was at the top of the doc so we should trigger an external
-                // action - gh-koenig-editor uses it to move focus to the title input
-                this.cursorDidExitAtTop();
-            }
-
-            this.set('selectedRange', editor.range);
+        // ignore the cursor moving from one end to the other within a selected
+        // card section, clicking and other interactions within a card can cause
+        // this to happen and we don't want to select/deselect accidentally.
+        // See the up/down/left/right key handlers for the card selection
+        if (this._selectedCard && this._selectedCard.postModel === section) {
             return;
         }
 
@@ -566,14 +537,22 @@ export default Component.extend({
         return false;
     },
 
-    // trigger a closure action to indicate that the caret "left" the top of
-    // the editor canvas when pressing LEFT with the caret at the beginning of
-    // the doc
     handleLeftKey(editor) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
+        // trigger a closure action to indicate that the caret "left" the top of
+        // the editor canvas if the caret is at the very beginning of the doc
         if (isCollapsed && !section.prev && offset === 0) {
             this.cursorDidExitAtTop();
+            return;
+        }
+
+        // if we have a selected card move the caret to end of the previous
+        // section because the cursor will likely be at the end of the card
+        // section meaning the default behaviour would move the cursor to the
+        // beginning and require two key presses instead of one
+        if (this._selectedCard && this._selectedCard.postModel === section) {
+            this._moveCaretToTailOfSection(section.prev, false);
             return;
         }
 
@@ -616,16 +595,7 @@ export default Component.extend({
         // if the card is at the top of the document
         this._hideCursor();
         let section = this._getSectionFromCard(card);
-        this.editor.run((postEditor) => {
-            let range = section.tailPosition().toRange();
-
-            // don't trigger another cursor change selection after selecting
-            if (!range.isEqual(this.editor.range)) {
-                this._skipCursorChange = true;
-            }
-
-            postEditor.setRange(range);
-        });
+        this._moveCaretToTailOfSection(section);
     },
 
     editCard(card) {
@@ -660,6 +630,19 @@ export default Component.extend({
 
     _getSectionFromCard(card) {
         return card.env.postModel;
+    },
+
+    _moveCaretToTailOfSection(section, skipCursorChange = true) {
+        this.editor.run((postEditor) => {
+            let range = section.tailPosition().toRange();
+
+            // don't trigger another cursor change selection after selecting
+            if (skipCursorChange && !range.isEqual(this.editor.range)) {
+                this._skipCursorChange = true;
+            }
+
+            postEditor.setRange(range);
+        });
     },
 
     _deleteCard(card, cursorDirection) {
