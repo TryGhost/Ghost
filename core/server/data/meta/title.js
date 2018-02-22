@@ -1,8 +1,9 @@
 var _ = require('lodash'),
     settingsCache = require('../../services/settings/cache');
 
-function getTitle(data, root, options) {
+function getTitle(data, options) {
     var title = '',
+        root = options.data ? options.data.root : null,
         context = root ? root.context : null,
         postSdTitle,
         blogTitle = settingsCache.get('title'),
