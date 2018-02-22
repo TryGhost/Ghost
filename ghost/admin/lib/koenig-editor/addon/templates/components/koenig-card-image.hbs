@@ -1,1 +1,61 @@
-<img src={{payload.src}} alt={{payload.alt}} />
+{{#koenig-card
+    tagName="figure"
+    class=(concat (kg-style "media-card-h") " flex flex-column")
+    isSelected=isSelected
+    isEditing=isEditing
+    selectCard=(action selectCard)
+    onSelect=(action "onSelect")
+    onDeselect=(action "onDeselect")
+    editCard=(action editCard)
+    toolbar=toolbar
+    hasEditMode=false
+}}
+    {{#gh-uploader
+        accept=imageMimeTypes
+        extensions=imageExtensions
+        onStart=(action "setPreviewSrc")
+        onComplete=(action "updateSrc")
+        onFailed=(action "resetSrcs")
+        as |uploader|
+    }}
+        <div class="relative">
+            {{#if (or previewSrc payload.src)}}
+                <img src={{or previewSrc payload.src}} class={{kg-style "image-normal"}} alt={{payload.alt}}>
+            {{/if}}
+
+            {{#if (or uploader.errors uploader.isUploading (not payload.src))}}
+                <div class="relative miw-100 flex items-center {{if (not previewSrc payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                    {{#if uploader.errors}}
+                        <span class="db absolute top-0 right-0 left-0 pl2 pr2 bg-red white sans-serif f7">
+                            {{uploader.errors.firstObject.message}}
+                        </span>
+                    {{/if}}
+
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if (not previewSrc payload.src)}}
+                        <button class="db center btn-base ba b--whitegrey br3 sans-serif fw4 f7 middarkgrey" onclick={{action "triggerFileDialog"}}>
+                            <span>Click to select an image</span>
+                        </button>
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>
+
+        <div style="display:none">
+            {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes}}
+        </div>
+    {{/gh-uploader}}
+
+    {{#if (or isSelected payload.caption)}}
+        <figcaption class="{{kg-style "figcaption"}} w-100">
+            <input
+                value={{payload.caption}}
+                type="text"
+                class="miw-100 tc bn form-text"
+                name="caption"
+                oninput={{action "updateCaption" value="target.value"}}
+                placeholder="Type caption for image (optional)">
+        </figcaption>
+    {{/if}}
+{{/koenig-card}}
