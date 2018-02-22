@@ -49,11 +49,19 @@ ghostBookshelf.plugin('bookshelf-relations', {
     hooks: {
         belongsToMany: {
             after: function (existing, targets, options) {
-                // reorder tags
+                // reorder tags/authors
+                var queryOptions = {
+                    query: {
+                        where: {}
+                    }
+                };
+
                 return Promise.each(targets.models, function (target, index) {
+                    queryOptions.query.where[existing.relatedData.otherKey] = target.id;
+
                     return existing.updatePivot({
                         sort_order: index
-                    }, _.extend({}, options, {query: {where: {tag_id: target.id}}}));
+                    }, _.extend({}, options, queryOptions));
                 });
             },
             beforeRelationCreation: function onCreatingRelation(model, data) {
