@@ -1,9 +1,9 @@
 /**
  * These fixtures are just for testing the filter spec
  */
-var _    = require('lodash'),
+var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
-    db   = require('../../../../server/data/db'),
+    db = require('../../../../server/data/db'),
     markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc,
     data = {};
 
@@ -317,7 +317,8 @@ function createTags(knex, DataGenerator) {
 }
 
 function createPosts(knex, DataGenerator) {
-    var postsTags = [];
+    var postsTags = [], postsAuthors = [];
+
     data.posts = _.map(data.posts, function (post) {
         post = DataGenerator.forKnex.createPost(post);
 
@@ -333,10 +334,20 @@ function createPosts(knex, DataGenerator) {
         return post;
     });
 
+    _.each(data.posts, function (post) {
+        postsAuthors.push({
+            id: ObjectId.generate(),
+            post_id: post.id,
+            author_id: post.author_id
+        });
+    });
+
     // Next, insert it into the database & return the correctly indexed data
     return writeFetchFix(knex, 'posts').then(function (createdPosts) {
         return knex('posts_tags').insert(postsTags).then(function () {
             return createdPosts;
+        }).then(function () {
+            return knex('posts_authors').insert(postsAuthors);
         });
     });
 }
