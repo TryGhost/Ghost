@@ -8,29 +8,25 @@
 */
 
 
-.tracked-tight-1 { letter-spacing: 0rem; }
-.tracked-tight-2 { letter-spacing: -.02rem; }
-.tracked-tight-3 { letter-spacing: -.04rem; }
-
 .tracked-1 { letter-spacing: .02rem; }
 .tracked-2 { letter-spacing: .04rem; }
 .tracked-3 { letter-spacing: .06rem; }
 
 
 @media (--breakpoint-not-small) {
-  .tracked-ns       { letter-spacing:  .045em; }
-  .tracked-tight-ns { letter-spacing: -.045em; }
-  .tracked-tight-2-ns { letter-spacing: -.02em; }
+    .tracked-1-ns { letter-spacing: .02rem; }
+    .tracked-2-ns { letter-spacing: .04rem; }
+    .tracked-3-ns { letter-spacing: .06rem; }
 }
 
 @media (--breakpoint-medium) {
-  .tracked-m       { letter-spacing:  .045em; }
-  .tracked-tight-m { letter-spacing: -.045em; }
-  .tracked-tight-2-m { letter-spacing: -.02em; }
+    .tracked-1-m { letter-spacing: .02rem; }
+    .tracked-2-m { letter-spacing: .04rem; }
+    .tracked-3-m { letter-spacing: .06rem; }
 }
 
 @media (--breakpoint-large) {
-  .tracked-l       { letter-spacing:  .045em; }
-  .tracked-tight-l { letter-spacing: -.045em; }
-  .tracked-tight-2-l { letter-spacing: -.02em; }
+    .tracked-1-l { letter-spacing: .02rem; }
+    .tracked-2-l { letter-spacing: .04rem; }
+    .tracked-3-l { letter-spacing: .06rem; }
 }

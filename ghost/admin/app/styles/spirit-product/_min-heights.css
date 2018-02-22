@@ -1,12 +1,19 @@
-/* Max Height Percentages */
+/*
 
-.mih-70   { min-height: 70%; }
-.mih-80   { min-height: 80%; }
-.mih-90   { min-height: 90%; }
-.mih-100  { min-height: 100%; }
+    Base:
+        mih = min height
 
+    Value:
+        (n) = (n * grid size)
+        -(m) = percentage value
+        -none = none
 
-/* Max Height Grid */
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
 
 .mih1 {    min-height: calc(var(--grid-size) * 1); }
 .mih2 {    min-height: calc(var(--grid-size) * 2); }
@@ -35,16 +42,14 @@
 .mih70 {    min-height: calc(var(--grid-size) * 70); }
 .mih88 {    min-height: calc(var(--grid-size) * 88); }
 
-/* Max Height String Properties */
+.mih-70   { min-height: 70%; }
+.mih-80   { min-height: 80%; }
+.mih-90   { min-height: 90%; }
+.mih-100  { min-height: 100%; }
 
 .mih-none { min-height: none; }
 
 @media (--breakpoint-not-small) {
-    .mih-70-ns { min-height: 70%; }
-    .mih-80-ns { min-height: 80%; }
-    .mih-90-ns { min-height: 90%; }
-    .mih-100-ns { min-height: 100%; }
-
     .mih1-ns {    min-height: calc(var(--grid-size) * 1); }
     .mih2-ns {    min-height: calc(var(--grid-size) * 2); }
     .mih3-ns {    min-height: calc(var(--grid-size) * 3); }
@@ -72,15 +77,15 @@
     .mih70-ns {    min-height: calc(var(--grid-size) * 70); }
     .mih88-ns {    min-height: calc(var(--grid-size) * 88); }
 
+    .mih-70-ns { min-height: 70%; }
+    .mih-80-ns { min-height: 80%; }
+    .mih-90-ns { min-height: 90%; }
+    .mih-100-ns { min-height: 100%; }
+
     .mih-none-ns { min-height: none; }
 }
 
 @media (--breakpoint-medium) {
-    .mih-70-m { min-height: 70%; }
-    .mih-80-m { min-height: 80%; }
-    .mih-90-m { min-height: 90%; }
-    .mih-100-m { min-height: 100%; }
-
     .mih1-m {    min-height: calc(var(--grid-size) * 1); }
     .mih2-m {    min-height: calc(var(--grid-size) * 2); }
     .mih3-m {    min-height: calc(var(--grid-size) * 3); }
@@ -107,6 +112,11 @@
     .mih50-m {    min-height: calc(var(--grid-size) * 50); }
     .mih70-m {    min-height: calc(var(--grid-size) * 70); }
     .mih88-m {    min-height: calc(var(--grid-size) * 88); }
+
+    .mih-70-m { min-height: 70%; }
+    .mih-80-m { min-height: 80%; }
+    .mih-90-m { min-height: 90%; }
+    .mih-100-m { min-height: 100%; }
 
     .mih-none-m { min-height: none; }
 }

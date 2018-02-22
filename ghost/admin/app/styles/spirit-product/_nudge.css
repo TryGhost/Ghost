@@ -1,3 +1,24 @@
+/*
+
+    Base:
+        nudge
+
+    Modifier:
+        -top = nudge from top (downwards)
+        -right = nudge from right (to left)
+        -bottom = nudge from bottom (upwards)
+        -left = nudge from left (to right)
+
+    Value:
+        --(n) = n px to nudge by
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
 .nudge-top--1 {
     position: relative;
     top: 1px;
