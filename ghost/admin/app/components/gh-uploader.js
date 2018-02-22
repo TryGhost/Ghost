@@ -183,7 +183,7 @@ export default Component.extend({
         let uploads = [];
 
         this._reset();
-        this.onStart();
+        this.onStart(files);
 
         // NOTE: for...of loop results in a transpilation that errors in Edge,
         // once we drop IE11 support we should be able to use native for...of

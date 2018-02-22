@@ -391,6 +391,48 @@ export default Component.extend({
 
         deselectCard(card) {
             this.deselectCard(card);
+        },
+
+        moveCursorToPrevSection(card) {
+            let section = this._getSectionFromCard(card);
+
+            if (section.prev) {
+                this.deselectCard(card);
+                this._moveCaretToTailOfSection(section.prev, false);
+            }
+        },
+
+        moveCursorToNextSection(card) {
+            let section = this._getSectionFromCard(card);
+
+            if (section.next) {
+                this.deselectCard(card);
+                this._moveCaretToHeadOfSection(section.next, false);
+            } else {
+                this.send('addParagraphAfterCard', card);
+            }
+        },
+
+        addParagraphAfterCard(card) {
+            let editor = this.get('editor');
+            let section = this._getSectionFromCard(card);
+            let collection = section.parent.sections;
+            let nextSection = section.next;
+
+            this.deselectCard(card);
+
+            editor.run((postEditor) => {
+                let {builder} = postEditor;
+                let newPara = builder.createMarkupSection('p');
+
+                if (nextSection) {
+                    postEditor.insertSectionBefore(collection, newPara, nextSection);
+                } else {
+                    postEditor.insertSectionAtEnd(newPara);
+                }
+
+                postEditor.setRange(newPara.tailPosition());
+            });
         }
     },
 
@@ -632,9 +674,18 @@ export default Component.extend({
         return card.env.postModel;
     },
 
+    _moveCaretToHeadOfSection(section, skipCursorChange = true) {
+        this._moveCaretToSection('head', section, skipCursorChange);
+    },
+
     _moveCaretToTailOfSection(section, skipCursorChange = true) {
+        this._moveCaretToSection('tail', section, skipCursorChange);
+    },
+
+    _moveCaretToSection(position, section, skipCursorChange = true) {
         this.editor.run((postEditor) => {
-            let range = section.tailPosition().toRange();
+            let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
+            let range = sectionPosition.toRange();
 
             // don't trigger another cursor change selection after selecting
             if (skipCursorChange && !range.isEqual(this.editor.range)) {
