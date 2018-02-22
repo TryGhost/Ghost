@@ -12,7 +12,7 @@ function getTitle(data, options) {
         page;
 
     options = options ? options : {};
-    page = options.hash !== undefined && _.isString(options.hash.page)? options.hash.page : 'Page';
+    page = options.hash !== undefined && _.isString(options.hash.page) ? options.hash.page : 'Page';
 
     if (pagination && pagination.total > 1) {
         pageString = ' (' + page + ' ' + pagination.page + ')';
