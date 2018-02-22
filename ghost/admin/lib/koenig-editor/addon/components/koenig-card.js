@@ -18,6 +18,7 @@ export default Component.extend({
     toolbar: null,
     isSelected: false,
     isEditing: false,
+    hasEditMode: true,
 
     // properties
     showToolbar: false,
@@ -52,6 +53,7 @@ export default Component.extend({
 
         let isSelected = this.get('isSelected');
         let isEditing = this.get('isEditing');
+        let hasEditMode = this.get('hasEditMode');
 
         if (isSelected !== this._lastIsSelected) {
             if (isSelected) {
@@ -62,7 +64,9 @@ export default Component.extend({
         }
 
         if (isEditing !== this._lastIsEditing) {
-            if (isEditing) {
+            if (!hasEditMode) {
+                isEditing = false;
+            } else if (isEditing) {
                 this._onEnterEdit();
             } else {
                 this._onLeaveEdit();
@@ -82,6 +86,7 @@ export default Component.extend({
     mouseDown(event) {
         let isSelected = this.get('isSelected');
         let isEditing = this.get('isEditing');
+        let hasEditMode = this.get('hasEditMode');
 
         // if we perform an action we want to prevent the mousedown from
         // triggering a cursor position change which can result in multiple
@@ -90,8 +95,17 @@ export default Component.extend({
         if (!isSelected && !isEditing) {
             this.selectCard();
             this.set('showToolbar', true);
-            event.preventDefault();
-        } else if (isSelected && !isEditing) {
+
+            // in most situations we want to prevent default behaviour which
+            // can cause an underlying cursor position change but inputs and
+            // textareas are different and we want the focus to move to them
+            // immediately when clicked
+            let targetTagName = event.target.tagName;
+            let allowedTagNames = ['INPUT', 'TEXTAREA'];
+            if (!allowedTagNames.includes(targetTagName)) {
+                event.preventDefault();
+            }
+        } else if (hasEditMode && isSelected && !isEditing) {
             this.editCard();
             this.set('showToolbar', true);
             event.preventDefault();
@@ -99,7 +113,7 @@ export default Component.extend({
     },
 
     doubleClick() {
-        if (!this.get('isEditing')) {
+        if (this.get('hasEditMode') && !this.get('isEditing')) {
             this.editCard();
             this.set('showToolbar', true);
         }
