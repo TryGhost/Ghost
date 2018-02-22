@@ -7,12 +7,14 @@ function getTitle(data, root, options) {
         postSdTitle,
         blogTitle = settingsCache.get('title'),
         pagination = root ? root.pagination : null,
-        pageString = '';
+        pageString = '',
+        page;
 
     options = options ? options : {};
+    page = options.hash !== undefined && _.isString(options.hash.page)? options.hash.page : 'Page';
 
     if (pagination && pagination.total > 1) {
-        pageString = ' (Page ' + pagination.page + ')';
+        pageString = ' (' + page + ' ' + pagination.page + ')';
     }
 
     // If there's a specific meta title
