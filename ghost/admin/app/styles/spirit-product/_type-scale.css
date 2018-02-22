@@ -1,3 +1,17 @@
+/*
+
+    Vertical rhythm = 1.067
+    Tools that can help with experimenting with type scale:
+    http://type-scale.com/
+    https://www.gridlover.net/
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
  :root {
     --ts-base-fontsize: 62.5%;
 
@@ -16,7 +30,7 @@
     --ts-supersmall: 1.1rem;
  }
 
-/* Rhythm = 1.15 */
+
 .fs-base        { font-size: var(--ts-base-fontsize); }
 .f-headline     { font-size: var(--ts-headline); }
 .f-subheadline  { font-size: var(--ts-subheadline); }

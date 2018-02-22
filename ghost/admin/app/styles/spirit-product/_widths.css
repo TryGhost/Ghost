@@ -1,9 +1,19 @@
 /*
 
-   Media Query Extensions:
-     -ns = not-small
-     -m  = medium
-     -l  = large
+    Base:
+        w = width
+
+    Value:
+        (n) = (n * grid size)
+        -(m) = (m)%
+        -third = third of full width
+        -two-thirds = two thirds of full width
+        -auto = auto
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
 
 */
 

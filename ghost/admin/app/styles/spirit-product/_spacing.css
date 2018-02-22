@@ -1,3 +1,26 @@
+/*
+
+    Base:
+        p = padding
+        m = margin
+
+    Modifier:
+        a = all
+        r = right
+        b = bottom
+        l = left
+        t = top
+
+    Value:
+        (n) = (n * grid size)
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+ */
+
 :root {
    --grid-size: .4rem;
 }

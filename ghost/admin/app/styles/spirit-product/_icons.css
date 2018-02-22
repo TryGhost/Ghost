@@ -1,5 +1,34 @@
-/* Icon fill colors
-/* -------------------------------------------------------- */
+/*
+
+    COLORING ICONS
+    ----------------------------------------
+    Base:
+        fill = filled icon
+        stroke = outlined icon
+
+    Value:
+        -(color) = color
+
+    See _colors.css for available colors.
+
+
+    ICON SIZES
+    ----------------------------------------
+    Base:
+        iw = icon width
+        ih = icon height
+
+    Value:
+        1-6 = size scale
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
+/* Icon fill colors */
 .filter-invert      {  filter: invert(100%);  }
 
 .fill-blue path,
@@ -415,18 +444,22 @@
 .stroke-white g       {  stroke: var(--white)  }
 
 
-/* Custom icon sizes
-/* -------------------------------------------------------- */
+/* Custom icon sizes */
 .ih1 { height: .8rem;  }
 .iw1 { width: .8rem;  }
+
 .ih2 { height: 1.2rem;  }
 .iw2 { width: 1.2rem;  }
+
 .ih3 { height: 1.6rem;  }
 .iw3 { width: 1.6rem;  }
+
 .ih4 { height: 2.0rem;  }
 .iw4 { width: 2.0rem;  }
+
 .ih5 { height: 2.4rem;  }
 .iw5 { width: 2.4rem;  }
+
 .ih6 { height: 3.2rem;  }
 .iw6 { width: 3.2rem;  }
 

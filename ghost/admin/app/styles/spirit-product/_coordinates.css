@@ -1,3 +1,21 @@
+/*
+
+    Base:
+        top
+        right
+        bottom
+        left
+
+    Value:
+        -(n) = (n * grid)
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
 .top-0 {    top: 0; }
 .top-1 {    top: calc(var(--grid-size) * 1); }
 .top-2 {    top: calc(var(--grid-size) * 2); }

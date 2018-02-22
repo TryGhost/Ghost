@@ -1,11 +1,17 @@
+/*
+
+    Namespaces:
+        kg- = koenig related classes
+        gh- = client related classes
+
+*/
+
 /* Buttons */
-/* ---------------------------------------------- */
 button, .btn-base {
     transition: none!important;
     text-decoration: none!important;
     user-select: none;
     outline: none;
-    /* border: none; */
 }
 
 .btn-base span {
@@ -45,7 +51,6 @@ button, .btn-base {
     box-shadow: none;
 }
 
-
 /* Green button */
 .btn-green {
     padding: 1px;
@@ -77,6 +82,7 @@ button, .btn-base {
     box-shadow: none;
 }
 
+
 /* Koenig Styles */
 .kg-editor {
     font-family: georgia,
@@ -99,6 +105,7 @@ button, .btn-base {
 .kg-card-selected {
     border: 1px solid var(--blue);
 }
+
 
 /* Client styles */
 .gh-nav-link:hover {
