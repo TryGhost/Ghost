@@ -1038,21 +1038,6 @@ describe('Post Model', function () {
                 });
             });
 
-            it('[unsupported] can\'t add `author` as object', function () {
-                var newPost = testUtils.DataGenerator.forModel.posts[2];
-
-                // `post.author` relation get's ignored in Ghost - unsupported
-                newPost.author = {id: testUtils.DataGenerator.Content.users[3].id};
-                delete newPost.author_id;
-
-                return PostModel.add(newPost, context)
-                    .then(function (createdPost) {
-                        // fallsback to logged in user
-                        createdPost.get('author_id').should.eql(context.context.user);
-                        createdPost.get('author_id').should.not.eql(testUtils.DataGenerator.Content.users[3].id);
-                    });
-            });
-
             it('can add, defaults are all correct', function (done) {
                 var createdPostUpdatedDate,
                     newPost = testUtils.DataGenerator.forModel.posts[2],
@@ -1759,12 +1744,14 @@ describe('Post Model', function () {
     });
 
     describe('Post tag handling edge cases', function () {
-        beforeEach(testUtils.setup());
+        before(testUtils.teardown);
 
         var postJSON,
             tagJSON,
             editOptions,
             createTag = testUtils.DataGenerator.forKnex.createTag;
+
+        beforeEach(testUtils.setup('owner'));
 
         beforeEach(function () {
             tagJSON = [];
@@ -1786,8 +1773,6 @@ describe('Post Model', function () {
 
             return Promise.props({
                 post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                role: RoleModel.add(testUtils.DataGenerator.forKnex.roles[2], context),
-                user: UserModel.add(testUtils.DataGenerator.forKnex.users[0], context),
                 tag1: TagModel.add(extraTags[0], context),
                 tag2: TagModel.add(extraTags[1], context),
                 tag3: TagModel.add(extraTags[2], context)
@@ -1840,22 +1825,6 @@ describe('Post Model', function () {
                 updatedPost.tags[0].slug.should.eql('eins');
                 updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
             });
-        });
-
-        it('[unsupported] can\'t edit `author` as object', function () {
-            var newJSON = _.cloneDeep(postJSON),
-                modelOptions = _.clone(editOptions);
-
-            newJSON.author.should.eql(testUtils.DataGenerator.Content.users[0].id);
-            newJSON.author = {id: testUtils.DataGenerator.Content.users[3].id};
-            delete newJSON.author_id;
-
-            modelOptions.withRelated.push('author');
-            return PostModel.edit(newJSON, modelOptions)
-                .then(function (updatedPost) {
-                    updatedPost.get('author_id').should.eql(testUtils.DataGenerator.Content.users[0].id);
-                    updatedPost.related('author').toJSON().slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
-                });
         });
 
         it('can\'t edit dates and authors of existing tag', function () {
