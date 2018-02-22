@@ -1,5 +1,6 @@
 var _ = require('lodash'),
-    settingsCache = require('../../services/settings/cache');
+    settingsCache = require('../../services/settings/cache'),
+    i18n = require('../../lib/common/i18n');
 
 function getTitle(data, root, options) {
     var title = '',
@@ -12,7 +13,7 @@ function getTitle(data, root, options) {
     options = options ? options : {};
 
     if (pagination && pagination.total > 1) {
-        pageString = ' (Page ' + pagination.page + ')';
+        pageString = i18n.t(' (Page {page})', {isThemeString: true, page: pagination.page});
     }
 
     // If there's a specific meta title
