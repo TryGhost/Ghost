@@ -1,20 +1,16 @@
 var _ = require('lodash'),
     settingsCache = require('../../services/settings/cache');
 
-function getTitle(data, root, options) {
+function getTitle(data, root) {
     var title = '',
         context = root ? root.context : null,
         postSdTitle,
         blogTitle = settingsCache.get('title'),
         pagination = root ? root.pagination : null,
-        pageString = '',
-        page;
-
-    options = options ? options : {};
-    page = options.hash !== undefined && _.isString(options.hash.page) ? options.hash.page : 'Page';
+        pageString;
 
     if (pagination && pagination.total > 1) {
-        pageString = ' (' + page + ' ' + pagination.page + ')';
+        pageString = pagination.pagestring ? pagination.pagestring : '';
     }
 
     // If there's a specific meta title
