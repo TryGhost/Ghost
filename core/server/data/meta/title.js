@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     settingsCache = require('../../services/settings/cache');
 
-function getTitle(data, root) {
+function getTitle(data, root, options) {
     var title = '',
         context = root ? root.context : null,
         postSdTitle,
