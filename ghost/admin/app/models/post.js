@@ -116,8 +116,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     init() {
-        // we can't use the defaultValue property on the attr because it won't
-        // have access to `this` for the feature check so we do it manually here.
+        // HACK: we can't use the defaultValue property on the mobiledoc attr
+        // because it won't have access to `this` for the feature check so we do
+        // it manually here instead
         if (!this.get('mobiledoc')) {
             let defaultValue;
 
@@ -128,10 +129,11 @@ export default Model.extend(Comparable, ValidationEngine, {
             }
 
             // using this.set() adds the property to the changedAttributes list
-            // which means the editor always sees new posts as dirty. Assigning
-            // the value directly works around that so you can exit the editor
-            // without a warning
-            this.mobiledoc = defaultValue;
+            // which means the editor always sees new posts as dirty. By setting
+            // the internal model data property first it's not seen as having
+            // changed so the changedAttributes key is removed
+            this._internalModel._data.mobiledoc = defaultValue;
+            this.set('mobiledoc', defaultValue);
         }
 
         this._super(...arguments);

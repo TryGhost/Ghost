@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import OAuth2Authenticator from 'ghost-admin/authenticators/oauth2';
 import destroyApp from '../helpers/destroy-app';
-import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import startApp from '../helpers/start-app';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
@@ -9,8 +8,6 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
-
-const Ghost = ghostPaths();
 
 describe('Acceptance: Authentication', function () {
     let application,
@@ -233,38 +230,5 @@ describe('Acceptance: Authentication', function () {
             run.debounce = origDebounce;
             run.throttle = origThrottle;
         });
-    });
-
-    it('adds auth headers to jquery ajax', async function (done) {
-        let role = server.create('role', {name: 'Administrator'});
-        server.create('user', {roles: [role]});
-
-        server.post('/uploads', (schema, request) => request);
-
-        /* eslint-disable camelcase */
-        authenticateSession(application, {
-            access_token: 'test_token',
-            expires_in: 3600,
-            token_type: 'Bearer'
-        });
-        /* eslint-enable camelcase */
-
-        // necessary to visit a page to fully boot the app in testing
-        await visit('/');
-
-        /* eslint-disable ghost/ember/jquery-ember-run */
-        await $.ajax({
-            type: 'POST',
-            url: `${Ghost.apiRoot}/uploads/`,
-            data: {test: 'Test'}
-        }).then((request) => {
-            expect(request.requestHeaders.Authorization, 'Authorization header')
-                .to.exist;
-            expect(request.requestHeaders.Authorization, 'Authotization header content')
-                .to.equal('Bearer test_token');
-        }).always(() => {
-            done();
-        });
-        /* eslint-enable ghost/ember/jquery-ember-run */
     });
 });

@@ -1,13 +1,16 @@
 import Mixin from '@ember/object/mixin';
 import RSVP from 'rsvp';
-import {assign} from '@ember/polyfills';
+// import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-let defaultPaginationSettings = {
-    page: 1,
-    limit: 15
-};
+// let defaultPaginationSettings = {
+//     page: 1,
+//     limit: 15
+// };
+
+// NOTE: this is DEPRECATED and now _only_ used by the subscribers route.
+// DO NOT USE - it will disappear soon
 
 export default Mixin.create({
     notifications: service(),
@@ -30,13 +33,17 @@ export default Mixin.create({
     }),
 
     init() {
+        // NOTE: errors in Ember 3.0 because this.paginationSettings.isDescriptor
+        // no longer exists as CPs will be available directly with no getter.
+        // Commented out for now as this whole mixin will soon disappear
+        //
         // don't merge defaults if paginationSettings is a CP
-        if (!this.paginationSettings.isDescriptor) {
-            let paginationSettings = this.get('paginationSettings');
-            let settings = assign({}, defaultPaginationSettings, paginationSettings);
-
-            this.set('paginationSettings', settings);
-        }
+        // if (!this.paginationSettings.isDescriptor) {
+        //     let paginationSettings = this.get('paginationSettings');
+        //     let settings = assign({}, defaultPaginationSettings, paginationSettings);
+        //
+        //     this.set('paginationSettings', settings);
+        // }
 
         this.set('paginationMeta', {});
 
