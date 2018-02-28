@@ -309,7 +309,7 @@ describe('Unit: models/user', function () {
         });
     });
 
-    describe('onValidate', function () {
+    describe('Edit', function () {
         let knexMock;
 
         before(function () {
@@ -329,21 +329,19 @@ describe('Unit: models/user', function () {
             knexMock.unmock();
         });
 
-        describe('edit', function () {
-            it('resets given empty value to null', function () {
-                return models.User.findOne({slug: 'joe-bloggs'})
-                    .then(function (user) {
-                        user.get('slug').should.eql('joe-bloggs');
-                        user.get('profile_image').should.eql('https://example.com/super_photo.jpg');
-                        user.set('profile_image', '');
-                        user.set('bio', '');
-                        return user.save();
-                    })
-                    .then(function (user) {
-                        should(user.get('profile_image')).be.null();
-                        user.get('bio').should.eql('');
-                    });
-            });
+        it('resets given empty value to null', function () {
+            return models.User.findOne({slug: 'joe-bloggs'})
+                .then(function (user) {
+                    user.get('slug').should.eql('joe-bloggs');
+                    user.get('profile_image').should.eql('https://example.com/super_photo.jpg');
+                    user.set('profile_image', '');
+                    user.set('bio', '');
+                    return user.save();
+                })
+                .then(function (user) {
+                    should(user.get('profile_image')).be.null();
+                    user.get('bio').should.eql('');
+                });
         });
     });
 });

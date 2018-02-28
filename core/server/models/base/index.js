@@ -136,6 +136,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @returns {*}
      */
     onValidate: function onValidate(model, columns, options) {
+        this.setEmptyValuesToNull();
+
         return validation.validateSchema(this.tableName, this, options);
     },
 
@@ -289,8 +291,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Sets given values to `null`
-    setEmptyValuesToNull: function setEmptyValuesToNull(attr) {
-        var self = this;
+    setEmptyValuesToNull: function setEmptyValuesToNull() {
+        var self = this,
+            attr;
+
+        if (!this.emptyStringProperties) {
+            return;
+        }
+
+        attr = this.emptyStringProperties();
 
         _.each(attr, function (value) {
             if (self.get(value) === '') {

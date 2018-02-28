@@ -302,15 +302,11 @@ Post = ghostBookshelf.Model.extend({
         return sequence(ops);
     },
 
-    onValidate: function onValidate() {
+    emptyStringProperties: function emptyStringProperties() {
         // CASE: the client might send empty image properties with "" instead of setting them to null.
         // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
         // See https://github.com/TryGhost/GQL/issues/24
-        var affectedProps = ['feature_image', 'og_image', 'twitter_image'];
-
-        ghostBookshelf.Model.prototype.setEmptyValuesToNull.call(this, affectedProps);
-
-        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments);
+        return ['feature_image', 'og_image', 'twitter_image'];
     },
 
     onCreating: function onCreating(model, attr, options) {

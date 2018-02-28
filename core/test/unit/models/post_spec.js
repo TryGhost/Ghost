@@ -16,7 +16,7 @@ describe('Unit: models/post', function () {
         sandbox.restore();
     });
 
-    describe('onValidate', function () {
+    describe('Edit', function () {
         let knexMock;
 
         before(function () {
@@ -28,21 +28,19 @@ describe('Unit: models/post', function () {
             knexMock.unmock();
         });
 
-        describe('edit', function () {
-            it('resets given empty value to null', function () {
-                return models.Post.findOne({slug: 'html-ipsum'})
-                    .then(function (post) {
-                        post.get('slug').should.eql('html-ipsum');
-                        post.get('feature_image').should.eql('https://example.com/super_photo.jpg');
-                        post.set('feature_image', '');
-                        post.set('custom_excerpt', '');
-                        return post.save();
-                    })
-                    .then(function (post) {
-                        should(post.get('feature_image')).be.null();
-                        post.get('custom_excerpt').should.eql('');
-                    });
-            });
+        it('resets given empty value to null', function () {
+            return models.Post.findOne({slug: 'html-ipsum'})
+                .then(function (post) {
+                    post.get('slug').should.eql('html-ipsum');
+                    post.get('feature_image').should.eql('https://example.com/super_photo.jpg');
+                    post.set('feature_image', '');
+                    post.set('custom_excerpt', '');
+                    return post.save();
+                })
+                .then(function (post) {
+                    should(post.get('feature_image')).be.null();
+                    post.get('custom_excerpt').should.eql('');
+                });
         });
     });
 
