@@ -33,13 +33,14 @@
 
                     <div class="gh-input-icon gh-icon-link">
                         {{inline-svg "link"}}
-                        {{gh-input slugValue
+                        {{gh-text-input
                             class="post-setting-slug"
                             id="url"
                             name="post-setting-slug"
-                            focusOut=(action "updateSlug" slugValue)
-                            stopEnterKeyDownPropagation="true"
-                            update=(action (mut slugValue))}}
+                            value=(readonly slugValue)
+                            input=(action (mut slugValue) value="target.value")
+                            focus-out=(action "updateSlug" slugValue)
+                            stopEnterKeyDownPropagation=true}}
                     </div>
                     {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
                 </div>
@@ -74,13 +75,14 @@
 
                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="customExcerpt"}}
                     <label for="custom-excerpt">Excerpt</label>
-                    {{gh-textarea customExcerptScratch
+                    {{gh-textarea
                         class="post-setting-custom-excerpt"
                         id="custom-excerpt"
                         name="post-setting-custom-excerpt"
-                        focusOut=(action "setCustomExcerpt" customExcerptScratch)
+                        value=(readonly customExcerptScratch)
+                        input=(action (mut customExcerptScratch) value="target.value")
+                        focus-out=(action "setCustomExcerpt" customExcerptScratch)
                         stopEnterKeyDownPropagation="true"
-                        update=(action (mut customExcerptScratch))
                         data-test-field="custom-excerpt"}}
                     {{gh-error-message errors=post.errors property="customExcerpt" data-test-error="custom-excerpt"}}
                 {{/gh-form-group}}
@@ -139,25 +141,27 @@
 
                 <div class="form-group for-checkbox">
                     <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                        {{one-way-checkbox post.page
+                        <input
+                            type="checkbox"
+                            checked={{post.page}}
+                            class="gh-input post-setting-static-page"
                             name="static-page"
                             id="static-page"
-                            class="gh-input post-setting-static-page"
-                            update=(action (mut post.page))
+                            onclick={{action (mut post.page) value="target.checked"}}
                             data-test-checkbox="static-page"
-                        }}
+                        >
                         <span class="input-toggle-component"></span>
                         <p>Turn this post into a page</p>
                     </label>
 
                     <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                        {{one-way-checkbox post.featured
-                            name="featured"
-                            id="featured"
-                            class="gh-input post-setting-featured"
-                            update=(action (mut post.featured))
+                        <input
+                            type="checkbox"
+                            checked={{post.featured}}
+                            class="gh-input post-settings-featured"
+                            onclick={{action (mut post.featured) value="target.checked"}}
                             data-test-checkbox="featured"
-                        }}
+                        >
                         <span class="input-toggle-component"></span>
                         <p>Feature this post</p>
                     </label>
@@ -189,13 +193,14 @@
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaTitle"}}
                                     <label for="meta-title">Meta Title</label>
-                                    {{gh-input metaTitleScratch
+                                    {{gh-text-input
                                         class="post-setting-meta-title"
                                         id="meta-title"
                                         name="post-setting-meta-title"
-                                        focusOut=(action "setMetaTitle" metaTitleScratch)
-                                        stopEnterKeyDownPropagation="true"
-                                        update=(action (mut metaTitleScratch))
+                                        value=(readonly metaTitleScratch)
+                                        input=(action (mut metaTitleScratch) value="target.value")
+                                        focus-out=(action "setMetaTitle" metaTitleScratch)
+                                        stopEnterKeyDownPropagation=true
                                         data-test-field="meta-title"}}
                                     <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
                                     {{gh-error-message errors=post.errors property="meta-title"}}
@@ -203,13 +208,14 @@
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaDescription"}}
                                     <label for="meta-description">Meta Description</label>
-                                    {{gh-textarea metaDescriptionScratch
+                                    {{gh-textarea
                                         class="post-setting-meta-description"
                                         id="meta-description"
                                         name="post-setting-meta-description"
-                                        focusOut=(action "setMetaDescription" metaDescriptionScratch)
+                                        value=(readonly metaDescriptionScratch)
+                                        input=(action (mut metaDescriptionScratch) value="target.value")
+                                        focus-out=(action "setMetaDescription" metaDescriptionScratch)
                                         stopEnterKeyDownPropagation="true"
-                                        update=(action (mut metaDescriptionScratch))
                                         data-test-field="meta-description"}}
                                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
                                     {{gh-error-message errors=post.errors property="meta-description"}}
@@ -246,28 +252,30 @@
                                 }}
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterTitle"}}
                                     <label for="twitter-title">Twitter Title</label>
-                                    {{gh-input twitterTitleScratch
+                                    {{gh-text-input
                                         class="post-setting-twitter-title"
                                         id="twitter-title"
                                         name="post-setting-twitter-title"
                                         placeholder=(truncate twitterTitle 40)
-                                        focusOut=(action "setTwitterTitle" twitterTitleScratch)
-                                        stopEnterKeyDownPropagation="true"
-                                        update=(action (mut twitterTitleScratch))
+                                        value=(readonly twitterTitleScratch)
+                                        input=(action (mut twitterTitleScratch) value="target.value")
+                                        focus-out=(action "setTwitterTitle" twitterTitleScratch)
+                                        stopEnterKeyDownPropagation=true
                                         data-test-field="twitter-title"}}
                                     {{gh-error-message errors=post.errors property="twitterTitle" data-test-error="twitter-title"}}
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterDescription"}}
                                     <label for="twitter-description">Twitter Description</label>
-                                    {{gh-textarea twitterDescriptionScratch
+                                    {{gh-textarea
                                         class="post-setting-twitter-description"
                                         id="twitter-description"
                                         name="post-setting-twitter-description"
                                         placeholder=(truncate twitterDescription 155)
-                                        focusOut=(action "setTwitterDescription" twitterDescriptionScratch)
                                         stopEnterKeyDownPropagation="true"
-                                        update=(action (mut twitterDescriptionScratch))
+                                        value=(readonly twitterDescriptionScratch)
+                                        input=(action (mut twitterDescriptionScratch) value="target.value")
+                                        focus-out=(action "setTwitterDescription" twitterDescriptionScratch)
                                         data-test-field="twitter-description"}}
                                     {{gh-error-message errors=post.errors property="twitterDescription" data-test-error="twitter-description"}}
                                 {{/gh-form-group}}
@@ -314,28 +322,30 @@
                                 }}
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogTitle"}}
                                     <label for="og-title">Facebook Title</label>
-                                    {{gh-input ogTitleScratch
+                                    {{gh-text-input
                                         class="post-setting-og-title"
                                         id="og-title"
                                         name="post-setting-og-title"
                                         placeholder=(truncate facebookTitle 40)
-                                        focusOut=(action "setOgTitle" ogTitleScratch)
-                                        stopEnterKeyDownPropagation="true"
-                                        update=(action (mut ogTitleScratch))
+                                        value=(readonly ogTitleScratch)
+                                        input=(action (mut ogTitleScratch) value="target.value")
+                                        focus-out=(action "setOgTitle" ogTitleScratch)
+                                        stopEnterKeyDownPropagation=true
                                         data-test-field="og-title"}}
                                     {{gh-error-message errors=post.errors property="ogTitle" data-test-error="og-title"}}
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogDescription"}}
                                     <label for="og-description">Facebook Description</label>
-                                    {{gh-textarea ogDescriptionScratch
+                                    {{gh-textarea
                                         class="post-setting-og-description"
                                         id="og-description"
                                         name="post-setting-og-description"
                                         placeholder=(truncate facebookDescription 160)
-                                        focusOut=(action "setOgDescription" ogDescriptionScratch)
+                                        value=(readonly ogDescriptionScratch)
+                                        input=(action (mut ogDescriptionScratch) value="target.value")
+                                        focus-out=(action "setOgDescription" ogDescriptionScratch)
                                         stopEnterKeyDownPropagation="true"
-                                        update=(action (mut ogDescriptionScratch))
                                         data-test-field="og-description"}}
                                     {{gh-error-message errors=post.errors property="ogDescription" data-test-error="og-description"}}
                                 {{/gh-form-group}}

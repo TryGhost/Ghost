@@ -10,16 +10,16 @@
         Gifted by the world’s most generous community of photographers. 🎁</p>
                     <span class="gh-input-icon">
                         {{inline-svg "search"}}
-                        {{gh-input unsplash.searchTerm
+                        {{gh-text-input
                             class="gh-unsplash-search"
-                            type="text"
                             name="searchKeyword"
                             placeholder="Search free high-resolution photos"
                             tabindex="1"
                             autocorrect="off"
+                            value=(readonly unsplash.searchTerm)
+                            input=(action "updateSearch" target=unsplash value="target.value")
                             focusIn=(action "setKeyScope")
-                            focusOut=(action "resetKeyScope")
-                            update=(action "updateSearch" target=unsplash)
+                            focus-out=(action "resetKeyScope")
                         }}
                     </span>
                 </header>

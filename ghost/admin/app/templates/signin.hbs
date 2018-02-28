@@ -5,7 +5,7 @@
                 {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="identification"}}
                     <span class="gh-input-icon gh-icon-mail">
                         {{inline-svg "email"}}
-                        {{gh-trim-focus-input signin.identification
+                        {{gh-trim-focus-input
                             class="email"
                             type="email"
                             placeholder="Email Address"
@@ -13,21 +13,24 @@
                             autocapitalize="off"
                             autocorrect="off"
                             tabindex="1"
-                            focusOut=(action "validate" "identification")
-                            update=(action (mut signin.identification))}}
+                            value=(readonly signin.identification)
+                            input=(action (mut signin.identification) value="target.value")
+                            focus-out=(action "validate" "identification")
+                        }}
                     </span>
                 {{/gh-form-group}}
                 {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="password"}}
                     <span class="gh-input-icon gh-icon-lock forgotten-wrap">
                         {{inline-svg "lock"}}
-                        {{gh-input signin.password
+                        {{gh-text-input
                             class="password"
                             type="password"
                             placeholder="Password"
                             name="password"
                             tabindex="2"
                             autocorrect="off"
-                            update=(action (mut signin.password))}}
+                            value=(readonly signin.password)
+                            input=(action (mut signin.password) value="target.value")}}
 
                         {{#gh-task-button
                             task=forgotten

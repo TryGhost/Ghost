@@ -8,7 +8,13 @@
 <form class="gh-flow-invite" {{action "invite" on="submit"}}>
     {{#gh-form-group errors=errors hasValidated=hasValidated property="users"}}
         <label for="users">Enter one email address per line, we’ll handle the rest! {{inline-svg "email"}}</label>
-        {{gh-textarea users name="users" required="required" focusOut=(action "validate") update=(action (mut users))}}
+        {{gh-textarea
+            name="users"
+            required="required"
+            value=(readonly users)
+            input=(action (mut users) value="target.value")
+            focus-out=(action "validate")
+        }}
     {{/gh-form-group}}
 
     {{#gh-task-button

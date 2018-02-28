@@ -78,16 +78,17 @@
                 as |markdown|
             }}
                 <div class="gh-markdown-editor-pane">
-                    {{gh-textarea post.titleScratch
+                    {{gh-textarea
                         class="gh-editor-title"
                         placeholder="Post Title"
                         tabindex="1"
                         autoExpand=".gh-markdown-editor-pane"
-                        update=(action "updateTitleScratch")
-                        focusOut=(action (perform saveTitle))
+                        value=(readonly post.titleScratch)
+                        input=(action "updateTitleScratch" value="target.value")
+                        focus-out=(action (perform saveTitle))
                         keyEvents=(hash
-                            9=(action markdown.focus 'bottom')
-                            13=(action markdown.focus 'top')
+                            Tab=(action markdown.focus 'bottom')
+                            Enter=(action markdown.focus 'top')
                         )
                         data-test-editor-title-input=true
                     }}

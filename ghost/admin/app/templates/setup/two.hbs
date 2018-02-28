@@ -13,14 +13,15 @@
         <label for="blog-title">Blog title</label>
         <span class="gh-input-icon gh-icon-content">
             {{inline-svg "content"}}
-            {{gh-trim-focus-input blogTitle
+            {{gh-trim-focus-input
                 tabindex="1"
                 type="text"
                 name="blog-title"
                 placeholder="Eg. The Daily Awesome"
                 autocorrect="off"
-                focusOut=(action "preValidate" "blogTitle")
-                update=(action (mut blogTitle))
+                value=(readonly blogTitle)
+                input=(action (mut blogTitle) value="target.value")
+                focus-out=(action "preValidate" "blogTitle")
                 data-test-blog-title-input=true}}
         </span>
         {{gh-error-message errors=errors property="blogTitle"}}
@@ -30,14 +31,14 @@
         <label for="name">Full name</label>
         <span class="gh-input-icon gh-icon-user">
             {{inline-svg "user-circle"}}
-            {{gh-input name
+            {{gh-text-input
                 tabindex="2"
-                type="text"
                 name="name"
                 placeholder="Eg. John H. Watson"
                 autocorrect="off"
-                focusOut=(action "preValidate" "name")
-                update=(action (mut name))
+                value=(readonly name)
+                input=(action (mut name) value="target.value")
+                focus-out=(action "preValidate" "name")
                 data-test-name-input=true}}
         </span>
         {{gh-error-message errors=errors property="name"}}
@@ -47,14 +48,15 @@
         <label for="email">Email address</label>
         <span class="gh-input-icon gh-icon-mail">
             {{inline-svg "email"}}
-            {{gh-input email
+            {{gh-text-input
                 tabindex="3"
                 type="email"
                 name="email"
                 placeholder="Eg. john@example.com"
                 autocorrect="off"
-                focusOut=(action "preValidate" "email")
-                update=(action (mut email))
+                value=(readonly email)
+                input=(action (mut email) value="target.value")
+                focus-out=(action "preValidate" "email")
                 data-test-email-input=true}}
         </span>
         {{gh-error-message errors=errors property="email"}}
@@ -64,14 +66,15 @@
         <label for="password">Password</label>
         <span class="gh-input-icon gh-icon-lock">
             {{inline-svg "lock"}}
-            {{gh-input password
+            {{gh-text-input
                 tabindex="4"
                 type="password"
                 name="password"
                 placeholder="At least 10 characters"
                 autocorrect="off"
-                focusOut=(action "preValidate" "password")
-                update=(action (mut password))
+                value=(readonly password)
+                input=(action (mut password) value="target.value")
+                focus-out=(action "preValidate" "password")
                 data-test-password-input=true}}
         </span>
         {{gh-error-message errors=errors property="password"}}

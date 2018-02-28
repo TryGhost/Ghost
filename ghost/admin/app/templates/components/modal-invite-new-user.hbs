@@ -7,9 +7,7 @@
     <fieldset>
         {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
             <label for="new-user-email">Email Address</label>
-            {{gh-input
-                email
-                enter="sendInvite"
+            {{gh-text-input
                 class="email"
                 id="new-user-email"
                 type="email"
@@ -18,8 +16,12 @@
                 autofocus="autofocus"
                 autocapitalize="off"
                 autocorrect="off"
-                focusOut=(action "validate" "email")
-                update=(action (mut email))
+                value=(readonly email)
+                input=(action (mut email) value="target.value")
+                keyEvents=(hash
+                    Enter=(action "confirm")
+                )
+                focus-out=(action "validate" "email")
             }}
             {{gh-error-message errors=errors property="email"}}
         {{/gh-form-group}}
