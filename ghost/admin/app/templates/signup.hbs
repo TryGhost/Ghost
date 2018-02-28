@@ -17,12 +17,15 @@
                     <label for="email-address">Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
                         {{inline-svg "email"}}
-                        {{gh-input signupDetails.email
+                        {{gh-text-input
                             type="email"
                             name="email"
                             placeholder="Eg. john@example.com"
                             disabled="disabled"
-                            autocorrect="off"}}
+                            autocorrect="off"
+                            value=(readonly signupDetails.email)
+                            input=(action (mut signupDetails.email) value="target.value")
+                        }}
                     </span>
                 {{/gh-form-group}}
 
@@ -30,15 +33,19 @@
                     <label for="full-name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
                         {{inline-svg "user-circle"}}
-                        {{gh-trim-focus-input signupDetails.name
+                        {{gh-trim-focus-input
                             tabindex="1"
                             type="text"
                             name="name"
                             placeholder="Eg. John H. Watson"
                             autocorrect="off"
-                            onenter=(action "signup")
-                            focusOut=(action "validate" "name")
-                            update=(action (mut signupDetails.name))}}
+                            value=(readonly signupDetails.name)
+                            input=(action (mut signupDetails.name) value="target.value")
+                            keyEvents=(hash
+                                Enter=(action "signup")
+                            )
+                            focus-out=(action "validate" "name")
+                        }}
                     </span>
                     {{gh-error-message errors=signupDetails.errors property="name"}}
                 {{/gh-form-group}}
@@ -47,15 +54,16 @@
                     <label for="password">Password</label>
                     <span class="gh-input-icon gh-icon-lock">
                         {{inline-svg "lock"}}
-                        {{gh-input signupDetails.password
+                        {{gh-text-input
                             tabindex="2"
                             type="password"
                             name="password"
                             placeholder="At least 10 characters"
                             onenter=(action "signup")
                             autocorrect="off"
-                            focusOut=(action "validate" "password")
-                            update=(action (mut signupDetails.password))}}
+                            value=(readonly signupDetails.password)
+                            input=(action (mut signupDetails.password) value="target.value")
+                            focus-out=(action "validate" "password")}}
                     </span>
                     {{gh-error-message errors=signupDetails.errors property="password"}}
                 {{/gh-form-group}}

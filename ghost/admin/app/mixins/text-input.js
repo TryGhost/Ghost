@@ -2,6 +2,11 @@
 import Mixin from '@ember/object/mixin';
 import {computed} from '@ember/object';
 
+const keyCodes = {
+    13: 'Enter',
+    9: 'Tab'
+};
+
 export default Mixin.create({
     attributeBindings: ['autofocus'],
 
@@ -32,14 +37,14 @@ export default Mixin.create({
         // stop event propagation when pressing "enter"
         // most useful in the case when undesired (global) keyboard shortcuts
         // are getting triggered while interacting with this particular input element.
-        if (this.get('stopEnterKeyDownPropagation') && event.keyCode === 13) {
+        if (event.keyCode === 13 && this.get('stopEnterKeyDownPropagation')) {
             event.stopPropagation();
 
             return true;
         }
 
         // prevent default TAB behaviour if we have a keyEvent for it
-        if (event.keyCode === 9 && typeof this.get('keyEvents.9') === 'function') {
+        if (event.keyCode === 9 && typeof this.get('keyEvents.Tab') === 'function') {
             event.preventDefault();
         }
 
@@ -48,11 +53,19 @@ export default Mixin.create({
 
     keyPress(event) {
         // prevent default ENTER behaviour if we have a keyEvent for it
-        if (event.keyCode === 13 && typeof this.get('keyEvents.13') === 'function') {
+        if (event.keyCode === 13 && typeof this.get('keyEvents.Enter') === 'function') {
             event.preventDefault();
         }
 
         this._super(...arguments);
+    },
+
+    keyUp(event) {
+        let methodName = this._getMethodFromKeyCode(event.keyCode);
+        let method = this.get(`keyEvents.${methodName}`);
+        if (method) {
+            method(event.target.value);
+        }
     },
 
     _focus() {
@@ -61,5 +74,10 @@ export default Mixin.create({
         if (this.get('shouldFocus') && !device.ios()) {
             this.element.focus();
         }
+    },
+
+    _getMethodFromKeyCode(keyCode) {
+        let methodName = keyCodes[keyCode.toString()];
+        return methodName;
     }
 });

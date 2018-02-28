@@ -10,8 +10,8 @@
     {{#if isEditing}}
         {{gh-textarea
             class="koenig-card-markdown"
-            value=payload.markdown
-            update=(action "updateMarkdown")
+            value=(readonly payload.markdown)
+            input=(action "updateMarkdown" value="target.value")
             autoExpand=".gh-koenig-editor"}}
     {{else}}
         {{renderedMarkdown}}

@@ -3821,14 +3821,13 @@ ember-native-dom-helpers@^0.5.4:
     broccoli-funnel "^1.1.0"
     ember-cli-babel "^6.6.0"
 
-ember-one-way-controls@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/ember-one-way-controls/-/ember-one-way-controls-3.0.1.tgz#bd18dab7a3fe59413bde4da3ae84bf9a2c76a1eb"
+ember-one-way-select@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ember-one-way-select/-/ember-one-way-select-4.0.0.tgz#4da2a8b8abb3360feaa69099ea31989ad3068e89"
   dependencies:
-    ember-cli-babel "^6.0.0"
+    ember-cli-babel "^6.6.0"
     ember-cli-htmlbars "^2.0.1"
     ember-invoke-action "^1.5.0"
-    ember-runtime-enumerable-includes-polyfill "^2.0.0"
 
 ember-power-calendar@^0.5.0:
   version "0.5.0"

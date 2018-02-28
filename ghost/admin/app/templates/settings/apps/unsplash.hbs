@@ -39,7 +39,14 @@
                 <div class="form-group right">
                     <div class="for-checkbox">
                         <label for="isActive" class="checkbox">
-                                {{one-way-checkbox unsplashSettings.isActive id="isActive" name="isActive" type="checkbox" update=(action "update") data-test-checkbox="unsplash"}}
+                                <input
+                                    type="checkbox"
+                                    checked={{unsplashSettings.isActive}}
+                                    id="isActive"
+                                    name="isActive"
+                                    onclick={{action "update" value="target.checked"}}
+                                    data-test-checkbox="unsplash"
+                                >
                                 <span class="input-toggle-component"></span>
                         </label>
                     </div>

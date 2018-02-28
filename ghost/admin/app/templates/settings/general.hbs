@@ -23,13 +23,23 @@
                 {{#liquid-if pubInfoOpen}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="title"}}
-                        {{gh-input settings.title type="text" focusOut=(action "validate" "title" target=settings) update=(action (mut settings.title)) data-test-title-input=true}}
+                        {{gh-text-input
+                            value=(readonly settings.title)
+                            input=(action (mut settings.title) value="target.value")
+                            focus-out=(action "validate" "title" target=settings)
+                            data-test-title-input=true
+                        }}
                         {{gh-error-message errors=settings.errors property="title"}}
                         <p>The name of your site</p>
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="description" class="description-container"}}
-                        {{gh-input settings.description type="text" focusOut=(action "validate" "description" target=settings) update=(action (mut settings.description)) data-test-description-input=true}}
+                        {{gh-text-input
+                            value=(readonly settings.description)
+                            input=(action (mut settings.description) value="target.value")
+                            focus-out=(action "validate" "description" target=settings)
+                            data-test-description-input=true
+                        }}
                         {{gh-error-message errors=settings.errors property="description"}}
                         <p>Used in your theme, meta data and search results</p>
                     {{/gh-form-group}}
@@ -64,7 +74,12 @@
                 {{#liquid-if defaultLocaleOpen}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="defaultLocale"}}
-                        {{gh-input settings.defaultLocale type="text" focusOut=(action "validate" "defaultLocale" target=settings) update=(action (mut settings.defaultLocale)) data-test-default-locale-input=true}}
+                        {{gh-text-input
+                            value=(readonly settings.defaultLocale)
+                            input=(action (mut settings.defaultLocale) value="target.value")
+                            focus-out=(action "validate" "defaultLocale" target=settings)
+                            data-test-default-locale-input=true
+                        }}
                         {{gh-error-message errors=settings.errors property="defaultLocale"}}
                         <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://themes.ghost.org/docs/i18n" target="_blank" rel="noopener">any language</a></p>
                     {{/gh-form-group}}
@@ -183,12 +198,28 @@
                 {{#liquid-if socialOpen}}
                 <div class="gh-setting-content-extended">
                     {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="facebook"}}
-                        <input value={{settings.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://www.facebook.com/ghost" autocorrect="off" data-test-facebook-input />
+                        {{gh-text-input
+                            type="url"
+                            placeholder="https://www.facebook.com/ghost"
+                            autocorrect="off"
+                            value=(readonly settings.facebook)
+                            input=(action (mut _scratchFacebook) value="target.value")
+                            focus-out=(action "validateFacebookUrl")
+                            data-test-facebook-input=true
+                        }}
                         {{gh-error-message errors=settings.errors property="facebook" data-test-facebook-error=true}}
                         <p>URL of your publication's Facebook Page</p>
                     {{/gh-form-group}}
                     {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="twitter"}}
-                        <input value={{settings.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" placeholder="https://twitter.com/tryghost" autocorrect="off" data-test-twitter-input />
+                        {{gh-text-input
+                            type="url"
+                            placeholder="https://twitter.com/tryghost"
+                            autocorrect="off"
+                            value=(readonly settings.twitter)
+                            input=(action (mut _scratchTwitter) value="target.value")
+                            focus-out=(action "validateTwitterUrl")
+                            data-test-twitter-input=true
+                        }}
                         {{gh-error-message errors=settings.errors property="twitter" data-test-twitter-error=true}}
                         <p>URL of your publication's Twitter profile</p>
                     {{/gh-form-group}}
@@ -209,7 +240,13 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">
                     <label class="checkbox" for="settings-dated-permalinks">
-                        {{one-way-checkbox isDatedPermalinks id="settings-dated-permalinks" type="checkbox" update=(action (mut isDatedPermalinks)) data-test-dated-permalinks-checkbox=true}}
+                        <input
+                            type="checkbox"
+                            checked={{isDatedPermalinks}}
+                            id="settings-dated-permalinks"
+                            onclick={{action (mut isDatedPermalinks) value="target.checked"}}
+                            data-test-dated-permalinks-checkbox
+                        >
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
@@ -233,7 +270,13 @@
                 {{#if settings.isPrivate}}
                     <div class="gh-setting-content-extended">
                         {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="password"}}
-                            {{gh-input settings.password name="general[password]" type="text" focusOut=(action "validate" "password" target=settings) update=(action (mut settings.password)) data-test-password-input=true}}
+                            {{gh-text-input
+                                value=(readonly settings.password)
+                                name="general[password]"
+                                focus-out=(action "validate" "password" target=settings)
+                                input=(action (mut settings.password) value="target.value")
+                                data-test-password-input=true
+                            }}
                             {{gh-error-message errors=settings.errors property="password" data-test-password-error=true}}
                             <p>Set the password for this site</p>
                         {{/gh-form-group}}
@@ -243,7 +286,13 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">
                     <label class="checkbox" for="settings-private">
-                        {{one-way-checkbox settings.isPrivate id="settings-private" type="checkbox" update=(action "toggleIsPrivate") data-test-private-checkbox=true}}
+                        <input
+                            type="checkbox"
+                            checked={{settings.isPrivate}}
+                            id="settings-private"
+                            onclick={{action "toggleIsPrivate" value="target.checked"}}
+                            data-test-private-checkbox
+                        >
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>

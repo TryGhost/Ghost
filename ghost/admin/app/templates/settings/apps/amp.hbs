@@ -38,7 +38,14 @@
             <div class="gh-setting-action">
                 <div class="for-checkbox">
                     <label for="amp" class="checkbox">
-                        {{one-way-checkbox ampSettings id="amp" name="amp" type="checkbox" update=(action "update") data-test-amp-checkbox=true}}
+                        <input
+                            type="checkbox"
+                            checked={{ampSettings}}
+                            id="amp"
+                            name="amp"
+                            onclick={{action "update" value="target.checked"}}
+                            data-test-amp-checkbox
+                        >
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
