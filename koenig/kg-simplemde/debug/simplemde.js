@@ -2042,6 +2042,7 @@ module.exports = CodeMirrorSpellChecker;
     clearPlaceholder(cm);
     var elt = cm.state.placeholder = document.createElement("pre");
     elt.style.cssText = "height: 0; overflow: visible";
+    elt.style.direction = cm.getOption("direction");
     elt.className = "CodeMirror-placeholder";
     var placeHolder = cm.getOption("placeholder")
     if (typeof placeHolder == "string") placeHolder = document.createTextNode(placeHolder)
@@ -7597,7 +7598,8 @@ function makeChangeInner(doc, change) {
 
 // Revert a change stored in a document's history.
 function makeChangeFromHistory(doc, type, allowSelectionOnly) {
-  if (doc.cm && doc.cm.state.suppressEdits && !allowSelectionOnly) { return }
+  var suppress = doc.cm && doc.cm.state.suppressEdits;
+  if (suppress && !allowSelectionOnly) { return }
 
   var hist = doc.history, event, selAfter = doc.sel;
   var source = type == "undo" ? hist.done : hist.undone, dest = type == "undo" ? hist.undone : hist.done;
@@ -7622,8 +7624,10 @@ function makeChangeFromHistory(doc, type, allowSelectionOnly) {
         return
       }
       selAfter = event;
-    }
-    else { break }
+    } else if (suppress) {
+      source.push(event);
+      return
+    } else { break }
   }
 
   // Build up a reverse change object to add to the opposite history
@@ -8099,7 +8103,7 @@ function addLineWidget(doc, handle, node, options) {
     }
     return true
   });
-  signalLater(cm, "lineWidgetAdded", cm, widget, typeof handle == "number" ? handle : lineNo(handle));
+  if (cm) { signalLater(cm, "lineWidgetAdded", cm, widget, typeof handle == "number" ? handle : lineNo(handle)); }
   return widget
 }
 
@@ -8957,11 +8961,11 @@ function onResize(cm) {
 }
 
 var keyNames = {
-  3: "Enter", 8: "Backspace", 9: "Tab", 13: "Enter", 16: "Shift", 17: "Ctrl", 18: "Alt",
+  3: "Pause", 8: "Backspace", 9: "Tab", 13: "Enter", 16: "Shift", 17: "Ctrl", 18: "Alt",
   19: "Pause", 20: "CapsLock", 27: "Esc", 32: "Space", 33: "PageUp", 34: "PageDown", 35: "End",
   36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 44: "PrintScrn", 45: "Insert",
   46: "Delete", 59: ";", 61: "=", 91: "Mod", 92: "Mod", 93: "Mod",
-  106: "*", 107: "=", 109: "-", 110: ".", 111: "/", 127: "Delete",
+  106: "*", 107: "=", 109: "-", 110: ".", 111: "/", 127: "Delete", 145: "ScrollLock",
   173: "-", 186: ";", 187: "=", 188: ",", 189: "-", 190: ".", 191: "/", 192: "`", 219: "[", 220: "\\",
   221: "]", 222: "'", 63232: "Up", 63233: "Down", 63234: "Left", 63235: "Right", 63272: "Delete",
   63273: "Home", 63275: "End", 63276: "PageUp", 63277: "PageDown", 63302: "Insert"
@@ -9108,6 +9112,9 @@ function keyName(event, noShift) {
   if (presto && event.keyCode == 34 && event["char"]) { return false }
   var name = keyNames[event.keyCode];
   if (name == null || event.altGraphKey) { return false }
+  // Ctrl-ScrollLock has keyCode 3, same as Ctrl-Pause,
+  // so we'll use event.code when available (Chrome 48+, FF 38+, Safari 10.1+)
+  if (event.keyCode == 3 && event.code) { name = event.code; }
   return addModifierNames(name, event, noShift)
 }
 
@@ -10397,7 +10404,7 @@ function applyTextInput(cm, inserted, deleted, sel, origin) {
 
   var paste = cm.state.pasteIncoming || origin == "paste";
   var textLines = splitLinesAuto(inserted), multiPaste = null;
-  // When pasing N lines into N selections, insert one line per selection
+  // When pasting N lines into N selections, insert one line per selection
   if (paste && sel.ranges.length > 1) {
     if (lastCopied && lastCopied.text.join("\n") == inserted) {
       if (sel.ranges.length % lastCopied.text.length == 0) {
@@ -12031,7 +12038,7 @@ CodeMirror$1.fromTextArea = fromTextArea;
 
 addLegacyProps(CodeMirror$1);
 
-CodeMirror$1.version = "5.33.0";
+CodeMirror$1.version = "5.35.0";
 
 return CodeMirror$1;
 
@@ -12284,6 +12291,8 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   function blankLine(state) {
     // Reset linkTitle state
     state.linkTitle = false;
+    state.linkHref = false;
+    state.linkText = false;
     // Reset EM state
     state.em = false;
     // Reset STRONG state
@@ -12322,6 +12331,12 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     if (state.indentationDiff === null) {
       state.indentationDiff = state.indentation;
       if (prevLineIsList) {
+        // Reset inline styles which shouldn't propagate aross list items
+        state.em = false;
+        state.strong = false;
+        state.code = false;
+        state.strikethrough = false;
+
         state.list = null;
         // While this list item's marker's indentation is less than the deepest
         //  list item's content's indentation,pop the deepest list item
@@ -12948,6 +12963,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
         formatting: false,
         linkText: s.linkText,
         linkTitle: s.linkTitle,
+        linkHref: s.linkHref,
         code: s.code,
         em: s.em,
         strong: s.strong,
@@ -13027,6 +13043,8 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   return mode;
 }, "xml");
 
+CodeMirror.defineMIME("text/markdown", "markdown");
+
 CodeMirror.defineMIME("text/x-markdown", "markdown");
 
 });
@@ -13051,7 +13069,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "ASN.1", mime: "text/x-ttcn-asn", mode: "asn.1", ext: ["asn", "asn1"]},
     {name: "Asterisk", mime: "text/x-asterisk", mode: "asterisk", file: /^extensions\.conf$/i},
     {name: "Brainfuck", mime: "text/x-brainfuck", mode: "brainfuck", ext: ["b", "bf"]},
-    {name: "C", mime: "text/x-csrc", mode: "clike", ext: ["c", "h"]},
+    {name: "C", mime: "text/x-csrc", mode: "clike", ext: ["c", "h", "ino"]},
     {name: "C++", mime: "text/x-c++src", mode: "clike", ext: ["cpp", "c++", "cc", "cxx", "hpp", "h++", "hh", "hxx"], alias: ["cpp"]},
     {name: "Cobol", mime: "text/x-cobol", mode: "cobol", ext: ["cob", "cpy"]},
     {name: "C#", mime: "text/x-csharp", mode: "clike", ext: ["cs"], alias: ["csharp"]},
@@ -13098,7 +13116,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Haxe", mime: "text/x-haxe", mode: "haxe", ext: ["hx"]},
     {name: "HXML", mime: "text/x-hxml", mode: "haxe", ext: ["hxml"]},
     {name: "ASP.NET", mime: "application/x-aspx", mode: "htmlembedded", ext: ["aspx"], alias: ["asp", "aspx"]},
-    {name: "HTML", mime: "text/html", mode: "htmlmixed", ext: ["html", "htm"], alias: ["xhtml"]},
+    {name: "HTML", mime: "text/html", mode: "htmlmixed", ext: ["html", "htm", "handlebars", "hbs"], alias: ["xhtml"]},
     {name: "HTTP", mime: "message/http", mode: "http"},
     {name: "IDL", mime: "text/x-idl", mode: "idl", ext: ["pro"]},
     {name: "Pug", mime: "text/x-pug", mode: "pug", ext: ["jade", "pug"], alias: ["jade"]},
@@ -13135,7 +13153,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Pascal", mime: "text/x-pascal", mode: "pascal", ext: ["p", "pas"]},
     {name: "PEG.js", mime: "null", mode: "pegjs", ext: ["jsonld"]},
     {name: "Perl", mime: "text/x-perl", mode: "perl", ext: ["pl", "pm"]},
-    {name: "PHP", mime: ["application/x-httpd-php", "text/x-php"], mode: "php", ext: ["php", "php3", "php4", "php5", "php7", "phtml"]},
+    {name: "PHP", mimes: ["text/x-php", "application/x-httpd-php", "application/x-httpd-php-open"], mode: "php", ext: ["php", "php3", "php4", "php5", "php7", "phtml"]},
     {name: "Pig", mime: "text/x-pig", mode: "pig", ext: ["pig"]},
     {name: "Plain Text", mime: "text/plain", mode: "null", ext: ["txt", "text", "conf", "def", "list", "log"]},
     {name: "PLSQL", mime: "text/x-plsql", mode: "sql", ext: ["pls"]},
@@ -13162,6 +13180,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Smalltalk", mime: "text/x-stsrc", mode: "smalltalk", ext: ["st"]},
     {name: "Smarty", mime: "text/x-smarty", mode: "smarty", ext: ["tpl"]},
     {name: "Solr", mime: "text/x-solr", mode: "solr"},
+    {name: "SML", mime: "text/x-sml", mode: "mllike", ext: ["sml", "sig", "fun", "smackspec"]},
     {name: "Soy", mime: "text/x-soy", mode: "soy", ext: ["soy"], alias: ["closure template"]},
     {name: "SPARQL", mime: "application/sparql-query", mode: "sparql", ext: ["rq", "sparql"], alias: ["sparul"]},
     {name: "Spreadsheet", mime: "text/x-spreadsheet", mode: "spreadsheet", alias: ["excel", "formula"]},
@@ -13171,7 +13190,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Stylus", mime: "text/x-styl", mode: "stylus", ext: ["styl"]},
     {name: "Swift", mime: "text/x-swift", mode: "swift", ext: ["swift"]},
     {name: "sTeX", mime: "text/x-stex", mode: "stex"},
-    {name: "LaTeX", mime: "text/x-latex", mode: "stex", ext: ["text", "ltx"], alias: ["tex"]},
+    {name: "LaTeX", mime: "text/x-latex", mode: "stex", ext: ["text", "ltx", "tex"], alias: ["tex"]},
     {name: "SystemVerilog", mime: "text/x-systemverilog", mode: "verilog", ext: ["v", "sv", "svh"]},
     {name: "Tcl", mime: "text/x-tcl", mode: "tcl", ext: ["tcl"]},
     {name: "Textile", mime: "text/x-textile", mode: "textile", ext: ["textile"]},
