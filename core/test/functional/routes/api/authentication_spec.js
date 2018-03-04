@@ -5,6 +5,7 @@ var should = require('should'),
     user = testUtils.DataGenerator.forModel.users[0],
     userForKnex = testUtils.DataGenerator.forKnex.users[0],
     models = require('../../../../../core/server/models'),
+    constants = require('../../../../../core/server/lib/constants'),
     config = require('../../../../../core/server/config'),
     security = require('../../../../../core/server/lib/security'),
     ghost = testUtils.startGhost,
@@ -177,7 +178,14 @@ describe('Authentication API', function () {
                                     token: refreshToken
                                 });
                             }).then(function (refreshTokenModel) {
-                                moment(refreshTokenModel.get('expires')).diff(moment(), 'month').should.be.above(5);
+                                // NOTE: the static 6 month ms number in our constants are based on 30 days
+                                // We have to compare against the static number. We can't compare against the month in
+                                // the next 6 month dynamically, because each month has a different number of days,
+                                // which results in a different ms number.
+                                moment(Date.now() + constants.SIX_MONTH_MS)
+                                    .startOf('day')
+                                    .diff(moment(refreshTokenModel.get('expires')).startOf('day'), 'month').should.eql(0);
+
                                 done();
                             });
                         });
