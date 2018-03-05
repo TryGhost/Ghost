@@ -93,6 +93,7 @@
 .gh-image-uploader .failed {
     margin: 1em 2em;
     font-size: 16px;
+    color: color(var(--midgrey));
 }
 
 /* TODO: remove the gh-image-uploader classes once it's using gh-progrss-bar */
