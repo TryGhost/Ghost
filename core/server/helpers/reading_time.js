@@ -39,11 +39,14 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
 
     html = this.html;
     imageCount = this.feature_image ? 1 : 0;
+    imageCount += localUtils.imageCount(html);
     wordCount = localUtils.wordCount(html);
     readingTimeSeconds = wordCount / wordsPerSecond;
 
-    // add 12 seconds to reading time if feature image is present
-    readingTimeSeconds = imageCount ? readingTimeSeconds + 12 : readingTimeSeconds;
+    for (var i = 12; i > 12 - imageCount; i -= 1) {
+        // add 12 seconds for the first image, 11 for the second, etc. limiting at 3
+        readingTimeSeconds += Math.max(i, 3);
+    }
 
     readingTimeMinutes = Math.round(readingTimeSeconds / 60);
 
