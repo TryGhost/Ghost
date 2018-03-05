@@ -3,7 +3,6 @@
 //
 // Page title used for sharing and SEO
 var proxy = require('./proxy'),
-    _ = require('lodash'),
     getMetaDataTitle = proxy.metaData.getMetaDataTitle;
 
 // We use the name meta_title to match the helper for consistency:
