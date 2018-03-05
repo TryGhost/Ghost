@@ -1,14 +1,47 @@
+'use strict';
+
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
-    utils = require('../../utils'),
-
+    testUtils = require('../../utils'),
     sandbox = sinon.sandbox.create();
 
-describe('Models: Post', function () {
+describe('Unit: models/post', function () {
     before(function () {
         models.init();
+    });
+
+    after(function () {
+        sandbox.restore();
+    });
+
+    describe('Edit', function () {
+        let knexMock;
+
+        before(function () {
+            knexMock = new testUtils.mocks.knex();
+            knexMock.mock();
+        });
+
+        after(function () {
+            knexMock.unmock();
+        });
+
+        it('resets given empty value to null', function () {
+            return models.Post.findOne({slug: 'html-ipsum'})
+                .then(function (post) {
+                    post.get('slug').should.eql('html-ipsum');
+                    post.get('feature_image').should.eql('https://example.com/super_photo.jpg');
+                    post.set('feature_image', '');
+                    post.set('custom_excerpt', '');
+                    return post.save();
+                })
+                .then(function (post) {
+                    should(post.get('feature_image')).be.null();
+                    post.get('custom_excerpt').should.eql('');
+                });
+        });
     });
 
     describe('Permissible', function () {
@@ -29,7 +62,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         false
                     ).then(() => {
@@ -56,7 +89,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -83,7 +116,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -110,7 +143,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -137,7 +170,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then((result) => {
@@ -161,7 +194,7 @@ describe('Models: Post', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -185,7 +218,7 @@ describe('Models: Post', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -209,7 +242,7 @@ describe('Models: Post', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then((result) => {
@@ -234,7 +267,7 @@ describe('Models: Post', function () {
                         'destroy',
                         context,
                         {},
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -260,7 +293,7 @@ describe('Models: Post', function () {
                         'destroy',
                         context,
                         {},
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then(() => {
@@ -286,7 +319,7 @@ describe('Models: Post', function () {
                         'destroy',
                         context,
                         {},
-                        utils.permissions.contributor,
+                        testUtils.permissions.contributor,
                         false,
                         true
                     ).then((result) => {
@@ -314,7 +347,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.author,
+                        testUtils.permissions.author,
                         false,
                         true
                     ).then(() => {
@@ -340,7 +373,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.author,
+                        testUtils.permissions.author,
                         false,
                         true
                     ).then(() => {
@@ -366,7 +399,7 @@ describe('Models: Post', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        utils.permissions.author,
+                        testUtils.permissions.author,
                         false,
                         true
                     ).then(() => {
@@ -388,7 +421,7 @@ describe('Models: Post', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        utils.permissions.author,
+                        testUtils.permissions.author,
                         false,
                         true
                     ).then(() => {
@@ -412,7 +445,7 @@ describe('Models: Post', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        utils.permissions.author,
+                        testUtils.permissions.author,
                         false,
                         true
                     ).then(() => {
@@ -437,7 +470,7 @@ describe('Models: Post', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    utils.permissions.editor,
+                    testUtils.permissions.editor,
                     false,
                     true
                 ).then(() => {
@@ -463,7 +496,7 @@ describe('Models: Post', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    utils.permissions.editor,
+                    testUtils.permissions.editor,
                     true,
                     true
                 ).then(() => {
