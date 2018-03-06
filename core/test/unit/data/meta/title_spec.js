@@ -93,7 +93,7 @@ describe('getTitle', function () {
         title.should.equal('Tag Name - My blog title 3 (Page 39)');
     });
 
-    it('should return translated pagination-string if passed in options object', function () {
+    it('should return translated pageString if passed in options object', function () {
         localSettingsCache.title = 'This is my blog title';
 
         var title = getTitle({
@@ -108,7 +108,7 @@ describe('getTitle', function () {
             },
         }, {
             hash: {
-                page: ' p.%'
+                pageString: ' p.%'
             }
         });
 
