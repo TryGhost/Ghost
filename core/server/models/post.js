@@ -302,6 +302,13 @@ Post = ghostBookshelf.Model.extend({
         return sequence(ops);
     },
 
+    emptyStringProperties: function emptyStringProperties() {
+        // CASE: the client might send empty image properties with "" instead of setting them to null.
+        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
+        // See https://github.com/TryGhost/GQL/issues/24
+        return ['feature_image', 'og_image', 'twitter_image'];
+    },
+
     onCreating: function onCreating(model, attr, options) {
         options = options || {};
 
@@ -668,12 +675,19 @@ Post = ghostBookshelf.Model.extend({
             origArgs = _.toArray(arguments).slice(1);
 
             // Get the actual post model
-            return this.findOne({id: postModelOrId, status: 'all'}).then(function then(foundPostModel) {
-                // Build up the original args but substitute with actual model
-                var newArgs = [foundPostModel].concat(origArgs);
+            return this.findOne({id: postModelOrId, status: 'all'})
+                .then(function then(foundPostModel) {
+                    if (!foundPostModel) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.posts.postNotFound')
+                        });
+                    }
 
-                return self.permissible.apply(self, newArgs);
-            });
+                    // Build up the original args but substitute with actual model
+                    var newArgs = [foundPostModel].concat(origArgs);
+
+                    return self.permissible.apply(self, newArgs);
+                });
         }
 
         function isChanging(attr) {

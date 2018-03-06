@@ -147,7 +147,7 @@ describe('Channel Routes', function () {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePosts(25);
+                    return testUtils.fixtures.insertExtraPosts(25);
                 }).then(function () {
                     done();
                 }).catch(done);
@@ -333,9 +333,9 @@ describe('Channel Routes', function () {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePosts(22);
+                    return testUtils.fixtures.insertExtraPosts(22);
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePostsTags(22);
+                    return testUtils.fixtures.insertExtraPostsTags(22);
                 }).then(function () {
                     done();
                 }).catch(done);
@@ -558,7 +558,7 @@ describe('Channel Routes', function () {
                 }).then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
-                    return testUtils.fixtures.insertMorePosts(9);
+                    return testUtils.fixtures.insertExtraPosts(9);
                 }).then(function () {
                     done();
                 }).catch(done);
