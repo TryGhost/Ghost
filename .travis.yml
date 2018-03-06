@@ -28,7 +28,7 @@ env:
 
 matrix:
   include:
-    - node_js: "6"
+    - node_js: "8"
       env: TEST_SUITE=lint
   fast_finish: true
 
@@ -46,7 +46,7 @@ install:
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "6" ]]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "8" ]]; then
           echo "Generate coverage..."
           grunt coverage
           npm install -g codeclimate-test-reporter
