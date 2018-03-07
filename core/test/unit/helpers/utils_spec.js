@@ -31,4 +31,13 @@ describe('Helpers Utils', function () {
             result.should.equal(8);
         });
     });
+
+    describe('Image Count', function () {
+        it('[success] can count images', function () {
+            var html = '<div class="kg-card-markdown"><p>This is a <img src="hello.png"> text example! Count me in ;)</p><img src="hello.png"></div>',
+                result = helperUtils.imageCount(html);
+
+            result.should.equal(2);
+        });
+    });
 });
