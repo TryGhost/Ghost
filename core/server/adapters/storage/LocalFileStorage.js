@@ -155,6 +155,9 @@ class LocalFileStore extends StorageBase {
         options = options || {};
         const useRelativePath = options.useRelativePath || false;
 
+        // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
+        targetDir = targetDir || this.getTargetDir(this.storagePath);
+
         return super.getUniqueFileName(image, targetDir)
             .then((relativePath) => {
                 if (useRelativePath) {
