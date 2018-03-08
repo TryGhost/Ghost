@@ -165,13 +165,15 @@ class LocalFileStore extends StorageBase {
                 } else {
                     // The src for the image must be in URI format, not a file system path, which in Windows uses \
                     // For local file system storage can use relative path so add a slash
-                    return urlService.utils
+                    const absolutePath = urlService.utils
                         .urlJoin(
                             '/',
                             urlService.utils.getSubdir(),
                             urlService.utils.STATIC_IMAGE_URL_PREFIX,
                             path.relative(this.storagePath, relativePath)
-                        )
+                        );
+
+                    return path.resolve(absolutePath)
                         .replace(new RegExp('\\' + path.sep, 'g'), '/');
                 }
             });
