@@ -227,6 +227,45 @@ describe('Local File System Storage', function () {
         });
     });
 
+    describe('getUniqueFileName', function () {
+        it('returns a modified file name if the original one is occupied', function (done) {
+            fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
+            fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
+            fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).rejects();
+
+            // windows setup
+            fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+            fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
+            fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).rejects();
+
+            localFileStore.getUniqueFileName(image).then(function (url) {
+                url.should.equal('/content/images/2013/09/IMAGE-2.jpg');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns a relative file name if requested', function (done) {
+            localFileStore.getUniqueFileName(image, null, {useRelativePath: true})
+                .then(function (url) {
+                    url.should.equal(path.resolve(process.cwd(), 'content/images/2013/09/IMAGE.jpg'));
+
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('respects the target directory', function (done) {
+            localFileStore.getUniqueFileName(image, '/fake/dir')
+                .then(function (url) {
+                    url.should.equal('/fake/dir/IMAGE.jpg');
+
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
     // @TODO: remove path.join mock...
     describe('on Windows', function () {
         var truePathSep = path.sep;

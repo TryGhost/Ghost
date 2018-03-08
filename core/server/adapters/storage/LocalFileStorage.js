@@ -41,7 +41,7 @@ class LocalFileStore extends StorageBase {
             this.getUniqueFileName(image, targetDir, {useRelativePath: true}),
             this.getUniqueFileName(image, targetDir, {useRelativePath: false})
         ]).spread(function (relativeFilename, absoluteFilename) {
-            // This might look like 'content/images/2018/02/foo.jpg'
+            // This might look like '/var/www/content/images/2018/02/foo.jpg' (i.e., it’s a file system path)
             targetRelativeFilename = relativeFilename;
             // This might look like '/blog/content/images/2018/02/foo.jpg' (i.e., it’s an URL)
             targetAbsoluteFilename = absoluteFilename;
