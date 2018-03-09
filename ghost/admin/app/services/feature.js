@@ -119,7 +119,11 @@ export default Service.extend({
     },
 
     _setAdminTheme(enabled) {
-        let nightShift = enabled || this.get('nightShift');
+        let nightShift = enabled;
+
+        if (typeof nightShift === 'undefined') {
+            nightShift = enabled || this.get('nightShift');
+        }
 
         return this.get('lazyLoader').loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
