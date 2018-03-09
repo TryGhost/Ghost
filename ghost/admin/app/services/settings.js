@@ -68,5 +68,9 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
 
     rollbackAttributes() {
         return this.get('content').rollbackAttributes();
+    },
+    
+    changedAttributes() {
+        return this.get('content').changedAttributes();
     }
 });
