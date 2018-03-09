@@ -103,12 +103,20 @@ export default Controller.extend({
         },
 
         toggleIsPrivate(isPrivate) {
-            this.set('settings.isPrivate', isPrivate);
-            this.get('settings.errors').remove('password');
+            let settings = this.get('settings');
+
+            settings.set('isPrivate', isPrivate);
+            settings.get('errors').remove('password');
+
+            let changedAttrs = settings.changedAttributes();
 
             // set a new random password when isPrivate is enabled
-            if (isPrivate && this.get('settings.hasDirtyAttributes')) {
-                this.get('settings').set('password', randomPassword());
+            if (isPrivate && changedAttrs.isPrivate) {
+                settings.set('password', randomPassword());
+
+            // reset the password when isPrivate is disabled
+            } else if (changedAttrs.password) {
+                settings.set('password', changedAttrs.password[0]);
             }
         },
 
