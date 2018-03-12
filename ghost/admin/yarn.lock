@@ -3147,7 +3147,7 @@ ember-cli-htmlbars@2.0.3, ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
     json-stable-stringify "^1.0.0"
     strip-bom "^3.0.0"
 
-ember-cli-htmlbars@^1.0.1, ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.11, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.1:
+ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.11, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.1:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-1.3.4.tgz#461289724b34af372a6a0c4b6635819156963353"
   dependencies:
@@ -3586,21 +3586,18 @@ ember-in-viewport@2.1.1:
     ember-cli-babel "^5.1.6"
     ember-getowner-polyfill "^1.1.1"
 
-ember-in-viewport@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-2.2.1.tgz#16888231f91a22d7088dd724d9ffb6dedbc649a4"
+ember-in-viewport@3.0.0, ember-in-viewport@~3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.0.0.tgz#2dec3fbbb70e3290b8dcedd2f1946d2362d12758"
   dependencies:
     ember-cli-babel "^6.6.0"
-    ember-getowner-polyfill "^2.0.0"
 
-ember-infinity@0.2.8:
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-0.2.8.tgz#813a24d0828446a44d09c21fee5adf371897d8dd"
+ember-infinity@1.0.0-alpha.9:
+  version "1.0.0-alpha.9"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.0.0-alpha.9.tgz#b1a80c8008f15ef17746eca5bf85cbf2f1f888f0"
   dependencies:
-    ember-cli-babel "^5.1.5"
-    ember-cli-htmlbars "^1.0.1"
-    ember-cli-version-checker "^1.0.2"
-    ember-version-is "0.0.3"
+    ember-cli-babel "^6.6.0"
+    ember-in-viewport "~3.0.0"
 
 ember-inflector@^1.9.2:
   version "1.12.1"
@@ -3896,12 +3893,6 @@ ember-truth-helpers@2.0.0, ember-truth-helpers@^2.0.0:
   resolved "https://registry.yarnpkg.com/ember-truth-helpers/-/ember-truth-helpers-2.0.0.tgz#f3e2eef667859197f1328bb4f83b0b35b661c1ac"
   dependencies:
     ember-cli-babel "^6.8.2"
-
-ember-version-is@0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/ember-version-is/-/ember-version-is-0.0.3.tgz#7d54ec39ed5e03f0df11cf8a5e22dc20b0810b1a"
-  dependencies:
-    ember-cli-babel "^5.0.0"
 
 ember-weakmap@^3.0.0, ember-weakmap@^3.1.0:
   version "3.1.1"
