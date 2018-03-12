@@ -115,15 +115,25 @@ export default BaseAdapter.extend({
     getEmbeddedRelations(store, modelName) {
         let model = store.modelFor(modelName);
         let ret = [];
+        let embedded = [];
 
         // Iterate through the model's relationships and build a list
         // of those that need to be pulled in via "include" from the API
-        model.eachRelationship(function (name, meta) {
-            if (meta.kind === 'hasMany'
+        model.eachRelationship((name, meta) => {
+            if (
+                meta.kind === 'hasMany'
                 && Object.prototype.hasOwnProperty.call(meta.options, 'embedded')
-                && meta.options.embedded === 'always') {
+                && meta.options.embedded === 'always'
+            ) {
                 ret.push(name);
+                embedded.push([name, meta.type]);
             }
+        });
+
+        embedded.forEach(([relName, modelName]) => {
+            this.getEmbeddedRelations(store, modelName).forEach((name) => {
+                ret.push(`${relName}.${name}`);
+            });
         });
 
         return ret;
