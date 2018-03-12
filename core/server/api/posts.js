@@ -8,7 +8,7 @@ var Promise = require('bluebird'),
     common = require('../lib/common'),
     docName = 'posts',
     allowedIncludes = [
-        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'authors'
+        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'authors', 'authors.roles'
     ],
     unsafeAttrs = ['author_id', 'status', 'authors'],
     posts;
