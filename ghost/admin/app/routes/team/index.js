@@ -11,8 +11,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
 
     modelPath: 'controller.activeUsers',
     perPage: 15,
-    perPageParam: 'limit',
-    totalPagesParam: 'meta.pagination.pages',
 
     model() {
         return this.get('session.user').then((user) => {
@@ -24,7 +22,9 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
                     modelPath,
                     perPage,
                     filter: 'status:-inactive',
-                    startingPage: 1
+                    startingPage: 1,
+                    perPageParam: 'limit',
+                    totalPagesParam: 'meta.pagination.pages'
                 })
             };
 

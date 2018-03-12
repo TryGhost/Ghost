@@ -28,8 +28,6 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
     titleToken: 'Content',
 
     perPage: 30,
-    perPageParam: 'limit',
-    totalPagesParam: 'meta.pagination.pages',
 
     _type: null,
 
@@ -37,6 +35,10 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
         return this.get('session.user').then((user) => {
             let queryParams = this._typeParams(params.type);
             let filterParams = {tag: params.tag};
+            let paginationParams = {
+                perPageParam: 'limit',
+                totalPagesParam: 'meta.pagination.pages'
+            };
 
             if (params.type === 'featured') {
                 filterParams.featured = true;
@@ -65,7 +67,7 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
             queryParams.formats = 'mobiledoc,plaintext';
 
             let perPage = this.get('perPage');
-            let paginationSettings = assign({perPage, startingPage: 1}, queryParams);
+            let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
             return this.infinityModel('post', paginationSettings);
         });
