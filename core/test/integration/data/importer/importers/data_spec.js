@@ -1865,16 +1865,22 @@ describe('Import (new test structure)', function () {
                     users[2].slug.should.eql(exportData.data.users[2].slug);
                     users[3].slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-                    posts.length.should.eql(2);
-                    posts[0].author.should.eql(users[0].id);
-                    posts[0].authors.length.should.eql(1);
-                    posts[0].authors[0].id.should.eql(users[0].id);
+                    posts.length.should.eql(3);
 
-                    posts[1].author.should.eql(users[1].id);
-                    posts[1].authors.length.should.eql(3);
-                    posts[1].authors[0].id.should.eql(users[1].id);
-                    posts[1].authors[1].id.should.eql(users[0].id);
-                    posts[1].authors[2].id.should.eql(users[2].id);
+                    // has three posts_authors relations, but 2 of them are invalid
+                    posts[0].author.should.eql(users[2].id);
+                    posts[0].authors.length.should.eql(1);
+                    posts[0].authors[0].id.should.eql(users[2].id);
+
+                    posts[1].author.should.eql(users[0].id);
+                    posts[1].authors.length.should.eql(1);
+                    posts[1].authors[0].id.should.eql(users[0].id);
+
+                    posts[2].author.should.eql(users[1].id);
+                    posts[2].authors.length.should.eql(3);
+                    posts[2].authors[0].id.should.eql(users[1].id);
+                    posts[2].authors[1].id.should.eql(users[0].id);
+                    posts[2].authors[2].id.should.eql(users[2].id);
                 });
             });
         });

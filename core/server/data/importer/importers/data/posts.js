@@ -31,8 +31,6 @@ class PostsImporter extends BaseImporter {
 
     /**
      * Naive function to attach related tags and authors.
-     * @TODO: is there a possible case where a target related tag was not yet inserted?
-     *        because this won't work and throw an error, because you need a minimal set of attributes to insert a tag
      */
     addNestedRelations() {
         this.requiredFromFile.posts_tags = _.orderBy(this.requiredFromFile.posts_tags, ['post_id', 'sort_order'], ['asc', 'asc']);
