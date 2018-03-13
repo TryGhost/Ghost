@@ -126,7 +126,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             // CASE: you can't delete all authors
             if (model.get('authors') && !model.get('authors').length) {
                 throw new common.errors.ValidationError({
-                    message: 'The server could not understand the request.'
+                    message: 'At least one author is required.'
                 });
             }
 
