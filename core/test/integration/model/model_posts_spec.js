@@ -1645,7 +1645,7 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return PostModel.edit({
-                            authors: [{name: 'new-tag-1'}],
+                            authors: [testUtils.DataGenerator.Content.users[3]],
                             updated_at: moment().subtract(1, 'day').format()
                         }, _.extend({}, context, {id: postToUpdate.id}));
                     })

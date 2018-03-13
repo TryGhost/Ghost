@@ -142,6 +142,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 };
 
                 model.set('authors', existingAuthors);
+            } else if (model.get('authors') && model.get('authors').length) {
+                // ensure we update the primary author id
+                model.set('author_id', model.get('authors')[0].id);
             }
 
             return proto.onSaving.call(this, model, attrs, options);

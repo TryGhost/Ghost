@@ -409,6 +409,32 @@ describe('Unit: models/post', function () {
                     });
                 });
 
+                it('change post.authors, do not include `author`', function () {
+                    testUtils.DataGenerator.forKnex.posts[3].author_id.should.not.equal(testUtils.DataGenerator.forKnex.users[3].id);
+
+                    const data = {
+                        authors: [
+                            {
+                                id: testUtils.DataGenerator.forKnex.users[3].id
+                            },
+                            {
+                                id: testUtils.DataGenerator.forKnex.users[2].id
+                            }
+                        ]
+                    };
+
+                    return models.Post.edit(data, {
+                        id: testUtils.DataGenerator.forKnex.posts[3].id,
+                        withRelated: ['authors']
+                    }).then(function (post) {
+                        post = post.toJSON();
+                        post.author.should.eql(testUtils.DataGenerator.forKnex.users[3].id);
+                        post.authors.length.should.eql(2);
+                        post.authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[3].id);
+                        post.authors[1].id.should.eql(testUtils.DataGenerator.forKnex.users[2].id);
+                    });
+                });
+
                 it('change post.authors and post.author_id (different primary author)', function () {
                     const data = {
                         authors: [
