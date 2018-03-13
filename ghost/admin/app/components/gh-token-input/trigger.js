@@ -7,6 +7,10 @@ import {isBlank} from '@ember/utils';
 export default EmberPowerSelectMultipleTrigger.extend({
 
     actions: {
+        chooseOption(option) {
+            this.get('select').actions.choose(option);
+        },
+
         handleOptionMouseDown(event) {
             let action = this.get('extra.optionMouseDown');
             if (action) {

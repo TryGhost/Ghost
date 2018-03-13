@@ -77,7 +77,6 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     validationType: 'post',
 
-    authorId: attr('string'),
     createdAtUTC: attr('moment-utc'),
     customExcerpt: attr('string'),
     featured: attr('boolean', {defaultValue: false}),
@@ -107,12 +106,19 @@ export default Model.extend(Comparable, ValidationEngine, {
     url: attr('string'),
     uuid: attr('string'),
 
-    author: belongsTo('user', {async: true}),
+    authors: hasMany('user', {
+        embedded: 'always',
+        async: false
+    }),
     createdBy: belongsTo('user', {async: true}),
     publishedBy: belongsTo('user', {async: true}),
     tags: hasMany('tag', {
         embedded: 'always',
         async: false
+    }),
+
+    primaryAuthor: computed('authors.[]', function () {
+        return this.get('authors.firstObject');
     }),
 
     init() {
@@ -282,7 +288,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     },
 
     isAuthoredByUser(user) {
-        return user.get('id') === this.get('authorId');
+        return this.get('authors').includes(user);
     },
 
     // a custom sort function is needed in order to sort the posts list the same way the server would:

@@ -7,29 +7,19 @@ export default DraggableObject.extend({
     attributeBindings: ['title'],
     classNames: ['tag-token'],
     classNameBindings: [
-        'primary:tag-token--primary',
         'internal:tag-token--internal'
     ],
 
-    content: readOnly('option'),
-    internal: readOnly('option.isInternal'),
+    internal: readOnly('content.isInternal'),
 
     primary: computed('idx', 'internal', function () {
         return !this.get('internal') && this.get('idx') === 0;
     }),
 
-    title: computed('option.name', 'primary', 'internal', function () {
-        let name = this.get('option.name');
-
+    title: computed('internal', function () {
         if (this.get('internal')) {
-            return `${name} (internal)`;
+            return `Internal tag`;
         }
-
-        if (this.get('primary')) {
-            return `${name} (primary tag)`;
-        }
-
-        return name;
     })
 
 });

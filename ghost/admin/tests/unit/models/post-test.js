@@ -1,4 +1,3 @@
-import EmberObject from '@ember/object';
 import {describe, it} from 'mocha';
 import {run} from '@ember/runloop';
 import {setupModelTest} from 'ember-mocha';
@@ -54,17 +53,19 @@ describe('Unit: Model: post', function () {
     });
 
     it('isAuthoredByUser is correct', function () {
-        let model = this.subject({
-            authorId: 'abcd1234'
-        });
-        let user = EmberObject.create({id: 'abcd1234'});
+        let user1 = this.store().createRecord('user', {id: 'abcd1234'});
+        let user2 = this.store().createRecord('user', {id: 'wxyz9876'});
 
-        expect(model.isAuthoredByUser(user)).to.be.ok;
+        let model = this.subject({
+            authors: [user1]
+        });
+
+        expect(model.isAuthoredByUser(user1)).to.be.ok;
 
         run(function () {
-            model.set('authorId', 'wxyz9876');
+            model.set('authors', [user2]);
 
-            expect(model.isAuthoredByUser(user)).to.not.be.ok;
+            expect(model.isAuthoredByUser(user1)).to.not.be.ok;
         });
     });
 

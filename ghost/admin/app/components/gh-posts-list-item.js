@@ -1,13 +1,9 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import Ember from 'ember';
 import {alias, equal} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
-
-const {Handlebars} = Ember;
 
 export default Component.extend({
     ghostPaths: service(),
@@ -29,19 +25,10 @@ export default Component.extend({
     isPublished: equal('post.status', 'published'),
     isScheduled: equal('post.status', 'scheduled'),
 
-    authorName: computed('post.author.{name,email}', function () {
-        return this.get('post.author.name') || this.get('post.author.email');
-    }),
+    authorNames: computed('post.authors.[]', function () {
+        let authors = this.get('post.authors');
 
-    authorAvatar: computed('post.author.profileImage', function () {
-        let defaultImage = '/img/user-image.png';
-        return this.get('post.author.profileImage') || `${this.get('ghostPaths.assetRoot')}${defaultImage}`;
-    }),
-
-    authorAvatarBackground: computed('authorAvatar', function () {
-        let authorAvatar = this.get('authorAvatar');
-        let safeUrl = Handlebars.Utils.escapeExpression(authorAvatar);
-        return htmlSafe(`background-image: url(${safeUrl})`);
+        return authors.map(author => author.get('name') || author.get('email')).join(', ');
     }),
 
     // HACK: this is intentionally awful due to time constraints

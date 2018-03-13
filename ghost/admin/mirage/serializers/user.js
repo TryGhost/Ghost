@@ -14,7 +14,7 @@ export default BaseSerializer.extend({
 
     serialize(object, request) {
         if (this.isCollection(object)) {
-            return BaseSerializer.prototype.serialize.apply(this, arguments);
+            return BaseSerializer.prototype.serialize.call(this, object, request);
         }
 
         let {user} = RestSerializer.prototype.serialize.call(this, object, request);

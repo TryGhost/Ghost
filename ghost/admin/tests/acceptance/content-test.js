@@ -35,11 +35,11 @@ describe('Acceptance: Content', function () {
             let editorRole = server.create('role', {name: 'Editor'});
             editor = server.create('user', {roles: [editorRole]});
 
-            publishedPost = server.create('post', {author: admin, status: 'published', title: 'Published Post'});
-            scheduledPost = server.create('post', {author: admin, status: 'scheduled', title: 'Scheduled Post'});
-            draftPost = server.create('post', {author: admin, status: 'draft', title: 'Draft Post'});
-            publishedPage = server.create('post', {author: admin, status: 'published', page: true, title: 'Published Page'});
-            authorPost = server.create('post', {author: editor, status: 'published', title: 'Editor Published Post'});
+            publishedPost = server.create('post', {authors: [admin], status: 'published', title: 'Published Post'});
+            scheduledPost = server.create('post', {authors: [admin], status: 'scheduled', title: 'Scheduled Post'});
+            draftPost = server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post'});
+            publishedPage = server.create('post', {authors: [admin], status: 'published', page: true, title: 'Published Page'});
+            authorPost = server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post'});
 
             return authenticateSession(application);
         });
@@ -138,8 +138,8 @@ describe('Acceptance: Content', function () {
             let admin = server.create('user', {roles: [adminRole]});
 
             // create posts
-            authorPost = server.create('post', {authorId: author.id, status: 'published', title: 'Author Post'});
-            server.create('post', {authorId: admin.id, status: 'scheduled', title: 'Admin Post'});
+            authorPost = server.create('post', {authors: [author], status: 'published', title: 'Author Post'});
+            server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
 
             return authenticateSession(application);
         });
@@ -169,9 +169,9 @@ describe('Acceptance: Content', function () {
             let admin = server.create('user', {roles: [adminRole]});
 
             // Create posts
-            contributorPost = server.create('post', {authorId: contributor.id, status: 'draft', title: 'Contributor Post Draft'});
-            server.create('post', {authorId: contributor.id, status: 'published', title: 'Contributor Published Post'});
-            server.create('post', {authorId: admin.id, status: 'scheduled', title: 'Admin Post'});
+            contributorPost = server.create('post', {authors: [contributor], status: 'draft', title: 'Contributor Post Draft'});
+            server.create('post', {authors: [contributor], status: 'published', title: 'Contributor Published Post'});
+            server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
 
             return authenticateSession(application);
         });

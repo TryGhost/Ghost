@@ -6,5 +6,5 @@ export default Model.extend({
     postCount: false,
 
     roles: hasMany(),
-    posts: hasMany('post', {inverse: 'author'})
+    posts: hasMany()
 });

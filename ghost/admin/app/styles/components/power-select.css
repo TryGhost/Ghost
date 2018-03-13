@@ -165,11 +165,26 @@
 
 .ember-power-select-multiple-option {
     margin: 2px;
-    padding: 2px 4px;
+    padding: 2px 6px;
+    border: 1px solid #3fb0ef;
     border-radius: 3px;
-    border: 0;
-    background: #3eb0ef;
+    font-size: 0.93em;
     color: white;
+    background: #3fb0ef;
+}
+
+.ember-power-select-multiple-remove-btn:not(:hover) {
+    opacity: 0.75;
+}
+
+.ember-power-select-multiple-remove-btn svg {
+    width: 0.6em;
+    height: auto;
+}
+
+.ember-power-select-multiple-remove-btn svg path {
+    stroke: white;
+    fill: white;
 }
 
 .ember-power-select-trigger-multiple-input {
@@ -187,6 +202,13 @@
 }
 
 /* Tag input */
-.tag-token--primary {
-    background: color(#3eb0ef lightness(-20%));
+
+.tag-token--internal {
+    background: #ebf7fd;
+    color: #3fb0ef;
+}
+
+.tag-token--internal svg path {
+    stroke: #3fb0ef;
+    fill: #3fb0ef;
 }
