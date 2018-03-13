@@ -7,11 +7,11 @@
     sortEndAction=(action "reorderItems")
 }}
     {{#each select.selected as |opt idx|}}
-        {{#component (or extra.tokenComponent draggable-object)
+        {{#component (or extra.tokenComponent "draggable-object")
             tagName="li"
             class="ember-power-select-multiple-option"
             select=select
-            option=(readonly opt)
+            content=(readonly opt)
             idx=idx
             isSortable=true
             mouseDown=(action "handleOptionMouseDown")
@@ -26,8 +26,10 @@
                 <span role="button"
                     aria-label="remove element"
                     class="ember-power-select-multiple-remove-btn"
-                    data-selected-index={{idx}}>
-                    &times;
+                    data-selected-index={{idx}}
+                    onmousedown={{action "chooseOption" opt}}
+                >
+                    {{svg-jar "close" data-selected-index=idx}}
                 </span>
             {{/unless}}
         {{/component}}

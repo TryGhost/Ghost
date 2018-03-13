@@ -6,21 +6,11 @@ import {pluralize} from 'ember-inflector';
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
     attrs: {
+        authors: {embedded: 'always'},
         tags: {embedded: 'always'},
         publishedAtUTC: {key: 'published_at'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    },
-
-    normalize(model, hash, prop) {
-        // this is to enable us to still access the raw authorId
-        // without requiring an extra get request (since it is an
-        // async relationship).
-        if ((prop === 'post' || prop === 'posts') && hash.author !== undefined) {
-            hash.author_id = hash.author;
-        }
-
-        return this._super(...arguments);
     },
 
     normalizeSingleResponse(store, primaryModelClass, payload) {
@@ -62,6 +52,8 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         delete data.author_id;
         // Read-only virtual property.
         delete data.url;
+        // Deprecated property (replaced with data.authors)
+        delete data.author;
 
         hash[root] = [data];
     }

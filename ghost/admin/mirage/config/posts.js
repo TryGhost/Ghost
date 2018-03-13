@@ -1,15 +1,21 @@
 import {Response} from 'ember-cli-mirage';
 import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
-import {paginateModelArray} from '../utils';
+import {paginateModelCollection} from '../utils';
 
 export default function mockPosts(server) {
-    server.post('/posts', function ({posts}) {
+    server.post('/posts', function ({posts, users}) {
         let attrs = this.normalizedRequestAttrs();
+        let authors = [];
 
-        // mirage expects `author` to be a reference but we only have an ID
-        attrs.authorId = attrs.author;
-        delete attrs.author;
+        // NOTE: this is necessary so that ember-cli-mirage has a valid user
+        // schema object rather than a plain object
+        // TODO: should ember-cli-mirage be handling this automatically?
+        attrs.authors.forEach((author) => {
+            authors.push(users.find(author.id));
+        });
+
+        attrs.authors = authors;
 
         if (isBlank(attrs.slug) && !isBlank(attrs.title)) {
             attrs.slug = dasherize(attrs.title);
@@ -24,7 +30,6 @@ export default function mockPosts(server) {
         let limit = +queryParams.limit || 15;
         let {status, staticPages} = queryParams;
         let query = {};
-        let models;
 
         if (status && status !== 'all') {
             query.status = status;
@@ -38,9 +43,9 @@ export default function mockPosts(server) {
             query.page = true;
         }
 
-        models = posts.where(query).models;
+        let collection = posts.where(query);
 
-        return paginateModelArray('posts', models, page, limit);
+        return paginateModelCollection('posts', collection, page, limit);
     });
 
     server.get('/posts/:id/', function ({posts}, {params}) {
@@ -55,17 +60,21 @@ export default function mockPosts(server) {
         });
     });
 
-    // Handle embedded author in post
-    server.put('/posts/:id/', function ({posts}, request) {
-        let post = this.normalizedRequestAttrs();
-        let {author} = post;
-        delete post.author;
+    server.put('/posts/:id/', function ({posts, users}, {params}) {
+        let attrs = this.normalizedRequestAttrs();
+        let post = posts.find(params.id);
+        let authors = [];
 
-        let savedPost = posts.find(request.params.id).update(post);
-        savedPost.authorId = author;
-        savedPost.save();
+        // NOTE: this is necessary so that ember-cli-mirage has a valid user
+        // schema object rather than a plain object
+        // TODO: should ember-cli-mirage be handling this automatically?
+        attrs.authors.forEach((author) => {
+            authors.push(users.find(author.id));
+        });
 
-        return savedPost;
+        attrs.authors = authors;
+
+        return post.update(attrs);
     });
 
     server.del('/posts/:id/');

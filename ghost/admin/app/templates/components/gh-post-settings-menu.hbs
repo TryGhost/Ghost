@@ -88,24 +88,11 @@
                 {{/gh-form-group}}
 
                 {{#unless session.user.isAuthorOrContributor}}
-                <div class="form-group for-select">
-                    <label for="author-list">Author</label>
-                    <span class="gh-input-icon gh-icon-user">
-                        {{svg-jar "user-circle"}}
-                        <span class="gh-select" tabindex="0">
-                        {{one-way-select
-                            selectedAuthor
-                            id="author-list"
-                            name="post-setting-author"
-                            options=authors
-                            optionValuePath="id"
-                            optionLabelPath="name"
-                            update=(action "changeAuthor")
-                        }}
-                        {{svg-jar "arrow-down-small"}}
-                        </span>
-                    </span>
-                </div>
+                    {{#gh-form-group class="for-select" errors=post.errors hasValidated=post.hasValidated property="authors" data-test-input="authors"}}
+                        <label for="author-list">Authors</label>
+                        {{gh-psm-authors-input selectedAuthors=post.authors updateAuthors=(action "changeAuthors") triggerId="author-list"}}
+                        {{gh-error-message errors=post.errors property="authors" data-test-error="authors"}}
+                    {{/gh-form-group}}
                 {{/unless}}
 
                 <ul class="nav-list nav-list-block">

@@ -1,7 +1,7 @@
 /* global key */
 import Component from '@ember/component';
 import Ember from 'ember';
-import {A} from '@ember/array';
+import {A, isArray} from '@ember/array';
 import {
     advanceSelectableOption,
     defaultMatcher,
@@ -21,6 +21,7 @@ const TAB = 9;
 export default Component.extend({
 
     // public attrs
+    allowCreation: true,
     closeOnSelect: false,
     labelField: 'name',
     matcher: defaultMatcher,
@@ -85,6 +86,10 @@ export default Component.extend({
     }),
 
     shouldShowCreateOption(term, options) {
+        if (!this.get('allowCreation')) {
+            return false;
+        }
+
         if (this.get('showCreateWhen')) {
             return this.get('showCreateWhen')(term, options);
         } else {
@@ -137,6 +142,11 @@ export default Component.extend({
         // allow tokens to be created with spaces
         if (keyboardEvent && keyboardEvent.code === 'Space') {
             select.actions.search(`${select.searchText} `);
+            return;
+        }
+
+        // guard against return being pressed when nothing is selected
+        if (!isArray(selection)) {
             return;
         }
 

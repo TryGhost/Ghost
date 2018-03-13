@@ -409,7 +409,12 @@ describe('Acceptance: Team', function () {
         it('can delete users', async function () {
             let user1 = server.create('user');
             let user2 = server.create('user');
-            server.create('post', {author: user2});
+            let post = server.create('post', {authors: [user2]});
+
+            // we don't have a full many-to-many relationship in mirage so we
+            // need to add the inverse manually
+            user2.posts = [post];
+            user2.save();
 
             await visit('/team');
             await click(`[data-test-user-id="${user1.id}"]`);

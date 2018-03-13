@@ -22,9 +22,7 @@ export default Component.extend(SettingsMenuMixin, {
     settings: service(),
     ui: service(),
 
-    authors: null,
     post: null,
-    selectedAuthor: null,
 
     _showSettingsMenu: false,
     _showThrobbers: false,
@@ -92,23 +90,8 @@ export default Component.extend(SettingsMenuMixin, {
         return seoURL;
     }),
 
-    init() {
-        this._super(...arguments);
-        this.authors = this.authors || [];
-    },
-
     didReceiveAttrs() {
         this._super(...arguments);
-
-        this.get('store').query('user', {limit: 'all'}).then((users) => {
-            if (!this.get('isDestroyed')) {
-                this.set('authors', users.sortBy('name'));
-            }
-        });
-
-        this.get('post.author').then((author) => {
-            this.set('selectedAuthor', author);
-        });
 
         // HACK: ugly method of working around the CSS animations so that we
         // can add throbbers only when the animation has finished
@@ -485,25 +468,24 @@ export default Component.extend(SettingsMenuMixin, {
             });
         },
 
-        changeAuthor(newAuthor) {
-            let author = this.get('post.author');
+        changeAuthors(newAuthors) {
             let post = this.get('post');
 
             // return if nothing changed
-            if (newAuthor.get('id') === author.get('id')) {
+            if (newAuthors.mapBy('id').join() === post.get('authors').mapBy('id').join()) {
                 return;
             }
 
-            post.set('author', newAuthor);
+            post.set('authors', newAuthors);
+            post.validate({property: 'authors'});
 
             // if this is a new post (never been saved before), don't try to save it
-            if (this.get('post.isNew')) {
+            if (post.get('isNew')) {
                 return;
             }
 
             this.get('savePost').perform().catch((error) => {
                 this.showError(error);
-                this.set('selectedAuthor', author);
                 post.rollbackAttributes();
             });
         },

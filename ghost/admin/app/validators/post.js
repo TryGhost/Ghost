@@ -6,6 +6,7 @@ import {isBlank, isEmpty, isPresent} from '@ember/utils';
 export default BaseValidator.create({
     properties: [
         'title',
+        'authors',
         'customExcerpt',
         'codeinjectionHead',
         'codeinjectionFoot',
@@ -29,6 +30,15 @@ export default BaseValidator.create({
 
         if (!validator.isLength(title || '', 0, 255)) {
             model.get('errors').add('title', 'Title cannot be longer than 255 characters.');
+            this.invalidate();
+        }
+    },
+
+    authors(model) {
+        let authors = model.get('authors');
+
+        if (isEmpty(authors)) {
+            model.get('errors').add('authors', 'At least one author is required.');
             this.invalidate();
         }
     },
