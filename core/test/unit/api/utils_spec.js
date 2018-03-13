@@ -424,6 +424,71 @@ describe('API Utils', function () {
                 done();
             }).catch(done);
         });
+
+        describe('invalid post.authors structure', function () {
+            it('post.authors is not present', function (done) {
+                var object = {posts: [{id: 1}]};
+
+                apiUtils.checkObject(_.cloneDeep(object), 'posts')
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('post.authors is no array', function (done) {
+                var object = {posts: [{id: 1, authors: null}]};
+
+                apiUtils.checkObject(_.cloneDeep(object), 'posts')
+                    .then(function () {
+                        "Test should fail".should.eql(false);
+                    })
+                    .catch(function (err) {
+                        (err instanceof common.errors.BadRequestError).should.be.true;
+                        err.message.should.eql('No valid object structure provided for: posts[*].authors');
+                        done();
+                    });
+            });
+
+            it('post.authors is empty', function (done) {
+                var object = {posts: [{id: 1, authors: []}]};
+
+                apiUtils.checkObject(_.cloneDeep(object), 'posts')
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('post.authors contains id property', function (done) {
+                var object = {
+                    posts: [{
+                        id: 1,
+                        authors: [{id: 'objectid', name: 'Kate'}, {id: 'objectid', name: 'Steffen'}]
+                    }]
+                };
+
+                apiUtils.checkObject(_.cloneDeep(object), 'posts')
+                    .then(function () {
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('post.authors does not contain id property', function (done) {
+                var object = {posts: [{id: 1, authors: [{id: 'objectid', name: 'Kate'}, {name: 'Steffen'}]}]};
+
+                apiUtils.checkObject(_.cloneDeep(object), 'posts')
+                    .then(function () {
+                        "Test should fail".should.eql(false);
+                    })
+                    .catch(function (err) {
+                        (err instanceof common.errors.BadRequestError).should.be.true;
+                        err.message.should.eql('No valid object structure provided for: posts[*].authors');
+                        done();
+                    });
+            });
+        });
     });
 
     describe('isPublicContext', function () {
