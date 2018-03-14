@@ -6801,9 +6801,9 @@ mobiledoc-dom-renderer@0.6.5:
   version "0.6.5"
   resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.6.5.tgz#56c0302c4f9c30840ab5b9b20dfe905aed1e437b"
 
-mobiledoc-kit@0.10.20:
-  version "0.10.20"
-  resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.20.tgz#2925a6223bac2a1eeb3468a4a94d992618089312"
+mobiledoc-kit@0.10.21:
+  version "0.10.21"
+  resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.21.tgz#71b165f7e61bcc242f99cb0e37209f853fcf86c2"
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
