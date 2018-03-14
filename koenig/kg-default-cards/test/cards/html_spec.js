@@ -17,6 +17,7 @@ describe('HTML card', function () {
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING</h1><p>PARAGRAPH</p></div>');
     });
+
     it('Plain content renders', function () {
         opts = {
             env: {
@@ -30,7 +31,8 @@ describe('HTML card', function () {
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html">CONTENT</div>');
     });
-    it.skip('Invalid HTML returns', function () {
+
+    it('Invalid HTML returns', function () {
         opts = {
             env: {
                 dom: new SimpleDom.Document()
@@ -42,5 +44,20 @@ describe('HTML card', function () {
 
         var serializer = new SimpleDom.HTMLSerializer([]);
         serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><h1>HEADING<</div>');
+    });
+
+    it('Caption renders', function () {
+        opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                html: '<iframe src="http://vimeo.com"></iframe>',
+                caption: 'Embed caption test'
+            }
+        };
+
+        var serializer = new SimpleDom.HTMLSerializer([]);
+        serializer.serialize(card.render(opts)).should.match('<div class="kg-card-html"><iframe src="http://vimeo.com"></iframe><p>Embed caption test</p></div>');
     });
 });
