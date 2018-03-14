@@ -4,17 +4,13 @@
 
 {{#if showMenu}}
     <div class="koenig-cardmenu">
-        <div class="koenig-cardmenu-search">
+        {{!-- <div class="koenig-cardmenu-search">
             {{inline-svg "koenig/search"}}
             <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
         </div>
         <div class="koenig-cardmenu-divider">
             Primary
-        </div>
-        <div class="koenig-cardmenu-card" {{action "closeMenu" on="click"}}>
-            <div class="koenig-cardmenu-icon">{{inline-svg "koenig/font-size"}}</div>
-            <div class="koenig-cardmenu-label">Text</div>
-        </div>
+        </div> --}}
         <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "markdown" on="click"}}>
             <div class="koenig-cardmenu-icon">{{inline-svg "koenig/markdown"}}</div>
             <div class="koenig-cardmenu-label">Markdown</div>
