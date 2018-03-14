@@ -720,18 +720,15 @@ export default Component.extend({
     _deleteCard(card, cursorDirection) {
         this.editor.run((postEditor) => {
             let section = card.env.postModel;
-            let rangeStart, rangeEnd;
+            let nextPosition;
 
             if (cursorDirection === CURSOR_BEFORE) {
-                rangeStart = section.prev ? section.prev.tailPosition() : section.headPosition();
-                rangeEnd = section.tailPosition();
+                nextPosition = section.prev.tailPosition();
             } else {
-                rangeStart = section.headPosition();
-                rangeEnd = section.next ? section.next.headPosition() : section.tailPosition();
+                nextPosition = section.next.headPosition();
             }
 
-            let range = new Range(rangeStart, rangeEnd);
-            let nextPosition = postEditor.deleteRange(range);
+            postEditor.removeSection(section);
             postEditor.setRange(nextPosition);
         });
     },
