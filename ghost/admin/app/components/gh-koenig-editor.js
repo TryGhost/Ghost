@@ -72,6 +72,12 @@ export default Component.extend({
                 ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && (!value || selectionStart === value.length))
             ) {
                 event.preventDefault();
+
+                // on Enter we also want to create a blank para if necessary
+                if (event.key === 'Enter') {
+                    this._addParaAtTop();
+                }
+
                 this._editor.focus();
             }
         },
@@ -104,5 +110,25 @@ export default Component.extend({
                 return true;
             }
         });
+    },
+
+    _addParaAtTop() {
+        if (!this._editor) {
+            return;
+        }
+
+        let editor = this._editor;
+        let section = editor.post.toRange().head.section;
+
+        // create a blank paragraph at the top of the editor unless it's already
+        // a blank paragraph
+        if (section.isListItem || !section.isBlank || section.text !== '') {
+            editor.run((postEditor) => {
+                let {builder} = postEditor;
+                let newPara = builder.createMarkupSection('p');
+
+                postEditor.insertSectionBefore(section.parent.sections, newPara, section);
+            });
+        }
     }
 });
