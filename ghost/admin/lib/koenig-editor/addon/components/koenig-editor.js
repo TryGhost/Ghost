@@ -470,9 +470,13 @@ export default Component.extend({
         // select the card if the cursor is on the before/after &zwnj; char
         if (section && isCollapsed && section.type === 'card-section') {
             if (head.offset === 0 || head.offset === 1) {
-                let card = this._getCardFromSection(section);
-                this.selectCard(card);
-                this.set('selectedRange', editor.range);
+                // select card after render to ensure that our componentCards
+                // attr is populated
+                run.schedule('afterRender', this, () => {
+                    let card = this._getCardFromSection(section);
+                    this.selectCard(card);
+                    this.set('selectedRange', editor.range);
+                });
                 return;
             }
         }
