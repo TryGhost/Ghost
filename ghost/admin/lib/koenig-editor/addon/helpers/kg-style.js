@@ -266,7 +266,7 @@ export function kgStyle(params/*, hash*/) {
     // Container cards
     case 'container-card':
     case 'container-card-p':
-        cssClass = cardBorderStyle + ' tmb--2-0x';
+        cssClass = cardBorderStyle + ' tmb--2-0x mih10';
         break;
 
     // Generic media card
