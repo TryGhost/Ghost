@@ -41,7 +41,7 @@ function postLookup(postUrl) {
     }
 
     // Query database to find post
-    return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,tags'})).then(function then(result) {
+    return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'})).then(function then(result) {
         var post = result.posts[0];
 
         if (!post) {
