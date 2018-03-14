@@ -24,6 +24,7 @@ export default Component.extend({
     _lastEditorRange: null,
     _hasCursorButton: false,
     _onMousemoveHandler: null,
+    _onKeydownHandler: null,
 
     // closure actions
     replaceWithCardSection() {},
@@ -69,6 +70,7 @@ export default Component.extend({
         window.removeEventListener('mousedown', this._onWindowMousedownHandler);
         window.removeEventListener('resize', this._onResizeHandler);
         window.removeEventListener('mousemove', this._onMousemoveHandler);
+        window.removeEventListener('keydown', this._onKeydownHandler);
     },
 
     actions: {
@@ -152,10 +154,7 @@ export default Component.extend({
         // gets inserted in the correct place because editorRange will be
         // wherever the cursor currently is if the menu was opened via a
         // mouseover button
-        this.set('editorRange', this._editorRange);
-        this.get('editor').run((postEditor) => {
-            postEditor.setRange(this._editorRange);
-        });
+        this._moveCaretToCachedEditorRange();
 
         // focus the search immediately so that you can filter immediately
         run.schedule('afterRender', this, function () {
@@ -164,10 +163,12 @@ export default Component.extend({
 
         // watch the window for mousedown events so that we can close the menu
         // when we detect a click outside
-        this._onWindowMousedownHandler = run.bind(this, (event) => {
-            this._handleWindowMousedown(event);
-        });
+        this._onWindowMousedownHandler = run.bind(this, this._handleWindowMousedown);
         window.addEventListener('mousedown', this._onWindowMousedownHandler);
+
+        // watch for keydown events so that we can close the mnu on Escape
+        this._onKeydownHandler = run.bind(this, this._handleKeydown);
+        window.addEventListener('keydown', this._onKeydownHandler);
     },
 
     _hideMenu() {
@@ -175,8 +176,9 @@ export default Component.extend({
             // reset our cached editorRange
             this._editorRange = null;
 
-            // stop watching the body for clicks
+            // stop watching the body for clicks and keydown
             window.removeEventListener('mousedown', this._onWindowMousedownHandler);
+            window.removeEventListener('keydown', this._onKeydownHandler);
 
             // hide the menu
             this.set('showMenu', false);
@@ -236,10 +238,25 @@ export default Component.extend({
         this._mousemoveTicking = false;
     },
 
+    _handleKeydown(event) {
+        if (event.code === 'Escape') {
+            // reset the caret position so we have a caret after closing
+            this._moveCaretToCachedEditorRange();
+            this._hideMenu();
+        }
+    },
+
     _handleResize() {
         if (this.get('showButton')) {
             this._throttleResize = run.throttle(this, this._positionMenu, 100);
         }
+    },
+
+    _moveCaretToCachedEditorRange() {
+        this.set('editorRange', this._editorRange);
+        this.get('editor').run((postEditor) => {
+            postEditor.setRange(this._editorRange);
+        });
     }
 
 });
