@@ -658,7 +658,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (isContributor) {
             // Note: at the moment primary_tag is a computed field,
-            // meaning we don't add it to this list. However, if the primary_tag
+            // meaning we don't add it to this list. However, if the primary_tag/primary_author
             // ever becomes a db field rather than a computed field, add it to this list
             // TODO: once contributors are able to edit existing tags, this can be removed
             // @TODO: we need a concept for making a diff between incoming tags and existing tags

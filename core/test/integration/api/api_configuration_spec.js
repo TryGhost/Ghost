@@ -33,6 +33,7 @@ describe('Configuration API', function () {
                 page: 'page',
                 preview: 'p',
                 primaryTagFallback: 'all',
+                primaryAuthorFallback: 'all',
                 private: 'private',
                 subscribe: 'subscribe',
                 amp: 'amp'

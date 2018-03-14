@@ -174,6 +174,7 @@ function urlPathForPost(post) {
     var output = '',
         permalinks = settingsCache.get('permalinks'),
         primaryTagFallback = config.get('routeKeywords').primaryTagFallback,
+        primaryAuthorFallback = config.get('routeKeywords').primaryAuthorFallback,
         publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('active_timezone')),
         tags = {
             year: function () {
@@ -190,6 +191,9 @@ function urlPathForPost(post) {
             },
             primary_tag: function () {
                 return post.primary_tag ? post.primary_tag.slug : primaryTagFallback;
+            },
+            primary_author: function () {
+                return post.primary_author ? post.primary_author.slug : primaryAuthorFallback;
             },
             slug: function () {
                 return post.slug;
