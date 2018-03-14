@@ -556,8 +556,11 @@ export default Component.extend({
         }
 
         // if the section about to be deleted by a DEL is a card then actually
-        // delete the card
-        if (isCollapsed && offset === section.length && section.next && section.next.type === 'card-section') {
+        // delete the card rather than selecting it
+        // However, if the current paragraph is blank then delete the paragraph
+        // instead - allows blank paragraphs between cards to be deleted and
+        // feels more natural
+        if (isCollapsed && offset === section.length && section.next && section.next.type === 'card-section' && !section.isBlank) {
             let card = this._getCardFromSection(section.next);
             this._deleteCard(card, CURSOR_BEFORE);
             return;
