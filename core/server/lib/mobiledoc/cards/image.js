@@ -1,10 +1,22 @@
+'use strict';
+
 module.exports = {
     name: 'image',
     type: 'dom',
-    render(opts) {
-        var img = opts.env.dom.createElement('img');
+    render({payload, env: {dom}}) {
+        let figure = dom.createElement('figure');
+
+        let img = dom.createElement('img');
         img.className = 'kg-card-image';
-        img.setAttribute('src', opts.payload.img);
-        return img;
+        img.setAttribute('src', payload.src);
+        figure.appendChild(img);
+
+        if (payload.caption) {
+            let figcaption = dom.createElement('figcaption');
+            figcaption.appendChild(dom.createTextNode(payload.caption));
+            figure.appendChild(figcaption);
+        }
+
+        return figure;
     }
 };
