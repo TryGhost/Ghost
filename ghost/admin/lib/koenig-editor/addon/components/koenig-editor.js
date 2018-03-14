@@ -528,6 +528,20 @@ export default Component.extend({
             return;
         }
 
+        // if the caret is at the beginning of the doc, on a blank para, and
+        // there are more sections then delete the para and trigger the
+        // `cursorDidExitAtTop` closure action
+        let isFirstSection = section === section.parent.sections.head;
+        if (isFirstSection && isCollapsed && offset === 0 && (section.isBlank || section.text === '') && section.next) {
+            this.editor.run((postEditor) => {
+                postEditor.removeSection(section);
+            });
+
+            // allow default behaviour which will trigger `cursorDidChange` and
+            // fire our `cursorDidExitAtTop` action
+            return;
+        }
+
         // if the section about to be deleted by a backspace is a card then
         // actually delete the card rather than selecting it.
         // However, if the current paragraph is blank then delete the paragraph
