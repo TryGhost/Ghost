@@ -10,11 +10,26 @@ describe('Image card', function () {
                 dom: new SimpleDom.Document()
             },
             payload: {
-                img: 'https://www.ghost.org/image.png'
+                src: 'https://www.ghost.org/image.png'
             }
         };
 
         var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<img src="https://www.ghost.org/image.png"></img>');
+        serializer.serialize(card.render(opts)).should.match('<figure><img src="https://www.ghost.org/image.png"></img></figure>');
+    });
+
+    it('generates an image with caption', function () {
+        opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                src: 'https://www.ghost.org/image.png',
+                caption: 'Test caption'
+            }
+        };
+
+        var serializer = new SimpleDom.HTMLSerializer([]);
+        serializer.serialize(card.render(opts)).should.match('<figure><img src="https://www.ghost.org/image.png"></img><figcaption>Test caption</figcaption></figure>');
     });
 });
