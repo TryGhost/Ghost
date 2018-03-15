@@ -36,20 +36,6 @@ const ITEM_MAP = [
         matches: ['divider', 'horizontal-rule', 'hr'],
         type: 'card',
         replaceArg: 'hr'
-    },
-    {
-        label: 'Bullet list',
-        icon: 'koenig/list-bullets',
-        matches: ['list-bullet', 'bullet', 'ul'],
-        type: 'list',
-        replaceArg: 'ul'
-    },
-    {
-        label: 'Number list',
-        icon: 'koenig/list-number',
-        matches: ['list-number', 'number', 'ol'],
-        type: 'list',
-        replaceArg: 'ol'
     }
 ];
 
@@ -74,7 +60,6 @@ export default Component.extend({
 
     // closure actions
     replaceWithCardSection() {},
-    replaceWithListSection() {},
 
     style: computed('top', function () {
         return htmlSafe(`top: ${this.get('top')}px`);
@@ -116,8 +101,6 @@ export default Component.extend({
 
             if (item.type === 'card') {
                 this.replaceWithCardSection(item.replaceArg, range);
-            } else if (item.type === 'list') {
-                this.replaceWithListSection(item.replaceArg, range);
             }
 
             this._hideMenu();

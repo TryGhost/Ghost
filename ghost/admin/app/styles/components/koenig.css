@@ -138,6 +138,9 @@
     stroke-width: 2px;
     stroke: color(var(--lightgrey) l(-10%));
 }
+.koenig-toolbar-btn-list svg path {
+    fill: color(var(--lightgrey) l(-10%));
+}
 
 .koenig-toolbar-btn:hover,
 .koenig-toolbar-btn.selected {
@@ -145,9 +148,15 @@
     cursor: pointer;
     text-shadow: #000 0 1px 6px;
 }
+.koenig-toolbar-btn-list.selected svg path {
+    fill: #fff;
+}
 
 .koenig-toolbar-btn:hover svg g {
     stroke: #fff;
+}
+.koenig-toolbar-btn-list:hover svg path {
+    fill: #fff;
 }
 
 .koenig-toolbar-btn-bold {

@@ -104,6 +104,8 @@ export default Component.extend({
         }
     },
 
+    /* private methods ------------------------------------------------------ */
+
     _toggleVisibility: task(function* () {
         // debounce for 100ms to account for "click to deselect" otherwise we
         // run twice and the fade out animation jumps position
