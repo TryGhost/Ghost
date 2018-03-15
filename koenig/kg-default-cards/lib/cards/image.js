@@ -3,7 +3,9 @@
 module.exports = {
     name: 'image',
     type: 'dom',
-    render({payload, env: {dom}}) {
+    render(opts) {
+        let payload = opts.payload;
+        let dom = opts.env.dom;
         let figure = dom.createElement('figure');
 
         let img = dom.createElement('img');
