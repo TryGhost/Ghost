@@ -3,6 +3,7 @@ import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-card-markdown';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 
@@ -18,8 +19,9 @@ export default Component.extend({
     toolbar: null,
 
     // closure actions
-    saveCard: null,
-    selectCard: null,
+    saveCard() {},
+    selectCard() {},
+    deleteCard() {},
 
     renderedMarkdown: computed('payload.markdown', function () {
         return htmlSafe(formatMarkdown(this.get('payload.markdown')));
@@ -41,6 +43,16 @@ export default Component.extend({
             // this action is called before the component is rendered so we
             // need to wait to ensure that the textarea element is present
             run.scheduleOnce('afterRender', this, this._focusTextarea);
+        },
+
+        leaveEditMode() {
+            if (isBlank(this.get('payload.markdown'))) {
+                // afterRender is required to avoid double modification of `isSelected`
+                // TODO: see if there's a way to avoid afterRender
+                run.scheduleOnce('afterRender', this, function () {
+                    this.deleteCard();
+                });
+            }
         },
 
         updateMarkdown(markdown) {

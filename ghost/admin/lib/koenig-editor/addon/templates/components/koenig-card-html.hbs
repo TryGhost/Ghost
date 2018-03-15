@@ -4,6 +4,7 @@
     isEditing=isEditing
     selectCard=(action selectCard)
     editCard=(action editCard)
+    onLeaveEdit=(action "leaveEditMode")
 }}
     {{#if isEditing}}
         {{gh-cm-editor payload.html
