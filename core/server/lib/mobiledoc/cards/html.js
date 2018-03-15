@@ -3,7 +3,9 @@
 module.exports = {
     name: 'html',
     type: 'dom',
-    render({payload, env: {dom}}) {
+    render(opts) {
+        let payload = opts.payload;
+        let dom = opts.env.dom;
         let caption = '';
 
         if (payload.caption) {
