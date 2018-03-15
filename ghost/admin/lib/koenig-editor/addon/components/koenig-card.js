@@ -24,6 +24,9 @@ export default Component.extend({
     toolbarWidth: 0,
     toolbarHeight: 0,
 
+    // internal properties
+    _lastIsEditing: false,
+
     // closure actions
     selectCard() {},
     editCard() {},

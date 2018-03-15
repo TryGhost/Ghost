@@ -221,7 +221,7 @@ export default function (editor) {
         }
     }
 
-    function matchImage(editor, text, hasTextAfter = false) {
+    function matchImage(editor, text) {
         let matches = text.match(/^!\[(.*?)\]\((.*?)\)$/);
         if (matches) {
             let {range: {head, head: {section}}} = editor;

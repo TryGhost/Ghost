@@ -1,5 +1,7 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-card-html';
+import {isBlank} from '@ember/utils';
+import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 
 export default Component.extend({
@@ -11,7 +13,8 @@ export default Component.extend({
     isEditing: false,
 
     // closure actions
-    saveCard: null,
+    saveCard() {},
+    deleteCard() {},
 
     init() {
         this._super(...arguments);
@@ -28,6 +31,16 @@ export default Component.extend({
 
         updateCaption(caption) {
             this._updatePayloadAttr('caption', caption);
+        },
+
+        leaveEditMode() {
+            if (isBlank(this.get('payload.html'))) {
+                // afterRender is required to avoid double modification of `isSelected`
+                // TODO: see if there's a way to avoid afterRender
+                run.scheduleOnce('afterRender', this, function () {
+                    this.deleteCard();
+                });
+            }
         }
     },
 

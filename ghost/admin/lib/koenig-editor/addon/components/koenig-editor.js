@@ -51,6 +51,7 @@ export const CARD_COMPONENT_MAP = {
 
 const CURSOR_BEFORE = -1;
 const CURSOR_AFTER = 1;
+const NO_CURSOR_MOVEMENT = 0;
 
 function arrayToMap(array) {
     let map = Object.create(null);
@@ -376,6 +377,10 @@ export default Component.extend({
 
         deselectCard(card) {
             this.deselectCard(card);
+        },
+
+        deleteCard(card, cursorMovement = NO_CURSOR_MOVEMENT) {
+            this._deleteCard(card, cursorMovement);
         },
 
         moveCursorToPrevSection(card) {
@@ -714,7 +719,10 @@ export default Component.extend({
             }
 
             postEditor.removeSection(section);
-            postEditor.setRange(nextPosition);
+
+            if (cursorDirection !== NO_CURSOR_MOVEMENT) {
+                postEditor.setRange(nextPosition);
+            }
         });
     },
 
