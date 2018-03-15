@@ -28,7 +28,6 @@ export default Component.extend({
 
     // closure actions
     replaceWithCardSection() {},
-    replaceWithListSection() {},
 
     style: computed('top', function () {
         return htmlSafe(`top: ${this.get('top')}px`);
@@ -88,14 +87,6 @@ export default Component.extend({
             this.replaceWithCardSection(cardName, range);
 
             this._hideButton();
-            this._hideMenu();
-        },
-
-        replaceWithListSection(listType) {
-            let range = this._editorRange;
-
-            this.replaceWithListSection(listType, range);
-
             this._hideMenu();
         }
     },

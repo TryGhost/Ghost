@@ -366,20 +366,6 @@ export default Component.extend({
             });
         },
 
-        replaceWithListSection(listType, range) {
-            let editor = this.get('editor');
-            let {head: {section}} = range;
-
-            editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let item = builder.createListItem();
-                let listSection = builder.createListSection(listType, [item]);
-
-                postEditor.replaceSection(section, listSection);
-                postEditor.setRange(listSection.headPosition());
-            });
-        },
-
         selectCard(card) {
             this.selectCard(card);
         },
