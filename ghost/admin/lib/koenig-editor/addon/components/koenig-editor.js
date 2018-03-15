@@ -7,7 +7,6 @@ import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import Ember from 'ember';
 import EmberObject from '@ember/object';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
 import layout from '../templates/components/koenig-editor';
