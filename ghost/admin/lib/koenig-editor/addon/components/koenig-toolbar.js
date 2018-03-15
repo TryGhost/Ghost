@@ -98,6 +98,10 @@ export default Component.extend({
 
     actions: {
         toggleMarkup(markupName) {
+            if (markupName === 'em' && this.get('activeMarkupTagNames.isI')) {
+                markupName = 'i';
+            }
+
             this.toggleMarkup(markupName);
         },
 
