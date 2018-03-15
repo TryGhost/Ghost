@@ -36,6 +36,7 @@ export default Component.extend({
     _isMouseDown: false,
     _hasSelectedRange: false,
     _onMousedownHandler: null,
+    _onMousemoveHandler: null,
     _onMouseupHandler: null,
     _onResizeHandler: null,
 
@@ -90,6 +91,7 @@ export default Component.extend({
         this._removeStyleElement();
         run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onMousedownHandler);
+        window.removeEventListener('mousemove', this._onMousemoveHandler);
         window.removeEventListener('mouseup', this._onMouseupHandler);
         window.removeEventListener('resize', this._onResizeHandler);
     },
@@ -106,8 +108,8 @@ export default Component.extend({
 
     /* private methods ------------------------------------------------------ */
 
-    _toggleVisibility: task(function* () {
-        // debounce for 100ms to account for "click to deselect" otherwise we
+    _toggleVisibility: task(function* (skipMousemove = false) {
+        // debounce for 50ms to account for "click to deselect" otherwise we
         // run twice and the fade out animation jumps position
         yield timeout(50);
 
@@ -121,7 +123,7 @@ export default Component.extend({
 
         // if we have a range, show the toolbnar once the mouse is lifted
         if (this._hasSelectedRange && !this._isMouseDown) {
-            this._showToolbar();
+            this._showToolbar(skipMousemove);
         } else {
             this._hideToolbar();
         }
@@ -134,10 +136,26 @@ export default Component.extend({
         }
     },
 
+    _handleMousemove() {
+        if (!this.get('showToolbar')) {
+            this.set('showToolbar', true);
+        }
+
+        this._removeMousemoveHandler();
+    },
+
+    _removeMousemoveHandler() {
+        window.removeEventListener('mousemove', this._onMousemoveHandler);
+        this._onMousemoveHandler = null;
+    },
+
     _handleMouseup(event) {
         if (event.which === 1) {
             this._isMouseDown = false;
-            this.get('_toggleVisibility').perform();
+            // we want to skip the mousemove handler here because we know the
+            // selection (if there was one) was via the mouse and we don't want
+            // to wait for another mousemove before showing the toolbar
+            this.get('_toggleVisibility').perform(true);
         }
     },
 
@@ -147,9 +165,17 @@ export default Component.extend({
         }
     },
 
-    _showToolbar() {
+    _showToolbar(skipMousemove) {
         this._positionToolbar();
-        this.set('showToolbar', true);
+
+        if (skipMousemove) {
+            this.set('showToolbar', true);
+        }
+
+        if (!this.get('showToolbar') && !this._onMousemoveHandler) {
+            this._onMousemoveHandler = run.bind(this, this._handleMousemove);
+            window.addEventListener('mousemove', this._onMousemoveHandler);
+        }
 
         // track displayed range so that we don't re-position unnecessarily
         this._lastRange = this.get('editorRange');
@@ -158,6 +184,7 @@ export default Component.extend({
     _hideToolbar() {
         this.set('showToolbar', false);
         this._lastRange = null;
+        this._removeMousemoveHandler();
     },
 
     _positionToolbar() {
