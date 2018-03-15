@@ -10,8 +10,8 @@
 <button
     type="button"
     title="Italic"
-    class="koenig-toolbar-btn koenig-toolbar-btn-italic {{if activeMarkupTagNames.isI "selected"}}"
-    {{action "toggleMarkup" "i"}}
+    class="koenig-toolbar-btn koenig-toolbar-btn-italic {{if (or activeMarkupTagNames.isEm activeMarkupTagNames.isI) "selected"}}"
+    {{action "toggleMarkup" "em"}}
 >
     I
 </button>
