@@ -20,27 +20,28 @@ export default function (editor) {
     editor.onTextInput({
         name: 'inline_markdown',
         match: /[*_)~`]$/,
-        run(postEditor, matches) {
-            let text = postEditor.range.head.section.textUntil(postEditor.range.head);
+        run(editor, matches) {
+            let text = editor.range.head.section.textUntil(editor.range.head);
+            let hasTextAfter = editor.range.head.section.text.length > text.length;
 
             switch (matches[0]) {
             case '*':
-                matchStrongStar(postEditor, text);
-                matchEmStar(postEditor, text);
+                matchStrongStar(editor, text, hasTextAfter);
+                matchEmStar(editor, text, hasTextAfter);
                 break;
             case '_':
-                matchStrongUnderscore(postEditor, text);
-                matchEmUnderscore(postEditor, text);
+                matchStrongUnderscore(editor, text, hasTextAfter);
+                matchEmUnderscore(editor, text, hasTextAfter);
                 break;
             case ')':
-                matchLink(postEditor, text);
-                matchImage(postEditor, text);
+                matchLink(editor, text, hasTextAfter);
+                matchImage(editor, text, hasTextAfter);
                 break;
             case '~':
-                matchStrikethrough(postEditor, text);
+                matchStrikethrough(editor, text, hasTextAfter);
                 break;
             case '`':
-                matchCode(postEditor, text);
+                matchCode(editor, text, hasTextAfter);
                 break;
             }
         }
@@ -99,37 +100,43 @@ export default function (editor) {
 
     /* inline markdown ------------------------------------------------------ */
 
-    function matchStrongStar(editor, text) {
+    function matchStrongStar(editor, text, hasTextAfter = false) {
         let {range} = editor;
-        let matches = text.match(/\*\*(.+?)\*\*$/);
+        let matches = text.match(/(^|\s)\*\*([^\s*].+?[^\s*])\*\*/);
         if (matches) {
-            range = range.extend(-(matches[0].length));
+            let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
+            range = range.extend(-(match.length));
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[1], [bold]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [bold]);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                }
             });
         }
     }
 
-    function matchStrongUnderscore(editor, text) {
+    function matchStrongUnderscore(editor, text, hasTextAfter = false) {
         let {range} = editor;
-        let matches = text.match(/__(.+?)__$/);
+        let matches = text.match(/(^|\s)__([^\s_].+?[^\s_])__/);
         if (matches) {
-            range = range.extend(-(matches[0].length));
+            let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
+            range = range.extend(-(match.length));
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[1], [bold]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [bold]);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                }
             });
         }
     }
 
-    function matchEmStar(editor, text) {
+    function matchEmStar(editor, text, hasTextAfter = false) {
         let {range} = editor;
-        let matches = text.match(/(^|[^*])\*([^*].*?)\*$/);
+        let matches = text.match(/(^|\s)\*([^\s*][^*]+?[^\s])\*/);
         if (matches) {
             let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
@@ -137,14 +144,16 @@ export default function (editor) {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
                 let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [em]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                }
             });
         }
     }
 
-    function matchEmUnderscore(editor, text) {
+    function matchEmUnderscore(editor, text, hasTextAfter = false) {
         let {range} = editor;
-        let matches = text.match(/(^|[^_])_([^_].+?)_$/);
+        let matches = text.match(/(^|\s)_([^\s_][^_]+?[^\s])_/);
         if (matches) {
             let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
@@ -152,12 +161,48 @@ export default function (editor) {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
                 let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [em]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
+                }
             });
         }
     }
 
-    function matchLink(editor, text) {
+    function matchStrikethrough(editor, text, hasTextAfter = false) {
+        let {range} = editor;
+        let matches = text.match(/(^|\s)~([^\s~][^~]+?[^\s])~/);
+        if (matches) {
+            let match = matches[0][0] === '~' ? matches[0] : matches[0].substr(1);
+            range = range.extend(-(match.length));
+            editor.run((postEditor) => {
+                let position = postEditor.deleteRange(range);
+                let s = postEditor.builder.createMarkup('s');
+                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [s]);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
+                }
+            });
+        }
+    }
+
+    function matchCode(editor, text, hasTextAfter = false) {
+        let {range} = editor;
+        let matches = text.match(/(^|\s)`([^\s`][^`]+?[^\s])`/);
+        if (matches) {
+            let match = matches[0][0] === '`' ? matches[0] : matches[0].substr(1);
+            range = range.extend(-(match.length));
+            editor.run((postEditor) => {
+                let position = postEditor.deleteRange(range);
+                let code = postEditor.builder.createMarkup('code');
+                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [code]);
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
+                }
+            });
+        }
+    }
+
+    function matchLink(editor, text, hasTextAfter = false) {
         let {range} = editor;
         let matches = text.match(/(^|[^!])\[(.*?)\]\((.*?)\)$/);
         if (matches) {
@@ -169,12 +214,14 @@ export default function (editor) {
                 let position = postEditor.deleteRange(range);
                 let a = postEditor.builder.createMarkup('a', {href: url});
                 let nextPosition = postEditor.insertTextWithMarkup(position, text, [a]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
+                if (!hasTextAfter) {
+                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
+                }
             });
         }
     }
 
-    function matchImage(editor, text) {
+    function matchImage(editor, text, hasTextAfter = false) {
         let matches = text.match(/^!\[(.*?)\]\((.*?)\)$/);
         if (matches) {
             let {range: {head, head: {section}}} = editor;
@@ -205,34 +252,6 @@ export default function (editor) {
                     postEditor.insertSectionAtEnd(newSection);
                     postEditor.setRange(newSection.tailPosition());
                 }
-            });
-        }
-    }
-
-    function matchStrikethrough(editor, text) {
-        let {range} = editor;
-        let matches = text.match(/~(.+?)~$/);
-        if (matches) {
-            range = range.extend(-(matches[0].length));
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let s = postEditor.builder.createMarkup('s');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[1], [s]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
-            });
-        }
-    }
-
-    function matchCode(editor, text) {
-        let {range} = editor;
-        let matches = text.match(/`(.+?)`/);
-        if (matches) {
-            range = range.extend(-(matches[0].length));
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let code = postEditor.builder.createMarkup('code');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[1], [code]);
-                postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
             });
         }
     }
