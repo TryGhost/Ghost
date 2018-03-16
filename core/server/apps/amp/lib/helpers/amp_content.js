@@ -194,7 +194,7 @@ function ampContent() {
         cleanHTML = sanitizeHtml(ampHTML, {
             allowedTags: allowedAMPTags,
             allowedAttributes: allowedAMPAttributes,
-            selfClosing: ['source', 'track']
+            selfClosing: ['source', 'track', 'br']
         });
 
         return new SafeString(cleanHTML);
