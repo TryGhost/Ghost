@@ -43,7 +43,7 @@ allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h
 allowedAMPAttributes = {
     '*': ['itemid', 'itemprop', 'itemref', 'itemscope', 'itemtype', 'accesskey', 'class', 'dir', 'draggable',
         'id', 'lang', 'tabindex', 'title', 'translate', 'aria-*', 'role', 'placeholder', 'fallback', 'lightbox',
-        'overflow', 'amp-access', 'amp-access-*', 'i-amp-access-id'],
+        'overflow', 'amp-access', 'amp-access-*', 'i-amp-access-id', 'data-*'],
     h1: ['align'],
     h2: ['align'],
     h3: ['align'],
