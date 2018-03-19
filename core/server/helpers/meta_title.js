@@ -7,5 +7,5 @@ var proxy = require('./proxy'),
 
 // We use the name meta_title to match the helper for consistency:
 module.exports = function meta_title(options) { // eslint-disable-line camelcase
-    return getMetaDataTitle(this, options.data.root);
+    return getMetaDataTitle(this, options.data.root, options);
 };
