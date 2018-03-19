@@ -1,4 +1,6 @@
 import BaseValidator from './base';
+import validator from 'npm:validator';
+import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
     properties: ['label', 'url'],
@@ -7,7 +9,7 @@ export default BaseValidator.create({
         let label = model.get('label');
         let hasValidated = model.get('hasValidated');
 
-        if (validator.empty(label)) {
+        if (isBlank(label)) {
             model.get('errors').add('label', 'You must specify a label');
             this.invalidate();
         }
@@ -23,7 +25,7 @@ export default BaseValidator.create({
         /* eslint-enable camelcase */
         let urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 
-        if (validator.empty(url)) {
+        if (isBlank(url)) {
             model.get('errors').add('url', 'You must specify a URL or relative path');
             this.invalidate();
         } else if (url.match(/\s/) || (!validator.isURL(url, validatorOptions) && !url.match(urlRegex))) {

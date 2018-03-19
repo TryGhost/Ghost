@@ -1,7 +1,7 @@
-/* global md5 */
 import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
+import md5 from 'npm:blueimp-md5';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

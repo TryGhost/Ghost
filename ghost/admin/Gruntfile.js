@@ -9,15 +9,10 @@ module.exports = function (grunt) {
     grunt.initConfig({
         clean: {
             built: {
-                src: [
-                    'dist/**'
-                ]
+                src: ['dist/**']
             },
             dependencies: {
-                src: [
-                    'bower_components/**',
-                    'node_modules/**'
-                ]
+                src: ['node_modules/**']
             },
             tmp: {
                 src: ['tmp/**']
@@ -34,10 +29,6 @@ module.exports = function (grunt) {
         shell: {
             'npm-install': {
                 command: 'yarn install'
-            },
-
-            'bower-install': {
-                command: 'bower install'
             },
 
             ember: {
@@ -74,6 +65,6 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('init', 'Install the client dependencies',
-        ['shell:npm-install', 'shell:bower-install']
+        ['shell:npm-install']
     );
 };

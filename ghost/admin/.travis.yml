@@ -30,9 +30,7 @@ before_install:
   - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
-  - yarn global add bower
   - yarn
-  - bower install
 
 before_script:
   - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;

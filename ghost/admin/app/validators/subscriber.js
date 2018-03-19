@@ -1,4 +1,6 @@
 import BaseValidator from './base';
+import validator from 'npm:validator';
+import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
     properties: ['email'],
@@ -6,7 +8,7 @@ export default BaseValidator.create({
     email(model) {
         let email = model.get('email');
 
-        if (validator.empty(email)) {
+        if (isBlank(email)) {
             model.get('errors').add('email', 'Please enter an email.');
             model.get('hasValidated').pushObject('email');
             this.invalidate();
