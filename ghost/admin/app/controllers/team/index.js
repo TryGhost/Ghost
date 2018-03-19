@@ -6,12 +6,6 @@ import {sort} from '@ember/object/computed';
 export default Controller.extend({
     session: service(),
 
-    init() {
-        this._super(...arguments);
-        this.inviteOrder = ['email'];
-        this.userOrder = ['name', 'email'];
-    },
-
     showInviteUserModal: false,
 
     activeUsers: null,
@@ -20,6 +14,12 @@ export default Controller.extend({
 
     inviteOrder: null,
     userOrder: null,
+
+    init() {
+        this._super(...arguments);
+        this.inviteOrder = ['email'];
+        this.userOrder = ['name', 'email'];
+    },
 
     sortedInvites: sort('invites', 'inviteOrder'),
     sortedActiveUsers: sort('activeUsers', 'userOrder'),

@@ -20,11 +20,6 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
-    init() {
-        this._super(...arguments);
-        this.iconExtensions = ICON_EXTENSIONS;
-    },
-
     availableTimezones: null,
     iconExtensions: null,
     iconMimeTypes: 'image/png,image/x-icon',
@@ -33,6 +28,11 @@ export default Controller.extend({
 
     _scratchFacebook: null,
     _scratchTwitter: null,
+
+    init() {
+        this._super(...arguments);
+        this.iconExtensions = ICON_EXTENSIONS;
+    },
 
     isDatedPermalinks: computed('settings.permalinks', {
         set(key, value) {

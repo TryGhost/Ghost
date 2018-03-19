@@ -6,6 +6,10 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
 
+    titleToken: 'Settings - Tags',
+
+    shortcuts: null,
+
     init() {
         this._super(...arguments);
         this.shortcuts = {
@@ -16,10 +20,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
             c: 'newTag'
         };
     },
-
-    titleToken: 'Settings - Tags',
-
-    shortcuts: null,
 
     // authors aren't allowed to manage tags
     beforeModel() {

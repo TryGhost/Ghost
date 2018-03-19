@@ -39,12 +39,6 @@ export default Controller.extend({
 
     queryParams: ['type', 'author', 'tag', 'order'],
 
-    init() {
-        this._super(...arguments);
-        this.availableTypes = TYPES;
-        this.availableOrders = ORDERS;
-    },
-
     type: null,
     author: null,
     tag: null,
@@ -55,6 +49,12 @@ export default Controller.extend({
 
     availableTypes: null,
     availableOrders: null,
+
+    init() {
+        this._super(...arguments);
+        this.availableTypes = TYPES;
+        this.availableOrders = ORDERS;
+    },
 
     postsInfinityModel: alias('model'),
 

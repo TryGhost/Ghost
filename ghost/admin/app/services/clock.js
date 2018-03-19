@@ -13,6 +13,7 @@ export default Service.extend({
     hour: null,
 
     init() {
+        this._super(...arguments);
         this.tick();
     },
 

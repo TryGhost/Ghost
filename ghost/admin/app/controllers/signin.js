@@ -17,11 +17,6 @@ export default Controller.extend(ValidationEngine, {
     session: service(),
     settings: service(),
 
-    init() {
-        this._super(...arguments);
-        this.authProperties = ['identification', 'password'];
-    },
-
     submitting: false,
     loggingIn: false,
     authProperties: null,
@@ -29,6 +24,11 @@ export default Controller.extend(ValidationEngine, {
     flowErrors: '',
     // ValidationEngine settings
     validationType: 'signin',
+
+    init() {
+        this._super(...arguments);
+        this.authProperties = ['identification', 'password'];
+    },
 
     signin: alias('model'),
 

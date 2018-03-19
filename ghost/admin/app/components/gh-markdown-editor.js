@@ -275,6 +275,7 @@ export default Component.extend(ShortcutsMixin, {
             this._editor.codemirror.setOption('mode', 'gfm');
 
             // add non-breaking space as a special char
+            // eslint-disable-next-line no-control-regex
             this._editor.codemirror.setOption('specialChars', /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\xa0]/g);
 
             // HACK: move the toolbar & status bar elements outside of the

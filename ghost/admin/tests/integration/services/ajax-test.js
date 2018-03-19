@@ -185,6 +185,7 @@ describe('Integration: Service: ajax', function () {
             authenticated: null,
 
             init() {
+                this._super(...arguments);
                 this.authenticated = {
                     expires_at: (new Date()).getTime() - 10000,
                     refresh_token: 'RefreshMe123'
