@@ -15,7 +15,8 @@ export default Component.extend({
     user: null,
 
     userDefault: computed('ghostPaths', function () {
-        return `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
+        let image = '/img/user-image.png';
+        return `${this.get('ghostPaths.assetRoot')}${image}`;
     }),
 
     userImageBackground: computed('user.profileImage', 'userDefault', function () {
