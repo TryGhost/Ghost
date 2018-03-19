@@ -2,7 +2,7 @@
     <header class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             {{link-to "Team" "team" data-test-team-link=true}}
-            <span>{{inline-svg "arrow-right"}}</span>
+            <span>{{svg-jar "arrow-right"}}</span>
             {{user.name}}
 
             {{#if user.isSuspended}}
@@ -22,7 +22,7 @@
                 <span class="dropdown">
                     {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-default gh-btn-icon only-has-icon user-actions-cog" title="User Actions" data-test-user-actions=true}}
                         <span>
-                            {{inline-svg "settings"}}
+                            {{svg-jar "settings"}}
                             <span class="hidden">User Settings</span>
                         </span>
                     {{/gh-dropdown-button}}

@@ -35,7 +35,7 @@
                 {{/unless}}
 
                 <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=ui}} data-test-psm-trigger>
-                    {{inline-svg "settings"}}
+                    {{svg-jar "settings"}}
                 </button>
             </section>
         </header>
@@ -142,7 +142,7 @@
                                 {{/each}}
 
                                 <button class="gh-btn gh-btn-grey gh-btn-icon" {{action upload.cancel}}>
-                                    <span>{{inline-svg "close"}} Close</span>
+                                    <span>{{svg-jar "close"}} Close</span>
                                 </button>
                             {{else}}
 

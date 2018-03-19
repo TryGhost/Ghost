@@ -1,4 +1,4 @@
-{{#if icon}}{{inline-svg icon class=iconClass}}{{/if}}
+{{#if icon}}{{svg-jar icon class=iconClass}}{{/if}}
 
 {{yield}}
 
@@ -13,7 +13,7 @@
                 onmousedown={{action item.action}}
             >
                 {{#if item.icon}}
-                    {{inline-svg item.icon}}
+                    {{svg-jar item.icon}}
                 {{else}}
                     {{item.title}}
                 {{/if}}

@@ -161,12 +161,12 @@ module.exports = function (defaults) {
                 import: ['simplemde.js', 'simplemde.css']
             }
         },
-        svg: {
+        svgJar: {
             paths: [
                 'public/assets/icons',
                 'lib/koenig-editor/public/icons'
             ],
-            optimize: {
+            optimizer: {
                 plugins: [
                     {removeDimensions: true},
                     {removeTitle: true},

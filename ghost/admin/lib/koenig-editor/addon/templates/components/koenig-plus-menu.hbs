@@ -1,30 +1,30 @@
 {{#if showButton}}
-    <button class="koenig-plus-menu-button" {{action "openMenu"}}>{{inline-svg "plus"}}</button>
+    <button class="koenig-plus-menu-button" {{action "openMenu"}}>{{svg-jar "plus"}}</button>
 {{/if}}
 
 {{#if showMenu}}
     <div class="koenig-cardmenu">
         {{!-- <div class="koenig-cardmenu-search">
-            {{inline-svg "koenig/search"}}
+            {{svg-jar "koenig/search"}}
             <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
         </div>
         <div class="koenig-cardmenu-divider">
             Primary
         </div> --}}
         <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "markdown" on="click"}}>
-            <div class="koenig-cardmenu-icon">{{inline-svg "koenig/markdown"}}</div>
+            <div class="koenig-cardmenu-icon">{{svg-jar "koenig/markdown"}}</div>
             <div class="koenig-cardmenu-label">Markdown</div>
         </div>
         <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "image" on="click"}}>
-            <div class="koenig-cardmenu-icon">{{inline-svg "koenig/image"}}</div>
+            <div class="koenig-cardmenu-icon">{{svg-jar "koenig/image"}}</div>
             <div class="koenig-cardmenu-label">Image</div>
         </div>
         <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "html" on="click"}}>
-            <div class="koenig-cardmenu-icon">{{inline-svg "koenig/embed"}}</div>
+            <div class="koenig-cardmenu-icon">{{svg-jar "koenig/embed"}}</div>
             <div class="koenig-cardmenu-label">Embed</div>
         </div>
         <div class="koenig-cardmenu-card" {{action "replaceWithCardSection" "hr" on="click"}}>
-            <div class="koenig-cardmenu-icon">{{inline-svg "koenig/divider"}}</div>
+            <div class="koenig-cardmenu-icon">{{svg-jar "koenig/divider"}}</div>
             <div class="koenig-cardmenu-label">Divider</div>
         </div>
     </div>

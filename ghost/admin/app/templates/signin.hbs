@@ -4,7 +4,7 @@
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
                 {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="identification"}}
                     <span class="gh-input-icon gh-icon-mail">
-                        {{inline-svg "email"}}
+                        {{svg-jar "email"}}
                         {{gh-trim-focus-input
                             class="email"
                             type="email"
@@ -21,7 +21,7 @@
                 {{/gh-form-group}}
                 {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="password"}}
                     <span class="gh-input-icon gh-icon-lock forgotten-wrap">
-                        {{inline-svg "lock"}}
+                        {{svg-jar "lock"}}
                         {{gh-text-input
                             class="password"
                             type="password"
@@ -41,7 +41,7 @@
                             failureClass=""
                             as |task|
                         }}
-                            <span>{{#if task.isRunning}}{{inline-svg "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
+                            <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
                         {{/gh-task-button}}
                     </span>
                 {{/gh-form-group}}

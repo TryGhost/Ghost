@@ -4,7 +4,7 @@
             <div class="settings-menu-header">
                 <h4>Post Settings</h4>
                 <button class="close settings-menu-header-action" {{action "closeMenus" target=ui}} data-test-close-settings-menu>
-                    {{inline-svg "close"}}<span class="hidden">Close</span>
+                    {{svg-jar "close"}}<span class="hidden">Close</span>
                 </button>
             </div>
             <div class="settings-menu-content">
@@ -22,17 +22,17 @@
                     {{#unless post.isNew}}
                         {{#if post.isPublished}}
                         <a class="post-view-link" target="_blank" href="{{post.absoluteUrl}}">
-                            View post {{inline-svg "external"}}
+                            View post {{svg-jar "external"}}
                         </a>
                         {{else}}
                         <a class="post-view-link" target="_blank" href="{{post.previewUrl}}">
-                            Preview {{inline-svg "external"}}
+                            Preview {{svg-jar "external"}}
                         </a>
                         {{/if}}
                     {{/unless}}
 
                     <div class="gh-input-icon gh-icon-link">
-                        {{inline-svg "link"}}
+                        {{svg-jar "link"}}
                         {{gh-text-input
                             class="post-setting-slug"
                             id="url"
@@ -91,7 +91,7 @@
                 <div class="form-group for-select">
                     <label for="author-list">Author</label>
                     <span class="gh-input-icon gh-icon-user">
-                        {{inline-svg "user-circle"}}
+                        {{svg-jar "user-circle"}}
                         <span class="gh-select" tabindex="0">
                         {{one-way-select
                             selectedAuthor
@@ -102,7 +102,7 @@
                             optionLabelPath="name"
                             update=(action "changeAuthor")
                         }}
-                        {{inline-svg "arrow-down-small"}}
+                        {{svg-jar "arrow-down-small"}}
                         </span>
                     </span>
                 </div>
@@ -114,28 +114,28 @@
                             <b>Meta Data</b>
                             <span>Extra content for search engines</span>
                         </button>
-                        {{inline-svg "arrow-right"}}
+                        {{svg-jar "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
                         <button type="button">
                             <b>Twitter Card</b>
                             <span>Customise structured data for Twitter</span>
                         </button>
-                        {{inline-svg "arrow-right"}}
+                        {{svg-jar "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
                         <button type="button">
                             <b>Facebook Card</b>
                             <span>Customise Open Graph data</span>
                         </button>
-                        {{inline-svg "arrow-right"}}
+                        {{svg-jar "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                         <button type="button">
                             <b>Code Injection</b>
                             <span>Add styles/scripts to the header &amp; footer</span>
                         </button>
-                        {{inline-svg "arrow-right"}}
+                        {{svg-jar "arrow-right"}}
                     </li>
                 </ul>
 
@@ -172,7 +172,7 @@
                     onTemplateSelect=(action (mut post.customTemplate))}}
 
                 {{#unless post.isNew}}
-                    <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{inline-svg "trash"}} Delete Post</span></button>
+                    <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{svg-jar "trash"}} Delete Post</span></button>
                 {{/unless}}
 
                 </form>
@@ -184,7 +184,7 @@
                 {{#if isViewingSubview}}
                     {{#if (eq subview "meta-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Meta Data</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -235,7 +235,7 @@
 
                     {{#if (eq subview "twitter-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Twitter Card</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -306,7 +306,7 @@
 
                     {{#if (eq subview "facebook-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Facebook Card</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -376,7 +376,7 @@
 
                     {{#if (eq subview "codeinjection")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Code Injection</h4>
                             <div style="width:23px;"></div>
                         </div>
