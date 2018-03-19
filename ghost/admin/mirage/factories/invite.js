@@ -9,6 +9,5 @@ export default Factory.extend({
     createdBy() { return 1; },
     updatedAt() { return moment.utc().format(); },
     updatedBy() { return 1; },
-    status() { return 'sent'; },
-    roleId() { return 1; }
+    status() { return 'sent'; }
 });

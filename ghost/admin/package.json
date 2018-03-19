@@ -55,7 +55,7 @@
     "ember-cli-htmlbars": "2.0.3",
     "ember-cli-htmlbars-inline-precompile": "1.0.2",
     "ember-cli-inject-live-reload": "1.7.0",
-    "ember-cli-mirage": "0.2.8",
+    "ember-cli-mirage": "0.4.2",
     "ember-cli-mocha": "^0.15.0",
     "ember-cli-moment-shim": "3.5.0",
     "ember-cli-node-assets": "0.2.2",

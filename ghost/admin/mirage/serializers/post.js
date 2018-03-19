@@ -5,8 +5,8 @@ export default BaseSerializer.extend({
     embed: true,
 
     include(request) {
-        if (request.queryParams.include && request.queryParams.include.indexOf('roles') >= 0) {
-            return ['roles'];
+        if (request.queryParams.include && request.queryParams.include.indexOf('tags') >= 0) {
+            return ['tags'];
         }
 
         return [];
@@ -17,14 +17,12 @@ export default BaseSerializer.extend({
             return BaseSerializer.prototype.serialize.apply(this, arguments);
         }
 
-        let {user} = RestSerializer.prototype.serialize.call(this, object, request);
+        let {post} = RestSerializer.prototype.serialize.call(this, object, request);
 
-        if (object.postCount) {
-            let posts = object.posts.models.length;
-
-            user.count = {posts};
+        if (object.author) {
+            post.author = object.author.id;
         }
 
-        return {users: [user]};
+        return {posts: [post]};
     }
 });

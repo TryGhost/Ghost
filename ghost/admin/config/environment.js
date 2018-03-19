@@ -59,6 +59,11 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
+
+        // Withuot manually setting this, pretender won't track requests
+        ENV['ember-cli-mirage'] = {
+            trackRequests: true
+        };
     }
 
     return ENV;

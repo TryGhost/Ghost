@@ -35,11 +35,11 @@ describe('Acceptance: Content', function () {
             let editorRole = server.create('role', {name: 'Editor'});
             editor = server.create('user', {roles: [editorRole]});
 
-            publishedPost = server.create('post', {authorId: admin.id, status: 'published', title: 'Published Post'});
-            scheduledPost = server.create('post', {authorId: admin.id, status: 'scheduled', title: 'Scheduled Post'});
-            draftPost = server.create('post', {authorId: admin.id, status: 'draft', title: 'Draft Post'});
-            publishedPage = server.create('post', {authorId: admin.id, status: 'published', page: true, title: 'Published Page'});
-            authorPost = server.create('post', {authorId: editor.id, status: 'published', title: 'Editor Published Post'});
+            publishedPost = server.create('post', {author: admin, status: 'published', title: 'Published Post'});
+            scheduledPost = server.create('post', {author: admin, status: 'scheduled', title: 'Scheduled Post'});
+            draftPost = server.create('post', {author: admin, status: 'draft', title: 'Draft Post'});
+            publishedPage = server.create('post', {author: admin, status: 'published', page: true, title: 'Published Page'});
+            authorPost = server.create('post', {author: editor, status: 'published', title: 'Editor Published Post'});
 
             return authenticateSession(application);
         });

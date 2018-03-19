@@ -73,7 +73,7 @@ describe('Acceptance: Team', function () {
             admin = server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
             // add an expired invite
-            server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf()});
+            server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
 
             // add a suspended user
             suspendedUser = server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
@@ -409,9 +409,7 @@ describe('Acceptance: Team', function () {
         it('can delete users', async function () {
             let user1 = server.create('user');
             let user2 = server.create('user');
-            let post = server.create('post');
-
-            user2.posts = [post];
+            server.create('post', {author: user2});
 
             await visit('/team');
             await click(`[data-test-user-id="${user1.id}"]`);
@@ -891,7 +889,7 @@ describe('Acceptance: Team', function () {
 
         it('can access the team page', async function () {
             server.create('user', {roles: [adminRole]});
-            server.create('invite', {roles: [authorRole]});
+            server.create('invite', {role: authorRole});
 
             errorOverride();
 
