@@ -159,7 +159,9 @@ module.exports = function (defaults) {
             }
         },
         svgJar: {
-            paths: [
+            strategy: 'inline',
+            stripPath: false,
+            sourceDirs: [
                 'public/assets/icons',
                 'lib/koenig-editor/public/icons'
             ],
