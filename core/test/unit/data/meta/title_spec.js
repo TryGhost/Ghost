@@ -93,6 +93,28 @@ describe('getTitle', function () {
         title.should.equal('Tag Name - My blog title 3 (Page 39)');
     });
 
+    it('should return translated pagination-string if passed in options object', function () {
+        localSettingsCache.title = 'This is my blog title';
+
+        var title = getTitle({
+            tag: {
+                name: 'Tag Name'
+            }
+        }, {
+            context: ['tag', 'paged'],
+            pagination: {
+                total: 40,
+                page: 23
+            },
+        }, {
+            hash: {
+                page: ' p.%'
+            }
+        });
+
+        title.should.equal('Tag Name - This is my blog title p.23');
+    });
+
     it('should return tag meta_title if in tag data', function () {
         var title = getTitle({
             tag: {
