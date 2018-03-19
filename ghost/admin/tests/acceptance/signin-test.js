@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import deparam from 'npm:deparam';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {Response} from 'ember-cli-mirage';
@@ -44,7 +44,7 @@ describe('Acceptance: Signin', function () {
                     username,
                     password,
                     client_id: clientId
-                } = $.deparam(requestBody);
+                } = deparam(requestBody);
 
                 expect(grantType, 'grant type').to.equal('password');
                 expect(username, 'username').to.equal('test@example.com');

@@ -1,5 +1,5 @@
-import $ from 'jquery';
 import OAuth2Authenticator from 'ghost-admin/authenticators/oauth2';
+import deparam from 'npm:deparam';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import windowProxy from 'ghost-admin/utils/window-proxy';
@@ -77,7 +77,7 @@ describe('Acceptance: Authentication', function () {
             expect(refreshRequest, 'token refresh request').to.exist;
             expect(refreshRequest.method, 'method').to.equal('POST');
 
-            let requestBody = $.deparam(refreshRequest.requestBody);
+            let requestBody = deparam(refreshRequest.requestBody);
             expect(requestBody.grant_type, 'grant_type').to.equal('refresh_token');
             expect(requestBody.refresh_token, 'refresh_token').to.equal('MirageRefreshToken');
         });
