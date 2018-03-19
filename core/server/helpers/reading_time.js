@@ -28,7 +28,7 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
         readingTimeSeconds,
         readingTimeMinutes,
         readingTime,
-        seconds = _.isString(options.hash.seconds) ? options.hash.seconds : '< 1 min read',
+        seconds = _.isString(options.hash.seconds) ? options.hash.seconds : '&lt; 1 min read',
         minute = _.isString(options.hash.minute) ? options.hash.minute : '1 min read',
         minutes = _.isString(options.hash.minutes) ? options.hash.minutes : '% min read';
 

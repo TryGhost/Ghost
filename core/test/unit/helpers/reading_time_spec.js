@@ -29,7 +29,7 @@ describe('{{reading_time}} helper', function () {
             },
             result = helpers.reading_time.call(data);
 
-        String(result).should.equal('< 1 min read');
+        String(result).should.equal('&lt; 1 min read');
     });
 
     it('[success] renders reading time for more than one minute text correctly', function () {
