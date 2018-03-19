@@ -1,7 +1,7 @@
 <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
     <div class="settings-menu-header {{if isMobile 'subview'}}">
         {{#if isMobile}}
-            {{#link-to 'settings.tags' class="back settings-menu-header-action"}}{{inline-svg "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
+            {{#link-to 'settings.tags' class="back settings-menu-header-action"}}{{svg-jar "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
             <h4>{{title}}</h4>
             <div style="width:23px;">{{!flexbox space-between}}</div>
         {{else}}
@@ -58,12 +58,12 @@
                         <b>Meta Data</b>
                         <span>Extra content for SEO and social media.</span>
                     </button>
-                    {{inline-svg "arrow-right"}}
+                    {{svg-jar "arrow-right"}}
                 </li>
             </ul>
 
             {{#unless tag.isNew}}
-                <button type="button" class="gh-btn gh-btn-link gh-btn-sm gh-btn-icon settings-menu-delete-button" {{action "deleteTag"}}><span>{{inline-svg "trash"}} Delete Tag</span></button>
+                <button type="button" class="gh-btn gh-btn-link gh-btn-sm gh-btn-icon settings-menu-delete-button" {{action "deleteTag"}}><span>{{svg-jar "trash"}} Delete Tag</span></button>
             {{/unless}}
         </form>
     </div>
@@ -71,7 +71,7 @@
 
 <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane tag-meta-settings-pane">
     <div class="settings-menu-header subview">
-        <button {{action "closeMeta"}} class="back settings-menu-header-action">{{inline-svg "arrow-left"}}<span class="hidden">Back</span></button>
+        <button {{action "closeMeta"}} class="back settings-menu-header-action">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
         <h4>Meta Data</h4>
         <div style="width:23px;">{{!flexbox space-between}}</div>
     </div>

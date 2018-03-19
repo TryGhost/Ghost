@@ -4,7 +4,7 @@
             <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
                 {{#gh-form-group errors=errors hasValidated=hasValidated property="newPassword"}}
                     <span class="gh-input-icon gh-icon-lock">
-                        {{inline-svg "lock"}}
+                        {{svg-jar "lock"}}
                         {{gh-text-input
                             type="password"
                             name="newpassword"
@@ -18,7 +18,7 @@
                 {{/gh-form-group}}
                 {{#gh-form-group errors=errors hasValidated=hasValidated property="ne2Password"}}
                     <span class="gh-input-icon gh-icon-lock">
-                        {{inline-svg "lock"}}
+                        {{svg-jar "lock"}}
                         {{gh-text-input
                             type="password"
                             name="ne2password"

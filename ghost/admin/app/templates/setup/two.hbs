@@ -12,7 +12,7 @@
     {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
         <label for="blog-title">Blog title</label>
         <span class="gh-input-icon gh-icon-content">
-            {{inline-svg "content"}}
+            {{svg-jar "content"}}
             {{gh-trim-focus-input
                 tabindex="1"
                 type="text"
@@ -30,7 +30,7 @@
     {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
         <label for="name">Full name</label>
         <span class="gh-input-icon gh-icon-user">
-            {{inline-svg "user-circle"}}
+            {{svg-jar "user-circle"}}
             {{gh-text-input
                 tabindex="2"
                 name="name"
@@ -47,7 +47,7 @@
     {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
         <label for="email">Email address</label>
         <span class="gh-input-icon gh-icon-mail">
-            {{inline-svg "email"}}
+            {{svg-jar "email"}}
             {{gh-text-input
                 tabindex="3"
                 type="email"
@@ -65,7 +65,7 @@
     {{#gh-form-group errors=errors hasValidated=hasValidated property="password"}}
         <label for="password">Password</label>
         <span class="gh-input-icon gh-icon-lock">
-            {{inline-svg "lock"}}
+            {{svg-jar "lock"}}
             {{gh-text-input
                 tabindex="4"
                 type="password"
@@ -88,9 +88,9 @@
         as |task|
     }}
         {{#if task.isRunning}}
-            <span>{{inline-svg "spinner" class="gh-icon-spinner gh-btn-icon-no-margin"}}</span>
+            <span>{{svg-jar "spinner" class="gh-icon-spinner gh-btn-icon-no-margin"}}</span>
         {{else}}
-            <span>Last step: Invite your team {{inline-svg "arrow-right-small" class="gh-btn-icon-right"}}</span>
+            <span>Last step: Invite your team {{svg-jar "arrow-right-small" class="gh-btn-icon-right"}}</span>
         {{/if}}
     {{/gh-task-button}}
 </form>

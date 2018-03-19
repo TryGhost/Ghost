@@ -7,7 +7,7 @@
 
 <form class="gh-flow-invite" {{action "invite" on="submit"}}>
     {{#gh-form-group errors=errors hasValidated=hasValidated property="users"}}
-        <label for="users">Enter one email address per line, we’ll handle the rest! {{inline-svg "email"}}</label>
+        <label for="users">Enter one email address per line, we’ll handle the rest! {{svg-jar "email"}}</label>
         {{gh-textarea
             name="users"
             required="required"
@@ -27,7 +27,7 @@
     }}
         <span>
             {{#if task.isRunning}}
-                {{inline-svg "spinner" class="no-margin"}}
+                {{svg-jar "spinner" class="no-margin"}}
             {{else}}
                 {{buttonText}}
             {{/if}}

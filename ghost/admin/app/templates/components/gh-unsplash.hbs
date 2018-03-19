@@ -2,14 +2,14 @@
     <div class="gh-unsplash {{if ui.hasSideNav "gh-unsplash--with-sidenav"}}">
         <div class="gh-unsplash-window">
             <div class="gh-unsplash-container">
-                <a class="gh-unsplash-logo" href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{inline-svg "unsplash"}}</a>
-                <div class="gh-unsplash-close" aria-role="button" {{action "close"}}>{{inline-svg "close"}}</div>
+                <a class="gh-unsplash-logo" href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{svg-jar "unsplash"}}</a>
+                <div class="gh-unsplash-close" aria-role="button" {{action "close"}}>{{svg-jar "close"}}</div>
                 <header class="gh-unsplash-header">
                     <h1 class="gh-unsplash-header-title">Unsplash</h1>
                     <p class="gh-unsplash-header-desc">Beautiful, free photos.<br>
         Gifted by the world’s most generous community of photographers. 🎁</p>
                     <span class="gh-input-icon">
-                        {{inline-svg "search"}}
+                        {{svg-jar "search"}}
                         {{gh-text-input
                             class="gh-unsplash-search"
                             name="searchKeyword"
