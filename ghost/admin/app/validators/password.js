@@ -1,4 +1,5 @@
 import BaseValidator from './base';
+import validator from 'npm:validator';
 
 const BAD_PASSWORDS = [
     '1234567890',
@@ -63,7 +64,7 @@ export default BaseValidator.extend({
         blogTitle = blogTitle ? blogTitle.trim().toLowerCase() : blogTitle;
 
         // password must be longer than 10 characters
-        if (!validator.isLength(password, 10)) {
+        if (!validator.isLength(password || '', 10)) {
             model.get('errors').add(errorTarget, 'Password must be at least 10 characters long');
             return this.invalidate();
         }

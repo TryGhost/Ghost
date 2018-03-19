@@ -1,4 +1,6 @@
 import PasswordValidator from 'ghost-admin/validators/password';
+import validator from 'npm:validator';
+import {isBlank} from '@ember/utils';
 
 export default PasswordValidator.extend({
     init() {
@@ -9,7 +11,7 @@ export default PasswordValidator.extend({
     name(model) {
         let name = model.get('name');
 
-        if (!validator.isLength(name, 1)) {
+        if (!validator.isLength(name || '', 1)) {
             model.get('errors').add('name', 'Please enter a name.');
             this.invalidate();
         }
@@ -18,7 +20,7 @@ export default PasswordValidator.extend({
     email(model) {
         let email = model.get('email');
 
-        if (validator.empty(email)) {
+        if (isBlank(email)) {
             model.get('errors').add('email', 'Please enter an email.');
             this.invalidate();
         } else if (!validator.isEmail(email)) {

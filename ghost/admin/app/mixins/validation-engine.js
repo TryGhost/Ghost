@@ -14,13 +14,9 @@ import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration'
 import SubscriberValidator from 'ghost-admin/validators/subscriber';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
 import UserValidator from 'ghost-admin/validators/user';
-import ValidatorExtensions from 'ghost-admin/utils/validator-extensions';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 const {Errors} = DS;
-
-// our extensions to the validator library
-ValidatorExtensions.init();
 
 /**
 * The class that gets this mixin will receive these properties and functions.

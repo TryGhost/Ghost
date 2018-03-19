@@ -1,11 +1,12 @@
 import BaseValidator from './base';
+import validator from 'npm:validator';
 
 export default BaseValidator.create({
     properties: ['title', 'description', 'password'],
     title(model) {
         let title = model.get('title');
 
-        if (!validator.isLength(title, 0, 150)) {
+        if (!validator.isLength(title || '', 0, 150)) {
             model.get('errors').add('title', 'Title is too long');
             this.invalidate();
         }
@@ -14,7 +15,7 @@ export default BaseValidator.create({
     description(model) {
         let desc = model.get('description');
 
-        if (!validator.isLength(desc, 0, 200)) {
+        if (!validator.isLength(desc || '', 0, 200)) {
             model.get('errors').add('description', 'Description is too long');
             this.invalidate();
         }

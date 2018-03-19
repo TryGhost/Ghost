@@ -143,20 +143,7 @@ module.exports = function (defaults) {
             }
         },
         nodeAssets: {
-            'blueimp-md5': {
-                import: ['js/md5.js']
-            },
-            codemirror: codemirrorAssets(),
-            'mobiledoc-kit': {
-                import: ['dist/amd/mobiledoc-kit.js', 'dist/amd/mobiledoc-kit.map']
-            },
-            'password-generator': {
-                import: ['lib/password-generator.js']
-            },
-            simplemde: {
-                srcDir: 'debug',
-                import: ['simplemde.js', 'simplemde.css']
-            }
+            codemirror: codemirrorAssets()
         },
         svgJar: {
             strategy: 'inline',
@@ -181,12 +168,16 @@ module.exports = function (defaults) {
         }
     });
 
+    // Stop: Normalize
+    app.import('node_modules/normalize.css/normalize.css');
+    app.import('node_modules/simplemde/debug/simplemde.css');
+
     // 'dem Scripts
-    app.import('bower_components/validator-js/validator.js');
-    app.import('bower_components/rangyinputs/rangyinputs-jquery-src.js');
-    app.import('bower_components/keymaster/keymaster.js');
-    app.import('bower_components/devicejs/lib/device.js');
-    app.import('bower_components/google-caja/html-css-sanitizer-bundle.js');
+    app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
+    app.import('node_modules/keymaster/keymaster.js');
+    app.import('node_modules/mobiledoc-kit/dist/amd/mobiledoc-kit.js');
+    app.import('node_modules/mobiledoc-kit/dist/amd/mobiledoc-kit.map');
+    app.import('node_modules/simplemde/debug/simplemde.js');
 
     // pull things we rely on via lazy-loading into the test-support.js file so
     // that tests don't break when running via http://localhost:4200/tests

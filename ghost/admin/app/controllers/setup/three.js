@@ -2,6 +2,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import DS from 'ember-data';
 import RSVP from 'rsvp';
+import validator from 'npm:validator';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';
@@ -43,14 +44,14 @@ export default Controller.extend({
         let ownerEmail = this.get('ownerEmail');
 
         return this.get('usersArray').filter(function (user) {
-            return validator.isEmail(user) && user !== ownerEmail;
+            return validator.isEmail(user || '') && user !== ownerEmail;
         });
     }),
 
     invalidUsersArray: computed('usersArray', 'ownerEmail', function () {
         let ownerEmail = this.get('ownerEmail');
 
-        return this.get('usersArray').reject(user => validator.isEmail(user) || user === ownerEmail);
+        return this.get('usersArray').reject(user => validator.isEmail(user || '') || user === ownerEmail);
     }),
 
     validationResult: computed('invalidUsersArray', function () {

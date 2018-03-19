@@ -1,4 +1,4 @@
-/* global generatePassword */
+import generatePassword from 'npm:password-generator';
 
 export default function () {
     let word = generatePassword(6);
