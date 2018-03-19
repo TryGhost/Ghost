@@ -119,7 +119,6 @@
 
 .modal-body {
     position: relative;
-    overflow-y: auto;
 }
 
 .modal-body p {
