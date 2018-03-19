@@ -37,12 +37,12 @@ describe.skip('Integration: Component: gh-psm-tags-input', function () {
 
     beforeEach(function () {
         server = startMirage();
-        server.create('user');
+        let author = server.create('user');
 
         mockPosts(server);
         mockTags(server);
 
-        server.create('post');
+        server.create('post', {author});
         server.create('tag', {name: 'Tag One', slug: 'one'});
         server.create('tag', {name: 'Tag Two', slug: 'two'});
         server.create('tag', {name: 'Tag Three', slug: 'three'});

@@ -69,7 +69,6 @@ describe('Acceptance: Subscribers', function () {
         it('can manage subscribers', async function () {
             server.createList('subscriber', 40);
 
-            authenticateSession(application);
             await visit('/');
             await click('.gh-nav-main a:contains("Subscribers")');
 

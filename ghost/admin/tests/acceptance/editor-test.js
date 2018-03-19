@@ -19,8 +19,8 @@ describe('Acceptance: Editor', function () {
     });
 
     it('redirects to signin when not authenticated', async function () {
-        server.create('user'); // necesary for post-author association
-        server.create('post');
+        let author = server.create('user'); // necesary for post-author association
+        server.create('post', {author});
 
         invalidateSession(application);
         await visit('/editor/1');
@@ -30,8 +30,8 @@ describe('Acceptance: Editor', function () {
 
     it('does not redirect to team page when authenticated as contributor', async function () {
         let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
-        server.create('post');
+        let author = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post', {author});
 
         authenticateSession(application);
         await visit('/editor/1');
@@ -41,8 +41,8 @@ describe('Acceptance: Editor', function () {
 
     it('does not redirect to team page when authenticated as author', async function () {
         let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
-        server.create('post');
+        let author = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post', {author});
 
         authenticateSession(application);
         await visit('/editor/1');
@@ -52,8 +52,8 @@ describe('Acceptance: Editor', function () {
 
     it('does not redirect to team page when authenticated as editor', async function () {
         let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
-        server.create('post');
+        let author = server.create('user', {roles: [role], slug: 'test-user'});
+        server.create('post', {author});
 
         authenticateSession(application);
         await visit('/editor/1');
@@ -72,56 +72,52 @@ describe('Acceptance: Editor', function () {
         expect(currentURL()).to.equal('/editor/1');
     });
 
-    describe('when logged in as contributor', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Contributor'});
-            server.create('user', {roles: [role]});
-            server.loadFixtures('settings');
+    it('when logged in as a contributor, renders a save button instead of a publish menu & hides tags input', async function () {
+        let role = server.create('role', {name: 'Contributor'});
+        let author = server.create('user', {roles: [role]});
+        server.createList('post', 2, {author});
+        server.loadFixtures('settings');
+        authenticateSession(application);
 
-            return authenticateSession(application);
-        });
+        // post id 1 is a draft, checking for draft behaviour now
+        await visit('/editor/1');
 
-        it('renders a save button instead of a publish menu & hides tags input', async function () {
-            server.createList('post', 2);
+        expect(currentURL(), 'currentURL').to.equal('/editor/1');
 
-            // post id 1 is a draft, checking for draft behaviour now
-            await visit('/editor/1');
+        // Expect publish menu to not exist
+        expect(
+            find('[data-test-publishmenu-trigger]'),
+            'publish menu trigger'
+        ).to.not.exist;
 
-            expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        // Open post settings menu
+        await click('[data-test-psm-trigger]');
 
-            // Expect publish menu to not exist
-            expect(
-                find('[data-test-publishmenu-trigger]'),
-                'publish menu trigger'
-            ).to.not.exist;
+        // Check to make sure that tags input doesn't exist
+        expect(
+            find('[data-test-token-input]'),
+            'tags input'
+        ).to.not.exist;
 
-            // Open post settings menu
-            await click('[data-test-psm-trigger]');
+        // post id 2 is published, we should be redirected to index
+        await visit('/editor/2');
 
-            // Check to make sure that tags input doesn't exist
-            expect(
-                find('[data-test-token-input]'),
-                'tags input'
-            ).to.not.exist;
-
-            // post id 2 is published, we should be redirected to index
-            await visit('/editor/2');
-
-            expect(currentURL(), 'currentURL').to.equal('/');
-        });
+        expect(currentURL(), 'currentURL').to.equal('/');
     });
 
     describe('when logged in', function () {
+        let author;
+
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+            author = server.create('user', {roles: [role]});
             server.loadFixtures('settings');
 
             return authenticateSession(application);
         });
 
         it('renders the editor correctly, PSM Publish Date and Save Button', async function () {
-            let [post1] = server.createList('post', 2);
+            let [post1] = server.createList('post', 2, {author});
             let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
             // post id 1 is a draft, checking for draft behaviour now
@@ -437,7 +433,7 @@ describe('Acceptance: Editor', function () {
                 });
             });
 
-            let post = server.create('post', 1);
+            let post = server.create('post', 1, {author});
             let plusTenMin = moment().utc().add(10, 'minutes');
 
             await visit(`/editor/${post.id}`);
@@ -461,7 +457,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('handles title validation errors correctly', async function () {
-            server.createList('post', 1);
+            server.create('post', {author});
 
             // post id 1 is a draft, checking for draft behaviour now
             await visit('/editor/1');
@@ -528,7 +524,7 @@ describe('Acceptance: Editor', function () {
             let compareDate = moment().tz('Etc/UTC').add(4, 'minutes');
             let compareDateString = compareDate.format('MM/DD/YYYY');
             let compareTimeString = compareDate.format('HH:mm');
-            server.create('post', {publishedAt: moment.utc().add(4, 'minutes'), status: 'scheduled'});
+            server.create('post', {publishedAt: moment.utc().add(4, 'minutes'), status: 'scheduled', author});
             server.create('setting', {activeTimezone: 'Europe/Dublin'});
             clock.restore();
 
@@ -549,9 +545,9 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author list and allows switching of author in PSM', async function () {
-            server.create('post', {authorId: 1});
             let role = server.create('role', {name: 'Author'});
-            let author = server.create('user', {name: 'Waldo', roles: [role]});
+            let otherAuthor = server.create('user', {name: 'Waldo', roles: [role]});
+            server.create('post', {author});
 
             await visit('/editor/1');
 
@@ -566,7 +562,7 @@ describe('Acceptance: Editor', function () {
             await fillIn('select[name="post-setting-author"]', '2');
 
             expect(find('select[name="post-setting-author"]').val()).to.equal('2');
-            expect(server.db.posts[0].authorId).to.equal(author.id);
+            expect(server.db.posts[0].authorId).to.equal(otherAuthor.id);
         });
 
         it('autosaves when title loses focus', async function () {
@@ -598,7 +594,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('saves post settings fields', async function () {
-            let post = server.create('post');
+            let post = server.create('post', {author});
 
             await visit(`/editor/${post.id}`);
 
@@ -814,7 +810,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('has unsplash icon when server doesn\'t return unsplash settings key', async function () {
-            server.createList('post', 1);
+            server.createList('post', 1, {author});
 
             await visit('/editor/1');
 

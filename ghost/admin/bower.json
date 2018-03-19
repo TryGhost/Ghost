@@ -2,11 +2,9 @@
   "name": "ghost-admin",
   "dependencies": {
     "devicejs": "0.2.7",
-    "Faker": "3.1.0",
     "google-caja": "6005.0.0",
     "keymaster": "1.6.3",
     "normalize.css": "3.0.3",
-    "pretender": "1.1.0",
     "rangyinputs": "1.2.0",
     "validator-js": "3.39.0"
   }

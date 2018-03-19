@@ -13,7 +13,6 @@ export default Factory.extend({
     status(i) { return faker.list.cycle('draft', 'published', 'scheduled')(i); },
     metaDescription(i) { return `Meta description for post ${i}.`; },
     metaTitle(i) { return `Meta Title for post ${i}`; },
-    authorId: 1,
     updatedAt: '2015-10-19T16:25:07.756Z',
     updatedBy: 1,
     publishedAt: '2015-12-19T16:25:07.000Z',
