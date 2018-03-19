@@ -60,6 +60,12 @@ module.exports = function (environment) {
 
         ENV.APP.rootElement = '#ember-testing';
 
+        // This is needed so that browserify dependencies in tests work correctly
+        // See https://github.com/ef4/ember-browserify/issues/14
+        ENV.browserify = {
+            tests: true
+        };
+
         // Withuot manually setting this, pretender won't track requests
         ENV['ember-cli-mirage'] = {
             trackRequests: true
