@@ -34,7 +34,8 @@ export default Component.extend({
     }),
 
     authorAvatar: computed('post.author.profileImage', function () {
-        return this.get('post.author.profileImage') || `${this.get('ghostPaths.assetRoot')}/img/user-image.png`;
+        let defaultImage = '/img/user-image.png';
+        return this.get('post.author.profileImage') || `${this.get('ghostPaths.assetRoot')}${defaultImage}`;
     }),
 
     authorAvatarBackground: computed('authorAvatar', function () {
