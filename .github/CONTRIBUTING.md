@@ -21,7 +21,6 @@ If you've **got some code** ✨ you want to [pull request](https://docs.ghost.or
 - [themes documentation](https://themes.ghost.org)
 - [api documentation](https://api.ghost.org)
 - [self-hoster guide](http://docs.ghost.org/v1/)
-- [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
 - [community guidelines](https://ghost.org/conduct/)
 - [dev blog](http://dev.ghost.org)
 
