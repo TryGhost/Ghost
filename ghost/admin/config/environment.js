@@ -44,6 +44,13 @@ module.exports = function (environment) {
         ENV.APP.LOG_TRANSITIONS = true;
         ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
         ENV.APP.LOG_VIEW_LOOKUPS = true;
+
+        // This is needed so that browserify dependencies in tests work correctly
+        // See https://github.com/ef4/ember-browserify/issues/14
+        ENV.browserify = {
+            tests: true
+        };
+
         // Enable mirage here in order to mock API endpoints during development
         ENV['ember-cli-mirage'] = {
             enabled: false
