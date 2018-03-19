@@ -69,8 +69,16 @@ Post = ghostBookshelf.Model.extend({
      * We update the tags after the Post was inserted.
      * We update the tags before the Post was updated, see `onSaving` event.
      * `onCreated` is called before `onSaved`.
+     *
+     * `onSaved` is the last event in the line - triggered for updating or inserting data.
+     * bookshelf-relations listens on `created` + `updated`.
+     * We ensure that we are catching the event after bookshelf relations.
      */
-    onCreated: function onCreated(model, response, options) {
+    onSaved: function onSaved(model, response, options) {
+        if (options.method !== 'insert') {
+            return;
+        }
+
         var status = model.get('status');
 
         model.emitChange('added');
@@ -317,7 +325,7 @@ Post = ghostBookshelf.Model.extend({
             this.set('author_id', this.contextUser(options));
         }
 
-        ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
+        return ghostBookshelf.Model.prototype.onCreating.call(this, model, attr, options);
     },
 
     // Relations

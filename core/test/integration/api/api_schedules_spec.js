@@ -102,10 +102,7 @@ describe('Schedules API', function () {
                 api.schedules.getScheduledPosts()
                     .then(function (result) {
                         result.posts.length.should.eql(5);
-                        Object.keys(result.posts[0].toJSON()).should.eql(
-                            // @TODO: the computed properties shouldn't be appearing here! Needs a fix
-                            ['id', 'published_at', 'created_at', 'author', 'primary_tag', 'url', 'comment_id']
-                        );
+                        testUtils.API.checkResponse(result, 'posts', null, ['meta']);
                         done();
                     })
                     .catch(done);

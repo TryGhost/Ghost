@@ -11,15 +11,7 @@ Basetoken = ghostBookshelf.Model.extend({
 
     client: function client() {
         return this.belongsTo('Client');
-    },
-
-    // override for base function since we don't have
-    // a updated_by field for sessions
-    onSaving: function onSaving() {
-        // Remove any properties which don't belong on the model
-        this.attributes = this.pick(this.permittedAttributes());
     }
-
 }, {
     destroyAllExpired: function destroyAllExpired(unfilteredOptions) {
         var options = this.filterOptions(unfilteredOptions, 'destroyAll');
