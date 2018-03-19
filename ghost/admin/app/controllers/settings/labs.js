@@ -34,13 +34,6 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
-    init() {
-        this._super(...arguments);
-        this.importMimeType = IMPORT_MIME_TYPES;
-        this.jsonExtension = JSON_EXTENSION;
-        this.jsonMimeType = JSON_MIME_TYPE;
-    },
-
     importErrors: null,
     importSuccessful: false,
     showDeleteAllModal: false,
@@ -50,6 +43,13 @@ export default Controller.extend({
     importMimeType: null,
     jsonExtension: null,
     jsonMimeType: null,
+
+    init() {
+        this._super(...arguments);
+        this.importMimeType = IMPORT_MIME_TYPES;
+        this.jsonExtension = JSON_EXTENSION;
+        this.jsonMimeType = JSON_MIME_TYPE;
+    },
 
     actions: {
         onUpload(file) {

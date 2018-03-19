@@ -19,6 +19,15 @@ export default TextArea.extend(TextInputMixin, {
         }
     },
 
+    willInsertElement() {
+        this._super(...arguments);
+
+        // disable the draggable resize element that browsers add to textareas
+        if (this.get('autoExpand')) {
+            this.element.style.resize = 'none';
+        }
+    },
+
     didInsertElement() {
         this._super(...arguments);
 
@@ -36,15 +45,6 @@ export default TextArea.extend(TextInputMixin, {
     willDestroyElement() {
         this._teardownAutoExpand();
         this._super(...arguments);
-    },
-
-    willInsertElement() {
-        this._super(...arguments);
-
-        // disable the draggable resize element that browsers add to textareas
-        if (this.get('autoExpand')) {
-            this.element.style.resize = 'none';
-        }
     },
 
     _autoExpand() {

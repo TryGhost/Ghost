@@ -12,13 +12,13 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
+    leaveSettingsTransition: null,
+    slackArray: null,
+
     init() {
         this._super(...arguments);
         this.slackArray = [];
     },
-
-    leaveSettingsTransition: null,
-    slackArray: null,
 
     slackSettings: boundOneWay('settings.slack.firstObject'),
     testNotificationDisabled: empty('slackSettings.url'),

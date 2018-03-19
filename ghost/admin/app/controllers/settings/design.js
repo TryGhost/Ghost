@@ -17,17 +17,17 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
-    init() {
-        this._super(...arguments);
-        this.set('newNavItem', NavigationItem.create({isNew: true}));
-    },
-
     newNavItem: null,
 
     dirtyAttributes: false,
 
     themes: null,
     themeToDelete: null,
+    init() {
+        this._super(...arguments);
+        this.set('newNavItem', NavigationItem.create({isNew: true}));
+    },
+
     showDeleteThemeModal: notEmpty('themeToDelete'),
 
     blogUrl: computed('config.blogUrl', function () {

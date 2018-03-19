@@ -39,6 +39,7 @@ export default Service.extend(Evented, {
     throbbers: null,
 
     init() {
+        this._super(...arguments);
         let adminUrl = `${window.location.origin}${this.get('ghostPaths.url').admin()}`;
         let adminDisplayUrl = adminUrl.replace(`${window.location.protocol}//`, '');
 
