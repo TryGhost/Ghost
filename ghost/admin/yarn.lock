@@ -33,11 +33,47 @@
     ember-cli-htmlbars "^1.1.1"
     ember-compatibility-helpers "^0.1.0"
 
+"@html-next/vertical-collection@^1.0.0-beta.9":
+  version "1.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-1.0.0-beta.10.tgz#2090dc4bbc423fa30e8a152a1a8364ff5b6fc398"
+  dependencies:
+    babel-plugin-transform-es2015-block-scoping "^6.24.1"
+    babel6-plugin-strip-class-callcheck "^6.0.0"
+    broccoli-funnel "^2.0.1"
+    broccoli-merge-trees "^2.0.0"
+    broccoli-rollup "^2.0.0"
+    ember-cli-babel "^6.6.0"
+    ember-cli-htmlbars "^2.0.3"
+    ember-cli-version-checker "^2.1.0"
+    ember-compatibility-helpers "^0.1.2"
+    ember-raf-scheduler "0.1.0"
+
 "@sinonjs/formatio@^2.0.0":
   version "2.0.0"
   resolved "http://registry.npmjs.org/@sinonjs/formatio/-/formatio-2.0.0.tgz#84db7e9eb5531df18a8c5e0bfb6e449e55e654b2"
   dependencies:
     samsam "1.3.0"
+
+"@types/acorn@*":
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@types/acorn/-/acorn-4.0.3.tgz#d1f3e738dde52536f9aad3d3380d14e448820afd"
+  dependencies:
+    "@types/estree" "*"
+
+"@types/estree@*":
+  version "0.0.38"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.38.tgz#c1be40aa933723c608820a99a373a16d215a1ca2"
+
+"@types/node@^8.0.53":
+  version "8.9.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.9.5.tgz#162b864bc70be077e6db212b322754917929e976"
+
+"@types/rollup@^0.51.0":
+  version "0.51.4"
+  resolved "https://registry.yarnpkg.com/@types/rollup/-/rollup-0.51.4.tgz#2432f308f889ad59c9a8ed1c9ec72523d872e612"
+  dependencies:
+    "@types/acorn" "*"
+    source-map "^0.6.1"
 
 JSONStream@^1.0.3:
   version "1.3.2"
@@ -1672,6 +1708,21 @@ broccoli-rollup@^1.0.3, broccoli-rollup@^1.2.0:
     symlink-or-copy "^1.1.8"
     walk-sync "^0.3.1"
 
+broccoli-rollup@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/broccoli-rollup/-/broccoli-rollup-2.0.0.tgz#db73f129e1c39b7829ae2b2054b5a5802ac94e46"
+  dependencies:
+    "@types/node" "^8.0.53"
+    "@types/rollup" "^0.51.0"
+    broccoli-plugin "^1.2.1"
+    fs-tree-diff "^0.5.2"
+    heimdalljs "^0.2.1"
+    heimdalljs-logger "^0.1.7"
+    node-modules-path "^1.0.1"
+    rollup "^0.51.6"
+    symlink-or-copy "^1.1.8"
+    walk-sync "^0.3.1"
+
 broccoli-slow-trees@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/broccoli-slow-trees/-/broccoli-slow-trees-3.0.1.tgz#9bf2a9e2f8eb3ed3a3f2abdde988da437ccdc9b4"
@@ -3272,7 +3323,7 @@ ember-cli-htmlbars-inline-precompile@1.0.2, ember-cli-htmlbars-inline-precompile
     heimdalljs-logger "^0.1.7"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@2.0.3, ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
+ember-cli-htmlbars@2.0.3, ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.2, ember-cli-htmlbars@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.3.tgz#e116e1500dba12f29c94b05b9ec90f52cb8bb042"
   dependencies:
@@ -3281,7 +3332,7 @@ ember-cli-htmlbars@2.0.3, ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
     json-stable-stringify "^1.0.0"
     strip-bom "^3.0.0"
 
-ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.11, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.1:
+ember-cli-htmlbars@^1.0.10, ember-cli-htmlbars@^1.0.3, ember-cli-htmlbars@^1.1.1:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-1.3.4.tgz#461289724b34af372a6a0c4b6635819156963353"
   dependencies:
@@ -3428,14 +3479,7 @@ ember-cli-shims@1.2.0:
     ember-rfc176-data "^0.3.1"
     silent-error "^1.0.1"
 
-ember-cli-string-helpers@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-1.0.0.tgz#4e1f876aa349aec21e1a47512d4c3a7987b7e5e4"
-  dependencies:
-    broccoli-funnel "^1.0.1"
-    ember-cli-babel "^5.1.7"
-
-ember-cli-string-helpers@1.8.0:
+ember-cli-string-helpers@1.8.0, ember-cli-string-helpers@^1.5.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-1.8.0.tgz#48002211d306648c784630fee99fb2762747d30c"
   dependencies:
@@ -3571,7 +3615,7 @@ ember-cli@3.0.1:
     watch-detector "^0.1.0"
     yam "0.0.22"
 
-ember-compatibility-helpers@^0.1.0:
+ember-compatibility-helpers@^0.1.0, ember-compatibility-helpers@^0.1.2:
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/ember-compatibility-helpers/-/ember-compatibility-helpers-0.1.3.tgz#039a57e9f1a401efda0023c1e3650bd01cfd7087"
   dependencies:
@@ -3686,13 +3730,6 @@ ember-fetch@3.4.4, "ember-fetch@^2.1.0 || ^3.0.0":
     node-fetch "^2.0.0-alpha.9"
     whatwg-fetch "^2.0.3"
 
-ember-get-config@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.1.tgz#a1325cceefcb4534c78fc6ccb2be87a3feda6817"
-  dependencies:
-    broccoli-file-creator "^1.1.1"
-    ember-cli-babel "^5.1.6"
-
 ember-get-config@^0.2.2:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.4.tgz#118492a2a03d73e46004ed777928942021fe1ecd"
@@ -3760,18 +3797,19 @@ ember-lifeline@^2.0.0:
   dependencies:
     ember-cli-babel "^6.8.2"
 
-ember-light-table@1.8.6:
-  version "1.8.6"
-  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.8.6.tgz#fd9a40cf33f8939836c5f06f49e126f2166eff9f"
+ember-light-table@1.12.2:
+  version "1.12.2"
+  resolved "https://registry.yarnpkg.com/ember-light-table/-/ember-light-table-1.12.2.tgz#6fe7bb87d7a562f2ff8d90bc6b86f7fb7dd32c6d"
   dependencies:
-    ember-cli-babel "^5.1.7"
-    ember-cli-htmlbars "^1.0.11"
-    ember-cli-string-helpers "1.0.0"
+    "@html-next/vertical-collection" "^1.0.0-beta.9"
+    ember-cli-babel "^6.6.0"
+    ember-cli-htmlbars "^2.0.2"
+    ember-cli-string-helpers "^1.5.0"
     ember-composable-helpers "^2.0.1"
-    ember-get-config "0.2.1"
+    ember-get-config "^0.2.2"
     ember-in-viewport "2.1.1"
-    ember-scrollable "^0.4.4"
-    ember-truth-helpers "1.2.0"
+    ember-scrollable "^0.4.10"
+    ember-truth-helpers "^2.0.0"
     ember-wormhole "^0.5.1"
 
 ember-load-initializers@1.0.0:
@@ -3890,6 +3928,12 @@ ember-power-select@1.10.4:
     ember-text-measurer "^0.4.0"
     ember-truth-helpers "^2.0.0"
 
+ember-raf-scheduler@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/ember-raf-scheduler/-/ember-raf-scheduler-0.1.0.tgz#a22a02d238c374499231c03ab9c5b9887c72a853"
+  dependencies:
+    ember-cli-babel "^6.6.0"
+
 ember-resolver@4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/ember-resolver/-/ember-resolver-4.5.4.tgz#39c06599b6859d6b476fb24ab31d850f2d1a74af"
@@ -3937,7 +3981,7 @@ ember-runtime-enumerable-includes-polyfill@^2.0.0:
     ember-cli-babel "^6.9.0"
     ember-cli-version-checker "^2.1.0"
 
-ember-scrollable@^0.4.4:
+ember-scrollable@^0.4.10:
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/ember-scrollable/-/ember-scrollable-0.4.11.tgz#2999e3fb8d8e4a0eb9d194d8773d44ddf1b3afb4"
   dependencies:
@@ -4018,12 +4062,6 @@ ember-text-measurer@^0.4.0:
   resolved "https://registry.yarnpkg.com/ember-text-measurer/-/ember-text-measurer-0.4.0.tgz#a676195378d4eb4c1617678c2d198a2344b4d12b"
   dependencies:
     ember-cli-babel "^6.8.2"
-
-ember-truth-helpers@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/ember-truth-helpers/-/ember-truth-helpers-1.2.0.tgz#e63cffeaa8211882ae61a958816fded3790d065b"
-  dependencies:
-    ember-cli-babel "^5.1.5"
 
 ember-truth-helpers@2.0.0, ember-truth-helpers@^2.0.0:
   version "2.0.0"
@@ -8498,6 +8536,10 @@ rollup@^0.41.4:
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.41.6.tgz#e0d05497877a398c104d816d2733a718a7a94e2a"
   dependencies:
     source-map-support "^0.4.0"
+
+rollup@^0.51.6:
+  version "0.51.8"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.51.8.tgz#58bd0b642885f4770b5f93cc64f14e4233c2236d"
 
 route-recognizer@^0.2.3:
   version "0.2.10"
