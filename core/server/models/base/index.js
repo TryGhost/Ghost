@@ -6,7 +6,7 @@
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
 var _ = require('lodash'),
-    bookshelf = require('bookshelf-0.10.3'),
+    bookshelf = require('bookshelf'),
     moment = require('moment'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
