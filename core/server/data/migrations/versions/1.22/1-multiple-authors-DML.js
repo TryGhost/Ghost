@@ -10,7 +10,7 @@ module.exports.config = {
 };
 
 module.exports.up = function handleMultipleAuthors(options) {
-    const postAllColumns = ['id', 'author_id', 'slug', 'title'],
+    const postAllColumns = ['id', 'author_id', 'slug', 'title', 'plaintext'],
         userColumns = ['id'];
 
     let localOptions = _.merge({
