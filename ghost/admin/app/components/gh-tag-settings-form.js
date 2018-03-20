@@ -4,7 +4,6 @@ import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {invokeAction} from 'ember-invoke-action';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
@@ -18,6 +17,10 @@ export default Component.extend({
     tag: null,
 
     isViewingSubview: false,
+
+    // Allowed actions
+    setProperty: () => {},
+    showDeleteTagModal: () => {},
 
     scratchName: boundOneWay('tag.name'),
     scratchSlug: boundOneWay('tag.slug'),
@@ -98,15 +101,15 @@ export default Component.extend({
 
     actions: {
         setProperty(property, value) {
-            invokeAction(this, 'setProperty', property, value);
+            this.setProperty(property, value);
         },
 
         setCoverImage(image) {
-            this.send('setProperty', 'featureImage', image);
+            this.setProperty('featureImage', image);
         },
 
         clearCoverImage() {
-            this.send('setProperty', 'featureImage', '');
+            this.setProperty('featureImage', '');
         },
 
         openMeta() {
@@ -118,7 +121,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            invokeAction(this, 'showDeleteTagModal');
+            this.showDeleteTagModal();
         }
     },
 

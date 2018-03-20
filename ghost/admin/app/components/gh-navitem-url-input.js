@@ -1,6 +1,5 @@
 import TextField from '@ember/component/text-field';
 import validator from 'npm:validator';
-import {InvokeActionMixin} from 'ember-invoke-action';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
 
@@ -24,8 +23,11 @@ let isRelative = function (url) {
     return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9-]+:)/);
 };
 
-export default TextField.extend(InvokeActionMixin, {
+export default TextField.extend({
     classNames: 'gh-input',
+
+    // Allowed actions
+    clearErrors: () => {},
 
     isBaseUrl: computed('baseUrl', 'value', function () {
         return this.get('baseUrl') === this.get('value');
@@ -73,7 +75,7 @@ export default TextField.extend(InvokeActionMixin, {
     },
 
     keyPress(event) {
-        this.invokeAction('clearErrors');
+        this.clearErrors();
 
         // enter key
         if (event.keyCode === 13) {

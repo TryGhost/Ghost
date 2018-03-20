@@ -1,13 +1,15 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {computed} from '@ember/object';
-import {invokeAction} from 'ember-invoke-action';
 
 export default ModalComponent.extend({
     labelText: 'Select or drag-and-drop a CSV File',
 
     response: null,
     closeDisabled: false,
+
+    // Allowed actions
+    confirm: () => {},
 
     uploadUrl: computed(function () {
         return `${ghostPaths().apiRoot}/subscribers/csv/`;
@@ -25,7 +27,7 @@ export default ModalComponent.extend({
         uploadSuccess(response) {
             this.set('response', response.meta.stats);
             // invoke the passed in confirm action
-            invokeAction(this, 'confirm');
+            this.confirm();
         },
 
         confirm() {

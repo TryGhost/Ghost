@@ -6,7 +6,6 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
-import {invokeAction} from 'ember-invoke-action';
 import {mapBy, or} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -125,7 +124,7 @@ export default ModalComponent.extend({
             this.set('hasWarningsOrErrors', this.get('validationErrors.length') || this.get('validationWarnings.length'));
 
             // invoke the passed in confirm action
-            invokeAction(this, 'model.uploadSuccess', theme);
+            this.get('model.uploadSuccess')(theme);
         },
 
         uploadFailed(error) {
@@ -156,8 +155,8 @@ export default ModalComponent.extend({
         },
 
         activate() {
-            invokeAction(this, 'model.activate', this.get('theme'));
-            invokeAction(this, 'closeModal');
+            this.get('model.activate')(this.get('theme'));
+            this.closeModal();
         },
 
         closeModal() {

@@ -1,9 +1,10 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import {alias} from '@ember/object/computed';
-import {invokeAction} from 'ember-invoke-action';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    // Allowed actions
+    confirm: () => {},
 
     user: alias('model'),
 
@@ -15,7 +16,7 @@ export default ModalComponent.extend({
 
     unsuspendUser: task(function* () {
         try {
-            yield invokeAction(this, 'confirm');
+            yield this.confirm();
         } finally {
             this.send('closeModal');
         }

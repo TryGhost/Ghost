@@ -1,6 +1,5 @@
 /* global key */
 import Component from '@ember/component';
-import {invokeAction} from 'ember-invoke-action';
 import {run} from '@ember/runloop';
 
 export default Component.extend({
@@ -8,6 +7,9 @@ export default Component.extend({
     classNames: 'modal-content',
 
     _previousKeymasterScope: null,
+
+    // Allowed Actions
+    closeModal: () => {},
 
     didInsertElement() {
         this._super(...arguments);
@@ -25,7 +27,7 @@ export default Component.extend({
         },
 
         closeModal() {
-            invokeAction(this, 'closeModal');
+            this.closeModal();
         }
     },
 
