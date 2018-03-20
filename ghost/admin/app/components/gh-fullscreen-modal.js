@@ -2,7 +2,6 @@ import Component from '@ember/component';
 import RSVP from 'rsvp';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';
-import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -40,27 +39,21 @@ const FullScreenModalComponent = Component.extend({
 
     actions: {
         close() {
-            // Because we return the promise from invokeAction, we have
-            // to check if "close" exists first
-            if (this.get('close')) {
-                return invokeAction(this, 'close');
-            }
-
-            return RSVP.resolve();
+            return this.close();
         },
 
         confirm() {
-            if (this.get('confirm')) {
-                return invokeAction(this, 'confirm');
-            }
-
-            return RSVP.resolve();
+            return this.confirm();
         },
 
         clickOverlay() {
             this.send('close');
         }
-    }
+    },
+
+    // Allowed actions
+    close: () => RSVP.resolve(),
+    confirm: () => RSVP.resolve()
 });
 
 FullScreenModalComponent.reopenClass({

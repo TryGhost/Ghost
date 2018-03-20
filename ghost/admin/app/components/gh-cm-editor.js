@@ -2,13 +2,12 @@
 import Component from '@ember/component';
 import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import {InvokeActionMixin} from 'ember-invoke-action';
 import {assign} from '@ember/polyfills';
 import {bind, once, scheduleOnce} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-const CmEditorComponent = Component.extend(InvokeActionMixin, {
+const CmEditorComponent = Component.extend({
     lazyLoader: service(),
 
     classNameBindings: ['isFocused:focus'],
@@ -24,6 +23,11 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
     autofocus: false,
 
     _editor: null, // reference to CodeMirror editor
+
+    // Allowed actions
+    'focus-in': () => {},
+    update: () => {},
+
     _value: boundOneWay('value'), // make sure a value exists
 
     didReceiveAttrs() {
@@ -52,7 +56,7 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
 
     actions: {
         updateFromTextarea(value) {
-            this.invokeAction('update', value);
+            this.update(value);
         }
     },
 
@@ -104,20 +108,12 @@ const CmEditorComponent = Component.extend(InvokeActionMixin, {
     },
 
     _update(codeMirror, changeObj) {
-        once(this, this._invokeUpdateAction, codeMirror.getValue(), codeMirror, changeObj);
-    },
-
-    _invokeUpdateAction(...args) {
-        this.invokeAction('update', ...args);
+        once(this, this.update, codeMirror.getValue(), codeMirror, changeObj);
     },
 
     _focus(codeMirror, event) {
         this.set('isFocused', true);
-        once(this, this._invokeFocusAction, codeMirror.getValue(), codeMirror, event);
-    },
-
-    _invokeFocusAction(...args) {
-        this.invokeAction('focus-in', ...args);
+        once(this, this.get('focus-in'), codeMirror.getValue(), codeMirror, event);
     },
 
     _blur(/* codeMirror, event */) {

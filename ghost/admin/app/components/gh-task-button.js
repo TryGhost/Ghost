@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
@@ -36,6 +35,9 @@ const GhTaskButton = Component.extend({
     successClass: 'gh-btn-green',
     failureText: 'Retry',
     failureClass: 'gh-btn-red',
+
+    // Allowed actions
+    action: () => {},
 
     isRunning: reads('task.last.isRunning'),
     runningText: reads('buttonText'),
@@ -113,7 +115,7 @@ const GhTaskButton = Component.extend({
             return;
         }
 
-        invokeAction(this, 'action');
+        this.action();
         task.perform();
 
         this.get('_restartAnimation').perform();

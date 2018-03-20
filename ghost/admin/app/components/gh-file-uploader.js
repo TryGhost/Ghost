@@ -7,7 +7,6 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -40,6 +39,13 @@ export default Component.extend({
     dragClass: null,
     failureMessage: null,
     uploadPercentage: 0,
+
+    // Allowed actions
+    fileSelected: () => {},
+    uploadStarted: () => {},
+    uploadFinished: () => {},
+    uploadSuccess: () => {},
+    uploadFailed: () => {},
 
     formData: computed('file', function () {
         let paramName = this.get('paramName');
@@ -108,7 +114,7 @@ export default Component.extend({
             let validationResult = this._validate(file);
 
             this.set('file', file);
-            invokeAction(this, 'fileSelected', file);
+            this.fileSelected(file);
 
             if (validationResult === true) {
                 run.schedule('actions', this, function () {
@@ -176,7 +182,7 @@ export default Component.extend({
         let formData = this.get('formData');
         let url = this.get('url');
 
-        invokeAction(this, 'uploadStarted');
+        this.uploadStarted();
 
         ajax.post(url, {
             data: formData,
@@ -197,7 +203,7 @@ export default Component.extend({
         }).catch((error) => {
             this._uploadFailed(error);
         }).finally(() => {
-            invokeAction(this, 'uploadFinished');
+            this.uploadFinished();
         });
     },
 
@@ -211,7 +217,7 @@ export default Component.extend({
     },
 
     _uploadSuccess(response) {
-        invokeAction(this, 'uploadSuccess', response);
+        this.uploadSuccess(response);
         this.send('reset');
     },
 
@@ -233,12 +239,12 @@ export default Component.extend({
         }
 
         this.set('failureMessage', message);
-        invokeAction(this, 'uploadFailed', error);
+        this.uploadFailed(error);
     },
 
     _validate(file) {
-        if (this.get('validate')) {
-            return invokeAction(this, 'validate', file);
+        if (this.validate) {
+            return this.validate(file);
         } else {
             return this._defaultValidator(file);
         }

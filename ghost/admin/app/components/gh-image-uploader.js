@@ -8,7 +8,6 @@ import {
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {invokeAction} from 'ember-invoke-action';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -47,6 +46,14 @@ export default Component.extend({
     _defaultExtensions: IMAGE_EXTENSIONS,
     _defaultUploadUrl: '/uploads/',
     _showUnsplash: false,
+
+    // Allowed actions
+    fileSelected: () => {},
+    update: () => {},
+    uploadStarted: () => {},
+    uploadFinished: () => {},
+    uploadSuccess: () => {},
+    uploadFailed: () => {},
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
@@ -102,7 +109,7 @@ export default Component.extend({
             let validationResult = this._validate(file);
 
             this.set('file', file);
-            invokeAction(this, 'fileSelected', file);
+            this.fileSelected(file);
 
             if (validationResult === true) {
                 run.schedule('actions', this, function () {
@@ -133,7 +140,7 @@ export default Component.extend({
 
         saveUrl() {
             let url = this.get('url');
-            invokeAction(this, 'update', url);
+            this.update(url);
         }
     },
 
@@ -170,10 +177,6 @@ export default Component.extend({
         }
     },
 
-    _uploadStarted() {
-        invokeAction(this, 'uploadStarted');
-    },
-
     _uploadProgress(event) {
         if (event.lengthComputable) {
             run(() => {
@@ -183,15 +186,11 @@ export default Component.extend({
         }
     },
 
-    _uploadFinished() {
-        invokeAction(this, 'uploadFinished');
-    },
-
     _uploadSuccess(response) {
         this.set('url', response);
         this.send('saveUrl');
         this.send('reset');
-        invokeAction(this, 'uploadSuccess', response);
+        this.uploadSuccess(response);
     },
 
     _uploadFailed(error) {
@@ -215,7 +214,7 @@ export default Component.extend({
         }
 
         this.set('failureMessage', message);
-        invokeAction(this, 'uploadFailed', error);
+        this.uploadFailed(error);
     },
 
     generateRequest() {
@@ -225,7 +224,7 @@ export default Component.extend({
         // CASE: we want to upload an icon and we have to POST it to a different endpoint, expecially for icons
         let url = `${ghostPaths().apiRoot}${uploadUrl}`;
 
-        this._uploadStarted();
+        this.uploadStarted();
 
         ajax.post(url, {
             data: formData,
@@ -247,13 +246,13 @@ export default Component.extend({
         }).catch((error) => {
             this._uploadFailed(error);
         }).finally(() => {
-            this._uploadFinished();
+            this.uploadFinished();
         });
     },
 
     _validate(file) {
-        if (this.get('validate')) {
-            return invokeAction(this, 'validate', file);
+        if (this.validate) {
+            return this.validate(file);
         } else {
             return this._defaultValidator(file);
         }
