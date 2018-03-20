@@ -45,7 +45,7 @@ export default BaseValidator.create({
     codeinjectionFoot(model) {
         let codeinjectionFoot = model.get('codeinjectionFoot');
 
-        if (!validator.isLength(codeinjectionFoot, 0, 65535)) {
+        if (!validator.isLength(codeinjectionFoot || '', 0, 65535)) {
             model.get('errors').add('codeinjectionFoot', 'Footer code cannot be longer than 65535 characters.');
             this.invalidate();
         }
