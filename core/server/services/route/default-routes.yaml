@@ -1,0 +1,13 @@
+# Copy this file to content/settings/routes.yaml
+routes:
+
+collections:
+  /:
+    route: '{globals.permalinks}'
+    template:
+      - home
+      - index
+
+resources:
+  tag: /tag/{slug}/
+  author: /author/{slug}/
