@@ -1,14 +1,13 @@
 var should = require('should'),
     sinon = require('sinon'),
+    _ = require('lodash'),
     testUtils = require('../../utils'),
 
     // Stuff we are testing
-    ModelsTag = require('../../../server/models/tag'),
-    ModelsPost = require('../../../server/models/post'),
+    db = require('../../../server/data/db'),
+    models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     context = testUtils.context.admin,
-    TagModel,
-    PostModel,
     sandbox = sinon.sandbox.create();
 
 describe('Tag Model', function () {
@@ -17,98 +16,116 @@ describe('Tag Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles'));
+    beforeEach(testUtils.setup('users:roles', 'posts'));
 
     afterEach(function () {
         sandbox.restore();
     });
+
     beforeEach(function () {
         eventSpy = sandbox.spy(common.events, 'emit');
     });
 
-    before(function () {
-        TagModel = ModelsTag.Tag;
-        PostModel = ModelsPost.Post;
+    describe('add', function () {
+        it('uses Date objects for dateTime fields', function (done) {
+            models.Tag.add(_.omit(testUtils.DataGenerator.forModel.tags[0], 'id'), context)
+                .then(function (tag) {
+                    return models.Tag.findOne({id: tag.id});
+                })
+                .then(function (tag) {
+                    should.exist(tag);
+                    tag.get('created_at').should.be.an.instanceof(Date);
 
-        should.exist(TagModel);
-        should.exist(PostModel);
-    });
+                    done();
+                })
+                .catch(done);
+        });
 
-    it('uses Date objects for dateTime fields', function (done) {
-        TagModel.add(testUtils.DataGenerator.forModel.tags[0], context).then(function (tag) {
-            return TagModel.findOne({id: tag.id});
-        }).then(function (tag) {
-            should.exist(tag);
-            tag.get('created_at').should.be.an.instanceof(Date);
+        it('returns count.posts if include count.posts', function (done) {
+            models.Tag.findOne({slug: 'kitchen-sink'}, {withRelated: ['count.posts']})
+                .then(function (tag) {
+                    should.exist(tag);
+                    tag.toJSON().count.posts.should.equal(2);
 
-            done();
-        }).catch(done);
-    });
-
-    it('returns count.posts if include count.posts', function (done) {
-        testUtils.fixtures.insertPostsAndTags().then(function () {
-            TagModel.findOne({slug: 'kitchen-sink'}, {withRelated: ['count.posts']}).then(function (tag) {
-                should.exist(tag);
-                tag.toJSON().count.posts.should.equal(2);
-
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
     });
 
     describe('findPage', function () {
-        beforeEach(function (done) {
-            testUtils.fixtures.insertPostsAndTags().then(function () {
-                done();
-            }).catch(done);
-        });
-
         it('with limit all', function (done) {
-            TagModel.findPage({limit: 'all'}).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal('all');
-                results.meta.pagination.pages.should.equal(1);
-                results.tags.length.should.equal(5);
+            models.Tag.findPage({limit: 'all'})
+                .then(function (results) {
+                    results.meta.pagination.page.should.equal(1);
+                    results.meta.pagination.limit.should.equal('all');
+                    results.meta.pagination.pages.should.equal(1);
+                    results.tags.length.should.equal(5);
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
 
         it('with include count.posts', function (done) {
-            TagModel.findPage({limit: 'all', withRelated: ['count.posts']}).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal('all');
-                results.meta.pagination.pages.should.equal(1);
-                results.tags.length.should.equal(5);
-                should.exist(results.tags[0].count.posts);
+            models.Tag.findPage({limit: 'all', withRelated: ['count.posts']})
+                .then(function (results) {
+                    results.meta.pagination.page.should.equal(1);
+                    results.meta.pagination.limit.should.equal('all');
+                    results.meta.pagination.pages.should.equal(1);
+                    results.tags.length.should.equal(5);
+                    should.exist(results.tags[0].count.posts);
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
     });
 
     describe('findOne', function () {
-        beforeEach(function (done) {
-            testUtils.fixtures.insertPostsAndTags().then(function () {
-                done();
-            }).catch(done);
-        });
-
         it('with slug', function (done) {
             var firstTag;
 
-            TagModel.findPage().then(function (results) {
-                should.exist(results);
-                should.exist(results.tags);
-                results.tags.length.should.be.above(0);
-                firstTag = results.tags[0];
+            models.Tag.findPage()
+                .then(function (results) {
+                    should.exist(results);
+                    should.exist(results.tags);
+                    results.tags.length.should.be.above(0);
+                    firstTag = results.tags[0];
 
-                return TagModel.findOne({slug: firstTag.slug});
-            }).then(function (found) {
-                should.exist(found);
+                    return models.Tag.findOne({slug: firstTag.slug});
+                })
+                .then(function (found) {
+                    should.exist(found);
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
+    describe('destroy', function () {
+        it('can destroy Tag (using transaction)', function () {
+            var firstTag = testUtils.DataGenerator.Content.tags[0].id;
+
+            return db.knex('posts_tags').where('tag_id', firstTag)
+                .then(function (response) {
+                    response.length.should.eql(2);
+                })
+                .then(function () {
+                    return db.knex.transaction(function (transacting) {
+                        return models.Tag.destroy({
+                            id: firstTag,
+                            transacting: transacting
+                        });
+                    });
+                })
+                .then(function () {
+                    return db.knex('posts_tags').where('tag_id', firstTag);
+                })
+                .then(function (response) {
+                    response.length.should.eql(0);
+                });
         });
     });
 });

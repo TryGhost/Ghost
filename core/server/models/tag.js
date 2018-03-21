@@ -103,11 +103,15 @@ Tag = ghostBookshelf.Model.extend({
         var options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
         options.withRelated = ['posts'];
 
-        return this.forge({id: options.id}).fetch(options).then(function destroyTagsAndPost(tag) {
-            return tag.related('posts').detach().then(function destroyTags() {
-                return tag.destroy(options);
+        return this.forge({id: options.id})
+            .fetch(options)
+            .then(function destroyTagsAndPost(tag) {
+                return tag.related('posts')
+                    .detach(null, options)
+                    .then(function destroyTags() {
+                        return tag.destroy(options);
+                    });
             });
-        });
     }
 });
 
