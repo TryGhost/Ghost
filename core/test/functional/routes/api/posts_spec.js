@@ -1437,10 +1437,9 @@ describe('Post API', function () {
                         slug: 'author-post',
                         author_id: author.id
                     }
-                })
-                    .then(function (post) {
-                        authorPostId = post.id;
-                    });
+                }).then(function (post) {
+                    authorPostId = post.id;
+                });
             });
 
             it('can edit own post', function (done) {
@@ -1573,13 +1572,13 @@ describe('Post API', function () {
 
             before(function () {
                 return testUtils.createPost({
-                        post: {
-                            title: 'Contributor\'s test post',
-                            slug: 'contributor-post',
-                            author_id: contributor.id,
-                            status: 'draft'
-                        }
-                    })
+                    post: {
+                        title: 'Contributor\'s test post',
+                        slug: 'contributor-post',
+                        author_id: contributor.id,
+                        status: 'draft'
+                    }
+                })
                     .then(function (post) {
                         contributorPostId = post.id;
                     });

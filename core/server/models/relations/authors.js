@@ -280,22 +280,48 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
             }
 
+            function isChangingAuthors() {
+                if (!unsafeAttrs.authors) {
+                    return false;
+                }
+
+                if (!unsafeAttrs.authors.length) {
+                    return true;
+                }
+
+                return unsafeAttrs.authors[0].id !== postModel.related('authors').models[0].id;
+            }
+
             function isOwner() {
-                return unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
+                let isCorrectOwner = true;
+
+                if (!unsafeAttrs.author_id && !unsafeAttrs.authors) {
+                    return false;
+                }
+
+                if (unsafeAttrs.author_id) {
+                    isCorrectOwner = unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
+                }
+
+                if (unsafeAttrs.authors) {
+                    isCorrectOwner = isCorrectOwner && unsafeAttrs.authors.length && unsafeAttrs.authors[0].id === context.user;
+                }
+
+                return isCorrectOwner;
             }
 
             function isCurrentOwner() {
-                return context.user === postModel.get('author_id');
+                return context.user === postModel.related('authors').models[0].id;
             }
 
             if (isContributor && isEdit) {
-                hasUserPermission = !isChanging('author_id') && isCurrentOwner();
+                hasUserPermission = !isChanging('author_id') && !isChangingAuthors() && isCurrentOwner();
             } else if (isContributor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (isContributor && isDestroy) {
                 hasUserPermission = isCurrentOwner();
             } else if (isAuthor && isEdit) {
-                hasUserPermission = isCurrentOwner() && !isChanging('author_id');
+                hasUserPermission = isCurrentOwner() && !isChanging('author_id') && !isChangingAuthors();
             } else if (isAuthor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (postModel) {
@@ -303,7 +329,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             // @TODO: we need a concept for making a diff between incoming authors and existing authors
-            // @TODO: for now we simply re-use the new concept of `excludedAttrs` - if you send `authors`, they are getting ignored
+            // @TODO: for now we simply re-use the new concept of `excludedAttrs`
+            // We only check the primary author of `authors`, any other change will be ignored.
+            // By this we can deprecate `author_id` more easily.
             if (isContributor || isAuthor) {
                 result.excludedAttrs = ['authors'];
             }
