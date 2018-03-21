@@ -687,7 +687,7 @@ Post = ghostBookshelf.Model.extend({
                 .then(function then(foundPostModel) {
                     if (!foundPostModel) {
                         throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.models.posts.postNotFound')
+                            message: common.i18n.t('errors.models.post.postNotFound')
                         });
                     }
 
