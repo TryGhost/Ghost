@@ -10,7 +10,7 @@ module.exports.config = {
 };
 
 module.exports.up = function handleMultipleAuthors(options) {
-    const postAllColumns = ['id', 'author_id', 'slug', 'title', 'plaintext'],
+    const postAllColumns = ['id', 'author_id'],
         userColumns = ['id'];
 
     let localOptions = _.merge({
@@ -23,23 +23,26 @@ module.exports.up = function handleMultipleAuthors(options) {
                 .then(function (posts) {
                     common.logging.info('Adding `posts_authors` relations');
 
-                    // CASE: ensure `post.author_id` is a valid user id
                     return Promise.map(posts.models, function (post) {
+                        let authorIdToSet;
+
+                        // CASE: ensure `post.author_id` is a valid user id
                         return models.User.findOne({id: post.get('author_id')}, _.merge({columns: userColumns}, localOptions))
                             .then(function (user) {
                                 if (!user) {
-                                    post.set('author_id', ownerUser.id);
+                                    authorIdToSet = ownerUser.id;
+                                } else {
+                                    authorIdToSet = post.get('author_id');
                                 }
                             })
                             .then(function () {
                                 // CASE: insert primary author
-                                post.set('authors', [
-                                    {
+                                return models.Post.edit({
+                                    author_id: authorIdToSet,
+                                    authors: [{
                                         id: post.get('author_id')
-                                    }
-                                ]);
-
-                                return post.save(null, localOptions);
+                                    }]
+                                }, _.merge({id: post.id}, localOptions));
                             });
                     }, {concurrency: 100});
                 });
