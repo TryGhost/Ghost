@@ -24,6 +24,13 @@ describe('Helpers Utils', function () {
             result.should.equal(11);
         });
 
+        it('[success] counted Chinese characters', function () {
+            var html = '<div class="kg-card-markdown"><p>我今天在家吃了好多好多好吃的，现在的我非常开心非常满足</p></div>',
+                result = helperUtils.wordCount(html);
+
+            result.should.equal(26);
+        });
+
         it('[success] sanitized white space correctly', function () {
             var html = ' <div class="kg-card-markdown"><p> This is a text example!\n Count   me in ;)</p></div> ',
                 result = helperUtils.wordCount(html);
