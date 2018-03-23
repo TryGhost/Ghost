@@ -466,6 +466,12 @@
                     "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
                     "help": "If you get this error repeatedly, please seek help on {url}."
                 }
+            },
+            "route": {
+                "settings": {
+                    "error": "Could not parse `routes.yaml`: {context}.",
+                    "help": "Check your `routes.yaml` file for typos and fix the named issues."
+                }
             }
         },
         "errors": {
