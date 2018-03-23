@@ -356,7 +356,7 @@ describe('getSchema', function () {
 
         should.deepEqual(schema, {
             '@context': 'https://schema.org',
-            '@type': 'Website',
+            '@type': 'WebSite',
             description: 'This is the theme description',
             image: {
                 '@type': 'ImageObject',
