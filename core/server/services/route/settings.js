@@ -10,62 +10,65 @@ const yaml = require('js-yaml'),
     routesFile = path.join(config.getContentPath('settings'), 'routes.yaml'),
     defaultRoutesFile = path.join(config.get('paths').defaultRoutes, 'default-routes.yaml');
 
-// TODO:
-// 1. make sure default `routes.yaml` in settings folder exists. If not, create it.
-// 2. read in the `routes.yaml` file
-// 3. no cache for now
+let loadSettings;
 
 // We should ALWAYS have a `routes.yaml` file available in content/settings.
 // This can be a custom file, or our default. If the file is missing, we
 // copy the default routes file back.
 function ensureRoutesFile() {
-    try {
-        fs.statSync(routesFile);
-        debug('routes.yaml file found');
-        return true;
-    } catch (e) {
-        // Only throw an error when it's not expected
-        if (e.code !== 'ENOENT') {
-            throw new common.errors.GhostError({
-                err: e
+    return fs.readFile(routesFile, 'utf8')
+        .then((file) => {
+            debug('Found routes file in settings folder');
+            return Promise.resolve(file);
+        }).catch({code: 'ENOENT'}, () => {
+            // File doesn't exist, copy it from our defaults
+            return fs.copy(defaultRoutesFile, routesFile).then(() => {
+                return fs.readFile(routesFile, 'utf8');
+            }).then((file) => {
+                debug('Default routes file copied');
+                return Promise.resolve(file);
+            }).catch((err) => {
+                // the default routes file doesn't exist 😱, or we can't access
+                // the content/settings folder. Now we have the salad
+                // TODO: what error do we want to return here
+                return Promise.reject(new common.errors.GhostError({
+                    message: 'Error trying to copy the default routes file.',
+                    err: err,
+                    context: err.path
+                }));
             });
-        }
-        debug('no routes.yaml file found');
-        // File doesn't exist, copy it from our defaults
-        try {
-            fs.copySync(defaultRoutesFile, routesFile);
-            debug('default route file copied');
-            return true;
-        } catch (err) {
-            // the default routes file doesn't exist 😱
-            // now we have the salad
-            throw new common.errors.GhostError({
-                err: err
-            });
-        }
-    }
+        }).catch((error) => {
+            if (common.errors.utils.isIgnitionError(error)) {
+                return Promise.reject(error);
+            }
+            // TODO: what error do we want to return here
+            return Promise.reject(new common.errors.GhostError({
+                message: 'Error trying to access routes files in content/settings',
+                err: error,
+                context: error.path
+            }));
+        });
 }
 
-function loadSettings() {
-    try {
-        ensureRoutesFile();
+loadSettings = function loadSettings() {
+    return ensureRoutesFile().then((yamlFile) => {
         try {
-            const routes = yaml.safeLoad(fs.readFileSync(routesFile, 'utf8'));
-            debug('read', routes);
+            const routes = yaml.safeLoad(yamlFile);
 
-            return routes;
+            return Promise.resolve(routes);
         } catch (err) {
-            throw new common.errors.IncorrectUsageError({
-                message: common.i18n.t('errors.services.route.settings.error', {context: err.message}),
-                err: err,
+            // Parsing failed, `js-yaml` tells us exactly what and where in the
+            // `reason` property as well as in the message.
+            return Promise.reject(new common.errors.IncorrectUsageError({
+                message: common.i18n.t('errors.services.route.settings.error', {context: err.reason}),
                 context: err.message,
+                err: err,
                 help: common.i18n.t('errors.services.route.settings.help')
-            });
+            }));
         }
-    } catch (e) {
-        debug('Error logged:', e);
-        common.logging.error(e);
-    }
-}
+    }).catch((error) => {
+        return Promise.reject(error);
+    });
+};
 
-module.exports = loadSettings();
+module.exports = loadSettings;
