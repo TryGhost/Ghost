@@ -107,7 +107,7 @@ function getPostSchema(metaData, data) {
 function getHomeSchema(metaData) {
     var schema = {
         '@context': 'https://schema.org',
-        '@type': 'Website',
+        '@type': 'WebSite',
         publisher: {
             '@type': 'Organization',
             name: escapeExpression(metaData.blog.title),
