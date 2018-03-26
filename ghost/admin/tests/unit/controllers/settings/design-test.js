@@ -121,8 +121,8 @@ describe('Unit: Controller: settings/design', function () {
         expect(ctrl.get('settings.navigation.lastObject.label')).to.equal('New');
         expect(ctrl.get('settings.navigation.lastObject.url')).to.equal('/new');
         expect(ctrl.get('settings.navigation.lastObject.isNew')).to.be.false;
-        expect(ctrl.get('newNavItem.label')).to.be.blank;
-        expect(ctrl.get('newNavItem.url')).to.be.blank;
+        expect(ctrl.get('newNavItem.label')).to.be.empty;
+        expect(ctrl.get('newNavItem.url')).to.be.empty;
         expect(ctrl.get('newNavItem.isNew')).to.be.true;
     });
 

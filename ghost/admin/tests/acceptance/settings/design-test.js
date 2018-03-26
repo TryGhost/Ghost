@@ -178,7 +178,7 @@ describe('Acceptance: Settings - Design', function () {
             expect(
                 find('.gh-blognav-label:last input').val(),
                 'new item label value after successful add'
-            ).to.be.blank;
+            ).to.be.empty;
 
             expect(
                 find('.gh-blognav-url:last input').val(),

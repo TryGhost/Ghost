@@ -150,7 +150,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         wait().then(() => {
             expect(fileSelected.calledOnce).to.be.true;
-            expect(fileSelected.args[0]).to.not.be.blank;
+            expect(fileSelected.args[0]).to.not.be.empty;
             done();
         });
     });
@@ -325,6 +325,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         run.later(this, function () {
             expect(this.$('.progress .bar').length).to.equal(1);
             let [, percentageWidth] = this.$('.progress .bar').attr('style').match(/width: (\d+)%?/);
+            percentageWidth = Number.parseInt(percentageWidth);
             expect(percentageWidth).to.be.above(0);
             expect(percentageWidth).to.be.below(100);
         }, 75);

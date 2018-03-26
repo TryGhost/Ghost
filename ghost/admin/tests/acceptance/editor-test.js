@@ -614,7 +614,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).customExcerpt,
                 'saved excerpt after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing custom excerpt auto-saves
             await fillIn('[data-test-field="custom-excerpt"]', 'Testing excerpt');
@@ -643,7 +643,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).codeinjectionHead,
                 'saved header injection after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing header injection auto-saves
             await headerCM.setValue('<script src="http://example.com/inject-head.js"></script>');
@@ -667,7 +667,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).codeinjectionFoot,
                 'saved footer injection after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing footer injection auto-saves
             await footerCM.setValue('<script src="http://example.com/inject-foot.js"></script>');
@@ -703,7 +703,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).twitterTitle,
                 'saved twitter title after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing twitter title auto-saves
             // twitter title has validation
@@ -727,7 +727,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).twitterDescription,
                 'saved twitter description after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing twitter description auto-saves
             // twitter description has validation
@@ -764,7 +764,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).ogTitle,
                 'saved facebook title after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing facebook title auto-saves
             // facebook title has validation
@@ -788,7 +788,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 server.db.posts.find(post.id).ogDescription,
                 'saved facebook description after validation error'
-            ).to.be.blank;
+            ).to.be.null;
 
             // changing facebook description auto-saves
             // facebook description has validation

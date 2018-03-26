@@ -764,12 +764,12 @@ describe('Acceptance: Team', function () {
                 expect(
                     find('[data-test-new-pass-input]').val(),
                     'password field after submit'
-                ).to.be.blank;
+                ).to.be.empty;
 
                 expect(
                     find('[data-test-ne2-pass-input]').val(),
                     'password verification field after submit'
-                ).to.be.blank;
+                ).to.be.empty;
 
                 // displays a notification
                 expect(

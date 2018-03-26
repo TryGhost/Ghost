@@ -186,7 +186,7 @@ describe('Acceptance: Settings - Tags', function () {
             // all fields start blank
             find('.tag-settings-pane input, .tag-settings-pane textarea').each(function () {
                 expect($(this).val(), `input field for ${$(this).attr('name')}`)
-                    .to.be.blank;
+                    .to.be.empty;
             });
 
             // save new tag
