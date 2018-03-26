@@ -118,6 +118,15 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.false();
         });
 
+        it('count:11', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:11'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
         it('count:>3', function () {
             thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
 

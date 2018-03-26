@@ -15,14 +15,14 @@ var proxy = require('./proxy'),
 function handleCount(ctxAttr, data) {
     let count;
 
-    if (ctxAttr.match(/count:\d/)) {
-        count = Number(ctxAttr.match(/count:(\d)/)[1]);
+    if (ctxAttr.match(/count:\d+/)) {
+        count = Number(ctxAttr.match(/count:(\d+)/)[1]);
         return count === data.length;
     } else if (ctxAttr.match(/count:>\d/)) {
-        count = Number(ctxAttr.match(/count:>(\d)/)[1]);
+        count = Number(ctxAttr.match(/count:>(\d+)/)[1]);
         return count < data.length;
     } else if (ctxAttr.match(/count:<\d/)) {
-        count = Number(ctxAttr.match(/count:<(\d)/)[1]);
+        count = Number(ctxAttr.match(/count:<(\d+)/)[1]);
         return count > data.length;
     }
 
