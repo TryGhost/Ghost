@@ -171,6 +171,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
         this._updatedAttributes = newObj.previousAttributes();
+
+        /**
+         * Bookshelf keeps none valid model attributes in `model.changed`. This causes problems
+         * when detecting if a model has changed. Bookshelf detects changed attributes too early.
+         * So we have to manually remove invalid model attributes from this object.
+         *
+         * e.g. if you pass `tag.parent` into the model layer, but the value has not changed,
+         * the attribute (`tag.parent`) is still kept in the `changed` object. This is wrong.
+         *
+         * TLDR; only keep valid model attributes in the changed object
+         */
+        this.changed = _.pick(this.changed, Object.keys(this.attributes));
     },
 
     /**
@@ -241,6 +253,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     newObj.set('created_by', this.previous('created_by'));
                 }
             }
+        }
+
+        // CASE: you only change the `updated_at` property. This is not allowed.
+        if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.hasOwnProperty('updated_at')) {
+            newObj.set('updated_at', this.previous('updated_at'));
         }
 
         return Promise.resolve(this.onValidate(newObj, attr, options));
