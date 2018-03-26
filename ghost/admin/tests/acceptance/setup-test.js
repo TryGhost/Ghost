@@ -175,7 +175,7 @@ describe('Acceptance: Setup', function () {
 
             // non-server validation
             expect(find('.main-error').text().trim(), 'error text')
-                .to.not.be.blank;
+                .to.not.be.empty;
 
             await fillIn('[data-test-email-input]', 'test@example.com');
             await fillIn('[data-test-name-input]', 'Test User');
@@ -192,7 +192,7 @@ describe('Acceptance: Setup', function () {
             await click('.gh-btn-green');
 
             expect(find('.main-error').text().trim(), 'error text')
-                .to.be.blank;
+                .to.be.empty;
 
             expect(find('.gh-alert-red').length, 'number of alerts')
                 .to.equal(1);

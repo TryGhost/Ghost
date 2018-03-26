@@ -230,7 +230,7 @@ describe('Integration: Component: gh-task-button', function () {
         run.later(this, function () {
             // chai-jquery test doesn't work because Firefox outputs blank string
             // expect(this.$('button')).to.not.have.attr('style');
-            expect(this.$('button').attr('style')).to.be.blank;
+            expect(this.$('button').attr('style')).to.be.empty;
         }, 100);
 
         return wait();
