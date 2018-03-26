@@ -1811,17 +1811,12 @@ describe('Post Model', function () {
         });
 
         it('can\'t edit dates and authors of existing tag', function () {
-            var newJSON = _.cloneDeep(postJSON), updatedAtFormat;
+            var newJSON = _.cloneDeep(postJSON), updatedAtFormat, createdAtFormat;
 
             // Add an existing tag to the beginning of the array
-            newJSON.tags = [{
-                id: postJSON.tags[0].id,
-                slug: 'eins',
-                created_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                updated_at: moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                created_by: 2,
-                updated_by: 2
-            }];
+            newJSON.tags = [_.cloneDeep(postJSON.tags[0])];
+            newJSON.tags[0].created_at = moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
+            newJSON.tags[0].updated_at = moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 
             // Edit the post
             return Promise.delay(1000)
@@ -1834,16 +1829,19 @@ describe('Post Model', function () {
                     updatedPost.tags.should.have.lengthOf(1);
                     updatedPost.tags[0].should.have.properties({
                         name: postJSON.tags[0].name,
-                        slug: 'eins',
+                        slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id,
-                        created_at: postJSON.tags[0].created_at,
-                        created_by: postJSON.created_by,
-                        updated_by: postJSON.updated_by
+                        created_by: postJSON.tags[0].created_by,
+                        updated_by: postJSON.tags[0].updated_by
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');
-                    updatedAtFormat.should.not.eql(moment(postJSON.updated_at).format('YYYY-MM-DD HH:mm:ss'));
+                    updatedAtFormat.should.eql(moment(postJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
                     updatedAtFormat.should.not.eql(moment(newJSON.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss'));
+
+                    createdAtFormat = moment(updatedPost.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss');
+                    createdAtFormat.should.eql(moment(postJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
+                    createdAtFormat.should.not.eql(moment(newJSON.tags[0].created_at).format('YYYY-MM-DD HH:mm:ss'));
                 });
         });
 

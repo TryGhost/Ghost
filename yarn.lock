@@ -535,9 +535,9 @@ bookshelf-relations@0.2.0:
     ghost-ignition "^2.8.16"
     lodash "^4.17.4"
 
-bookshelf@0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/bookshelf/-/bookshelf-0.13.0.tgz#dec282886c7653436a43c1e55fcb873c5822cb4a"
+bookshelf@0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/bookshelf/-/bookshelf-0.13.3.tgz#aa73d9159b6cac92830dc1ff37325490c3c6dfba"
   dependencies:
     babel-runtime "^6.26.0"
     bluebird "^3.4.3"
