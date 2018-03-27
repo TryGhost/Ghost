@@ -46,13 +46,13 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
 
             if (user.get('isAuthor')) {
                 // authors can only view their own posts
-                filterParams.author = user.get('slug');
+                filterParams.authors = user.get('slug');
             } else if (user.get('isContributor')) {
                 // Contributors can only view their own draft posts
-                filterParams.author = user.get('slug');
+                filterParams.authors = user.get('slug');
                 queryParams.status = 'draft';
             } else if (params.author) {
-                filterParams.author = params.author;
+                filterParams.authors = params.author;
             }
 
             let filter = this._filterString(filterParams);
