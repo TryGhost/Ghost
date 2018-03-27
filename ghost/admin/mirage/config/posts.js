@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
 import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
@@ -73,6 +74,8 @@ export default function mockPosts(server) {
         });
 
         attrs.authors = authors;
+
+        attrs.updatedAt = moment.utc().toDate();
 
         return post.update(attrs);
     });

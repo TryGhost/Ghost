@@ -28,6 +28,7 @@
                     {{else}}
                         {{gh-publishmenu
                             post=post
+                            postStatus=post.status
                             saveTask=save
                             setSaveType=(action "setSaveType")
                             onOpen=(action "cancelAutosave")}}

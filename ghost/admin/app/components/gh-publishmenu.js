@@ -9,7 +9,9 @@ export default Component.extend({
     clock: service(),
 
     classNames: 'gh-publishmenu',
+    displayState: 'draft',
     post: null,
+    postStatus: 'draft',
     saveTask: null,
     runningText: null,
 
@@ -101,6 +103,28 @@ export default Component.extend({
 
         return buttonText;
     }),
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        // update the displayState based on the post status but only after a
+        // save has finished to avoid swapping the menu prematurely and triggering
+        // calls to `setSaveType` due to the component re-rendering
+        // TODO: we should have a better way of dealing with this where we don't
+        // rely on the side-effect of component rendering calling setSaveType
+        let postStatus = this.get('postStatus');
+        if (postStatus !== this._postStatus) {
+            if (this.get('saveTask.isRunning')) {
+                this.get('saveTask.last').then(() => {
+                    this.set('displayState', postStatus);
+                });
+            } else {
+                this.set('displayState', postStatus);
+            }
+        }
+
+        this._postStatus = this.get('postStatus');
+    },
 
     actions: {
         setSaveType(saveType) {
