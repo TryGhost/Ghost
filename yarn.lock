@@ -2124,9 +2124,9 @@ getsetdeep@~2.0.0:
   dependencies:
     typechecker "~2.0.1"
 
-ghost-gql@0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.8.tgz#630410cf1f71ccffbdab3d9d01419981c794b0ce"
+ghost-gql@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.9.tgz#46b80b07651e71fac77b94d8fabf688baabf2c32"
   dependencies:
     lodash "^4.17.4"
 
