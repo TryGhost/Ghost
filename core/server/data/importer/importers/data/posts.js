@@ -11,7 +11,7 @@ class PostsImporter extends BaseImporter {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['posts', 'tags', 'posts_tags'],
+            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors'],
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
@@ -30,90 +30,98 @@ class PostsImporter extends BaseImporter {
     }
 
     /**
-     * Naive function to attach related tags.
-     * Target tags should not be created. We add the relation by foreign key.
+     * Naive function to attach related tags and authors.
      */
     addNestedRelations() {
         this.requiredFromFile.posts_tags = _.orderBy(this.requiredFromFile.posts_tags, ['post_id', 'sort_order'], ['asc', 'asc']);
+        this.requiredFromFile.posts_authors = _.orderBy(this.requiredFromFile.posts_authors, ['post_id', 'sort_order'], ['asc', 'asc']);
 
         /**
-         * {post_id: 1, tag_id: 2}
+         * from {post_id: 1, tag_id: 2} to post.tags=[{id:id}]
+         * from {post_id: 1, author_id: 2} post.authors=[{id:id}]
          */
-        _.each(this.requiredFromFile.posts_tags, (postTagRelation) => {
-            if (!postTagRelation.post_id) {
-                return;
-            }
+        const run = (relations, target, fk) => {
+            _.each(relations, (relation) => {
+                if (!relation.post_id) {
+                    return;
+                }
 
-            let postToImport = _.find(this.dataToImport, {id: postTagRelation.post_id});
+                let postToImport = _.find(this.dataToImport, {id: relation.post_id});
 
-            // CASE: we won't import a relation when the target post does not exist
-            if (!postToImport) {
-                return;
-            }
+                // CASE: we won't import a relation when the target post does not exist
+                if (!postToImport) {
+                    return;
+                }
 
-            if (!postToImport.tags || !_.isArray(postToImport.tags)) {
-                postToImport.tags = [];
-            }
+                if (!postToImport[target] || !_.isArray(postToImport[target])) {
+                    postToImport[target] = [];
+                }
 
-            // CASE: duplicate relation?
-            if (!_.find(postToImport.tags, {tag_id: postTagRelation.tag_id})) {
-                postToImport.tags.push({
-                    tag_id: postTagRelation.tag_id
-                });
-            }
-        });
+                // CASE: detect duplicate relations
+                if (!_.find(postToImport[target], {id: relation[fk]})) {
+                    postToImport[target].push({
+                        id: relation[fk]
+                    });
+                }
+            });
+        };
+
+        run(this.requiredFromFile.posts_tags, 'tags', 'tag_id');
+        run(this.requiredFromFile.posts_authors, 'authors', 'author_id');
     }
 
     /**
-     * Replace all `tag_id` references.
+     * Replace all identifier references.
      */
     replaceIdentifiers() {
-        /**
-         * {post_id: 1, tag_id: 2}
-         */
-        _.each(this.dataToImport, (postToImport, postIndex) => {
-            if (!postToImport.tags || !postToImport.tags.length) {
+        const run = (postToImport, postIndex, targetProperty, tableName) => {
+            if (!postToImport[targetProperty] || !postToImport[targetProperty].length) {
                 return;
             }
 
             let indexesToRemove = [];
-            _.each(postToImport.tags, (tag, tagIndex) => {
-                let tagInFile = _.find(this.requiredFromFile.tags, {id: tag.tag_id});
+            _.each(postToImport[targetProperty], (object, index) => {
+                let objectInFile = _.find(this.requiredFromFile[tableName], {id: object.id});
 
-                if (!tagInFile) {
-                    let existingTag = _.find(this.requiredExistingData.tags, {id: tag.tag_id});
+                if (!objectInFile) {
+                    let existingObject = _.find(this.requiredExistingData[tableName], {id: object.id});
 
-                    // CASE: tag is not in file, tag is not in db
-                    if (!existingTag) {
-                        indexesToRemove.push(tagIndex);
+                    // CASE: is not in file, is not in db
+                    if (!existingObject) {
+                        indexesToRemove.push(index);
                         return;
                     } else {
-                        this.dataToImport[postIndex].tags[tagIndex].tag_id = existingTag.id;
+                        this.dataToImport[postIndex][targetProperty][index].id = existingObject.id;
                         return;
                     }
                 }
 
                 // CASE: search through imported data
-                let importedTag = _.find(this.requiredImportedData.tags, {slug: tagInFile.slug});
+                let importedObject = _.find(this.requiredImportedData[tableName], {slug: objectInFile.slug});
 
-                if (importedTag) {
-                    this.dataToImport[postIndex].tags[tagIndex].tag_id = importedTag.id;
+                if (importedObject) {
+                    this.dataToImport[postIndex][targetProperty][index].id = importedObject.id;
                     return;
                 }
 
                 // CASE: search through existing data
-                let existingTag = _.find(this.requiredExistingData.tags, {slug: tagInFile.slug});
+                let existingObject = _.find(this.requiredExistingData[tableName], {slug: objectInFile.slug});
 
-                if (existingTag) {
-                    this.dataToImport[postIndex].tags[tagIndex].tag_id = existingTag.id;
+                if (existingObject) {
+                    this.dataToImport[postIndex][targetProperty][index].id = existingObject.id;
                 } else {
-                    indexesToRemove.push(tagIndex);
+                    indexesToRemove.push(index);
                 }
             });
 
-            this.dataToImport[postIndex].tags = _.filter(this.dataToImport[postIndex].tags, ((tag, index) => {
+            this.dataToImport[postIndex][targetProperty] = _.filter(this.dataToImport[postIndex][targetProperty], ((object, index) => {
                 return indexesToRemove.indexOf(index) === -1;
             }));
+        };
+
+        _.each(this.dataToImport, (postToImport, postIndex) => {
+            run(postToImport, postIndex, 'tags', 'tags');
+            run(postToImport, postIndex, 'authors', 'users');
         });
 
         return super.replaceIdentifiers();

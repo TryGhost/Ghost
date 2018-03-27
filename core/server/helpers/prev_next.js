@@ -24,7 +24,10 @@ buildApiOptions = function buildApiOptions(options, post) {
         op = options.name === 'prev_post' ? '<=' : '>',
         order = options.name === 'prev_post' ? 'desc' : 'asc',
         apiOptions = {
-            include: 'author,tags',
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
+            include: 'author,authors,tags',
             order: 'published_at ' + order,
             limit: 1,
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
@@ -35,6 +38,8 @@ buildApiOptions = function buildApiOptions(options, post) {
     if (_.get(options, 'hash.in')) {
         if (options.hash.in === 'primary_tag' && _.get(post, 'primary_tag.slug')) {
             apiOptions.filter += '+primary_tag:' + post.primary_tag.slug;
+        } else if (options.hash.in === 'primary_author' && _.get(post, 'primary_author.slug')) {
+            apiOptions.filter += '+primary_author:' + post.primary_author.slug;
         } else if (options.hash.in === 'author' && _.get(post, 'author.slug')) {
             apiOptions.filter += '+author:' + post.author.slug;
         }

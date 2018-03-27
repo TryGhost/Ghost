@@ -63,18 +63,19 @@ describe('Exporter', function () {
 
                 knexMock.getCall(0).args[0].should.eql('posts');
                 knexMock.getCall(1).args[0].should.eql('users');
-                knexMock.getCall(2).args[0].should.eql('roles');
-                knexMock.getCall(3).args[0].should.eql('roles_users');
-                knexMock.getCall(4).args[0].should.eql('permissions');
-                knexMock.getCall(5).args[0].should.eql('permissions_users');
-                knexMock.getCall(6).args[0].should.eql('permissions_roles');
-                knexMock.getCall(7).args[0].should.eql('permissions_apps');
-                knexMock.getCall(8).args[0].should.eql('settings');
-                knexMock.getCall(9).args[0].should.eql('tags');
-                knexMock.getCall(10).args[0].should.eql('posts_tags');
-                knexMock.getCall(11).args[0].should.eql('apps');
-                knexMock.getCall(12).args[0].should.eql('app_settings');
-                knexMock.getCall(13).args[0].should.eql('app_fields');
+                knexMock.getCall(2).args[0].should.eql('posts_authors');
+                knexMock.getCall(3).args[0].should.eql('roles');
+                knexMock.getCall(4).args[0].should.eql('roles_users');
+                knexMock.getCall(5).args[0].should.eql('permissions');
+                knexMock.getCall(6).args[0].should.eql('permissions_users');
+                knexMock.getCall(7).args[0].should.eql('permissions_roles');
+                knexMock.getCall(8).args[0].should.eql('permissions_apps');
+                knexMock.getCall(9).args[0].should.eql('settings');
+                knexMock.getCall(10).args[0].should.eql('tags');
+                knexMock.getCall(11).args[0].should.eql('posts_tags');
+                knexMock.getCall(12).args[0].should.eql('apps');
+                knexMock.getCall(13).args[0].should.eql('app_settings');
+                knexMock.getCall(14).args[0].should.eql('app_fields');
 
                 knexMock.calledWith('clients').should.be.false();
                 knexMock.calledWith('client_trusted_domains').should.be.false();

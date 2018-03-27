@@ -7,7 +7,7 @@ describe('getCreatorTwitterUrl', function () {
             var twitterUrl = getCreatorTwitterUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         twitter: 'https://twitter.com/user'
                     }
                 }
@@ -20,7 +20,7 @@ describe('getCreatorTwitterUrl', function () {
             var twitterUrl = getCreatorTwitterUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         twitter: ''
                     }
                 }
@@ -41,7 +41,7 @@ describe('getCreatorTwitterUrl', function () {
             var twitterUrl = getCreatorTwitterUrl({
                 context: ['amp', 'post'],
                 post: {
-                    author: {
+                    primary_author: {
                         twitter: 'https://twitter.com/user'
                     }
                 }
@@ -54,7 +54,7 @@ describe('getCreatorTwitterUrl', function () {
             var twitterUrl = getCreatorTwitterUrl({
                 context: ['amp', 'post'],
                 post: {
-                    author: {
+                    primary_author: {
                         twitter: ''
                     }
                 }

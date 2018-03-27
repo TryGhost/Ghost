@@ -99,11 +99,74 @@ describe('{{#has}} helper', function () {
             fn.called.should.be.false();
             inverse.called.should.be.false();
         });
+
+        it('count:0', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:0'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:3', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:3'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('count:11', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:11'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:>3', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:>3'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:>2', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:>2'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('count:<1', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:<1'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:<3', function () {
+            thisCtx = {tags: [{name: 'foo'}, {name: 'bar'}]};
+
+            callHasHelper(thisCtx, {tag: 'count:<3'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
     });
 
     describe('author match', function () {
         it('should handle author list that evaluates to true', function () {
-            thisCtx = {author: {name: 'sam'}};
+            thisCtx = {authors: [{name: 'sam'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat'});
 
@@ -112,7 +175,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('should handle author list that evaluates to false', function () {
-            thisCtx = {author: {name: 'jamie'}};
+            thisCtx = {authors: [{name: 'jamie'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat'});
 
@@ -121,7 +184,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('should handle authors with case-insensitivity', function () {
-            thisCtx = {author: {name: 'Sam'}};
+            thisCtx = {authors: [{name: 'Sam'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sAm, pat'});
 
@@ -130,7 +193,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('should handle tags and authors like an OR query (pass)', function () {
-            thisCtx = {author: {name: 'sam'}, tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+            thisCtx = {authors: [{name: 'sam'}], tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
@@ -139,7 +202,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('should handle tags and authors like an OR query (pass)', function () {
-            thisCtx = {author: {name: 'sam'}, tags: [{name: 'much'}, {name: 'bar'}, {name: 'baz'}]};
+            thisCtx = {authors: [{name: 'sam'}], tags: [{name: 'much'}, {name: 'bar'}, {name: 'baz'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
@@ -148,12 +211,75 @@ describe('{{#has}} helper', function () {
         });
 
         it('should handle tags and authors like an OR query (fail)', function () {
-            thisCtx = {author: {name: 'fred'}, tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+            thisCtx = {authors: [{name: 'fred'}], tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
             fn.called.should.be.false();
             inverse.called.should.be.true();
+        });
+
+        it('count:0', function () {
+            thisCtx = {authors: [{name: 'fred'}]};
+
+            callHasHelper(thisCtx, {author: 'count:0'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:1', function () {
+            thisCtx = {authors: [{name: 'fred'}]};
+
+            callHasHelper(thisCtx, {author: 'count:1'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('count:>1', function () {
+            thisCtx = {authors: [{name: 'fred'}]};
+
+            callHasHelper(thisCtx, {author: 'count:>1'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:>1', function () {
+            thisCtx = {authors: [{name: 'fred'}, {name: 'sam'}]};
+
+            callHasHelper(thisCtx, {author: 'count:>1'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('count:>2', function () {
+            thisCtx = {authors: [{name: 'fred'}, {name: 'sam'}]};
+
+            callHasHelper(thisCtx, {author: 'count:>2'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:<1', function () {
+            thisCtx = {authors: [{name: 'fred'}, {name: 'sam'}]};
+
+            callHasHelper(thisCtx, {author: 'count:<1'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('count:<3', function () {
+            thisCtx = {authors: [{name: 'fred'}, {name: 'sam'}]};
+
+            callHasHelper(thisCtx, {author: 'count:<3'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
         });
     });
 

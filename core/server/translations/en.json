@@ -404,6 +404,7 @@
             "utils": {
                 "noPermissionToCall": "You do not have permission to {method} {docName}",
                 "noRootKeyProvided": "No root key ('{docName}') provided.",
+                "invalidStructure": "No valid object structure provided for: {key}",
                 "invalidIdProvided": "Invalid id provided."
             },
             "invites": {

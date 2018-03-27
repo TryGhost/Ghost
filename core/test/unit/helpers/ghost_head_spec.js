@@ -5,6 +5,7 @@ var should = require('should'), // jshint ignore:line
     moment = require('moment'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
+    models = require('../../../server/models'),
     helpers = require('../../../server/helpers'),
     imageLib = require('../../../server/lib/image'),
     proxy = require('../../../server/helpers/proxy'),
@@ -15,6 +16,10 @@ var should = require('should'), // jshint ignore:line
     sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sandbox.restore();
         configUtils.restore();
@@ -128,7 +133,7 @@ describe('{{ghost_head}} helper', function () {
                     twitter_title: '',
                     twitter_description: '',
                     page: true,
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author',
@@ -200,7 +205,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     page: true,
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author',
@@ -534,7 +539,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author',
@@ -627,7 +632,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author',
@@ -711,7 +716,7 @@ describe('{{ghost_head}} helper', function () {
                     custom_excerpt: '',
                     title: 'Welcome to Ghost',
                     html: '<p>This is a short post</p>',
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author'
@@ -778,7 +783,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http://testauthorurl.com',
                         slug: 'Author',
@@ -865,7 +870,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -950,7 +955,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -1032,7 +1037,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -1135,7 +1140,7 @@ describe('{{ghost_head}} helper', function () {
                 post: {
                     title: 'Welcome to Ghost',
                     html: '<p>This is a short post</p>',
-                    author: {
+                    primary_author: {
                         name: 'Author name'
                     }
                 }
@@ -1165,7 +1170,7 @@ describe('{{ghost_head}} helper', function () {
                 post: {
                     title: 'Welcome to Ghost',
                     html: '<p>This is a short post</p>',
-                    author: {
+                    primary_author: {
                         name: 'Author name'
                     }
                 }
@@ -1337,7 +1342,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -1484,7 +1489,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -1571,7 +1576,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',
@@ -1627,7 +1632,7 @@ describe('{{ghost_head}} helper', function () {
                     published_at: moment('2008-05-31T19:18:15').toISOString(),
                     updated_at: moment('2014-10-06T15:23:54').toISOString(),
                     tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    author: {
+                    primary_author: {
                         name: 'Author name',
                         url: 'http//:testauthorurl.com',
                         slug: 'Author',

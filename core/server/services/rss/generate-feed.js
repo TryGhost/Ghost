@@ -30,7 +30,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
             url: itemUrl,
             date: post.published_at,
             categories: generateTags(post),
-            author: post.author ? post.author.name : null,
+            author: post.primary_author ? post.primary_author.name : null,
             custom_elements: []
         },
         imageUrl;

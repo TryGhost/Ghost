@@ -12,7 +12,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['post'],
             post: {
-                author: {
+                primary_author: {
                     profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
@@ -25,7 +25,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['post'],
             post: {
-                author: {
+                primary_author: {
                     profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
@@ -38,7 +38,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['amp', 'post'],
             post: {
-                author: {
+                primary_author: {
                     profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
@@ -50,7 +50,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['amp', 'post'],
             post: {
-                author: {
+                primary_author: {
                     profile_image: '/content/images/2016/01/myimage.jpg'
                 }
             }
@@ -63,7 +63,7 @@ describe('getAuthorImage', function () {
         var imageUrl = getAuthorImage({
             context: ['post'],
             post: {
-                author: {
+                primary_author: {
                     name: 'Test Author'
                 }
             }

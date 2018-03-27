@@ -27,7 +27,8 @@
         "private": "private",
         "subscribe": "subscribe",
         "amp": "amp",
-        "primaryTagFallback": "all"
+        "primaryTagFallback": "all",
+        "primaryAuthorFallback": "all"
     },
     "slugs": {
         "reserved": ["admin", "app", "apps", "categories",

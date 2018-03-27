@@ -174,6 +174,7 @@ function urlPathForPost(post) {
     var output = '',
         permalinks = settingsCache.get('permalinks'),
         primaryTagFallback = config.get('routeKeywords').primaryTagFallback,
+        primaryAuthorFallback = config.get('routeKeywords').primaryAuthorFallback,
         publishedAtMoment = moment.tz(post.published_at || Date.now(), settingsCache.get('active_timezone')),
         tags = {
             year: function () {
@@ -185,11 +186,17 @@ function urlPathForPost(post) {
             day: function () {
                 return publishedAtMoment.format('DD');
             },
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             author: function () {
                 return post.author.slug;
             },
             primary_tag: function () {
                 return post.primary_tag ? post.primary_tag.slug : primaryTagFallback;
+            },
+            primary_author: function () {
+                return post.primary_author ? post.primary_author.slug : primaryAuthorFallback;
             },
             slug: function () {
                 return post.slug;

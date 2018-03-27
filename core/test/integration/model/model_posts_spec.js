@@ -50,6 +50,12 @@ describe('Post Model', function () {
 
             should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object();
+
+            if (options.withRelated && options.withRelated.indexOf('authors') !== -1) {
+                firstPost.authors.length.should.eql(1);
+                firstPost.authors[0].should.eql(firstPost.author);
+            }
+
             firstPost.url.should.equal('/html-ipsum/');
             firstPost.fields.should.be.an.Array();
             firstPost.tags.should.be.an.Array();
@@ -108,7 +114,9 @@ describe('Post Model', function () {
             });
 
             it('can findAll, returning all related data', function (done) {
-                PostModel.findAll({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                var options = {withRelated: ['author', 'authors', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']};
+
+                PostModel.findAll(options)
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
@@ -117,7 +125,7 @@ describe('Post Model', function () {
                             return model.toJSON();
                         }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
 
-                        checkFirstPostData(firstPost);
+                        checkFirstPostData(firstPost, options);
 
                         done();
                     }).catch(done);
@@ -1030,28 +1038,13 @@ describe('Post Model', function () {
                 });
             });
 
-            it('[unsupported] can\'t add `author` as object', function () {
-                var newPost = testUtils.DataGenerator.forModel.posts[2];
-
-                // `post.author` relation get's ignored in Ghost - unsupported
-                newPost.author = {id: testUtils.DataGenerator.Content.users[3].id};
-                delete newPost.author_id;
-
-                return PostModel.add(newPost, context)
-                    .then(function (createdPost) {
-                        // fallsback to logged in user
-                        createdPost.get('author_id').should.eql(context.context.user);
-                        createdPost.get('author_id').should.not.eql(testUtils.DataGenerator.Content.users[3].id);
-                    });
-            });
-
             it('can add, defaults are all correct', function (done) {
                 var createdPostUpdatedDate,
                     newPost = testUtils.DataGenerator.forModel.posts[2],
                     newPostDB = testUtils.DataGenerator.Content.posts[2];
 
-                PostModel.add(newPost, context).then(function (createdPost) {
-                    return new PostModel({id: createdPost.id}).fetch();
+                PostModel.add(newPost, _.merge({withRelated: ['author']}, context)).then(function (createdPost) {
+                    return PostModel.findOne({id: createdPost.id, status: 'all'});
                 }).then(function (createdPost) {
                     should.exist(createdPost);
                     createdPost.has('uuid').should.equal(true);
@@ -1148,6 +1141,24 @@ describe('Post Model', function () {
                     Object.keys(eventsTriggered).length.should.eql(1);
                     should.exist(eventsTriggered['post.added']);
 
+                    done();
+                }).catch(done);
+            });
+
+            it('add multiple authors', function (done) {
+                PostModel.add({
+                    status: 'draft',
+                    title: 'draft 1',
+                    mobiledoc: markdownToMobiledoc('This is some content'),
+                    authors: [{
+                        id: testUtils.DataGenerator.forKnex.users[0].id,
+                        name: testUtils.DataGenerator.forKnex.users[0].name
+                    }]
+                }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
+                    should.exist(newPost);
+                    newPost.toJSON().author.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    newPost.toJSON().authors.length.should.eql(1);
+                    newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                     done();
                 }).catch(done);
             });
@@ -1264,7 +1275,7 @@ describe('Post Model', function () {
                     };
 
                 PostModel.add(newPost, context).then(function (createdPost) {
-                    return new PostModel({id: createdPost.id}).fetch();
+                    return PostModel.findOne({id: createdPost.id, status: 'all'});
                 }).then(function (createdPost) {
                     should.exist(createdPost);
                     createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
@@ -1625,6 +1636,28 @@ describe('Post Model', function () {
                     });
             });
 
+            it('update post authors and updated_at is out of sync', function (done) {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                PostModel.findOne({id: postToUpdate.id, status: 'all'})
+                    .then(function () {
+                        return Promise.delay(1000);
+                    })
+                    .then(function () {
+                        return PostModel.edit({
+                            authors: [testUtils.DataGenerator.Content.users[3]],
+                            updated_at: moment().subtract(1, 'day').format()
+                        }, _.extend({}, context, {id: postToUpdate.id}));
+                    })
+                    .then(function () {
+                        done(new Error('expected no success'));
+                    })
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                        done();
+                    });
+            });
+
             it('update post tags and updated_at is NOT out of sync', function (done) {
                 var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
 
@@ -1711,12 +1744,14 @@ describe('Post Model', function () {
     });
 
     describe('Post tag handling edge cases', function () {
-        beforeEach(testUtils.setup());
+        before(testUtils.teardown);
 
         var postJSON,
             tagJSON,
             editOptions,
             createTag = testUtils.DataGenerator.forKnex.createTag;
+
+        beforeEach(testUtils.setup('owner'));
 
         beforeEach(function () {
             tagJSON = [];
@@ -1738,8 +1773,6 @@ describe('Post Model', function () {
 
             return Promise.props({
                 post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                role: RoleModel.add(testUtils.DataGenerator.forKnex.roles[2], context),
-                user: UserModel.add(testUtils.DataGenerator.forKnex.users[0], context),
                 tag1: TagModel.add(extraTags[0], context),
                 tag2: TagModel.add(extraTags[1], context),
                 tag3: TagModel.add(extraTags[2], context)
@@ -1792,22 +1825,6 @@ describe('Post Model', function () {
                 updatedPost.tags[0].slug.should.eql('eins');
                 updatedPost.tags[0].id.should.eql(postJSON.tags[0].id);
             });
-        });
-
-        it('[unsupported] can\'t edit `author` as object', function () {
-            var newJSON = _.cloneDeep(postJSON),
-                modelOptions = _.clone(editOptions);
-
-            newJSON.author.should.eql(testUtils.DataGenerator.Content.users[0].id);
-            newJSON.author = {id: testUtils.DataGenerator.Content.users[3].id};
-            delete newJSON.author_id;
-
-            modelOptions.withRelated.push('author');
-            return PostModel.edit(newJSON, modelOptions)
-                .then(function (updatedPost) {
-                    updatedPost.get('author_id').should.eql(testUtils.DataGenerator.Content.users[0].id);
-                    updatedPost.related('author').toJSON().slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
-                });
         });
 
         it('can\'t edit dates and authors of existing tag', function () {

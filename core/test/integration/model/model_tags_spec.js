@@ -17,7 +17,7 @@ describe('Tag Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup());
+    beforeEach(testUtils.setup('users:roles'));
 
     afterEach(function () {
         sandbox.restore();

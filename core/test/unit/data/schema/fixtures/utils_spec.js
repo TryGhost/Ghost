@@ -103,7 +103,7 @@ describe('Migration Fixture Utils', function () {
             var postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
                 postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
+            fixtureUtils.addFixturesForModel(fixtures.models[5]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
@@ -119,7 +119,8 @@ describe('Migration Fixture Utils', function () {
         it('should not call add for main post fixture if it is already found', function (done) {
             var postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve({})),
                 postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve({}));
-            fixtureUtils.addFixturesForModel(fixtures.models[0]).then(function (result) {
+
+            fixtureUtils.addFixturesForModel(fixtures.models[5]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);

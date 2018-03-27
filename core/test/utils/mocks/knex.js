@@ -18,7 +18,7 @@ class KnexMock {
     initialiseDb() {
         this.db = {};
 
-        _.each(_.pick(_.cloneDeep(DataGenerator.forKnex), ['posts', 'users', 'tags', 'permissions', 'roles']), (objects, tableName) => {
+        _.each(_.pick(_.cloneDeep(DataGenerator.forKnex), ['posts', 'users', 'tags', 'permissions', 'roles', 'posts_authors']), (objects, tableName) => {
             this.db[tableName] = [];
 
             _.each(objects, (object) => {

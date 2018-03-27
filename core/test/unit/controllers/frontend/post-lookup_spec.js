@@ -28,7 +28,7 @@ describe('postLookup', function () {
         beforeEach(function () {
             localSettingsCache.permalinks = '/:slug/';
 
-            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
+            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,authors,tags'})
                 .returns(new Promise.resolve({
                     posts: [{
                         url: '/welcome-to-ghost/',
@@ -86,7 +86,7 @@ describe('postLookup', function () {
         beforeEach(function () {
             localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
-            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
+            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,authors,tags'})
                 .returns(new Promise.resolve({
                     posts: [{
                         url: '/2016/01/01/welcome-to-ghost/',
@@ -144,7 +144,7 @@ describe('postLookup', function () {
         beforeEach(function () {
             localSettingsCache.permalinks = '/:slug/';
 
-            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
+            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,authors,tags'})
                 .returns(new Promise.resolve({
                     posts: [{
                         url: '/welcome-to-ghost/',
@@ -206,7 +206,7 @@ describe('postLookup', function () {
         beforeEach(function () {
             localSettingsCache.permalinks = '/:slug/';
 
-            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,tags'})
+            postAPIStub.withArgs({slug: 'welcome-to-ghost', include: 'author,authors,tags'})
                 .returns(new Promise.resolve({
                     posts: [{
                         url: '/welcome-to-ghost/',

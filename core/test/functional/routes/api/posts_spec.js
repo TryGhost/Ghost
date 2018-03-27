@@ -404,7 +404,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve a post with author, created_by, and tags', function (done) {
+            it('[DEPRECATED] can retrieve a post with author, created_by, and tags', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=author,tags,created_by'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -424,6 +424,36 @@ describe('Post API', function () {
 
                         jsonResponse.posts[0].author.should.be.an.Object();
                         testUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
+                        jsonResponse.posts[0].tags[0].should.be.an.Object();
+                        testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
+                        done();
+                    });
+            });
+
+            it('can retrieve a post with authors, created_by, and tags', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,created_by'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.posts);
+
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
+
+                        jsonResponse.posts[0].author.should.be.a.String();
+                        jsonResponse.posts[0].page.should.not.be.ok();
+
+                        jsonResponse.posts[0].authors[0].should.be.an.Object();
+                        testUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
+
                         jsonResponse.posts[0].tags[0].should.be.an.Object();
                         testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
                         done();
@@ -1437,10 +1467,9 @@ describe('Post API', function () {
                         slug: 'author-post',
                         author_id: author.id
                     }
-                })
-                    .then(function (post) {
-                        authorPostId = post.id;
-                    });
+                }).then(function (post) {
+                    authorPostId = post.id;
+                });
             });
 
             it('can edit own post', function (done) {
@@ -1573,13 +1602,13 @@ describe('Post API', function () {
 
             before(function () {
                 return testUtils.createPost({
-                        post: {
-                            title: 'Contributor\'s test post',
-                            slug: 'contributor-post',
-                            author_id: contributor.id,
-                            status: 'draft'
-                        }
-                    })
+                    post: {
+                        title: 'Contributor\'s test post',
+                        slug: 'contributor-post',
+                        author_id: contributor.id,
+                        status: 'draft'
+                    }
+                })
                     .then(function (post) {
                         contributorPostId = post.id;
                     });

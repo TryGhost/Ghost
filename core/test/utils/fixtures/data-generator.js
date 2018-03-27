@@ -375,6 +375,7 @@ DataGenerator.forKnex = (function () {
     var posts,
         tags,
         posts_tags,
+        posts_authors,
         apps,
         app_fields,
         roles,
@@ -695,6 +696,63 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
+    posts_authors = [
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[0].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[1].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[2].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[3].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[3].id,
+            author_id: DataGenerator.Content.users[2].id,
+            sort_order: 1
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[4].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[5].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[6].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[7].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        }
+    ];
+
     apps = [
         createBasic(DataGenerator.Content.apps[0]),
         createBasic(DataGenerator.Content.apps[1]),
@@ -740,6 +798,7 @@ DataGenerator.forKnex = (function () {
         posts: posts,
         tags: tags,
         posts_tags: posts_tags,
+        posts_authors: posts_authors,
         apps: apps,
         app_fields: app_fields,
         roles: roles,

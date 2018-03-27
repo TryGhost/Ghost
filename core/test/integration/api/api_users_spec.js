@@ -860,7 +860,11 @@ describe('Users API', function () {
                         post.tags = testUtils.DataGenerator.forKnex.tags.slice(2, 4);
                         return models.Post.add(post, _.merge({}, options, context.author));
                     }
-                }).then(function () {
+                }).then(function (added) {
+                    // 6 posts, 2 pages
+                    added.length.should.eql(8);
+
+                    // find all posts of the editor
                     return models.Post.findAll(_.merge({}, {
                         context: context.editor.context,
                         filter: 'author_id:' + userIdFor.editor,
@@ -874,6 +878,7 @@ describe('Users API', function () {
                         postIdsToDelete.push(post.get('id'));
                     });
 
+                    // find all posts of the author
                     return models.Post.findAll(_.merge({
                         context: context.author.context,
                         filter: 'author_id:' + userIdFor.author,
@@ -896,6 +901,22 @@ describe('Users API', function () {
                     return db.knex('tags');
                 }).then(function (allTags) {
                     allTags.length.should.eql(5);
+
+                    return Promise.mapSeries(postIdsToDelete.concat(postIsToKeep), function (id) {
+                        return db.knex('posts_authors').where('post_id', id);
+                    });
+                }).then(function (result) {
+                    _.flatten(result).length.should.eql(6);
+
+                    return db.knex('posts_authors');
+                }).then(function (result) {
+                    // 11 relations from the default posts from the data generator
+                    // 6 relations from the newly added posts
+                    _.flatten(result).length.should.eql(17);
+
+                    return db.knex('users');
+                }).then(function (result) {
+                    _.flatten(result).length.should.eql(9);
 
                     return UserAPI.destroy(_.extend({}, context.owner, _.merge({}, options, {id: userIdFor.editor})));
                 }).then(function () {
@@ -927,6 +948,24 @@ describe('Users API', function () {
                     return db.knex('tags');
                 }).then(function (allTags) {
                     allTags.length.should.eql(5);
+
+                    return Promise.mapSeries(postIdsToDelete.concat(postIsToKeep), function (id) {
+                        return db.knex('posts_authors').where('post_id', id);
+                    });
+                }).then(function (result) {
+                    // 3 relations where related, because the user owned 3 posts
+                    _.flatten(result).length.should.eql(3);
+
+                    return db.knex('posts_authors');
+                }).then(function (result) {
+                    // the user is secondary author on one post
+                    // the user is the owner of one page
+                    _.flatten(result).length.should.eql(12);
+
+                    return db.knex('users');
+                }).then(function (allUsers) {
+                    // one user was deleted, that's why 8
+                    allUsers.length.should.eql(8);
                     done();
                 }).catch(done);
             });
@@ -975,12 +1014,12 @@ describe('Users API', function () {
             it('Can destroy admin, editor, author, contributor', function (done) {
                 // Admin
                 UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[0].id}))
-                .then(function (response) {
-                    should.not.exist(response);
+                    .then(function (response) {
+                        should.not.exist(response);
 
-                    // Editor
-                    return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[1].id}));
-                }).then(function (response) {
+                        // Editor
+                        return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[1].id}));
+                    }).then(function (response) {
                     should.not.exist(response);
 
                     // Author

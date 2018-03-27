@@ -22,8 +22,8 @@ var _ = require('lodash'),
             .keys()
             // by default we only return html
             .without('mobiledoc', 'amp', 'plaintext')
-            // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag
-            .without('author_id').concat('author', 'url', 'comment_id', 'primary_tag')
+            // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
+            .without('author_id').concat('author', 'url', 'comment_id', 'primary_tag', 'primary_author')
             .value(),
         user: {
             default: _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
