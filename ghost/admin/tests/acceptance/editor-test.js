@@ -434,7 +434,7 @@ describe('Acceptance: Editor', function () {
                 });
             });
 
-            let post = server.create('post', 1, {authors: [author]});
+            let post = server.create('post', 1, {authors: [author], status: 'draft'});
             let plusTenMin = moment().utc().add(10, 'minutes');
 
             await visit(`/editor/${post.id}`);
@@ -444,6 +444,7 @@ describe('Acceptance: Editor', function () {
             await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', plusTenMin);
             await fillIn('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', plusTenMin.format('HH:mm'));
             await triggerEvent('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', 'blur');
+
             await click('[data-test-publishmenu-save]');
 
             expect(
