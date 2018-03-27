@@ -154,7 +154,7 @@ describe('Advanced Browse', function () {
             });
         });
 
-        describe('4. Posts - filter="author:[leslie,pat]+(tag:hash-audio,image:-null)"', function () {
+        describe('[DEPRECATED] 4. Posts - filter="author:[leslie,pat]+(tag:hash-audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
             it('Will fetch posts by the author `leslie` or `pat` which are either have tag `hash-audio` or an image.', function (done) {
                 PostAPI.browse({
@@ -773,7 +773,7 @@ describe('Advanced Browse', function () {
                 }).catch(done);
             });
 
-            it('Will fetch posts with a given author', function (done) {
+            it('[DEPRECATED] Will fetch posts with a given author', function (done) {
                 PostAPI.browse({
                     filter: 'author:leslie',
                     include: 'tag,author',

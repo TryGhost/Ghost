@@ -351,7 +351,7 @@ describe('API Utils', function () {
             }).catch(done);
         });
 
-        it('should do author_id to author conversion for posts', function (done) {
+        it('[DEPRECATED] should do author_id to author conversion for posts', function (done) {
             var object = {posts: [{id: 1, author: 4}]};
             apiUtils.checkObject(_.cloneDeep(object), 'posts').then(function (data) {
                 should.exist(data);
@@ -364,7 +364,7 @@ describe('API Utils', function () {
             }).catch(done);
         });
 
-        it('should not do author_id to author conversion for posts if not needed', function (done) {
+        it('[DEPRECATED] should not do author_id to author conversion for posts if not needed', function (done) {
             var object = {posts: [{id: 1, author_id: 4}]};
             apiUtils.checkObject(_.cloneDeep(object), 'posts').then(function (data) {
                 should.exist(data);
