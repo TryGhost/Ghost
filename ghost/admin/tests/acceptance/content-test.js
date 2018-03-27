@@ -112,7 +112,7 @@ describe('Acceptance: Content', function () {
             expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
             expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
             expect(lastRequest.queryParams.filter, '"editor" request filter param')
-                .to.equal(`author:${editor.slug}`);
+                .to.equal(`authors:${editor.slug}`);
 
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association
@@ -151,7 +151,7 @@ describe('Acceptance: Content', function () {
 
             // API request includes author filter
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.equal(`author:${author.slug}`);
+            expect(lastRequest.queryParams.filter).to.equal(`authors:${author.slug}`);
 
             // only author's post is shown
             expect(find('[data-test-post-id]').length, 'post count').to.equal(1);
@@ -189,7 +189,7 @@ describe('Acceptance: Content', function () {
 
             // API request includes author filter
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.equal(`author:${contributor.slug}`);
+            expect(lastRequest.queryParams.filter).to.equal(`authors:${contributor.slug}`);
 
             // only contributor's post is shown
             expect(find('[data-test-post-id]').length, 'post count').to.equal(1);
