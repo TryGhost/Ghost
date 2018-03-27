@@ -1,5 +1,8 @@
+'use strict';
+
 // # Has Helper
 // Usage: `{{#has tag="video, music"}}`, `{{#has author="sam, pat"}}`
+//        `{{#has author="count:1"}}`, `{{#has tag="count:>1"}}`
 //
 // Checks if a post has a particular property
 
@@ -8,6 +11,23 @@ var proxy = require('./proxy'),
     logging = proxy.logging,
     i18n = proxy.i18n,
     validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
+
+function handleCount(ctxAttr, data) {
+    let count;
+
+    if (ctxAttr.match(/count:\d+/)) {
+        count = Number(ctxAttr.match(/count:(\d+)/)[1]);
+        return count === data.length;
+    } else if (ctxAttr.match(/count:>\d/)) {
+        count = Number(ctxAttr.match(/count:>(\d+)/)[1]);
+        return count < data.length;
+    } else if (ctxAttr.match(/count:<\d/)) {
+        count = Number(ctxAttr.match(/count:<(\d+)/)[1]);
+        return count > data.length;
+    }
+
+    return false;
+}
 
 function evaluateTagList(expr, tags) {
     return expr.split(',').map(function (v) {
@@ -22,12 +42,38 @@ function evaluateTagList(expr, tags) {
     }, false);
 }
 
-function evaluateAuthorList(expr, author) {
+function handleTag(data, attrs) {
+    if (!attrs.tag) {
+        return false;
+    }
+
+    if (attrs.tag.match(/count:/)) {
+        return handleCount(attrs.tag, data.tags);
+    }
+
+    return evaluateTagList(attrs.tag, _.map(data.tags, 'name')) || false;
+}
+
+function evaluateAuthorList(expr, authors) {
     var authorList = expr.split(',').map(function (v) {
         return v.trim().toLocaleLowerCase();
     });
 
-    return _.includes(authorList, author.toLocaleLowerCase());
+    return _.filter(authors, (author) => {
+        return _.includes(authorList, author.name.toLocaleLowerCase());
+    }).length;
+}
+
+function handleAuthor(data, attrs) {
+    if (!attrs.author) {
+        return false;
+    }
+
+    if (attrs.author.match(/count:/)) {
+        return handleCount(attrs.author, data.authors);
+    }
+
+    return evaluateAuthorList(attrs.author, data.authors) || false;
 }
 
 function evaluateIntegerMatch(expr, integer) {
@@ -77,14 +123,30 @@ module.exports = function has(options) {
         attrs = _.pick(options.hash, validAttrs),
         data = _.pick(options.data, ['blog', 'config', 'labs']),
         checks = {
-            tag: function () { return attrs.tag && evaluateTagList(attrs.tag, _.map(self.tags, 'name')) || false; },
-            author: function () { return attrs.author && evaluateAuthorList(attrs.author, _.get(self, 'author.name')) || false; },
-            number: function () { return attrs.number && evaluateIntegerMatch(attrs.number, options.data.number) || false; },
-            index: function () { return attrs.index && evaluateIntegerMatch(attrs.index, options.data.index) || false; },
-            slug: function () { return attrs.slug && evaluateStringMatch(attrs.slug, self.slug, true) || false; },
-            id: function () { return attrs.id && evaluateStringMatch(attrs.id, self.id, true) || false; },
-            any: function () { return attrs.any && evaluateList('some', attrs.any, self, data) || false; },
-            all: function () { return attrs.all && evaluateList('every', attrs.all, self, data) || false; }
+            tag: function () {
+                return handleTag(self, attrs);
+            },
+            author: function () {
+                return handleAuthor(self, attrs);
+            },
+            number: function () {
+                return attrs.number && evaluateIntegerMatch(attrs.number, options.data.number) || false;
+            },
+            index: function () {
+                return attrs.index && evaluateIntegerMatch(attrs.index, options.data.index) || false;
+            },
+            slug: function () {
+                return attrs.slug && evaluateStringMatch(attrs.slug, self.slug, true) || false;
+            },
+            id: function () {
+                return attrs.id && evaluateStringMatch(attrs.id, self.id, true) || false;
+            },
+            any: function () {
+                return attrs.any && evaluateList('some', attrs.any, self, data) || false;
+            },
+            all: function () {
+                return attrs.all && evaluateList('every', attrs.all, self, data) || false;
+            }
         },
         result;
 

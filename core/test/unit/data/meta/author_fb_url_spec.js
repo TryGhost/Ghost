@@ -7,7 +7,7 @@ describe('getAuthorFacebookUrl', function () {
             var facebookUrl = getAuthorFacebookUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         facebook: 'https://www.facebook.com/user'
                     }
                 }
@@ -20,7 +20,7 @@ describe('getAuthorFacebookUrl', function () {
             var facebookUrl = getAuthorFacebookUrl({
                 context: ['amp', 'post'],
                 post: {
-                    author: {
+                    primary_author: {
                         facebook: 'https://www.facebook.com/user'
                     }
                 }
@@ -33,7 +33,7 @@ describe('getAuthorFacebookUrl', function () {
             var facebookUrl = getAuthorFacebookUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         facebook: ''
                     }
                 }

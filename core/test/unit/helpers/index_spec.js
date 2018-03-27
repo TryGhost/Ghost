@@ -9,7 +9,7 @@ var should = require('should'), // jshint ignore:line
 describe('Helpers', function () {
     var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup'],
         ghostHelpers = [
-            'asset', 'author', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
+            'asset', 'author', 'authors', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
             'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'lang', 'meta_description', 'meta_title', 'navigation',
             'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'reading_time', 't', 'tags', 'title', 'twitter_url',
             'url'

@@ -7,7 +7,7 @@ describe('getAuthorUrl', function () {
             var authorUrl = getAuthorUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         slug: 'test-author'
                     }
                 }
@@ -20,7 +20,7 @@ describe('getAuthorUrl', function () {
             var authorUrl = getAuthorUrl({
                 context: ['post'],
                 post: {
-                    author: {
+                    primary_author: {
                         slug: 'test-author'
                     }
                 }
@@ -34,7 +34,7 @@ describe('getAuthorUrl', function () {
             var authorUrl = getAuthorUrl({
                 context: ['amp', 'post'],
                 post: {
-                    author: {
+                    primary_author: {
                         slug: 'test-author'
                     }
                 }
@@ -47,7 +47,7 @@ describe('getAuthorUrl', function () {
             var authorUrl = getAuthorUrl({
                 context: ['amp', 'post'],
                 post: {
-                    author: {
+                    primary_author: {
                         slug: 'test-author'
                     }
                 }

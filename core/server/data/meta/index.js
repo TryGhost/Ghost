@@ -90,8 +90,8 @@ function getMetaData(data, root) {
         metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
     }
 
-    if (data.post && data.post.author && data.post.author.name) {
-        metaData.authorName = data.post.author.name;
+    if (data.post && data.post.primary_author && data.post.primary_author.name) {
+        metaData.authorName = data.post.primary_author.name;
     }
 
     return Promise.props(getImageDimensions(metaData)).then(function () {
