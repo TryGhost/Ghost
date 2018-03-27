@@ -68,6 +68,28 @@ fixtures = {
             return db.knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
             return db.knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
+        }).then(function () {
+            return db.knex('posts_authors').insert(DataGenerator.forKnex.posts_authors)
+                .catch(function (err) {
+                    var clonedPostsAuthors;
+
+                    // CASE: routing tests insert extra posts, but some tests don't add the users from the data generator
+                    // The only users which exist via the default Ghost fixtures are the Owner and the Ghost author
+                    // This results a MySQL error: `ER_NO_REFERENCED_ROW_2`
+                    // @TODO: rework if we overhaul the test env
+                    if (err.errno === 1452) {
+                        clonedPostsAuthors = _.cloneDeep(DataGenerator.forKnex.posts_authors);
+
+                        // Fallback to owner user - this user does exist for sure
+                        _.each(clonedPostsAuthors, function (postsAuthorRelation) {
+                            postsAuthorRelation.author_id = DataGenerator.forKnex.users[0].id;
+                        });
+
+                        return db.knex('posts_authors').insert(clonedPostsAuthors);
+                    }
+
+                    throw err;
+                });
         });
     },
 
@@ -100,7 +122,14 @@ fixtures = {
 
             return sequence(_.times(posts.length, function (index) {
                 return function () {
-                    return db.knex('posts').insert(posts[index]);
+                    return db.knex('posts').insert(posts[index])
+                        .then(function () {
+                            return db.knex('posts_authors').insert({
+                                id: ObjectId.generate(),
+                                post_id: posts[index].id,
+                                author_id: posts[index].author_id
+                            });
+                        });
                 };
             }));
         }).then(function () {
@@ -155,7 +184,14 @@ fixtures = {
 
         return sequence(_.times(posts.length, function (index) {
             return function () {
-                return db.knex('posts').insert(posts[index]);
+                return db.knex('posts').insert(posts[index])
+                    .then(function () {
+                        return db.knex('posts_authors').insert({
+                            id: ObjectId.generate(),
+                            post_id: posts[index].id,
+                            author_id: posts[index].author_id
+                        });
+                    });
             };
         }));
     },
@@ -635,7 +671,7 @@ initFixtures = function initFixtures() {
  * @returns {Function}
  */
 setup = function setup() {
-    var self = this,
+    const self = this,
         args = arguments;
 
     return function setup() {
@@ -703,7 +739,11 @@ createPost = function createPost(options) {
     return db.knex('posts')
         .insert(post)
         .then(function () {
-            return post;
+            return db.knex('posts_authors').insert({
+                id: ObjectId.generate(),
+                author_id: post.author_id,
+                post_id: post.id
+            }).return(post);
         });
 };
 

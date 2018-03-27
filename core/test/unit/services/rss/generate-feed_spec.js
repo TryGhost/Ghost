@@ -20,7 +20,7 @@ describe('RSS: Generate Feed', function () {
         _.each(posts, function (post, i) {
             post.id = i;
             post.url = '/' + post.slug + '/';
-            post.author = {name: 'Joe Bloggs'};
+            post.primary_author = {name: 'Joe Bloggs'};
         });
     });
 
@@ -126,7 +126,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     it('should no error if author is somehow not present', function (done) {
-        data.posts = [_.omit(posts[2], 'author')];
+        data.posts = [_.omit(posts[2], 'primary_author')];
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);

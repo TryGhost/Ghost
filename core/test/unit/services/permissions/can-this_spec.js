@@ -1,4 +1,6 @@
-var should = require('should'), // jshint ignore:line
+'use strict';
+
+const should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),
@@ -24,7 +26,12 @@ describe('Permissions', function () {
         });
 
         findPostSpy = sandbox.stub(models.Post, 'findOne').callsFake(function () {
-            return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
+            // @TODO: the test env has no concept of including relations
+            let post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]),
+                authors = [testUtils.DataGenerator.Content.users[0]];
+
+            post.related('authors').set(authors);
+            return Promise.resolve(post);
         });
 
         findTagSpy = sandbox.stub(models.Tag, 'findOne').callsFake(function () {

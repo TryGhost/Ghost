@@ -3,7 +3,7 @@
  * Dynamically build and execute queries on the API for channels
  */
 var api = require('../../api'),
-    _   = require('lodash'),
+    _ = require('lodash'),
     Promise = require('bluebird'),
     themes = require('../../services/themes'),
     queryDefaults,
@@ -16,10 +16,14 @@ queryDefaults = {
     options: {}
 };
 
-// Default post query needs to always include author & tags
+/**
+ * Default post query needs to always include author, authors & tags
+ *
+ * @deprecated: `author`, will be removed in Ghost 2.0
+ */
 _.extend(defaultPostQuery, queryDefaults, {
     options: {
-        include: 'author,tags'
+        include: 'author,authors,tags'
     }
 });
 
@@ -85,8 +89,7 @@ function processQuery(query, slugParam) {
  */
 function fetchData(channelOptions) {
     // @TODO improve this further
-    var pageOptions = channelOptions.isRSS ?
-            {options: channelOptions.postOptions} : fetchPostsPerPage(channelOptions.postOptions),
+    var pageOptions = channelOptions.isRSS ? {options: channelOptions.postOptions} : fetchPostsPerPage(channelOptions.postOptions),
         postQuery,
         props = {};
 

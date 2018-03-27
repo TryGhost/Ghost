@@ -6,6 +6,7 @@ var coreHelpers = {},
 
 coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
+coreHelpers.authors = require('./authors');
 coreHelpers.body_class = require('./body_class');
 coreHelpers.content = require('./content');
 coreHelpers.date = require('./date');
@@ -40,6 +41,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
     registerThemeHelper('author', coreHelpers.author);
+    registerThemeHelper('authors', coreHelpers.authors);
     registerThemeHelper('body_class', coreHelpers.body_class);
     registerThemeHelper('content', coreHelpers.content);
     registerThemeHelper('date', coreHelpers.date);

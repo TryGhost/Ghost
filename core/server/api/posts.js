@@ -7,10 +7,13 @@ var Promise = require('bluebird'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'posts',
+    /**
+     * @deprecated: `author`, will be removed in Ghost 2.0
+     */
     allowedIncludes = [
-        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'
+        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'authors', 'authors.roles'
     ],
-    unsafeAttrs = ['author_id', 'status'],
+    unsafeAttrs = ['author_id', 'status', 'authors'],
     posts;
 
 /**
