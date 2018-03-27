@@ -31,6 +31,10 @@ _.extend(PostMapGenerator.prototype, {
             status: 'published',
             staticPages: false,
             limit: 'all',
+            /**
+             * Is required for permalinks e.g. `/:author/:slug/`.
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             include: 'author,tags'
         }).then(function (resp) {
             return resp.posts;

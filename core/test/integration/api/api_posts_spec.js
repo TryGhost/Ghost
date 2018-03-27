@@ -283,11 +283,34 @@ describe('Post API', function () {
             }).catch(done);
         });
 
-        it('can include author', function (done) {
+        it('[DEPRECATED] can include author (using status:all)', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', include: 'author'}).then(function (results) {
                 should.exist(results.posts);
                 should.exist(results.posts[0].author.name);
                 results.posts[0].author.name.should.eql('Joe Bloggs');
+
+                done();
+            }).catch(done);
+        });
+
+        it('[DEPRECATED] can include author', function (done) {
+            PostAPI.read({
+                context: {user: testUtils.DataGenerator.Content.users[1].id},
+                id: testUtils.DataGenerator.Content.posts[1].id,
+                include: 'author'
+            }).then(function (results) {
+                should.exist(results.posts[0].author.name);
+                results.posts[0].author.name.should.eql('Joe Bloggs');
+                done();
+            }).catch(done);
+        });
+
+        it('can include authors', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: 'authors'}).then(function (results) {
+                should.exist(results.posts);
+                should.exist(results.posts[0].authors);
+                should.exist(results.posts[0].authors[0]);
+                results.posts[0].authors[0].name.should.eql('Joe Bloggs');
 
                 done();
             }).catch(done);
@@ -311,27 +334,29 @@ describe('Post API', function () {
             }).catch(done);
         });
 
-        it('can include author and be case insensitive', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: 'Author'}).then(function (results) {
+        it('can include authors and be case insensitive', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: 'Authors'}).then(function (results) {
                 should.exist(results.posts);
-                should.exist(results.posts[0].author.name);
-                results.posts[0].author.name.should.eql('Joe Bloggs');
+                should.exist(results.posts[0].authors);
+                should.exist(results.posts[0].authors[0]);
+                results.posts[0].authors[0].name.should.eql('Joe Bloggs');
 
                 done();
             }).catch(done);
         });
 
-        it('can include author and ignore space in include', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: ' author'}).then(function (results) {
+        it('can include authors and ignore space in include', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: ' authors'}).then(function (results) {
                 should.exist(results.posts);
-                should.exist(results.posts[0].author.name);
-                results.posts[0].author.name.should.eql('Joe Bloggs');
+                should.exist(results.posts[0].authors);
+                should.exist(results.posts[0].authors[0]);
+                results.posts[0].authors[0].name.should.eql('Joe Bloggs');
 
                 done();
             }).catch(done);
         });
 
-        it('can fetch all posts for an author', function (done) {
+        it('[DEPRECATED] can fetch all posts for an author', function (done) {
             PostAPI.browse({
                 context: {user: 1},
                 status: 'all',
@@ -343,6 +368,24 @@ describe('Post API', function () {
 
                 _.each(results.posts, function (post) {
                     post.author.slug.should.eql('joe-bloggs');
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('can fetch all posts for an author', function (done) {
+            PostAPI.browse({
+                context: {user: 1},
+                status: 'all',
+                filter: 'authors:joe-bloggs',
+                include: 'authors'
+            }).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(6);
+
+                _.each(results.posts, function (post) {
+                    post.primary_author.slug.should.eql('joe-bloggs');
                 });
 
                 done();
@@ -362,7 +405,7 @@ describe('Post API', function () {
         });
 
         it.skip('cannot fetch all posts for an author with invalid slug', function (done) {
-            PostAPI.browse({filter: 'author:invalid!'}).then(function () {
+            PostAPI.browse({filter: 'authors:invalid!'}).then(function () {
                 done(new Error('Should not return a result with invalid author'));
             }).catch(function (err) {
                 should.exist(err);
@@ -611,18 +654,6 @@ describe('Post API', function () {
             }).then(function (results) {
                 should.exist(results.posts[0].tags);
                 results.posts[0].tags[0].slug.should.eql('chorizo');
-                done();
-            }).catch(done);
-        });
-
-        it('can include author', function (done) {
-            PostAPI.read({
-                context: {user: testUtils.DataGenerator.Content.users[1].id},
-                id: testUtils.DataGenerator.Content.posts[1].id,
-                include: 'author'
-            }).then(function (results) {
-                should.exist(results.posts[0].author.name);
-                results.posts[0].author.name.should.eql('Joe Bloggs');
                 done();
             }).catch(done);
         });

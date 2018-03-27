@@ -1809,31 +1809,79 @@ describe('Import (new test structure)', function () {
         });
     });
 
-    describe('1.0: basic import test', function () {
+    describe('1.0: tests', function () {
         var exportData;
 
-        before(function doImport() {
-            // initialize the blog with some data
-            return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
-                return testUtils.fixtures.loadExportFixture('export-basic-test');
-            }).then(function (exported) {
-                exportData = exported.db[0];
-                return dataImporter.doImport(exportData, importOptions);
+        afterEach(testUtils.teardown);
+
+        describe('amp/comment', function () {
+            before(function doImport() {
+                // initialize the blog with some data
+                return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                    return testUtils.fixtures.loadExportFixture('export-basic-test');
+                }).then(function (exported) {
+                    exportData = exported.db[0];
+                    return dataImporter.doImport(exportData, importOptions);
+                });
+            });
+
+            it('keeps the value of the amp field', function () {
+                return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
+                    should.exist(response.posts);
+
+                    response.posts.length.should.eql(exportData.data.posts.length);
+                    response.posts[0].amp.should.eql(exportData.data.posts[1].id);
+                    response.posts[1].amp.should.eql(exportData.data.posts[0].amp);
+
+                    response.posts[0].comment_id.should.eql(response.posts[0].amp);
+                    response.posts[1].comment_id.should.eql(response.posts[1].amp);
+                });
             });
         });
 
-        after(testUtils.teardown);
+        describe('authors', function () {
+            before(function doImport() {
+                // initialize the blog with some data
+                return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
+                    return testUtils.fixtures.loadExportFixture('export-authors');
+                }).then(function (exported) {
+                    exportData = exported.db[0];
+                    return dataImporter.doImport(exportData, importOptions);
+                });
+            });
 
-        it('keeps the value of the amp field', function () {
-            return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
-                should.exist(response.posts);
+            it('imports authors successfully', function () {
+                return Promise.join(
+                    models.Post.findPage(_.merge({withRelated: ['authors']}, testUtils.context.internal)),
+                    models.User.findPage(testUtils.context.internal)
+                ).then(function (importedData) {
+                    const posts = importedData[0].posts,
+                        users = importedData[1].users;
 
-                response.posts.length.should.eql(exportData.data.posts.length);
-                response.posts[0].amp.should.eql(exportData.data.posts[1].id);
-                response.posts[1].amp.should.eql(exportData.data.posts[0].amp);
+                    // owner + 3 imported users
+                    users.length.should.eql(4);
+                    users[0].slug.should.eql(exportData.data.users[0].slug);
+                    users[1].slug.should.eql(exportData.data.users[1].slug);
+                    users[2].slug.should.eql(exportData.data.users[2].slug);
+                    users[3].slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-                response.posts[0].comment_id.should.eql(response.posts[0].amp);
-                response.posts[1].comment_id.should.eql(response.posts[1].amp);
+                    posts.length.should.eql(3);
+
+                    // has three posts_authors relations, but 2 of them are invalid
+                    posts[0].author.should.eql(users[2].id);
+                    posts[0].authors.length.should.eql(1);
+                    posts[0].authors[0].id.should.eql(users[2].id);
+
+                    posts[1].author.should.eql(users[0].id);
+                    posts[1].authors.length.should.eql(1);
+                    posts[1].authors[0].id.should.eql(users[0].id);
+
+                    posts[2].author.should.eql(users[1].id);
+                    posts[2].authors.length.should.eql(3);
+                    posts[2].authors[0].id.should.eql(users[1].id);
+                    posts[2].authors[1].id.should.eql(users[0].id);
+                    posts[2].authors[2].id.should.eql(users[2].id);
+                });
             });
         });
     });
