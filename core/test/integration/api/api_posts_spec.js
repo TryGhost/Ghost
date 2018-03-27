@@ -374,6 +374,24 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('can fetch all posts for an author', function (done) {
+            PostAPI.browse({
+                context: {user: 1},
+                status: 'all',
+                filter: 'authors:joe-bloggs',
+                include: 'authors'
+            }).then(function (results) {
+                should.exist(results.posts);
+                results.posts.length.should.eql(6);
+
+                _.each(results.posts, function (post) {
+                    post.primary_author.slug.should.eql('joe-bloggs');
+                });
+
+                done();
+            }).catch(done);
+        });
+
         // @TODO: ensure filters are fully validated
         it.skip('cannot fetch all posts for a tag with invalid slug', function (done) {
             PostAPI.browse({filter: 'tags:invalid!'}).then(function () {

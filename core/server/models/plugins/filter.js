@@ -151,8 +151,8 @@ filter = function filter(Bookshelf) {
                 // TODO make the order handling in pagination handle orderByRaw
                 // TODO extend this handling to all joins
                 if (gql.json.findStatement(this._filters.statements, {prop: /^authors/, op: 'IN'})) {
-                    // TODO make this count the number of MATCHING tags, not just the number of tags
-                    this.query('orderByRaw', 'count(users.id) DESC');
+                    // TODO make this count the number of MATCHING authors, not just the number of authors
+                    this.query('orderByRaw', 'count(authors.id) DESC');
                 }
 
                 // We need to add a group by to counter the double left outer join
