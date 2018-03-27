@@ -186,6 +186,9 @@ function urlPathForPost(post) {
             day: function () {
                 return publishedAtMoment.format('DD');
             },
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             author: function () {
                 return post.author.slug;
             },

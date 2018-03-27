@@ -100,6 +100,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         // NOTE: `post.author` was always ignored [unsupported]
         onSaving: function (model, attrs, options) {
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             model.unset('author');
 
             // CASE: `post.author_id` has changed
@@ -161,7 +164,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 this._originalOptions = {};
             }
 
-            // CASE: `author` was requested, `posts.authors` must exist
+            /**
+             * CASE: `author` was requested, `posts.authors` must exist
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
                 if (!authors.models.length) {
                     throw new common.errors.ValidationError({

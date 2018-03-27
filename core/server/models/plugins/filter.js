@@ -161,6 +161,9 @@ filter = function filter(Bookshelf) {
                 options.groups.push('posts.id');
             }
 
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             if (joinTables && joinTables.indexOf('author') > -1) {
                 this
                     .query('join', 'users as author', 'author.id', '=', 'posts.author_id');

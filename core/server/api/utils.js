@@ -317,7 +317,11 @@ utils = {
         }
 
         if (docName === 'posts') {
-            // convert author property to author_id to match the name in the database
+            /**
+             * Convert author property to author_id to match the name in the database.
+             *
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             if (object.posts[0].hasOwnProperty('author')) {
                 object.posts[0].author_id = object.posts[0].author;
                 delete object.posts[0].author;

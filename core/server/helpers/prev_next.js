@@ -24,6 +24,9 @@ buildApiOptions = function buildApiOptions(options, post) {
         op = options.name === 'prev_post' ? '<=' : '>',
         order = options.name === 'prev_post' ? 'desc' : 'asc',
         apiOptions = {
+            /**
+             * @deprecated: `author`, will be removed in Ghost 2.0
+             */
             include: 'author,authors,tags',
             order: 'published_at ' + order,
             limit: 1,
