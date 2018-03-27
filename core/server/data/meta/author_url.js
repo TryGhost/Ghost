@@ -8,8 +8,9 @@ function getAuthorUrl(data, absolute) {
     if (data.author) {
         return urlService.utils.urlFor('author', {author: data.author}, absolute);
     }
-    if (data[context] && data[context].author) {
-        return urlService.utils.urlFor('author', {author: data[context].author}, absolute);
+
+    if (data[context] && data[context].primary_author) {
+        return urlService.utils.urlFor('author', {author: data[context].primary_author}, absolute);
     }
     return null;
 }

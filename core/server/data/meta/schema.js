@@ -39,14 +39,14 @@ function trimSameAs(data, context) {
     var sameAs = [];
 
     if (context === 'post') {
-        if (data.post.author.website) {
-            sameAs.push(escapeExpression(data.post.author.website));
+        if (data.post.primary_author.website) {
+            sameAs.push(escapeExpression(data.post.primary_author.website));
         }
-        if (data.post.author.facebook) {
-            sameAs.push(social.urls.facebook(data.post.author.facebook));
+        if (data.post.primary_author.facebook) {
+            sameAs.push(social.urls.facebook(data.post.primary_author.facebook));
         }
-        if (data.post.author.twitter) {
-            sameAs.push(social.urls.twitter(data.post.author.twitter));
+        if (data.post.primary_author.twitter) {
+            sameAs.push(social.urls.twitter(data.post.primary_author.twitter));
         }
     } else if (context === 'author') {
         if (data.author.website) {
@@ -79,12 +79,12 @@ function getPostSchema(metaData, data) {
         },
         author: {
             '@type': 'Person',
-            name: escapeExpression(data.post.author.name),
+            name: escapeExpression(data.post.primary_author.name),
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
             sameAs: trimSameAs(data, 'post'),
-            description: data.post.author.metaDescription ?
-                escapeExpression(data.post.author.metaDescription) :
+            description: data.post.primary_author.metaDescription ?
+                escapeExpression(data.post.primary_author.metaDescription) :
                 null
         },
         headline: escapeExpression(metaData.metaTitle),
