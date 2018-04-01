@@ -22,6 +22,9 @@ module.exports = function setupParentApp() {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
+    // Disable sending the x-powered-by header
+    parentApp.disable('x-powered-by');
+
     parentApp.use(logRequest);
 
     // enabled gzip compression by default
