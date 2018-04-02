@@ -25,10 +25,16 @@ module.exports.up = function handleMultipleAuthors(options) {
                     common.logging.info('Adding `posts_authors` relations');
 
                     return Promise.map(posts.models, function (post) {
+                        let invalidAuthorId = false;
+
                         // CASE: ensure `post.author_id` is a valid user id
                         return models.User.findOne({id: post.get('author_id')}, _.merge({columns: userColumns}, localOptions))
                             .then(function (user) {
                                 if (!user) {
+                                    invalidAuthorId = true;
+
+                                    // NOTE: updating the `author_id`, will auto initialize `post.authors`.
+                                    // This is an edge case and should not happen for many blogs. We skip the manual insert.
                                     return models.Post.edit({
                                         author_id: ownerUser.id
                                     }, _.merge({id: post.id}, localOptions));
@@ -37,6 +43,10 @@ module.exports.up = function handleMultipleAuthors(options) {
                                 return post;
                             })
                             .then(function (post) {
+                                if (invalidAuthorId) {
+                                    return;
+                                }
+
                                 return options.transacting('posts_authors').insert({
                                     id: ObjectId.generate(),
                                     post_id: post.id,
