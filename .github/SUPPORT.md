@@ -4,7 +4,7 @@ For **help**, **support** and **questions** please use **[our forum](https://for
 
 Please **_do not_** raise an issue on GitHub.
 
-We have a **help** category in our **[forum](https://forum.ghost.org/)** team where you can get quick answers,
+We have a **help** category in our **[forum](https://forum.ghost.org/)** where you can get quick answers,
 help with debugging weird issues, and general help with any aspect of Ghost.
 
 Our extensive **documentation** can be found at https://docs.ghost.org.
