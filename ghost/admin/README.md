@@ -7,7 +7,7 @@ This is the home of Ember.js based admin client that ships with [Ghost](https://
 
 **Do you want to set up a Ghost blog?** Check the [getting started guide](https://docs.ghost.org/docs/getting-started-guide)
 
-**Do you want to modify or contribute to Ghost-Admin?** Please read the [working with Ghost-Admin](https://docs.ghost.org/docs/working-with-the-admin-client) section of our contributing guide for setup details and swing by our [Slack channel](https://slack.ghost.org) if you need any help 😄
+**Do you want to modify or contribute to Ghost-Admin?** Please read the [working with Ghost-Admin](https://docs.ghost.org/docs/working-with-the-admin-client) section of our contributing guide for setup details and swing by our [forum](https://forum.ghost.org) if you need any help 😄
 
 ## Have a bug or issue?
 
