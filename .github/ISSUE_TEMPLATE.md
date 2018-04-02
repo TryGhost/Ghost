@@ -1,6 +1,8 @@
 Welcome to Ghost's GitHub repo! 👋🎉
 
-Do you need help or have a question? Please come chat in Slack: https://ghost.org/slack 👫. Found a bug? Please fill out the sections below... thank you 👍
+Do you need help or have a question? Please come chat in our forum: https://forum.ghost.org 👫.
+
+Found a bug? Please fill out the sections below... thank you 👍
 
 If your issue is with Ghost CLI, please report it on the CLI repo ➡️ https://github.com/TryGhost/Ghost-CLI/issues/new.
 
