@@ -2,6 +2,7 @@
 
 const _ = require('lodash'),
     Promise = require('bluebird'),
+    ObjectId = require('bson-objectid'),
     common = require('../../../../lib/common'),
     models = require('../../../../models');
 
@@ -24,25 +25,24 @@ module.exports.up = function handleMultipleAuthors(options) {
                     common.logging.info('Adding `posts_authors` relations');
 
                     return Promise.map(posts.models, function (post) {
-                        let authorIdToSet;
-
                         // CASE: ensure `post.author_id` is a valid user id
                         return models.User.findOne({id: post.get('author_id')}, _.merge({columns: userColumns}, localOptions))
                             .then(function (user) {
                                 if (!user) {
-                                    authorIdToSet = ownerUser.id;
-                                } else {
-                                    authorIdToSet = post.get('author_id');
+                                    return models.Post.edit({
+                                        author_id: ownerUser.id
+                                    }, _.merge({id: post.id}, localOptions));
                                 }
+
+                                return post;
                             })
-                            .then(function () {
-                                // CASE: insert primary author
-                                return models.Post.edit({
-                                    author_id: authorIdToSet,
-                                    authors: [{
-                                        id: post.get('author_id')
-                                    }]
-                                }, _.merge({id: post.id}, localOptions));
+                            .then(function (post) {
+                                return options.transacting('posts_authors').insert({
+                                    id: ObjectId.generate(),
+                                    post_id: post.id,
+                                    author_id: post.get('author_id'),
+                                    sort_order: 0
+                                });
                             });
                     }, {concurrency: 100});
                 });
