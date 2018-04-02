@@ -13,7 +13,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Developer Blog](http://dev.ghost.org)
 - [Self-hoster Docs](http://docs.ghost.org/v1/)
 
-**NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
+**NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [forum](https://forum.ghost.org/) rather than opening an issue.**
 
 &nbsp;
 
@@ -57,7 +57,7 @@ For anyone wishing to contribute to Ghost or to hack/customise core files we rec
 
 When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1/docs/upgrade) for what to do next.
 
-You can talk to other Ghost users and developers in our [public Slack team](https://ghost.org/slack/) (it's pretty awesome).
+You can talk to other Ghost users and developers in our [forum](https://forum.ghost.org/) (it's pretty awesome).
 
 New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
