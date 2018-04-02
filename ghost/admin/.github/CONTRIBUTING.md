@@ -1,6 +1,6 @@
 # Welcome to the contributing overview for Ghost!
 
-For **help**, **support** and **questions** please use **[slack](https://slack.ghost.org)**  🚑.
+For **help**, **support** and **questions** please use **[our forum](https://forum.ghost.org)**  🚑.
 
 ---
 
@@ -16,7 +16,7 @@ If you've **got some code** ✨ you want to [pull request](https://docs.ghost.or
 
 
 *Quick Links:*
-- [slack community](https://slack.ghost.org)
+- [forum](https://forum.ghost.org)
 - [user documentation](https://help.ghost.org)
 - [themes documentation](https://themes.ghost.org)
 - [api documentation](https://api.ghost.org)
