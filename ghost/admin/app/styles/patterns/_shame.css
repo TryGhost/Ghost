@@ -1,3 +1,19 @@
 /* Shame
 /* ---------------------------------------------------------- */
 /* TODO: Kill with fire */
+
+.kg-card-selected {
+    border: 1px solid var(--blue);
+}
+
+/* force a 16:10 aspect ratio */
+.kg-media-placeholder:before {
+    content: "";
+    float: left;
+    padding-bottom: 62.5%;
+}
+.kg-media-placeholder:after {
+    clear: left;
+    content: " ";
+    display: table;
+}
