@@ -3,21 +3,18 @@
 {{yield}}
 
 {{#if toolbar}}
-    <div class="koenig-card-toolbar koenig-toolbar {{if showToolbar "koenig-toolbar--visible"}}" style={{toolbarStyle}}>
+    <ul data-toolbar="true" class="kg-action-bar bg-lgr-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center absolute white sans-serif f8 fw6 tracked-2 anim-fast-bezier {{if showToolbar "" "o-0 drop-down"}}" style={{toolbarStyle}}>
         {{#each toolbar.items as |item|}}
-            <button
-                type="button"
-                title={{item.title}}
-                class="koenig-toolbar-btn sans-serif f7"
-                style="width: auto !important"
-                onmousedown={{action item.action}}
-            >
-                {{#if item.icon}}
-                    {{svg-jar item.icon}}
-                {{else}}
-                    {{item.title}}
-                {{/if}}
-            </button>
+            <li class="ma0">
+                <button
+                    type="button"
+                    title={{item.title}}
+                    class="dib dim-lite pa3 pt2 pb2 link {{item.buttonClass}}"
+                    onmousedown={{action item.action}}
+                >
+                    {{#if item.icon}}{{svg-jar item.icon class=(concat item.iconClass (if item.text " mr2") " w4 h4")}} {{/if}}{{item.text}}
+                </button>
+            </li>
         {{/each}}
-    </div>
+    </ul>
 {{/if}}

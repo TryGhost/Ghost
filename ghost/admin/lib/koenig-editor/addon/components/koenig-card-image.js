@@ -32,7 +32,9 @@ export default Component.extend({
         if (this.get('payload.src')) {
             return {
                 items: [{
-                    title: 'Replace',
+                    title: 'Replace image',
+                    icon: 'koenig/kg-replace',
+                    iconClass: 'nudge-top--1',
                     action: run.bind(this, this._triggerFileDialog)
                 }]
             };
