@@ -25,7 +25,7 @@ legend {
     display: block;
     width: 100%;
     margin: 2em 0;
-    border-bottom: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    border-bottom: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     color: var(--midgrey);
     font-size: 1.2em;
     line-height: 2.0em;
@@ -37,12 +37,12 @@ input {
 }
 
 ::-webkit-input-placeholder {
-    color: color(var(--midgrey) l(+18%));
+    color: color-mod(var(--midgrey) l(+18%));
     font-weight: 200;
 }
 
 :-ms-input-placeholder {
-    color: color(var(--midgrey) l(+18%));
+    color: color-mod(var(--midgrey) l(+18%));
     font-weight: 200;
 }
 
@@ -103,12 +103,12 @@ input {
     z-index: 2;
     width: 14px;
     height: 14px;
-    fill: color(var(--midgrey) l(+15%));
+    fill: color-mod(var(--midgrey) l(+15%));
     transform: translateY(-7px);
 }
 
 .gh-input-icon.gh-icon-link svg path {
-    stroke: color(var(--midgrey) l(+15%));
+    stroke: color-mod(var(--midgrey) l(+15%));
 }
 
 .gh-input-icon input {
@@ -129,8 +129,8 @@ select {
     width: 100%;
     height: 40px;
     padding: 10px 12px;
-    border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
-    color: color(var(--midgrey) l(-18%));
+    border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    color: color-mod(var(--midgrey) l(-18%));
     font-size: 1.6rem;
     line-height: 1em;
     font-weight: 300;
@@ -159,7 +159,7 @@ select.error {
 .gh-select:focus,
 select:focus {
     outline: 0;
-    border-color: color(var(--lightgrey) l(-15%) s(-10%));
+    border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
 }
 
 textarea {
@@ -209,13 +209,13 @@ textarea {
     width: 18px;
     height: 18px;
     margin-right: 7px;
-    border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
-    background: color(var(--lightgrey) l(+4%));
+    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
+    background: color-mod(var(--lightgrey) l(+4%));
 }
 
 .for-checkbox label:hover input:not(:checked) + .input-toggle-component,
 .for-radio label:hover input:not(:checked) + .input-toggle-component {
-    border-color: color(var(--lightgrey) l(-15%) s(-10%));
+    border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .for-checkbox .input-toggle-component {
@@ -242,7 +242,7 @@ textarea {
 }
 
 .for-checkbox input:checked + .input-toggle-component {
-    border-color: color(var(--green) lightness(-10%));
+    border-color: color-mod(var(--green) lightness(-10%));
     background: var(--green);
 }
 
@@ -272,7 +272,7 @@ textarea {
 }
 
 .for-radio input:checked + .input-toggle-component {
-    border-color: color(var(--green) lightness(-10%));
+    border-color: color-mod(var(--green) lightness(-10%));
     background: var(--green);
 }
 
@@ -308,7 +308,7 @@ textarea {
 }
 
 .gh-select svg path {
-    stroke: color(var(--midgrey) l(+15%));
+    stroke: color-mod(var(--midgrey) l(+15%));
 }
 
 .gh-select select {
@@ -334,12 +334,12 @@ textarea {
 }
 
 .gh-select.disabled select {
-    color: color(var(--midgrey) l(+18%));
+    color: color-mod(var(--midgrey) l(+18%));
     cursor: default;
 }
 
 .gh-select.disabled svg path {
-    stroke: color(var(--midgrey) l(+30%));
+    stroke: color-mod(var(--midgrey) l(+30%));
 }
 
 
@@ -367,6 +367,6 @@ textarea {
         padding: 7px 10px 7px 8px;
     }
     .gh-select:focus {
-        border-color: color(var(--lightgrey) l(-15%) s(-10%));
+        border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
     }
 }

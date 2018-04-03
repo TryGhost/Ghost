@@ -42,7 +42,7 @@
     overflow: hidden;
     margin: 8px 0;
     height: 1px;
-    background: color(#dfe1e3 lightness(+5%));
+    background: color-mod(#dfe1e3 lightness(+5%));
 }
 
 .dropdown-menu li {
@@ -57,7 +57,7 @@
     padding: 6px 10px;
     width: 100%;
     border-radius: 3px;
-    color: color(var(--darkgrey) lightness(+20%));
+    color: color-mod(var(--darkgrey) lightness(+20%));
     text-align: left;
     white-space: nowrap;
     font-size: 1.3rem;
@@ -71,11 +71,11 @@
     height: 14px;
     width: 14px;
     line-height: 1em;
-    fill: color(var(--darkgrey) lightness(+20%));
+    fill: color-mod(var(--darkgrey) lightness(+20%));
 }
 
 .dropdown-menu svg path {
-    stroke: color(var(--darkgrey) lightness(+20%));
+    stroke: color-mod(var(--darkgrey) lightness(+20%));
 }
 
 @media (max-width: 500px) {
@@ -98,7 +98,7 @@
 .dropdown-menu > li > a:focus,
 .dropdown-menu > li > button:hover,
 .dropdown-menu > li > button:focus {
-    background: color(var(--blue) alpha(-85%));
+    background: color-mod(var(--blue) alpha(-85%));
     color: var(--darkgrey);
     text-decoration: none;
 }

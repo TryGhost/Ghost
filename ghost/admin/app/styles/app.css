@@ -1,3 +1,11 @@
+/* Spirit - Ghost's CSS framework
+/* ---------------------------------------------------------- */
+/*
+    includes normalize v7 so must come first to avoid clobbering
+    our old non-Spirit classes
+*/
+@import "spirit/spirit-product.css";
+
 /* Patterns: Groups of Styles
 /* ---------------------------------------------------------- */
 @import "patterns/global.css";

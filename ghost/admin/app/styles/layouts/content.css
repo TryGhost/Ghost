@@ -9,7 +9,7 @@
     justify-content: space-between;
     margin: 2vw 0 1vw;
     padding: 10px 0 0 0;
-    border-top: color(var(--lightgrey)) 1px solid;
+    border-top: color-mod(var(--lightgrey)) 1px solid;
     list-style: none;
 }
 
@@ -50,7 +50,7 @@
 .gh-contentfilter li a {
     display: block;
     padding: 13px 1px 0;
-    color: color(var(--midgrey) l(+8%));
+    color: color-mod(var(--midgrey) l(+8%));
     font-size: 1.5rem;
     font-weight: 300;
     letter-spacing: 0.3px;
@@ -118,7 +118,7 @@
     position: relative;
     margin: 0;
     padding: 24px 0 25px 0;
-    border-bottom: color(var(--lightgrey)) 1px solid;
+    border-bottom: color-mod(var(--lightgrey)) 1px solid;
 }
 
 .gh-posts-list-item a:hover {
@@ -133,7 +133,7 @@
 }
 
 .gh-content-entry-title a {
-    color: color(var(--darkgrey) l(+3%));
+    color: color-mod(var(--darkgrey) l(+3%));
 }
 
 .gh-posts-list-item p {

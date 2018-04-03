@@ -57,7 +57,7 @@
 }
 
 .gh-unsplash-close svg {
-    fill: color(var(--midgrey) l(+15%));
+    fill: color-mod(var(--midgrey) l(+15%));
 }
 
 .gh-unsplash-header {

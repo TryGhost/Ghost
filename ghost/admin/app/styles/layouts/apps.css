@@ -47,7 +47,7 @@
     flex: 1 1 100%;
 }
 .apps-grid-cell:hover {
-    background: color(var(--lightgrey) l(+5%));
+    background: color-mod(var(--lightgrey) l(+5%));
 }
 
 .apps-card-app {

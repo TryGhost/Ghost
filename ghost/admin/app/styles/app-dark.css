@@ -1,3 +1,11 @@
+/* Spirit - Ghost's CSS framework
+/* ---------------------------------------------------------- */
+/*
+    includes normalize v7 so must come first to avoid clobbering
+    our old non-Spirit classes
+*/
+@import "spirit/spirit-product.css";
+
 /* Patterns: Groups of Styles
 /* ---------------------------------------------------------- */
 @import "patterns/global.css";
@@ -61,12 +69,12 @@ body {
 }
 
 pre {
-    border: color(var(--lightgrey) l(+5%));
+    border: color-mod(var(--lightgrey) l(+5%));
     background: var(--lightgrey);
 }
 
 hr {
-    border-color: color(var(--lightgrey) l(+5%));
+    border-color: color-mod(var(--lightgrey) l(+5%));
 }
 
 input,
@@ -74,8 +82,8 @@ input,
 .gh-select,
 .gh-select select {
     color: var(--darkgrey);
-    border-color: color(var(--lightgrey));
-    background: color(var(--lightgrey));
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
 }
 
 .gh-nav,
@@ -94,13 +102,13 @@ input,
 }
 
 .gh-nav-search .ember-power-select-trigger {
-    border-color: color(var(--lightgrey));
-    background: color(var(--lightgrey));
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
 }
 
 .ember-power-select-multiple-trigger {
-    border-color: color(var(--lightgrey));
-    background: color(var(--lightgrey));
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
 }
 
 .ember-power-select-dropdown {
@@ -110,14 +118,14 @@ input,
 .ember-power-select-dropdown,
 .ember-power-select-options:not([role="group"]),
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
-    border-color: color(var(--lightgrey));
-    background: color(var(--lightgrey));
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
 }
 
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {
-    border-color: color(var(--lightgrey));
+    border-color: color-mod(var(--lightgrey));
 }
 
 .ember-power-calendar-weekdays,
@@ -140,8 +148,8 @@ input,
 }
 
 .gh-btn {
-    border: color(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid ;
-    color: color(var(--darkgrey) l(-27%) blackness(+15%));
+    border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid ;
+    color: color-mod(var(--darkgrey) l(-27%) blackness(+15%));
     text-shadow: none;
 }
 .gh-btn-blue,
@@ -170,7 +178,7 @@ input,
 
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
-    color: color(var(--lightgrey) lightness(+20%));
+    color: color-mod(var(--lightgrey) lightness(+20%));
 }
 
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus, .dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
@@ -222,7 +230,7 @@ input,
 }
 
 .gh-main > section.gh-editor-fullscreen {
-    background: color(#212A2E l(+2%));
+    background: color-mod(#212A2E l(+2%));
 }
 
 .dropdown-menu {
@@ -250,7 +258,7 @@ input,
 }
 
 .seo-preview-title {
-    color: color(#1e0fbe l(+25%));
+    color: color-mod(#1e0fbe l(+25%));
 }
 
 .seo-preview-description {
@@ -300,7 +308,7 @@ input,
 }
 
 .gh-unsplash-search:focus {
-    background-color: color(var(--lightgrey));
+    background-color: color-mod(var(--lightgrey));
 }
 
 .gh-unsplash-zoom {
@@ -326,5 +334,5 @@ input,
 }
 
 .CodeMirror .CodeMirror-code .cm-string {
-    color: color(#183691 l(+25%));
+    color: color-mod(#183691 l(+25%));
 }

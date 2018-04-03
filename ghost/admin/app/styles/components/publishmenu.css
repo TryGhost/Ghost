@@ -90,7 +90,7 @@
     position: relative;
     width: 15px;
     height: 15px;
-    border: color(var(--lightgrey) l(-10%)) 1px solid;
+    border: color-mod(var(--lightgrey) l(-10%)) 1px solid;
     border-radius: 100%;
     background: #fff;
 }
@@ -112,7 +112,7 @@
     font-size: 1.3rem;
     line-height: 1.4em;
     font-weight: 200;
-    color: color(var(--midgrey) l(+10%));
+    color: color-mod(var(--midgrey) l(+10%));
 }
 
 .gh-publishmenu-radio-label:hover,
@@ -121,7 +121,7 @@
 }
 
 .gh-publishmenu-radio.active .gh-publishmenu-radio-button {
-    border-color: color(var(--blue) l(-12%));
+    border-color: color-mod(var(--blue) l(-12%));
     background: var(--blue);
 }
 
@@ -154,7 +154,7 @@
     position: relative;
     margin: 7px 0 4px;
     padding: 6px 8px;
-    border: color(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: 3px;
     transition: border-color 0.15s linear;
     background: #fff;
@@ -175,7 +175,7 @@
     padding: 0;
     width: 100%;
     border: none;
-    color: color(var(--midgrey) l(-18%));
+    color: color-mod(var(--midgrey) l(-18%));
     font-size: 1.3rem;
     line-height: 1em;
     font-weight: 400;
@@ -190,19 +190,19 @@
 
 .gh-date-time-picker-date:focus,
 .gh-date-time-picker-time:focus {
-    border-color: color(var(--lightgrey) l(-15%) s(-10%));
+    border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .gh-date-time-picker-date svg {
     width: 14px;
     height: 14px;
-    fill: color(var(--midgrey) l(+15%));
+    fill: color-mod(var(--midgrey) l(+15%));
 }
 
 .gh-date-time-picker-timezone {
     font-size: 1.1rem;
     font-weight: 200;
-    color: color(var(--midgrey) l(+17%));
+    color: color-mod(var(--midgrey) l(+17%));
     margin-left: -30px;
 }
 

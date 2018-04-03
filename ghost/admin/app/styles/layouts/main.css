@@ -60,7 +60,7 @@ body > .ember-view:not(.default-liquid-destination) {
     display: flex;
     flex-direction: column;
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
-    background: color(var(--lightgrey) l(+4%));
+    background: color-mod(var(--lightgrey) l(+4%));
     transform: translateX(0);
 }
 
@@ -92,7 +92,7 @@ body > .ember-view:not(.default-liquid-destination) {
 
 .gh-nav-menu svg path {
     stroke-width: 1px;
-    stroke: color(var(--darkgrey));
+    stroke: color-mod(var(--darkgrey));
 }
 
 .gh-nav-menu-icon {
@@ -203,13 +203,13 @@ body > .ember-view:not(.default-liquid-destination) {
 }
 
 .gh-nav-list .active {
-    background: color(var(--blue) lightness(+10%));
+    background: color-mod(var(--blue) lightness(+10%));
     color: #fff;
     opacity: 1;
 }
 
 .gh-nav-list a:not(.active):hover {
-    background: color(var(--blue) alpha(-85%));
+    background: color-mod(var(--blue) alpha(-85%));
     color: var(--darkgrey);
     opacity: 1;
 }
@@ -247,12 +247,12 @@ body > .ember-view:not(.default-liquid-destination) {
     justify-content: center;
     align-items: center;
     height: 46px;
-    border-top: color(var(--lightgrey) l(-1%)) 1px solid;
+    border-top: color-mod(var(--lightgrey) l(-1%)) 1px solid;
     text-align: center;
     font-size: 1.2rem;
     line-height: 1em;
     font-weight: 300;
-    color:  color(var(--midgrey) l(+5%));
+    color:  color-mod(var(--midgrey) l(+5%));
 }
 
 @media (max-width: 500px) {
@@ -264,7 +264,7 @@ body > .ember-view:not(.default-liquid-destination) {
 .gh-nav-foot-sitelink svg {
     width: 13px;
     margin-left: 5px;
-    fill: color(var(--midgrey) l(+5%));
+    fill: color-mod(var(--midgrey) l(+5%));
 }
 
 /* Mobile Nav Menu (Slides out)
@@ -356,7 +356,7 @@ body > .ember-view:not(.default-liquid-destination) {
     right: -8px;
     height: 34px;
     width: 25px;
-    border: color(var(--lightgrey) l(+4%)) 5px solid;
+    border: color-mod(var(--lightgrey) l(+4%)) 5px solid;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -492,7 +492,7 @@ body > .ember-view:not(.default-liquid-destination) {
     }
 
     .gh-mobile-nav-bar a.active {
-        background: color(var(--blue) lightness(+10%));
+        background: color-mod(var(--blue) lightness(+10%));
         color: #fff;
     }
 
