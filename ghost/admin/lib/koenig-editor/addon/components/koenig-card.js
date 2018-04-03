@@ -79,6 +79,11 @@ export default Component.extend({
         this._lastIsEditing = isEditing;
     },
 
+    didInsertElement() {
+        this._super(...arguments);
+        this._setToolbarProperties();
+    },
+
     willDestroyElement() {
         this._super(...arguments);
         window.removeEventListener('keydown', this._onKeydownHandler);
@@ -143,17 +148,21 @@ export default Component.extend({
         this.onLeaveEdit();
     },
 
-    _showToolbar() {
-        // only show a toolbar if we have one
+    _setToolbarProperties() {
         if (this.get('toolbar')) {
-            let toolbar = this.element.querySelector('.koenig-card-toolbar');
+            let toolbar = this.element.querySelector('[data-toolbar="true"]');
             let {width, height} = toolbar.getBoundingClientRect();
 
             this.setProperties({
                 toolbarWidth: width,
                 toolbarHeight: height + TICK_HEIGHT
             });
+        }
+    },
 
+    _showToolbar() {
+        // only show a toolbar if we have one
+        if (this.get('toolbar')) {
             if (!this.get('showToolbar') && !this._onMousemoveHandler) {
                 this._onMousemoveHandler = run.bind(this, this._handleMousemove);
                 window.addEventListener('mousemove', this._onMousemoveHandler);

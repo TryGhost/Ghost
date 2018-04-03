@@ -15,10 +15,8 @@ export default Component.extend({
     isSelected: false,
     isEditing: false,
 
-    // properties
-    toolbar: null,
-
     // closure actions
+    editCard() {},
     saveCard() {},
     selectCard() {},
     deleteCard() {},
@@ -27,16 +25,20 @@ export default Component.extend({
         return htmlSafe(formatMarkdown(this.get('payload.markdown')));
     }),
 
-    init() {
-        this._super(...arguments);
-        this.set('toolbar', {
-            items: [{
-                icon: 'trash',
-                title: 'Delete',
-                action: () => {}
-            }]
-        });
-    },
+    toolbar: computed('isEditing', function () {
+        if (!this.get('isEditing')) {
+            return {
+                items: [{
+                    buttonClass: 'fw4 flex items-center white',
+                    icon: 'koenig/kg-edit-v2',
+                    iconClass: 'stroke-white',
+                    title: 'Edit',
+                    text: 'Edit',
+                    action: run.bind(this, this.get('editCard'))
+                }]
+            };
+        }
+    }),
 
     actions: {
         enterEditMode() {

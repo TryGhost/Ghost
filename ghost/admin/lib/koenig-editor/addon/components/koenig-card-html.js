@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-card-html';
+import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
@@ -13,8 +14,25 @@ export default Component.extend({
     isEditing: false,
 
     // closure actions
+    editCard() {},
     saveCard() {},
+    selectCard() {},
     deleteCard() {},
+
+    toolbar: computed('isEditing', function () {
+        if (!this.get('isEditing')) {
+            return {
+                items: [{
+                    buttonClass: 'fw4 flex items-center white',
+                    icon: 'koenig/kg-edit-v2',
+                    iconClass: 'stroke-white',
+                    title: 'Edit',
+                    text: 'Edit',
+                    action: run.bind(this, this.get('editCard'))
+                }]
+            };
+        }
+    }),
 
     init() {
         this._super(...arguments);
