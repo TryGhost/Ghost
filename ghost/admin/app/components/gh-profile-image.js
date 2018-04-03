@@ -45,7 +45,8 @@ export default Component.extend({
     init() {
         this._super(...arguments);
 
-        this._defaultImageUrl = `${this.get('ghostPaths.assetRoot')}img/user-image.png`;
+        let defaultImage = '/img/user-image.png';
+        this._defaultImageUrl = `${this.get('ghostPaths.assetRoot')}${defaultImage}`;
         this._setPlaceholderImage(this._defaultImageUrl);
     },
 
