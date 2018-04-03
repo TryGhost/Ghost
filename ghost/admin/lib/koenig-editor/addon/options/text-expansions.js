@@ -2,6 +2,7 @@ import {
     replaceWithHeaderSection,
     replaceWithListSection
 } from 'mobiledoc-kit/editor/text-input-handlers';
+import {run} from '@ember/runloop';
 
 // Text expansions watch text entry events and will look for matches, replacing
 // the matches with additional markup, atoms, or cards
@@ -22,26 +23,25 @@ export default function (editor) {
         match: /[*_)~`]$/,
         run(editor, matches) {
             let text = editor.range.head.section.textUntil(editor.range.head);
-            let hasTextAfter = editor.range.head.section.text.length > text.length;
 
             switch (matches[0]) {
             case '*':
-                matchStrongStar(editor, text, hasTextAfter);
-                matchEmStar(editor, text, hasTextAfter);
+                matchStrongStar(editor, text);
+                matchEmStar(editor, text);
                 break;
             case '_':
-                matchStrongUnderscore(editor, text, hasTextAfter);
-                matchEmUnderscore(editor, text, hasTextAfter);
+                matchStrongUnderscore(editor, text);
+                matchEmUnderscore(editor, text);
                 break;
             case ')':
-                matchLink(editor, text, hasTextAfter);
-                matchImage(editor, text, hasTextAfter);
+                matchLink(editor, text);
+                matchImage(editor, text);
                 break;
             case '~':
-                matchStrikethrough(editor, text, hasTextAfter);
+                matchStrikethrough(editor, text);
                 break;
             case '`':
-                matchCode(editor, text, hasTextAfter);
+                matchCode(editor, text);
                 break;
             }
         }
@@ -100,109 +100,127 @@ export default function (editor) {
 
     /* inline markdown ------------------------------------------------------ */
 
-    function matchStrongStar(editor, text, hasTextAfter = false) {
+    function matchStrongStar(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)\*\*([^\s*].+?[^\s*])\*\*/);
         if (matches) {
             let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [bold]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [bold]);
             });
         }
+
+        // must be scheduled so that the toggle isn't reset automatically
+        run.schedule('actions', this, function () {
+            editor.toggleMarkup('strong');
+        });
     }
 
-    function matchStrongUnderscore(editor, text, hasTextAfter = false) {
+    function matchStrongUnderscore(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)__([^\s_].+?[^\s_])__/);
         if (matches) {
             let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [bold]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [bold]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('strong');
             });
         }
     }
 
-    function matchEmStar(editor, text, hasTextAfter = false) {
+    function matchEmStar(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)\*([^\s*][^*]+?[^\s])\*/);
         if (matches) {
             let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [em]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [em]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('em');
             });
         }
     }
 
-    function matchEmUnderscore(editor, text, hasTextAfter = false) {
+    function matchEmUnderscore(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)_([^\s_][^_]+?[^\s])_/);
         if (matches) {
             let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [em]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []);
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [em]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('code');
             });
         }
     }
 
-    function matchStrikethrough(editor, text, hasTextAfter = false) {
+    function matchStrikethrough(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)~([^\s~][^~]+?[^\s])~/);
         if (matches) {
             let match = matches[0][0] === '~' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let s = postEditor.builder.createMarkup('s');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [s]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [s]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('s');
             });
         }
     }
 
-    function matchCode(editor, text, hasTextAfter = false) {
+    function matchCode(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|\s)`([^\s`][^`]+?[^\s])`/);
         if (matches) {
             let match = matches[0][0] === '`' ? matches[0] : matches[0].substr(1);
             range = range.extend(-(match.length));
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let code = postEditor.builder.createMarkup('code');
-                let nextPosition = postEditor.insertTextWithMarkup(position, matches[2], [code]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
-                }
+                postEditor.insertTextWithMarkup(position, matches[2], [code]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('code');
             });
         }
     }
 
-    function matchLink(editor, text, hasTextAfter = false) {
+    function matchLink(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|[^!])\[(.*?)\]\((.*?)\)$/);
         if (matches) {
@@ -210,13 +228,16 @@ export default function (editor) {
             let text = matches[2];
             let match = matches[0][0] === '[' ? matches[0] : matches[0].substr(1);
             range = range.extend(-match.length);
+
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let a = postEditor.builder.createMarkup('a', {href: url});
-                let nextPosition = postEditor.insertTextWithMarkup(position, text, [a]);
-                if (!hasTextAfter) {
-                    postEditor.insertTextWithMarkup(nextPosition, ' ', []); // insert the un-marked-up space
-                }
+                postEditor.insertTextWithMarkup(position, text, [a]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('code');
             });
         }
     }
