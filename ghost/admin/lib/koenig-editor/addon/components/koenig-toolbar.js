@@ -18,10 +18,9 @@ export default Component.extend({
     layout,
 
     attributeBindings: ['style'],
+    classNames: ['absolute'],
 
     // public attrs
-    classNames: ['koenig-toolbar'],
-    classNameBindings: ['showToolbar:koenig-toolbar--visible'],
     editorRange: null,
     activeMarkupTagNames: null,
     activeSectionTagNames: null,
@@ -245,7 +244,7 @@ export default Component.extend({
     _addStyleElement(styles) {
         let styleElement = document.createElement('style');
         styleElement.id = `${this.elementId}-style`;
-        styleElement.innerHTML = `#${this.elementId}:after { ${styles} }`;
+        styleElement.innerHTML = `#${this.elementId} > ul:after { ${styles} }`;
         document.head.appendChild(styleElement);
     },
 

@@ -89,27 +89,6 @@
     border: none;
 }
 
-.koenig-toolbar.is-link {
-    width: 263px;
-    height: 40px;
-}
-.koenig-toolbar.is-link input {
-    width: 100%;
-    background-color: transparent;
-    outline: none;
-    border: none;
-    padding:5px;
-}
-.koenig-toolbar.is-touch {
-    position: fixed !important;
-    top: 70px;
-    right: 40px;
-}
-
-.koenig-toolbar.is-touch:after {
-    border: none;
-}
-
 .koenig-toolbar-btn {
     display: flex;
     justify-content: center;
@@ -125,6 +104,7 @@
     width: 43px;
     padding-left: 8px;
 }
+
 .koenig-toolbar-btn:last-child {
     width: 43px;
     padding-right: 8px;
@@ -138,9 +118,6 @@
     stroke-width: 2px;
     stroke: color-mod(var(--lightgrey) l(-10%));
 }
-.koenig-toolbar-btn-list svg path {
-    fill: color-mod(var(--lightgrey) l(-10%));
-}
 
 .koenig-toolbar-btn:hover,
 .koenig-toolbar-btn.selected {
@@ -148,63 +125,9 @@
     cursor: pointer;
     text-shadow: #000 0 1px 6px;
 }
-.koenig-toolbar-btn-list.selected svg path {
-    fill: #fff;
-}
 
 .koenig-toolbar-btn:hover svg g {
     stroke: #fff;
-}
-.koenig-toolbar-btn-list:hover svg path {
-    fill: #fff;
-}
-
-.koenig-toolbar-btn-bold {
-    font-weight: 700;
-}
-
-.koenig-toolbar-btn-italic {
-    width: 31px;
-    font-size: 1.7rem;
-    text-indent: -1px;
-    font-style: italic;
-    font-family: Georgia, Times, serif;
-    font-weight: 500;
-}
-
-.koenig-toolbar-btn-strike {
-    text-decoration: line-through;
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
-}
-
-.koenig-toolbar-btn-h1 {
-    font-variant: small-caps;
-    font-weight: 700;
-    -webkit-font-smoothing: antialiased;
-}
-
-.koenig-toolbar-btn-h2 {
-    font-weight: 700;
-    font-size: 0.9em;
-    font-variant: small-caps;
-    line-height: 42px;
-    -webkit-font-smoothing: antialiased;
-}
-
-.koenig-toolbar-btn-quote {
-    font-size: 4rem;
-    line-height: 62px;
-    font-family: Georgia, Times, serif;
-    -webkit-font-smoothing: antialiased;
-}
-
-.koenig-toolbar-divider {
-    height: 40px;
-    width: 1px;
-    margin: 0 9px 0 8px;
-    background: color-mod(var(--darkgrey) l(-10%));
-    box-shadow: rgba(255,255,255,0.04) 1px 0 0 0;
 }
 
 /* ⨁ menu ------------------------------------------------------------------ */
