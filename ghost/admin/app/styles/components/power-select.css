@@ -42,11 +42,11 @@
 .ember-power-select-option {
     margin: 0;
     padding: 6px 10px;
-    color: color(var(--darkgrey) lightness(+20%));
+    color: color-mod(var(--darkgrey) lightness(+20%));
 }
 
 .ember-power-select-option[aria-current="true"] {
-    background: color(var(--blue) alpha(-85%));
+    background: color-mod(var(--blue) alpha(-85%));
     color: var(--darkgrey);
 }
 
@@ -135,7 +135,7 @@
 }
 
 .ember-power-select-group .ember-power-select-option[aria-current="true"] {
-    background: color(var(--blue) alpha(-85%));
+    background: color-mod(var(--blue) alpha(-85%));
     color: var(--darkgrey);
 }
 

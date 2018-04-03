@@ -135,7 +135,7 @@
 .gh-flow-nav .active .step {
     border: var(--green) 2px solid;
     background: transparent;
-    color: color(var(--green) lightness(-10%));
+    color: color-mod(var(--green) lightness(-10%));
     cursor: default;
 }
 

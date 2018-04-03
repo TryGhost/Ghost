@@ -67,39 +67,6 @@ codemirrorAssets = function () {
     return config;
 };
 
-function postcssPlugins() {
-    let plugins = [{
-        module: require('postcss-easy-import')
-    }, {
-        module: require('postcss-custom-properties')
-    }, {
-        module: require('postcss-color-function')
-    }, {
-        module: require('autoprefixer'),
-        options: {
-            browsers: ['last 2 versions']
-        }
-    }];
-
-    if (isProduction) {
-        plugins.push({
-            module: require('cssnano'),
-            // cssnano minifies animations sometimes wrong, so they don't work anymore.
-            // See: https://github.com/ben-eb/gulp-cssnano/issues/33#issuecomment-210518957
-            options: {
-                reduceIdents: {
-                    keyframes: false
-                },
-                discardUnused: {
-                    keyframes: false
-                }
-            }
-        });
-    }
-
-    return plugins;
-}
-
 module.exports = function (defaults) {
     let app = new EmberApp(defaults, {
         'ember-cli-babel': {
@@ -115,7 +82,6 @@ module.exports = function (defaults) {
                 js: assetLocation('ghost.js'),
                 css: {
                     app: assetLocation('ghost.css'),
-                    spirit: assetLocation('spirit.css'),
                     // TODO: find a way to use the .min file with the lazyLoader
                     'app-dark': 'assets/ghost-dark.css'
                 }
@@ -123,12 +89,6 @@ module.exports = function (defaults) {
             vendor: {
                 js: assetLocation('vendor.js'),
                 css: assetLocation('vendor.css')
-            }
-        },
-        postcssOptions: {
-            compile: {
-                enabled: true,
-                plugins: postcssPlugins()
             }
         },
         fingerprint: {

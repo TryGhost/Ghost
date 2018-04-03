@@ -99,41 +99,41 @@
 /* ---------------------------------------------------------- */
 
 .gh-badge.owner {
-    border: color(var(--darkgrey) blackness(+8%)) 1px solid;
+    border: color-mod(var(--darkgrey) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--darkgrey) whiteness(+10%)),
-    color(var(--darkgrey) blackness(+4%))
+    color-mod(var(--darkgrey) whiteness(+10%)),
+    color-mod(var(--darkgrey) blackness(+4%))
     );
 }
 
 .gh-badge.administrator {
-    border: color(var(--red) blackness(+8%)) 1px solid;
+    border: color-mod(var(--red) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--red) whiteness(+10%)),
-    color(var(--red) blackness(+4%))
+    color-mod(var(--red) whiteness(+10%)),
+    color-mod(var(--red) blackness(+4%))
     );
 }
 
 .gh-badge.editor {
-    border: color(var(--blue) blackness(+8%)) 1px solid;
+    border: color-mod(var(--blue) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--blue) whiteness(+10%)),
-    color(var(--blue) blackness(+4%))
+    color-mod(var(--blue) whiteness(+10%)),
+    color-mod(var(--blue) blackness(+4%))
     );
 }
 
 .gh-badge.author {
-    border: color(var(--lightgrey) blackness(+8%)) 1px solid;
-    color: color(var(--midgrey) l(+5%));
+    border: color-mod(var(--lightgrey) blackness(+8%)) 1px solid;
+    color: color-mod(var(--midgrey) l(+5%));
     background: #fff;
 }
 
 .gh-badge.suspended {
     margin-left: 15px;
-    border: color(var(--red) blackness(+8%)) 1px solid;
+    border: color-mod(var(--red) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--red) whiteness(+10%)),
-    color(var(--red) blackness(+4%))
+    color-mod(var(--red) whiteness(+10%)),
+    color-mod(var(--red) blackness(+4%))
     );
 }
 

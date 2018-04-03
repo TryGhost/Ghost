@@ -4,7 +4,7 @@
 .nav-list {
     padding: 0;
     max-width: 500px;
-    border: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
+    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
     background: #fff;
     border-radius: var(--border-radius);
 }
@@ -22,7 +22,7 @@
 }
 
 .nav-list-item:hover {
-    background: color(var(--lightgrey) l(+6%));
+    background: color-mod(var(--lightgrey) l(+6%));
     cursor: pointer;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .nav-list-item:not(:last-of-type) {
-    border-bottom: 1px solid color(var(--lightgrey) l(-5%) s(-10%));
+    border-bottom: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
 }
 
 .nav-list-item button {

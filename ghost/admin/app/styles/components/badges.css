@@ -4,7 +4,7 @@
 .gh-badge {
     display: inline-block;
     padding: 2px 4px 3px;
-    border: color(var(--green) blackness(+8%)) 1px solid;
+    border: color-mod(var(--green) blackness(+8%)) 1px solid;
     color: #fff;
     font-size: 0.8em;
     line-height: 1em;
@@ -15,39 +15,39 @@
     white-space: nowrap;
     user-select: none;
     background: linear-gradient(
-    color(var(--green) whiteness(+4%)),
-    color(var(--green) blackness(+4%))
+    color-mod(var(--green) whiteness(+4%)),
+    color-mod(var(--green) blackness(+4%))
     );
     border-radius: 3px;
 }
 
 .gh-badge-blue {
-    border: color(var(--blue) blackness(+8%)) 1px solid;
+    border: color-mod(var(--blue) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--blue) whiteness(+10%)),
-    color(var(--blue) blackness(+4%))
+    color-mod(var(--blue) whiteness(+10%)),
+    color-mod(var(--blue) blackness(+4%))
     );
 }
 
 .gh-badge-red {
-    border: color(var(--red) blackness(+8%)) 1px solid;
+    border: color-mod(var(--red) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--red) whiteness(+10%)),
-    color(var(--red) blackness(+4%))
+    color-mod(var(--red) whiteness(+10%)),
+    color-mod(var(--red) blackness(+4%))
     );
 }
 
 .gh-badge-black {
-    border: color(var(--darkgrey) blackness(+8%)) 1px solid;
+    border: color-mod(var(--darkgrey) blackness(+8%)) 1px solid;
     background: linear-gradient(
-    color(var(--darkgrey) whiteness(+10%)),
-    color(var(--darkgrey) blackness(+4%))
+    color-mod(var(--darkgrey) whiteness(+10%)),
+    color-mod(var(--darkgrey) blackness(+4%))
     );
 }
 
 .gh-badge-outline {
-    border-color: color(var(--midgrey) l(+35%));
-    color: color(var(--midgrey) l(+25%));
+    border-color: color-mod(var(--midgrey) l(+35%));
+    color: color-mod(var(--midgrey) l(+25%));
     font-weight: 400;
     background: transparent;
     box-shadow: none;

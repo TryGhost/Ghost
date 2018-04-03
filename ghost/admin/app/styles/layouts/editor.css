@@ -501,7 +501,7 @@
 
 .gh-markdown-editor .CodeMirror pre {
     padding: 0;
-    color: color(var(--darkgrey) l(+5%));
+    color: color-mod(var(--darkgrey) l(+5%));
     font-family: "Consolas", monaco, monospace;
     font-size: 1.6rem;
 }
@@ -529,7 +529,7 @@
 
 .gh-editor .editor-preview,
 .gh-markdown-editor-preview {
-    color: color(var(--darkgrey) l(+5%));
+    color: color-mod(var(--darkgrey) l(+5%));
     font-family: Georgia, Times, Serif;
     font-size: 1.9rem;
 }
@@ -596,7 +596,7 @@
 
 /* TODO: need a way to make stroke + fill global without causing issues with certain icons */
 .gh-editor-image-upload .gh-btn-grey svg path {
-    stroke: color(var(--darkgrey) l(+15%));
+    stroke: color-mod(var(--darkgrey) l(+15%));
 }
 
 .editor-toolbar a {
@@ -651,12 +651,12 @@
 
 .editor-toolbar i.separator {
     border-right: none;
-    border-left: color(var(--lightgrey) l(-3%)) 1px solid;
+    border-left: color-mod(var(--lightgrey) l(-3%)) 1px solid;
 }
 
 .editor-toolbar a.active,
 .editor-toolbar a:hover {
-    border-color: color(var(--lightgrey) l(-5%));
+    border-color: color-mod(var(--lightgrey) l(-5%));
 }
 
 .gh-markdown-editor .CodeMirror .CodeMirror-selectedtext {
@@ -664,5 +664,5 @@
 }
 
 .CodeMirror .CodeMirror-selected {
-    background: color(var(--blue) lightness(+30%));
+    background: color-mod(var(--blue) lightness(+30%));
 }

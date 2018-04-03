@@ -51,13 +51,13 @@
     text-align: center;
     user-select: none;
     cursor: pointer;
-    color: color(var(--lightgrey) l(-10%));
+    color: color-mod(var(--lightgrey) l(-10%));
     background: linear-gradient(
-        color(var(--darkgrey) l(-3%)),
-        color(var(--darkgrey) l(-8%))
+        color-mod(var(--darkgrey) l(-3%)),
+        color-mod(var(--darkgrey) l(-8%))
     );
     border-radius: 5px;
-    box-shadow: 0 0 0 1px color(var(--darkgrey) l(-10%)), 0 8px 16px rgba(26,39,49,0.16), rgba(255,255,255,0.09) 0 1px 0 0 inset;
+    box-shadow: 0 0 0 1px color-mod(var(--darkgrey) l(-10%)), 0 8px 16px rgba(26,39,49,0.16), rgba(255,255,255,0.09) 0 1px 0 0 inset;
     z-index:110; /* places it above the title */
     pointer-events: none !important; /* no interactivity when hidden */
     opacity: 0;
@@ -81,7 +81,7 @@
     height: 0;
     border-left: transparent 10px solid;
     border-right: transparent 10px solid;
-    border-top: color(var(--darkgrey) l(-10%)) 8px solid;
+    border-top: color-mod(var(--darkgrey) l(-10%)) 8px solid;
     transition-property: left;
     transition-duration: 100ms;
 }
@@ -136,10 +136,10 @@
 
 .koenig-toolbar-btn svg g {
     stroke-width: 2px;
-    stroke: color(var(--lightgrey) l(-10%));
+    stroke: color-mod(var(--lightgrey) l(-10%));
 }
 .koenig-toolbar-btn-list svg path {
-    fill: color(var(--lightgrey) l(-10%));
+    fill: color-mod(var(--lightgrey) l(-10%));
 }
 
 .koenig-toolbar-btn:hover,
@@ -203,7 +203,7 @@
     height: 40px;
     width: 1px;
     margin: 0 9px 0 8px;
-    background: color(var(--darkgrey) l(-10%));
+    background: color-mod(var(--darkgrey) l(-10%));
     box-shadow: rgba(255,255,255,0.04) 1px 0 0 0;
 }
 
@@ -361,7 +361,7 @@
 
 .koenig-cardmenu-card:hover, .koenig-cardmenu-card.selected {
     cursor: pointer;
-    background: color(var(--lightgrey) l(+3%) s(-10%));
+    background: color-mod(var(--lightgrey) l(+3%) s(-10%));
 }
 .koenig-cardmenu-card:hover .koenig-cardmenu-label, .koenig-cardmenu-card.selected .koenig-cardmenu-label {
     color: var(--darkgrey);
@@ -375,7 +375,7 @@
     margin: 12px -15px;
     font-size: 1.2rem;
     text-align: center;
-    background: color(var(--lightgrey) l(+3%) s(-10%));
+    background: color-mod(var(--lightgrey) l(+3%) s(-10%));
 }
 
 
@@ -387,7 +387,7 @@
     position: relative;
     display: flex;
     width: calc(100% + 60px);
-    border: 2px solid  color(var(--blue) alpha(-85%));
+    border: 2px solid  color-mod(var(--blue) alpha(-85%));
     flex-direction: row;
     border-radius: 4px;
     padding: 10px;
@@ -398,7 +398,7 @@
 }
 
 .koenig-card:hover {
-    border-color: color(var(--blue) alpha(-25%));
+    border-color: color-mod(var(--blue) alpha(-25%));
 }
 
 .koenig-card--selected {

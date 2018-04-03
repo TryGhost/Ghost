@@ -10,7 +10,7 @@
     min-height: 130px;
     overflow: hidden;
     margin: 1.6em 0;
-    color: color(var(--midgrey) l(-18%));
+    color: color-mod(var(--midgrey) l(-18%));
     text-align: center;
     background: #fff;
     border-radius: 4px;
@@ -93,7 +93,7 @@
 .gh-image-uploader .failed {
     margin: 1em 2em;
     font-size: 16px;
-    color: color(var(--midgrey));
+    color: color-mod(var(--midgrey));
 }
 
 /* TODO: remove the gh-image-uploader classes once it's using gh-progrss-bar */

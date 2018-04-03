@@ -172,7 +172,7 @@
 .gh-blognav-grab svg {
     width: 16px;
     height: 16px;
-    fill: color(var(--midgrey) l(+15%));
+    fill: color-mod(var(--midgrey) l(+15%));
 }
 
 .gh-blognav-line {
@@ -196,7 +196,7 @@
 }
 
 .gh-blognav-delete svg {
-    fill: color(var(--midgrey) l(+15%));
+    fill: color-mod(var(--midgrey) l(+15%));
     height: 14px;
     width: 14px;
     transition: fill 0.1s linear;
@@ -228,7 +228,7 @@
 
 .gh-blognav-add:hover,
 .gh-blognav-add:focus {
-    background: color(var(--green) lightness(-10%));
+    background: color-mod(var(--green) lightness(-10%));
 }
 
 .gh-blognav-item:not(.gh-blognav-item--sortable) {
@@ -241,11 +241,11 @@
         margin-right: -1px;
     }
     .gh-blognav-label input {
-        border-right-color: color(var(--lightgrey) l(-5%) s(-10%));
+        border-right-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
         border-radius: 4px 0 0 4px;
     }
     .gh-blognav-url input {
-        border-left-color: color(var(--lightgrey) l(-5%) s(-10%));
+        border-left-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
         border-radius: 0 4px 4px 0;
     }
     .gh-blognav-item input:focus {

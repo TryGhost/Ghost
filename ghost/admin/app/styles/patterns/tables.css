@@ -53,7 +53,7 @@ table td,
 
 .table tbody > tr:nth-child(odd) > td,
 .table tbody > tr:nth-child(odd) > th {
-    background-color: color(#dfe1e3 lightness(+10%));
+    background-color: color-mod(#dfe1e3 lightness(+10%));
 }
 
 .table.plain tbody > tr:nth-child(odd) > td,

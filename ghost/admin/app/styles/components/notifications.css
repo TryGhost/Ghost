@@ -18,7 +18,7 @@
     margin-top: 5px;
     padding: 4px;
     width: 240px;
-    border: color(var(--blue) l(-10%)) 1px solid;
+    border: color-mod(var(--blue) l(-10%)) 1px solid;
     background: var(--blue);
     border-radius: 4px;
     box-shadow: rgba(0,0,0,0.06) 0 1px 7px;
@@ -102,7 +102,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-notification-red {
-    border: color(var(--red) lightness(+28%)) 1px solid;
+    border: color-mod(var(--red) lightness(+28%)) 1px solid;
 }
 
 .gh-notification-red em {
@@ -110,14 +110,14 @@
 }
 
 .gh-notification-red:hover .gh-notification-content {
-    background: color(var(--red) lightness(+40%));
+    background: color-mod(var(--red) lightness(+40%));
 }
 
 /* Green notification
 /* ---------------------------------------------------------- */
 
 .gh-notification-green {
-    border: color(var(--green) lightness(+28%)) 1px solid;
+    border: color-mod(var(--green) lightness(+28%)) 1px solid;
 }
 
 .gh-notification-green em {
@@ -125,7 +125,7 @@
 }
 
 .gh-notification-green:hover .gh-notification-content {
-    background: color(var(--green) lightness(+40%));
+    background: color-mod(var(--green) lightness(+40%));
 }
 
 /* Schedule notification top
@@ -208,7 +208,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-alert-blue {
-    border-bottom: color(var(--blue) lightness(-10%)) 1px solid;
+    border-bottom: color-mod(var(--blue) lightness(-10%)) 1px solid;
     background: var(--blue);
     color: #fff;
 }
@@ -226,7 +226,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-alert-red {
-    border-bottom: color(var(--red) lightness(-10%)) 1px solid;
+    border-bottom: color-mod(var(--red) lightness(-10%)) 1px solid;
     background: var(--red);
     color: #fff;
 }
@@ -247,7 +247,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-alert-green {
-    border-bottom: color(var(--green) lightness(-7%)) 1px solid;
+    border-bottom: color-mod(var(--green) lightness(-7%)) 1px solid;
     background: var(--green);
     color: #fff;
 }
@@ -268,7 +268,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-alert-black {
-    border-bottom: color(var(--darkgrey) lightness(-10%)) 1px solid;
+    border-bottom: color-mod(var(--darkgrey) lightness(-10%)) 1px solid;
     background: var(--darkgrey);
     color: #fff;
 }
