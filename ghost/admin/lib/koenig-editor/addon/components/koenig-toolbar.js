@@ -18,7 +18,7 @@ export default Component.extend({
     layout,
 
     attributeBindings: ['style'],
-    classNames: ['absolute'],
+    classNames: ['absolute', 'z-999'],
 
     // public attrs
     editorRange: null,
@@ -45,13 +45,20 @@ export default Component.extend({
 
     /* computed properties -------------------------------------------------- */
 
-    style: computed('top', 'left', 'right', function () {
+    style: computed('showToolbar', 'top', 'left', 'right', function () {
         let position = this.getProperties('top', 'left', 'right');
         let styles = Object.keys(position).map((style) => {
             if (position[style] !== null) {
                 return `${style}: ${position[style]}px`;
             }
         });
+
+        // ensure hidden toolbar is non-interactive
+        if (this.get('showToolbar')) {
+            styles.push('pointer-events: auto !important');
+        } else {
+            styles.push('pointer-events: none !important');
+        }
 
         return htmlSafe(styles.compact().join('; '));
     }),
