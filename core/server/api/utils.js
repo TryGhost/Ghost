@@ -305,6 +305,16 @@ utils = {
      * ### Check Object
      * Check an object passed to the API is in the correct format
      *
+     * @TODO:
+     * The weird thing about this function is..
+     *   - that the API converts properties back to model notation
+     *      - post.author -> post.author_id
+     *   - and the model layer implementation of `toJSON` knows about these transformations as well
+     *      - post.author_id -> post.author
+     *   - this must live in one place
+     *      - API IN <-> API OUT
+     *      - this should be unrelated to the model layer
+     *
      * @param {Object} object
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
@@ -351,6 +361,51 @@ utils = {
                     return Promise.reject(new common.errors.BadRequestError({
                         message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
                     }));
+                }
+
+                /**
+                 * CASE: we don't support updating nested-nested relations e.g. `post.authors[*].roles` yet.
+                 *
+                 * Bookshelf-relations supports this feature, BUT bookshelf's `hasChanged` fn will currently
+                 * clash with this, because `hasChanged` won't be able to tell if relations have changed or not.
+                 * It would always return `changed.roles = [....]`. It would always throw a model event that relations
+                 * were updated, which is not true.
+                 *
+                 * Bookshelf-relations can tell us if a relation has changed, it knows that.
+                 * But the connection between our model layer, Bookshelf's `hasChanged` fn and Bookshelf-relations
+                 * is not present. As long as we don't support this case, we have to ignore this.
+                 */
+                if (object.posts[0].authors && object.posts[0].authors.length) {
+                    _.each(object.posts[0].authors, (author, index) => {
+                        if (author.hasOwnProperty('roles')) {
+                            delete object.posts[0].authors[index].roles;
+                        }
+
+                        if (author.hasOwnProperty('permissions')) {
+                            delete object.posts[0].authors[index].permissions;
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Model notation is: `tag.parent_id`.
+             * The API notation is `tag.parent`.
+             *
+             * See @TODO on the fn description. This information lives in two places. Not nice.
+             */
+            if (object.posts[0].hasOwnProperty('tags')) {
+                if (_.isArray(object.posts[0].tags) && object.posts[0].tags.length) {
+                    _.each(object.posts[0].tags, (tag, index) => {
+                        if (tag.hasOwnProperty('parent')) {
+                            object.posts[0].tags[index].parent_id = tag.parent;
+                            delete object.posts[0].tags[index].parent;
+                        }
+
+                        if (tag.hasOwnProperty('posts')) {
+                            delete object.posts[0].tags[index].posts;
+                        }
+                    });
                 }
             }
         }

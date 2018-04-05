@@ -309,6 +309,37 @@ describe('Unit: models/user', function () {
         });
     });
 
+    describe('Fetch', function () {
+        let knexMock;
+
+        before(function () {
+            models.init();
+        });
+
+        after(function () {
+            sandbox.restore();
+        });
+
+        before(function () {
+            knexMock = new testUtils.mocks.knex();
+            knexMock.mock();
+        });
+
+        after(function () {
+            knexMock.unmock();
+        });
+
+        it('ensure data type', function () {
+            return models.User.findOne({slug: 'joe-bloggs'}, testUtils.context.internal)
+                .then((user) => {
+                    user.get('updated_by').should.be.a.String();
+                    user.get('created_by').should.be.a.String();
+                    user.get('created_at').should.be.a.Date();
+                    user.get('updated_at').should.be.a.Date();
+                });
+        });
+    });
+
     describe('Edit', function () {
         let knexMock;
 
