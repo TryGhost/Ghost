@@ -2,6 +2,7 @@
 
 const should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
+    _ = require('lodash'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
     models = require('../../../server/models'),
@@ -39,6 +40,68 @@ describe('Unit: models/post', function () {
     });
 
     describe('Edit', function () {
+        it('update post, relation has not changed', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+                .then((post) => {
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        title: 'change',
+                        tags: post.related('tags').toJSON()
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.updated('title').should.eql(testUtils.DataGenerator.forKnex.posts[3].title);
+                    post.get('title').should.eql('change');
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql([]);
+                });
+        });
+
+        it('update post, relation has changed', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+                .then((post) => {
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        title: 'change',
+                        tags: [{id: post.related('tags').toJSON()[0].id, slug: 'after'}]
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.updated('title').should.eql('change');
+                    post.get('title').should.eql('change');
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql(['edited']);
+                });
+        });
+
         it('resets given empty value to null', function () {
             return models.Post.findOne({slug: 'html-ipsum'})
                 .then(function (post) {
