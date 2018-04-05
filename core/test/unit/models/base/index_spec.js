@@ -18,7 +18,65 @@ describe('Models: base', function () {
         sandbox.restore();
     });
 
-    describe('setEmptyValuesToNull', function () {
+    describe('fn: sanitizeData', function () {
+        it('date is invalid', function () {
+            const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '0000-00-00 00:00:00'});
+
+            try {
+                models.Base.Model.sanitizeData
+                    .bind({prototype: {tableName: 'posts'}})(data);
+            } catch (err) {
+                err.code.should.eql('DATE_INVALID');
+            }
+        });
+
+        it('expect date transformation', function () {
+            const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '2018-04-01 07:53:07'});
+
+            data.updated_at.should.be.a.String();
+
+            models.Base.Model.sanitizeData
+                .bind({prototype: {tableName: 'posts'}})(data);
+
+            data.updated_at.should.be.a.Date();
+        });
+
+        it('date is JS date, ignore', function () {
+            const data = testUtils.DataGenerator.forKnex.createPost({updated_at: new Date()});
+
+            data.updated_at.should.be.a.Date();
+
+            models.Base.Model.sanitizeData
+                .bind({prototype: {tableName: 'posts'}})(data);
+
+            data.updated_at.should.be.a.Date();
+        });
+
+        it('expect date transformation for nested relations', function () {
+            const data = testUtils.DataGenerator.forKnex.createPost({
+                authors: [{
+                    name: 'Thomas',
+                    updated_at: '2018-04-01 07:53:07'
+                }]
+            });
+
+            data.authors[0].updated_at.should.be.a.String();
+
+            models.Base.Model.sanitizeData
+                .bind({
+                    prototype: {
+                        tableName: 'posts',
+                        relationships: ['authors'],
+                        relationshipBelongsTo: {authors: 'users'}
+                    }
+                })(data);
+
+            data.authors[0].name.should.eql('Thomas');
+            data.authors[0].updated_at.should.be.a.Date();
+        });
+    });
+
+    describe('fn: setEmptyValuesToNull', function () {
         it('resets given empty value to null', function () {
             const base = models.Base.Model.forge({a: '', b: ''});
 
