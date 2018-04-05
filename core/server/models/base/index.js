@@ -252,9 +252,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        // CASE: you only change the `updated_at` property. This is not allowed.
-        if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.hasOwnProperty('updated_at')) {
-            newObj.set('updated_at', this.previous('updated_at'));
+        // CASE: do not allow setting only the `updated_at` field, exception: importing
+        if (schema.tables[this.tableName].hasOwnProperty('updated_at') && !options.importing) {
+            if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.updated_at) {
+                newObj.set('updated_at', newObj.previous('updated_at'));
+            }
         }
 
         return Promise.resolve(this.onValidate(newObj, attr, options));
