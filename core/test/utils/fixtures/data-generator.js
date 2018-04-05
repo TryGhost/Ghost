@@ -470,7 +470,9 @@ DataGenerator.forKnex = (function () {
             status: 'active',
             password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
             created_by: DataGenerator.Content.users[0].id,
-            created_at: new Date()
+            created_at: new Date(),
+            updated_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id
         });
     }
 
