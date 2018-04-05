@@ -1835,6 +1835,10 @@ describe('Post Model', function () {
             newJSON.tags[0].created_at = moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
             newJSON.tags[0].updated_at = moment().add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 
+            // NOTE: this is currently only removed in the API layer
+            newJSON.tags[0].parent_id = newJSON.tags[0].parent;
+            delete newJSON.tags[0].parent;
+
             // Edit the post
             return Promise.delay(1000)
                 .then(function () {
