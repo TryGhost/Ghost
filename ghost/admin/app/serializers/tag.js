@@ -8,18 +8,13 @@ export default ApplicationSerializer.extend({
         updatedAtUTC: {key: 'updated_at'}
     },
 
-    serializeIntoHash(hash, type, record, options) {
-        options = options || {};
-        options.includeId = true;
-
-        let root = pluralize(type.modelName);
-        let data = this.serialize(record, options);
+    serialize(/*snapshot, options*/) {
+        let json = this._super(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
+        delete json.count;
 
-        delete data.count;
-
-        hash[root] = [data];
+        return json;
     },
 
     // if we use `queryRecord` ensure we grab the first record to avoid

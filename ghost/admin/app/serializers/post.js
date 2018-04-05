@@ -29,32 +29,19 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         return this._super(...arguments);
     },
 
-    serializeIntoHash(hash, type, record, options) {
-        options = options || {};
-        options.includeId = true;
-
-        // We have a plural root in the API
-        let root = pluralize(type.modelName);
-
-        // TODO: this is throwing a warning when saving a new post:
-        // The embedded relationship 'tags' is undefined for 'post' with id 'null'.
-        // Please include it in your original payload.
-        //
-        // This appears to be an issue in Ember Data - needs further investigation
-        // and possibly an issue raised
-        let data = this.serialize(record, options);
+    serialize(/*snapshot, options*/) {
+        let json = this._super(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
-
-        delete data.uuid;
-        delete data.html;
+        delete json.uuid;
+        delete json.html;
         // Inserted locally as a convenience.
-        delete data.author_id;
+        delete json.author_id;
         // Read-only virtual property.
-        delete data.url;
+        delete json.url;
         // Deprecated property (replaced with data.authors)
-        delete data.author;
+        delete json.author;
 
-        hash[root] = [data];
+        return json;
     }
 });
