@@ -39,6 +39,12 @@ Post = ghostBookshelf.Model.extend({
 
     relationships: ['tags', 'authors'],
 
+    // NOTE: look up object, not super nice, but was easy to implement
+    relationshipBelongsTo: {
+        tags: 'tags',
+        authors: 'users'
+    },
+
     /**
      * The base model keeps only the columns, which are defined in the schema.
      * We have to add the relations on top, otherwise bookshelf-relations

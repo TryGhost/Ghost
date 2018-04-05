@@ -592,27 +592,6 @@ describe('Post Model', function () {
                 });
             });
 
-            it('draft -> scheduled: invalid published_at update', function (done) {
-                PostModel.findOne({status: 'draft'}).then(function (results) {
-                    var post;
-
-                    should.exist(results);
-                    post = results.toJSON();
-                    post.status.should.equal('draft');
-
-                    // @TODO: add unit test for valid and invalid formats
-                    return PostModel.edit({
-                        status: 'scheduled',
-                        published_at: '0000-00-00 00:00:00'
-                    }, _.extend({}, context, {id: post.id}));
-                }).catch(function (err) {
-                    should.exist(err);
-                    (err instanceof common.errors.ValidationError).should.eql(true);
-                    err.code.should.eql('DATE_INVALID');
-                    done();
-                });
-            });
-
             it('draft -> scheduled: expect update of published_at', function (done) {
                 var newPublishedAt = moment().add(1, 'day').toDate();
 
@@ -974,30 +953,6 @@ describe('Post Model', function () {
 
                     done();
                 }).catch(done);
-            });
-
-            it('send invalid published_at date', function (done) {
-                var postId = testUtils.DataGenerator.Content.posts[0].id;
-
-                PostModel
-                    .findOne({
-                        id: postId
-                    })
-                    .then(function (results) {
-                        var post;
-                        should.exist(results);
-                        post = results.toJSON();
-                        post.id.should.equal(postId);
-
-                        return PostModel.edit({published_at: '0000-00-00 00:00:00'}, _.extend({}, context, {id: postId}));
-                    })
-                    .then(function () {
-                        done(new Error('This test should fail.'));
-                    })
-                    .catch(function (err) {
-                        err.statusCode.should.eql(422);
-                        done();
-                    });
             });
 
             it('send empty date', function (done) {
