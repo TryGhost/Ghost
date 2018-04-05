@@ -1,3 +1,5 @@
+'use strict';
+
 // # Base Model
 // This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
 // several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.
@@ -5,7 +7,7 @@
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
-var _ = require('lodash'),
+const _ = require('lodash'),
     bookshelf = require('bookshelf'),
     moment = require('moment'),
     Promise = require('bluebird'),
@@ -18,9 +20,9 @@ var _ = require('lodash'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
     validation = require('../../data/validation'),
-    plugins = require('../plugins'),
+    plugins = require('../plugins');
 
-    ghostBookshelf,
+let ghostBookshelf,
     proto;
 
 // ### ghostBookshelf
@@ -137,9 +139,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 return;
             }
 
-            self.on(eventName, function eventTriggered() {
-                return this[functionName].apply(this, arguments);
-            });
+            self.on(eventName, self[functionName]);
         });
 
         // NOTE: Please keep here. If we don't initialize the parent, bookshelf-relations won't work.
