@@ -101,7 +101,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return [];
     },
 
+    /**
+     * @NOTE
+     * We have to remember the `_previousAttributes` attributes, because when destroying resources
+     * We listen on the `onDestroyed` event and Bookshelf resets these properties right after the event.
+     * If the query runs in a txn, `_previousAttributes` will be empty.
+     */
     emitChange: function (model, event, options) {
+        const previousAttributes = model._previousAttributes;
+
         if (!options.transacting) {
             return common.events.emit(event, model, options);
         }
@@ -119,8 +127,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
+                    model._previousAttributes = previousAttributes;
                     common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
                 });
+
+                delete model.ghostEvents;
             });
         }
 
