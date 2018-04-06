@@ -351,7 +351,42 @@ Post = ghostBookshelf.Model.extend({
     fields: function fields() {
         return this.morphMany('AppField', 'relatable');
     },
-
+    /**
+     * @NOTE:
+     * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
+     * But the model layer is complex and needs specific fields in specific situations.
+     *
+     * ### url generation
+     *   - it needs the following attrs for permalinks
+     *     - `slug`: /:slug/
+     *     - `published_at`: /:year/:slug
+     *     - `author_id`: /:author/:slug, /:primary_author/:slug
+     *   - @TODO: with channels, we no longer need these
+     *     - because the url service pre-generates urls based on the resources
+     *     - you can ask `urlService.getUrl(post.id)`
+     *   - @TODO: there is currently a bug in here
+     *     - you request `fields=title,url`
+     *     - you don't use `include=tags`
+     *     - your permalink is `/:primary_tag/:slug/`
+     *     - we won't fetch the primary tag, ends in `url = /all/my-slug/`
+     *     - will be auto fixed when merging channels
+     *   - url generator when using `findAll` or `findOne` doesn't work either when using e.g. `columns: title`
+     *      - this is because both functions don't make use of `defaultColumnsToFetch`
+     *      - will be auto fixed when merging channels
+     *
+     * ### events
+     *   - you call `findAll` with `columns: id`
+     *   - then you trigger `post.save()`
+     *   - bookshelf events (`onSaving`) and model events (`emitChange`) are triggered
+     *   - @TODO: we need to disallow this
+     *   - you should use `models.Post.edit(..)`
+     *   - editing resources denies `columns`
+     *   - same for destroy - you should use `models.Post.destroy(...)`
+     *
+     * @IMPORTANT: This fn should **never** be used when updating models (models.Post.edit)!
+     *            Because the events for updating a resource require most of the fields.
+     *            This is protected by the fn `permittedOptions`.
+     */
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return ['id', 'published_at', 'slug', 'author_id'];
     },
