@@ -17,3 +17,39 @@
     content: " ";
     display: table;
 }
+
+/* similar to .kg-action-bar to add a positionable triangle to a popup */
+.kg-input-bar:after,
+.kg-input-bar:before {
+    position: absolute;
+    /* bottom: 150%; */
+    /* left: 50%; */
+    /* margin-left: -5px; */
+    top: 34px;
+    left: calc(50% - 8px);
+    width: 0;
+    content: "";
+    font-size: 0;
+    line-height: 0;
+}
+.kg-input-bar:after {
+    margin-left: 1px;
+    border-top: 7px solid #fff;
+    border-right: 7px solid transparent;
+    border-left: 7px solid transparent;
+}
+.kg-input-bar:before {
+    border-top: 8px solid var(--darkgrey-d2);
+    border-right: 8px solid transparent;
+    border-left: 8px solid transparent;
+}
+
+.kg-input-bar-close {
+    position: absolute;
+    top: 11px;
+    right: 9px;
+    left: auto;
+    line-height: 1.2rem;
+    z-index: 100;
+    cursor: pointer;
+}

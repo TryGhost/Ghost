@@ -84,6 +84,7 @@ export default Component.extend({
     activeSectionTagNames: null,
     selectedRange: null,
     componentCards: null,
+    linkRange: null,
 
     // private properties
     _localMobiledoc: null,
@@ -377,6 +378,18 @@ export default Component.extend({
 
         deselectCard(card) {
             this.deselectCard(card);
+        },
+
+        // range should be set to the full extent of the selection or the
+        // appropriate <a> markup. If there's a selection when the link edit
+        // component renders it will re-select when finished which should
+        // trigger the normal toolbar
+        editLink(range) {
+            this.set('linkRange', range);
+        },
+
+        cancelEditLink() {
+            this.set('linkRange', null);
         },
 
         deleteCard(card, cursorMovement = NO_CURSOR_MOVEMENT) {

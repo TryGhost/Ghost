@@ -12,7 +12,12 @@ import {task, timeout} from 'ember-concurrency';
 // animation occurs via CSS transitions
 // position is kept after hiding, it's made inoperable by CSS pointer-events
 
-const TOOLBAR_TOP_MARGIN = 15;
+// pixels that should be added to separate toolbar from positioning rect
+export const TOOLBAR_MARGIN = 15;
+
+// pixels that should be added to the `left` property of the tick adjustment styles
+// TODO: handle via CSS?
+const TICK_ADJUSTMENT = 8;
 
 export default Component.extend({
     layout,
@@ -42,6 +47,7 @@ export default Component.extend({
     // closure actions
     toggleMarkup() {},
     toggleSection() {},
+    editLink() {},
 
     /* computed properties -------------------------------------------------- */
 
@@ -113,6 +119,10 @@ export default Component.extend({
 
         toggleSection(sectionName) {
             this.toggleSection(sectionName);
+        },
+
+        editLink() {
+            this.editLink(this.get('editorRange'));
         }
     },
 
@@ -207,7 +217,7 @@ export default Component.extend({
         // rangeRect is relative to the viewport so we need to subtract the
         // container measurements to get a position relative to the container
         newPosition = {
-            top: rangeRect.top - containerRect.top - height - TOOLBAR_TOP_MARGIN,
+            top: rangeRect.top - containerRect.top - height - TOOLBAR_MARGIN,
             left: rangeRect.left - containerRect.left + rangeRect.width / 2 - width / 2,
             right: null
         };
@@ -241,7 +251,7 @@ export default Component.extend({
         // style is by adding a style element to the head
         this._removeStyleElement(); // reset to base styles
         if (tickPosition !== 50) {
-            this._addStyleElement(`left: ${tickPosition}%`);
+            this._addStyleElement(`left: calc(${tickPosition}% - ${TICK_ADJUSTMENT}px)`);
         }
 
         // update the toolbar position
