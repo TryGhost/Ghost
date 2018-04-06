@@ -4,12 +4,24 @@
 
 {{!-- pop-up markup toolbar is shown when there's a selection --}}
 {{koenig-toolbar
+    editor=editor
     editorRange=selectedRange
     activeMarkupTagNames=activeMarkupTagNames
     activeSectionTagNames=activeSectionTagNames
     toggleMarkup=(action "toggleMarkup")
     toggleSection=(action "toggleSection")
+    editLink=(action "editLink")
 }}
+
+{{!-- pop-up link editing toolbar --}}
+{{#if linkRange}}
+    {{koenig-link-input
+        editor=editor
+        linkRange=linkRange
+        selectedRange=selectedRange
+        cancel=(action "cancelEditLink")
+    }}
+{{/if}}
 
 {{!-- (+) icon and pop-up menu --}}
 {{koenig-plus-menu
