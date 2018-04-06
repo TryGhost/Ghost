@@ -148,6 +148,21 @@ class KnexMock {
                             }));
 
                             if (dbEntry) {
+                                // select fields
+                                dbEntry = _.map(dbEntry, (obj) => {
+                                    let keys = query.sql.match(/select\s(\".*\"\,?)+\sfrom/);
+
+                                    if (keys) {
+                                        keys = keys[1];
+                                        keys = keys.replace(/"/g, '');
+                                        keys = keys.replace(/\s/g, '');
+                                        keys = keys.split(',');
+                                        return _.pick(obj, keys);
+                                    }
+
+                                    return obj;
+                                });
+
                                 query.response(dbEntry);
                                 debug('#### Query end.\n');
                             } else {
