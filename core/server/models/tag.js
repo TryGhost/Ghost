@@ -1,7 +1,7 @@
-var ghostBookshelf = require('./base'),
-    common = require('../lib/common'),
-    Tag,
-    Tags;
+'use strict';
+
+const ghostBookshelf = require('./base');
+let Tag, Tags;
 
 Tag = ghostBookshelf.Model.extend({
 
@@ -13,20 +13,21 @@ Tag = ghostBookshelf.Model.extend({
         };
     },
 
-    emitChange: function emitChange(event) {
-        common.events.emit('tag' + '.' + event, this);
+    emitChange: function emitChange(event, options) {
+        const eventToTrigger = 'tag' + '.' + event;
+        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onCreated: function onCreated(model) {
-        model.emitChange('added');
+    onCreated: function onCreated(model, attrs, options) {
+        model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model) {
-        model.emitChange('edited');
+    onUpdated: function onUpdated(model, attrs, options) {
+        model.emitChange('edited', options);
     },
 
-    onDestroyed: function onDestroyed(model) {
-        model.emitChange('deleted');
+    onDestroyed: function onDestroyed(model, options) {
+        model.emitChange('deleted', options);
     },
 
     onSaving: function onSaving(newTag, attr, options) {
