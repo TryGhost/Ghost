@@ -5,6 +5,7 @@ const should = require('should'), // jshint ignore:line
     _ = require('lodash'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
+    settingsCache = require('../../../server/services/settings/cache'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
@@ -37,6 +38,22 @@ describe('Unit: models/post', function () {
 
     after(function () {
         sandbox.restore();
+    });
+
+    describe('findPage', function () {
+        /**
+         * This is a @bug.
+         * If you don't include tags, we can't generate the url properly.
+         * Will be fixed when merging channels, because the post model has no longer generate the url.
+         */
+        it('[bug] permalink: /:primary_tag/:slug/, columns: [title,url]', function () {
+            sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:primary_tag/:slug/');
+
+            return models.Post.findPage({columns: ['title', 'url']})
+                .then(function (result) {
+                    result.posts[0].url.should.eql('/all/html-ipsum/');
+                });
+        });
     });
 
     describe('Edit', function () {
