@@ -32,6 +32,9 @@ ghostBookshelf = bookshelf(db.knex);
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
+// Add committed/rollback events.
+ghostBookshelf.plugin(plugins.transactionEvents);
+
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
@@ -96,6 +99,32 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // When loading an instance, subclasses can specify default to fetch
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return [];
+    },
+
+    emitChange: function (model, event, options) {
+        if (!options.transacting) {
+            return common.events.emit(event, model, options);
+        }
+
+        if (!model.ghostEvents) {
+            model.ghostEvents = [];
+
+            if (options.importing) {
+                options.transacting.setMaxListeners(0);
+            }
+
+            options.transacting.once('committed', (committed) => {
+                if (!committed) {
+                    return;
+                }
+
+                _.each(this.ghostEvents, (ghostEvent) => {
+                    common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
+                });
+            });
+        }
+
+        model.ghostEvents.push(event);
     },
 
     // Bookshelf `initialize` - declare a constructor-like method for model creation

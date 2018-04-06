@@ -1,4 +1,6 @@
-var _ = require('lodash'),
+'use strict';
+
+const _ = require('lodash'),
     Promise = require('bluebird'),
     validator = require('validator'),
     ObjectId = require('bson-objectid'),
@@ -15,9 +17,9 @@ var _ = require('lodash'),
      * locked user: imported users, they get a random passport
      */
     inactiveStates = ['inactive', 'locked'],
-    allStates = activeStates.concat(inactiveStates),
-    User,
-    Users;
+    allStates = activeStates.concat(inactiveStates);
+
+let User, Users;
 
 User = ghostBookshelf.Model.extend({
 
@@ -30,23 +32,24 @@ User = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        common.events.emit('user' + '.' + event, this, options);
+        const eventToTrigger = 'user' + '.' + event;
+        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onDestroyed: function onDestroyed(model, response, options) {
+    onDestroyed: function onDestroyed(model, options) {
         if (_.includes(activeStates, model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
-        model.emitChange('deleted');
+        model.emitChange('deleted', options);
     },
 
-    onCreated: function onCreated(model) {
-        model.emitChange('added');
+    onCreated: function onCreated(model, attrs, options) {
+        model.emitChange('added', options);
 
         // active is the default state, so if status isn't provided, this will be an active user
         if (!model.get('status') || _.includes(activeStates, model.get('status'))) {
-            model.emitChange('activated');
+            model.emitChange('activated', options);
         }
     },
 
@@ -58,11 +61,11 @@ User = ghostBookshelf.Model.extend({
             model.emitChange(model.isActive ? 'activated' : 'deactivated', options);
         } else {
             if (model.isActive) {
-                model.emitChange('activated.edited');
+                model.emitChange('activated.edited', options);
             }
         }
 
-        model.emitChange('edited');
+        model.emitChange('edited', options);
     },
 
     isActive: function isActive() {

@@ -424,6 +424,48 @@ describe('Post Model', function () {
                 });
             });
 
+            it('[failure] multiple edits in one transaction', function () {
+                const options = _.cloneDeep(context),
+                    data = {
+                        status: 'published'
+                    };
+
+                return models.Base.transaction(function (txn) {
+                    options.transacting = txn;
+
+                    return models.Post.edit(data, _.merge({id: testUtils.DataGenerator.Content.posts[3].id}, options))
+                        .then(function () {
+                            return models.Post.edit(data, _.merge({id: testUtils.DataGenerator.Content.posts[5].id}, options));
+                        })
+                        .then(function () {
+                            // force rollback
+                            throw new Error();
+                        });
+                }).catch(function () {
+                    // txn was rolled back
+                    Object.keys(eventsTriggered).length.should.eql(0);
+                });
+            });
+
+            it('multiple edits in one transaction', function () {
+                const options = _.cloneDeep(context),
+                    data = {
+                        status: 'published'
+                    };
+
+                return models.Base.transaction(function (txn) {
+                    options.transacting = txn;
+
+                    return models.Post.edit(data, _.merge({id: testUtils.DataGenerator.Content.posts[3].id}, options))
+                        .then(function () {
+                            return models.Post.edit(data, _.merge({id: testUtils.DataGenerator.Content.posts[5].id}, options));
+                        });
+                }).then(function () {
+                    // txn was successful
+                    Object.keys(eventsTriggered).length.should.eql(4);
+                });
+            });
+
             it('can change title', function (done) {
                 var postId = testUtils.DataGenerator.Content.posts[0].id;
 
@@ -932,7 +974,10 @@ describe('Post Model', function () {
                     post.status.should.equal('draft');
 
                     // Test changing status and published_by at the same time
-                    return models.Post.edit({status: 'published', published_by: 4}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({
+                        status: 'published',
+                        published_by: 4
+                    }, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
