@@ -61,15 +61,19 @@ Post = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        options = options || {};
+        let eventToTrigger;
 
         var resourceType = this.get('page') ? 'page' : 'post';
 
-        if (options.usePreviousResourceType) {
+        if (options.useUpdatedAttribute) {
             resourceType = this.updated('page') ? 'page' : 'post';
+        } else if (options.usePreviousAttribute) {
+            resourceType = this.previous('page') ? 'page' : 'post';
         }
 
-        common.events.emit(resourceType + '.' + event, this, options);
+        eventToTrigger = resourceType + '.' + event;
+
+        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
     /**
@@ -88,14 +92,14 @@ Post = ghostBookshelf.Model.extend({
 
         var status = model.get('status');
 
-        model.emitChange('added');
+        model.emitChange('added', options);
 
         if (['published', 'scheduled'].indexOf(status) !== -1) {
-            model.emitChange(status, {importing: options.importing});
+            model.emitChange(status, options);
         }
     },
 
-    onUpdated: function onUpdated(model) {
+    onUpdated: function onUpdated(model, attrs, options) {
         model.statusChanging = model.get('status') !== model.updated('status');
         model.isPublished = model.get('status') === 'published';
         model.isScheduled = model.get('status') === 'scheduled';
@@ -108,65 +112,65 @@ Post = ghostBookshelf.Model.extend({
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
             if (model.wasPublished) {
-                model.emitChange('unpublished', {usePreviousResourceType: true});
+                model.emitChange('unpublished', Object.assign({useUpdatedAttribute: true}, options));
             }
 
             if (model.wasScheduled) {
-                model.emitChange('unscheduled', {usePreviousResourceType: true});
+                model.emitChange('unscheduled', Object.assign({useUpdatedAttribute: true}, options));
             }
 
-            model.emitChange('deleted', {usePreviousResourceType: true});
-            model.emitChange('added');
+            model.emitChange('deleted', Object.assign({useUpdatedAttribute: true}, options));
+            model.emitChange('added', options);
 
             if (model.isPublished) {
-                model.emitChange('published');
+                model.emitChange('published', options);
             }
 
             if (model.isScheduled) {
-                model.emitChange('scheduled');
+                model.emitChange('scheduled', options);
             }
         } else {
             if (model.statusChanging) {
                 // CASE: was published before and is now e.q. draft or scheduled
                 if (model.wasPublished) {
-                    model.emitChange('unpublished');
+                    model.emitChange('unpublished', options);
                 }
 
                 // CASE: was draft or scheduled before and is now e.q. published
                 if (model.isPublished) {
-                    model.emitChange('published');
+                    model.emitChange('published', options);
                 }
 
                 // CASE: was draft or published before and is now e.q. scheduled
                 if (model.isScheduled) {
-                    model.emitChange('scheduled');
+                    model.emitChange('scheduled', options);
                 }
 
                 // CASE: from scheduled to something
                 if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
-                    model.emitChange('unscheduled');
+                    model.emitChange('unscheduled', options);
                 }
             } else {
                 if (model.isPublished) {
-                    model.emitChange('published.edited');
+                    model.emitChange('published.edited', options);
                 }
 
                 if (model.needsReschedule) {
-                    model.emitChange('rescheduled');
+                    model.emitChange('rescheduled', options);
                 }
             }
 
             // Fire edited if this wasn't a change between resourceType
-            model.emitChange('edited');
+            model.emitChange('edited', options);
         }
     },
 
-    onDestroying: function onDestroying(model) {
+    onDestroyed: function onDestroyed(model, options) {
         if (model.previous('status') === 'published') {
-            model.emitChange('unpublished');
+            model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
 
-        model.emitChange('deleted');
+        model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
     },
 
     onSaving: function onSaving(model, attr, options) {
