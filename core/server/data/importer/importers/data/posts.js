@@ -74,6 +74,12 @@ class PostsImporter extends BaseImporter {
      * Replace all identifier references.
      */
     replaceIdentifiers() {
+        const ownerUserId = _.find(this.requiredExistingData.users, (user) => {
+            if (user.roles[0].name === 'Owner') {
+                return true;
+            }
+        }).id;
+
         const run = (postToImport, postIndex, targetProperty, tableName) => {
             if (!postToImport[targetProperty] || !postToImport[targetProperty].length) {
                 return;
@@ -104,7 +110,7 @@ class PostsImporter extends BaseImporter {
                     return;
                 }
 
-                // CASE: search through existing data
+                // CASE: search through existing data by unique attribute
                 let existingObject = _.find(this.requiredExistingData[tableName], {slug: objectInFile.slug});
 
                 if (existingObject) {
@@ -117,6 +123,17 @@ class PostsImporter extends BaseImporter {
             this.dataToImport[postIndex][targetProperty] = _.filter(this.dataToImport[postIndex][targetProperty], ((object, index) => {
                 return indexesToRemove.indexOf(index) === -1;
             }));
+
+            // CASE: we had to remove all the relations, because we could not match or find the relation reference.
+            // e.g. you import a post with multiple authors. Only the primary author is assigned.
+            // But the primary author won't be imported and we can't find the author in the existing database.
+            // This would end in `post.authors = []`, which is not allowed. There must be always minimum one author.
+            // We fallback to the owner user.
+            if (targetProperty === 'authors' && !this.dataToImport[postIndex][targetProperty].length) {
+                this.dataToImport[postIndex][targetProperty] = [{
+                    id: ownerUserId
+                }];
+            }
         };
 
         _.each(this.dataToImport, (postToImport, postIndex) => {

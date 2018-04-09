@@ -247,6 +247,34 @@
                         "created_by": "1",
                         "updated_at": "2017-09-01T12:30:59.000Z",
                         "updated_by": "1"
+                    },
+                    {
+                        "id": "5951f5fca366002ebd5dbef11",
+                        "name": "Joe Blogg's",
+                        "slug": "joe-bloggs-1",
+                        "ghost_auth_access_token": null,
+                        "ghost_auth_id": null,
+                        "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                        "email": "jbloggs@example.com",
+                        "profile_image": "/content/images/2017/05/authorlogo.jpeg",
+                        "cover_image": "/content/images/2017/05/authorcover.jpeg",
+                        "bio": "I'm Joe's father, the good looking one!",
+                        "website": "http://joebloggs.com",
+                        "location": null,
+                        "facebook": null,
+                        "twitter": null,
+                        "accessibility": null,
+                        "status": "active",
+                        "locale": "en_US",
+                        "visibility": "public",
+                        "meta_title": null,
+                        "meta_description": null,
+                        "tour": "[\"getting-started\",\"using-the-editor\",\"static-post\",\"featured-post\",\"upload-a-theme\"]",
+                        "last_seen": "2017-07-01T12:30:37.000Z",
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:59.000Z",
+                        "updated_by": "1"
                     }
                 ],
                 "posts_authors": [
@@ -291,11 +319,23 @@
                         "post_id": "59a952be7d79ed06b0d21129",
                         "author_id": "5951f5fca366002ebd5dbefff",
                         "sort_order": 1
-                    },                    {
+                    },
+                    {
                         "id": "5a8c0aa22a49c40927b18479",
                         "post_id": "59a952be7d79ed06b0d21129",
                         "author_id": "5951f5fca366002ebd5dbef10",
                         "sort_order": 2
+                    },
+                    {
+                        "id": "5a8c0aa22a49c40927b18479",
+                        "post_id": "59a952be7d79ed06b0d21129",
+                        "author_id": "5951f5fca366002ebd5dbef10",
+                        "sort_order": 2
+                    },
+                    {
+                        "id": "5a8c0aa22a49c40927b18480",
+                        "post_id": "59a952be7d79ed06b0d21128",
+                        "author_id": "5951f5fca366002ebd5dbef11"
                     }
                 ]
             }

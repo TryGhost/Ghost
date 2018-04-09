@@ -281,6 +281,34 @@ describe('Unit: models/post', function () {
                     });
                 });
 
+                it('[not allowed] with empty authors ([]), without author_id', function () {
+                    const post = testUtils.DataGenerator.forKnex.createPost();
+                    delete post.author_id;
+                    post.authors = [];
+
+                    return models.Post.add(post, {withRelated: ['author', 'authors']})
+                        .then(function () {
+                            'Expected error'.should.eql(false);
+                        })
+                        .catch(function (err) {
+                            (err instanceof common.errors.ValidationError).should.eql(true);
+                        });
+                });
+
+                it('[not allowed] with empty authors ([]), with author_id', function () {
+                    const post = testUtils.DataGenerator.forKnex.createPost();
+                    post.author_id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    post.authors = [];
+
+                    return models.Post.add(post, {withRelated: ['author', 'authors']})
+                        .then(function () {
+                            'Expected error'.should.eql(false);
+                        })
+                        .catch(function (err) {
+                            (err instanceof common.errors.ValidationError).should.eql(true);
+                        });
+                });
+
                 it('with authors, with author_id', function () {
                     const post = testUtils.DataGenerator.forKnex.createPost();
                     post.author_id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
