@@ -6493,9 +6493,9 @@ just-extend@^1.1.27:
   version "1.1.27"
   resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-1.1.27.tgz#ec6e79410ff914e472652abfa0e603c03d60e905"
 
-keymaster@1.6.2:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/keymaster/-/keymaster-1.6.2.tgz#e1ae54d0ea9488f9f60b66b668f02e9a1946c6eb"
+"keymaster@https://github.com/madrobby/keymaster.git":
+  version "1.6.3"
+  resolved "https://github.com/madrobby/keymaster.git#3b1f2afabf1569848dea8b697ac418f19b601a30"
 
 kind-of@^1.1.0:
   version "1.1.0"
