@@ -45,33 +45,27 @@ key.setScope('default');
  */
 export default Mixin.create({
 
-    _hasRegisteredShortcuts: false,
-
     registerShortcuts() {
-        if (!this._hasRegisteredShortcuts) {
-            let shortcuts = this.get('shortcuts');
+        let shortcuts = this.get('shortcuts');
 
-            Object.keys(shortcuts).forEach((shortcut) => {
-                let scope = shortcuts[shortcut].scope || 'default';
-                let action = shortcuts[shortcut];
-                let options;
+        Object.keys(shortcuts).forEach((shortcut) => {
+            let scope = shortcuts[shortcut].scope || 'default';
+            let action = shortcuts[shortcut];
+            let options;
 
-                if (typeOf(action) !== 'string') {
-                    options = action.options;
-                    action = action.action;
-                }
+            if (typeOf(action) !== 'string') {
+                options = action.options;
+                action = action.action;
+            }
 
-                key(shortcut, scope, (event) => {
-                    // stop things like ctrl+s from actually opening a save dialogue
-                    event.preventDefault();
-                    run(this, function () {
-                        this.send(action, options);
-                    });
+            key(shortcut, scope, (event) => {
+                // stop things like ctrl+s from actually opening a save dialogue
+                event.preventDefault();
+                run(this, function () {
+                    this.send(action, options);
                 });
             });
-
-            this._hasRegisteredShortcuts = true;
-        }
+        });
     },
 
     removeShortcuts() {

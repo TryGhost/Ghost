@@ -102,7 +102,7 @@
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "grunt": "1.0.2",
     "grunt-shell": "2.1.0",
-    "keymaster": "1.6.2",
+    "keymaster": "https://github.com/madrobby/keymaster.git",
     "liquid-fire": "0.29.2",
     "liquid-tether": "2.0.6",
     "liquid-wormhole": "2.1.1",
