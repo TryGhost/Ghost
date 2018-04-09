@@ -1858,7 +1858,7 @@ describe('Import (new test structure)', function () {
                     const posts = importedData[0].posts,
                         users = importedData[1].users;
 
-                    // owner + 3 imported users
+                    // owner + 3 imported users + 1 duplicate
                     users.length.should.eql(4);
                     users[0].slug.should.eql(exportData.data.users[0].slug);
                     users[1].slug.should.eql(exportData.data.users[1].slug);
@@ -1872,9 +1872,10 @@ describe('Import (new test structure)', function () {
                     posts[0].authors.length.should.eql(1);
                     posts[0].authors[0].id.should.eql(users[2].id);
 
-                    posts[1].author.should.eql(users[0].id);
+                    // falls back to owner user, because target reference could not be resolved (duplicate)
+                    posts[1].author.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[1].authors.length.should.eql(1);
-                    posts[1].authors[0].id.should.eql(users[0].id);
+                    posts[1].authors[0].id.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     posts[2].author.should.eql(users[1].id);
                     posts[2].authors.length.should.eql(3);

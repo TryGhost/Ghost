@@ -105,6 +105,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
              */
             model.unset('author');
 
+            // CASE: you can't delete all authors
+            if (model.get('authors') && !model.get('authors').length) {
+                throw new common.errors.ValidationError({
+                    message: 'At least one author is required.'
+                });
+            }
+
             // CASE: `post.author_id` has changed
             if (model.hasChanged('author_id')) {
                 // CASE: you don't send `post.authors`
@@ -124,13 +131,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                         model.set('author_id', model.get('authors')[0].id);
                     }
                 }
-            }
-
-            // CASE: you can't delete all authors
-            if (model.get('authors') && !model.get('authors').length) {
-                throw new common.errors.ValidationError({
-                    message: 'At least one author is required.'
-                });
             }
 
             // CASE: if you change `post.author_id`, we have to update the primary author
