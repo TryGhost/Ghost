@@ -31,7 +31,7 @@
     max-width: none;
     width: 460px;
     color: #fff;
-    background: linear-gradient(135deg, color-mod(var(--blue) l(+3%)) 0%,color(var(--blue) l(-5%) s(-5%)) 100%);
+    background: linear-gradient(135deg, color-mod(var(--blue) l(+3%)) 0%, color-mod(var(--blue) l(-5%) s(-5%)) 100%);
     box-shadow: rgba(0,0,0,0.05) 0 0 0 1px inset, rgba(0,0,0,0.15) 0 1px 8px;
     border-radius: 10px;
 }
