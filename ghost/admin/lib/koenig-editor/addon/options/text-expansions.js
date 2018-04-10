@@ -102,35 +102,35 @@ export default function (editor) {
 
     function matchStrongStar(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)\*\*([^\s*].+?[^\s*])\*\*/);
+        let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*/);
         if (matches) {
-            let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                postEditor.insertTextWithMarkup(position, matches[2], [bold]);
+                postEditor.insertTextWithMarkup(position, matches[1], [bold]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('strong');
             });
         }
-
-        // must be scheduled so that the toggle isn't reset automatically
-        run.schedule('actions', this, function () {
-            editor.toggleMarkup('strong');
-        });
     }
 
     function matchStrongUnderscore(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)__([^\s_].+?[^\s_])__/);
+        let matches = text.match(/(?:^|\s)__([^\s_]+|[^\s_][^_]*[^\s])__/);
         if (matches) {
-            let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let bold = postEditor.builder.createMarkup('strong');
-                postEditor.insertTextWithMarkup(position, matches[2], [bold]);
+                postEditor.insertTextWithMarkup(position, matches[1], [bold]);
             });
 
             // must be scheduled so that the toggle isn't reset automatically
@@ -142,15 +142,29 @@ export default function (editor) {
 
     function matchEmStar(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)\*([^\s*][^*]+?[^\s])\*/);
+        // (?:^|\s)     - match beginning of input or a starting space (don't capture)
+        // \*           - match leading *
+        // (            - start capturing group
+        //   [^\s*]+    - match a stretch with no spaces or * chars
+        //   |          - OR
+        //   [^\s*]     - match a single non-space or * char    | this group will only match at
+        //   [^*]*      - match zero or more non * chars        | least two chars so we need the
+        //   [^\s]      - match a single non-space char         | [^\s*]+ to match single chars
+        // )            - end capturing group
+        // \*           - match trailing *
+        //
+        // input = " *foo*"
+        // matches[0] = " *foo*"
+        // matches[1] = "foo"
+        let matches = text.match(/(?:^|\s)\*([^\s*]+|[^\s*][^*]*[^\s])\*/);
         if (matches) {
-            let match = matches[0][0] === '*' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
-                postEditor.insertTextWithMarkup(position, matches[2], [em]);
+                postEditor.insertTextWithMarkup(position, matches[1], [em]);
             });
 
             // must be scheduled so that the toggle isn't reset automatically
@@ -162,15 +176,15 @@ export default function (editor) {
 
     function matchEmUnderscore(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)_([^\s_][^_]+?[^\s])_/);
+        let matches = text.match(/(?:^|\s)_([^\s_]+|[^\s_][^_]*[^\s])_/);
         if (matches) {
-            let match = matches[0][0] === '_' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let em = postEditor.builder.createMarkup('em');
-                postEditor.insertTextWithMarkup(position, matches[2], [em]);
+                postEditor.insertTextWithMarkup(position, matches[1], [em]);
             });
 
             // must be scheduled so that the toggle isn't reset automatically
@@ -182,15 +196,15 @@ export default function (editor) {
 
     function matchStrikethrough(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)~([^\s~][^~]+?[^\s])~/);
+        let matches = text.match(/(?:^|\s)~([^\s~]+|[^\s~][^~]*[^\s])~/);
         if (matches) {
-            let match = matches[0][0] === '~' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let s = postEditor.builder.createMarkup('s');
-                postEditor.insertTextWithMarkup(position, matches[2], [s]);
+                postEditor.insertTextWithMarkup(position, matches[1], [s]);
             });
 
             // must be scheduled so that the toggle isn't reset automatically
@@ -202,15 +216,15 @@ export default function (editor) {
 
     function matchCode(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|\s)`([^\s`][^`]+?[^\s])`/);
+        let matches = text.match(/(?:^|\s)`([^\s`]+|[^\s`][^`]*[^\s`])`/);
         if (matches) {
-            let match = matches[0][0] === '`' ? matches[0] : matches[0].substr(1);
+            let match = matches[0].trim();
             range = range.extend(-(match.length));
 
             editor.run((postEditor) => {
                 let position = postEditor.deleteRange(range);
                 let code = postEditor.builder.createMarkup('code');
-                postEditor.insertTextWithMarkup(position, matches[2], [code]);
+                postEditor.insertTextWithMarkup(position, matches[1], [code]);
             });
 
             // must be scheduled so that the toggle isn't reset automatically
