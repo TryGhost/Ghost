@@ -606,6 +606,32 @@ describe('Unit: models/post', function () {
                         post.authors[1].id.should.eql(testUtils.DataGenerator.forKnex.users[2].id);
                     });
                 });
+
+                it('[unsupported] change post.plaintext', function () {
+                    const data = {
+                        plaintext: 'test'
+                    };
+
+                    return models.Post.edit(data, {
+                        id: testUtils.DataGenerator.forKnex.posts[2].id
+                    }).then(function (post) {
+                        post = post.toJSON({formats: ['mobiledoc', 'plaintext', 'html']});
+                        post.plaintext.should.eql(testUtils.DataGenerator.forKnex.posts[2].plaintext);
+                    });
+                });
+
+                it('[unsupported] change post.html', function () {
+                    const data = {
+                        html: 'test'
+                    };
+
+                    return models.Post.edit(data, {
+                        id: testUtils.DataGenerator.forKnex.posts[2].id
+                    }).then(function (post) {
+                        post = post.toJSON({formats: ['mobiledoc', 'plaintext', 'html']});
+                        post.html.should.eql(testUtils.DataGenerator.forKnex.posts[2].html);
+                    });
+                });
             });
 
             describe('destroy', function () {
