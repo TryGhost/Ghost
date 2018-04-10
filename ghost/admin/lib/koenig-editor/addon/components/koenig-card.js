@@ -43,11 +43,20 @@ export default Component.extend({
         return htmlSafe(baseStyles);
     }),
 
-    toolbarStyle: computed('toolbarWidth', 'toolbarHeight', function () {
+    toolbarStyle: computed('showToolbar', 'toolbarWidth', 'toolbarHeight', function () {
+        let showToolbar = this.get('showToolbar');
         let width = this.get('toolbarWidth');
         let height = this.get('toolbarHeight');
+        let styles = [];
 
-        return htmlSafe(`top: -${height}px; left: calc(50% - ${width / 2}px)`);
+        styles.push(`top: -${height}px`);
+        styles.push(`left: calc(50% - ${width / 2}px)`);
+
+        if (!showToolbar) {
+            styles.push('pointer-events: none !important');
+        }
+
+        return htmlSafe(styles.join('; '));
     }),
 
     didReceiveAttrs() {
