@@ -61,6 +61,14 @@ describe('Post API', function () {
 
     describe('Browse', function () {
         beforeEach(function () {
+            return db.knex('posts_authors').insert({
+                id: ObjectId.generate(),
+                post_id: testUtils.DataGenerator.forKnex.posts[0].id,
+                author_id: testUtils.DataGenerator.forKnex.users[1].id
+            });
+        });
+
+        beforeEach(function () {
             localSettingsCache.permalinks = '/:slug/';
         });
 
@@ -387,6 +395,8 @@ describe('Post API', function () {
                 _.each(results.posts, function (post) {
                     post.primary_author.slug.should.eql('joe-bloggs');
                 });
+
+                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[0].id}).authors.length.should.eql(2);
 
                 done();
             }).catch(done);
