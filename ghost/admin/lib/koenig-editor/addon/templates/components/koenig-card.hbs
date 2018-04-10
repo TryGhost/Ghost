@@ -3,7 +3,7 @@
 {{yield}}
 
 {{#if toolbar}}
-    <ul data-toolbar="true" class="kg-action-bar bg-lgr-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center absolute white sans-serif f8 fw6 tracked-2 anim-fast-bezier {{if showToolbar "" "o-0 drop-down"}}" style={{toolbarStyle}}>
+    <ul data-toolbar="true" class="kg-action-bar bg-lgr-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center absolute white sans-serif f8 fw6 tracked-2 anim-fast-bezier z-999 {{if showToolbar "" "o-0 drop-down"}}" style={{toolbarStyle}}>
         {{#each toolbar.items as |item|}}
             <li class="ma0">
                 <button
