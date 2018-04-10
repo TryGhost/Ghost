@@ -345,12 +345,6 @@ textarea.koenig-card-markdown {
     color: #a0a0a0;
 }
 
-.__mobiledoc-editor img {
-    display: block;
-    max-width: 100%;
-    margin: 0 auto;
-}
-
 .__mobiledoc-editor hr {
     margin: 0.5em 0;
 }

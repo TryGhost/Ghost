@@ -28,19 +28,55 @@ export default Component.extend({
     moveCursorToPrevSection() {},
     addParagraphAfterCard() {},
 
-    toolbar: computed('payload.src', function () {
-        if (this.get('payload.src')) {
-            return {
-                items: [{
-                    title: 'Replace image',
-                    icon: 'koenig/kg-replace',
-                    iconClass: 'nudge-top--1',
-                    action: run.bind(this, this._triggerFileDialog)
-                }]
-            };
+    kgImgStyle: computed('payload.imageStyle', function () {
+        let imageStyle = this.get('payload.imageStyle');
+
+        if (imageStyle === 'wide') {
+            return 'image-wide';
         }
 
-        return null;
+        if (imageStyle === 'wide') {
+            return 'image-full';
+        }
+
+        return 'image-normal';
+    }),
+
+    toolbar: computed('payload.{imageStyle,src}', function () {
+        let imageStyle = this.get('payload.imageStyle');
+        let items = [];
+
+        items.push({
+            title: 'Regular',
+            icon: 'koenig/kg-img-regular',
+            iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            action: run.bind(this, this._changeImageStyle, '')
+        });
+
+        items.push({
+            title: 'Wide',
+            icon: 'koenig/kg-img-wide',
+            iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            action: run.bind(this, this._changeImageStyle, 'wide')
+        });
+
+        items.push({
+            title: 'Full',
+            icon: 'koenig/kg-img-full',
+            iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            action: run.bind(this, this._changeImageStyle, 'full')
+        });
+
+        if (this.get('payload.src')) {
+            items.push({
+                title: 'Replace image',
+                icon: 'koenig/kg-replace',
+                iconClass: 'nudge-top--1',
+                action: run.bind(this, this._triggerFileDialog)
+            });
+        }
+
+        return {items};
     }),
 
     willDestroyElement() {
@@ -93,6 +129,10 @@ export default Component.extend({
             this.set('previewSrc', null);
             this._updatePayloadAttr('src', null);
         }
+    },
+
+    _changeImageStyle(imageStyle) {
+        this._updatePayloadAttr('imageStyle', imageStyle);
     },
 
     _updatePayloadAttr(attr, value) {
