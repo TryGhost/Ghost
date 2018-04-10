@@ -5,7 +5,6 @@ var _ = require('lodash'),
     // (Less) dirty requires
     proxy = require('../../../../helpers/proxy'),
     templates = proxy.templates,
-    config = proxy.config,
     url = proxy.url,
     SafeString = proxy.SafeString,
 
@@ -39,7 +38,8 @@ subscribeScript =
 module.exports = function subscribe_form(options) { // eslint-disable-line camelcase
     var root = options.data.root,
         data = _.merge({}, options.hash, _.pick(root, params), {
-            action: url.urlJoin('/', url.getSubdir(), config.get('routeKeywords').subscribe, '/'),
+            // routeKeywords.subscribe: 'subscribe'
+            action: url.urlJoin('/', url.getSubdir(), 'subscribe/'),
             script: new SafeString(subscribeScript),
             hidden: new SafeString(
                 makeHidden('confirm') +

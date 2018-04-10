@@ -1,5 +1,4 @@
 var _ = require('lodash'),
-    config = require('../../config'),
     urlService = require('../../services/url');
 
 function getPaginatedUrl(page, data, absolute) {
@@ -7,10 +6,11 @@ function getPaginatedUrl(page, data, absolute) {
     if (!data || !data.relativeUrl || !data.pagination) {
         return null;
     }
-
-    var pagePath = urlService.utils.urlJoin('/', config.get('routeKeywords').page, '/'),
+    // routeKeywords.page: 'page'
+    var pagePath = urlService.utils.urlJoin('/page/'),
         // Try to match the base url, as whatever precedes the pagePath
-        baseUrlPattern = new RegExp('(.+)?(/' + config.get('routeKeywords').page + '/\\d+/)'),
+        // routeKeywords.page: 'page'
+        baseUrlPattern = new RegExp('(.+)?(/page/\\d+/)'),
         baseUrlMatch = data.relativeUrl.match(baseUrlPattern),
         // If there is no match for pagePath, use the original url, without the trailing slash
         baseUrl = baseUrlMatch ? baseUrlMatch[1] : data.relativeUrl.slice(0, -1),

@@ -27,17 +27,6 @@ describe('Configuration API', function () {
             props = response.configuration[0];
 
             props.blogUrl.should.eql('http://127.0.0.1:2369/');
-            props.routeKeywords.should.eql({
-                tag: 'tag',
-                author: 'author',
-                page: 'page',
-                preview: 'p',
-                primaryTagFallback: 'all',
-                primaryAuthorFallback: 'all',
-                private: 'private',
-                subscribe: 'subscribe',
-                amp: 'amp'
-            });
 
             props.useGravatar.should.eql(false);
             props.publicAPI.should.eql(false);
