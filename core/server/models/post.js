@@ -183,11 +183,12 @@ Post = ghostBookshelf.Model.extend({
             newTitle = this.get('title'),
             newStatus = this.get('status'),
             olderStatus = this.previous('status'),
-            prevTitle = this._previousAttributes.title,
-            prevSlug = this._previousAttributes.slug,
+            prevTitle = this.previous('title'),
+            prevSlug = this.previous('slug'),
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc = this.get('mobiledoc'),
+            generatedFields = ['html', 'plaintext'],
             tagsToSave,
             ops = [];
 
@@ -242,6 +243,13 @@ Post = ghostBookshelf.Model.extend({
         }
 
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
+
+        // do not allow generated fields to be overridden via the API
+        generatedFields.forEach((field) => {
+            if (this.hasChanged(field)) {
+                this.set(field, this.previous(field));
+            }
+        });
 
         if (mobiledoc) {
             this.set('html', converters.mobiledocConverter.render(JSON.parse(mobiledoc)));
