@@ -24,7 +24,7 @@
     "author": {
         "route": "/:t_author/:slug/",
         "postOptions": {
-            "filter": "author:'%s'"
+            "filter": "authors:'%s'"
         },
         "data": {
             "author": {
