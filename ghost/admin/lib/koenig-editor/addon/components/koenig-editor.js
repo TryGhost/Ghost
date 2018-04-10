@@ -595,8 +595,9 @@ export default Component.extend({
     // the doc
     handleUpKey(editor) {
         let {isCollapsed, head: {offset, section}} = editor.range;
+        let prevSection = section.isListItem ? section.parent.prev : section.prev;
 
-        if (isCollapsed && !section.prev && offset === 0) {
+        if (isCollapsed && offset === 0 && !prevSection) {
             this.cursorDidExitAtTop();
         }
 
@@ -608,7 +609,8 @@ export default Component.extend({
 
         // trigger a closure action to indicate that the caret "left" the top of
         // the editor canvas if the caret is at the very beginning of the doc
-        if (isCollapsed && !section.prev && offset === 0) {
+        let prevSection = section.isListItem ? section.parent.prev : section.prev;
+        if (isCollapsed && offset === 0 && !prevSection) {
             this.cursorDidExitAtTop();
             return;
         }
