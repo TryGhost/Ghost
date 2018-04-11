@@ -68,6 +68,8 @@ export default Component.extend({
         });
 
         if (this.get('payload.src')) {
+            items.push({divider: true});
+
             items.push({
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
