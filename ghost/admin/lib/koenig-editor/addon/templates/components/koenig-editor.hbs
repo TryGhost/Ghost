@@ -13,6 +13,15 @@
     editLink=(action "editLink")
 }}
 
+{{!-- pop-up link hover toolbar --}}
+{{koenig-link-toolbar
+    editor=editor
+    container=element
+    linkRange=linkRange
+    selectedRange=selectedRange
+    editLink=(action "editLink")
+}}
+
 {{!-- pop-up link editing toolbar --}}
 {{#if linkRange}}
     {{koenig-link-input

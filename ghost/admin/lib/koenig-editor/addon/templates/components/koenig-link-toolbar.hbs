@@ -1,0 +1,29 @@
+{{#if showToolbar}}
+    <ul class="bg-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center relative white f-small fw3 tracked-2">
+        <li class="mw70 ma0 truncate">
+            <a href="{{url}}" class="dib dim-lite pa2 pr1 link white" target="_blank" rel="noopener noreferrer">{{url}}</a>
+        </li>
+        <li class="ma0">
+            <button
+                type="button"
+                title="Edit"
+                class="dib dim-lite pa1 link"
+                {{action "edit"}}
+            >
+                {{!-- TODO: get correct icon --}}
+                {{svg-jar "koenig/kg-thin-edit" class="stroke-white w4 h4 nudge-top--1"}}
+            </button>
+        </li>
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Remove"
+                class="dib dim-lite pa1 pr2 link"
+                {{action "remove"}}
+            >
+                {{!-- TODO: get correct icon --}}
+                {{svg-jar "koenig/kg-thin-delete" class="stroke-white w4 h4 nudge-top--1"}}
+            </button>
+        </li>
+    </ul>
+{{/if}}

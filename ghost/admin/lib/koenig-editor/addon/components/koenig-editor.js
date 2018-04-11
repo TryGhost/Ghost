@@ -174,6 +174,7 @@ export default Component.extend({
         // create a new editor
         let editorOptions = this.get('editorOptions');
         editorOptions.mobiledoc = mobiledoc;
+        editorOptions.showLinkTooltips = false;
 
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
