@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "1.22.1",
+  "version": "1.22.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -21,7 +21,8 @@
     "start": "node index",
     "dev": "DEBUG=ghost:* grunt dev",
     "test": "grunt validate --verbose",
-    "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true"
+    "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
+    "lint": "grunt lint"
   },
   "engines": {
     "node": "^4.5.0 || ^6.9.0 || ^8.9.0",
@@ -52,7 +53,7 @@
     "extract-zip": "1.6.6",
     "fs-extra": "3.0.1",
     "ghost-gql": "0.0.9",
-    "ghost-ignition": "2.9.0",
+    "ghost-ignition": "2.9.1",
     "ghost-storage-base": "0.0.1",
     "glob": "5.0.15",
     "got": "7.1.0",

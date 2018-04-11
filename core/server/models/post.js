@@ -39,6 +39,12 @@ Post = ghostBookshelf.Model.extend({
 
     relationships: ['tags', 'authors'],
 
+    // NOTE: look up object, not super nice, but was easy to implement
+    relationshipBelongsTo: {
+        tags: 'tags',
+        authors: 'users'
+    },
+
     /**
      * The base model keeps only the columns, which are defined in the schema.
      * We have to add the relations on top, otherwise bookshelf-relations
@@ -55,15 +61,19 @@ Post = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        options = options || {};
+        let eventToTrigger;
 
         var resourceType = this.get('page') ? 'page' : 'post';
 
-        if (options.usePreviousResourceType) {
+        if (options.useUpdatedAttribute) {
             resourceType = this.updated('page') ? 'page' : 'post';
+        } else if (options.usePreviousAttribute) {
+            resourceType = this.previous('page') ? 'page' : 'post';
         }
 
-        common.events.emit(resourceType + '.' + event, this, options);
+        eventToTrigger = resourceType + '.' + event;
+
+        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
     /**
@@ -82,14 +92,14 @@ Post = ghostBookshelf.Model.extend({
 
         var status = model.get('status');
 
-        model.emitChange('added');
+        model.emitChange('added', options);
 
         if (['published', 'scheduled'].indexOf(status) !== -1) {
-            model.emitChange(status, {importing: options.importing});
+            model.emitChange(status, options);
         }
     },
 
-    onUpdated: function onUpdated(model) {
+    onUpdated: function onUpdated(model, attrs, options) {
         model.statusChanging = model.get('status') !== model.updated('status');
         model.isPublished = model.get('status') === 'published';
         model.isScheduled = model.get('status') === 'scheduled';
@@ -102,65 +112,65 @@ Post = ghostBookshelf.Model.extend({
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
             if (model.wasPublished) {
-                model.emitChange('unpublished', {usePreviousResourceType: true});
+                model.emitChange('unpublished', Object.assign({useUpdatedAttribute: true}, options));
             }
 
             if (model.wasScheduled) {
-                model.emitChange('unscheduled', {usePreviousResourceType: true});
+                model.emitChange('unscheduled', Object.assign({useUpdatedAttribute: true}, options));
             }
 
-            model.emitChange('deleted', {usePreviousResourceType: true});
-            model.emitChange('added');
+            model.emitChange('deleted', Object.assign({useUpdatedAttribute: true}, options));
+            model.emitChange('added', options);
 
             if (model.isPublished) {
-                model.emitChange('published');
+                model.emitChange('published', options);
             }
 
             if (model.isScheduled) {
-                model.emitChange('scheduled');
+                model.emitChange('scheduled', options);
             }
         } else {
             if (model.statusChanging) {
                 // CASE: was published before and is now e.q. draft or scheduled
                 if (model.wasPublished) {
-                    model.emitChange('unpublished');
+                    model.emitChange('unpublished', options);
                 }
 
                 // CASE: was draft or scheduled before and is now e.q. published
                 if (model.isPublished) {
-                    model.emitChange('published');
+                    model.emitChange('published', options);
                 }
 
                 // CASE: was draft or published before and is now e.q. scheduled
                 if (model.isScheduled) {
-                    model.emitChange('scheduled');
+                    model.emitChange('scheduled', options);
                 }
 
                 // CASE: from scheduled to something
                 if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
-                    model.emitChange('unscheduled');
+                    model.emitChange('unscheduled', options);
                 }
             } else {
                 if (model.isPublished) {
-                    model.emitChange('published.edited');
+                    model.emitChange('published.edited', options);
                 }
 
                 if (model.needsReschedule) {
-                    model.emitChange('rescheduled');
+                    model.emitChange('rescheduled', options);
                 }
             }
 
             // Fire edited if this wasn't a change between resourceType
-            model.emitChange('edited');
+            model.emitChange('edited', options);
         }
     },
 
-    onDestroying: function onDestroying(model) {
+    onDestroyed: function onDestroyed(model, options) {
         if (model.previous('status') === 'published') {
-            model.emitChange('unpublished');
+            model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
 
-        model.emitChange('deleted');
+        model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
     },
 
     onSaving: function onSaving(model, attr, options) {
@@ -173,11 +183,12 @@ Post = ghostBookshelf.Model.extend({
             newTitle = this.get('title'),
             newStatus = this.get('status'),
             olderStatus = this.previous('status'),
-            prevTitle = this._previousAttributes.title,
-            prevSlug = this._previousAttributes.slug,
+            prevTitle = this.previous('title'),
+            prevSlug = this.previous('slug'),
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
             mobiledoc = this.get('mobiledoc'),
+            generatedFields = ['html', 'plaintext'],
             tagsToSave,
             ops = [];
 
@@ -232,6 +243,13 @@ Post = ghostBookshelf.Model.extend({
         }
 
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
+
+        // do not allow generated fields to be overridden via the API
+        generatedFields.forEach((field) => {
+            if (this.hasChanged(field)) {
+                this.set(field, this.previous(field));
+            }
+        });
 
         if (mobiledoc) {
             this.set('html', converters.mobiledocConverter.render(JSON.parse(mobiledoc)));
@@ -345,7 +363,42 @@ Post = ghostBookshelf.Model.extend({
     fields: function fields() {
         return this.morphMany('AppField', 'relatable');
     },
-
+    /**
+     * @NOTE:
+     * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
+     * But the model layer is complex and needs specific fields in specific situations.
+     *
+     * ### url generation
+     *   - it needs the following attrs for permalinks
+     *     - `slug`: /:slug/
+     *     - `published_at`: /:year/:slug
+     *     - `author_id`: /:author/:slug, /:primary_author/:slug
+     *   - @TODO: with channels, we no longer need these
+     *     - because the url service pre-generates urls based on the resources
+     *     - you can ask `urlService.getUrl(post.id)`
+     *   - @TODO: there is currently a bug in here
+     *     - you request `fields=title,url`
+     *     - you don't use `include=tags`
+     *     - your permalink is `/:primary_tag/:slug/`
+     *     - we won't fetch the primary tag, ends in `url = /all/my-slug/`
+     *     - will be auto fixed when merging channels
+     *   - url generator when using `findAll` or `findOne` doesn't work either when using e.g. `columns: title`
+     *      - this is because both functions don't make use of `defaultColumnsToFetch`
+     *      - will be auto fixed when merging channels
+     *
+     * ### events
+     *   - you call `findAll` with `columns: id`
+     *   - then you trigger `post.save()`
+     *   - bookshelf events (`onSaving`) and model events (`emitChange`) are triggered
+     *   - @TODO: we need to disallow this
+     *   - you should use `models.Post.edit(..)`
+     *   - editing resources denies `columns`
+     *   - same for destroy - you should use `models.Post.destroy(...)`
+     *
+     * @IMPORTANT: This fn should **never** be used when updating models (models.Post.edit)!
+     *            Because the events for updating a resource require most of the fields.
+     *            This is protected by the fn `permittedOptions`.
+     */
     defaultColumnsToFetch: function defaultColumnsToFetch() {
         return ['id', 'published_at', 'slug', 'author_id'];
     },

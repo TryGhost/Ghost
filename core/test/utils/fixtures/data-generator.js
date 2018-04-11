@@ -48,6 +48,7 @@ DataGenerator.Content = {
             slug: 'short-and-sweet',
             mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
             html: '<div class=\"kg-card-markdown\"><h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n</div>',
+            plaintext: 'testing\nmctesters\n\n * test\n * line\n * items',
             feature_image: 'http://placekitten.com/500/200',
             meta_description: 'test stuff',
             published_at: new Date('2015-01-03'),
@@ -470,7 +471,9 @@ DataGenerator.forKnex = (function () {
             status: 'active',
             password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
             created_by: DataGenerator.Content.users[0].id,
-            created_at: new Date()
+            created_at: new Date(),
+            updated_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id
         });
     }
 

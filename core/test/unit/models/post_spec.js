@@ -2,8 +2,10 @@
 
 const should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
+    _ = require('lodash'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
+    settingsCache = require('../../../server/services/settings/cache'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
@@ -38,7 +40,85 @@ describe('Unit: models/post', function () {
         sandbox.restore();
     });
 
+    describe('findPage', function () {
+        /**
+         * This is a @bug.
+         * If you don't include tags, we can't generate the url properly.
+         * Will be fixed when merging channels, because the post model has no longer generate the url.
+         */
+        it('[bug] permalink: /:primary_tag/:slug/, columns: [title,url]', function () {
+            sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:primary_tag/:slug/');
+
+            return models.Post.findPage({columns: ['title', 'url']})
+                .then(function (result) {
+                    result.posts[0].url.should.eql('/all/html-ipsum/');
+                });
+        });
+    });
+
     describe('Edit', function () {
+        it('update post, relation has not changed', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+                .then((post) => {
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        title: 'change',
+                        tags: post.related('tags').toJSON()
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.updated('title').should.eql(testUtils.DataGenerator.forKnex.posts[3].title);
+                    post.get('title').should.eql('change');
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql([]);
+                });
+        });
+
+        it('update post, relation has changed', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+                .then((post) => {
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        title: 'change',
+                        tags: [{id: post.related('tags').toJSON()[0].id, slug: 'after'}]
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.updated('title').should.eql('change');
+                    post.get('title').should.eql('change');
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql(['edited']);
+                });
+        });
+
         it('resets given empty value to null', function () {
             return models.Post.findOne({slug: 'html-ipsum'})
                 .then(function (post) {
@@ -199,6 +279,34 @@ describe('Unit: models/post', function () {
                         post.author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                         should.not.exist(post.authors);
                     });
+                });
+
+                it('[not allowed] with empty authors ([]), without author_id', function () {
+                    const post = testUtils.DataGenerator.forKnex.createPost();
+                    delete post.author_id;
+                    post.authors = [];
+
+                    return models.Post.add(post, {withRelated: ['author', 'authors']})
+                        .then(function () {
+                            'Expected error'.should.eql(false);
+                        })
+                        .catch(function (err) {
+                            (err instanceof common.errors.ValidationError).should.eql(true);
+                        });
+                });
+
+                it('[not allowed] with empty authors ([]), with author_id', function () {
+                    const post = testUtils.DataGenerator.forKnex.createPost();
+                    post.author_id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    post.authors = [];
+
+                    return models.Post.add(post, {withRelated: ['author', 'authors']})
+                        .then(function () {
+                            'Expected error'.should.eql(false);
+                        })
+                        .catch(function (err) {
+                            (err instanceof common.errors.ValidationError).should.eql(true);
+                        });
                 });
 
                 it('with authors, with author_id', function () {
@@ -496,6 +604,32 @@ describe('Unit: models/post', function () {
                         post.authors.length.should.eql(2);
                         post.authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                         post.authors[1].id.should.eql(testUtils.DataGenerator.forKnex.users[2].id);
+                    });
+                });
+
+                it('[unsupported] change post.plaintext', function () {
+                    const data = {
+                        plaintext: 'test'
+                    };
+
+                    return models.Post.edit(data, {
+                        id: testUtils.DataGenerator.forKnex.posts[2].id
+                    }).then(function (post) {
+                        post = post.toJSON({formats: ['mobiledoc', 'plaintext', 'html']});
+                        post.plaintext.should.eql(testUtils.DataGenerator.forKnex.posts[2].plaintext);
+                    });
+                });
+
+                it('[unsupported] change post.html', function () {
+                    const data = {
+                        html: 'test'
+                    };
+
+                    return models.Post.edit(data, {
+                        id: testUtils.DataGenerator.forKnex.posts[2].id
+                    }).then(function (post) {
+                        post = post.toJSON({formats: ['mobiledoc', 'plaintext', 'html']});
+                        post.html.should.eql(testUtils.DataGenerator.forKnex.posts[2].html);
                     });
                 });
             });

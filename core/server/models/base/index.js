@@ -1,3 +1,5 @@
+'use strict';
+
 // # Base Model
 // This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
 // several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.
@@ -5,7 +7,7 @@
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
-var _ = require('lodash'),
+const _ = require('lodash'),
     bookshelf = require('bookshelf'),
     moment = require('moment'),
     Promise = require('bluebird'),
@@ -18,9 +20,9 @@ var _ = require('lodash'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
     validation = require('../../data/validation'),
-    plugins = require('../plugins'),
+    plugins = require('../plugins');
 
-    ghostBookshelf,
+let ghostBookshelf,
     proto;
 
 // ### ghostBookshelf
@@ -29,6 +31,9 @@ ghostBookshelf = bookshelf(db.knex);
 
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
+
+// Add committed/rollback events.
+ghostBookshelf.plugin(plugins.transactionEvents);
 
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
@@ -96,6 +101,43 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return [];
     },
 
+    /**
+     * @NOTE
+     * We have to remember the `_previousAttributes` attributes, because when destroying resources
+     * We listen on the `onDestroyed` event and Bookshelf resets these properties right after the event.
+     * If the query runs in a txn, `_previousAttributes` will be empty.
+     */
+    emitChange: function (model, event, options) {
+        const previousAttributes = model._previousAttributes;
+
+        if (!options.transacting) {
+            return common.events.emit(event, model, options);
+        }
+
+        if (!model.ghostEvents) {
+            model.ghostEvents = [];
+
+            if (options.importing) {
+                options.transacting.setMaxListeners(0);
+            }
+
+            options.transacting.once('committed', (committed) => {
+                if (!committed) {
+                    return;
+                }
+
+                _.each(this.ghostEvents, (ghostEvent) => {
+                    model._previousAttributes = previousAttributes;
+                    common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
+                });
+
+                delete model.ghostEvents;
+            });
+        }
+
+        model.ghostEvents.push(event);
+    },
+
     // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
         var self = this;
@@ -137,9 +179,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 return;
             }
 
-            self.on(eventName, function eventTriggered() {
-                return this[functionName].apply(this, arguments);
-            });
+            self.on(eventName, self[functionName]);
         });
 
         // NOTE: Please keep here. If we don't initialize the parent, bookshelf-relations won't work.
@@ -180,18 +220,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
         this._updatedAttributes = newObj.previousAttributes();
-
-        /**
-         * Bookshelf keeps none valid model attributes in `model.changed`. This causes problems
-         * when detecting if a model has changed. Bookshelf detects changed attributes too early.
-         * So we have to manually remove invalid model attributes from this object.
-         *
-         * e.g. if you pass `tag.parent` into the model layer, but the value has not changed,
-         * the attribute (`tag.parent`) is still kept in the `changed` object. This is wrong.
-         *
-         * TLDR; only keep valid model attributes in the changed object
-         */
-        this.changed = _.pick(this.changed, Object.keys(this.attributes));
     },
 
     /**
@@ -264,9 +292,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        // CASE: you only change the `updated_at` property. This is not allowed.
-        if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.hasOwnProperty('updated_at')) {
-            newObj.set('updated_at', this.previous('updated_at'));
+        // CASE: do not allow setting only the `updated_at` field, exception: importing
+        if (schema.tables[this.tableName].hasOwnProperty('updated_at') && !options.importing) {
+            if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.updated_at) {
+                newObj.set('updated_at', newObj.previous('updated_at'));
+            }
         }
 
         return Promise.resolve(this.onValidate(newObj, attr, options));
@@ -496,14 +526,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @IMPORTANT
      * Before the new client data get's inserted again, the dates get's re-transformed into
      * proper strings, see `format`.
+     *
+     * @IMPORTANT
+     * Sanitize relations.
      */
     sanitizeData: function sanitizeData(data) {
         var tableName = _.result(this.prototype, 'tableName'), date;
 
-        _.each(data, function (value, key) {
+        _.each(data, (value, property) => {
             if (value !== null
-                && schema.tables[tableName].hasOwnProperty(key)
-                && schema.tables[tableName][key].type === 'dateTime'
+                && schema.tables[tableName].hasOwnProperty(property)
+                && schema.tables[tableName][property].type === 'dateTime'
                 && typeof value === 'string'
             ) {
                 date = new Date(value);
@@ -511,12 +544,36 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 // CASE: client sends `0000-00-00 00:00:00`
                 if (isNaN(date)) {
                     throw new common.errors.ValidationError({
-                        message: common.i18n.t('errors.models.base.invalidDate', {key: key}),
+                        message: common.i18n.t('errors.models.base.invalidDate', {key: property}),
                         code: 'DATE_INVALID'
                     });
                 }
 
-                data[key] = moment(value).toDate();
+                data[property] = moment(value).toDate();
+            }
+
+            if (this.prototype.relationships && this.prototype.relationships.indexOf(property) !== -1) {
+                _.each(data[property], (relation, indexInArr) => {
+                    _.each(relation, (value, relationProperty) => {
+                        if (value !== null
+                            && schema.tables[this.prototype.relationshipBelongsTo[property]].hasOwnProperty(relationProperty)
+                            && schema.tables[this.prototype.relationshipBelongsTo[property]][relationProperty].type === 'dateTime'
+                            && typeof value === 'string'
+                        ) {
+                            date = new Date(value);
+
+                            // CASE: client sends `0000-00-00 00:00:00`
+                            if (isNaN(date)) {
+                                throw new common.errors.ValidationError({
+                                    message: common.i18n.t('errors.models.base.invalidDate', {key: relationProperty}),
+                                    code: 'DATE_INVALID'
+                                });
+                            }
+
+                            data[property][indexInArr][relationProperty] = moment(value).toDate();
+                        }
+                    });
+                });
             }
         });
 
