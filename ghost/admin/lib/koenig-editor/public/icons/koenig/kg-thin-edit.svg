@@ -1,0 +1,9 @@
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        kg-link-edit
+    </title>
+    <g stroke="#FFF" fill="none" fill-rule="evenodd">
+        <path d="M5.255 13.644l-3.772.885.885-3.772 9.1-9.1c.455-.456 1.195-.456 1.65 0l1.238 1.237c.455.456.455 1.194 0 1.65l-9.101 9.1zM13.112 5.79l-2.881-2.896 2.881 2.896z" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5.402 13.497L2.514 10.61l2.888 2.887z" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+</svg>
