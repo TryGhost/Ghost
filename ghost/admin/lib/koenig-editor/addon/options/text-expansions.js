@@ -196,7 +196,7 @@ export default function (editor) {
 
     function matchStrikethrough(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(?:^|\s)~([^\s~]+|[^\s~][^~]*[^\s])~/);
+        let matches = text.match(/(?:^|\s)~~([^\s~]+|[^\s~][^~]*[^\s])~~/);
         if (matches) {
             let match = matches[0].trim();
             range = range.extend(-(match.length));
