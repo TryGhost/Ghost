@@ -684,6 +684,14 @@ export default Component.extend({
         this._showCursor();
     },
 
+    /* Ember event handlers ------------------------------------------------- */
+
+    // disable dragging
+    // TODO: needs testing for how this interacts with cards that have drag behaviour
+    dragStart(event) {
+        event.preventDefault();
+    },
+
     /* internal methods ----------------------------------------------------- */
 
     _getCardFromSection(section) {
