@@ -53,6 +53,13 @@ const CURSOR_BEFORE = -1;
 const CURSOR_AFTER = 1;
 const NO_CURSOR_MOVEMENT = 0;
 
+// markups that should not be continued when typing and reverted to their
+// text expansion style when backspacing over findal char of markup
+const SPECIAL_MARKUPS = {
+    S: '~~',
+    CODE: '`'
+};
+
 function arrayToMap(array) {
     let map = Object.create(null);
     array.forEach((key) => {
@@ -490,6 +497,24 @@ export default Component.extend({
             this.deselectCard(this._selectedCard);
         }
 
+        // if we have `code` or ~strike~ formatting to the left but not the right
+        // then toggle the formatting - these formats should only be creatable
+        // through the text expansions
+        // HACK: this is largely duplicated in `inputModeDidChange` to work
+        // around an event ordering bug - see comments there
+        if (isCollapsed && head.marker) {
+            Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
+                if (head.marker.hasMarkup(tagName)) {
+                    let nextMarker = head.markerIn(1);
+                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                        run.next(this, function () {
+                            editor.toggleMarkup(tagName);
+                        });
+                    }
+                }
+            });
+        }
+
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
     },
@@ -507,6 +532,23 @@ export default Component.extend({
         let sectionParentTagNames = editor.activeSections.map(s => s.isNested ? s.parent.tagName : s.tagName);
         let sectionTags = arrayToMap(sectionParentTagNames);
 
+        // HACK: this is largly duplicated with our `cursorDidChange` handling.
+        // On keyboard cursor movement our `cursorDidChange` toggle for special
+        // formats happens before mobiledoc's readstate updates activeMarkups
+        // so we have to re-do it here
+        let {head, isCollapsed} = editor.range;
+        if (isCollapsed) {
+            let activeMarkupTagNames = editor.activeMarkups.mapBy('tagName');
+            Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
+                if (activeMarkupTagNames.includes(tagName.toLowerCase())) {
+                    let nextMarker = head.markerIn(1);
+                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                        return editor.toggleMarkup(tagName);
+                    }
+                }
+            });
+        }
+
         // Avoid updating this component's properties synchronously while
         // rendering the editor (after rendering the component) because it
         // causes Ember to display deprecation warnings
@@ -522,7 +564,8 @@ export default Component.extend({
     },
 
     handleBackspaceKey() {
-        let {isCollapsed, head: {offset, section}} = this.editor.range;
+        let editor = this.get('editor');
+        let {head, isCollapsed, head: {marker, offset, section}} = editor.range;
 
         // if a card is selected we should delete the card then place the cursor
         // at the end of the previous section
@@ -555,6 +598,39 @@ export default Component.extend({
             let card = this._getCardFromSection(section.prev);
             this._deleteCard(card, CURSOR_AFTER);
             return;
+        }
+
+        // if the markup about to be deleted is a special format (code, strike)
+        // then undo the text expansion to allow it to be extended
+        if (isCollapsed && marker) {
+            let specialMarkupTagNames = Object.keys(SPECIAL_MARKUPS);
+            let hasReversed = false;
+            specialMarkupTagNames.forEach((tagName) => {
+                // only continue if we're about to delete a special markup
+                let markup = marker.markups.find(markup => markup.tagName.toUpperCase() === tagName);
+                if (markup) {
+                    let nextMarker = head.markerIn(1);
+                    // ensure we're at the end of the markup not inside it
+                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                        // wrap with the text expansion, remove formatting, then delete the last char
+                        editor.run((postEditor) => {
+                            let markdown = SPECIAL_MARKUPS[tagName];
+                            let range = editor.range.expandByMarker(marker => !!marker.markups.includes(markup));
+                            postEditor.insertText(range.head, markdown);
+                            range = range.extend(markdown.length);
+                            let endPos = postEditor.insertText(range.tail, markdown);
+                            range = range.extend(markdown.length);
+                            postEditor.toggleMarkup(tagName, range);
+                            endPos = postEditor.deleteAtPosition(endPos, -1);
+                            postEditor.setRange(endPos);
+                        });
+                        hasReversed = true;
+                    }
+                }
+            });
+            if (hasReversed) {
+                return;
+            }
         }
 
         return false;
