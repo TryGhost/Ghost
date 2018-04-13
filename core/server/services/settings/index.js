@@ -4,16 +4,107 @@
  */
 
 var SettingsModel = require('../../models/settings').Settings,
-    SettingsCache = require('./cache');
+    SettingsCache = require('./cache'),
+    SettingsLoader = require('./loader'),
+    // EnsureSettingsFiles = require('./ensure-settings'),
+    _ = require('lodash'),
+    common = require('../../lib/common'),
+    debug = require('ghost-ignition').debug('services:settings:index');
 
 module.exports = {
     init: function init() {
+        const knownSettings = this.knownSettings();
+
+        debug('init settings service for:', knownSettings);
+
+        // TODO: uncomment this section, once we want to
+        // copy the default routes.yaml file into the /content/settings
+        // folder
+
+        // Make sure that supported settings files are available
+        // inside of the `content/setting` directory
+        // return EnsureSettingsFiles(knownSettings)
+        //     .then(() => {
+
         // Update the defaults
         return SettingsModel.populateDefaults()
             .then(function (settingsCollection) {
                 // Initialise the cache with the result
                 // This will bind to events for further updates
                 SettingsCache.init(settingsCollection);
+            });
+        // });
+    },
+
+    /**
+    * Global place to switch on more available settings.
+    */
+    knownSettings: function knownSettings() {
+        return ['routes'];
+    },
+
+    /**
+     * Getter for YAML settings.
+     * Example: `settings.get('routes').then(...)`
+     * will return an Object like this:
+     * {routes: {}, collections: {}, resources: {}}
+     * @param {String} setting type of supported setting.
+     * @returns {Promise<Object>} settingsFile
+     * @description Returns settings object as defined per YAML files in
+     * `/content/settings` directory.
+     */
+    get: function get(setting) {
+        const knownSettings = this.knownSettings();
+
+        // CASE: this should be an edge case and only if internal usage of the
+        // getter is incorrect.
+        if (!setting || _.indexOf(knownSettings, setting) < 0) {
+            return Promise.reject(new common.errors.IncorrectUsageError({
+                message: `Requested setting is not supported: '${setting}'.`,
+                help: `Please use only the supported settings: ${knownSettings}.`
+            }));
+        }
+
+        return SettingsLoader(setting)
+            .then((settingsFile) => {
+                debug('setting loaded and parsed:', settingsFile);
+
+                return settingsFile;
+            });
+    },
+
+    /**
+     * Getter for all YAML settings.
+     * Example: `settings.getAll().then(...)`
+     * will return an Object like this (assuming we're supporting `routes`
+     * and `globals`):
+     * {
+     *     routes: {
+     *         routes: null,
+     *         collections: { '/': [Object] },
+     *         resources: { tag: '/tag/{slug}/', author: '/author/{slug}/' }
+     *     },
+     *     globals: {
+     *         config: { url: 'testblog.com' }
+     *     }
+     * }
+     * @returns {Promise<Object>} settingsObject
+     * @description Returns all settings object as defined per YAML files in
+     * `/content/settings` directory.
+     */
+    getAll: function getAll() {
+        const knownSettings = this.knownSettings(),
+            props = {};
+
+        _.each(knownSettings, function (setting) {
+            props[setting] = SettingsLoader(setting);
+        });
+
+        return Promise.props(props)
+            .then((settingsFile) => {
+                debug('all settings loaded and parsed:', settingsFile);
+
+                return settingsFile;
             });
     }
 };
