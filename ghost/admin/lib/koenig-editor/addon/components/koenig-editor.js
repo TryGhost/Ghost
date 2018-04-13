@@ -12,12 +12,14 @@ import defaultCards from '../options/cards';
 import layout from '../templates/components/koenig-editor';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
+import validator from 'npm:validator';
 import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {computed} from '@ember/object';
 import {copy} from '@ember/object/internals';
+import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {run} from '@ember/runloop';
 
 export const ADD_CARD_HOOK = 'addComponent';
@@ -327,6 +329,14 @@ export default Component.extend({
         this.didCreateEditor(editor);
     },
 
+    didInsertElement() {
+        this._super(...arguments);
+        let editorElement = this.element.querySelector('.koenig-editor__editor');
+
+        this._pasteHandler = run.bind(this, this.handlePaste);
+        editorElement.addEventListener('paste', this._pasteHandler);
+    },
+
     // our ember component has rendered, now we need to render the mobiledoc
     // editor itself if necessary
     didRender() {
@@ -342,6 +352,9 @@ export default Component.extend({
 
     willDestroyElement() {
         let editor = this.get('editor');
+        let editorElement = this.element.querySelector('.koenig-editor__editor');
+
+        editorElement.removeEventListener('paste', this._pasteHandler);
         editor.destroy();
         this._super(...arguments);
     },
@@ -746,6 +759,27 @@ export default Component.extend({
         }
 
         return false;
+    },
+
+    // if a URL is pasted and we have a selection, make that selection a link
+    handlePaste(event) {
+        let editor = this.get('editor');
+        let range = editor.range;
+
+        // only attempt link if we have a text selection in a single section
+        if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
+            let {text} = getContentFromPasteEvent(event);
+            if (text && validator.isURL(text)) {
+                let linkMarkup = editor.builder.createMarkup('a', {href: text});
+                editor.run((postEditor) => {
+                    postEditor.addMarkupToRange(range, linkMarkup);
+                });
+                editor.selectRange(range.tail);
+                // prevent mobiledoc's default paste event handler firing
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+        }
     },
 
     selectCard(card, isEditing = false) {
