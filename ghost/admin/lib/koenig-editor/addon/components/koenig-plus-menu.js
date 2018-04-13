@@ -131,10 +131,12 @@ export default Component.extend({
         if (section) {
             let containerRect = this.element.parentNode.getBoundingClientRect();
             let selectedElement = section.renderNode.element;
-            let selectedElementRect = selectedElement.getBoundingClientRect();
-            let top = selectedElementRect.top - containerRect.top;
+            if (selectedElement) {
+                let selectedElementRect = selectedElement.getBoundingClientRect();
+                let top = selectedElementRect.top - containerRect.top;
 
-            this.set('top', top);
+                this.set('top', top);
+            }
         }
     },
 
