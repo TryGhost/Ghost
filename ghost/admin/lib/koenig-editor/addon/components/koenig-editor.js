@@ -239,12 +239,17 @@ export default Component.extend({
         registerKeyCommands(editor);
         registerTextExpansions(editor);
 
+        editor.registerKeyCommand({
+            str: 'ENTER',
+            run: run.bind(this, this.handleEnterKey, editor)
+        }),
+
         // the cursor is always positioned after a selected card so DELETE wont
         // work to remove the card like BACKSPACE does. Add a custom command to
         // override the default behaviour when a card is selected
         editor.registerKeyCommand({
             str: 'DEL',
-            run: run.bind(this, this.handleDelKey)
+            run: run.bind(this, this.handleDelKey, editor)
         }),
 
         // by default mobiledoc-kit will remove the selected card but replace it
@@ -252,22 +257,22 @@ export default Component.extend({
         // section instead
         editor.registerKeyCommand({
             str: 'BACKSPACE',
-            run: run.bind(this, this.handleBackspaceKey)
+            run: run.bind(this, this.handleBackspaceKey, editor)
         }),
 
         editor.registerKeyCommand({
             str: 'UP',
-            run: run.bind(this, this.handleUpKey)
+            run: run.bind(this, this.handleUpKey, editor)
         });
 
         editor.registerKeyCommand({
             str: 'LEFT',
-            run: run.bind(this, this.handleLeftKey)
+            run: run.bind(this, this.handleLeftKey, editor)
         });
 
         editor.registerKeyCommand({
             str: 'META+ENTER',
-            run: run.bind(this, this.handleCmdEnter)
+            run: run.bind(this, this.handleCmdEnter, editor)
         });
 
         // set up editor hooks
@@ -283,6 +288,7 @@ export default Component.extend({
                 run.begin();
             }
         });
+
         editor.didRender(() => {
             // if we had explicitly started a runloop in `editor.willRender`,
             // we must explicitly end it here
@@ -291,16 +297,19 @@ export default Component.extend({
                 run.end();
             }
         });
+
         editor.postDidChange(() => {
             run.join(() => {
                 this.postDidChange(editor);
             });
         });
+
         editor.cursorDidChange(() => {
             run.join(() => {
                 this.cursorDidChange(editor);
             });
         });
+
         editor.inputModeDidChange(() => {
             if (this.isDestroyed) {
                 return;
@@ -563,8 +572,23 @@ export default Component.extend({
         }
     },
 
-    handleBackspaceKey() {
-        let editor = this.get('editor');
+    handleEnterKey(editor) {
+        let {isCollapsed, head: {offset, section}} = editor.range;
+
+        // if cursor is at beginning of a heading, insert a blank paragraph above
+        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/)) {
+            editor.run((postEditor) => {
+                let newPara = postEditor.builder.createMarkupSection('p');
+                let collection = section.parent.sections;
+                postEditor.insertSectionBefore(collection, newPara, section);
+            });
+            return;
+        }
+
+        return false;
+    },
+
+    handleBackspaceKey(editor) {
         let {head, isCollapsed, head: {marker, offset, section}} = editor.range;
 
         // if a card is selected we should delete the card then place the cursor
@@ -597,6 +621,15 @@ export default Component.extend({
         if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section' && !section.isBlank) {
             let card = this._getCardFromSection(section.prev);
             this._deleteCard(card, CURSOR_AFTER);
+            return;
+        }
+
+        // if cursor is at the beginning of a heading and previous section is a
+        // blank paragraph, delete the blank paragraph
+        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && section.prev.tagName === 'p' && section.prev.isBlank) {
+            editor.run((postEditor) => {
+                postEditor.removeSection(section.prev);
+            });
             return;
         }
 
@@ -636,8 +669,8 @@ export default Component.extend({
         return false;
     },
 
-    handleDelKey() {
-        let {isCollapsed, head: {offset, section}} = this.editor.range;
+    handleDelKey(editor) {
+        let {isCollapsed, head: {offset, section}} = editor.range;
 
         // if a card is selected we should delete the card then place the cursor
         // at the beginning of the next section or select the following card
