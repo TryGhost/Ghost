@@ -261,16 +261,16 @@ describe('Post Model', function () {
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(6);
-                    paginationResult.posts.length.should.equal(10);
+                    paginationResult.meta.pagination.pages.should.equal(1);
+                    paginationResult.posts.length.should.equal(2);
 
                     // Test both boolean formats for featured pages
                     return models.Post.findPage({limit: 10, filter: 'featured:1'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(6);
-                    paginationResult.posts.length.should.equal(10);
+                    paginationResult.meta.pagination.pages.should.equal(1);
+                    paginationResult.posts.length.should.equal(2);
 
                     return models.Post.findPage({limit: 10, page: 2, status: 'all'});
                 }).then(function (paginationResult) {
