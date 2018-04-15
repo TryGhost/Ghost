@@ -432,6 +432,7 @@ DataGenerator.forKnex = (function () {
             uuid: uuid.v4(),
             title: 'title',
             status: 'published',
+            feature_image: null,
             featured: false,
             page: false,
             author_id: DataGenerator.Content.users[0].id,
