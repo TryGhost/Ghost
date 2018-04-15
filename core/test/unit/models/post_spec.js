@@ -293,7 +293,10 @@ describe('Unit: models/post', function () {
                 events.tag.push(event);
             });
 
-            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+            return models.Post.findOne({
+                id: testUtils.DataGenerator.forKnex.posts[3].id,
+                status: 'draft'
+            }, {withRelated: ['tags']})
                 .then((post) => {
                     // post will be updated, tags relation not
                     return models.Post.edit({
@@ -324,7 +327,10 @@ describe('Unit: models/post', function () {
                 events.tag.push(event);
             });
 
-            return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['tags']})
+            return models.Post.findOne({
+                id: testUtils.DataGenerator.forKnex.posts[3].id,
+                status: 'draft'
+            }, {withRelated: ['tags']})
                 .then((post) => {
                     // post will be updated, tags relation not
                     return models.Post.edit({
@@ -775,7 +781,10 @@ describe('Unit: models/post', function () {
 
             describe('findOne', function () {
                 it('withRelated: []', function () {
-                    return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: []})
+                    return models.Post.findOne({
+                        id: testUtils.DataGenerator.forKnex.posts[3].id,
+                        status: 'draft'
+                    }, {withRelated: []})
                         .then(function (post) {
                             post = post.toJSON();
                             post.author.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
@@ -785,7 +794,10 @@ describe('Unit: models/post', function () {
                 });
 
                 it('withRelated: [author]', function () {
-                    return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['author']})
+                    return models.Post.findOne({
+                        id: testUtils.DataGenerator.forKnex.posts[3].id,
+                        status: 'draft'
+                    }, {withRelated: ['author']})
                         .then(function (post) {
                             post = post.toJSON();
                             post.author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
@@ -794,7 +806,10 @@ describe('Unit: models/post', function () {
                 });
 
                 it('withRelated: [authors]', function () {
-                    return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['authors']})
+                    return models.Post.findOne({
+                        id: testUtils.DataGenerator.forKnex.posts[3].id,
+                        status: 'draft'
+                    }, {withRelated: ['authors']})
                         .then(function (post) {
                             post = post.toJSON();
                             post.author.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
@@ -805,7 +820,10 @@ describe('Unit: models/post', function () {
                 });
 
                 it('withRelated: [authors, author]', function () {
-                    return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['authors', 'author']})
+                    return models.Post.findOne({
+                        id: testUtils.DataGenerator.forKnex.posts[3].id,
+                        status: 'draft'
+                    }, {withRelated: ['authors', 'author']})
                         .then(function (post) {
                             post = post.toJSON();
                             post.author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
@@ -911,7 +929,10 @@ describe('Unit: models/post', function () {
                         post = post.toJSON();
                         post.author.should.eql(testUtils.DataGenerator.forKnex.users[1].id);
                         should.not.exist(post.authors);
-                        return models.Post.findOne({id: testUtils.DataGenerator.forKnex.posts[3].id}, {withRelated: ['authors']});
+                        return models.Post.findOne({
+                            id: testUtils.DataGenerator.forKnex.posts[3].id,
+                            status: 'draft'
+                        }, {withRelated: ['authors']});
                     }).then(function (post) {
                         post = post.toJSON();
                         post.authors.length.should.eql(2);
