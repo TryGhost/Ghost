@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-invalid-this:0 */
 
 const should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
@@ -6,6 +7,7 @@ const should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
     settingsCache = require('../../../server/services/settings/cache'),
+    schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
@@ -56,7 +58,227 @@ describe('Unit: models/post', function () {
         });
     });
 
-    describe('Edit', function () {
+    describe('add', function () {
+        describe('ensure full set of data for model events', function () {
+            it('default', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    tags: [{
+                        name: 'my-tag'
+                    }]
+                }, testUtils.context.editor)
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('added');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `withRelated=tags`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    tags: [{
+                        name: 'my-tag'
+                    }]
+                }, _.merge({
+                    withRelated: ['tags']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.exist(post.tags);
+                        should.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('added');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `withRelated=tags,authors`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    tags: [{
+                        name: 'my-tag'
+                    }]
+                }, _.merge({
+                    withRelated: ['tags', 'authors']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.exist(post.authors);
+                        should.exist(post.primary_author);
+                        should.exist(post.tags);
+                        should.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('added');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `columns=title`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    tags: [{
+                        name: 'my-tag'
+                    }]
+                }, _.merge({
+                    columns: ['title']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['title', 'id'])), (key) => {
+                            should.not.exist(post[key]);
+                        });
+
+                        should.exist(post.id);
+                        should.exist(post.title);
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('added');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `formats=mobiledoc`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    tags: [{
+                        name: 'my-tag'
+                    }]
+                }, _.merge({
+                    formats: ['mobiledoc']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['html', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('added');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+        });
+    });
+
+    describe('edit', function () {
         it('update post, relation has not changed', function () {
             const events = {
                 post: [],
@@ -132,6 +354,213 @@ describe('Unit: models/post', function () {
                     should(post.get('feature_image')).be.null();
                     post.get('custom_excerpt').should.eql('');
                 });
+        });
+
+        describe('ensure full set of data for model events', function () {
+            it('default', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.edit({
+                    title: 'My beautiful title.'
+                }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('edited');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `withRelated=tags`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.edit({
+                    title: 'My beautiful title.'
+                }, _.merge({
+                    id: testUtils.DataGenerator.forKnex.posts[3].id,
+                    withRelated: ['tags']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.exist(post.tags);
+                        should.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('edited');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `withRelated=tags,authors`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.edit({
+                    title: 'My beautiful title.'
+                }, _.merge({
+                    id: testUtils.DataGenerator.forKnex.posts[3].id,
+                    withRelated: ['tags', 'authors']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.exist(post.authors);
+                        should.exist(post.primary_author);
+                        should.exist(post.tags);
+                        should.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('edited');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `columns=title`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.edit({
+                    title: 'My beautiful title.'
+                }, _.merge({
+                    id: testUtils.DataGenerator.forKnex.posts[3].id,
+                    columns: ['title']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['title', 'id'])), (key) => {
+                            should.not.exist(post[key]);
+                        });
+
+                        should.exist(post.id);
+                        should.exist(post.title);
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('edited');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('use `formats=mobiledoc`', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.edit({
+                    title: 'My beautiful title.'
+                }, _.merge({
+                    id: testUtils.DataGenerator.forKnex.posts[3].id,
+                    formats: ['mobiledoc']
+                }, testUtils.context.editor))
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['html', 'amp', 'plaintext'])), (key) => {
+                            should.exist(post.hasOwnProperty(key));
+                        });
+
+                        should.not.exist(post.authors);
+                        should.not.exist(post.primary_author);
+                        should.not.exist(post.tags);
+                        should.not.exist(post.primary_tag);
+
+                        events.post[0].event.should.eql('edited');
+
+                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
+                            should.exist(events.post[0].data.hasOwnProperty(key));
+                        });
+
+                        should.exist(events.post[0].data.authors);
+                        should.exist(events.post[0].data.primary_author);
+                        should.exist(events.post[0].data.tags);
+                        should.exist(events.post[0].data.primary_tag);
+                    });
+            });
         });
     });
 
