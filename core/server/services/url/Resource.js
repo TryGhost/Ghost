@@ -1,50 +1,59 @@
 'use strict';
 
-const _ = require('lodash'),
-    localUtils = require('./utils'),
-    prefetchDefaults = {
-        context: {
-            internal: true
-        },
-        limit: 'all'
-    };
+const EventEmitter = require('events').EventEmitter,
+    common = require('../../lib/common');
 
-class Resource {
-    constructor(config) {
-        this.name = config.name;
-        this.api = config.api;
-        this.prefetchOptions = config.prefetchOptions || {};
-        this.urlLookup = config.urlLookup || config.name;
-        this.events = config.events;
-        this.items = {};
+class Resource extends EventEmitter {
+    constructor(type, obj) {
+        super();
+
+        this.data = {};
+        this.config = {
+            type: type,
+            reserved: false
+        };
+
+        Object.assign(this.data, obj);
     }
 
-    fetchAll() {
-        const options = _.defaults(this.prefetchOptions, prefetchDefaults);
+    getType() {
+        return this.config.type;
+    }
 
-        return require('../../api')[this.api]
-            .browse(options)
-            .then((resp) => {
-                this.items = resp[this.api];
-                return this.items;
+    reserve() {
+        if (!this.config.reserved) {
+            this.config.reserved = true;
+        } else {
+            throw new common.errors.InternalServerError({
+                message: 'Resource is already taken.'
             });
+        }
     }
 
-    toUrl(item) {
-        const data = {
-            [this.urlLookup]: item
-        };
-        return localUtils.urlFor(this.urlLookup, data);
+    release() {
+        this.config.reserved = false;
     }
 
-    toData(item) {
-        return {
-            slug: item.slug,
-            resource: {
-                type: this.name,
-                id: item.id
-            }
-        };
+    isReserved() {
+        return this.config.reserved === true;
+    }
+
+    update(obj) {
+        this.data = obj;
+
+        if (!this.isReserved()) {
+            return;
+        }
+
+        this.emit('updated', this);
+    }
+
+    remove() {
+        if (!this.isReserved()) {
+            return;
+        }
+
+        this.emit('removed', this);
     }
 }
 
