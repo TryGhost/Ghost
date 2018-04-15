@@ -10,11 +10,6 @@ const debug = require('ghost-ignition').debug('services:url:resources'),
 /**
  * These are the default resources and filters.
  * These are the minimum filters for public accessibility of resources.
- *
- * @TODO:
- * - keep a set of attributes in the url service
- *  - BUT trigger the event with the full set of attributes
- *  - the subscriber should have access to all of them?
  */
 const resourcesConfig = [
     {
