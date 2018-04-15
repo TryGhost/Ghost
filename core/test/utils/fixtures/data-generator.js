@@ -75,14 +75,14 @@ DataGenerator.Content = {
             title: 'This is a static page',
             slug: 'static-page-test',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: 1
+            page: true
         },
         {
             id: ObjectId.generate(),
             title: 'This is a draft static page',
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: 1,
+            page: true,
             status: 'draft'
         },
         {
@@ -441,7 +441,8 @@ DataGenerator.forKnex = (function () {
             created_at: new Date(),
             created_by: DataGenerator.Content.users[0].id,
             published_at: new Date(),
-            published_by: DataGenerator.Content.users[0].id
+            published_by: DataGenerator.Content.users[0].id,
+            visibility: 'public'
         });
     }
 
@@ -475,7 +476,8 @@ DataGenerator.forKnex = (function () {
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id
+            updated_by: DataGenerator.Content.users[0].id,
+            visibility: 'public'
         });
     }
 
