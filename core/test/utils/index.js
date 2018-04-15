@@ -933,7 +933,7 @@ startGhost = function startGhost(options) {
             .then(function () {
                 customRedirectsMiddleware.reload();
 
-                common.events.emit('server:start');
+                common.events.emit('server.start');
                 return ghostServer;
             });
     }

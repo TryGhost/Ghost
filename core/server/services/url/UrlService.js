@@ -44,7 +44,7 @@ class UrlService {
         UrlService.cacheRoute('/subscribe/', {});
 
         // Register a listener for server-start to load all the known urls
-        common.events.on('server:start', (() => {
+        common.events.on('server.start', (() => {
             debug('URL service, loading all URLS');
             this.loadResourceUrls();
         }));
