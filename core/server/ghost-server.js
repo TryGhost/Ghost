@@ -94,7 +94,7 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             debug('...Started');
-            common.events.emit('server:start');
+            common.events.emit('server.start');
             self.logStartMessages();
             resolve(self);
         });
@@ -115,7 +115,7 @@ GhostServer.prototype.stop = function () {
             resolve(self);
         } else {
             self.httpServer.close(function () {
-                common.events.emit('server:stop');
+                common.events.emit('server.stop');
                 self.httpServer = null;
                 self.logShutdownMessages();
                 resolve(self);
