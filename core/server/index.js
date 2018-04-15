@@ -53,6 +53,9 @@ function init() {
         return settings.init();
     }).then(function () {
         debug('Update settings cache done');
+
+        common.events.emit('db.ready');
+
         // Full internationalization for core could be here
         // in a future version with backend translations
         // (settings for language and theme available here;
