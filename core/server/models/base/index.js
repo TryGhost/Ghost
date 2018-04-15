@@ -604,6 +604,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         permittedOptions = _.union(permittedOptions, extraAllowedProperties);
         options = _.pick(options, permittedOptions);
 
+        if (this.defaultRelations) {
+            options = this.defaultRelations(methodName, options);
+        }
+
         return options;
     },
 
@@ -642,6 +646,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Find results by page - returns an object containing the
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
+     *
+     * @TODO: This model function does return JSON O_O.
      *
      * **response:**
      *
