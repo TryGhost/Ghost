@@ -7,13 +7,15 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
-const JSONContentType = 'application/json';
+const JSON_CONTENT_TYPE = 'application/json';
+const GHOST_REQUEST = /\/ghost\/api\//;
+const TOKEN_REQUEST = /authentication\/(?:token|ghost|revoke)/;
 
 function isJSONContentType(header) {
     if (!header || isNone(header)) {
         return false;
     }
-    return header.indexOf(JSONContentType) === 0;
+    return header.indexOf(JSON_CONTENT_TYPE) === 0;
 }
 
 /* Version mismatch error */
@@ -135,8 +137,8 @@ let ajaxService = AjaxService.extend({
     // and formats appropriately, we want to handle `application/json` the same
     _makeRequest(hash) {
         let isAuthenticated = this.get('session.isAuthenticated');
-        let isGhostRequest = hash.url.indexOf('/ghost/api/') !== -1;
-        let isTokenRequest = isGhostRequest && hash.url.match(/authentication\/(?:token|ghost)/);
+        let isGhostRequest = GHOST_REQUEST.test(hash.url);
+        let isTokenRequest = isGhostRequest && TOKEN_REQUEST.test(hash.url);
         let tokenExpiry = this.get('session.authenticated.expires_at');
         let isTokenExpired = tokenExpiry < (new Date()).getTime();
 
@@ -167,7 +169,7 @@ let ajaxService = AjaxService.extend({
         return this._super(...arguments);
     },
 
-    handleResponse(status, headers, payload) {
+    handleResponse(status, headers, payload, request) {
         if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {
@@ -182,9 +184,11 @@ let ajaxService = AjaxService.extend({
             return new ThemeValidationError(payload);
         }
 
-        // TODO: we may want to check that we are hitting our own API before
-        // logging the user out due to a 401 response
-        if (this.isUnauthorizedError(status, headers, payload) && this.get('session.isAuthenticated')) {
+        let isGhostRequest = GHOST_REQUEST.test(request.url);
+        let isAuthenticated = this.get('session.isAuthenticated');
+        let isUnauthorized = this.isUnauthorizedError(status, headers, payload);
+
+        if (isAuthenticated && isGhostRequest && isUnauthorized) {
             this.get('session').invalidate();
         }
 

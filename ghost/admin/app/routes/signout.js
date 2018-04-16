@@ -16,9 +16,9 @@ export default AuthenticatedRoute.extend(styleBody, {
     afterModel(model, transition) {
         this.get('notifications').clearAll();
         if (canInvoke(transition, 'send')) {
-            transition.send('invalidateSession');
+            transition.send('logout');
         } else {
-            this.send('invalidateSession');
+            this.send('logout');
         }
     }
 });

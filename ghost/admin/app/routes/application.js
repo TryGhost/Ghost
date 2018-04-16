@@ -30,8 +30,10 @@ shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
+    ajax: service(),
     config: service(),
     feature: service(),
+    ghostPaths: service(),
     notifications: service(),
     settings: service(),
     tour: service(),
@@ -106,10 +108,33 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.send('loadServerNotifications', true);
         },
 
-        invalidateSession() {
-            this.get('session').invalidate().catch((error) => {
-                this.get('notifications').showAlert(error.message, {type: 'error', key: 'session.invalidate.failed'});
-            });
+        // this is only called by the `signout` route at present.
+        // it's separate to the normal ESA session invalidadition because it will
+        // actually send the token revocation requests whereas we have to avoid
+        // those most of the time because they will fail if we have invalid tokens
+        logout() {
+            let session = this.get('session');
+            // revoke keys on the server
+            if (session.get('isAuthenticated')) {
+                let auth = session.get('data.authenticated');
+                let revokeEndpoint = `${this.get('ghostPaths.apiRoot')}/authentication/revoke`;
+                let authenticator = session.get('session')._lookupAuthenticator(session.get('session.authenticator'));
+                let requests = [];
+                ['refresh_token', 'access_token'].forEach((tokenType) => {
+                    let data = {
+                        token_type_hint: tokenType,
+                        token: auth[tokenType]
+                    };
+                    authenticator.makeRequest(revokeEndpoint, data);
+                });
+                RSVP.all(requests).finally(() => {
+                    // remove local keys and refresh
+                    session.invalidate();
+                });
+            } else {
+                // remove local keys and refresh
+                session.invalidate();
+            }
         },
 
         authorizationFailed() {
