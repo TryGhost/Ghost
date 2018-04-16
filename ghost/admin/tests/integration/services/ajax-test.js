@@ -177,8 +177,6 @@ describe('Integration: Service: ajax', function () {
 
     /* eslint-disable camelcase */
     describe('session handling', function () {
-        let successfulRequest = false;
-
         let sessionStub = Service.extend({
             isAuthenticated: true,
             restoreCalled: false,
@@ -261,7 +259,6 @@ describe('Integration: Service: ajax', function () {
                 // TODO: fix the error return when a session restore fails
                 // expect(isUnauthorizedError(error)).to.be.true;
                 expect(ajax.get('session.restoreCalled'), 'restoreCalled').to.be.true;
-                expect(successfulRequest, 'successfulRequest').to.be.false;
                 expect(invalidateCalled, 'invalidateCalled').to.be.true;
                 done();
             });

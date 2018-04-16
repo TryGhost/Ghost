@@ -26,9 +26,10 @@ export default Authenticator.extend({
         return `${this.get('ghostPaths.apiRoot')}/authentication/token`;
     }),
 
-    serverTokenRevocationEndpoint: computed('ghostPaths.apiRoot', function () {
-        return `${this.get('ghostPaths.apiRoot')}/authentication/revoke`;
-    }),
+    // disable general token revocation because the requests will always 401
+    // (revocation is triggered by invalid access token so it's already invalid)
+    // we have a separate logout procedure that sends revocation requests
+    serverTokenRevocationEndpoint: null,
 
     makeRequest(url, data) {
         /* eslint-disable camelcase */
