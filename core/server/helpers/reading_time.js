@@ -47,9 +47,9 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
         readingTimeSeconds += Math.max(i, 3);
     }
 
-    readingTimeMinutes = Math.max(Math.round(readingTimeSeconds / 60), 1);
+    readingTimeMinutes = Math.round(readingTimeSeconds / 60);
 
-    if (readingTimeMinutes === 1) {
+    if (readingTimeMinutes <= 1) {
         readingTime = minute;
     } else {
         readingTime = minutes.replace('%', readingTimeMinutes);
