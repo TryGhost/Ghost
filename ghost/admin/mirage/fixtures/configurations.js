@@ -6,12 +6,5 @@ export default [{
     fileStorage: 'true',
     internalTags: 'false',
     publicAPI: 'false',
-    routeKeywords: {
-        tag: 'tag',
-        author: 'author',
-        page: 'page',
-        preview: 'p',
-        private: 'private'
-    },
     useGravatar: 'true'
 }];
