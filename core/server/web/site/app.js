@@ -123,6 +123,9 @@ module.exports = function setupSiteApp() {
 
     debug('General middleware done');
 
+    // @temporary
+    require('../../services/channels/Channels2');
+
     // Set up Frontend routes (including private blogging routes)
     siteApp.use(siteRoutes());
 
