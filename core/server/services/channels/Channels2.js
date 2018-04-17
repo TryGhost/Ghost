@@ -138,22 +138,6 @@ const collection1 = new Collection({
     }
 });
 
-// @TODO: remove me (was only for testing)
-const collection2 = new Collection({
-    route: {
-        value: '/podcast/'
-    },
-    permalinks: {
-        value: '/:year/:month/:day/:slug/'
-    },
-    config: {
-        type: 'posts',
-        options: {
-            filter: 'featured:true'
-        }
-    }
-});
-
 const taxonomy1 = new Taxonomy({
     route: {
         value: '/author/'
