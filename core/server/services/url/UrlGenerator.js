@@ -5,6 +5,7 @@ const _ = require('lodash'),
     moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),
     debug = require('ghost-ignition').debug('services:url:generator'),
+    localUtils = require('./utils'),
     settingsCache = require('../settings/cache'),
     /**
      * @TODO: This is a fake version of the upcoming GQL tool.
@@ -136,9 +137,16 @@ class UrlGenerator {
         }
     }
 
+    /**
+     * We currently generate relative urls.
+     *
+     * @TODO: reconsider? e.g. sitemaps would receive a relative url, but we show absolute urls
+     */
     _generateUrl(resource) {
-        const url = this.routingType.getPermalinks().getValue();
-        return this._replacePermalink(url, resource);
+        let url = this.routingType.getPermalinks().getValue();
+        url = this._replacePermalink(url, resource);
+
+        return localUtils.createUrl(url, false, false);
     }
 
     /**
