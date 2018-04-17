@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
+const configUtils = require('../../../utils/configUtils');
 const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
 const UrlService = require('../../../../server/services/url/UrlService');
@@ -539,6 +540,203 @@ describe('Unit: services/url/UrlService', function () {
                         });
                     });
             });
+        });
+    });
+
+    describe('functional: subdirectory', function () {
+        let routingType1, routingType2, routingType3, routingType4, routingType5;
+
+        beforeEach(function (done) {
+            configUtils.set('url', 'http://localhost:2388/blog');
+
+            urlService = new UrlService();
+
+            routingType1 = {
+                getFilter: sandbox.stub(),
+                addListener: sandbox.stub(),
+                getType: sandbox.stub(),
+                getPermalinks: sandbox.stub(),
+                toString: function () {
+                    return 'post collection 1';
+                }
+            };
+
+            routingType2 = {
+                getFilter: sandbox.stub(),
+                addListener: sandbox.stub(),
+                getType: sandbox.stub(),
+                getPermalinks: sandbox.stub(),
+                toString: function () {
+                    return 'post collection 2';
+                }
+            };
+
+            routingType3 = {
+                getFilter: sandbox.stub(),
+                addListener: sandbox.stub(),
+                getType: sandbox.stub(),
+                getPermalinks: sandbox.stub(),
+                toString: function () {
+                    return 'authors';
+                }
+            };
+
+            routingType4 = {
+                getFilter: sandbox.stub(),
+                addListener: sandbox.stub(),
+                getType: sandbox.stub(),
+                getPermalinks: sandbox.stub(),
+                toString: function () {
+                    return 'tags';
+                }
+            };
+
+            routingType5 = {
+                getFilter: sandbox.stub(),
+                addListener: sandbox.stub(),
+                getType: sandbox.stub(),
+                getPermalinks: sandbox.stub(),
+                toString: function () {
+                    return 'static pages';
+                }
+            };
+
+            routingType1.getFilter.returns('featured:false');
+            routingType1.getType.returns('posts');
+            routingType1.getPermalinks.returns({
+                getValue: function () {
+                    return '/collection/:year/:slug/';
+                }
+            });
+
+            routingType2.getFilter.returns('featured:true');
+            routingType2.getType.returns('posts');
+            routingType2.getPermalinks.returns({
+                getValue: function () {
+                    return '/podcast/:slug/';
+                }
+            });
+
+            routingType3.getFilter.returns(false);
+            routingType3.getType.returns('users');
+            routingType3.getPermalinks.returns({
+                getValue: function () {
+                    return '/persons/:slug/';
+                }
+            });
+
+            routingType4.getFilter.returns(false);
+            routingType4.getType.returns('tags');
+            routingType4.getPermalinks.returns({
+                getValue: function () {
+                    return '/category/:slug/';
+                }
+            });
+
+            routingType5.getFilter.returns(false);
+            routingType5.getType.returns('pages');
+            routingType5.getPermalinks.returns({
+                getValue: function () {
+                    return '/:slug/';
+                }
+            });
+
+            common.events.emit('routingType.created', routingType1);
+            common.events.emit('routingType.created', routingType2);
+            common.events.emit('routingType.created', routingType3);
+            common.events.emit('routingType.created', routingType4);
+            common.events.emit('routingType.created', routingType5);
+
+            common.events.emit('db.ready');
+
+            let timeout;
+            (function retry() {
+                clearTimeout(timeout);
+
+                if (urlService.hasFinished()) {
+                    return done();
+                }
+
+                setTimeout(retry, 50);
+            })();
+        });
+
+        afterEach(function () {
+            urlService.reset();
+            configUtils.restore();
+        });
+
+        it('check url generators', function () {
+            urlService.urlGenerators.length.should.eql(5);
+            urlService.urlGenerators[0].routingType.should.eql(routingType1);
+            urlService.urlGenerators[1].routingType.should.eql(routingType2);
+            urlService.urlGenerators[2].routingType.should.eql(routingType3);
+            urlService.urlGenerators[3].routingType.should.eql(routingType4);
+            urlService.urlGenerators[4].routingType.should.eql(routingType5);
+        });
+
+        it('getUrl', function () {
+            urlService.urlGenerators.forEach(function (generator) {
+                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:false') {
+                    generator.getUrls().length.should.eql(2);
+                }
+
+                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:true') {
+                    generator.getUrls().length.should.eql(2);
+                }
+
+                if (generator.routingType.getType() === 'pages') {
+                    generator.getUrls().length.should.eql(1);
+                }
+
+                if (generator.routingType.getType() === 'tags') {
+                    generator.getUrls().length.should.eql(5);
+                }
+
+                if (generator.routingType.getType() === 'users') {
+                    generator.getUrls().length.should.eql(5);
+                }
+            });
+
+            let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
+            url.should.eql('/blog/collection/2015/html-ipsum/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
+            url.should.eql('/blog/collection/2015/ghostly-kitchen-sink/');
+
+            // featured
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
+            url.should.eql('/blog/podcast/short-and-sweet/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
+            url.should.eql('/blog/category/kitchen-sink/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
+            url.should.eql('/blog/category/bacon/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
+            url.should.eql('/blog/category/chorizo/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
+            url.should.eql('/blog/category/pollo/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
+            url.should.eql('/blog/category/injection/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
+            url.should.eql('/blog/persons/joe-bloggs/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
+            url.should.eql('/blog/persons/smith-wellingsworth/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
+            url.should.eql('/blog/persons/jimothy-bogendath/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
+            url.should.eql('/blog/persons/slimer-mcectoplasm/');
+
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
+            url.should.eql('/blog/persons/contributor/');
         });
     });
 });
