@@ -5,7 +5,6 @@ const _ = require('lodash'),
     moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),
     debug = require('ghost-ignition').debug('services:url:generator'),
-    config = require('../../config'),
     settingsCache = require('../settings/cache'),
     /**
      * @TODO: This is a fake version of the upcoming GQL tool.
@@ -150,7 +149,7 @@ class UrlGenerator {
      */
     _replacePermalink(url, resource) {
         var output = url,
-            primaryTagFallback = config.get('routeKeywords').primaryTagFallback,
+            primaryTagFallback = 'all',
             publishedAtMoment = moment.tz(resource.data.published_at || Date.now(), settingsCache.get('active_timezone')),
             permalink = {
                 year: function () {
