@@ -17,11 +17,7 @@ const resourcesConfig = [
         modelOptions: {
             modelName: 'Post',
             filter: 'visibility:public+status:published+page:false',
-            exclude: [
-                'mobiledoc',
-                'html',
-                'plaintext'
-            ],
+            reducedFields: true,
             withRelated: ['tags', 'authors'],
             withRelatedFields: {
                 tags: ['tags.id', 'tags.slug'],
@@ -38,11 +34,7 @@ const resourcesConfig = [
         type: 'pages',
         modelOptions: {
             modelName: 'Post',
-            exclude: [
-                'mobiledoc',
-                'html',
-                'plaintext'
-            ],
+            reducedFields: true,
             filter: 'visibility:public+status:published+page:true'
         },
         events: {
@@ -56,6 +48,7 @@ const resourcesConfig = [
         keep: ['id', 'slug', 'updated_at', 'created_at'],
         modelOptions: {
             modelName: 'Tag',
+            reducedFields: true,
             filter: 'visibility:public'
         },
         events: {
@@ -68,6 +61,7 @@ const resourcesConfig = [
         type: 'users',
         modelOptions: {
             modelName: 'User',
+            reducedFields: true,
             filter: 'visibility:public'
         },
         events: {

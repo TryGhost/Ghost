@@ -978,13 +978,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
-     * If you want to fetch all data, i recommend using this function.
-     * Bookshelf is just too slow.
+     * If you want to fetch all data fast, i recommend using this function.
+     * Bookshelf is just too slow, too much ORM overhead.
      *
      * If we e.g. instantiate for each object a model, it takes twice long.
-     *
-     * @TODO:
-     * - move this somewhere else?
      */
     raw_knex: {
         fetchAll: function (options) {
@@ -996,7 +993,44 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 User: 'users',
                 Tag: 'tags'
             };
-            const exclude = options.exclude;
+            const reducedFields = options.reducedFields;
+            const exclude = {
+                Post: [
+                    'title',
+                    'mobiledoc',
+                    'html',
+                    'plaintext',
+                    'amp',
+                    'codeinjection_head',
+                    'codeinjection_foot',
+                    'meta_title',
+                    'meta_description',
+                    'custom_excerpt',
+                    'og_image',
+                    'og_title',
+                    'og_description',
+                    'twitter_image',
+                    'twitter_title',
+                    'twitter_description',
+                    'custom_template'
+                ],
+                User: [
+                    'bio',
+                    'website',
+                    'location',
+                    'facebook',
+                    'twitter',
+                    'accessibility',
+                    'meta_title',
+                    'meta_description',
+                    'tour'
+                ],
+                Tag: [
+                    'description',
+                    'meta_title',
+                    'meta_description'
+                ]
+            };
             const filter = options.filter;
             const withRelated = options.withRelated;
             const withRelatedFields = options.withRelatedFields;
@@ -1029,11 +1063,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             let query = ghostBookshelf.knex(tableNames[modelName]);
 
-            // exclude fields
-            if (exclude) {
+            // exclude fields if enabled
+            if (reducedFields) {
                 const toSelect = _.keys(schema.tables[tableNames[modelName]]);
 
-                _.each(exclude, (key) => {
+                _.each(exclude[modelName], (key) => {
                     if (toSelect.indexOf(key) !== -1) {
                         toSelect.splice(toSelect.indexOf(key), 1);
                     }
