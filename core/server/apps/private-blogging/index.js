@@ -1,9 +1,10 @@
-var config = require('../../config'),
-    urlService = require('../../services/url'),
+var urlService = require('../../services/url'),
     common = require('../../lib/common'),
     middleware = require('./lib/middleware'),
     router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
+    // routeKeywords.private: 'private'
+    PRIVATE_KEYWORD = 'private',
     checkSubdir;
 
 checkSubdir = function checkSubdir() {
@@ -12,7 +13,7 @@ checkSubdir = function checkSubdir() {
     if (urlService.utils.getSubdir()) {
         paths = urlService.utils.getSubdir().split('/');
 
-        if (paths.pop() === config.get('routeKeywords').private) {
+        if (paths.pop() === PRIVATE_KEYWORD) {
             common.logging.error(new common.errors.GhostError({
                 message: common.i18n.t('errors.config.urlCannotContainPrivateSubdir.error'),
                 context: common.i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
@@ -27,7 +28,7 @@ checkSubdir = function checkSubdir() {
 
 module.exports = {
     activate: function activate(ghost) {
-        var privateRoute = '/' + config.get('routeKeywords').private + '/';
+        var privateRoute = '/' + PRIVATE_KEYWORD + '/';
 
         checkSubdir();
 
