@@ -20,17 +20,6 @@
             "amp"
         ]
     },
-    "routeKeywords": {
-        "tag": "tag",
-        "author": "author",
-        "page": "page",
-        "preview": "p",
-        "private": "private",
-        "subscribe": "subscribe",
-        "amp": "amp",
-        "primaryTagFallback": "all",
-        "primaryAuthorFallback": "all"
-    },
     "slugs": {
         "reserved": ["admin", "app", "apps", "categories",
             "category", "dashboard", "feed", "ghost-admin", "login", "logout",

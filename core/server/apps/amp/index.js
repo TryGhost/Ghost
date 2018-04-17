@@ -3,13 +3,13 @@ var router           = require('./lib/router'),
     urlService = require('../../services/url'),
 
     // Dirty requires
-    config = require('../../config'),
     settingsCache = require('../../services/settings/cache');
 
 function ampRouter(req, res) {
     if (settingsCache.get('amp') === true) {
         return router.apply(this, arguments);
     } else {
+        // routeKeywords.amp: 'amp'
         var redirectUrl = req.originalUrl.replace(/amp\/$/, '');
         urlService.utils.redirect301(res, redirectUrl);
     }
@@ -17,7 +17,8 @@ function ampRouter(req, res) {
 
 module.exports = {
     activate: function activate(ghost) {
-        var ampRoute = '*/' + config.get('routeKeywords').amp + '/';
+        // routeKeywords.amp: 'amp'
+        var ampRoute = '*/amp/';
 
         ghost.routeService.registerRouter(ampRoute, ampRouter);
 

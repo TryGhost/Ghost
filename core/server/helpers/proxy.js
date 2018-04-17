@@ -35,7 +35,6 @@ module.exports = {
     // Config!
     // Keys used:
     // isPrivacyDisabled & referrerPolicy used in ghost_head
-    // Subscribe app uses routeKeywords
     config: {
         get: config.get.bind(config),
         isPrivacyDisabled: config.isPrivacyDisabled.bind(config)
