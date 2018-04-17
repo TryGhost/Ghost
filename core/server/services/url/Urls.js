@@ -23,9 +23,12 @@ class Urls {
         debug('cache', url);
 
         if (this.urls[resource.data.id]) {
-            throw new common.errors.IncorrectUsageError({
-                message: 'This should not happen'
-            });
+            common.logging.error(new common.errors.InternalServerError({
+                message: 'This should not happen.',
+                code: 'URLSERVICE_RESOURCE_DUPLICATE'
+            }));
+
+            this.removeResourceId(resource.data.id);
         }
 
         this.urls[resource.data.id] = {
@@ -77,6 +80,10 @@ class Urls {
     }
 
     removeResourceId(id) {
+        if (!this.urls[id]) {
+            return;
+        }
+
         debug('removed', this.urls[id].url, this.urls[id].generatorId);
 
         common.events.emit('url.removed', {

@@ -123,13 +123,6 @@ class UrlService {
             return obj.url;
         }
 
-        if (!this.hasFinished()) {
-            throw new common.errors.InternalServerError({
-                message: 'UrlService still bootstraps.',
-                code: 'URLSERVICE_NOT_READY'
-            });
-        }
-
         return null;
     }
 

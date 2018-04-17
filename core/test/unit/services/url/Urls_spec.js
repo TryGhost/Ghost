@@ -61,13 +61,31 @@ describe('Unit: services/url/Urls', function () {
             url: '/test/',
             resource: {
                 data: {
-                    id: 'object-id-x'
+                    id: 'object-id-x',
+                    slug: 'a'
                 }
             },
             generatorId: 1
         });
 
         should.exist(eventsToRemember['url.added']);
+        urls.getByResourceId('object-id-x').resource.data.slug.should.eql('a');
+
+        // add duplicate
+        urls.add({
+            url: '/test/',
+            resource: {
+                data: {
+                    id: 'object-id-x',
+                    slug: 'b'
+                }
+            },
+            generatorId: 1
+        });
+
+        should.exist(eventsToRemember['url.added']);
+
+        urls.getByResourceId('object-id-x').resource.data.slug.should.eql('b');
     });
 
     it('fn: getByResourceId', function () {
@@ -85,5 +103,7 @@ describe('Unit: services/url/Urls', function () {
     it('fn: removeResourceId', function () {
         urls.removeResourceId('object-id-2');
         should.not.exist(urls.getByResourceId('object-id-2'));
+
+        urls.removeResourceId('does not exist');
     });
 });

@@ -24,9 +24,10 @@ class Resource extends EventEmitter {
         if (!this.config.reserved) {
             this.config.reserved = true;
         } else {
-            throw new common.errors.InternalServerError({
-                message: 'Resource is already taken.'
-            });
+            common.logging.error(new common.errors.InternalServerError({
+                message: 'Resource is already taken. This should not happen.',
+                code: 'URLSERVICE_RESERVE_RESOURCE'
+            }));
         }
     }
 

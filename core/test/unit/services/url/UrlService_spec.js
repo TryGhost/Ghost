@@ -41,7 +41,7 @@ describe('Unit: services/url/UrlService', function () {
     describe('functional: default routing set', function () {
         let routingType1, routingType2, routingType3, routingType4;
 
-        beforeEach(function () {
+        beforeEach(function (done) {
             urlService = new UrlService();
 
             routingType1 = {
@@ -122,6 +122,17 @@ describe('Unit: services/url/UrlService', function () {
             common.events.emit('routingType.created', routingType4);
 
             common.events.emit('db.ready');
+
+            let timeout;
+            (function retry() {
+                clearTimeout(timeout);
+
+                if (urlService.hasFinished()) {
+                    return done();
+                }
+
+                setTimeout(retry, 50);
+            })();
         });
 
         afterEach(function () {
@@ -136,87 +147,53 @@ describe('Unit: services/url/UrlService', function () {
             urlService.urlGenerators[3].routingType.should.eql(routingType4);
         });
 
-        it('getUrl', function (done) {
-            let timeout;
+        it('getUrl', function () {
+            let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
+            url.should.eql('/html-ipsum/');
 
-            (function retry() {
-                clearTimeout(timeout);
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
+            url.should.eql('/ghostly-kitchen-sink/');
 
-                try {
-                    let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
-                    url.should.eql('/html-ipsum/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
+            should.not.exist(url);
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
-                    url.should.eql('/ghostly-kitchen-sink/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
+            url.should.eql('/tag/kitchen-sink/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
-                    should.not.exist(url);
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
+            url.should.eql('/tag/bacon/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
-                    url.should.eql('/tag/kitchen-sink/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
+            url.should.eql('/tag/chorizo/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
-                    url.should.eql('/tag/bacon/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
+            url.should.eql('/tag/pollo/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
-                    url.should.eql('/tag/chorizo/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
+            url.should.eql('/tag/injection/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
-                    url.should.eql('/tag/pollo/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
+            url.should.eql('/author/joe-bloggs/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
-                    url.should.eql('/tag/injection/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
+            url.should.eql('/author/smith-wellingsworth/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
-                    url.should.eql('/author/joe-bloggs/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
+            url.should.eql('/author/jimothy-bogendath/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
-                    url.should.eql('/author/smith-wellingsworth/');
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
+            url.should.eql('/author/slimer-mcectoplasm/');
 
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
-                    url.should.eql('/author/jimothy-bogendath/');
-
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
-                    url.should.eql('/author/slimer-mcectoplasm/');
-
-                    url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
-                    url.should.eql('/author/contributor/');
-
-                    done();
-                } catch (err) {
-                    if (err.code === 'URLSERVICE_NOT_READY') {
-                        timeout = setTimeout(retry, 50);
-                        return;
-                    }
-
-                    done(err);
-                }
-            })();
+            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
+            url.should.eql('/author/contributor/');
         });
 
-        it('getResource', function (done) {
-            let timeout;
+        it('getResource', function () {
+            let resource = urlService.getResource('/html-ipsum/');
+            resource.data.id.should.eql(testUtils.DataGenerator.forKnex.posts[0].id);
 
-            (function retry() {
-                clearTimeout(timeout);
-
-                try {
-                    let resource = urlService.getResource('/html-ipsum/');
-                    resource.data.id.should.eql(testUtils.DataGenerator.forKnex.posts[0].id);
-
-                    resource = urlService.getResource('/does-not-exist/');
-                    should.not.exist(resource);
-
-                    done();
-                } catch (err) {
-                    if (err.code === 'URLSERVICE_NOT_READY') {
-                        timeout = setTimeout(retry, 50);
-                        return;
-                    }
-
-                    done(err);
-                }
-            })();
+            resource = urlService.getResource('/does-not-exist/');
+            should.not.exist(resource);
         });
 
         describe('update resource', function () {
@@ -228,7 +205,7 @@ describe('Unit: services/url/UrlService', function () {
                         (function retry() {
                             clearTimeout(timeout);
 
-                            try {
+                            if (urlService.hasFinished()) {
                                 // There is no collection which owns featured posts.
                                 let url = urlService.getUrl(post.id);
                                 should.not.exist(url);
@@ -242,15 +219,11 @@ describe('Unit: services/url/UrlService', function () {
                                         generator.getUrls().length.should.eql(1);
                                     }
                                 });
-                                done();
-                            } catch (err) {
-                                if (err.code === 'URLSERVICE_NOT_READY') {
-                                    timeout = setTimeout(retry, 50);
-                                    return;
-                                }
 
-                                done(err);
+                                return done();
                             }
+
+                            timeout = setTimeout(retry, 50);
                         })();
                     });
             });
@@ -263,7 +236,7 @@ describe('Unit: services/url/UrlService', function () {
                         (function retry() {
                             clearTimeout(timeout);
 
-                            try {
+                            if (urlService.hasFinished()) {
                                 let url = urlService.getUrl(post.id);
 
                                 url.should.eql('/ghostly-kitchen-sink/');
@@ -278,15 +251,10 @@ describe('Unit: services/url/UrlService', function () {
                                     }
                                 });
 
-                                done();
-                            } catch (err) {
-                                if (err.code === 'URLSERVICE_NOT_READY') {
-                                    timeout = setTimeout(retry, 50);
-                                    return;
-                                }
-
-                                done(err);
+                                return done();
                             }
+
+                            timeout = setTimeout(retry, 50);
                         })();
                     });
             });
@@ -299,7 +267,7 @@ describe('Unit: services/url/UrlService', function () {
                         (function retry() {
                             clearTimeout(timeout);
 
-                            try {
+                            if (urlService.hasFinished()) {
                                 let url = urlService.getUrl(post.id);
 
                                 url.should.eql('/static-page-test/');
@@ -314,15 +282,10 @@ describe('Unit: services/url/UrlService', function () {
                                     }
                                 });
 
-                                done();
-                            } catch (err) {
-                                if (err.code === 'URLSERVICE_NOT_READY') {
-                                    timeout = setTimeout(retry, 50);
-                                    return;
-                                }
-
-                                done(err);
+                                return done();
                             }
+
+                            timeout = setTimeout(retry, 50);
                         })();
                     });
             });
@@ -341,22 +304,17 @@ describe('Unit: services/url/UrlService', function () {
                 (function retry() {
                     clearTimeout(timeout);
 
-                    try {
+                    if (urlService.hasFinished()) {
                         let url = urlService.getUrl(post.id);
                         url.should.eql('/brand-new-story/');
 
                         let resource = urlService.getResource(url);
                         resource.data.primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[4].id);
 
-                        done();
-                    } catch (err) {
-                        if (err.code === 'URLSERVICE_NOT_READY') {
-                            timeout = setTimeout(retry, 50);
-                            return;
-                        }
-
-                        done(err);
+                        return done();
                     }
+
+                    timeout = setTimeout(retry, 50);
                 })();
             });
         });
