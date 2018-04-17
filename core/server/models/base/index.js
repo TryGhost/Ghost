@@ -11,7 +11,9 @@ const _ = require('lodash'),
     bookshelf = require('bookshelf'),
     moment = require('moment'),
     Promise = require('bluebird'),
+    gql = require('ghost-gql'),
     ObjectId = require('bson-objectid'),
+    debug = require('ghost-ignition').debug('models:base'),
     config = require('../../config'),
     db = require('../../data/db'),
     common = require('../../lib/common'),
@@ -324,7 +326,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * all supported databases (sqlite, mysql) return different values
      *
      * sqlite:
-     *   - knex returns a UTC String
+     *   - knex returns a UTC String (2018-04-12 20:50:35)
      * mysql:
      *   - knex wraps the UTC value into a local JS Date
      */
@@ -422,7 +424,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @returns {*}
      */
     toJSON: function toJSON(unfilteredOptions) {
-        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
+        const options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
         options.omitPivot = true;
 
         return proto.toJSON.call(this, options);
@@ -604,6 +606,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         permittedOptions = _.union(permittedOptions, extraAllowedProperties);
         options = _.pick(options, permittedOptions);
 
+        if (this.defaultRelations) {
+            options = this.defaultRelations(methodName, options);
+        }
+
         return options;
     },
 
@@ -642,6 +648,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Find results by page - returns an object containing the
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
+     *
+     * @TODO: This model function does return JSON O_O.
      *
      * **response:**
      *
@@ -967,6 +975,214 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return _.map(visibility.split(','), _.trim);
+    },
+
+    /**
+     * If you want to fetch all data fast, i recommend using this function.
+     * Bookshelf is just too slow, too much ORM overhead.
+     *
+     * If we e.g. instantiate for each object a model, it takes twice long.
+     */
+    raw_knex: {
+        fetchAll: function (options) {
+            options = options || {};
+
+            const modelName = options.modelName;
+            const tableNames = {
+                Post: 'posts',
+                User: 'users',
+                Tag: 'tags'
+            };
+            const reducedFields = options.reducedFields;
+            const exclude = {
+                Post: [
+                    'title',
+                    'mobiledoc',
+                    'html',
+                    'plaintext',
+                    'amp',
+                    'codeinjection_head',
+                    'codeinjection_foot',
+                    'meta_title',
+                    'meta_description',
+                    'custom_excerpt',
+                    'og_image',
+                    'og_title',
+                    'og_description',
+                    'twitter_image',
+                    'twitter_title',
+                    'twitter_description',
+                    'custom_template'
+                ],
+                User: [
+                    'bio',
+                    'website',
+                    'location',
+                    'facebook',
+                    'twitter',
+                    'accessibility',
+                    'meta_title',
+                    'meta_description',
+                    'tour'
+                ],
+                Tag: [
+                    'description',
+                    'meta_title',
+                    'meta_description'
+                ]
+            };
+            const filter = options.filter;
+            const withRelated = options.withRelated;
+            const withRelatedFields = options.withRelatedFields;
+            const relations = {
+                tags: {
+                    targetTable: 'tags',
+                    name: 'tags',
+                    innerJoin: {
+                        relation: 'posts_tags',
+                        condition: ['posts_tags.tag_id', '=', 'tags.id']
+                    },
+                    select: ['posts_tags.post_id as post_id'],
+                    whereIn: 'posts_tags.post_id',
+                    whereInKey: 'post_id',
+                    orderBy: 'sort_order'
+                },
+                authors: {
+                    targetTable: 'users',
+                    name: 'authors',
+                    innerJoin: {
+                        relation: 'posts_authors',
+                        condition: ['posts_authors.author_id', '=', 'users.id']
+                    },
+                    select: ['posts_authors.post_id as post_id'],
+                    whereIn: 'posts_authors.post_id',
+                    whereInKey: 'post_id',
+                    orderBy: 'sort_order'
+                }
+            };
+
+            let query = ghostBookshelf.knex(tableNames[modelName]);
+
+            // exclude fields if enabled
+            if (reducedFields) {
+                const toSelect = _.keys(schema.tables[tableNames[modelName]]);
+
+                _.each(exclude[modelName], (key) => {
+                    if (toSelect.indexOf(key) !== -1) {
+                        toSelect.splice(toSelect.indexOf(key), 1);
+                    }
+                });
+
+                query.select(toSelect);
+            }
+
+            // filter data
+            gql.knexify(query, gql.parse(filter));
+
+            return query.then((objects) => {
+                debug('fetched', modelName, filter);
+
+                let props = {};
+
+                if (!withRelated) {
+                    return _.map(objects, (object) => {
+                        object = ghostBookshelf._models[modelName].prototype.toJSON.bind({
+                            attributes: object,
+                            related: function (key) {
+                                return object[key];
+                            },
+                            serialize: ghostBookshelf._models[modelName].prototype.serialize,
+                            formatsToJSON: ghostBookshelf._models[modelName].prototype.formatsToJSON
+                        })();
+
+                        object = ghostBookshelf._models[modelName].prototype.fixBools(object);
+                        object = ghostBookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                        return object;
+                    });
+                }
+
+                _.each(withRelated, (withRelatedKey) => {
+                    const relation = relations[withRelatedKey];
+
+                    props[relation.name] = (() => {
+                        debug('fetch withRelated', relation.name);
+
+                        let query = db.knex(relation.targetTable);
+
+                        // default fields to select
+                        _.each(relation.select, (fieldToSelect) => {
+                            query.select(fieldToSelect);
+                        });
+
+                        // custom fields to select
+                        _.each(withRelatedFields[withRelatedKey], (toSelect) => {
+                            query.select(toSelect);
+                        });
+
+                        query.innerJoin(
+                            relation.innerJoin.relation,
+                            relation.innerJoin.condition[0],
+                            relation.innerJoin.condition[1],
+                            relation.innerJoin.condition[2]
+                        );
+
+                        query.whereIn(relation.whereIn, _.map(objects, 'id'));
+                        query.orderBy(relation.orderBy);
+
+                        return query
+                            .then((relations) => {
+                                debug('fetched withRelated', relation.name);
+
+                                // arr => obj[post_id] = [...] (faster access)
+                                return relations.reduce((obj, item) => {
+                                    if (!obj[item[relation.whereInKey]]) {
+                                        obj[item[relation.whereInKey]] = [];
+                                    }
+
+                                    obj[item[relation.whereInKey]].push(_.omit(item, relation.select));
+                                    return obj;
+                                }, {});
+                            });
+                    })();
+                });
+
+                return Promise.props(props)
+                    .then((relations) => {
+                        debug('attach relations', modelName);
+
+                        objects = _.map(objects, (object) => {
+                            _.each(Object.keys(relations), (relation) => {
+                                if (!relations[relation][object.id]) {
+                                    object[relation] = [];
+                                    return;
+                                }
+
+                                object[relation] = relations[relation][object.id];
+                            });
+
+                            object = ghostBookshelf._models[modelName].prototype.toJSON.bind({
+                                attributes: object,
+                                _originalOptions: {
+                                    withRelated: Object.keys(relations)
+                                },
+                                related: function (key) {
+                                    return object[key];
+                                },
+                                serialize: ghostBookshelf._models[modelName].prototype.serialize,
+                                formatsToJSON: ghostBookshelf._models[modelName].prototype.formatsToJSON
+                            })();
+
+                            object = ghostBookshelf._models[modelName].prototype.fixBools(object);
+                            object = ghostBookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                            return object;
+                        });
+
+                        debug('attached relations', modelName);
+
+                        return objects;
+                    });
+            });
+        }
     }
 });
 

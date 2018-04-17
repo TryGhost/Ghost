@@ -1,144 +1,143 @@
 'use strict';
 
-/**
- * # URL Service
- *
- * This file defines a class of URLService, which serves as a centralised place to handle
- * generating, storing & fetching URLs of all kinds.
- */
-
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    _debug = require('ghost-ignition').debug._base,
-    debug = _debug('ghost:services:url'),
+const _debug = require('ghost-ignition').debug._base,
+    debug = _debug('ghost:services:url:service'),
+    _ = require('lodash'),
     common = require('../../lib/common'),
-    // TODO: make this dynamic
-    resourceConfig = require('./config.json'),
-    Resource = require('./Resource'),
-    urlCache = require('./cache'),
+    UrlGenerator = require('./UrlGenerator'),
+    Queue = require('./Queue'),
+    Urls = require('./Urls'),
+    Resources = require('./Resources'),
     localUtils = require('./utils');
 
 class UrlService {
     constructor(options) {
-        this.resources = [];
-        this.utils = localUtils;
+        options = options || {};
 
-        _.each(resourceConfig, (config) => {
-            this.resources.push(new Resource(config));
-        });
+        this.utils = localUtils;
 
         // You can disable the url preload, in case we encounter a problem with the new url service.
         if (options.disableUrlPreload) {
             return;
         }
 
-        this.bind();
+        this.finished = false;
+        this.urlGenerators = [];
 
-        // Hardcoded routes
-        // @TODO figure out how to do this from channel or other config
-        // @TODO get rid of name concept (for compat with sitemaps)
-        UrlService.cacheRoute('/', {name: 'home'});
+        this.urls = new Urls();
+        this.queue = new Queue();
+        this.resources = new Resources(this.queue);
 
-        // @TODO figure out how to do this from apps
-        // @TODO only do this if subscribe is enabled!
-        UrlService.cacheRoute('/subscribe/', {});
-
-        // Register a listener for server-start to load all the known urls
-        common.events.on('server:start', (() => {
-            debug('URL service, loading all URLS');
-            this.loadResourceUrls();
-        }));
+        this._listeners();
     }
 
-    bind() {
-        const eventHandlers = {
-            add(model, resource) {
-                UrlService.cacheResourceItem(resource, model.toJSON());
-            },
-            update(model, resource) {
-                const newItem = model.toJSON();
-                const oldItem = model.updatedAttributes();
+    _listeners() {
+        /**
+         * The purpose of this event is to notify the url service as soon as a channel get's created.
+         */
+        this._onRoutingTypeListener = this._onRoutingType.bind(this);
+        common.events.on('routingType.created', this._onRoutingTypeListener);
 
-                const oldUrl = resource.toUrl(oldItem);
-                const storedData = urlCache.get(oldUrl);
+        /**
+         * The queue will notify us if url generation has started/finished.
+         */
+        this._onQueueStartedListener = this._onQueueStarted.bind(this);
+        this.queue.addListener('started', this._onQueueStartedListener);
 
-                const newUrl = resource.toUrl(newItem);
-                const newData = resource.toData(newItem);
+        this._onQueueEndedListener = this._onQueueEnded.bind(this);
+        this.queue.addListener('ended', this._onQueueEnded.bind(this));
 
-                debug('update', oldUrl, newUrl);
-                if (oldUrl && oldUrl !== newUrl && storedData) {
-                    // CASE: we are updating a cached item and the URL has changed
-                    debug('Changing URL, unset first');
-                    urlCache.unset(oldUrl);
-                }
+        this._resetListener = this.reset.bind(this);
+        common.events.on('server.stop', this._resetListener);
+    }
 
-                // CASE: the URL is either new, or the same, this will create or update
-                urlCache.set(newUrl, newData);
-            },
+    _onQueueStarted(event) {
+        if (event === 'init') {
+            this.finished = false;
+        }
+    }
 
-            remove(model, resource) {
-                const url = resource.toUrl(model.toJSON());
-                urlCache.unset(url);
-            },
+    _onQueueEnded(event) {
+        if (event === 'init') {
+            this.finished = true;
+        }
+    }
 
-            reload(model, resource) {
-                // @TODO: get reload working, so that permalink changes are reflected
-                // NOTE: the current implementation of sitemaps doesn't have this
-                debug('Need to reload all resources: ' + resource.name);
+    _onRoutingType(routingType) {
+        debug('routingType.created');
+
+        let urlGenerator = new UrlGenerator(routingType, this.queue, this.resources, this.urls, this.urlGenerators.length);
+        this.urlGenerators.push(urlGenerator);
+    }
+
+    /**
+     * You have a url and want to know which the url belongs to.
+     * It's in theory possible that multiple resources generate the same url,
+     * but they both would serve different content e.g. static pages and collections.
+     *
+     * We only return the resource, which would be served.
+     */
+    getResource(url) {
+        let objects = this.urls.getByUrl(url);
+
+        if (!objects.length) {
+            if (!this.hasFinished()) {
+                throw new common.errors.InternalServerError({
+                    message: 'UrlService is processing.',
+                    code: 'URLSERVICE_NOT_READY'
+                });
+            } else {
+                return null;
             }
-        };
+        }
 
-        _.each(this.resources, (resource) => {
-            _.each(resource.events, (method, eventName) => {
-                common.events.on(eventName, (model) => {
-                    eventHandlers[method].call(this, model, resource, eventName);
-                });
-            });
-        });
-    }
+        if (objects.length > 1) {
+            objects = _.reduce(objects, (toReturn, object) => {
+                if (!toReturn.length) {
+                    toReturn.push(object);
+                } else {
+                    const i1 = _.findIndex(this.urlGenerators, {uid: toReturn[0].generatorId});
+                    const i2 = _.findIndex(this.urlGenerators, {uid: object.generatorId});
 
-    fetchAll() {
-        return Promise.each(this.resources, (resource) => {
-            return resource.fetchAll();
-        });
-    }
-
-    loadResourceUrls() {
-        debug('load start');
-
-        this.fetchAll()
-            .then(() => {
-                debug('load end, start processing');
-
-                _.each(this.resources, (resource) => {
-                    _.each(resource.items, (item) => {
-                        UrlService.cacheResourceItem(resource, item);
-                    });
-                });
-
-                debug('processing done, url cache built. Number urls', _.size(urlCache.getAll()));
-                // Wrap this in a check, because else this is a HUGE amount of output
-                // To output this, use DEBUG=ghost:*,ghost-url
-                if (_debug.enabled('ghost-url')) {
-                    debug('url-cache', require('util').inspect(urlCache.getAll(), false, null));
+                    if (i2 < i1) {
+                        toReturn = [];
+                        toReturn.push(object);
+                    }
                 }
-            })
-            .catch((err) => {
-                debug('load error', err);
-            });
+            }, []);
+        }
+
+        return objects[0].resource;
     }
 
-    static cacheResourceItem(resource, item) {
-        const url = resource.toUrl(item);
-        const data = resource.toData(item);
-
-        urlCache.set(url, data);
+    hasFinished() {
+        return this.finished;
     }
 
-    static cacheRoute(relativeUrl, data) {
-        const url = localUtils.urlFor({relativeUrl: relativeUrl});
-        data.static = true;
-        urlCache.set(url, data);
+    /**
+     * Get url by resource id.
+     */
+    getUrl(id) {
+        const obj = this.urls.getByResourceId(id);
+
+        if (obj) {
+            return obj.url;
+        }
+
+        return null;
+    }
+
+    reset() {
+        this.urlGenerators = [];
+
+        this.urls.reset();
+        this.queue.reset();
+        this.resources.reset();
+
+        this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
+        this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
+        this._onRoutingTypeListener && common.events.removeListener('routingType.created', this._onRoutingTypeListener);
+        this._resetListener && common.events.removeListener('server.stop', this._resetListener);
     }
 }
 

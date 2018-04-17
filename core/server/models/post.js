@@ -564,6 +564,20 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
+     * We have to ensure consistency. If you listen on model events (e.g. `post.published`), you can expect that you always
+     * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
+     * that event listeners have to re-fetch a resource. This function is used in the context of inserting
+     * and updating resources. We won't return the relations by default for now.
+     */
+    defaultRelations: function defaultRelations(methodName, options) {
+        if (['edit', 'add'].indexOf(methodName) !== -1) {
+            options.withRelated = _.union(this.prototype.relationships, options.withRelated || []);
+        }
+
+        return options;
+    },
+
+    /**
      * Manually add 'tags' attribute since it's not in the schema and call parent.
      *
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
@@ -611,7 +625,10 @@ Post = ghostBookshelf.Model.extend({
 
             return ghostBookshelf.Model.edit.call(this, data, options)
                 .then((post) => {
-                    return this.findOne({status: 'all', id: options.id}, options)
+                    return this.findOne({
+                        status: 'all',
+                        id: options.id
+                    }, _.merge({transacting: options.transacting}, unfilteredOptions))
                         .then((found) => {
                             if (found) {
                                 // Pass along the updated attributes for checking status changes
@@ -643,7 +660,10 @@ Post = ghostBookshelf.Model.extend({
         const addPost = (() => {
             return ghostBookshelf.Model.add.call(this, data, options)
                 .then((post) => {
-                    return this.findOne({status: 'all', id: post.id}, options);
+                    return this.findOne({
+                        status: 'all',
+                        id: post.id
+                    }, _.merge({transacting: options.transacting}, unfilteredOptions));
                 });
         });
 

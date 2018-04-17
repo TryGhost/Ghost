@@ -467,6 +467,14 @@
                     "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
                     "help": "If you get this error repeatedly, please seek help on {url}."
                 }
+            },
+            "settings": {
+                "yaml": {
+                    "error": "Could not parse {file}: {context}.",
+                    "help": "Check your {file} file for typos and fix the named issues."
+                },
+                "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
+                "ensureSettings": "Error trying to access settings files in {path}."
             }
         },
         "errors": {

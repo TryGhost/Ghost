@@ -1,50 +1,60 @@
 'use strict';
 
-const _ = require('lodash'),
-    localUtils = require('./utils'),
-    prefetchDefaults = {
-        context: {
-            internal: true
-        },
-        limit: 'all'
-    };
+const EventEmitter = require('events').EventEmitter,
+    common = require('../../lib/common');
 
-class Resource {
-    constructor(config) {
-        this.name = config.name;
-        this.api = config.api;
-        this.prefetchOptions = config.prefetchOptions || {};
-        this.urlLookup = config.urlLookup || config.name;
-        this.events = config.events;
-        this.items = {};
-    }
+class Resource extends EventEmitter {
+    constructor(type, obj) {
+        super();
 
-    fetchAll() {
-        const options = _.defaults(this.prefetchOptions, prefetchDefaults);
-
-        return require('../../api')[this.api]
-            .browse(options)
-            .then((resp) => {
-                this.items = resp[this.api];
-                return this.items;
-            });
-    }
-
-    toUrl(item) {
-        const data = {
-            [this.urlLookup]: item
+        this.data = {};
+        this.config = {
+            type: type,
+            reserved: false
         };
-        return localUtils.urlFor(this.urlLookup, data);
+
+        Object.assign(this.data, obj);
     }
 
-    toData(item) {
-        return {
-            slug: item.slug,
-            resource: {
-                type: this.name,
-                id: item.id
-            }
-        };
+    getType() {
+        return this.config.type;
+    }
+
+    reserve() {
+        if (!this.config.reserved) {
+            this.config.reserved = true;
+        } else {
+            common.logging.error(new common.errors.InternalServerError({
+                message: 'Resource is already taken. This should not happen.',
+                code: 'URLSERVICE_RESERVE_RESOURCE'
+            }));
+        }
+    }
+
+    release() {
+        this.config.reserved = false;
+    }
+
+    isReserved() {
+        return this.config.reserved === true;
+    }
+
+    update(obj) {
+        this.data = obj;
+
+        if (!this.isReserved()) {
+            return;
+        }
+
+        this.emit('updated', this);
+    }
+
+    remove() {
+        if (!this.isReserved()) {
+            return;
+        }
+
+        this.emit('removed', this);
     }
 }
 

@@ -269,7 +269,7 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(4);
+                        jsonResponse.posts.should.have.length(2);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();

@@ -19,7 +19,7 @@ module.exports = {
         debug('init themes', activeThemeName);
 
         // Register a listener for server-start to load all themes
-        common.events.on('server:start', function readAllThemesOnServerStart() {
+        common.events.on('server.start', function readAllThemesOnServerStart() {
             themeLoader.loadAllThemes();
         });
 

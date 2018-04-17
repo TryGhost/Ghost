@@ -1,0 +1,12 @@
+routes:
+
+collections:
+  /:
+    route: '{globals.permalinks}'
+    template:
+      - home
+      - index
+
+resources:
+  tag: /tag/{slug}/
+  author: /author/{slug}/
