@@ -15,17 +15,18 @@ class UrlService {
         options = options || {};
 
         this.utils = localUtils;
+
+        // You can disable the url preload, in case we encounter a problem with the new url service.
+        if (options.disableUrlPreload) {
+            return;
+        }
+
         this.finished = false;
         this.urlGenerators = [];
 
         this.urls = new Urls();
         this.queue = new Queue();
         this.resources = new Resources(this.queue);
-
-        // You can disable the url preload, in case we encounter a problem with the new url service.
-        if (options.disableUrlPreload) {
-            return;
-        }
 
         this._listeners();
     }
