@@ -197,125 +197,95 @@ describe('Unit: services/url/UrlService', function () {
         });
 
         describe('update resource', function () {
-            it('featured: false => featured:true', function (done) {
-                models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
+            it('featured: false => featured:true', function () {
+                return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
-                        let timeout;
+                        // There is no collection which owns featured posts.
+                        let url = urlService.getUrl(post.id);
+                        should.not.exist(url);
 
-                        (function retry() {
-                            clearTimeout(timeout);
-
-                            if (urlService.hasFinished()) {
-                                // There is no collection which owns featured posts.
-                                let url = urlService.getUrl(post.id);
-                                should.not.exist(url);
-
-                                urlService.urlGenerators.forEach(function (generator) {
-                                    if (generator.routingType.getType() === 'posts') {
-                                        generator.getUrls().length.should.eql(1);
-                                    }
-
-                                    if (generator.routingType.getType() === 'pages') {
-                                        generator.getUrls().length.should.eql(1);
-                                    }
-                                });
-
-                                return done();
+                        urlService.urlGenerators.forEach(function (generator) {
+                            if (generator.routingType.getType() === 'posts') {
+                                generator.getUrls().length.should.eql(1);
                             }
 
-                            timeout = setTimeout(retry, 50);
-                        })();
+                            if (generator.routingType.getType() === 'pages') {
+                                generator.getUrls().length.should.eql(1);
+                            }
+                        });
                     });
             });
 
-            it('page: false => page:true', function (done) {
-                models.Post.edit({page: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
+            it('page: false => page:true', function () {
+                return models.Post.edit({page: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
-                        let timeout;
+                        let url = urlService.getUrl(post.id);
 
-                        (function retry() {
-                            clearTimeout(timeout);
+                        url.should.eql('/ghostly-kitchen-sink/');
 
-                            if (urlService.hasFinished()) {
-                                let url = urlService.getUrl(post.id);
-
-                                url.should.eql('/ghostly-kitchen-sink/');
-
-                                urlService.urlGenerators.forEach(function (generator) {
-                                    if (generator.routingType.getType() === 'posts') {
-                                        generator.getUrls().length.should.eql(1);
-                                    }
-
-                                    if (generator.routingType.getType() === 'pages') {
-                                        generator.getUrls().length.should.eql(2);
-                                    }
-                                });
-
-                                return done();
+                        urlService.urlGenerators.forEach(function (generator) {
+                            if (generator.routingType.getType() === 'posts') {
+                                generator.getUrls().length.should.eql(1);
                             }
 
-                            timeout = setTimeout(retry, 50);
-                        })();
+                            if (generator.routingType.getType() === 'pages') {
+                                generator.getUrls().length.should.eql(2);
+                            }
+                        });
                     });
             });
 
-            it('page: true => page:false', function (done) {
-                models.Post.edit({page: false}, {id: testUtils.DataGenerator.forKnex.posts[5].id})
+            it('page: true => page:false', function () {
+                return models.Post.edit({page: false}, {id: testUtils.DataGenerator.forKnex.posts[5].id})
                     .then(function (post) {
-                        let timeout;
+                        let url = urlService.getUrl(post.id);
 
-                        (function retry() {
-                            clearTimeout(timeout);
+                        url.should.eql('/static-page-test/');
 
-                            if (urlService.hasFinished()) {
-                                let url = urlService.getUrl(post.id);
-
-                                url.should.eql('/static-page-test/');
-
-                                urlService.urlGenerators.forEach(function (generator) {
-                                    if (generator.routingType.getType() === 'posts') {
-                                        generator.getUrls().length.should.eql(3);
-                                    }
-
-                                    if (generator.routingType.getType() === 'pages') {
-                                        generator.getUrls().length.should.eql(0);
-                                    }
-                                });
-
-                                return done();
+                        urlService.urlGenerators.forEach(function (generator) {
+                            if (generator.routingType.getType() === 'posts') {
+                                generator.getUrls().length.should.eql(3);
                             }
 
-                            timeout = setTimeout(retry, 50);
-                        })();
+                            if (generator.routingType.getType() === 'pages') {
+                                generator.getUrls().length.should.eql(0);
+                            }
+                        });
                     });
             });
         });
 
-        it('add new resource', function (done) {
-            models.Post.add({
-                featured: false,
-                page: false,
-                status: 'published',
-                title: 'Brand New Story!',
-                author_id: testUtils.DataGenerator.forKnex.users[4].id
-            }).then(function (post) {
-                let timeout;
+        describe('add new resource', function () {
+            it('already published', function () {
+                return models.Post.add({
+                    featured: false,
+                    page: false,
+                    status: 'published',
+                    title: 'Brand New Story!',
+                    author_id: testUtils.DataGenerator.forKnex.users[4].id
+                }).then(function (post) {
+                    let url = urlService.getUrl(post.id);
+                    url.should.eql('/brand-new-story/');
 
-                (function retry() {
-                    clearTimeout(timeout);
+                    let resource = urlService.getResource(url);
+                    resource.data.primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[4].id);
+                });
+            });
 
-                    if (urlService.hasFinished()) {
-                        let url = urlService.getUrl(post.id);
-                        url.should.eql('/brand-new-story/');
+            it('draft', function () {
+                return models.Post.add({
+                    featured: false,
+                    page: false,
+                    status: 'draft',
+                    title: 'Brand New Story!',
+                    author_id: testUtils.DataGenerator.forKnex.users[4].id
+                }).then(function (post) {
+                    let url = urlService.getUrl(post.id);
+                    should.not.exist(url);
 
-                        let resource = urlService.getResource(url);
-                        resource.data.primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[4].id);
-
-                        return done();
-                    }
-
-                    timeout = setTimeout(retry, 50);
-                })();
+                    let resource = urlService.getResource(url);
+                    should.not.exist(resource);
+                });
             });
         });
     });

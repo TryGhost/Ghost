@@ -108,24 +108,28 @@ class Queue extends EventEmitter {
 
             debug('execute', action, event, this.toNotify[action].notified.length);
 
-            return fn(eventData)
-                .then(() => {
-                    debug('executed', action, event, this.toNotify[action].notified.length);
-                    this.toNotify[action].notified.push(fn);
-                    this.run(options);
-                })
-                .catch((err) => {
-                    debug('error', err.message);
+            /**
+             * Currently no async operations happen in the subscribers functions.
+             * We can trigger the functions sync.
+             */
+            try {
+                fn(eventData);
 
-                    common.logging.error(new common.errors.InternalServerError({
-                        message: 'Something bad happened.',
-                        code: 'SERVICES_URL_QUEUE',
-                        err: err
-                    }));
+                debug('executed', action, event, this.toNotify[action].notified.length);
+                this.toNotify[action].notified.push(fn);
+                this.run(options);
+            } catch (err) {
+                debug('error', err.message);
 
-                    // just try again
-                    this.run(options);
-                });
+                common.logging.error(new common.errors.InternalServerError({
+                    message: 'Something bad happened.',
+                    code: 'SERVICES_URL_QUEUE',
+                    err: err
+                }));
+
+                // just try again
+                this.run(options);
+            }
         } else {
             // CASE 1: zero tolerance, kill run fn
             // CASE 2: okay, i was tolerant enough, kill me

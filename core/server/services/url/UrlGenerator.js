@@ -82,8 +82,6 @@ class UrlGenerator {
         _.each(resources, (resource) => {
             this._try(resource);
         });
-
-        return Promise.resolve();
     }
 
     _onAdded(event) {
@@ -97,8 +95,6 @@ class UrlGenerator {
         const resource = this.resources.getByIdAndType(event.type, event.id);
 
         this._try(resource);
-
-        return Promise.resolve();
     }
 
     _try(resource) {

@@ -110,10 +110,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
-            return urlGenerator._onInit()
-                .then(function () {
-                    urlGenerator._try.calledOnce.should.be.true();
-                });
+            urlGenerator._onInit();
+            urlGenerator._try.calledOnce.should.be.true();
         });
 
         it('no resource', function () {
@@ -123,10 +121,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
-            return urlGenerator._onInit()
-                .then(function () {
-                    urlGenerator._try.called.should.be.false();
-                });
+            urlGenerator._onInit();
+            urlGenerator._try.called.should.be.false();
         });
     });
 
@@ -138,10 +134,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
-            return urlGenerator._onAdded({id: 1, type: 'posts'})
-                .then(function () {
-                    urlGenerator._try.calledOnce.should.be.true();
-                });
+            urlGenerator._onAdded({id: 1, type: 'posts'});
+            urlGenerator._try.calledOnce.should.be.true();
         });
 
         it('type is not equal', function () {
@@ -150,10 +144,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
-            return urlGenerator._onAdded({id: 1, type: 'posts'})
-                .then(function () {
-                    urlGenerator._try.called.should.be.false();
-                });
+            urlGenerator._onAdded({id: 1, type: 'posts'});
+            urlGenerator._try.called.should.be.false();
         });
     });
 

@@ -76,7 +76,6 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             }, function () {
                 notified = notified + 1;
-                return Promise.resolve();
             });
 
             queue.start({
@@ -104,7 +103,6 @@ describe('Unit: services/url/Queue', function () {
                 }, function () {
                     order.push(i);
                     notified = notified + 1;
-                    return Promise.resolve();
                 });
             });
 
@@ -131,7 +129,6 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             }, function () {
                 notified = notified + 1;
-                return Promise.resolve();
             });
         });
 
@@ -151,11 +148,10 @@ describe('Unit: services/url/Queue', function () {
             }, function () {
                 if (i === 0) {
                     i = i + 1;
-                    return Promise.reject(new Error('oops'));
+                    throw new Error('oops');
                 }
 
                 notified = notified + 1;
-                return Promise.resolve();
             });
 
             queue.start({
@@ -185,7 +181,6 @@ describe('Unit: services/url/Queue', function () {
                 tolerance: 20
             }, function () {
                 notified = notified + 1;
-                return Promise.resolve();
             });
         });
 
@@ -211,12 +206,11 @@ describe('Unit: services/url/Queue', function () {
                 tolerance: 70
             }, function () {
                 if (called !== 0) {
-                    return Promise.reject(new Error('Should only be triggered once.'));
+                    return done(new Error('Should only be triggered once.'));
                 }
 
                 called = called + 1;
                 notified = notified + 1;
-                return Promise.resolve();
             });
 
             queue.start({
