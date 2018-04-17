@@ -236,6 +236,10 @@ class UrlGenerator {
         resource.addListener('removed', onRemoved.bind(this));
     }
 
+    getUrls() {
+        return this.urls.getByGeneratorId(this.uid);
+    }
+
     toString() {
         return this.routingType.toString();
     }

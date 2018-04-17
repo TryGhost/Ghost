@@ -79,7 +79,18 @@ class Resources {
     constructor(queue) {
         this.queue = queue;
         this.data = {};
+
+        this.listeners = [];
         this._listeners();
+    }
+
+    _listenOn(eventName, listener) {
+        this.listeners.push({
+            eventName: eventName,
+            listener: listener
+        });
+
+        common.events.on(eventName, listener);
     }
 
     _listeners() {
@@ -88,25 +99,28 @@ class Resources {
          * Currently the url service needs to use the settings cache,
          * because we need to `settings.permalink`.
          */
-        this._onDatabaseReadyListener = this._onDatabaseReady.bind(this);
-        common.events.on('db.ready', this._onDatabaseReadyListener);
+        this._listenOn('db.ready', this._onDatabaseReady.bind(this));
     }
 
     _onDatabaseReady() {
         const ops = [];
         debug('db ready. settings cache ready.');
 
-        this._onResourceAddedListener = this._onResourceAdded.bind(this);
-        this._onResourceUpdatedListener = this._onResourceUpdated.bind(this);
-        this._onResourceRemovedListener = this._onResourceRemoved.bind(this);
-
         _.each(resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
             ops.push(this._fetch(resourceConfig));
 
-            common.events.on(resourceConfig.events.add, this._onResourceAddedListener);
-            common.events.on(resourceConfig.events.update, this._onResourceUpdatedListener);
-            common.events.on(resourceConfig.events.remove, this._onResourceRemovedListener);
+            this._listenOn(resourceConfig.events.add, (model) => {
+                return this._onResourceAdded.bind(this)(resourceConfig.type, model);
+            });
+
+            this._listenOn(resourceConfig.events.update, (model) => {
+                return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+            });
+
+            this._listenOn(resourceConfig.events.remove, (model) => {
+                return this._onResourceRemoved.bind(this)(resourceConfig.type, model);
+            });
         });
 
         Promise.all(ops)
@@ -132,10 +146,10 @@ class Resources {
             });
     }
 
-    _onResourceAdded(model) {
-        const type = model.tableName;
+    _onResourceAdded(type, model) {
         const resource = new Resource(type, model.toJSON());
 
+        debug('_onResourceAdded', type);
         this.data[type].push(resource);
 
         this.queue.start({
@@ -162,8 +176,8 @@ class Resources {
      *   - but the data changed and is maybe no longer owned?
      *   - e.g. featured:false changes and your filter requires featured posts
      */
-    _onResourceUpdated(model) {
-        const type = model.tableName;
+    _onResourceUpdated(type, model) {
+        debug('_onResourceUpdated', type);
 
         this.data[type].every((resource) => {
             if (resource.data.id === model.id) {
@@ -189,8 +203,7 @@ class Resources {
         });
     }
 
-    _onResourceRemoved(model) {
-        const type = model.tableName;
+    _onResourceRemoved(type, model) {
         let index = null;
         let resource;
 
@@ -228,13 +241,11 @@ class Resources {
     }
 
     reset() {
-        _.each(resourcesConfig, (resourceConfig) => {
-            this._onResourceAddedListener && common.events.removeListener(resourceConfig.events.add, this._onResourceAddedListener);
-            this._onResourceUpdatedListener && common.events.removeListener(resourceConfig.events.update, this._onResourceUpdatedListener);
-            this._onResourceRemovedListener && common.events.removeListener(resourceConfig.events.remove, this._onResourceRemovedListener);
+        _.each(this.listeners, (obj) => {
+            common.events.removeListener(obj.eventName, obj.listener);
         });
 
-        this._onDatabaseReadyListener && common.events.removeListener('db.ready', this._onDatabaseReadyListener);
+        this.listeners = [];
         this.data = {};
     }
 }
