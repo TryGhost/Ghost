@@ -138,8 +138,6 @@ class UrlGenerator {
 
     /**
      * We currently generate relative urls.
-     *
-     * @TODO: reconsider? e.g. sitemaps would receive a relative url, but we show absolute urls
      */
     _generateUrl(resource) {
         let url = this.routingType.getPermalinks().getValue();
