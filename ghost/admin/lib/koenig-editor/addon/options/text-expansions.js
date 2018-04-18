@@ -189,7 +189,7 @@ export default function (editor) {
 
             // must be scheduled so that the toggle isn't reset automatically
             run.schedule('actions', this, function () {
-                editor.toggleMarkup('code');
+                editor.toggleMarkup('em');
             });
         }
     }
@@ -251,7 +251,7 @@ export default function (editor) {
 
             // must be scheduled so that the toggle isn't reset automatically
             run.schedule('actions', this, function () {
-                editor.toggleMarkup('code');
+                editor.toggleMarkup('a');
             });
         }
     }
