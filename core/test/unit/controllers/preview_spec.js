@@ -2,16 +2,13 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-
-    // Test utils
+    testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
-
-    // Server requires
     api = require('../../../server/api'),
     controllers = require('../../../server/controllers'),
+    urlService = require('../../../server/services/url'),
     themes = require('../../../server/services/themes'),
-
     sandbox = sinon.sandbox.create();
 
 describe('Controllers', function () {
@@ -35,6 +32,8 @@ describe('Controllers', function () {
 
     beforeEach(function () {
         setupActiveTheme();
+
+        sandbox.stub(urlService, 'getUrlByResourceId');
     });
 
     // Helper function to prevent unit tests
@@ -47,65 +46,39 @@ describe('Controllers', function () {
     }
 
     describe('preview', function () {
-        var req, res, mockPosts = [{
-            posts: [{
+        var req, res, mockPosts = [
+            testUtils.DataGenerator.forKnex.createPost({
                 status: 'draft',
                 uuid: 'abc-1234-01',
-                id: 1,
                 title: 'Test static page',
                 slug: 'test-static-page',
                 mobiledoc: markdownToMobiledoc('Test static page content'),
-                page: 1,
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                },
-                url: '/test-static-page/'
-            }]
-        }, {
-            posts: [{
+                page: 1
+            })
+            ,
+            testUtils.DataGenerator.forKnex.createPost({
                 status: 'draft',
                 uuid: 'abc-1234-02',
-                id: 2,
                 title: 'Test normal post',
                 slug: 'test-normal-post',
                 mobiledoc: markdownToMobiledoc('The test normal post content'),
-                page: 0,
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                }
-            }]
-        }, {
-            posts: [{
+                page: 0
+            }),
+            testUtils.DataGenerator.forKnex.createPost({
                 status: 'published',
                 uuid: 'abc-1234-03',
-                id: 3,
                 title: 'Getting started',
                 slug: 'about',
                 mobiledoc: markdownToMobiledoc('This is a blog post'),
                 page: 0,
-                published_at: new Date('2014/1/30').getTime(),
-                author: {
-                    id: 1,
-                    name: 'Test User',
-                    slug: 'test',
-                    email: 'test@ghost.org'
-                },
-                url: '/getting-started/'
-            }]
-        }];
+                published_at: new Date('2014/1/30').getTime()
+            })
+        ];
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read').callsFake(function (args) {
-                var post = _.find(mockPosts, function (mock) {
-                    return mock.posts[0].uuid === args.uuid;
-                });
-                return Promise.resolve(post || {posts: []});
+                var post = _.find(mockPosts, {uuid: args.uuid});
+                return Promise.resolve(post ? {posts: post} : {posts: []});
             });
 
             req = {
@@ -160,6 +133,9 @@ describe('Controllers', function () {
         });
 
         it('should call redirect if post is published', function (done) {
+            urlService.getUrlByResourceId.withArgs(_.find(mockPosts, {uuid: 'abc-1234-03'}))
+                .returns('/getting-started/');
+
             req.params = {uuid: 'abc-1234-03'};
             res.redirect = function (status, url) {
                 res.render.called.should.be.false();

@@ -1,9 +1,7 @@
 const _ = require('lodash'),
-    moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),
     debug = require('ghost-ignition').debug('services:url:generator'),
     localUtils = require('./utils'),
-    settingsCache = require('../settings/cache'),
     /**
      * @TODO: This is a fake version of the upcoming GQL tool.
      * GQL will offer a tool to match a JSON against a filter.
@@ -138,57 +136,10 @@ class UrlGenerator {
      * We currently generate relative urls.
      */
     _generateUrl(resource) {
-        let url = this.routingType.getPermalinks().getValue();
-        url = this._replacePermalink(url, resource);
+        const permalink = this.routingType.getPermalinks().getValue();
+        const url = localUtils.replacePermalink(permalink, resource.data);
 
         return localUtils.createUrl(url, false, false);
-    }
-
-    /**
-     * @TODO:
-     * This is a copy of `replacePermalink` of our url utility, see ./utils.
-     * But it has modifications, because the whole url utility doesn't work anymore.
-     * We will rewrite some of the functions in the utility.
-     */
-    _replacePermalink(url, resource) {
-        var output = url,
-            primaryTagFallback = 'all',
-            publishedAtMoment = moment.tz(resource.data.published_at || Date.now(), settingsCache.get('active_timezone')),
-            permalink = {
-                year: function () {
-                    return publishedAtMoment.format('YYYY');
-                },
-                month: function () {
-                    return publishedAtMoment.format('MM');
-                },
-                day: function () {
-                    return publishedAtMoment.format('DD');
-                },
-                author: function () {
-                    return resource.data.primary_author.slug;
-                },
-                primary_author: function () {
-                    return resource.data.primary_author ? resource.data.primary_author.slug : primaryTagFallback;
-                },
-                primary_tag: function () {
-                    return resource.data.primary_tag ? resource.data.primary_tag.slug : primaryTagFallback;
-                },
-                slug: function () {
-                    return resource.data.slug;
-                },
-                id: function () {
-                    return resource.data.id;
-                }
-            };
-
-        // replace tags like :slug or :year with actual values
-        output = output.replace(/(:[a-z_]+)/g, function (match) {
-            if (_.has(permalink, match.substr(1))) {
-                return permalink[match.substr(1)]();
-            }
-        });
-
-        return output;
     }
 
     /**

@@ -246,6 +246,14 @@ class Resources {
         this.listeners = [];
         this.data = {};
     }
+
+    softReset() {
+        this.data = {};
+
+        _.each(resourcesConfig, (resourceConfig) => {
+            this.data[resourceConfig.type] = [];
+        });
+    }
 }
 
 module.exports = Resources;

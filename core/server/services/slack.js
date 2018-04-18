@@ -28,7 +28,7 @@ function ping(post) {
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
-        message = urlService.utils.urlFor('post', {post: post}, true);
+        message = urlService.getUrlByResourceId(post.id, {absolute: true});
     } else {
         message = post.message;
     }

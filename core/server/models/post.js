@@ -466,7 +466,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = urlService.utils.urlPathForPost(attrs);
+            attrs.url = urlService.getUrlByResourceId(attrs.id);
         }
 
         if (oldPostId) {

@@ -6,6 +6,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     sequence = require('../../../server/lib/promise/sequence'),
     settingsCache = require('../../../server/services/settings/cache'),
+    urlService = require('../../../server/services/url'),
     ghostBookshelf = require('../../../server/models/base'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
@@ -32,6 +33,10 @@ describe('Post Model', function () {
 
     afterEach(function () {
         sandbox.restore();
+    });
+
+    beforeEach(function () {
+        sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
     });
 
     function checkFirstPostData(firstPost, options) {
@@ -418,6 +423,8 @@ describe('Post Model', function () {
                             permalinks: '/:year/:month/:day/:slug/'
                         }[key];
                     });
+
+                    urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
 
                     models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
                         .then(function (result) {
@@ -1785,14 +1792,14 @@ describe('Post Model', function () {
 
             var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),
                 postTags = [
-                    createTag({name: 'tag1'}),
-                    createTag({name: 'tag2'}),
-                    createTag({name: 'tag3'})
+                    createTag({name: 'tag1', slug: 'tag1'}),
+                    createTag({name: 'tag2', slug: 'tag2'}),
+                    createTag({name: 'tag3', slug: 'tag3'})
                 ],
                 extraTags = [
-                    createTag({name: 'existing tag a'}),
-                    createTag({name: 'existing-tag-b'}),
-                    createTag({name: 'existing_tag_c'})
+                    createTag({name: 'existing tag a', slug: 'existing-tag-a'}),
+                    createTag({name: 'existing-tag-b', slug: 'existing-tag-b'}),
+                    createTag({name: 'existing_tag_c', slug: 'existing_tag_c'})
                 ];
 
             post.tags = postTags;

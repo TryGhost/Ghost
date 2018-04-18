@@ -44,9 +44,6 @@ class UrlService {
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
         this.queue.addListener('ended', this._onQueueEnded.bind(this));
-
-        this._resetListener = this.reset.bind(this);
-        common.events.on('server.stop', this._resetListener);
     }
 
     _onQueueStarted(event) {
@@ -114,18 +111,38 @@ class UrlService {
 
     /**
      * Get url by resource id.
+     * e.g. tags, authors, posts, pages
+     *
+     * If we can't find a url for an id, we have to return a url.
+     * There are many components in Ghost which call `getUrlByResourceId` and
+     * based on the return value, they set the resource url somewhere e.g. meta data.
+     * Or if you define no collections in your yaml file and serve a page.
+     * You will see a suggestion of posts, but they all don't belong to a collection.
+     * They would show localhost:2368/null/.
      */
-    getUrlByResourceId(id) {
+    getUrlByResourceId(id, options) {
+        options = options || {};
+
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {
+            if (options.absolute) {
+                return this.utils.createUrl(obj.url, options.absolute, options.secure);
+            }
+
             return obj.url;
         }
 
-        return null;
+        // @TODO: yes/no? reconsider!
+        if (options.absolute) {
+            return this.utils.createUrl('/404/', options.absolute, options.secure);
+        }
+
+        return '/404/';
     }
 
     reset() {
+        debug('reset');
         this.urlGenerators = [];
 
         this.urls.reset();
@@ -135,7 +152,13 @@ class UrlService {
         this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
         this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
         this._onRoutingTypeListener && common.events.removeListener('routingType.created', this._onRoutingTypeListener);
-        this._resetListener && common.events.removeListener('server.stop', this._resetListener);
+    }
+
+    softReset() {
+        debug('softReset');
+        this.urls.softReset();
+        this.queue.softReset();
+        this.resources.softReset();
     }
 }
 
