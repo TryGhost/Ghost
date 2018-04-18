@@ -187,7 +187,7 @@ export default Component.extend({
 
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
-            [ADD_CARD_HOOK]: ({env, options, payload}) => {
+            [ADD_CARD_HOOK]: ({env, options, payload}, koenigOptions) => {
                 let cardId = Ember.uuid();
                 let cardName = env.name;
                 let componentName = CARD_COMPONENT_MAP[cardName];
@@ -209,6 +209,7 @@ export default Component.extend({
                     destinationElementId,
                     cardName,
                     componentName,
+                    koenigOptions,
                     payload,
                     env,
                     options,
@@ -394,7 +395,11 @@ export default Component.extend({
             // is actually present
             run.schedule('afterRender', this, function () {
                 let card = this.get('componentCards.lastObject');
-                this.editCard(card);
+                if (card.get('koenigOptions.hasEditMode')) {
+                    this.editCard(card);
+                } else if (card.get('koenigOptions.selectAfterInsert')) {
+                    this.selectCard(card);
+                }
             });
         },
 
