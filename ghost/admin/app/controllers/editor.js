@@ -3,9 +3,11 @@ import Ember from 'ember';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
+import {BLANK_MARKDOWN} from 'ghost-admin/models/post';
 import {alias, mapBy, reads} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
+import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -122,6 +124,14 @@ export default Controller.extend({
 
     _tagNames: mapBy('post.tags', 'name'),
 
+    markdown: computed('post.mobiledoc', function () {
+        if (this.get('post').isCompatibleWithMarkdownEditor()) {
+            let mobiledoc = this.get('post.mobiledoc');
+            let markdown = mobiledoc.cards[0][1].markdown;
+            return markdown;
+        }
+    }),
+
     // computed.apply is a bit of an ugly hack, but necessary to watch all the
     // post's attributes and more without having to be explicit and remember
     // to update the watched props list every time we add a new post attr
@@ -155,6 +165,14 @@ export default Controller.extend({
             this.get('_autosave').perform();
             // force save at 60 seconds
             this.get('_timedSave').perform();
+        },
+
+        // TODO: Only used by the markdown editor, ensure it's removed when
+        // we switch to Koenig
+        updateMarkdown(markdown) {
+            let mobiledoc = copy(BLANK_MARKDOWN, true);
+            mobiledoc.cards[0][1].markdown = markdown;
+            this.send('updateScratch', mobiledoc);
         },
 
         updateTitleScratch(title) {

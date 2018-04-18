@@ -4,18 +4,32 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
-import {BLANK_DOC as BLANK_MARKDOWN} from 'ghost-admin/components/gh-markdown-editor';
 import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {belongsTo, hasMany} from 'ember-data/relationships';
 import {compare} from '@ember/utils';
-import {computed} from '@ember/object';
+import {computed, observer} from '@ember/object';
+import {copy} from '@ember/object/internals';
 import {equal, filterBy} from '@ember/object/computed';
 import {isBlank} from '@ember/utils';
-import {observer} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
+
+// for our markdown-only editor we need to build a blank mobiledoc
+const MOBILEDOC_VERSION = '0.3.1';
+export const BLANK_MARKDOWN = {
+    version: MOBILEDOC_VERSION,
+    markups: [],
+    atoms: [],
+    cards: [
+        ['card-markdown', {
+            cardName: 'card-markdown',
+            markdown: ''
+        }]
+    ],
+    sections: [[10, 0]]
+};
 
 function statusCompare(postA, postB) {
     let status1 = postA.get('status');
@@ -129,9 +143,9 @@ export default Model.extend(Comparable, ValidationEngine, {
             let defaultValue;
 
             if (this.get('feature.koenigEditor')) {
-                defaultValue = BLANK_MOBILEDOC;
+                defaultValue = copy(BLANK_MOBILEDOC, true);
             } else {
-                defaultValue = BLANK_MARKDOWN;
+                defaultValue = copy(BLANK_MARKDOWN, true);
             }
 
             // using this.set() adds the property to the changedAttributes list

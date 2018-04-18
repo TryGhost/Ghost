@@ -68,9 +68,9 @@
                 placeholder="Begin writing your story..."
                 autofocus=shouldFocusEditor
                 uploadedImageUrls=editor.uploadedImageUrls
-                mobiledoc=(readonly post.scratch)
+                markdown=(readonly markdown)
                 isFullScreen=editor.isFullScreen
-                onChange=(action "updateScratch")
+                onChange=(action "updateMarkdown")
                 onFullScreenToggle=(action editor.toggleFullScreen)
                 onPreviewToggle=(action editor.togglePreview)
                 onSplitScreenToggle=(action editor.toggleSplitScreen)
