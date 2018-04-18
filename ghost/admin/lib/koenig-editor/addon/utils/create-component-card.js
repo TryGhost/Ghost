@@ -2,8 +2,13 @@ import {
     ADD_CARD_HOOK,
     REMOVE_CARD_HOOK
 } from '../components/koenig-editor';
+import {assign} from '@ember/polyfills';
 
 const RENDER_TYPE = 'dom';
+const DEFAULT_KOENIG_OPTIONS = {
+    hasEditMode: true,
+    selectAfterInsert: true
+};
 
 function renderFallback(doc) {
     let element = doc.createElement('div');
@@ -13,7 +18,7 @@ function renderFallback(doc) {
 }
 
 // sets up boilerplate for an Ember component card
-export default function createComponentCard(name, doc = window.document) {
+export default function createComponentCard(name, koenigOptions, doc = window.document) {
     return {
         name,
         type: RENDER_TYPE,
@@ -25,11 +30,13 @@ export default function createComponentCard(name, doc = window.document) {
         // ember components as cards
         render(cardArg) {
             let {env, options} = cardArg;
+            let kgOptions = assign({}, DEFAULT_KOENIG_OPTIONS, koenigOptions);
+
             if (!options[ADD_CARD_HOOK]) {
                 return renderFallback(doc);
             }
 
-            let {card, element} = options[ADD_CARD_HOOK](cardArg);
+            let {card, element} = options[ADD_CARD_HOOK](cardArg, kgOptions);
             let {onTeardown} = env;
 
             onTeardown(() => options[REMOVE_CARD_HOOK](card));
