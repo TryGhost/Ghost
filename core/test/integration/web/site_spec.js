@@ -3,6 +3,7 @@ const should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     siteApp = require('../../../server/web/site/app'),
+    urlService = require('../../../server/services/url'),
     models = require('../../../server/models'),
     sandbox = sinon.sandbox.create();
 
@@ -12,6 +13,7 @@ describe('Integration - Web - Site', function () {
     beforeEach(function () {
         app = siteApp();
 
+        sandbox.stub(urlService, 'hasFinished').returns(true);
         return testUtils.configureGhost(sandbox);
     });
 

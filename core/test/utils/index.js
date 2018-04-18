@@ -928,6 +928,21 @@ startGhost = function startGhost(options) {
                 return themes.init();
             })
             .then(function () {
+                let timeout;
+
+                return new Promise(function (resolve) {
+                    (function retry() {
+                        clearTimeout(timeout);
+
+                        if (urlService.hasFinished()) {
+                            return resolve();
+                        }
+
+                        timeout = setTimeout(retry, 50);
+                    })();
+                });
+            })
+            .then(function () {
                 customRedirectsMiddleware.reload();
 
                 common.events.emit('server.start');
@@ -957,6 +972,21 @@ startGhost = function startGhost(options) {
             }
 
             return ghostServer.start();
+        })
+        .then(function () {
+            let timeout;
+
+            return new Promise(function (resolve) {
+                (function retry() {
+                    clearTimeout(timeout);
+
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
+
+                    timeout = setTimeout(retry, 50);
+                })();
+            });
         })
         .then(function returnGhost() {
             return ghostServer;
