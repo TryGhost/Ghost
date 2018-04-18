@@ -20,18 +20,18 @@ describe('{{ghost_foot}} helper', function () {
     });
 
     it('outputs global injected code', function (done) {
-        settingsCacheStub.withArgs('ghost_foot').returns('<script type="text/javascript">var test = \'I am a variable!\'</script>');
+        settingsCacheStub.withArgs('ghost_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
         helpers.ghost_foot({data: {}}).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
+            rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
 
             done();
         }).catch(done);
     });
 
     it('outputs post injected code', function (done) {
-        settingsCacheStub.withArgs('ghost_foot').returns('<script type="text/javascript">var test = \'I am a variable!\'</script>');
+        settingsCacheStub.withArgs('ghost_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
         helpers.ghost_foot({
             data: {
@@ -43,7 +43,7 @@ describe('{{ghost_foot}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
+            rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
             rendered.string.should.match(/post-codeinjection/);
 
             done();
@@ -51,7 +51,7 @@ describe('{{ghost_foot}} helper', function () {
     });
 
     it('handles post injected code being null', function (done) {
-        settingsCacheStub.withArgs('ghost_foot').returns('<script type="text/javascript">var test = \'I am a variable!\'</script>');
+        settingsCacheStub.withArgs('ghost_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
         helpers.ghost_foot({
             data: {
@@ -63,7 +63,7 @@ describe('{{ghost_foot}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
+            rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
             rendered.string.should.not.match(/post-codeinjection/);
 
             done();
@@ -71,7 +71,7 @@ describe('{{ghost_foot}} helper', function () {
     });
 
     it('handles post injected code being empty', function (done) {
-        settingsCacheStub.withArgs('ghost_foot').returns('<script type="text/javascript">var test = \'I am a variable!\'</script>');
+        settingsCacheStub.withArgs('ghost_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
         helpers.ghost_foot({
             data: {
@@ -83,7 +83,7 @@ describe('{{ghost_foot}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.match(/<script type="text\/javascript">var test = 'I am a variable!'<\/script>/);
+            rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
             rendered.string.should.not.match(/post-codeinjection/);
 
             done();

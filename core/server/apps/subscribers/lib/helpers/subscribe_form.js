@@ -27,7 +27,7 @@ function makeHidden(name, extras) {
  * document.querySelector['.location']['value'] = document.querySelector('.location')['value'] || window.location.href;
  */
 subscribeScript =
-    '<script type="text/javascript">' +
+    '<script>' +
     '(function(g,h,o,s,t){' +
     'h[o](\'.location\')[s]=h[o](\'.location\')[s] || g.location.href;' +
     'h[o](\'.referrer\')[s]=h[o](\'.referrer\')[s] || h.referrer;' +
