@@ -110,7 +110,7 @@ get = function get(resource, options) {
         apiMethod;
 
     if (!options.fn) {
-        data.error = i18n.t('warnings.helpers.get.mustBeCalledAsBlock', {helperName: 'get'});
+        data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: 'get'});
         logging.warn(data.error);
         return Promise.resolve();
     }

@@ -374,6 +374,7 @@
                 "noPermissionToEditThemes": "You do not have permission to edit themes.",
                 "themeDoesNotExist": "Theme does not exist.",
                 "invalidTheme": "Theme is not compatible or contains errors.",
+                "invalidThemeName": "Please select a valid theme.",
                 "missingFile": "Please select a theme.",
                 "invalidFile": "Please select a valid zip file.",
                 "overrideCasper": "Please rename your zip, it's not allowed to override the default casper theme.",
