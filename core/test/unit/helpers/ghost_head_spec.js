@@ -1557,7 +1557,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<script/);
+                rendered.string.should.match(/<script src="/);
                 rendered.string.should.match(/ghost\.init\(\{/);
                 rendered.string.should.match(/\tclientId: "/);
                 rendered.string.should.match(/\tclientSecret: "/);
@@ -1596,7 +1596,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.not.match(/<script/);
+                rendered.string.should.not.match(/<script src="/);
                 rendered.string.should.not.match(/ghost\.init\(\{/);
                 rendered.string.should.not.match(/\tclientId: "/);
                 rendered.string.should.not.match(/\tclientSecret: "/);
