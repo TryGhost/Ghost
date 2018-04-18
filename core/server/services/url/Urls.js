@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:url:urls');
+const localUtils = require('./utils');
 const common = require('../../lib/common');
 
 /**
@@ -9,6 +10,8 @@ const common = require('../../lib/common');
  * Each resource has exactly one url.
  *
  * Connector for url generator and resources.
+ *
+ * Stores relative urls by default.
  */
 class Urls {
     constructor() {
@@ -38,11 +41,15 @@ class Urls {
         };
 
         common.events.emit('url.added', {
-            url: url,
+            url: {
+                relative: url,
+                absolute: localUtils.createUrl(url, true)
+            },
             resource: resource
         });
     }
 
+    // @TODO: add an option to receive an absolute url
     getByResourceId(id) {
         return this.urls[id];
     }
