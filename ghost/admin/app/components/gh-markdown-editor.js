@@ -4,26 +4,10 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
 import {isEmpty, typeOf} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-
-const MOBILEDOC_VERSION = '0.3.1';
-
-export const BLANK_DOC = {
-    version: MOBILEDOC_VERSION,
-    markups: [],
-    atoms: [],
-    cards: [
-        ['card-markdown', {
-            cardName: 'card-markdown',
-            markdown: ''
-        }]
-    ],
-    sections: [[10, 0]]
-};
 
 export default Component.extend(ShortcutsMixin, {
 
@@ -41,16 +25,13 @@ export default Component.extend(ShortcutsMixin, {
     autofocus: false,
     imageMimeTypes: null,
     isFullScreen: false,
-    mobiledoc: null,
+    markdown: null,
     options: null,
     placeholder: '',
     showMarkdownHelp: false,
     uploadedImageUrls: null,
 
     shortcuts: null,
-
-    // Internal attributes
-    markdown: null,
 
     // Private
     _editor: null,
@@ -187,7 +168,6 @@ export default Component.extend(ShortcutsMixin, {
     // extract markdown content from single markdown card
     didReceiveAttrs() {
         this._super(...arguments);
-        let mobiledoc = this.get('mobiledoc') || copy(BLANK_DOC, true);
 
         let uploadedImageUrls = this.get('uploadedImageUrls');
         if (!isEmpty(uploadedImageUrls) && uploadedImageUrls !== this._uploadedImageUrls) {
@@ -200,14 +180,10 @@ export default Component.extend(ShortcutsMixin, {
             });
         }
 
-        // eslint-disable-next-line ember-suave/prefer-destructuring
-        let markdown = mobiledoc.cards[0][1].markdown;
-        this.set('markdown', markdown);
-
         // focus the editor when the markdown value changes, this is necessary
         // because both the autofocus and markdown values can change without a
         // re-render, eg. navigating from edit->new
-        if (this._editor && markdown !== this._editor.value() && this.get('autofocus')) {
+        if (this.get('autofocus') && this._editor && this.get('markdown') !== this._editor.value()) {
             this.send('focusEditor');
         }
 
@@ -255,11 +231,9 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     actions: {
-        // put the markdown into a new mobiledoc card, trigger external update
+        // trigger external update, any mobiledoc updates are handled there
         updateMarkdown(markdown) {
-            let mobiledoc = copy(BLANK_DOC, true);
-            mobiledoc.cards[0][1].markdown = markdown;
-            this.onChange(mobiledoc);
+            this.onChange(markdown);
         },
 
         // store a reference to the simplemde editor so that we can handle
