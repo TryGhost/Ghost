@@ -37,7 +37,7 @@ module.exports = function previewController(req, res, next) {
         }
 
         if (post.status === 'published') {
-            return urlService.utils.redirect301(res, urlService.utils.urlFor('post', {post: post}));
+            return urlService.utils.redirect301(res, urlService.getUrlByResourceId(post.id));
         }
 
         setRequestIsSecure(req, post);

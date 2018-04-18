@@ -1,4 +1,6 @@
-var should = require('should'), // jshint ignore:line
+'use strict';
+
+var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     Promise = require('bluebird'),
@@ -6,6 +8,7 @@ var should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     models = require('../../../server/models'),
+    urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers'),
     imageLib = require('../../../server/lib/image'),
     proxy = require('../../../server/helpers/proxy'),
@@ -16,6 +19,8 @@ var should = require('should'), // jshint ignore:line
     sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
+    let data;
+
     before(function () {
         models.init();
     });
@@ -26,6 +31,384 @@ describe('{{ghost_head}} helper', function () {
     });
 
     beforeEach(function () {
+        data = {
+            post0: {
+                id: '5ad9c8a3c7cef3f8ec9a5061',
+                meta_description: 'all about our blog',
+                title: 'About',
+                feature_image: '/content/images/test-image-about.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                og_image: '',
+                og_title: '',
+                og_description: '',
+                twitter_image: '',
+                twitter_title: '',
+                twitter_description: '',
+                page: true,
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5160',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post1: {
+                id: '5ad9c8a3c7cef3f8ec9a5059',
+                meta_description: 'all about our blog',
+                title: 'About',
+                feature_image: '/content/images/test-image-about.png',
+                og_image: '/content/images/test-og-image.png',
+                og_title: 'Custom Facebook title',
+                og_description: 'Custom Facebook description',
+                twitter_image: '/content/images/test-twitter-image.png',
+                twitter_title: 'Custom Twitter title',
+                twitter_description: 'Custom Twitter description',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                page: true,
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5161',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post2: {
+                id: '5ad9c8a3c7cef3f8ec9a5062',
+                meta_description: 'blog description',
+                custom_excerpt: '',
+                title: 'Welcome to Ghost',
+                feature_image: '/content/images/test-image.png',
+                og_image: '',
+                og_title: 'Custom Facebook title',
+                og_description: 'Custom Facebook description',
+                twitter_image: '/content/images/test-twitter-image.png',
+                twitter_title: '',
+                twitter_description: '',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5162',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    bio: 'Author bio',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            },
+
+            post3: {
+                id: '5ad9c8a3c7cef3f8ec9a5063',
+                meta_description: 'blog description',
+                custom_excerpt: 'post custom excerpt',
+                title: 'Welcome to Ghost',
+                feature_image: '/content/images/test-image.png',
+                og_image: '/content/images/test-facebook-image.png',
+                og_title: '',
+                og_description: '',
+                twitter_image: '/content/images/test-twitter-image.png',
+                twitter_title: 'Custom Twitter title',
+                twitter_description: '',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5163',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post4: {
+                id: '5ad9c8a3c7cef3f8ec9a5064',
+                meta_description: '',
+                custom_excerpt: '',
+                title: 'Welcome to Ghost',
+                html: '<p>This is a short post</p>',
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5164',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post5: {
+                id: '5ad9c8a3c7cef3f8ec9a5065',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                feature_image: '/content/images/test-image.png',
+                og_image: '/content/images/test-facebook-image.png',
+                og_title: 'Custom Facebook title',
+                og_description: '',
+                twitter_image: '/content/images/test-twitter-image.png',
+                twitter_title: 'Custom Twitter title',
+                twitter_description: '',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5165',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post6: {
+                id: '5ad9c8a3c7cef3f8ec9a5066',
+                meta_description: 'blog "test" description',
+                title: 'title',
+                meta_title: 'Welcome to Ghost "test"',
+                feature_image: '/content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5166',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post7: {
+                id: '5ad9c8a3c7cef3f8ec9a5067',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                feature_image: '/content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5167',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post8: {
+                id: '5ad9c8a3c7cef3f8ec9a5068',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                feature_image: null,
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5168',
+                    name: 'Author name',
+                    url: 'http//:testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: null,
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            },
+
+            post9: {
+                id: '5ad9c8a3c7cef3f8ec9a5069',
+                title: 'Welcome to Ghost',
+                html: '<p>This is a short post</p>',
+                primary_author: {
+                    name: 'Author name'
+                }
+            },
+
+            post10: {
+                id: '5ad9c8a3c7cef3f8ec9a5070',
+                title: 'Welcome to Ghost',
+                html: '<p>This is a short post</p>',
+                primary_author: {
+                    name: 'Author name'
+                }
+            },
+
+            post11: {
+                id: '5ad9c8a3c7cef3f8ec9a5071',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5169',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post12: {
+                id: '5ad9c8a3c7cef3f8ec9a5072',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5170',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post13: {
+                id: '5ad9c8a3c7cef3f8ec9a5073',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5171',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            post14: {
+                id: '5ad9c8a3c7cef3f8ec9a5074',
+                meta_description: 'blog description',
+                title: 'Welcome to Ghost',
+                image: 'content/images/test-image.png',
+                published_at: moment('2008-05-31T19:18:15').toISOString(),
+                updated_at: moment('2014-10-06T15:23:54').toISOString(),
+                tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
+                primary_author: {
+                    id: '5ad9c8a3c7cef3f8ec9a5172',
+                    name: 'Author name',
+                    url: 'http://testauthorurl.com',
+                    slug: 'Author',
+                    profile_image: '/content/images/test-author-image.png',
+                    website: 'http://authorwebsite.com',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
+                    bio: 'Author bio'
+                }
+            },
+
+            tag1: {
+                id: '5ad9c8a3c7cef3f8ec9a5075',
+                meta_description: 'tag meta description',
+                name: 'tagtitle',
+                meta_title: 'tag meta title',
+                feature_image: '/content/images/tag-image.png'
+            },
+
+            tag2: {
+                id: '5ad9c8a3c7cef3f8ec9a5076',
+                meta_description: '',
+                description: 'tag description',
+                name: 'tagtitle',
+                meta_title: '',
+                feature_image: '/content/images/tag-image.png'
+            },
+
+            tag3: {
+                id: '5ad9c8a3c7cef3f8ec9a5077',
+                meta_description: '',
+                name: 'tagtitle',
+                meta_title: '',
+                feature_image: '/content/images/tag-image.png'
+            },
+
+            tag4: {
+                id: '5ad9c8a3c7cef3f8ec9a5078',
+                meta_description: 'tag meta description',
+                title: 'tagtitle',
+                meta_title: 'tag meta title',
+                feature_image: '/content/images/tag-image.png'
+            },
+
+            author1: {
+                id: '5ad9c8a3c7cef3f8ec9a5079',
+                name: 'Author name',
+                slug: 'AuthorName',
+                bio: 'Author bio',
+                profile_image: '/content/images/test-author-image.png',
+                cover_image: '/content/images/author-cover-image.png',
+                website: 'http://authorwebsite.com',
+                facebook: 'testuser',
+                twitter: '@testuser'
+            },
+
+            author2: {
+                id: '5ad9c8a3c7cef3f8ec9a5080',
+                name: 'Author name',
+                slug: 'AuthorName',
+                bio: 'Author bio',
+                profile_image: '/content/images/test-author-image.png',
+                cover_image: '/content/images/author-cover-image.png',
+                website: 'http://authorwebsite.com'
+            }
+        };
+
         /**
          * Each test case here requests the image dimensions.
          * The image path is e.g. localhost:port/favicon.ico, but no server is running.
@@ -40,6 +423,63 @@ describe('{{ghost_head}} helper', function () {
         }));
 
         sandbox.stub(labs, 'isSet').returns(true);
+
+        sandbox.stub(urlService, 'getUrlByResourceId').callsFake(function (id, options) {
+            let resource;
+            const blogUrl = '://localhost:65530/';
+
+            _.each(data, function (value, key) {
+                if (value.id === id) {
+                    resource = {
+                        key: key,
+                        value: value
+                    };
+                }
+
+                if (value.primary_author && value.primary_author.id === id) {
+                    resource = {
+                        key: 'author',
+                        value: value.primary_author
+                    };
+                }
+            });
+
+            if (resource.key.match(/author/)) {
+                if (options.absolute) {
+                    if (options.secure) {
+                        return 'https' + blogUrl + 'author/' + resource.value.slug + '/';
+                    }
+
+                    return 'http' + blogUrl + 'author/' + resource.value.slug + '/';
+                }
+
+                return '/author/' + resource.value.slug + '/';
+            }
+
+            if (resource.key.match(/tag/)) {
+                if (options.absolute) {
+                    if (options.secure) {
+                        return 'https' + blogUrl + 'tag/' + resource.value.slug + '/';
+                    }
+
+                    return 'http' + blogUrl + 'tag/' + resource.value.slug + '/';
+                }
+
+                return '/tag/' + resource.value.slug + '/';
+            }
+
+            if (resource.key.match(/post/)) {
+                if (options.absolute) {
+                    if (options.secure) {
+                        return 'https' + blogUrl + resource.value.slug + '/';
+                    }
+
+                    return 'http' + blogUrl + resource.value.slug + '/';
+                }
+
+                return '/' + resource.value.slug + '/';
+            }
+        });
     });
 
     describe('without Code Injection', function () {
@@ -120,30 +560,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on static page', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'all about our blog',
-                    title: 'About',
-                    feature_image: '/content/images/test-image-about.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    og_image: '',
-                    og_title: '',
-                    og_description: '',
-                    twitter_image: '',
-                    twitter_title: '',
-                    twitter_description: '',
-                    page: true,
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser',
-                        bio: 'Author bio'
-                    }
-                }
+                post: data.post0
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -192,30 +609,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on static page with custom post structured data', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'all about our blog',
-                    title: 'About',
-                    feature_image: '/content/images/test-image-about.png',
-                    og_image: '/content/images/test-og-image.png',
-                    og_title: 'Custom Facebook title',
-                    og_description: 'Custom Facebook description',
-                    twitter_image: '/content/images/test-twitter-image.png',
-                    twitter_title: 'Custom Twitter title',
-                    twitter_description: 'Custom Twitter description',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    page: true,
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser',
-                        bio: 'Author bio'
-                    }
-                }
+                post: data.post1
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -264,12 +658,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data and schema first tag page with meta description and meta title', function (done) {
             var renderObject = {
-                tag: {
-                    meta_description: 'tag meta description',
-                    name: 'tagtitle',
-                    meta_title: 'tag meta title',
-                    feature_image: '/content/images/tag-image.png'
-                }
+                tag: data.tag1
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -312,13 +701,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('tag first page without meta data if no meta title and meta description, but model description provided', function (done) {
             var renderObject = {
-                tag: {
-                    meta_description: '',
-                    description: 'tag description',
-                    name: 'tagtitle',
-                    meta_title: '',
-                    feature_image: '/content/images/tag-image.png'
-                }
+                tag: data.tag2
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -361,12 +744,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('tag first page without meta and model description returns no description fields', function (done) {
             var renderObject = {
-                tag: {
-                    meta_description: '',
-                    name: 'tagtitle',
-                    meta_title: '',
-                    feature_image: '/content/images/tag-image.png'
-                }
+                tag: data.tag3
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -390,12 +768,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('does not return structured data on paginated tag pages', function (done) {
             var renderObject = {
-                tag: {
-                    meta_description: 'tag meta description',
-                    title: 'tagtitle',
-                    meta_title: 'tag meta title',
-                    feature_image: '/content/images/tag-image.png'
-                }
+                tag: data.tag4
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -421,16 +794,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data and schema on first author page with cover image', function (done) {
             var renderObject = {
-                author: {
-                    name: 'Author name',
-                    slug: 'AuthorName',
-                    bio: 'Author bio',
-                    profile_image: '/content/images/test-author-image.png',
-                    cover_image: '/content/images/author-cover-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                }
+                author: data.author1
             }, authorBk = _.cloneDeep(renderObject.author);
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -476,14 +840,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('does not return structured data on paginated author pages', function (done) {
             var renderObject = {
-                author: {
-                    name: 'Author name',
-                    slug: 'AuthorName',
-                    bio: 'Author bio',
-                    profile_image: '/content/images/test-author-image.png',
-                    cover_image: '/content/images/author-cover-image.png',
-                    website: 'http://authorwebsite.com'
-                }
+                author: data.author2
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -525,31 +882,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with author image and post cover image', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    custom_excerpt: '',
-                    title: 'Welcome to Ghost',
-                    feature_image: '/content/images/test-image.png',
-                    og_image: '',
-                    og_title: 'Custom Facebook title',
-                    og_description: 'Custom Facebook description',
-                    twitter_image: '/content/images/test-twitter-image.png',
-                    twitter_title: '',
-                    twitter_description: '',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        bio: 'Author bio',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post2
             }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -618,31 +951,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with custom excerpt for description and meta description', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    custom_excerpt: 'post custom excerpt',
-                    title: 'Welcome to Ghost',
-                    feature_image: '/content/images/test-image.png',
-                    og_image: '/content/images/test-facebook-image.png',
-                    og_title: '',
-                    og_description: '',
-                    twitter_image: '/content/images/test-twitter-image.png',
-                    twitter_title: 'Custom Twitter title',
-                    twitter_description: '',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        bio: 'Author bio',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post3
             }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -711,17 +1020,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: '',
-                    custom_excerpt: '',
-                    title: 'Welcome to Ghost',
-                    html: '<p>This is a short post</p>',
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author'
-                    }
-                }
+                post: data.post4
             }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -770,30 +1069,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on AMP post page with author image and post cover image', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    feature_image: '/content/images/test-image.png',
-                    og_image: '/content/images/test-facebook-image.png',
-                    og_title: 'Custom Facebook title',
-                    og_description: '',
-                    twitter_image: '/content/images/test-twitter-image.png',
-                    twitter_title: 'Custom Twitter title',
-                    twitter_description: '',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        bio: 'Author bio',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post5
             }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -862,24 +1138,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data if metaTitle and metaDescription have double quotes', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog "test" description',
-                    title: 'title',
-                    meta_title: 'Welcome to Ghost "test"',
-                    feature_image: '/content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post6
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -948,23 +1207,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data without tags if there are no tags', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    feature_image: '/content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post7
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1030,23 +1273,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with null author image and post cover image', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    feature_image: null,
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        profile_image: null,
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post8
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1137,13 +1364,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns twitter and facebook descriptions even if no meta description available', function (done) {
             var renderObject = {
-                post: {
-                    title: 'Welcome to Ghost',
-                    html: '<p>This is a short post</p>',
-                    primary_author: {
-                        name: 'Author name'
-                    }
-                }
+                post: data.post9
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1167,13 +1388,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns canonical URL', function (done) {
             var renderObject = {
-                post: {
-                    title: 'Welcome to Ghost',
-                    html: '<p>This is a short post</p>',
-                    primary_author: {
-                        name: 'Author name'
-                    }
-                }
+                post: data.post10
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1335,23 +1550,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('does not return structured data', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    image: 'content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        image: 'content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post11
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1421,11 +1620,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs post codeinjection as well', function (done) {
+            data.post1.codeinjection_head = 'post-codeinjection';
+
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: {
-                    post: {
-                        codeinjection_head: 'post-codeinjection'
-                    }
+                    post: data.post1
                 },
                 locals: {
                     context: ['paged', 'index'],
@@ -1441,11 +1640,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being empty', function (done) {
+            data.post1.codeinjection_head = '';
+
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: {
-                    post: {
-                        codeinjection_head: ''
-                    }
+                    post: data.post1
                 },
                 locals: {
                     context: ['paged', 'index'],
@@ -1461,11 +1660,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being null', function (done) {
+            data.post1.codeinjection_head = null;
+
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: {
-                    post: {
-                        codeinjection_head: null
-                    }
+                    post: data.post1
                 },
                 locals: {
                     context: ['paged', 'index'],
@@ -1482,23 +1681,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns meta tag without injected code for amp context', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    image: 'content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        image: 'content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post12
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1569,23 +1752,7 @@ describe('{{ghost_head}} helper', function () {
         });
         it('does not render script tag with for amp context', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    image: 'content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        image: 'content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post13
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -1625,24 +1792,9 @@ describe('{{ghost_head}} helper', function () {
 
         it('does not contain amphtml link', function (done) {
             var renderObject = {
-                post: {
-                    meta_description: 'blog description',
-                    title: 'Welcome to Ghost',
-                    image: 'content/images/test-image.png',
-                    published_at: moment('2008-05-31T19:18:15').toISOString(),
-                    updated_at: moment('2014-10-06T15:23:54').toISOString(),
-                    tags: [{name: 'tag1'}, {name: 'tag2'}, {name: 'tag3'}],
-                    primary_author: {
-                        name: 'Author name',
-                        url: 'http//:testauthorurl.com',
-                        slug: 'Author',
-                        image: 'content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    }
-                }
+                post: data.post14
             };
+
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {

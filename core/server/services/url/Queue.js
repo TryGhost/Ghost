@@ -203,6 +203,14 @@ class Queue extends EventEmitter {
 
         this.toNotify = {};
     }
+
+    softReset() {
+        _.each(this.toNotify, (obj) => {
+            clearTimeout(obj.timeout);
+        });
+
+        this.toNotify = {};
+    }
 }
 
 module.exports = Queue;

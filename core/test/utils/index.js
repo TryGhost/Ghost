@@ -509,7 +509,10 @@ truncate = function truncate(tableName) {
 // we must always try to delete all tables
 clearData = function clearData() {
     debug('Database reset');
-    return knexMigrator.reset({force: true});
+    return knexMigrator.reset({force: true})
+        .then(function () {
+            urlService.softReset();
+        });
 };
 
 toDoList = {
@@ -931,6 +934,10 @@ startGhost = function startGhost(options) {
                 return themes.init();
             })
             .then(function () {
+                urlService.softReset();
+                urlService.finished = false;
+                common.events.emit('db.ready');
+
                 let timeout;
 
                 return new Promise(function (resolve) {
@@ -963,6 +970,8 @@ startGhost = function startGhost(options) {
             return knexMigrator.init();
         })
         .then(function initializeGhost() {
+            urlService.softReset();
+
             return ghost();
         })
         .then(function startGhost(_ghostServer) {

@@ -7,6 +7,7 @@ const should = require('should'), // jshint ignore:line
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
     settingsCache = require('../../../server/services/settings/cache'),
+    urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
@@ -28,6 +29,7 @@ describe('Unit: models/post', function () {
 
     beforeEach(function () {
         sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+        sandbox.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
@@ -49,6 +51,8 @@ describe('Unit: models/post', function () {
          * Will be fixed when merging channels, because the post model has no longer generate the url.
          */
         it('[bug] permalink: /:primary_tag/:slug/, columns: [title,url]', function () {
+            urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/all/html-ipsum/');
+
             sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:primary_tag/:slug/');
 
             return models.Post.findPage({columns: ['title', 'url']})

@@ -37,6 +37,7 @@ describe('Integration - Web - Site', function () {
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('/prettify-me/');
+                    urlService.hasFinished.calledOnce.should.be.true();
                 });
         });
     });
@@ -44,10 +45,13 @@ describe('Integration - Web - Site', function () {
     describe('component: url redirects', function () {
         describe('page', function () {
             it('success', function () {
+                const post = testUtils.DataGenerator.forKnex.createPost({slug: 'cars'});
                 configUtils.set('url', 'https://example.com');
 
                 sandbox.stub(models.Post, 'findOne')
-                    .resolves(models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'cars'})));
+                    .resolves(models.Post.forge(post));
+
+                sandbox.stub(urlService, 'getUrlByResourceId').withArgs(post.id).returns('/cars/');
 
                 const req = {
                     secure: true,
@@ -60,6 +64,7 @@ describe('Integration - Web - Site', function () {
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
+                        urlService.hasFinished.calledOnce.should.be.true();
                     });
             });
 
