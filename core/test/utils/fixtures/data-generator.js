@@ -52,8 +52,8 @@ DataGenerator.Content = {
             feature_image: 'http://placekitten.com/500/200',
             meta_description: 'test stuff',
             published_at: new Date('2015-01-03'),
-            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d',
-            featured: true
+            featured: true,
+            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
         },
         {
             id: ObjectId.generate(),
@@ -132,7 +132,7 @@ DataGenerator.Content = {
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
+            password: 'Sl1m3rson99',
             profile_image: 'https://example.com/super_photo.jpg'
         },
         {
@@ -141,7 +141,7 @@ DataGenerator.Content = {
             name: 'Smith Wellingsworth',
             slug: 'smith-wellingsworth',
             email: 'swellingsworth@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // editor
@@ -149,7 +149,7 @@ DataGenerator.Content = {
             name: 'Jimothy Bogendath',
             slug: 'jimothy-bogendath',
             email: 'jbOgendAth@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // author
@@ -157,7 +157,7 @@ DataGenerator.Content = {
             name: 'Slimer McEctoplasm',
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // editor 2
@@ -165,7 +165,7 @@ DataGenerator.Content = {
             name: 'Ivan Email',
             slug: 'ivan-email',
             email: 'info1@ghost.org',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // author 2
@@ -173,7 +173,7 @@ DataGenerator.Content = {
             name: 'Author2',
             slug: 'a-2',
             email: 'info2@ghost.org',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // admin 2
@@ -181,7 +181,7 @@ DataGenerator.Content = {
             name: 'admin2',
             slug: 'ad-2',
             email: 'info3@ghost.org',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // contributor
@@ -189,7 +189,7 @@ DataGenerator.Content = {
             name: 'Contributor',
             slug: 'contributor',
             email: 'contributor@ghost.org',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         },
         {
             // contributor
@@ -197,7 +197,7 @@ DataGenerator.Content = {
             name: 'contributor2',
             slug: 'contrib-2',
             email: 'contributor2@ghost.org',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         }
     ],
 
@@ -472,7 +472,7 @@ DataGenerator.forKnex = (function () {
             name: 'name',
             slug: 'slug_' + Date.now(),
             status: 'active',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS',
+            password: 'Sl1m3rson99',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
@@ -505,7 +505,7 @@ DataGenerator.forKnex = (function () {
             name: 'Joe Bloggs',
             slug: 'joe-blogs',
             email: 'joe_' + uniqueInteger + '@example.com',
-            password: '$2b$10$ujPIlqjTsYwfc2/zrqZXZ.yd7cQQm2iOkAFenTAJfveKkc23nwdeS'
+            password: 'Sl1m3rson99'
         });
     }
 
