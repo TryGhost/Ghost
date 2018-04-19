@@ -15,7 +15,10 @@
 )}}
 
 <div style="display:none">
-    {{gh-file-input multiple=true action=(action onImageFilesSelected) accept=imageMimeTypes}}
+    {{gh-file-input
+        multiple=true
+        action=(action onImageFilesSelected)
+        accept=imageMimeTypes}}
 </div>
 
 {{#if _showUnsplash}}

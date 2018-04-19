@@ -10,11 +10,63 @@
     editCard=(action editCard)
 }}
     {{#if isEditing}}
-        {{gh-textarea
-            class="koenig-card-markdown"
-            value=(readonly payload.markdown)
-            input=(action "updateMarkdown" value="target.value")
-            autoExpand=".gh-koenig-editor"}}
+        {{#gh-editor as |editor|}}
+            {{#gh-markdown-editor
+                markdown=(readonly payload.markdown)
+                onChange=(action "updateMarkdown")
+                enableSideBySide=false
+                enablePreview=false
+                enableHemingway=false
+                options=(hash status=false)
+                uploadedImageUrls=editor.uploadedImageUrls
+                onImageFilesSelected=(action editor.uploadImages)
+                imageMimeTypes=editor.imageMimeTypes
+                as |markdown|
+            }}
+                {{markdown.editor}}
+            {{/gh-markdown-editor}}
+
+            {{!-- files are dragged over editor pane --}}
+            {{#if editor.isDraggedOver}}
+                <div class="drop-target gh-editor-drop-target">
+                    <div class="drop-target-message">
+                        <h3>Drop image(s) here to upload</h3>
+                    </div>
+                </div>
+            {{/if}}
+
+            {{!-- files have been dropped ready to be uploaded --}}
+            {{#if editor.droppedFiles}}
+                {{#gh-uploader
+                    files=editor.droppedFiles
+                    accept=editor.imageMimeTypes
+                    extensions=editor.imageExtensions
+                    onComplete=(action editor.uploadComplete)
+                    onCancel=(action editor.uploadCancelled)
+                    as |upload|
+                }}
+                    <div class="gh-editor-image-upload {{if upload.errors "-error"}}">
+                        <div class="gh-editor-image-upload-content">
+                            {{#if upload.errors}}
+                                <h3>Upload failed</h3>
+
+                                {{#each upload.errors as |error|}}
+                                    <div class="failed">{{error.fileName}} - {{error.message}}</div>
+                                {{/each}}
+
+                                <button class="gh-btn gh-btn-grey gh-btn-icon" {{action upload.cancel}}>
+                                    <span>{{svg-jar "close"}} Close</span>
+                                </button>
+                            {{else}}
+
+                                <h3>Uploading {{pluralize upload.files.length "image"}}...</h3>
+                                {{upload.progressBar}}
+                            {{/if}}
+                        </div>
+                    </div>
+                {{/gh-uploader}}
+            {{/if}}
+        {{/gh-editor}}
     {{else}}
         {{renderedMarkdown}}
     {{/if}}
