@@ -295,11 +295,14 @@ export default Component.extend(ShortcutsMixin, {
 
             // HACK: move the toolbar & status bar elements outside of the
             // editor container so that they can be aligned in fixed positions
-            let container = this.$().closest('.gh-editor').find('.gh-editor-footer');
-            this._toolbar = this.$('.editor-toolbar');
-            this._statusbar = this.$('.editor-statusbar');
-            this._toolbar.appendTo(container);
-            this._statusbar.appendTo(container);
+            let container = this.element.closest('.gh-editor');
+            let footer = container && container.querySelector('.gh-editor-footer');
+            if (footer) {
+                this._toolbar = this.element.querySelector('.editor-toolbar');
+                this._statusbar = this.element.querySelector('.editor-statusbar');
+                footer.appendChild(this._toolbar);
+                footer.appendChild(this._statusbar);
+            }
 
             this._updateButtonState();
         },
@@ -439,9 +442,11 @@ export default Component.extend(ShortcutsMixin, {
         // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
         // errors when it tries to remove them
         destroyEditor() {
-            let container = this.$('.gh-markdown-editor-pane');
-            this._toolbar.appendTo(container);
-            this._statusbar.appendTo(container);
+            let container = this.element.querySelector('.gh-markdown-editor-pane');
+            if (container) {
+                container.appendChild(this._toolbar);
+                container.appendChild(this._statusbar);
+            }
             this._editor = null;
         }
     },
@@ -560,9 +565,9 @@ export default Component.extend(ShortcutsMixin, {
     _connectSplitPreview() {
         let cm = this._editor.codemirror;
         let editor = this._editor;
-        let editorPane = this.$('.gh-markdown-editor-pane')[0];
-        let previewPane = this.$('.gh-markdown-editor-preview')[0];
-        let previewContent = this.$('.gh-markdown-editor-preview-content')[0];
+        let editorPane = this.element.querySelector('.gh-markdown-editor-pane');
+        let previewPane = this.element.querySelector('.gh-markdown-editor-preview');
+        let previewContent = this.element.querySelector('.gh-markdown-editor-preview-content');
 
         this._editorPane = editorPane;
         this._previewPane = previewPane;

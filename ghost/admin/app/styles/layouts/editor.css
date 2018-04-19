@@ -376,9 +376,12 @@
     position: relative;
     z-index: 0;
     width: 100%;
-    height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+.gh-editor > .gh-markdown-editor {
+    height: 100vh;
 }
 
 .gh-markdown-editor-pane,

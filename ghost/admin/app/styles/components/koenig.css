@@ -266,10 +266,6 @@
 
 /* specific cards... */
 
-textarea.koenig-card-markdown {
-    max-width: 100%;
-}
-
 .koenig-card-html--editor .CodeMirror {
     min-height: 170px;
     padding: 0;
@@ -286,6 +282,30 @@ textarea.koenig-card-markdown {
     overflow: hidden !important;
     margin-right: 0;
 }
+
+.koenig-editor .gh-markdown-editor {
+    position: static;
+    overflow: visible;
+}
+
+.koenig-editor .gh-markdown-editor .editor-toolbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-left: none;
+    border-right: none;
+    z-index: 9999;
+    border-radius: 0;
+    text-align: center;
+}
+
+/* margin to account for absolutely positioned toolbar */
+.koenig-editor .gh-markdown-editor .CodeMirror {
+    margin-bottom: 49px;
+}
+
+
 
 /* mobiledoc-kit base styles ------------------------------------------------
  * NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
