@@ -297,8 +297,10 @@ export default Controller.extend({
         }
 
         // Set the properties that are indirected
-        // set mobiledoc equal to what's in the editor
-        this.set('post.mobiledoc', this.get('post.scratch'));
+        // set mobiledoc equal to what's in the editor but create a copy so that
+        // nested objects/arrays don't keep references which can mean that both
+        // scratch and mobiledoc get updated simultaneously
+        this.set('post.mobiledoc', copy(this.get('post.scratch'), true));
         this.set('post.status', status);
 
         // Set a default title
