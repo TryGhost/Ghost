@@ -31,6 +31,10 @@ export default Component.extend(ShortcutsMixin, {
     showMarkdownHelp: false,
     uploadedImageUrls: null,
 
+    enableSideBySide: true,
+    enablePreview: true,
+    enableHemingway: true,
+
     shortcuts: null,
 
     // Private
@@ -136,11 +140,31 @@ export default Component.extend(ShortcutsMixin, {
             status: ['words']
         };
 
-        if (this.get('settings.unsplash.isActive')) {
-            let image = defaultOptions.toolbar.findBy('name', 'image');
-            let index = defaultOptions.toolbar.indexOf(image) + 1;
+        let toolbar = defaultOptions.toolbar;
 
-            defaultOptions.toolbar.splice(index, 0, {
+        if (!this.get('enableSideBySide')) {
+            let sideBySide = toolbar.findBy('name', 'side-by-side');
+            let index = toolbar.indexOf(sideBySide);
+            toolbar.splice(index, 1);
+        }
+
+        if (!this.get('enablePreview')) {
+            let preview = toolbar.findBy('name', 'preview');
+            let index = toolbar.indexOf(preview);
+            toolbar.splice(index, 1);
+        }
+
+        if (!this.get('enableHemingway')) {
+            let hemingway = toolbar.findBy('name', 'hemingway');
+            let index = toolbar.indexOf(hemingway);
+            toolbar.splice(index, 1);
+        }
+
+        if (this.get('settings.unsplash.isActive')) {
+            let image = toolbar.findBy('name', 'image');
+            let index = toolbar.indexOf(image) + 1;
+
+            toolbar.splice(index, 0, {
                 name: 'unsplash',
                 action: () => {
                     this.send('toggleUnsplash');
@@ -150,6 +174,15 @@ export default Component.extend(ShortcutsMixin, {
             });
         }
 
+        let lastItem = null;
+        toolbar.forEach((item, index) => {
+            if (item === '|' && item === lastItem) {
+                toolbar[index] = null;
+            }
+            lastItem = item;
+        });
+        defaultOptions.toolbar = toolbar.filter(Boolean);
+
         return assign(defaultOptions, options);
     }),
 
@@ -158,10 +191,18 @@ export default Component.extend(ShortcutsMixin, {
 
         let shortcuts = {};
         shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'openImageFileDialog'};
-        shortcuts['ctrl+alt+r'] = {action: 'togglePreview'};
-        shortcuts['ctrl+alt+p'] = {action: 'toggleSplitScreen'};
         shortcuts['ctrl+alt+s'] = {action: 'toggleSpellcheck'};
-        shortcuts['ctrl+alt+h'] = {action: 'toggleHemingway'};
+
+        if (this.get('enablePreview')) {
+            shortcuts['ctrl+alt+r'] = {action: 'togglePreview'};
+        }
+        if (this.get('enableSideBySide')) {
+            shortcuts['ctrl+alt+p'] = {action: 'toggleSplitScreen'};
+        }
+        if (this.get('enableHemingway')) {
+            shortcuts['ctrl+alt+h'] = {action: 'toggleHemingway'};
+        }
+
         this.shortcuts = shortcuts;
     },
 
