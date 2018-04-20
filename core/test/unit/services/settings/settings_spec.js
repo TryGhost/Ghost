@@ -4,9 +4,7 @@ const sinon = require('sinon'),
     should = require('should'),
     rewire = require('rewire'),
     common = require('../../../../server/lib/common'),
-
     settings = rewire('../../../../server/services/settings/index'),
-
     sandbox = sinon.sandbox.create();
 
 describe('UNIT > Settings Service:', function () {
@@ -42,40 +40,43 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('returns settings object for `routes`', function () {
-            settingsLoaderStub.resolves(settingsStubFile);
+            settingsLoaderStub.returns(settingsStubFile);
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
-            settings.get('routes').then((result) => {
-                should.exist(result);
-                result.should.be.an.Object().with.properties('routes', 'collections', 'resources');
-                settingsLoaderStub.calledOnce.should.be.true();
-            });
+            const result = settings.get('routes');
+            should.exist(result);
+            result.should.be.an.Object().with.properties('routes', 'collections', 'resources');
+            settingsLoaderStub.calledOnce.should.be.true();
         });
 
-        it('rejects when requested settings type is not supported', function () {
-            settingsLoaderStub.resolves(settingsStubFile);
+        it('rejects when requested settings type is not supported', function (done) {
+            settingsLoaderStub.returns(settingsStubFile);
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
-            return settings.get('something').then((result) => {
-                should.not.exist(result);
-            }).catch((error) => {
-                should.exist(error);
-                error.message.should.be.eql('Requested setting is not supported: \'something\'.');
+            try {
+                settings.get('something');
+                done(new Error('SettingsLoader should fail'));
+            } catch (err) {
+                should.exist(err);
+                err.message.should.be.eql('Requested setting is not supported: \'something\'.');
                 settingsLoaderStub.callCount.should.be.eql(0);
-            });
+                done();
+            }
         });
 
-        it('passes SettingsLoader error through', function () {
-            settingsLoaderStub.rejects(new common.errors.GhostError({message: 'oops'}));
+        it('passes SettingsLoader error through', function (done) {
+            settingsLoaderStub.throws(new common.errors.GhostError({message: 'oops'}));
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
-            return settings.get('routes').then((result) => {
-                should.not.exist(result);
-            }).catch((error) => {
-                should.exist(error);
-                error.message.should.be.eql('oops');
+            try {
+                settings.get('routes');
+                done(new Error('SettingsLoader should fail'));
+            } catch (err) {
+                should.exist(err);
+                err.message.should.be.eql('oops');
                 settingsLoaderStub.calledOnce.should.be.true();
-            });
+                done();
+            }
         });
     });
 
@@ -106,32 +107,33 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('returns settings object for all known settings', function () {
-            settingsLoaderStub.onFirstCall().resolves(settingsStubFile1);
-            settingsLoaderStub.onSecondCall().resolves(settingsStubFile2);
+            settingsLoaderStub.onFirstCall().returns(settingsStubFile1);
+            settingsLoaderStub.onSecondCall().returns(settingsStubFile2);
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
-            return settings.getAll().then((result) => {
-                should.exist(result);
-                result.should.be.an.Object().with.properties('routes', 'globals');
-                result.routes.should.be.an.Object().with.properties('routes', 'collections', 'resources');
-                result.globals.should.be.an.Object().with.properties('config');
+            const result = settings.getAll();
+            should.exist(result);
+            result.should.be.an.Object().with.properties('routes', 'globals');
+            result.routes.should.be.an.Object().with.properties('routes', 'collections', 'resources');
+            result.globals.should.be.an.Object().with.properties('config');
 
-                settingsLoaderStub.calledTwice.should.be.true();
-            });
+            settingsLoaderStub.calledTwice.should.be.true();
         });
 
-        it('passes SettinsLoader error through', function () {
-            settingsLoaderStub.onFirstCall().resolves(settingsStubFile1);
-            settingsLoaderStub.onSecondCall().rejects(new common.errors.GhostError({message: 'oops'}));
+        it('passes SettinsLoader error through', function (done) {
+            settingsLoaderStub.onFirstCall().returns(settingsStubFile1);
+            settingsLoaderStub.onSecondCall().throws(new common.errors.GhostError({message: 'oops'}));
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
-            return settings.getAll().then((result) => {
-                should.not.exist(result);
-            }).catch((error) => {
-                should.exist(error);
-                error.message.should.be.eql('oops');
+            try {
+                settings.getAll();
+                done(new Error('SettingsLoader should fail'));
+            } catch (err) {
+                should.exist(err);
+                err.message.should.be.eql('oops');
                 settingsLoaderStub.calledTwice.should.be.true();
-            });
+                done();
+            }
         });
     });
 });
