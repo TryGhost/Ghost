@@ -311,7 +311,7 @@
     line-height: 0;
 }
 
-.koenig-editor__editor div + div {
+.koenig-editor__editor > div + div {
     margin: 3.2rem 0 0;
 }
 
@@ -446,4 +446,14 @@
 
 .koenig-card-markdown-rendered hr + p {
     margin: 3.2rem 0 0;
+}
+
+.koenig-editor .gh-markdown-editor pre {
+    border: none;
+    background: none;
+    white-space: normal;
+}
+
+.koenig-editor .gh-markdown-editor a {
+    box-shadow: none;
 }
