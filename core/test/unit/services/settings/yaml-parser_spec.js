@@ -27,7 +27,7 @@ describe('UNIT > Settings Service:', function () {
 
             const result = yamlParser(file, 'goodroutes.yaml');
             should.exist(result);
-            result.should.be.an.Object().with.properties('routes', 'collections', 'resources');
+            result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             yamlSpy.calledOnce.should.be.true();
         });
 
