@@ -342,10 +342,10 @@
     margin-bottom: 2vw;
     border: none;
     color: var(--darkgrey);
-    font-size: 3.2rem;
-    line-height: 1.15em;
-    font-weight: bold;
-    letter-spacing: 0.8px;
+    font-size: 3.6rem;
+    line-height: 1.333em;
+    font-weight: 700;
+    letter-spacing: 0.04rem;
     overflow: hidden;
 }
 
