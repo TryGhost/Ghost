@@ -1,3 +1,7 @@
+
+/* Import basic typography styles for Koenig */
+@import "./koenig-content.css";
+
 /* TODO: move these back into the editor.css layout? */
 
 /* scrollable container */
@@ -318,35 +322,9 @@ textarea.koenig-card-markdown {
     top: 0;
 }
 
-.__mobiledoc-editor a {
-    color: #0b8bff;
-    white-space: nowrap;
-}
-
 /* override of global.css block display */
 .__mobiledoc-editor i {
     display: inline;
-}
-
-.__mobiledoc-editor h1,
-.__mobiledoc-editor h2,
-.__mobiledoc-editor h3,
-.__mobiledoc-editor h4,
-.__mobiledoc-editor h5,
-.__mobiledoc-editor h6 {
-    font-weight: 800;
-    letter-spacing: -0.02em;
-}
-
-.__mobiledoc-editor blockquote {
-    border-left: 4px solid #0b8bff;
-    margin: 1em 0 1em -1.2em;
-    padding-left: 1.05em;
-    color: #a0a0a0;
-}
-
-.__mobiledoc-editor hr {
-    margin: 0.5em 0;
 }
 
 /**
