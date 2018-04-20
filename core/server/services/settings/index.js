@@ -1,13 +1,14 @@
+'use strict';
+
 /**
  * Settings Lib
  * A collection of utilities for handling settings including a cache
  */
-
-var SettingsModel = require('../../models/settings').Settings,
+const _ = require('lodash'),
+    SettingsModel = require('../../models/settings').Settings,
     SettingsCache = require('./cache'),
     SettingsLoader = require('./loader'),
     // EnsureSettingsFiles = require('./ensure-settings'),
-    _ = require('lodash'),
     common = require('../../lib/common'),
     debug = require('ghost-ignition').debug('services:settings:index');
 
@@ -49,7 +50,7 @@ module.exports = {
      * will return an Object like this:
      * {routes: {}, collections: {}, resources: {}}
      * @param {String} setting type of supported setting.
-     * @returns {Promise<Object>} settingsFile
+     * @returns {Object} settingsFile
      * @description Returns settings object as defined per YAML files in
      * `/content/settings` directory.
      */
@@ -59,18 +60,13 @@ module.exports = {
         // CASE: this should be an edge case and only if internal usage of the
         // getter is incorrect.
         if (!setting || _.indexOf(knownSettings, setting) < 0) {
-            return Promise.reject(new common.errors.IncorrectUsageError({
+            throw new common.errors.IncorrectUsageError({
                 message: `Requested setting is not supported: '${setting}'.`,
                 help: `Please use only the supported settings: ${knownSettings}.`
-            }));
+            });
         }
 
-        return SettingsLoader(setting)
-            .then((settingsFile) => {
-                debug('setting loaded and parsed:', settingsFile);
-
-                return settingsFile;
-            });
+        return SettingsLoader(setting);
     },
 
     /**
@@ -88,23 +84,18 @@ module.exports = {
      *         config: { url: 'testblog.com' }
      *     }
      * }
-     * @returns {Promise<Object>} settingsObject
+     * @returns {Object} settingsObject
      * @description Returns all settings object as defined per YAML files in
      * `/content/settings` directory.
      */
     getAll: function getAll() {
         const knownSettings = this.knownSettings(),
-            props = {};
+            settingsToReturn = {};
 
         _.each(knownSettings, function (setting) {
-            props[setting] = SettingsLoader(setting);
+            settingsToReturn[setting] = SettingsLoader(setting);
         });
 
-        return Promise.props(props)
-            .then((settingsFile) => {
-                debug('all settings loaded and parsed:', settingsFile);
-
-                return settingsFile;
-            });
+        return settingsToReturn;
     }
 };
