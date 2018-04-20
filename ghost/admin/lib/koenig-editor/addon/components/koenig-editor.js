@@ -520,7 +520,7 @@ export default Component.extend({
         }
 
         // deselect any selected card because the cursor is no longer on a card
-        if (this._selectedCard) {
+        if (this._selectedCard && !editor.range.isBlank) {
             this.deselectCard(this._selectedCard);
         }
 
