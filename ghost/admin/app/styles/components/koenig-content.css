@@ -23,7 +23,8 @@
 .koenig-editor__editor h3,
 .koenig-editor__editor h4,
 .koenig-editor__editor h5,
-.koenig-editor__editor h6 {
+.koenig-editor__editor h6,
+.koenig-editor__editor blockquote {
     margin: 1.6rem 0 0;
 }
 
@@ -315,22 +316,22 @@
     margin: 3.2rem 0 0;
 }
 
-.koenig-editor__editor p + div,
-.koenig-editor__editor blockquote + div,
-.koenig-editor__editor ul + div,
-.koenig-editor__editor ol + div {
+.koenig-editor__editor > p + div,
+.koenig-editor__editor > blockquote + div,
+.koenig-editor__editor > ul + div,
+.koenig-editor__editor > ol + div {
     margin: 3.2rem 0 0;
 }
 
-.koenig-editor__editor h1 + div {
+.koenig-editor__editor > h1 + div {
     margin: 2.8rem 0 0;
 }
 
-.koenig-editor__editor h2 + div,
-.koenig-editor__editor h3 + div,
-.koenig-editor__editor h4 + div,
-.koenig-editor__editor h5 + div,
-.koenig-editor__editor h6 + div {
+.koenig-editor__editor > h2 + div,
+.koenig-editor__editor > h3 + div,
+.koenig-editor__editor > h4 + div,
+.koenig-editor__editor > h5 + div,
+.koenig-editor__editor > h6 + div {
     margin: 1.6rem 0 0;
 }
 
@@ -456,4 +457,31 @@
 
 .koenig-editor .gh-markdown-editor a {
     box-shadow: none;
+}
+
+
+/* HTML editor
+/* --------------------------------------------------------------- */
+
+.koenig-card-html--editor pre {
+    border: none;
+    background: none;
+    white-space: pre-line;
+    padding: 0 .8rem;
+    line-height: 1.4em;
+}
+
+
+/* Table
+/* --------------------------------------------------------------- */
+
+.koenig-editor__editor table {
+    font-size: 1.75rem;
+    margin: 0;
+}
+
+.koenig-editor__editor table tr td,
+.koenig-editor__editor table tr th {
+    vertical-align: top;
+    border-bottom: 1px solid var(--lightgrey);
 }
