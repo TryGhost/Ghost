@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     validator = require('validator'),
     BaseMapGenerator = require('./base-generator');

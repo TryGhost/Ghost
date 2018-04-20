@@ -473,7 +473,8 @@
             "settings": {
                 "yaml": {
                     "error": "Could not parse {file}: {context}.",
-                    "help": "Check your {file} file for typos and fix the named issues."
+                    "help": "Check your {file} file for typos and fix the named issues.",
+                    "validate": "The following definition \"{at}\" is invalid: {reason}"
                 },
                 "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
                 "ensureSettings": "Error trying to access settings files in {path}."

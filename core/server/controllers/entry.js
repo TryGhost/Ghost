@@ -42,7 +42,9 @@ module.exports = function entryController(req, res, next) {
          *
          * @NOTE
          *
-         * The resource url always contains the subdirectory. This was different before dynamic routing.
+         * The resource url (post.url) always contains the subdirectory. This was different before dynamic routing.
+         * Because with dynamic routing we have a service which knows where a resource lives - and this includes the
+         * subdirectory. Otherwise every time we use a resource url, we would need to take care of the subdirectory.
          * That's why we have to use the original url, which contains the sub-directory.
          */
         if (post.url !== req.originalUrl) {

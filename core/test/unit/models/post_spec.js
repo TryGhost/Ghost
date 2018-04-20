@@ -43,24 +43,6 @@ describe('Unit: models/post', function () {
         sandbox.restore();
     });
 
-    describe('findPage', function () {
-        /**
-         * This is a @bug.
-         * If you don't include tags, we can't generate the url properly.
-         * Will be fixed when merging channels, because the post model has no longer generate the url.
-         */
-        it('[bug] permalink: /:primary_tag/:slug/, columns: [title,url]', function () {
-            urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/all/html-ipsum/');
-
-            sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:primary_tag/:slug/');
-
-            return models.Post.findPage({columns: ['title', 'url']})
-                .then(function (result) {
-                    result.posts[0].url.should.eql('/all/html-ipsum/');
-                });
-        });
-    });
-
     describe('add', function () {
         describe('ensure full set of data for model events', function () {
             it('default', function () {

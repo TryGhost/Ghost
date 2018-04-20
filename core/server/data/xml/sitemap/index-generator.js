@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     xml = require('xml'),
     moment = require('moment'),

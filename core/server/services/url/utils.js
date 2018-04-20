@@ -149,7 +149,7 @@ function getAdminUrl() {
 // - secure (optional, default:false) - boolean whether or not to force SSL
 // Returns:
 //  - a URL which always ends with a slash
-function createUrl(urlPath, absolute, secure) {
+function createUrl(urlPath, absolute, secure, trailingSlash) {
     urlPath = urlPath || '/';
     absolute = absolute || false;
     var base;
@@ -159,6 +159,12 @@ function createUrl(urlPath, absolute, secure) {
         base = getBlogUrl(secure);
     } else {
         base = getSubdir();
+    }
+
+    if (trailingSlash) {
+        if (!urlPath.match(/\/$/)) {
+            urlPath += '/';
+        }
     }
 
     return urlJoin(base, urlPath);
@@ -232,7 +238,6 @@ function urlFor(context, data, absolute) {
         // this will become really big
         knownPaths = {
             home: '/',
-            rss: '/rss/',
             api: API_PATH,
             sitemap_xsl: '/sitemap.xsl'
         };
@@ -403,6 +408,16 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl) {
     return htmlContent;
 }
 
+function absoluteToRelative(urlToModify) {
+    const urlObj = url.parse(urlToModify);
+    return urlObj.pathname;
+}
+
+function deduplicateDoubleSlashes(url) {
+    return url.replace(/\/\//g, '/');
+}
+
+module.exports.absoluteToRelative = absoluteToRelative;
 module.exports.makeAbsoluteUrls = makeAbsoluteUrls;
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
@@ -413,6 +428,7 @@ module.exports.replacePermalink = replacePermalink;
 module.exports.redirectToAdmin = redirectToAdmin;
 module.exports.redirect301 = redirect301;
 module.exports.createUrl = createUrl;
+module.exports.deduplicateDoubleSlashes = deduplicateDoubleSlashes;
 
 /**
  * If you request **any** image in Ghost, it get's served via

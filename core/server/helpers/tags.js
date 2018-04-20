@@ -1,5 +1,3 @@
-'use strict';
-
 // # Tags Helper
 // Usage: `{{tags}}`, `{{tags separator=' - '}}`
 //

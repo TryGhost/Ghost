@@ -24,7 +24,7 @@ describe('getPaginatedUrl', function () {
     });
 
     describe('index', function () {
-        it('should calculate correct urls for the first page of the index channel', function () {
+        it('should calculate correct urls for the first page of an index collection', function () {
             // Setup tests
             data.relativeUrl = '/';
             data.pagination = {prev: null, next: 2};
@@ -40,7 +40,7 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/page/10/');
         });
 
-        it('should calculate correct urls for the second page of the index channel', function () {
+        it('should calculate correct urls for the second page of an index collection', function () {
             // Setup tests
             data.relativeUrl = '/page/2/';
             data.pagination = {prev: 1, next: 3};
@@ -56,7 +56,7 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/page/10/');
         });
 
-        it('should calculate correct urls for the last page of the index channel', function () {
+        it('should calculate correct urls for the last page of an index collection', function () {
             // Setup tests
             data.relativeUrl = '/page/10/';
             data.pagination = {prev: 9, next: null};
@@ -74,7 +74,7 @@ describe('getPaginatedUrl', function () {
     });
 
     describe('other', function () {
-        it('should calculate correct urls for the first page of another channel', function () {
+        it('should calculate correct urls for the first page of another collection', function () {
             // Setup tests
             data.relativeUrl = '/featured/';
             data.pagination = {prev: null, next: 2};
@@ -90,7 +90,7 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/featured/page/10/');
         });
 
-        it('should calculate correct urls for the second page of another channel', function () {
+        it('should calculate correct urls for the second page of another collection', function () {
             // Setup tests
             data.relativeUrl = '/featured/page/2/';
             data.pagination = {prev: 1, next: 3};
@@ -106,7 +106,7 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/featured/page/10/');
         });
 
-        it('should calculate correct urls for the last page of another channel', function () {
+        it('should calculate correct urls for the last page of another collection', function () {
             // Setup tests
             data.relativeUrl = '/featured/page/10/';
             data.pagination = {prev: 9, next: null};
@@ -148,7 +148,7 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/blog/page/10/');
         });
 
-        it('should calculate correct urls for another channel', function () {
+        it('should calculate correct urls for another collection', function () {
             // Setup tests
             data.relativeUrl = '/featured/page/2/';
             data.pagination = {prev: 1, next: 3};

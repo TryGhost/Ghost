@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'),
     sinon = require('sinon'),
 
@@ -64,9 +62,10 @@ describe('Unit: sitemap/manager', function () {
 
         it('can create a SiteMapManager instance', function () {
             should.exist(manager);
-            Object.keys(eventsToRemember).length.should.eql(2);
+            Object.keys(eventsToRemember).length.should.eql(3);
             should.exist(eventsToRemember['url.added']);
             should.exist(eventsToRemember['url.removed']);
+            should.exist(eventsToRemember['router.created']);
         });
 
         describe('trigger url events', function () {

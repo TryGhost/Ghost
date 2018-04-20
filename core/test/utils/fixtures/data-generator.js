@@ -472,6 +472,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             name: 'name',
+            email: 'test@ghost.org',
             bio: 'bio',
             website: null,
             slug: 'slug_' + Date.now(),

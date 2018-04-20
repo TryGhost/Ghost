@@ -164,18 +164,6 @@ describe('Url', function () {
             }, true).should.equal('https://my-ghost-blog.com/blog');
         });
 
-        it('should return rss url when asked for', function () {
-            var testContext = 'rss';
-
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            urlService.utils.urlFor(testContext).should.equal('/rss/');
-            urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            urlService.utils.urlFor(testContext).should.equal('/blog/rss/');
-            urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
-        });
-
         it('should handle weird cases by always returning /', function () {
             urlService.utils.urlFor('').should.equal('/');
             urlService.utils.urlFor('post', {}).should.equal('/');
@@ -582,7 +570,6 @@ describe('Url', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
-                // @TODO: is this the correct behaviour?
                 postLink = '/undefined/short-and-sweet/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');

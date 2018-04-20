@@ -23,11 +23,11 @@ describe('UNIT > Settings Service:', function () {
             routes: null,
             collections: {
                 '/': {
-                    route: '{globals.permalinks}',
+                    permalink: '{globals.permalinks}',
                     template: ['home', 'index']
                 }
             },
-            resources: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
+            taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
         };
         let yamlParserStub;
 
@@ -44,7 +44,7 @@ describe('UNIT > Settings Service:', function () {
 
             const setting = loadSettings('goodroutes');
             should.exist(setting);
-            setting.should.be.an.Object().with.properties('routes', 'collections', 'resources');
+            setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             // There are 4 files in the fixtures folder, but only 1 supported and valid yaml files
             fsReadFileSpy.calledOnce.should.be.true();
             fsReadFileSpy.calledWith(expectedSettingsFile).should.be.true();

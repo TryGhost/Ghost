@@ -1,5 +1,3 @@
-'use strict';
-
 const config  = require('../../../config'),
     Manager = require('./manager'),
     manager = new Manager();

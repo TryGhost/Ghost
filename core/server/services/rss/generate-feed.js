@@ -65,7 +65,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
 /**
  * Generate Feed
  *
- * Data is an object which contains the res.locals + results from fetching a channel, but without related data.
+ * Data is an object which contains the res.locals + results from fetching a collection, but without related data.
  *
  * @param {string} baseUrl
  * @param {{title, description, safeVersion, secure, posts}} data

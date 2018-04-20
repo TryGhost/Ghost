@@ -11,7 +11,7 @@ routes:
 
 collections:
   /:
-    route: '{globals.permalinks}'
+    permalink: '{globals.permalinks}'
     template:
       - home
       - index

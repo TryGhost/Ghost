@@ -72,7 +72,8 @@ class Urls {
      *  - resource1 -> /welcome/
      *  - resource2 -> /welcome/
      *
-     *  But depending on the routing registration, you will always serve e.g. resource1.
+     *  But depending on the routing registration, you will always serve e.g. resource1,
+     *  because the router it belongs to was registered first.
      */
     getByUrl(url) {
         return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {

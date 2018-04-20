@@ -44,6 +44,11 @@ describe('getUrl', function () {
     it('should return url for a tag', function () {
         const tag = testUtils.DataGenerator.forKnex.createTag();
 
+        // @NOTE: we currently have no way to generate a test model which is correctly jsonified
+        //        e.g. testUtils.DataGenerator.forModel.createTag().toJSON()
+        //        the tag object contains a `parent` attribute. the tag model contains a `parent_id` attr.
+        tag.parent = null;
+
         urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, secure: undefined})
             .returns('tag url');
 
@@ -53,7 +58,12 @@ describe('getUrl', function () {
     it('should return secure url for a tag', function () {
         const tag = testUtils.DataGenerator.forKnex.createTag();
 
-        // @TODO: WTF
+        // @NOTE: we currently have no way to generate a test model which is correctly jsonified
+        //        e.g. testUtils.DataGenerator.forModel.createTag().toJSON()
+        //        the tag object contains a `parent` attribute. the tag model contains a `parent_id` attr.
+        tag.parent = null;
+
+        // @TODO: WTF O_O
         tag.secure = true;
 
         urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, secure: true})

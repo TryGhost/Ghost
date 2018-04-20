@@ -18,8 +18,8 @@ const _ = require('lodash'),
     };
 
 class UrlGenerator {
-    constructor(routingType, queue, resources, urls, position) {
-        this.routingType = routingType;
+    constructor(router, queue, resources, urls, position) {
+        this.router = router;
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
@@ -27,9 +27,9 @@ class UrlGenerator {
 
         debug('constructor', this.toString());
 
-        // CASE: channels can define custom filters, but not required.
-        if (this.routingType.getFilter()) {
-            this.filter = transformFilter(this.routingType.getFilter());
+        // CASE: routers can define custom filters, but not required.
+        if (this.router.getFilter()) {
+            this.filter = transformFilter(this.router.getFilter());
             debug('filter', this.filter);
         }
 
@@ -41,7 +41,7 @@ class UrlGenerator {
          * @NOTE: currently only used if the permalink setting changes and it's used for this url generator.
          * @TODO: remove in Ghost 2.0
          */
-        this.routingType.addListener('updated', () => {
+        this.router.addListener('updated', () => {
             const myResources = this.urls.getByGeneratorId(this.uid);
 
             myResources.forEach((object) => {
@@ -72,7 +72,7 @@ class UrlGenerator {
         debug('_onInit', this.toString());
 
         // @NOTE: get the resources of my type e.g. posts.
-        const resources = this.resources.getAllByType(this.routingType.getType());
+        const resources = this.resources.getAllByType(this.router.getType());
 
         _.each(resources, (resource) => {
             this._try(resource);
@@ -83,7 +83,7 @@ class UrlGenerator {
         debug('onAdded', this.toString());
 
         // CASE: you are type "pages", but the incoming type is "users"
-        if (event.type !== this.routingType.getType()) {
+        if (event.type !== this.router.getType()) {
             return;
         }
 
@@ -136,10 +136,10 @@ class UrlGenerator {
      * We currently generate relative urls.
      */
     _generateUrl(resource) {
-        const permalink = this.routingType.getPermalinks().getValue();
+        const permalink = this.router.getPermalinks().getValue();
         const url = localUtils.replacePermalink(permalink, resource.data);
 
-        return localUtils.createUrl(url, false, false);
+        return localUtils.createUrl(url, false, false, true);
     }
 
     /**
@@ -169,7 +169,7 @@ class UrlGenerator {
                     action: 'added:' + resource.data.id,
                     eventData: {
                         id: resource.data.id,
-                        type: this.routingType.getType()
+                        type: this.router.getType()
                     }
                 });
             }
@@ -185,12 +185,22 @@ class UrlGenerator {
         resource.addListener('removed', onRemoved.bind(this));
     }
 
+    hasUrl(url) {
+        const existingUrl = this.urls.getByUrl(url);
+
+        if (existingUrl.length && existingUrl[0].generatorId === this.uid) {
+            return true;
+        }
+
+        return false;
+    }
+
     getUrls() {
         return this.urls.getByGeneratorId(this.uid);
     }
 
     toString() {
-        return this.routingType.toString();
+        return this.router.toString();
     }
 }
 

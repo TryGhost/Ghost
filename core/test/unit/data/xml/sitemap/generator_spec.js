@@ -1,12 +1,8 @@
-'use strict';
-
 const should = require('should'),
     sinon = require('sinon'),
-    Promise = require('bluebird'),
-    validator = require('validator'),
+    ObjectId = require('bson-objectid'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
-    api = require('../../../../../server/api'),
     urlService = require('../../../../../server/services/url'),
     IndexGenerator = require('../../../../../server/data/xml/sitemap/index-generator'),
     PostGenerator = require('../../../../../server/data/xml/sitemap/post-generator'),
@@ -210,32 +206,30 @@ describe('Generators', function () {
         });
 
         describe('fn: getXml', function () {
-            it('has a home item even if pages are empty', function () {
+            it('add', function () {
+                generator.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+                generator.addUrl('http://my-ghost-blog.com/magic/', {id: 'identifier2', staticRoute: false});
+                generator.addUrl('http://my-ghost-blog.com/subscribe/', {id: ObjectId.generate(), page: 1});
+
                 generator.getXml();
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('home', true) + '</loc>');
+
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
+
                 // <loc> should exist exactly one time
-                generator.siteMapContent.indexOf('<loc>').should.eql(generator.siteMapContent.lastIndexOf('<loc>'));
-            });
-
-            it('has a home item when pages are not empty', function () {
-                generator.addUrl('magic', testUtils.DataGenerator.forKnex.createPost({
-                    page: true,
-                    slug: 'static-page'
-                }));
-
-                generator.getXml();
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('home', true) + '</loc>');
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('page', {url: 'magic'}, true) + '</loc>');
+                generator.siteMapContent.match(/<loc>/g).length.should.eql(3);
             });
         });
 
         describe('fn: getPriorityForDatum', function () {
-            it('uses 1 priority for home page', function () {
+            it('uses 1 priority for static routes', function () {
                 generator.getPriorityForDatum({
-                    name: 'home'
+                    staticRoute: true
                 }).should.equal(1);
             });
-            it('uses 0.8 priority for static pages', function () {
+
+            it('uses 0.8 priority for static pages or collection indexes', function () {
                 generator.getPriorityForDatum({}).should.equal(0.8);
             });
         });

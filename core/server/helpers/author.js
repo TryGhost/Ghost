@@ -1,5 +1,3 @@
-'use strict';
-
 // # Author Helper
 // Usage: `{{author}}` OR `{{#author}}{{/author}}`
 //

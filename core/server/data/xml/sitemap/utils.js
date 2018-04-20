@@ -1,8 +1,7 @@
-'use strict';
+var urlService = require('../../../services/url'),
+    sitemapsUtils;
 
-const urlService = require('../../../services/url');
-
-module.exports = {
+sitemapsUtils = {
     getDeclarations: function () {
         var baseUrl = urlService.utils.urlFor('sitemap_xsl', true);
         baseUrl = baseUrl.replace(/^(http:|https:)/, '');
@@ -10,3 +9,5 @@ module.exports = {
             '<?xml-stylesheet type="text/xsl" href="' + baseUrl + '"?>';
     }
 };
+
+module.exports = sitemapsUtils;

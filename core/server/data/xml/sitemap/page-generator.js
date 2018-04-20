@@ -1,7 +1,4 @@
-'use strict';
-
 const _  = require('lodash'),
-    urlService = require('../../../services/url'),
     BaseMapGenerator = require('./base-generator');
 
 class PageMapGenerator extends BaseMapGenerator {
@@ -11,7 +8,6 @@ class PageMapGenerator extends BaseMapGenerator {
         this.name = 'pages';
 
         _.extend(this, opts);
-        this.addUrl(urlService.utils.urlFor('home', true), {slug: 'name'});
     }
 
     /**
@@ -19,7 +15,7 @@ class PageMapGenerator extends BaseMapGenerator {
      * We could influence this with priority or meta information
      */
     getPriorityForDatum(page) {
-        return page && page.name === 'home' ? 1.0 : 0.8;
+        return page && page.staticRoute ? 1.0 : 0.8;
     }
 }
 

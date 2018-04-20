@@ -9,7 +9,7 @@ const debug = require('ghost-ignition').debug('services:url:queue'),
  * Ghost fetches as earliest as possible the resources from the database. The reason is simply: we
  * want to know all urls as soon as possible.
  *
- * Parallel to this, the routes/channels are read/prepared and registered in express.
+ * Parallel to this, the routes are read/prepared and registered in express.
  * So the challenge is to handle both resource availability and route registration.
  * If you start an event, all subscribers of it are executed in a sequence. The queue will wait
  * till the current subscriber has finished it's work.
@@ -21,9 +21,9 @@ const debug = require('ghost-ignition').debug('services:url:queue'),
  *
  * - you can re-run an event
  * - you can add more subscribers to an existing queue
- * - you can order subscribers (helpful if you want to order routes/channels)
+ * - you can order subscribers (helpful if you want to order routers)
  *
- * Each subscriber represents one instance of the url generator. One url generator represents one channel/route.
+ * Each subscriber represents one instance of the url generator. One url generator represents one router.
  *
  * ### Tolerance option
  *
