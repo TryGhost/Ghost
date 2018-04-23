@@ -1,6 +1,6 @@
 Welcome to Ghost's GitHub repo! 👋🎉
 
-Do you need help or have a question? Please come chat in our forum: https://forum.ghost.org 👫.
+Do you need help, have a question or an idea? Please come chat in our forum: https://forum.ghost.org 👫.
 
 Found a bug? Please fill out the sections below... thank you 👍
 
