@@ -483,9 +483,7 @@ describe('Acceptance: Team', function () {
                 windowProxy.replaceState = originalReplaceState;
             });
 
-            // TODO: runs into this bug https://github.com/emberjs/ember.js/issues/16541
-            // unskip when we upgrade to Ember.js >= 3.1.1
-            it.skip('input fields reset and validate correctly', async function () {
+            it('input fields reset and validate correctly', async function () {
                 // test user name
                 await visit('/team/test-1');
 
