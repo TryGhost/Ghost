@@ -79,7 +79,7 @@
   version "0.0.38"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.38.tgz#c1be40aa933723c608820a99a373a16d215a1ca2"
 
-"@types/node@^9.6.0":
+"@types/node@*", "@types/node@^9.6.0":
   version "9.6.6"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.6.tgz#439b91f9caf3983cad2eef1e11f6bedcbf9431d2"
 
@@ -3368,7 +3368,7 @@ ember-cli-chai@0.5.0:
     rollup-plugin-commonjs "^8.0.2"
     rollup-plugin-node-resolve "^3.0.0"
 
-ember-cli-cjs-transform@1.1.1, ember-cli-cjs-transform@^1.1.1:
+ember-cli-cjs-transform@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ember-cli-cjs-transform/-/ember-cli-cjs-transform-1.1.1.tgz#79082031fec73885077496e2cd8d481dac79e0d0"
   dependencies:
@@ -3379,6 +3379,21 @@ ember-cli-cjs-transform@1.1.1, ember-cli-cjs-transform@^1.1.1:
     hash-for-dep "^1.2.3"
     pkg-dir "^2.0.0"
     rollup "^0.57.1"
+    rollup-plugin-commonjs "^9.1.0"
+    rollup-plugin-node-resolve "^3.3.0"
+    username "^3.0.0"
+
+ember-cli-cjs-transform@^1.1.1:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-cjs-transform/-/ember-cli-cjs-transform-1.2.0.tgz#34a0d2667673caec0248f500a954f45668027e8b"
+  dependencies:
+    broccoli-debug "^0.6.4"
+    broccoli-plugin "^1.3.0"
+    ember-cli-babel "^6.6.0"
+    fs-extra "^5.0.0"
+    hash-for-dep "^1.2.3"
+    pkg-dir "^2.0.0"
+    rollup "^0.58.1"
     rollup-plugin-commonjs "^9.1.0"
     rollup-plugin-node-resolve "^3.3.0"
     username "^3.0.0"
@@ -3786,9 +3801,17 @@ ember-composable-helpers@2.1.0, ember-composable-helpers@^2.0.1:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^6.6.0"
 
-ember-concurrency@0.8.17, ember-concurrency@^0.8.1, ember-concurrency@^0.8.12:
+ember-concurrency@0.8.17:
   version "0.8.17"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.8.17.tgz#be47a90342f1960f4f57284c2fe5f7ce2396142a"
+  dependencies:
+    babel-core "^6.24.1"
+    ember-cli-babel "^6.8.2"
+    ember-maybe-import-regenerator "^0.1.5"
+
+ember-concurrency@^0.8.1, ember-concurrency@^0.8.12:
+  version "0.8.18"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.8.18.tgz#20a9ac4ced6496ea4ebe52e88f4524a473871396"
   dependencies:
     babel-core "^6.24.1"
     ember-cli-babel "^6.8.2"
@@ -4167,9 +4190,9 @@ ember-sinon@2.1.0:
     ember-cli-babel "^6.6.0"
     sinon "^4.4.5"
 
-ember-source@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.1.0.tgz#21902747801c747b615f60168712968db3b433fc"
+ember-source@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.1.1.tgz#9cf95e8a6d7568d60b8eda2aeda17ac8944e654b"
   dependencies:
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^2.0.0"
@@ -5124,8 +5147,8 @@ fs.realpath@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
 
 fsevents@^1.1.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.0.tgz#e11a5ff285471e4cc43ab9cd09bb7986c565dcdc"
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.2.tgz#4f598f0f69b273188ef4a62ca4e9e08ace314bbf"
   dependencies:
     nan "^2.9.2"
     node-pre-gyp "^0.9.0"
@@ -9044,6 +9067,13 @@ rollup@^0.57.1:
     rollup-pluginutils "^2.0.1"
     signal-exit "^3.0.2"
     sourcemap-codec "^1.4.1"
+
+rollup@^0.58.1:
+  version "0.58.2"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.58.2.tgz#2feddea8c0c022f3e74b35c48e3c21b3433803ce"
+  dependencies:
+    "@types/estree" "0.0.38"
+    "@types/node" "*"
 
 route-recognizer@^0.2.3:
   version "0.2.10"
