@@ -125,9 +125,10 @@ let ajaxService = AjaxService.extend({
         headers['App-Pragma'] = 'no-cache';
 
         if (session.get('isAuthenticated')) {
-            session.authorize('authorizer:oauth2', (headerName, headerValue) => {
-                headers[headerName] = headerValue;
-            });
+            /* eslint-disable camelcase */
+            let {access_token} = session.get('data.authenticated');
+            headers.Authorization = `Bearer ${access_token}`;
+            /* eslint-enable camelcase */
         }
 
         return headers;
