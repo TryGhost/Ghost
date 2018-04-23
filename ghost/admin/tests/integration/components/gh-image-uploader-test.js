@@ -19,10 +19,12 @@ const notificationsStub = Service.extend({
 
 const sessionStub = Service.extend({
     isAuthenticated: false,
-    authorize(authorizer, block) {
-        if (this.get('isAuthenticated')) {
-            block('Authorization', 'Bearer token');
-        }
+
+    init() {
+        this._super(...arguments);
+        let authenticated = {access_token: 'AccessMe123'};
+        this.authenticated = authenticated;
+        this.data = {authenticated};
     }
 });
 
@@ -103,7 +105,7 @@ describe('Integration: Component: gh-image-uploader', function () {
 
         wait().then(() => {
             let [request] = server.handledRequests;
-            expect(request.requestHeaders.Authorization).to.equal('Bearer token');
+            expect(request.requestHeaders.Authorization).to.equal('Bearer AccessMe123');
             done();
         });
     });

@@ -5,8 +5,6 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {inject as service} from '@ember/service';
 
 export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
-    authorizer: 'authorizer:oauth2',
-
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
@@ -15,6 +13,15 @@ export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
     shouldBackgroundReloadRecord() {
         return false;
     },
+
+    /* eslint-disable camelcase */
+    authorize(xhr) {
+        if (this.get('session.isAuthenticated')) {
+            let {access_token} = this.get('session.data.authenticated');
+            xhr.setRequestHeader('Authorization', `Bearer ${access_token}`);
+        }
+    },
+    /* eslint-enable camelcase */
 
     query(store, type, query) {
         let id;

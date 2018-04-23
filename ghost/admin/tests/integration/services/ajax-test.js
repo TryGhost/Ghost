@@ -184,10 +184,13 @@ describe('Integration: Service: ajax', function () {
 
             init() {
                 this._super(...arguments);
-                this.authenticated = {
+                let authenticated = {
                     expires_at: (new Date()).getTime() - 10000,
+                    access_token: 'AccessMe123',
                     refresh_token: 'RefreshMe123'
                 };
+                this.authenticated = authenticated;
+                this.data = {authenticated};
             },
 
             restore() {
