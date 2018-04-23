@@ -12,9 +12,11 @@ export default EmberPowerSelectMultipleTrigger.extend({
         },
 
         handleOptionMouseDown(event) {
-            let action = this.get('extra.optionMouseDown');
-            if (action) {
-                return action(event);
+            if (!event.target.closest('[data-selected-index]')) {
+                let action = this.get('extra.optionMouseDown');
+                if (action) {
+                    return action(event);
+                }
             }
         },
 
