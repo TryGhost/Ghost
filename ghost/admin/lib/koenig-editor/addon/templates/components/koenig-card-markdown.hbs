@@ -11,6 +11,13 @@
 }}
     {{#if isEditing}}
         {{#gh-editor as |editor|}}
+            {{gh-scroll-trigger
+                triggerOffset=(hash bottom=bottomOffset)
+                enter=(action "topEntered")
+                exit=(action "topExited")
+                registerElement=(action "registerTop")
+            }}
+
             {{#gh-markdown-editor
                 markdown=(readonly payload.markdown)
                 onChange=(action "updateMarkdown")
@@ -25,6 +32,12 @@
             }}
                 {{markdown.editor}}
             {{/gh-markdown-editor}}
+
+            {{gh-scroll-trigger
+                enter=(action "bottomEntered")
+                exit=(action "bottomExited")
+                registerElement=(action "registerBottom")
+            }}
 
             {{!-- files are dragged over editor pane --}}
             {{#if editor.isDraggedOver}}
