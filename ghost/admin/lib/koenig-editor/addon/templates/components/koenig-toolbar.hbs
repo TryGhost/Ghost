@@ -1,42 +1,42 @@
-<ul class="kg-action-bar bg-lgr-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center relative white f8 fw6 tracked-2 {{if showToolbar "anim-fast-bezier" "o-0 pop-down"}}">
+<ul class="kg-action-bar bg-lgr-darkgrey inline-flex pa0 ma0 pl1 pr1 nl1 list br3 shadow-2 items-center relative white f8 fw6 tracked-2 {{if showToolbar "anim-fast-bezier" "o-0 pop-down"}}">
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Bold"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleMarkup" "strong"}}
         >
-            {{svg-jar "koenig/kg-bold" class=(concat (if activeMarkupTagNames.isStrong "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-bold" class=(concat (if activeMarkupTagNames.isStrong "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Italic"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleMarkup" "em"}}
         >
-            {{svg-jar "koenig/kg-italic" class=(concat (if (or activeMarkupTagNames.isEm activeMarkupTagNames.isI) "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-italic" class=(concat (if (or activeMarkupTagNames.isEm activeMarkupTagNames.isI) "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Heading One"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleSection" "h1"}}
         >
-            {{svg-jar "koenig/kg-heading-1" class=(concat (if activeSectionTagNames.isH1 "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-heading-1" class=(concat (if activeSectionTagNames.isH1 "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Heading Two"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleSection" "h2"}}
         >
-            {{svg-jar "koenig/kg-heading-2" class=(concat (if activeSectionTagNames.isH2 "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-heading-2" class=(concat (if activeSectionTagNames.isH2 "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
 
@@ -46,30 +46,30 @@
         <button
             type="button"
             title="Quote"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleSection" "blockquote"}}
         >
-            {{svg-jar "koenig/kg-quote" class=(concat (if activeSectionTagNames.isBlockquote "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-quote" class=(concat (if activeSectionTagNames.isBlockquote "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Unordered List"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleSection" "ul"}}
         >
-            {{svg-jar "koenig/kg-bullet-list" class=(concat (if activeSectionTagNames.isUl "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-bullet-list" class=(concat (if activeSectionTagNames.isUl "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
     <li class="ma0 lh-solid">
         <button
             type="button"
             title="Ordered List"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "toggleSection" "ol"}}
         >
-            {{svg-jar "koenig/kg-numbered-list" class=(concat (if activeSectionTagNames.isOl "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-numbered-list" class=(concat (if activeSectionTagNames.isOl "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
 
@@ -79,10 +79,10 @@
         <button
             type="button"
             title="Link"
-            class="dib dim-lite pa3 pt2 pb2 link"
+            class="dib dim-lite pa2 link h8"
             {{action "editLink"}}
         >
-            {{svg-jar "koenig/kg-link" class=(concat (if activeMarkupTagNames.isA "stroke-blue-l2" "stroke-white") " w4 h4 nudge-top--1")}}
+            {{svg-jar "koenig/kg-link" class=(concat (if activeMarkupTagNames.isA "stroke-blue-l2" "stroke-white") " w4 h4")}}
         </button>
     </li>
 </ul>

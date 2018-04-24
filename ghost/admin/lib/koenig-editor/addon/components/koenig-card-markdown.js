@@ -33,7 +33,7 @@ export default Component.extend({
                     icon: 'koenig/kg-edit-v2',
                     iconClass: 'stroke-white',
                     title: 'Edit',
-                    text: 'Edit',
+                    text: '',
                     action: run.bind(this, this.get('editCard'))
                 }]
             };

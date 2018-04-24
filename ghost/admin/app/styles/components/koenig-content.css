@@ -26,6 +26,7 @@
 .koenig-editor__editor h6,
 .koenig-editor__editor blockquote {
     margin: 1.6rem 0 0;
+    min-width: 100%;
 }
 
 
@@ -226,16 +227,19 @@
     font-size: 2rem;
 }
 
-.koenig-editor__editor h1 + p,
+.koenig-editor__editor h1 + p {
+    margin: 1.2rem 0 0;
+}
+
 .koenig-editor__editor h2 + p {
-    margin: .8rem 0 0;
+    margin: 0.8rem 0 0;
 }
 
 .koenig-editor__editor h3 + p,
 .koenig-editor__editor h4 + p,
 .koenig-editor__editor h5 + p,
 .koenig-editor__editor h6 + p {
-    margin: .4rem 0 0;
+    margin: .8rem 0 0;
 }
 
 .koenig-editor__editor p + p,
@@ -257,17 +261,27 @@
 .koenig-editor__editor ul:not(.kg-action-bar),
 .koenig-editor__editor ol {
     padding: 0;
+    min-width: 100%;
 }
 
-.koenig-editor__editor ul:not(.kg-action-bar) li,
-.koenig-editor__editor ol li {
-    margin: 0.8rem 0 0 2.8rem;
+.koenig-editor__editor ul:not(.kg-action-bar) li {
+    margin: 1.6rem 0 0 2.4rem;
+    padding: 0 0 0 0.6rem;
     line-height: 3.2rem;
 }
 
-.koenig-editor__editor ul:not(.kg-action-bar) li:first-child,
+.koenig-editor__editor ul:not(.kg-action-bar) li:first-child {
+    margin: 0 0 0 2.4rem;
+}
+
+.koenig-editor__editor ol li {
+    margin: 1.6rem 0 0 2.2rem;
+    padding: 0 0 0 0.8rem;
+    line-height: 3.2rem;
+}
+
 .koenig-editor__editor ol li:first-child {
-    margin: 0 0 0 2.8rem;
+    margin: 0 0 0 2.2rem;
 }
 
 .koenig-editor__editor p + ul:not(.kg-action-bar),
@@ -310,6 +324,7 @@
 
 .koenig-editor__editor > div {
     line-height: 0;
+    min-width: 100%;
 }
 
 .koenig-editor__editor > div + div {

@@ -317,6 +317,9 @@
 
 /* TODO: update to match Ghost styles */
 .__mobiledoc-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
     font-family: var(--font-family);
     font-size: 1.7rem;
@@ -335,11 +338,17 @@
 }
 
 .__mobiledoc-editor.__has-no-content:after {
+    font-family: georgia,serif;
+    font-weight: 300;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+    font-size: 2rem;
+    min-width: 100%;
     content: attr(data-placeholder);
-    color: #bbb;
+    color: var(--midgrey-l2);
     cursor: text;
     position: absolute;
-    top: 0;
+    top: 16px;
 }
 
 /* override of global.css block display */
