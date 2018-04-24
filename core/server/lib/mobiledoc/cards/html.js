@@ -12,7 +12,7 @@ module.exports = {
             caption = `<p>${payload.caption}</p>`;
         }
 
-        let html = `<div class="kg-card-html">${payload.html}${caption}</div>`;
+        let html = `${payload.html}\n${caption}`;
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
