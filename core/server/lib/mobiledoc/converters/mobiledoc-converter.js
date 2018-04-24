@@ -1,18 +1,21 @@
-var SimpleDom = require('simple-dom'),
-    Renderer = require('mobiledoc-dom-renderer').default,
-    common = require('../../common'),
-    atoms = require('../atoms'),
-    cards = require('../cards'),
-    options = {
-        dom: new SimpleDom.Document(),
-        cards: cards,
-        atoms: atoms,
-        unknownCardHandler: function (args) {
-            common.logging.error(new common.errors.InternalServerError({
-                message: 'Mobiledoc card \'' + args.env.name + '\' not found.'
-            }));
-        }
-    };
+'use strict';
+
+const SimpleDom = require('simple-dom');
+const Renderer = require('mobiledoc-dom-renderer').default;
+const common = require('../../common');
+const atoms = require('../atoms');
+const cards = require('../cards');
+
+let options = {
+    dom: new SimpleDom.Document(),
+    cards: cards,
+    atoms: atoms,
+    unknownCardHandler: function (args) {
+        common.logging.error(new common.errors.InternalServerError({
+            message: 'Mobiledoc card \'' + args.env.name + '\' not found.'
+        }));
+    }
+};
 
 // function getCards() {
 //     return config.get('apps:internal').reduce(
@@ -37,10 +40,34 @@ var SimpleDom = require('simple-dom'),
 
 module.exports = {
     render: function (mobiledoc) {
-        var renderer = new Renderer(options),
-            rendered = renderer.render(mobiledoc),
-            serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap),
-            html = serializer.serializeChildren(rendered.result);
+        let renderer = new Renderer(options);
+        let rendered = renderer.render(mobiledoc);
+
+        let currentNode = rendered.result.firstChild;
+        while (currentNode) {
+            // ignore divs for now
+            if (currentNode.tagName === 'DIV' && !currentNode.getAttribute('class')) {
+                currentNode = currentNode.nextSibling;
+                return;
+            }
+
+            let prevSibling = currentNode.previousSibling;
+            let existingClass = currentNode.getAttribute('class');
+            let nodeName = existingClass || `kg-${currentNode.tagName.toLowerCase()}`;
+
+            if (prevSibling) {
+                let afterTag = prevSibling.tagName.toLowerCase();
+                currentNode.setAttribute('class', `${existingClass} ${nodeName}--after-${afterTag}`.trim());
+            } else {
+                currentNode.setAttribute('class', `${nodeName}`);
+            }
+
+            currentNode = currentNode.nextSibling;
+        }
+
+        let serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+        let html = serializer.serializeChildren(rendered.result);
+        rendered.teardown();
         return html;
     }
 };

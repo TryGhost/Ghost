@@ -6,10 +6,18 @@ module.exports = {
     render(opts) {
         let payload = opts.payload;
         let dom = opts.env.dom;
+
         let figure = dom.createElement('figure');
+        figure.setAttribute('class', 'kg-image-card');
 
         let img = dom.createElement('img');
-        img.className = 'kg-card-image';
+        let imgClass = 'kg-img';
+
+        if (payload.imageStyle) {
+            imgClass = `${imgClass} kg-img--${payload.imageStyle}`;
+        }
+
+        img.setAttribute('class', imgClass);
         img.setAttribute('src', payload.src);
         figure.appendChild(img);
 
