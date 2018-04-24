@@ -47,8 +47,8 @@ describe('Unit: services/url/Urls', function () {
         });
 
         eventsToRemember = {};
-        sandbox.stub(common.events, 'emit').callsFake(function (eventName, callback) {
-            eventsToRemember[eventName] = callback;
+        sandbox.stub(common.events, 'emit').callsFake(function (eventName, data) {
+            eventsToRemember[eventName] = data;
         });
     });
 
@@ -69,6 +69,11 @@ describe('Unit: services/url/Urls', function () {
         });
 
         should.exist(eventsToRemember['url.added']);
+        eventsToRemember['url.added'].url.absolute.should.eql('http://127.0.0.1:2369/test/');
+        eventsToRemember['url.added'].url.relative.should.eql('/test/');
+        should.exist(eventsToRemember['url.added'].resource);
+        should.exist(eventsToRemember['url.added'].resource.data);
+
         urls.getByResourceId('object-id-x').resource.data.slug.should.eql('a');
 
         // add duplicate

@@ -11,7 +11,7 @@ module.exports = function previewController(req, res, next) {
     var params = {
         uuid: req.params.uuid,
         status: 'all',
-        include: 'authors,tags'
+        include: 'author,authors,tags'
     };
 
     // Note: this is super similar to the config middleware used in channels

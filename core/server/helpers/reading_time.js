@@ -28,7 +28,6 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
         readingTimeSeconds,
         readingTimeMinutes,
         readingTime,
-        seconds = _.isString(options.hash.seconds) ? options.hash.seconds : '&lt; 1 min read',
         minute = _.isString(options.hash.minute) ? options.hash.minute : '1 min read',
         minutes = _.isString(options.hash.minutes) ? options.hash.minutes : '% min read';
 
@@ -50,9 +49,7 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
 
     readingTimeMinutes = Math.round(readingTimeSeconds / 60);
 
-    if (readingTimeSeconds < 60) {
-        readingTime = seconds;
-    } else if (readingTimeMinutes === 1) {
+    if (readingTimeMinutes <= 1) {
         readingTime = minute;
     } else {
         readingTime = minutes.replace('%', readingTimeMinutes);

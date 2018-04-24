@@ -1,10 +1,10 @@
 'use strict';
 
 const _ = require('lodash'),
-    Promise = require('bluebird'),
     moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),
     debug = require('ghost-ignition').debug('services:url:generator'),
+    localUtils = require('./utils'),
     settingsCache = require('../settings/cache'),
     /**
      * @TODO: This is a fake version of the upcoming GQL tool.
@@ -88,7 +88,7 @@ class UrlGenerator {
 
         // CASE: you are type "pages", but the incoming type is "users"
         if (event.type !== this.routingType.getType()) {
-            return Promise.resolve();
+            return;
         }
 
         const resource = this.resources.getByIdAndType(event.type, event.id);
@@ -136,9 +136,14 @@ class UrlGenerator {
         }
     }
 
+    /**
+     * We currently generate relative urls.
+     */
     _generateUrl(resource) {
-        const url = this.routingType.getPermalinks().getValue();
-        return this._replacePermalink(url, resource);
+        let url = this.routingType.getPermalinks().getValue();
+        url = this._replacePermalink(url, resource);
+
+        return localUtils.createUrl(url, false, false);
     }
 
     /**

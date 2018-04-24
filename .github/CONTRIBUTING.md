@@ -1,6 +1,6 @@
 # Welcome to the contributing overview for Ghost!
 
-For **help**, **support** and **questions** please use **[our forum](https://forum.ghost.org)**  🚑.
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
 
 ---
 
