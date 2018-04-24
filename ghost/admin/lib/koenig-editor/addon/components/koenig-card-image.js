@@ -35,7 +35,7 @@ export default Component.extend({
             return 'image-wide';
         }
 
-        if (imageStyle === 'wide') {
+        if (imageStyle === 'full') {
             return 'image-full';
         }
 
@@ -49,21 +49,21 @@ export default Component.extend({
         items.push({
             title: 'Regular',
             icon: 'koenig/kg-img-regular',
-            iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'}`,
             action: run.bind(this, this._changeImageStyle, '')
         });
 
         items.push({
             title: 'Wide',
             icon: 'koenig/kg-img-wide',
-            iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
             action: run.bind(this, this._changeImageStyle, 'wide')
         });
 
         items.push({
             title: 'Full',
             icon: 'koenig/kg-img-full',
-            iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'} nudge-top--1`,
+            iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
             action: run.bind(this, this._changeImageStyle, 'full')
         });
 
@@ -73,7 +73,7 @@ export default Component.extend({
             items.push({
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
-                iconClass: 'nudge-top--1',
+                iconClass: '',
                 action: run.bind(this, this._triggerFileDialog)
             });
         }
