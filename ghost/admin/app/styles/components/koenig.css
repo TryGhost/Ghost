@@ -266,6 +266,8 @@
 
 /* specific cards... */
 
+/* HTML */
+
 .koenig-card-html--editor .CodeMirror {
     min-height: 170px;
     padding: 0;
@@ -283,6 +285,8 @@
     margin-right: 0;
 }
 
+/* Markdown */
+
 .koenig-editor .gh-markdown-editor {
     position: static;
     overflow: visible;
@@ -295,17 +299,22 @@
     right: 0;
     border-left: none;
     border-right: none;
+    border-radius: 0 0 .4rem .4rem;
     z-index: 9999;
-    border-radius: 0;
+    background-color: #fff;
+    opacity: 1;
     text-align: center;
 }
 
-/* margin to account for absolutely positioned toolbar */
 .koenig-editor .gh-markdown-editor .CodeMirror {
+    min-height: 130px;
+    /* margin to account for absolutely positioned toolbar */
     margin-bottom: 49px;
 }
 
-
+.koenig-editor .gh-markdown-editor .CodeMirror-scroll {
+    min-height: 130px;
+}
 
 /* mobiledoc-kit base styles ------------------------------------------------
  * NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css

@@ -3,24 +3,42 @@ import InViewportMixin from 'ember-in-viewport';
 
 export default Component.extend(InViewportMixin, {
 
-    onEnterViewport() {},
+    enter() {},
+    exit() {},
+    registerElement() {},
 
     didInsertElement() {
-        let offset = this.get('triggerOffset');
+        let offset = this.get('triggerOffset') || {};
+
+        // if triggerOffset is a number we use it for all dimensions
+        if (typeof offset === 'number') {
+            offset = {
+                top: offset,
+                bottom: offset,
+                left: offset,
+                right: offset
+            };
+        }
 
         this.set('viewportSpy', true);
         this.set('viewportTolerance', {
-            top: offset,
-            bottom: offset,
-            left: offset,
-            right: offset
+            top: offset.top,
+            bottom: offset.bottom,
+            left: offset.left,
+            right: offset.right
         });
 
         this._super(...arguments);
+
+        this.registerElement(this.element);
     },
 
     didEnterViewport() {
-        return this.onEnterViewport();
+        return this.enter();
+    },
+
+    didExitViewport() {
+        return this.exit();
     }
 
 });
