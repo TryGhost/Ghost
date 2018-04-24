@@ -3941,7 +3941,7 @@ ember-in-viewport@2.1.1:
     ember-cli-babel "^5.1.6"
     ember-getowner-polyfill "^1.1.1"
 
-ember-in-viewport@3.0.2, ember-in-viewport@~3.0.0:
+ember-in-viewport@3.0.2, ember-in-viewport@^3.0.0, ember-in-viewport@~3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.0.2.tgz#bee66f564e68f397ebc2d31b7a3619394ac933d0"
   dependencies:
@@ -4207,6 +4207,14 @@ ember-source@3.1.1:
     inflection "^1.12.0"
     jquery "^3.3.1"
     resolve "^1.5.0"
+
+ember-sticky-element@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ember-sticky-element/-/ember-sticky-element-0.2.0.tgz#0f85b29e3d31313b05094cca6fe0ab152caab668"
+  dependencies:
+    ember-cli-babel "^6.8.2"
+    ember-cli-htmlbars "^2.0.1"
+    ember-in-viewport "^3.0.0"
 
 ember-svg-jar@1.1.1:
   version "1.1.1"
