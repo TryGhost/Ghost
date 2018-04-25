@@ -1,7 +1,8 @@
 'use strict';
 
-const crypto = require('crypto'),
-    constants = require('../lib/constants'),
+const constants = require('../lib/constants'),
+    security = require('../lib/security'),
+    settingsCache = require('../services/settings/cache'),
     ghostBookshelf = require('./base');
 
 let Invite,
@@ -26,18 +27,20 @@ Invite = ghostBookshelf.Model.extend({
         return options;
     },
 
-    add: function add(data, options) {
-        var hash = crypto.createHash('sha256'),
-            text = '';
+    add: function add(data, unfilteredOptions) {
+        const options = Invite.filterOptions(unfilteredOptions, 'add');
+        data = data || {};
+
+        if (!options.context || !options.context.internal) {
+            data.status = 'pending';
+        }
 
         data.expires = Date.now() + constants.ONE_WEEK_MS;
-        data.status = 'pending';
-
-        // @TODO: call a util fn?
-        hash.update(String(data.expires));
-        hash.update(data.email.toLocaleLowerCase());
-        text += [data.expires, data.email, hash.digest('base64')].join('|');
-        data.token = new Buffer(text).toString('base64');
+        data.token = security.tokens.generateHash({
+            email: data.email,
+            expires: data.expires,
+            secret: settingsCache.get('db_hash')
+        });
 
         return ghostBookshelf.Model.add.call(this, data, options);
     }
