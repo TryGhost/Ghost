@@ -172,6 +172,8 @@ export default Component.extend({
     _showToolbar() {
         // only show a toolbar if we have one
         if (this.get('toolbar')) {
+            this._setToolbarProperties();
+
             if (!this.get('showToolbar') && !this._onMousemoveHandler) {
                 this._onMousemoveHandler = run.bind(this, this._handleMousemove);
                 window.addEventListener('mousemove', this._onMousemoveHandler);
