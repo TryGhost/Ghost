@@ -493,6 +493,7 @@
 
 .koenig-card-html--editor .CodeMirror {
     border: none;
+    margin: 0 -8px;
 }
 
 .koenig-card-html--editor .CodeMirror-linenumber {
