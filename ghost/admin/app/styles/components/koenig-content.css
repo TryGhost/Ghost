@@ -415,7 +415,7 @@
 .koenig-editor__editor code {
     border-radius: 2px;
     color: var(--pink);
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     line-height: 1em;
     padding: .4rem .4rem .2rem;
     vertical-align: middle;
@@ -425,7 +425,7 @@
 .koenig-editor__editor pre code {
     border: none;
     font-size: 1.6rem;
-    color: var(--darkgrey);
+    color: var(--pink);
     padding: 0;
 }
 

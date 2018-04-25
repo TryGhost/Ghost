@@ -24,8 +24,8 @@ const ITEM_MAP = [
         replaceArg: 'image'
     },
     {
-        label: 'Embed',
-        icon: 'koenig/embed',
+        label: 'HTML',
+        icon: 'koenig/html',
         matches: ['embed', 'html'],
         type: 'card',
         replaceArg: 'html'
