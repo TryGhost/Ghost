@@ -111,19 +111,23 @@ export default Component.extend({
         // update menu position to match cursor position
         this._positionMenu(editorRange);
 
-        // close the menu if we're on a non-slash section (eg, when / is deleted)
-        if (this.get('showMenu') && editorRange.head.section && editorRange.head.section.text.indexOf('/') !== 0) {
-            this._hideMenu();
-            return;
-        }
+        if (this.get('showMenu') && editorRange) {
+            let {head: {section}} = editorRange;
 
-        // update the query when the menu is open and cursor is in our open range
-        if (this.get('showMenu') && editorRange.head.section === this._openRange.head.section) {
-            let query = editorRange.head.section.text.substring(
-                this._openRange.head.offset,
-                editorRange.head.offset
-            );
-            this._updateQuery(query);
+            // close the menu if we're on a non-slash section (eg, when / is deleted)
+            if (section && section.text && section.text.indexOf('/') !== 0) {
+                this._hideMenu();
+                return;
+            }
+
+            // update the query when the menu is open and cursor is in our open range
+            if (section === this._openRange.head.section) {
+                let query = section.text.substring(
+                    this._openRange.head.offset,
+                    editorRange.head.offset
+                );
+                this._updateQuery(query);
+            }
         }
     },
 
