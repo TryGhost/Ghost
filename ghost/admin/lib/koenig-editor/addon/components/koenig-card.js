@@ -13,7 +13,7 @@ export default Component.extend({
 
     // attrs
     icon: null,
-    iconClass: 'ih2 absolute fill-lightgrey mt2 nl10 kg-icon',
+    iconClass: 'ih5 absolute stroke-midgrey-l2 mt1 nl10 kg-icon',
     toolbar: null,
     isSelected: false,
     isEditing: false,

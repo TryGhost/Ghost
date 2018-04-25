@@ -58,22 +58,32 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     border: var(--midgrey) 1px solid;
     background: #fff;
     border-radius: 100%;
-    margin-left: -40px;
+    margin-left: -48px;
+    margin-top: -2px;
+}
+
+.koenig-plus-menu-button:hover {
+    border: var(--blue) 1px solid;
+    background: rgba(62, 176, 239, .05);
 }
 
 .koenig-plus-menu-button svg {
-    height: 15px;
-    width: 15px;
+    height: 16px;
+    width: 16px;
 }
 
 .koenig-plus-menu-button svg path {
     stroke: var(--midgrey);
     stroke-width: 2px;
+}
+
+.koenig-plus-menu-button:hover svg path {
+    stroke: var(--middarkgrey);
 }
 
 @media (max-width: 1024px) {
@@ -97,14 +107,14 @@
     display: flex;
     flex-wrap: wrap;
     margin: 0 0 20px 0;
-    padding: 12px 15px;
-    width: 350px;
+    padding: 20px;
+    width: 360px;
     max-height: 460px;
     overflow-y: auto;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
-    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.03), 0 10px 34px rgba(0,0,0,0.12);
     text-transform: none;
     font-size: 1.4rem;
     font-weight: normal;
@@ -185,10 +195,15 @@
     display: flex;
     align-items: center;
 }
+
 .koenig-cardmenu-icon svg {
-    width: 27px;
-    height: 27px;
-    fill: var(--darkgrey);
+    width: 32px;
+    height: 32px;
+}
+
+.koenig-cardmenu-icon svg path,
+.koenig-cardmenu-icon svg g {
+    stroke: var(--midgrey);
 }
 
 .koenig-cardmenu-label {
@@ -201,11 +216,18 @@
 
 .koenig-cardmenu-card:hover, .koenig-cardmenu-card.selected {
     cursor: pointer;
-    background: color-mod(var(--lightgrey) l(+3%) s(-10%));
+    background: rgba(62, 176, 239, .05);
+    border: 1px solid var(--blue);
 }
+
 .koenig-cardmenu-card:hover .koenig-cardmenu-label, .koenig-cardmenu-card.selected .koenig-cardmenu-label {
     color: var(--darkgrey);
     font-weight: 300;
+}
+
+.koenig-cardmenu-card:hover svg path,
+.koenig-cardmenu-card:hover svg g {
+    stroke: var(--darkgrey);
 }
 
 .koenig-cardmenu-divider {
@@ -290,6 +312,7 @@
 .koenig-editor .gh-markdown-editor {
     position: static;
     overflow: visible;
+    padding-top: 2px;
 }
 
 .koenig-editor .gh-markdown-editor .editor-toolbar {
