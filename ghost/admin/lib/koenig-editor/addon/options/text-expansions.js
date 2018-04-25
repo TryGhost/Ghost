@@ -11,7 +11,7 @@ import {run} from '@ember/runloop';
 // TODO: this was copied from our old Koenig editor, it could do with some
 // comments, cleanup, and refactoring
 
-export default function (editor) {
+export default function (editor, koenig) {
     // We don't want to run all our content rules on every text entry event,
     // instead we check to see if this text entry event could match a content
     // rule, and only then run the rules. Right now we only want to match
@@ -82,19 +82,7 @@ export default function (editor) {
                 return;
             }
 
-            editor.run((postEditor) => {
-                let card = postEditor.builder.createCardSection('hr');
-                let needsTrailingParagraph = !section.next;
-
-                postEditor.replaceSection(section, card);
-
-                // add an empty paragraph after if necessary so writing can continue
-                if (needsTrailingParagraph) {
-                    let newSection = postEditor.builder.createMarkupSection('p');
-                    postEditor.insertSectionAtEnd(newSection);
-                    postEditor.setRange(newSection.tailPosition());
-                }
-            });
+            koenig.send('replaceWithCardSection', 'hr', section.toRange());
         }
     });
 

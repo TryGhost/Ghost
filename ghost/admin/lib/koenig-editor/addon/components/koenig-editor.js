@@ -243,7 +243,7 @@ export default Component.extend({
         // TODO: this will override any passed in options, we should allow the
         // default behaviour to be overridden by addon consumers
         registerKeyCommands(editor);
-        registerTextExpansions(editor);
+        registerTextExpansions(editor, this);
 
         editor.registerKeyCommand({
             str: 'ENTER',
@@ -381,14 +381,18 @@ export default Component.extend({
             editor.run((postEditor) => {
                 let {builder} = postEditor;
                 let card = builder.createCardSection(cardName);
-                let needsTrailingParagraph = !section.next;
+                let nextSection = section.next;
+                let needsTrailingParagraph = !nextSection;
 
                 postEditor.replaceSection(section, card);
 
+                // add an empty paragraph after if necessary so writing can continue
                 if (needsTrailingParagraph) {
                     let newSection = postEditor.builder.createMarkupSection('p');
                     postEditor.insertSectionAtEnd(newSection);
                     postEditor.setRange(newSection.tailPosition());
+                } else {
+                    postEditor.setRange(nextSection.headPosition());
                 }
             });
 
