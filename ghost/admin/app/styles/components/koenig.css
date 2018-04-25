@@ -286,6 +286,16 @@
     z-index: 400;
 }
 
+/* embedded CodeMirror overrides */
+
+.koenig-editor .CodeMirror pre {
+    white-space: pre;
+}
+
+.koenig-editor .CodeMirror-wrap pre {
+    white-space: pre-wrap;
+}
+
 /* specific cards... */
 
 /* HTML */
@@ -305,14 +315,6 @@
     min-height: 170px;
     overflow: hidden !important;
     margin-right: 0;
-}
-
-.koenig-card-html--editor .CodeMirror pre {
-    white-space: pre;
-}
-
-.koenig-card-html--editor .CodeMirror-wrap pre {
-    white-space: pre-wrap;
 }
 
 /* Markdown */
