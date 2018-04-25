@@ -47,10 +47,6 @@ export default Component.extend({
             this._updatePayloadAttr('html', html);
         },
 
-        updateCaption(caption) {
-            this._updatePayloadAttr('caption', caption);
-        },
-
         leaveEditMode() {
             if (isBlank(this.get('payload.html'))) {
                 // afterRender is required to avoid double modification of `isSelected`
