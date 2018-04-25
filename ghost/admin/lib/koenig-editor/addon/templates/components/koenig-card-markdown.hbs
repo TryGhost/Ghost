@@ -21,6 +21,7 @@
             {{#gh-markdown-editor
                 markdown=(readonly payload.markdown)
                 onChange=(action "updateMarkdown")
+                autofocus=true
                 enableSideBySide=false
                 enablePreview=false
                 enableHemingway=false

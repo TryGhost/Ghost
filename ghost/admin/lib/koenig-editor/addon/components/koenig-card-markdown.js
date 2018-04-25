@@ -59,9 +59,7 @@ export default Component.extend({
 
     actions: {
         enterEditMode() {
-            // this action is called before the component is rendered so we
-            // need to wait to ensure that the textarea element is present
-            run.scheduleOnce('afterRender', this, this._focusTextarea);
+
         },
 
         leaveEditMode() {
@@ -119,10 +117,6 @@ export default Component.extend({
         registerBottom(element) {
             this._bottomElement = element;
         }
-    },
-
-    _focusTextarea() {
-        this.element.querySelector('textarea').focus();
     },
 
     _applyToolbarStyles() {
