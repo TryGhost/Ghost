@@ -63,6 +63,11 @@ ghostBookshelf.plugin('bookshelf-relations', {
                     }
                 };
 
+                // CASE: disable after hook for specific relations
+                if (['permissions_roles'].indexOf(existing.relatedData.joinTableName) !== -1) {
+                    return Promise.resolve();
+                }
+
                 return Promise.each(targets.models, function (target, index) {
                     queryOptions.query.where[existing.relatedData.otherKey] = target.id;
 
