@@ -497,7 +497,7 @@
 
 .koenig-card-html--editor .CodeMirror-linenumber {
     padding: 12px 3px 0 5px;
-    color: var(--midlightgrey);
+    color: var(--midlightgrey-l2);
 }
 
 .koenig-card-html--editor .CodeMirror-gutters {
