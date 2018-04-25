@@ -307,6 +307,14 @@
     margin-right: 0;
 }
 
+.koenig-card-html--editor .CodeMirror pre {
+    white-space: pre;
+}
+
+.koenig-card-html--editor .CodeMirror-wrap pre {
+    white-space: pre-wrap;
+}
+
 /* Markdown */
 
 .koenig-editor .gh-markdown-editor {

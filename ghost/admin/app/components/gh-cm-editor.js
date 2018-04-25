@@ -16,11 +16,12 @@ const CmEditorComponent = Component.extend({
     isInitializingCodemirror: true,
 
     // options for the editor
-    lineNumbers: true,
+    autofocus: false,
     indentUnit: 4,
+    lineNumbers: true,
+    lineWrapping: false,
     mode: 'htmlmixed',
     theme: 'xq-light',
-    autofocus: false,
 
     _editor: null, // reference to CodeMirror editor
 
@@ -74,7 +75,7 @@ const CmEditorComponent = Component.extend({
     }),
 
     _initCodeMirror() {
-        let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme', 'autofocus');
+        let options = this.getProperties('lineNumbers', 'lineWrapping', 'indentUnit', 'mode', 'theme', 'autofocus');
         assign(options, {value: this.get('_value')});
 
         let textarea = this.element.querySelector('textarea');
