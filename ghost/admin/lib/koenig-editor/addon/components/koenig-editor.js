@@ -22,6 +22,8 @@ import {copy} from '@ember/object/internals';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {run} from '@ember/runloop';
 
+const UNDO_DEPTH = 50;
+
 export const ADD_CARD_HOOK = 'addComponent';
 export const REMOVE_CARD_HOOK = 'removeComponent';
 
@@ -184,6 +186,7 @@ export default Component.extend({
         let editorOptions = this.get('editorOptions');
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
+        editorOptions.undoDepth = UNDO_DEPTH;
 
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
