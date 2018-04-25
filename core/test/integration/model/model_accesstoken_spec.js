@@ -18,7 +18,7 @@ describe('Accesstoken Model', function () {
         sandbox.restore();
     });
 
-    beforeEach(testUtils.setup('users:roles', 'clients'));
+    beforeEach(testUtils.setup('owner', 'clients'));
 
     it('on creation emits token.added event', function (done) {
         // Setup

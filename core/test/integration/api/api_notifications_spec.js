@@ -3,13 +3,18 @@ var should = require('should'),
     uuid = require('uuid'),
     ObjectId = require('bson-objectid'),
     testUtils = require('../../utils'),
+    models = require('../../../server/models'),
     NotificationsAPI = require('../../../server/api/notifications');
 
 describe('Notifications API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('settings', 'users:roles', 'perms:setting', 'perms:notification', 'perms:init'));
+    after(testUtils.teardown);
+    before(testUtils.setup('settings', 'users:roles', 'perms:setting', 'perms:notification', 'perms:init'));
+
+    beforeEach(function () {
+        return models.Settings.edit({key: 'notifications', value: '[]'}, testUtils.context.internal);
+    });
 
     should.exist(NotificationsAPI);
 

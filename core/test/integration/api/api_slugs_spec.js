@@ -6,9 +6,9 @@ var should = require('should'),
 describe('Slug API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    after(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users:roles', 'perms:slug', 'perms:init'));
+    before(testUtils.setup('settings', 'users:roles', 'perms:slug', 'perms:init'));
 
     should.exist(SlugAPI);
 

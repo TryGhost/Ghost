@@ -14,7 +14,7 @@ describe('User API', function () {
         authorAccessToken = '',
         editor, author, ghostServer, inactiveUser;
 
-    beforeEach(function () {
+    before(function () {
         return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
@@ -24,7 +24,7 @@ describe('User API', function () {
                 // create editor
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[1]
+                    role: testUtils.DataGenerator.Content.roles[1].name
                 });
             })
             .then(function (_user1) {
@@ -33,7 +33,7 @@ describe('User API', function () {
                 // create author
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[2]
+                    role: testUtils.DataGenerator.Content.roles[2].name
                 });
             })
             .then(function (_user2) {
@@ -42,7 +42,7 @@ describe('User API', function () {
                 // create inactive user
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
-                    role: testUtils.DataGenerator.Content.roles[2]
+                    role: testUtils.DataGenerator.Content.roles[2].name
                 });
             })
             .then(function (_user3) {
@@ -558,6 +558,60 @@ describe('User API', function () {
     });
 
     describe('As Editor', function () {
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    // create editor
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[1].name
+                    });
+                })
+                .then(function (_user1) {
+                    editor = _user1;
+
+                    // create author
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[2].name
+                    });
+                })
+                .then(function (_user2) {
+                    author = _user2;
+
+                    // create inactive user
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
+                        role: testUtils.DataGenerator.Content.roles[2].name
+                    });
+                })
+                .then(function (_user3) {
+                    inactiveUser = _user3;
+
+                    // by default we login with the owner
+                    return testUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    ownerAccessToken = token;
+
+                    request.user = editor;
+                    return testUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    editorAccessToken = token;
+
+                    request.user = author;
+                    return testUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    authorAccessToken = token;
+                });
+        });
+
         describe('success cases', function () {
             it('can edit himself', function (done) {
                 request.put(testUtils.API.getApiQuery('users/' + editor.id + '/'))
