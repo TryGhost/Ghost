@@ -405,6 +405,7 @@
 
 /* Code
 /* ------------------------------------------------------------------ */
+.koenig-card-html--editor .CodeMirror,
 .koenig-editor__editor code,
 .koenig-editor__editor pre {
     font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
@@ -478,12 +479,30 @@
 /* HTML editor
 /* --------------------------------------------------------------- */
 
+.koenig-card-html-rendered > :nth-child(2) {
+    margin: 0;
+}
+
 .koenig-card-html--editor pre {
     border: none;
     background: none;
     white-space: pre-line;
     padding: 0 .8rem;
     line-height: 1.4em;
+}
+
+.koenig-card-html--editor .CodeMirror {
+    border: none;
+}
+
+.koenig-card-html--editor .CodeMirror-linenumber {
+    padding: 12px 3px 0 5px;
+    color: var(--midlightgrey);
+}
+
+.koenig-card-html--editor .CodeMirror-gutters {
+    border: none;
+    background: none;
 }
 
 
@@ -493,6 +512,9 @@
 .koenig-editor__editor table {
     font-size: 1.75rem;
     margin: 0;
+    font-family: georgia,serif;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
 }
 
 .koenig-editor__editor table tr td,
