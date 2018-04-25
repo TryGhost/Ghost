@@ -25,13 +25,15 @@ describe('Update Check', function () {
         configUtils.restore();
     });
 
+    after(testUtils.teardown);
+
     describe('fn: updateCheck', function () {
         var updateCheckRequestSpy,
             updateCheckResponseSpy,
             updateCheckErrorSpy;
 
-        beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner'));
 
         beforeEach(function () {
             updateCheckRequestSpy = sandbox.stub().returns(Promise.resolve());
@@ -107,9 +109,8 @@ describe('Update Check', function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.setup('owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
-
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
         it('should report the correct data', function (done) {
             var updateCheckData = updateCheck.__get__('updateCheckData');
@@ -148,13 +149,12 @@ describe('Update Check', function () {
             updateCheck.__set__('ghostVersion.original', currentVersionOrig);
         });
 
-        beforeEach(testUtils.setup('owner', 'posts', 'settings', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
 
         beforeEach(function () {
             return NotificationsAPI.destroyAll(testUtils.context.internal);
         });
-
-        afterEach(testUtils.teardown);
 
         it('should create a release notification for target version', function (done) {
             var createCustomNotification = updateCheck.__get__('createCustomNotification'),
@@ -315,8 +315,8 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckResponse', function () {
-        beforeEach(testUtils.setup('settings', 'perms:setting', 'perms:init'));
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init'));
 
         it('receives a notifications with messages', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),

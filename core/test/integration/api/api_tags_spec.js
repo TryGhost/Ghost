@@ -17,13 +17,22 @@ function onlyFixtures(slug) {
 describe('Tags API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:tag', 'perms:init', 'posts'));
+    after(testUtils.teardown);
+
+    before(testUtils.setup('settings', 'users:roles', 'perms:tag', 'perms:init'));
 
     should.exist(TagAPI);
 
     describe('Add', function () {
         var newTag;
+
+        beforeEach(function () {
+            return testUtils.fixtures.insertTags();
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('tags');
+        });
 
         beforeEach(function () {
             newTag = _.clone(_.omit(testUtils.DataGenerator.forKnex.createTag(testUtils.DataGenerator.Content.tags[0]), 'id'));
@@ -108,6 +117,14 @@ describe('Tags API', function () {
     });
 
     describe('Edit', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertTags();
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('tags');
+        });
+
         var newTagName = 'tagNameUpdated',
             firstTag = testUtils.DataGenerator.Content.tags[0].id;
 
@@ -163,6 +180,14 @@ describe('Tags API', function () {
     });
 
     describe('Destroy', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertTags();
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('tags');
+        });
+
         var firstTag = testUtils.DataGenerator.Content.tags[0].id;
 
         it('can destroy Tag', function (done) {
@@ -176,10 +201,14 @@ describe('Tags API', function () {
     });
 
     describe('Browse', function () {
-        beforeEach(function (done) {
-            testUtils.fixtures.insertExtraTags().then(function () {
-                done();
-            });
+        before(function () {
+            return testUtils.fixtures.insertPostsAndTags();
+        });
+
+        after(testUtils.teardown);
+
+        before(function () {
+            return testUtils.fixtures.insertExtraTags();
         });
 
         it('can browse (internal)', function (done) {
@@ -356,6 +385,8 @@ describe('Tags API', function () {
     });
 
     describe('Read', function () {
+        before(testUtils.setup('users:roles', 'posts'));
+
         it('returns count.posts with include count.posts', function (done) {
             TagAPI.read({context: {user: 1}, include: 'count.posts', slug: 'kitchen-sink'}).then(function (results) {
                 should.exist(results);

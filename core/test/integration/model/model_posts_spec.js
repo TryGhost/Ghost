@@ -26,152 +26,144 @@ describe('Post Model', function () {
     var eventsTriggered = {};
 
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    after(testUtils.teardown);
+
+    before(testUtils.setup('users:roles'));
 
     afterEach(function () {
         sandbox.restore();
     });
+
+    function checkFirstPostData(firstPost, options) {
+        options = options || {};
+
+        should.not.exist(firstPost.author_id);
+        firstPost.author.should.be.an.Object();
+
+        if (options.withRelated && options.withRelated.indexOf('authors') !== -1) {
+            firstPost.authors.length.should.eql(1);
+            firstPost.authors[0].should.eql(firstPost.author);
+        }
+
+        firstPost.url.should.equal('/html-ipsum/');
+        firstPost.tags.should.be.an.Array();
+
+        firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
+        firstPost.created_at.should.be.an.instanceof(Date);
+        firstPost.created_by.should.be.an.Object();
+        firstPost.updated_by.should.be.an.Object();
+        firstPost.published_by.should.be.an.Object();
+        firstPost.created_by.name.should.equal(DataGenerator.Content.users[0].name);
+        firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
+        firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
+        firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
+        firstPost.custom_excerpt.should.equal(DataGenerator.Content.posts[0].custom_excerpt);
+
+        if (options.formats) {
+            if (options.formats.indexOf('mobiledoc') !== -1) {
+                firstPost.mobiledoc.should.match(/HTML Ipsum Presents/);
+            }
+
+            if (options.formats.indexOf('html') !== -1) {
+                firstPost.html.should.match(/HTML Ipsum Presents/);
+            }
+
+            if (options.formats.indexOf('plaintext') !== -1) {
+                firstPost.plaintext.should.match(/HTML Ipsum Presents/);
+            }
+        } else {
+            firstPost.html.should.match(/HTML Ipsum Presents/);
+            should.equal(firstPost.plaintext, undefined);
+            should.equal(firstPost.mobiledoc, undefined);
+            should.equal(firstPost.amp, undefined);
+        }
+    }
 
     describe('Single author posts', function () {
         afterEach(function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.setup('owner', 'posts', 'apps'));
+        describe('fetchOne/fetchAll/fetchPage', function () {
+            before(testUtils.fixtures.insertPostsAndTags);
+            after(function () {
+                return testUtils.truncate('posts_tags')
+                    .then(function () {
+                        return testUtils.truncate('tags');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts');
+                    });
+            });
 
-        function checkFirstPostData(firstPost, options) {
-            options = options || {};
+            describe('findAll', function () {
+                beforeEach(function () {
+                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+                        return {
+                            permalinks: '/:slug/'
+                        }[key];
+                    });
+                });
 
-            should.not.exist(firstPost.author_id);
-            firstPost.author.should.be.an.Object();
+                it('can findAll', function (done) {
+                    models.Post.findAll().then(function (results) {
+                        should.exist(results);
+                        results.length.should.be.above(1);
+                        done();
+                    }).catch(done);
+                });
 
-            if (options.withRelated && options.withRelated.indexOf('authors') !== -1) {
-                firstPost.authors.length.should.eql(1);
-                firstPost.authors[0].should.eql(firstPost.author);
-            }
+                it('can findAll, returning all related data', function (done) {
+                    var options = {withRelated: ['author', 'authors', 'tags', 'created_by', 'updated_by', 'published_by']};
 
-            firstPost.url.should.equal('/html-ipsum/');
-            firstPost.fields.should.be.an.Array();
-            firstPost.tags.should.be.an.Array();
+                    models.Post.findAll(options)
+                        .then(function (results) {
+                            should.exist(results);
+                            results.length.should.be.above(0);
 
-            firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
-            firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
-            firstPost.created_at.should.be.an.instanceof(Date);
-            firstPost.created_by.should.be.an.Object();
-            firstPost.updated_by.should.be.an.Object();
-            firstPost.published_by.should.be.an.Object();
-            firstPost.created_by.name.should.equal(DataGenerator.Content.users[0].name);
-            firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
-            firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
-            firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
-            firstPost.custom_excerpt.should.equal(DataGenerator.Content.posts[0].custom_excerpt);
+                            var posts = results.models.map(function (model) {
+                                return model.toJSON();
+                            }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
 
-            if (options.formats) {
-                if (options.formats.indexOf('mobiledoc') !== -1) {
-                    firstPost.mobiledoc.should.match(/HTML Ipsum Presents/);
-                }
+                            checkFirstPostData(firstPost, options);
 
-                if (options.formats.indexOf('html') !== -1) {
-                    firstPost.html.should.match(/HTML Ipsum Presents/);
-                }
+                            done();
+                        }).catch(done);
+                });
 
-                if (options.formats.indexOf('plaintext') !== -1) {
-                    /**
-                     * NOTE: this is null, not undefined, so it was returned
-                     * The plaintext value is generated.
-                     */
-                    should.equal(firstPost.plaintext, null);
-                }
-            } else {
-                firstPost.html.should.match(/HTML Ipsum Presents/);
-                should.equal(firstPost.plaintext, undefined);
-                should.equal(firstPost.mobiledoc, undefined);
-                should.equal(firstPost.amp, undefined);
-            }
-        }
+                it('can findAll, use formats option', function (done) {
+                    var options = {
+                        formats: ['mobiledoc', 'plaintext'],
+                        withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
+                    };
 
-        describe('findAll', function () {
-            beforeEach(function () {
-                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                    return {
-                        permalinks: '/:slug/'
-                    }[key];
+                    models.Post.findAll(options)
+                        .then(function (results) {
+                            should.exist(results);
+                            results.length.should.be.above(0);
+
+                            var posts = results.models.map(function (model) {
+                                return model.toJSON(options);
+                            }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
+
+                            checkFirstPostData(firstPost, options);
+
+                            done();
+                        }).catch(done);
                 });
             });
 
-            it('can findAll', function (done) {
-                models.Post.findAll().then(function (results) {
-                    should.exist(results);
-                    results.length.should.be.above(1);
-                    done();
-                }).catch(done);
-            });
-
-            it('can findAll, returning all related data', function (done) {
-                var options = {withRelated: ['author', 'authors', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']};
-
-                models.Post.findAll(options)
-                    .then(function (results) {
-                        should.exist(results);
-                        results.length.should.be.above(0);
-
-                        var posts = results.models.map(function (model) {
-                            return model.toJSON();
-                        }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-
-                        checkFirstPostData(firstPost, options);
-
-                        done();
-                    }).catch(done);
-            });
-
-            it('can findAll, use formats option', function (done) {
-                var options = {
-                    formats: ['mobiledoc', 'plaintext'],
-                    withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
-                };
-
-                models.Post.findAll(options)
-                    .then(function (results) {
-                        should.exist(results);
-                        results.length.should.be.above(0);
-
-                        var posts = results.models.map(function (model) {
-                            return model.toJSON(options);
-                        }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-
-                        checkFirstPostData(firstPost, options);
-
-                        done();
-                    }).catch(done);
-            });
-        });
-
-        describe('findPage', function () {
-            beforeEach(function () {
-                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                    return {
-                        permalinks: '/:slug/'
-                    }[key];
+            describe('findPage', function () {
+                beforeEach(function () {
+                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+                        return {
+                            permalinks: '/:slug/'
+                        }[key];
+                    });
                 });
-            });
 
-            it('can findPage (default)', function (done) {
-                models.Post.findPage().then(function (results) {
-                    should.exist(results);
-
-                    results.meta.pagination.page.should.equal(1);
-                    results.meta.pagination.limit.should.equal(15);
-                    results.meta.pagination.pages.should.equal(1);
-                    results.posts.length.should.equal(4);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can findPage, returning all related data', function (done) {
-                models.Post.findPage({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
-                    .then(function (results) {
+                it('can findPage (default)', function (done) {
+                    models.Post.findPage().then(function (results) {
                         should.exist(results);
 
                         results.meta.pagination.page.should.equal(1);
@@ -179,239 +171,282 @@ describe('Post Model', function () {
                         results.meta.pagination.pages.should.equal(1);
                         results.posts.length.should.equal(4);
 
-                        var firstPost = _.find(results.posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-                        checkFirstPostData(firstPost);
+                        done();
+                    }).catch(done);
+                });
+
+                it('can findPage, returning all related data', function (done) {
+                    models.Post.findPage({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                        .then(function (results) {
+                            should.exist(results);
+
+                            results.meta.pagination.page.should.equal(1);
+                            results.meta.pagination.limit.should.equal(15);
+                            results.meta.pagination.pages.should.equal(1);
+                            results.posts.length.should.equal(4);
+
+                            var firstPost = _.find(results.posts, {title: testUtils.DataGenerator.Content.posts[0].title});
+                            checkFirstPostData(firstPost);
+
+                            done();
+                        }).catch(done);
+                });
+
+                it('returns computed fields when columns are asked for explicitly', function (done) {
+                    models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
+                        should.exist(results);
+
+                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                        post.url.should.equal('/html-ipsum/');
+
+                        // If a computed property is inadvertently passed into a "fetch" operation,
+                        // there's a bug in bookshelf where the model will come back with it as
+                        // a column enclosed in quotes.
+                        should.not.exist(post['"url"']);
 
                         done();
                     }).catch(done);
-            });
+                });
 
-            it('returns computed fields when columns are asked for explicitly', function (done) {
-                models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
-                    should.exist(results);
+                it('ignores columns that do not exist', function (done) {
+                    models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
+                        should.exist(results);
 
-                    var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
-                    post.url.should.equal('/html-ipsum/');
-
-                    // If a computed property is inadvertently passed into a "fetch" operation,
-                    // there's a bug in bookshelf where the model will come back with it as
-                    // a column enclosed in quotes.
-                    should.not.exist(post['"url"']);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('ignores columns that do not exist', function (done) {
-                models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
-                    should.exist(results);
-
-                    var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
-                    post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
-                    post.slug.should.equal('html-ipsum');
-                    should.not.exist(post.doesnotexist);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can findPage, with various options', function (done) {
-                testUtils.fixtures.insertExtraPosts().then(function () {
-                    return testUtils.fixtures.insertExtraPostsTags();
-                }).then(function () {
-                    return models.Post.findPage({page: 2});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(2);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(4);
-                    paginationResult.posts.length.should.equal(15);
-
-                    return models.Post.findPage({page: 5});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(5);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(4);
-                    paginationResult.posts.length.should.equal(0);
-
-                    return models.Post.findPage({limit: 30});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(30);
-                    paginationResult.meta.pagination.pages.should.equal(2);
-                    paginationResult.posts.length.should.equal(30);
-
-                    // Test both boolean formats
-                    return models.Post.findPage({limit: 10, staticPages: true});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(1);
-
-                    // Test both boolean formats
-                    return models.Post.findPage({limit: 10, staticPages: '1'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(1);
-
-                    // Test featured pages
-                    return models.Post.findPage({limit: 10, filter: 'featured:true'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(2);
-
-                    // Test both boolean formats for featured pages
-                    return models.Post.findPage({limit: 10, filter: 'featured:1'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(2);
-
-                    return models.Post.findPage({limit: 10, page: 2, status: 'all'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.pages.should.equal(11);
-
-                    return models.Post.findPage({limit: 'all', status: 'all'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal('all');
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(108);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can findPage for tag, with various options', function (done) {
-                testUtils.fixtures.insertExtraPosts().then(function () {
-                    return testUtils.fixtures.insertExtraPostsTags();
-                }).then(function () {
-                    // Test tag filter
-                    return models.Post.findPage({page: 1, filter: 'tags:bacon'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(2);
-
-                    return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(2);
-
-                    return models.Post.findPage({page: 1, filter: 'tags:injection'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(2);
-                    paginationResult.posts.length.should.equal(15);
-
-                    return models.Post.findPage({page: 2, filter: 'tags:injection'});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(2);
-                    paginationResult.meta.pagination.limit.should.equal(15);
-                    paginationResult.meta.pagination.pages.should.equal(2);
-                    paginationResult.posts.length.should.equal(10);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can NOT findPage for a page that overflows the datatype', function (done) {
-                models.Post.findPage({page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309})
-                    .then(function (paginationResult) {
-                        should.exist(paginationResult.meta);
-
-                        paginationResult.meta.pagination.page.should.be.a.Number();
+                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                        post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
+                        post.slug.should.equal('html-ipsum');
+                        should.not.exist(post.doesnotexist);
 
                         done();
                     }).catch(done);
-            });
-        });
+                });
 
-        describe('findOne', function () {
-            beforeEach(function () {
-                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                    return {
-                        permalinks: '/:slug/'
-                    }[key];
+                it('can NOT findPage for a page that overflows the datatype', function (done) {
+                    models.Post.findPage({page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309})
+                        .then(function (paginationResult) {
+                            should.exist(paginationResult.meta);
+
+                            paginationResult.meta.pagination.page.should.be.a.Number();
+
+                            done();
+                        }).catch(done);
+                });
+
+                describe('with more posts/tags', function () {
+                    beforeEach(function () {
+                        return testUtils.truncate('posts_tags')
+                            .then(function () {
+                                return testUtils.truncate('tags');
+                            })
+                            .then(function () {
+                                return testUtils.truncate('posts');
+                            });
+                    });
+
+                    beforeEach(function () {
+                        return testUtils.fixtures.insertPostsAndTags()
+                            .then(function () {
+                                return testUtils.fixtures.insertExtraPosts();
+                            })
+                            .then(function () {
+                                return testUtils.fixtures.insertExtraPostsTags();
+                            });
+                    });
+
+                    it('can findPage, with various options', function (done) {
+                        models.Post.findPage({page: 2})
+                            .then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(2);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(4);
+                            paginationResult.posts.length.should.equal(15);
+
+                            return models.Post.findPage({page: 5});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(5);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(4);
+                            paginationResult.posts.length.should.equal(0);
+
+                            return models.Post.findPage({limit: 30});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(30);
+                            paginationResult.meta.pagination.pages.should.equal(2);
+                            paginationResult.posts.length.should.equal(30);
+
+                            // Test both boolean formats
+                            return models.Post.findPage({limit: 10, staticPages: true});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(10);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(1);
+
+                            // Test both boolean formats
+                            return models.Post.findPage({limit: 10, staticPages: '1'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(10);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(1);
+
+                            // Test featured pages
+                            return models.Post.findPage({limit: 10, filter: 'featured:true'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(10);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(2);
+
+                            // Test both boolean formats for featured pages
+                            return models.Post.findPage({limit: 10, filter: 'featured:1'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(10);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(2);
+
+                            return models.Post.findPage({limit: 10, page: 2, status: 'all'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.pages.should.equal(11);
+
+                            return models.Post.findPage({limit: 'all', status: 'all'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal('all');
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(108);
+
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('can findPage for tag, with various options', function (done) {
+                        // Test tag filter
+                        models.Post.findPage({page: 1, filter: 'tags:bacon'})
+                            .then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(2);
+
+                            return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(1);
+                            paginationResult.posts.length.should.equal(2);
+
+                            return models.Post.findPage({page: 1, filter: 'tags:injection'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(1);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(2);
+                            paginationResult.posts.length.should.equal(15);
+
+                            return models.Post.findPage({page: 2, filter: 'tags:injection'});
+                        }).then(function (paginationResult) {
+                            paginationResult.meta.pagination.page.should.equal(2);
+                            paginationResult.meta.pagination.limit.should.equal(15);
+                            paginationResult.meta.pagination.pages.should.equal(2);
+                            paginationResult.posts.length.should.equal(10);
+
+                            done();
+                        }).catch(done);
+                    });
                 });
             });
 
-            it('can findOne', function (done) {
-                var firstPost;
-
-                models.Post.findPage().then(function (results) {
-                    should.exist(results);
-                    should.exist(results.posts);
-                    results.posts.length.should.be.above(0);
-                    firstPost = results.posts[0];
-
-                    return models.Post.findOne({slug: firstPost.slug});
-                }).then(function (found) {
-                    should.exist(found);
-                    found.attributes.title.should.equal(firstPost.title);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can findOne, returning all related data', function (done) {
-                var firstPost;
-
-                models.Post.findOne({}, {withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
-                    .then(function (result) {
-                        should.exist(result);
-                        firstPost = result.toJSON();
-
-                        checkFirstPostData(firstPost);
-
-                        done();
-                    }).catch(done);
-            });
-
-            it('can findOne, returning a slug only permalink', function (done) {
-                models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                    .then(function (result) {
-                        should.exist(result);
-                        var firstPost = result.toJSON();
-                        firstPost.url.should.equal('/html-ipsum/');
-
-                        done();
-                    }).catch(done);
-            });
-
-            it('can findOne, returning a dated permalink', function (done) {
-                settingsCache.get.restore();
-
-                sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                    return {
-                        permalinks: '/:year/:month/:day/:slug/'
-                    }[key];
+            describe('findOne', function () {
+                beforeEach(function () {
+                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+                        return {
+                            permalinks: '/:slug/'
+                        }[key];
+                    });
                 });
 
-                models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                    .then(function (result) {
-                        should.exist(result);
-                        var firstPost = result.toJSON();
+                it('can findOne', function (done) {
+                    var firstPost;
 
-                        // published_at of post 1 is 2015-01-01 00:00:00
-                        // default blog TZ is UTC
-                        firstPost.url.should.equal('/2015/01/01/html-ipsum/');
+                    models.Post.findPage().then(function (results) {
+                        should.exist(results);
+                        should.exist(results.posts);
+                        results.posts.length.should.be.above(0);
+                        firstPost = results.posts[0];
+
+                        return models.Post.findOne({slug: firstPost.slug});
+                    }).then(function (found) {
+                        should.exist(found);
+                        found.attributes.title.should.equal(firstPost.title);
 
                         done();
                     }).catch(done);
+                });
+
+                it('can findOne, returning all related data', function (done) {
+                    var firstPost;
+
+                    models.Post.findOne({}, {withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                        .then(function (result) {
+                            should.exist(result);
+                            firstPost = result.toJSON();
+
+                            checkFirstPostData(firstPost);
+
+                            done();
+                        }).catch(done);
+                });
+
+                it('can findOne, returning a slug only permalink', function (done) {
+                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
+                        .then(function (result) {
+                            should.exist(result);
+                            var firstPost = result.toJSON();
+                            firstPost.url.should.equal('/html-ipsum/');
+
+                            done();
+                        }).catch(done);
+                });
+
+                it('can findOne, returning a dated permalink', function (done) {
+                    settingsCache.get.restore();
+
+                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+                        return {
+                            permalinks: '/:year/:month/:day/:slug/'
+                        }[key];
+                    });
+
+                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
+                        .then(function (result) {
+                            should.exist(result);
+                            var firstPost = result.toJSON();
+
+                            // published_at of post 1 is 2015-01-01 00:00:00
+                            // default blog TZ is UTC
+                            firstPost.url.should.equal('/2015/01/01/html-ipsum/');
+
+                            done();
+                        }).catch(done);
+                });
             });
         });
 
         describe('edit', function () {
+            beforeEach(testUtils.fixtures.insertPostsAndTags);
+
+            afterEach(function () {
+                return testUtils.truncate('posts_tags')
+                    .then(function () {
+                        return testUtils.truncate('tags');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts');
+                    });
+            });
+
             beforeEach(function () {
                 eventsTriggered = {};
 
@@ -548,7 +583,7 @@ describe('Post Model', function () {
                 models.Post.findOne({id: postId}).then(function (results) {
                     should.exist(results);
                     results.attributes.html.should.match(/HTML Ipsum Presents/);
-                    should.not.exist(results.attributes.plaintext);
+                    should.exist(results.attributes.plaintext);
                     return models.Post.edit({updated_at: results.attributes.updated_at}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
@@ -1020,6 +1055,18 @@ describe('Post Model', function () {
         });
 
         describe('add', function () {
+            before(testUtils.fixtures.insertPostsAndTags);
+
+            after(function () {
+                return testUtils.truncate('posts_tags')
+                    .then(function () {
+                        return testUtils.truncate('tags');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts');
+                    });
+            });
+
             beforeEach(function () {
                 eventsTriggered = {};
 
@@ -1424,6 +1471,18 @@ describe('Post Model', function () {
         });
 
         describe('destroy', function () {
+            beforeEach(testUtils.fixtures.insertPostsAndTags);
+
+            afterEach(function () {
+                return testUtils.truncate('posts_tags')
+                    .then(function () {
+                        return testUtils.truncate('tags');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts');
+                    });
+            });
+
             beforeEach(function () {
                 eventsTriggered = {};
                 sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
@@ -1586,136 +1645,104 @@ describe('Post Model', function () {
         });
 
         describe('Collision Protection', function () {
-            it('update post title, but updated_at is out of sync', function (done) {
-                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+            before(testUtils.fixtures.insertPostsAndTags);
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
+            after(function () {
+                return testUtils.truncate('posts_tags')
                     .then(function () {
-                        return Promise.delay(1000);
+                        return testUtils.truncate('tags');
                     })
                     .then(function () {
-                        return models.Post.edit({
-                            title: 'New Post Title',
-                            updated_at: moment().subtract(1, 'day').format()
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done(new Error('expected no success'));
-                    })
-                    .catch(function (err) {
-                        err.code.should.eql('UPDATE_COLLISION');
-                        done();
+                        return testUtils.truncate('posts');
                     });
             });
 
-            it('update post tags and updated_at is out of sync', function (done) {
+            it('update post title, but updated_at is out of sync', function () {
                 var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
+                return models.Post.edit({
+                    title: 'New Post Title',
+                    updated_at: moment().subtract(1, 'day').format()
+                }, _.extend({}, context, {id: postToUpdate.id}))
                     .then(function () {
-                        return Promise.delay(1000);
-                    })
-                    .then(function () {
-                        return models.Post.edit({
-                            tags: [{name: 'new-tag-1'}],
-                            updated_at: moment().subtract(1, 'day').format()
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done(new Error('expected no success'));
+                        throw new Error('expected no success');
                     })
                     .catch(function (err) {
                         err.code.should.eql('UPDATE_COLLISION');
-                        done();
                     });
             });
 
-            it('update post authors and updated_at is out of sync', function (done) {
+            it('update post tags and updated_at is out of sync', function () {
                 var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
+                return models.Post.edit({
+                    tags: [{name: 'new-tag-1'}],
+                    updated_at: moment().subtract(1, 'day').format()
+                }, _.extend({}, context, {id: postToUpdate.id}))
                     .then(function () {
-                        return Promise.delay(1000);
-                    })
-                    .then(function () {
-                        return models.Post.edit({
-                            authors: [testUtils.DataGenerator.Content.users[3]],
-                            updated_at: moment().subtract(1, 'day').format()
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done(new Error('expected no success'));
+                        throw new Error('expected no success');
                     })
                     .catch(function (err) {
                         err.code.should.eql('UPDATE_COLLISION');
-                        done();
                     });
             });
 
-            it('update post tags and updated_at is NOT out of sync', function (done) {
+            it('update post authors and updated_at is out of sync', function () {
                 var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
+                return models.Post.edit({
+                    authors: [testUtils.DataGenerator.Content.users[3]],
+                    updated_at: moment().subtract(1, 'day').format()
+                }, _.extend({}, context, {id: postToUpdate.id}))
                     .then(function () {
-                        return Promise.delay(1000);
+                        throw new Error('expected no success');
                     })
-                    .then(function () {
-                        return models.Post.edit({
-                            tags: [{name: 'new-tag-1'}]
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done();
-                    })
-                    .catch(done);
+                    .catch(function (err) {
+                        err.code.should.eql('UPDATE_COLLISION');
+                    });
             });
 
-            it('update post with no changes, but updated_at is out of sync', function (done) {
+            it('update post tags and updated_at is NOT out of sync', function () {
                 var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
-                    .then(function () {
-                        return Promise.delay(1000);
-                    })
-                    .then(function () {
-                        return models.Post.edit({
-                            updated_at: moment().subtract(1, 'day').format()
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done();
-                    })
-                    .catch(done);
+                return models.Post.edit({
+                    tags: [{name: 'new-tag-1'}]
+                }, _.extend({}, context, {id: postToUpdate.id}));
             });
 
-            it('update post with old post title, but updated_at is out of sync', function (done) {
+            it('update post with no changes, but updated_at is out of sync', function () {
+                var postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
+
+                return models.Post.edit({
+                    updated_at: moment().subtract(1, 'day').format()
+                }, _.extend({}, context, {id: postToUpdate.id}));
+            });
+
+            it('update post with old post title, but updated_at is out of sync', function () {
                 var postToUpdate = {
                     id: testUtils.DataGenerator.Content.posts[1].id,
                     title: testUtils.DataGenerator.forModel.posts[1].title
                 };
 
-                models.Post.findOne({id: postToUpdate.id, status: 'all'})
-                    .then(function () {
-                        return Promise.delay(1000);
-                    })
-                    .then(function () {
-                        return models.Post.edit({
-                            title: postToUpdate.title,
-                            updated_at: moment().subtract(1, 'day').format()
-                        }, _.extend({}, context, {id: postToUpdate.id}));
-                    })
-                    .then(function () {
-                        done();
-                    })
-                    .catch(done);
+                return models.Post.edit({
+                    title: postToUpdate.title,
+                    updated_at: moment().subtract(1, 'day').format()
+                }, _.extend({}, context, {id: postToUpdate.id}));
             });
         });
     });
 
     describe('Multiauthor Posts', function () {
         before(testUtils.teardown);
-        afterEach(testUtils.teardown);
-        beforeEach(testUtils.setup('posts:mu'));
+
+        after(function () {
+            return testUtils.teardown()
+                .then(function () {
+                    return testUtils.setup('users:roles')();
+                });
+        });
+
+        before(testUtils.setup('posts:mu'));
 
         it('can destroy multiple posts by author', function (done) {
             // We're going to delete all posts by user 1
@@ -1738,14 +1765,20 @@ describe('Post Model', function () {
     });
 
     describe('Post tag handling edge cases', function () {
-        before(testUtils.teardown);
-
         var postJSON,
             tagJSON,
             editOptions,
             createTag = testUtils.DataGenerator.forKnex.createTag;
 
-        beforeEach(testUtils.setup('owner'));
+        beforeEach(function () {
+            return testUtils.truncate('posts_tags')
+                .then(function () {
+                    return testUtils.truncate('tags');
+                })
+                .then(function () {
+                    return testUtils.truncate('posts');
+                });
+        });
 
         beforeEach(function () {
             tagJSON = [];

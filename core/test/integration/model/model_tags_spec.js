@@ -15,8 +15,8 @@ describe('Tag Model', function () {
 
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'posts'));
+    after(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
 
     afterEach(function () {
         sandbox.restore();
@@ -24,33 +24,6 @@ describe('Tag Model', function () {
 
     beforeEach(function () {
         eventSpy = sandbox.spy(common.events, 'emit');
-    });
-
-    describe('add', function () {
-        it('uses Date objects for dateTime fields', function (done) {
-            models.Tag.add(_.omit(testUtils.DataGenerator.forModel.tags[0], 'id'), context)
-                .then(function (tag) {
-                    return models.Tag.findOne({id: tag.id});
-                })
-                .then(function (tag) {
-                    should.exist(tag);
-                    tag.get('created_at').should.be.an.instanceof(Date);
-
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('returns count.posts if include count.posts', function (done) {
-            models.Tag.findOne({slug: 'kitchen-sink'}, {withRelated: ['count.posts']})
-                .then(function (tag) {
-                    should.exist(tag);
-                    tag.toJSON().count.posts.should.equal(2);
-
-                    done();
-                })
-                .catch(done);
-        });
     });
 
     describe('findPage', function () {
@@ -97,6 +70,33 @@ describe('Tag Model', function () {
                 })
                 .then(function (found) {
                     should.exist(found);
+
+                    done();
+                })
+                .catch(done);
+        });
+    });
+
+    describe('add', function () {
+        it('uses Date objects for dateTime fields', function (done) {
+            models.Tag.add(_.omit(testUtils.DataGenerator.forModel.tags[0], 'id'), context)
+                .then(function (tag) {
+                    return models.Tag.findOne({id: tag.id});
+                })
+                .then(function (tag) {
+                    should.exist(tag);
+                    tag.get('created_at').should.be.an.instanceof(Date);
+
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('returns count.posts if include count.posts', function (done) {
+            models.Tag.findOne({slug: 'kitchen-sink'}, {withRelated: ['count.posts']})
+                .then(function (tag) {
+                    should.exist(tag);
+                    tag.toJSON().count.posts.should.equal(2);
 
                     done();
                 })

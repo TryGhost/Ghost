@@ -174,7 +174,7 @@ describe('Schedules API', function () {
     describe('fn: publishPost', function () {
         var originalCannotScheduleAPostBeforeInMinutes;
 
-        beforeEach(function (done) {
+        before(function (done) {
             originalCannotScheduleAPostBeforeInMinutes = config.get('times').cannotScheduleAPostBeforeInMinutes;
 
             // we can insert published_at less then 5minutes
@@ -407,7 +407,7 @@ describe('Schedules API', function () {
             });
 
             it('other user has no access', function (done) {
-                testUtils.fixtures.insertOne('users', 'createUser', 4)
+                testUtils.fixtures.insertOne('User', 'users', 'createUser', 4)
                     .then(function (result) {
                         api.schedules.publishPost({id: scope.posts[0].id, context: {user: result[0]}})
                             .then(function () {

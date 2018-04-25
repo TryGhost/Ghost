@@ -17,34 +17,9 @@ describe('Post API', function () {
     var localSettingsCache = {};
 
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init'));
+    after(testUtils.teardown);
 
-    // @TODO: remove when https://github.com/TryGhost/Ghost/issues/6930 is fixed
-    // we insert the posts via the model layer, because right now the test utils insert dates wrong
-    beforeEach(function (done) {
-        Promise.mapSeries(testUtils.DataGenerator.forKnex.posts, function (post) {
-            return models.Post.add(post, {context: {internal: true}});
-        }).then(function () {
-            done();
-        }).catch(done);
-    });
-
-    beforeEach(function (done) {
-        Promise.mapSeries(testUtils.DataGenerator.forKnex.tags, function (tag) {
-            return models.Tag.add(tag, {context: {internal: true}});
-        }).then(function () {
-            done();
-        }).catch(done);
-    });
-
-    beforeEach(function (done) {
-        db.knex('posts_tags').insert(testUtils.DataGenerator.forKnex.posts_tags)
-            .then(function () {
-                done();
-            })
-            .catch(done);
-    });
+    before(testUtils.setup('users:roles', 'perms:post', 'perms:init', 'posts'));
 
     beforeEach(function () {
         sandbox.stub(settingsCache, 'get').callsFake(function (key) {
@@ -60,14 +35,6 @@ describe('Post API', function () {
     should.exist(PostAPI);
 
     describe('Browse', function () {
-        beforeEach(function () {
-            return db.knex('posts_authors').insert({
-                id: ObjectId.generate(),
-                post_id: testUtils.DataGenerator.forKnex.posts[0].id,
-                author_id: testUtils.DataGenerator.forKnex.users[1].id
-            });
-        });
-
         beforeEach(function () {
             localSettingsCache.permalinks = '/:slug/';
         });
@@ -396,7 +363,8 @@ describe('Post API', function () {
                     post.primary_author.slug.should.eql('joe-bloggs');
                 });
 
-                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[0].id}).authors.length.should.eql(2);
+                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[0].id}).authors.length.should.eql(1);
+                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[3].id}).authors.length.should.eql(2);
 
                 done();
             }).catch(done);
@@ -682,6 +650,10 @@ describe('Post API', function () {
     });
 
     describe('Destroy', function () {
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init', 'posts'));
+        after(testUtils.teardown);
+
         it('can delete a post', function (done) {
             var options = {
                 context: {user: testUtils.DataGenerator.Content.users[1].id},
@@ -717,6 +689,10 @@ describe('Post API', function () {
     });
 
     describe('Edit', function () {
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('users:roles', 'perms:post', 'perms:init', 'posts'));
+        after(testUtils.teardown);
+
         it('can edit own post', function (done) {
             PostAPI.edit({posts: [{status: 'test'}]}, {
                 context: {user: testUtils.DataGenerator.Content.users[1].id},

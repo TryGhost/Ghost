@@ -19,6 +19,10 @@ describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
 
+    before(testUtils.setup(
+        'settings', 'users:roles', 'users:extra', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+    ));
+
     beforeEach(function () {
         eventsTriggered = {};
 
@@ -31,14 +35,11 @@ describe('Users API', function () {
         });
     });
 
-    beforeEach(testUtils.setup(
-        'users:roles', 'users:extra', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
-    ));
-
     afterEach(function () {
         sandbox.restore();
-        return testUtils.teardown();
     });
+
+    after(testUtils.teardown);
 
     function checkForErrorType(type, done) {
         return function checkForErrorType(error) {
@@ -50,20 +51,6 @@ describe('Users API', function () {
             }
         };
     }
-
-    it('dateTime fields are returned as Date objects', function (done) {
-        var userData = testUtils.DataGenerator.forModel.users[0];
-
-        models.User.check({email: userData.email, password: userData.password}).then(function (user) {
-            return UserAPI.read(_.merge({id: user.id}, context.internal));
-        }).then(function (response) {
-            response.users[0].created_at.should.be.an.instanceof(Date);
-            response.users[0].updated_at.should.be.an.instanceof(Date);
-            response.users[0].last_seen.should.be.an.instanceof(Date);
-
-            done();
-        }).catch(done);
-    });
 
     describe('Browse', function () {
         function checkBrowseResponse(response, count, additional, missing, only, options) {
@@ -519,6 +506,20 @@ describe('Users API', function () {
             }).catch(done);
         });
 
+        it('dateTime fields are returned as Date objects', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[0];
+
+            models.User.check({email: userData.email, password: userData.password}).then(function (user) {
+                return UserAPI.read(_.merge({id: user.id}, context.internal));
+            }).then(function (response) {
+                response.users[0].created_at.should.be.an.instanceof(Date);
+                response.users[0].updated_at.should.be.an.instanceof(Date);
+                response.users[0].last_seen.should.be.an.instanceof(Date);
+
+                done();
+            }).catch(done);
+        });
+
         describe('Change status', function () {
             describe('as owner', function () {
                 it('[success] can change status to inactive for admin', function () {
@@ -841,7 +842,15 @@ describe('Users API', function () {
     });
 
     describe('Destroy', function () {
+        before(testUtils.teardown);
+
         describe('General Tests', function () {
+            beforeEach(testUtils.setup(
+                'settings', 'users:roles', 'users:extra', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+            ));
+
+            afterEach(testUtils.teardown);
+
             it('ensure posts get deleted', function (done) {
                 var postIdsToDelete = [], postIsToKeep = [], options = {};
 
@@ -971,166 +980,186 @@ describe('Users API', function () {
             });
         });
 
-        describe('Owner', function () {
-            it('CANNOT destroy self', function (done) {
-                UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.owner}))
-                    .then(function () {
-                        done(new Error('Owner should not be able to delete itself'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
+        describe('Permissions', function () {
+            beforeEach(testUtils.setup(
+                'settings', 'users:roles', 'users:extra', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'
+            ));
 
-            it('Can destroy admin, editor, author, contributor', function (done) {
-                // Admin
-                UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.admin}))
-                    .then(function (response) {
-                        should.not.exist(response);
-                        // Editor
-                        return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.editor}));
-                    }).then(function (response) {
-                    should.not.exist(response);
+            afterEach(testUtils.teardown);
 
-                    // Author
-                    return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.author}));
-                }).then(function (response) {
-                    should.not.exist(response);
+            describe('Owner', function () {
+                it('CANNOT destroy self', function (done) {
+                    UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.owner}))
+                        .then(function () {
+                            done(new Error('Owner should not be able to delete itself'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
 
-                    // Contributor
-                    return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.contributor}));
-                }).then(function (response) {
-                    should.not.exist(response);
-                    done();
-                }).catch(done);
-            });
-        });
-
-        describe('Admin', function () {
-            it('CANNOT destroy owner', function (done) {
-                UserAPI.destroy(_.extend({}, context.admin, {id: userIdFor.owner}))
-                    .then(function () {
-                        done(new Error('Admin should not be able to delete owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('Can destroy admin, editor, author, contributor', function (done) {
-                // Admin
-                UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[0].id}))
-                    .then(function (response) {
+                it('Can destroy admin, editor, author, contributor', function (done) {
+                    // Admin
+                    UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.admin}))
+                        .then(function (response) {
+                            should.not.exist(response);
+                            // Editor
+                            return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.editor}));
+                        }).then(function (response) {
                         should.not.exist(response);
 
-                        // Editor
-                        return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[1].id}));
+                        // Author
+                        return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.author}));
                     }).then(function (response) {
-                    should.not.exist(response);
+                        should.not.exist(response);
 
-                    // Author
-                    return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[2].id}));
-                }).then(function (response) {
-                    should.not.exist(response);
-
-                    // Contributor
-                    return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[3].id}));
-                }).then(function (response) {
-                    should.not.exist(response);
-                    done();
-                }).catch(done);
-            });
-        });
-
-        describe('Editor', function () {
-            it('CANNOT destroy owner', function (done) {
-                UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.owner}))
-                    .then(function () {
-                        done(new Error('Editor should not be able to delete owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy admin', function (done) {
-                UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.admin}))
-                    .then(function () {
-                        done(new Error('Editor should not be able to delete admin'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy other editor', function (done) {
-                UserAPI.destroy(_.extend({}, context.editor, {id: testUtils.DataGenerator.Content.extraUsers[1].id}))
-                    .then(function () {
-                        done(new Error('Editor should not be able to delete other editor'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('Can destroy self', function (done) {
-                UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.editor}))
-                    .then(function (response) {
+                        // Contributor
+                        return UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.contributor}));
+                    }).then(function (response) {
                         should.not.exist(response);
                         done();
                     }).catch(done);
+                });
             });
 
-            it('Can destroy author', function (done) {
-                UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.author}))
-                    .then(function (response) {
+            describe('Admin', function () {
+                it('CANNOT destroy owner', function (done) {
+                    UserAPI.destroy(_.extend({}, context.admin, {id: userIdFor.owner}))
+                        .then(function () {
+                            done(new Error('Admin should not be able to delete owner'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('Can destroy admin, editor, author, contributor', function (done) {
+                    // Admin
+                    UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[0].id}))
+                        .then(function (response) {
+                            should.not.exist(response);
+
+                            // Editor
+                            return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[1].id}));
+                        }).then(function (response) {
+                        should.not.exist(response);
+
+                        // Author
+                        return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[2].id}));
+                    }).then(function (response) {
+                        should.not.exist(response);
+
+                        // Contributor
+                        return UserAPI.destroy(_.extend({}, context.admin, {id: testUtils.DataGenerator.Content.extraUsers[3].id}));
+                    }).then(function (response) {
                         should.not.exist(response);
                         done();
                     }).catch(done);
-            });
-        });
-
-        describe('Author', function () {
-            it('CANNOT destroy owner', function (done) {
-                UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.owner}))
-                    .then(function () {
-                        done(new Error('Author should not be able to delete owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
+                });
             });
 
-            it('CANNOT destroy admin', function (done) {
-                UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.admin}))
-                    .then(function () {
-                        done(new Error('Author should not be able to delete admin'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
+            describe('Editor', function () {
+                it('CANNOT destroy owner', function (done) {
+                    UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.owner}))
+                        .then(function () {
+                            done(new Error('Editor should not be able to delete owner'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy admin', function (done) {
+                    UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.admin}))
+                        .then(function () {
+                            done(new Error('Editor should not be able to delete admin'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy other editor', function (done) {
+                    UserAPI.destroy(_.extend({}, context.editor, {id: testUtils.DataGenerator.Content.extraUsers[1].id}))
+                        .then(function () {
+                            done(new Error('Editor should not be able to delete other editor'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('Can destroy self', function (done) {
+                    UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.editor}))
+                        .then(function (response) {
+                            should.not.exist(response);
+                            done();
+                        }).catch(done);
+                });
+
+                it('Can destroy author', function (done) {
+                    UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.author}))
+                        .then(function (response) {
+                            should.not.exist(response);
+                            done();
+                        }).catch(done);
+                });
             });
 
-            it('CANNOT destroy editor', function (done) {
-                UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.editor}))
-                    .then(function () {
-                        done(new Error('Author should not be able to delete editor'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
+            describe('Author', function () {
+                it('CANNOT destroy owner', function (done) {
+                    UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.owner}))
+                        .then(function () {
+                            done(new Error('Author should not be able to delete owner'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy admin', function (done) {
+                    UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.admin}))
+                        .then(function () {
+                            done(new Error('Author should not be able to delete admin'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy editor', function (done) {
+                    UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.editor}))
+                        .then(function () {
+                            done(new Error('Author should not be able to delete editor'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy other author', function (done) {
+                    UserAPI.destroy(_.extend({}, context.author, {id: testUtils.DataGenerator.Content.extraUsers[2].id}))
+                        .then(function () {
+                            done(new Error('Author should not be able to delete other author'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
+
+                it('CANNOT destroy self', function (done) {
+                    UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.author}))
+                        .then(function () {
+                            done(new Error('Author should not be able to delete self'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
             });
 
-            it('CANNOT destroy other author', function (done) {
-                UserAPI.destroy(_.extend({}, context.author, {id: testUtils.DataGenerator.Content.extraUsers[2].id}))
-                    .then(function () {
-                        done(new Error('Author should not be able to delete other author'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
+            describe('Contributor', function () {
+                it('CANNOT destroy owner', function (done) {
+                    UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.owner}))
+                        .then(function () {
+                            done(new Error('Contributor should not be able to delete owner'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
 
-            it('CANNOT destroy self', function (done) {
-                UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.author}))
-                    .then(function () {
-                        done(new Error('Author should not be able to delete self'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-        });
-
-        describe('Contributor', function () {
-            it('CANNOT destroy owner', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.owner}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete owner'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
-            });
-
-            it('CANNOT destroy self', function (done) {
-                UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.contributor}))
-                    .then(function () {
-                        done(new Error('Contributor should not be able to delete self'));
-                    }).catch(checkForErrorType('NoPermissionError', done));
+                it('CANNOT destroy self', function (done) {
+                    UserAPI.destroy(_.extend({}, context.contributor, {id: userIdFor.contributor}))
+                        .then(function () {
+                            done(new Error('Contributor should not be able to delete self'));
+                        }).catch(checkForErrorType('NoPermissionError', done));
+                });
             });
         });
     });
 
     describe('Edit and assign role', function () {
         var newName = 'Jo McBlogger';
+
+        before(testUtils.teardown);
+
+        before(testUtils.setup(
+            'settings', 'users:roles', 'users:extra', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'
+        ));
+
+        beforeEach(function () {
+            return testUtils.fixtures.resetRoles();
+        });
+
+        after(testUtils.teardown);
 
         function checkEditResponse(response) {
             should.exist(response);
@@ -1465,6 +1494,14 @@ describe('Users API', function () {
     });
 
     describe('Transfer ownership', function () {
+        before(testUtils.teardown);
+
+        beforeEach(testUtils.setup(
+            'settings', 'users:roles', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'
+        ));
+
+        afterEach(testUtils.teardown);
+
         it('Owner can transfer ownership', function (done) {
             // transfer ownership to admin user id:2
             UserAPI.transferOwnership(
@@ -1564,6 +1601,14 @@ describe('Users API', function () {
     });
 
     describe('Change Password', function () {
+        before(testUtils.teardown);
+
+        beforeEach(testUtils.setup(
+            'settings', 'users:roles', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'
+        ));
+
+        afterEach(testUtils.teardown);
+
         it('Owner can change own password', function (done) {
             var payload = {
                 password: [{

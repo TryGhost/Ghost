@@ -18,7 +18,7 @@ describe('Public API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request, 'posts', 'tags:extra', 'client:trusted-domain');
+                return testUtils.doAuth(request, 'users:no-owner', 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 
@@ -312,7 +312,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(2);
+                jsonResponse.users.should.have.length(6);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -335,7 +335,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(2);
+                jsonResponse.users.should.have.length(6);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -466,7 +466,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(2);
+                jsonResponse.users.should.have.length(6);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
@@ -489,7 +489,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(2);
+                jsonResponse.users.should.have.length(6);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});

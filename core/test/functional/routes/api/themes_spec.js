@@ -74,7 +74,7 @@ describe('Themes API', function () {
 
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[1]
+                    role: testUtils.DataGenerator.Content.roles[1].name
                 });
             })
             .then(function (user) {
@@ -88,7 +88,7 @@ describe('Themes API', function () {
 
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+author@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[2]
+                    role: testUtils.DataGenerator.Content.roles[2].name
                 });
             })
             .then(function (user) {

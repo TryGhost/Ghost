@@ -30,7 +30,7 @@ describe('Spam Prevention API', function () {
             .then(function () {
                 return testUtils.createUser({
                     user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                    role: testUtils.DataGenerator.Content.roles[1]
+                    role: testUtils.DataGenerator.Content.roles[1].name
                 });
             })
             .then(function (user) {

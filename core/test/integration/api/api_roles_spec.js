@@ -7,8 +7,9 @@ var should = require('should'),
 describe('Roles API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:role', 'perms:init'));
+    after(testUtils.teardown);
+
+    before(testUtils.setup('users:roles', 'perms:role', 'perms:init'));
 
     describe('Browse', function () {
         function checkBrowseResponse(response) {

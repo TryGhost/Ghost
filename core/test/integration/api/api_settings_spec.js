@@ -13,8 +13,8 @@ var should = require('should'),
 describe('Settings API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'perms:setting', 'settings', 'perms:init'));
+    after(testUtils.teardown);
+    before(testUtils.setup('settings', 'users:roles', 'perms:setting', 'perms:init'));
 
     should.exist(SettingsAPI);
 

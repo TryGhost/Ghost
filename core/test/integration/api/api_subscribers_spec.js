@@ -14,16 +14,26 @@ var should = require('should'),
 describe('Subscribers API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    after(testUtils.teardown);
+
     afterEach(function () {
         sandbox.restore();
     });
-    beforeEach(testUtils.setup('users:roles', 'perms:subscriber', 'perms:init', 'posts', 'subscriber'));
+
+    before(testUtils.setup('settings', 'users:roles', 'perms:subscriber', 'perms:init', 'posts'));
 
     should.exist(SubscribersAPI);
 
     describe('Add', function () {
         var newSubscriber;
+
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
 
         beforeEach(function () {
             newSubscriber = _.clone(testUtils.DataGenerator.forKnex.createSubscriber(testUtils.DataGenerator.Content.subscribers[1]));
@@ -95,6 +105,14 @@ describe('Subscribers API', function () {
     });
 
     describe('Edit', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
+
         var newSubscriberEmail = 'subscriber@updated.com',
             firstSubscriber = testUtils.DataGenerator.Content.subscribers[0].id;
 
@@ -153,6 +171,14 @@ describe('Subscribers API', function () {
     });
 
     describe('Destroy', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
+
         var firstSubscriber = testUtils.DataGenerator.Content.subscribers[0];
 
         it('can destroy subscriber as admin', function (done) {
@@ -197,6 +223,14 @@ describe('Subscribers API', function () {
     });
 
     describe('Browse', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
+
         it('can browse (internal)', function (done) {
             SubscribersAPI.browse(testUtils.context.internal).then(function (results) {
                 should.exist(results);
@@ -229,6 +263,14 @@ describe('Subscribers API', function () {
     });
 
     describe('Read', function () {
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
+
         it('with id', function (done) {
             SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
                 should.exist(results);
@@ -274,6 +316,14 @@ describe('Subscribers API', function () {
 
     describe('Read CSV', function () {
         var scope = {};
+
+        beforeEach(function () {
+            return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
+        });
+
+        afterEach(function () {
+            return testUtils.truncate('subscribers');
+        });
 
         beforeEach(function () {
             sandbox.stub(fs, 'unlink').resolves();

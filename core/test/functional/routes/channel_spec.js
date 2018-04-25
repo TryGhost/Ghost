@@ -439,11 +439,13 @@ describe('Channel Routes', function () {
 
     describe('Author', function () {
         var lockedUser = {
+                name: 'Locked so what',
                 slug: 'locked-so-what',
                 email: 'locked@example.com',
                 status: 'locked'
             },
             suspendedUser = {
+                name: 'Suspended meeh',
                 slug: 'suspended-meeh',
                 email: 'suspended@example.com',
                 status: 'inactive'
@@ -554,11 +556,11 @@ describe('Channel Routes', function () {
                     // we initialise data, but not a user. No user should be required for navigating the frontend
                     return testUtils.initData();
                 }).then(function () {
-                    return testUtils.fixtures.overrideOwnerUser('ghost-owner');
-                }).then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
                     return testUtils.fixtures.insertExtraPosts(9);
+                }).then(function () {
+                    return testUtils.fixtures.overrideOwnerUser('ghost-owner');
                 }).then(function () {
                     done();
                 }).catch(done);

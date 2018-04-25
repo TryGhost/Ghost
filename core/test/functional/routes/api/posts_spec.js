@@ -1415,7 +1415,7 @@ describe('Post API', function () {
                     // create author
                     return testUtils.createUser({
                         user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2]
+                        role: testUtils.DataGenerator.Content.roles[2].name
                     });
                 })
                 .then(function (_author) {
@@ -1555,7 +1555,7 @@ describe('Post API', function () {
                     // create contributor
                     return testUtils.createUser({
                         user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[4]
+                        role: testUtils.DataGenerator.Content.roles[4].name
                     });
                 })
                 .then(function (_contributor) {

@@ -8,8 +8,8 @@ var should = require('should'),
 describe('App Fields Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('app_field'));
+    after(testUtils.teardown);
+    before(testUtils.setup('app_field'));
 
     before(function () {
         should.exist(AppFieldsModel);

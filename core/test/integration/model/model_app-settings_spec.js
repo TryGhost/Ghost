@@ -8,8 +8,8 @@ var should = require('should'),
 describe('App Setting Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('app_setting'));
+    after(testUtils.teardown);
+    before(testUtils.setup('app_setting'));
 
     before(function () {
         should.exist(AppSettingModel);
