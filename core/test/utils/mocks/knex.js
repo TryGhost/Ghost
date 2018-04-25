@@ -23,6 +23,7 @@ class KnexMock {
             'posts',
             'users',
             'tags',
+            'invites',
             'permissions',
             'roles',
             'posts_authors',
