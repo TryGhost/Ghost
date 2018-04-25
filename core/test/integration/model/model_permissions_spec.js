@@ -75,7 +75,7 @@ describe('Permission Model', function () {
 
             return PermissionModel.destroy(firstPermission);
         }).then(function (response) {
-            response.toJSON().should.be.empty();
+            response.toJSON({shallow: true}).should.be.empty();
             return PermissionModel.findOne(firstPermission);
         }).then(function (newResults) {
             should.equal(newResults, null);
