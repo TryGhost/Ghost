@@ -8,8 +8,8 @@ var should = require('should'),
 describe('Permission Model', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('permission'));
+    after(testUtils.teardown);
+    before(testUtils.setup('permission'));
 
     before(function () {
         should.exist(PermissionModel);
