@@ -117,7 +117,7 @@ class UrlService {
     /**
      * Get url by resource id.
      */
-    getUrl(id) {
+    getUrlByResourceId(id) {
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {
