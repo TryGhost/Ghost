@@ -131,10 +131,7 @@ const collection1 = new Collection({
         value: '/{settings.permalinks}/'
     },
     config: {
-        type: 'posts',
-        options: {
-            filter: 'featured:false'
-        }
+        type: 'posts'
     }
 });
 
