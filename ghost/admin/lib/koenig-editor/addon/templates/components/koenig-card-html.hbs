@@ -14,20 +14,8 @@
             lineWrapping=true
             update=(action "updateHtml")
         }}
-
-        <input
-            value={{payload.caption}}
-            type="text"
-            class="miw-100 tc bn form-text"
-            oninput={{action "updateCaption" value="target.value"}}
-            placeholder="Type caption for embed (optional)">
     {{else}}
         {{{payload.html}}}
-
-        {{#if payload.caption}}
-            <p class={{kg-style "figcaption"}}>{{{payload.caption}}}</p>
-        {{/if}}
-
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 {{/koenig-card}}
