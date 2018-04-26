@@ -8,9 +8,6 @@ import {run} from '@ember/runloop';
 // the matches with additional markup, atoms, or cards
 // https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input
 
-// TODO: this was copied from our old Koenig editor, it could do with some
-// comments, cleanup, and refactoring
-
 export default function (editor, koenig) {
     // We don't want to run all our content rules on every text entry event,
     // instead we check to see if this text entry event could match a content
@@ -224,11 +221,11 @@ export default function (editor, koenig) {
 
     function matchLink(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(^|[^!])\[(.*?)\]\((.*?)\)$/);
+        let matches = text.match(/(?:^|\s)\[([^\s\]]+|[^\s\]][^\]]*[^\s\]])\]\(([^\s)]+|[^\s)][^)]*[^\s)])\)/);
         if (matches) {
-            let url = matches[3];
-            let text = matches[2];
-            let match = matches[0][0] === '[' ? matches[0] : matches[0].substr(1);
+            let url = matches[2];
+            let text = matches[1] || url;
+            let match = matches[0].trim();
             range = range.extend(-match.length);
 
             editor.run((postEditor) => {
@@ -248,8 +245,8 @@ export default function (editor, koenig) {
         let matches = text.match(/^!\[(.*?)\]\((.*?)\)$/);
         if (matches) {
             let {range: {head, head: {section}}} = editor;
-            let src = matches[2];
-            let alt = matches[1];
+            let src = matches[2].trim();
+            let alt = matches[1].trim();
 
             // skip if cursor is not at end of section
             if (!head.isTail()) {
