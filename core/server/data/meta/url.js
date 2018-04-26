@@ -12,16 +12,8 @@ function sanitizeAmpUrl(url) {
 }
 
 function getUrl(data, absolute) {
-    if (schema.isPost(data)) {
-        return urlService.utils.urlFor('post', {post: data, secure: data.secure}, absolute);
-    }
-
-    if (schema.isTag(data)) {
-        return urlService.utils.urlFor('tag', {tag: data, secure: data.secure}, absolute);
-    }
-
-    if (schema.isUser(data)) {
-        return urlService.utils.urlFor('author', {author: data, secure: data.secure}, absolute);
+    if (schema.isPost(data) || schema.isTag(data) || schema.isUser(data)) {
+        return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute});
     }
 
     if (schema.isNav(data)) {

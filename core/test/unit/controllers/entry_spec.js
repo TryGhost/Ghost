@@ -141,14 +141,14 @@ describe('Controllers', function () {
         describe('static pages', function () {
             describe('custom page templates', function () {
                 it('it will render a custom page-slug template if it exists', function (done) {
-                    req.path = '/' + mockPosts[2].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('page-' + mockPosts[2].posts[0].slug);
                         context.post.should.equal(mockPosts[2].posts[0]);
                         done();
                     };
-                    mockPosts[2].posts[0].url = req.path;
+                    mockPosts[2].posts[0].url = req.originalUrl;
 
                     controllers.entry(req, res, failTest(done));
                 });
@@ -156,14 +156,14 @@ describe('Controllers', function () {
                 it('it will use page.hbs if it exists and no page-slug template is present', function (done) {
                     hasTemplateStub.withArgs('page-about').returns(false);
 
-                    req.path = '/' + mockPosts[2].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('page');
                         context.post.should.equal(mockPosts[2].posts[0]);
                         done();
                     };
-                    mockPosts[2].posts[0].url = req.path;
+                    mockPosts[2].posts[0].url = req.originalUrl;
 
                     controllers.entry(req, res, failTest(done));
                 });
@@ -172,14 +172,14 @@ describe('Controllers', function () {
                     hasTemplateStub.withArgs('page-about').returns(false);
                     hasTemplateStub.withArgs('page').returns(false);
 
-                    req.path = '/' + mockPosts[2].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('post');
                         context.post.should.equal(mockPosts[2].posts[0]);
                         done();
                     };
-                    mockPosts[2].posts[0].url = req.path;
+                    mockPosts[2].posts[0].url = req.originalUrl;
 
                     controllers.entry(req, res, failTest(done));
                 });
@@ -187,7 +187,7 @@ describe('Controllers', function () {
 
             describe('permalink set to slug', function () {
                 it('will render static page via /:slug/', function (done) {
-                    req.path = '/' + mockPosts[0].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('page');
@@ -199,7 +199,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render static page via /YYY/MM/DD/:slug', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -208,7 +208,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render static page via /:author/:slug', function (done) {
-                    req.path = '/' + ['test', mockPosts[0].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[0].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -217,7 +217,7 @@ describe('Controllers', function () {
                 });
 
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
-                    req.path = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
                         res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[0].posts[0].id + '/');
@@ -228,7 +228,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -238,7 +238,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect static page to admin edit page via /:author/:slug/edit', function (done) {
-                    req.path = '/' + ['test', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -254,7 +254,7 @@ describe('Controllers', function () {
                 });
 
                 it('will render static page via /:slug', function (done) {
-                    req.path = '/' + mockPosts[0].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('page');
@@ -266,7 +266,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render static page via /YYYY/MM/DD/:slug', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
                     res.render = sinon.spy();
 
                     controllers.entry(req, res, function () {
@@ -276,7 +276,7 @@ describe('Controllers', function () {
                 });
 
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
-                    req.path = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
                     res.render = sinon.spy();
                     res.redirect = function (arg) {
                         res.render.called.should.be.false();
@@ -288,7 +288,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
                     res.render = sinon.spy();
                     res.redirect = sinon.spy();
 
@@ -308,7 +308,7 @@ describe('Controllers', function () {
                 });
 
                 it('will render post via /:slug/', function (done) {
-                    req.path = '/' + mockPosts[1].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[1].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('post');
@@ -321,7 +321,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -330,7 +330,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /:author/:slug', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -340,7 +340,7 @@ describe('Controllers', function () {
 
                 // Handle Edit append
                 it('will redirect post to admin edit page via /:slug/edit', function (done) {
-                    req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
                         res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
@@ -351,7 +351,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
-                    req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -361,7 +361,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect post to admin edit page via /:author/:slug/edit', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -371,7 +371,7 @@ describe('Controllers', function () {
                 });
 
                 it('should call next if post is not found', function (done) {
-                    req.path = '/unknown/';
+                    req.originalUrl = '/unknown/';
 
                     controllers.entry(req, res, function (err) {
                         if (err) {
@@ -396,7 +396,7 @@ describe('Controllers', function () {
 
                 it('will render post via /YYYY/MM/DD/:slug/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
-                    req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
 
                     res.render = function (view, context) {
@@ -410,7 +410,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /:slug/', function (done) {
-                    req.path = '/' + mockPosts[1].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[1].posts[0].slug + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -419,7 +419,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /:author/:slug/', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -431,7 +431,7 @@ describe('Controllers', function () {
                 it('will redirect post to admin edit page via /YYYY/MM/DD/:slug/edit/', function (done) {
                     var dateFormat = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
 
-                    req.path = '/' + [dateFormat, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [dateFormat, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
                         res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
@@ -442,7 +442,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect post to admin edit page via /:slug/edit/', function (done) {
-                    req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -452,7 +452,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect post to admin edit page via /:author/:slug/edit/', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -471,7 +471,7 @@ describe('Controllers', function () {
                 });
 
                 it('will render post via /:author/:slug/', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('post');
@@ -485,7 +485,7 @@ describe('Controllers', function () {
 
                 it('will NOT render post via /YYYY/MM/DD/:slug/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
-                    req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -494,7 +494,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /:author/:slug/ when author does not match post author', function (done) {
-                    req.path = '/' + ['test-2', mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + ['test-2', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -503,7 +503,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT render post via /:slug/', function (done) {
-                    req.path = '/' + mockPosts[1].posts[0].slug + '/';
+                    req.originalUrl = '/' + mockPosts[1].posts[0].slug + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -513,7 +513,7 @@ describe('Controllers', function () {
 
                 // Handle Edit append
                 it('will redirect post to admin edit page via /:author/:slug/edit/', function (done) {
-                    req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     res.redirect = function (arg) {
                         res.render.called.should.be.false();
@@ -526,7 +526,7 @@ describe('Controllers', function () {
 
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
-                    req.path = '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -536,7 +536,7 @@ describe('Controllers', function () {
                 });
 
                 it('will NOT redirect post to admin edit page /:slug/edit/', function (done) {
-                    req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
+                    req.originalUrl = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     controllers.entry(req, res, function () {
                         res.render.called.should.be.false();
@@ -557,7 +557,7 @@ describe('Controllers', function () {
                 it('will render post via /:year/:slug/', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
 
-                    req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.originalUrl = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
 
                     res = {

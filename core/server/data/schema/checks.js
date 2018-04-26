@@ -5,7 +5,7 @@ function isPost(jsonData) {
 
 function isTag(jsonData) {
     return jsonData.hasOwnProperty('name') && jsonData.hasOwnProperty('slug') &&
-        jsonData.hasOwnProperty('description') && jsonData.hasOwnProperty('parent');
+        jsonData.hasOwnProperty('description');
 }
 
 function isUser(jsonData) {

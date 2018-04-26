@@ -1,3 +1,4 @@
+'use strict';
 // # Authors Helper
 // Usage: `{{authors}}`, `{{authors separator=' - '}}`
 //
@@ -5,32 +6,32 @@
 // By default, authors are separated by commas.
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
-
-var proxy = require('./proxy'),
+const proxy = require('./proxy'),
     _ = require('lodash'),
+    urlService = require('../services/url'),
     SafeString = proxy.SafeString,
     templates = proxy.templates,
-    url = proxy.url,
     models = proxy.models;
 
 module.exports = function authors(options) {
     options = options || {};
     options.hash = options.hash || {};
 
-    var autolink = !(_.isString(options.hash.autolink) && options.hash.autolink === 'false'),
+    const autolink = !(_.isString(options.hash.autolink) && options.hash.autolink === 'false'),
         separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
         prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
         suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
         limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
+        visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
+
+    let output = '',
         from = options.hash.from ? parseInt(options.hash.from, 10) : 1,
-        to = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
-        visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility),
-        output = '';
+        to = options.hash.to ? parseInt(options.hash.to, 10) : undefined;
 
     function createAuthorsList(authors) {
         function processAuthor(author) {
             return autolink ? templates.link({
-                url: url.urlFor('author', {author: author}),
+                url: urlService.getUrlByResourceId(author.id),
                 text: _.escape(author.name)
             }) : _.escape(author.name);
         }

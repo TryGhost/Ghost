@@ -1,9 +1,13 @@
+'use strict';
+
 var should = require('should'),
+    sinon = require('sinon'),
     _ = require('lodash'),
     testUtils = require('../../../utils'),
     configUtils = require('../../../utils/configUtils'),
-
-    generateFeed = require('../../../../server/services/rss/generate-feed');
+    urlService = require('../../../../server/services/url'),
+    generateFeed = require('../../../../server/services/rss/generate-feed'),
+    sandbox = sinon.sandbox.create();
 
 describe('RSS: Generate Feed', function () {
     var data = {},
@@ -13,12 +17,12 @@ describe('RSS: Generate Feed', function () {
 
     before(function () {
         posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
+
         posts = _.filter(posts, function filter(post) {
             return post.status === 'published' && post.page === false;
         });
 
-        _.each(posts, function (post, i) {
-            post.id = i;
+        _.each(posts, function (post) {
             post.url = '/' + post.slug + '/';
             post.primary_author = {name: 'Joe Bloggs'};
         });
@@ -26,10 +30,13 @@ describe('RSS: Generate Feed', function () {
 
     afterEach(function () {
         configUtils.restore();
+        sandbox.restore();
     });
 
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
+
+        sandbox.stub(urlService, 'getUrlByResourceId');
 
         baseUrl = '/rss/';
 
@@ -71,6 +78,10 @@ describe('RSS: Generate Feed', function () {
 
     it('should get the item tags correct', function (done) {
         data.posts = posts;
+
+        _.each(data.posts, function (post) {
+            urlService.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+        });
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);
@@ -162,6 +173,10 @@ describe('RSS: Generate Feed', function () {
 
     it('should use excerpt when no meta_description is set', function (done) {
         data.posts = [posts[0]];
+
+        _.each(data.posts, function (post) {
+            urlService.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+        });
 
         generateFeed(baseUrl, data).then(function (xmlData) {
             should.exist(xmlData);

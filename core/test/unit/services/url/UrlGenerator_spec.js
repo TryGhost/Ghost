@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const should = require('should');
 const jsonpath = require('jsonpath');
 const sinon = require('sinon');
+const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
 const sandbox = sinon.sandbox.create();
 
@@ -259,55 +260,10 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_replacePermalink').returns('/url');
+            sandbox.stub(urlUtils, 'replacePermalink').returns('/url');
 
             urlGenerator._generateUrl(resource).should.eql('/url');
-            urlGenerator._replacePermalink.calledWith('/:slug/', resource).should.be.true();
-        });
-    });
-
-    describe('fn: _replacePermalink', function () {
-        it('/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome'
-            };
-
-            urlGenerator._replacePermalink('/:slug/', resource).should.eql('/welcome/');
-        });
-
-        it('/:year/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                published_at: '2017-04-13T20:00:53.584Z'
-            };
-
-            urlGenerator._replacePermalink('/:year/:slug/', resource).should.eql('/2017/welcome/');
-        });
-
-        it('/:author/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                primary_author: {
-                    slug: 'joe'
-                }
-            };
-
-            urlGenerator._replacePermalink('/:author/:slug/', resource).should.eql('/joe/welcome/');
-        });
-
-        it('/:primary_tag/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                primary_tag: {
-                    slug: 'football'
-                }
-            };
-
-            urlGenerator._replacePermalink('/:primary_tag/:slug/', resource).should.eql('/football/welcome/');
+            urlUtils.replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
         });
     });
 

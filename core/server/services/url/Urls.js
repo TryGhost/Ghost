@@ -104,6 +104,10 @@ class Urls {
     reset() {
         this.urls = {};
     }
+
+    softReset() {
+        this.urls = {};
+    }
 }
 
 module.exports = Urls;

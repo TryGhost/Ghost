@@ -174,7 +174,7 @@ describe('Unit: services/url/UrlService', function () {
             url.should.eql('/ghostly-kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            should.not.exist(url);
+            url.should.eql('/404/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
             url.should.eql('/tag/kitchen-sink/');
@@ -221,7 +221,7 @@ describe('Unit: services/url/UrlService', function () {
                     .then(function (post) {
                         // There is no collection which owns featured posts.
                         let url = urlService.getUrlByResourceId(post.id);
-                        should.not.exist(url);
+                        url.should.eql('/404/');
 
                         urlService.urlGenerators.forEach(function (generator) {
                             if (generator.routingType.getType() === 'posts') {
@@ -300,7 +300,7 @@ describe('Unit: services/url/UrlService', function () {
                     author_id: testUtils.DataGenerator.forKnex.users[4].id
                 }).then(function (post) {
                     let url = urlService.getUrlByResourceId(post.id);
-                    should.not.exist(url);
+                    url.should.eql('/404/');
 
                     let resource = urlService.getResource(url);
                     should.not.exist(resource);
