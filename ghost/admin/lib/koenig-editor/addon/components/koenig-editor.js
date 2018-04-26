@@ -20,6 +20,7 @@ import {camelize, capitalize} from '@ember/string';
 import {computed} from '@ember/object';
 import {copy} from '@ember/object/internals';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
+import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
@@ -242,7 +243,7 @@ export default Component.extend({
         // set up key commands and text expansions (MD conversion)
         // TODO: this will override any passed in options, we should allow the
         // default behaviour to be overridden by addon consumers
-        registerKeyCommands(editor);
+        registerKeyCommands(editor, this);
         registerTextExpansions(editor, this);
 
         editor.registerKeyCommand({
@@ -427,7 +428,10 @@ export default Component.extend({
         // component renders it will re-select when finished which should
         // trigger the normal toolbar
         editLink(range) {
-            this.set('linkRange', range);
+            let linkMarkup = getLinkMarkupFromRange(range);
+            if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
+                this.set('linkRange', range);
+            }
         },
 
         cancelEditLink() {
