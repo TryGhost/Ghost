@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import layout from '../templates/components/koenig-link-input';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {computed} from '@ember/object';
+import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 
@@ -144,13 +145,10 @@ export default Component.extend({
     // if we have a single link or a slice of a single link selected, grab the
     // href and adjust our linkRange to encompass the whole link
     _getHrefFromMarkup() {
-        let {headMarker, tailMarker} = this._linkRange;
-        if (headMarker === tailMarker || headMarker.next === tailMarker) {
-            let linkMarkup = tailMarker.markups.findBy('tagName', 'a');
-            if (linkMarkup) {
-                this.set('href', linkMarkup.attributes.href);
-                this._linkRange = this._linkRange.expandByMarker(marker => !!marker.markups.includes(linkMarkup));
-            }
+        let linkMarkup = getLinkMarkupFromRange(this._linkRange);
+        if (linkMarkup) {
+            this.set('href', linkMarkup.attributes.href);
+            this._linkRange = this._linkRange.expandByMarker(marker => !!marker.markups.includes(linkMarkup));
         }
     },
 
