@@ -605,7 +605,7 @@ export default Component.extend({
         let {isCollapsed, head: {offset, section}} = editor.range;
 
         // if cursor is at beginning of a heading, insert a blank paragraph above
-        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/)) {
+        if (isCollapsed && offset === 0 && section.tagName && section.tagName.match(/^h\d$/)) {
             editor.run((postEditor) => {
                 let newPara = postEditor.builder.createMarkupSection('p');
                 let collection = section.parent.sections;
