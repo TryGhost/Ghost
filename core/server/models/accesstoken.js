@@ -1,5 +1,3 @@
-'use strict';
-
 const ghostBookshelf = require('./base'),
     Basetoken = require('./base/token');
 

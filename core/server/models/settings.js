@@ -1,5 +1,3 @@
-'use strict';
-
 const Promise = require('bluebird'),
     _ = require('lodash'),
     uuid = require('uuid'),

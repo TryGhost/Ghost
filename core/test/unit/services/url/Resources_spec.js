@@ -1,5 +1,3 @@
-'use strict';
-
 // jshint unused: false
 const should = require('should');
 const _ = require('lodash');

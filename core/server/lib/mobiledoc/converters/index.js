@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = {
     get mobiledocConverter() {
         return require('./mobiledoc-converter');

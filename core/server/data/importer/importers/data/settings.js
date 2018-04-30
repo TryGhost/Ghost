@@ -1,5 +1,3 @@
-'use strict';
-
 const debug = require('ghost-ignition').debug('importer:settings'),
     Promise = require('bluebird'),
     _ = require('lodash'),

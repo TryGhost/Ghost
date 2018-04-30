@@ -1,5 +1,3 @@
-'use strict';
-
 const Promise = require('bluebird'),
     csvParser = require('csv-parser'),
     _ = require('lodash'),

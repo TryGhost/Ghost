@@ -1,5 +1,3 @@
-'use strict';
-
 const url = require('url'),
     path = require('path'),
     _ = require('lodash');

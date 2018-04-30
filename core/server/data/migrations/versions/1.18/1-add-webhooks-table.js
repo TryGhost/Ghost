@@ -1,5 +1,3 @@
-'use strict';
-
 var Promise = require('bluebird'),
     common = require('../../../../lib/common'),
     commands = require('../../../schema').commands,

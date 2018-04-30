@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = {
     get blogIcon() {
         return require('./blog-icon');

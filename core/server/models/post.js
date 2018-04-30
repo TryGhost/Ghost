@@ -1,5 +1,3 @@
-'use strict';
-
 // # Post Model
 var _ = require('lodash'),
     uuid = require('uuid'),

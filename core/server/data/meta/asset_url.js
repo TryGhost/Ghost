@@ -1,5 +1,3 @@
-'use strict';
-
 const crypto = require('crypto'),
     config = require('../../config'),
     imageLib = require('../../lib/image'),

@@ -1,5 +1,3 @@
-'use strict';
-
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
 

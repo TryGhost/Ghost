@@ -1,5 +1,3 @@
-'use strict';
-
 // # Update Checking Service
 //
 // Makes a request to Ghost.org to check if there is a new version of Ghost available.

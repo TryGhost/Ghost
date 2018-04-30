@@ -1,5 +1,3 @@
-'use strict';
-
 const merge = require('lodash/merge'),
     utils = require('../../../schema/fixtures/utils'),
     models = require('../../../../models'),

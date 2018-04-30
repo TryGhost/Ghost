@@ -1,5 +1,3 @@
-'use strict';
-
 var should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
     models = require('../../../server/models'),

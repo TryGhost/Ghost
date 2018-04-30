@@ -25,7 +25,7 @@
     "lint": "grunt lint"
   },
   "engines": {
-    "node": "^4.5.0 || ^6.9.0 || ^8.9.0",
+    "node": "^6.9.0 || ^8.9.0",
     "cli": "^1.7.0"
   },
   "dependencies": {

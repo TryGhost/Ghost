@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:url:urls');
 const localUtils = require('./utils');

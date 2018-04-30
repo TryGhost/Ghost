@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs-extra');
 
 module.exports = function zipFolder(folderToZip, destination, callback) {

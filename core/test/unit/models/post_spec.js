@@ -1,4 +1,3 @@
-'use strict';
 /* eslint no-invalid-this:0 */
 
 const should = require('should'), // jshint ignore:line

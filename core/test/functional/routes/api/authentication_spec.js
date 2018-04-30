@@ -1,5 +1,3 @@
-'use strict';
-
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),

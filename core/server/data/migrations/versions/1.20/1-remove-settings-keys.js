@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     models = require('../../../../models'),
     common = require('../../../../lib/common');

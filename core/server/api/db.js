@@ -1,5 +1,3 @@
-'use strict';
-
 // # DB API
 // API for DB operations
 var Promise = require('bluebird'),

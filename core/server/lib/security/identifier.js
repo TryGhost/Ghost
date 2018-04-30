@@ -1,5 +1,3 @@
-'use strict';
-
 let _private = {};
 
 // @TODO: replace with crypto.randomBytes

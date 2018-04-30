@@ -1,5 +1,3 @@
-'use strict';
-
 // # Posts API
 // RESTful API for the Post resource
 const Promise = require('bluebird'),

@@ -1,5 +1,3 @@
-'use strict';
-
 const common = require('../../../lib/common'),
     config = require('../../../config'),
     localUtils = require('../../utils');
