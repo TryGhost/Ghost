@@ -25,6 +25,14 @@ var config = require('./core/server/config'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory = path.resolve(cwd, '.dist'),
 
+    hasBuiltClient = false,
+    logBuildingClient = function (grunt) {
+        if (!hasBuiltClient) {
+            grunt.log.writeln('Building admin client... (can take ~1min)');
+            setTimeout(logBuildingClient, 5000, grunt);
+        }
+    },
+
     // ## Grunt configuration
 
     configureGrunt = function (grunt) {
@@ -202,7 +210,10 @@ var config = require('./core/server/config'),
 
             bgShell: {
                 client: {
-                    cmd: 'grunt subgrunt:watch',
+                    cmd: function () {
+                        logBuildingClient(grunt);
+                        return 'grunt subgrunt:watch';
+                    },
                     bg: grunt.option('client') ? false : true,
                     stdout: function (chunk) {
                         // hide certain output to prevent confusion when running alongside server
@@ -216,6 +227,10 @@ var config = require('./core/server/config'),
 
                         if (!filter) {
                             grunt.log.write(chunk);
+                        }
+
+                        if (chunk.indexOf('Build successful') !== -1) {
+                            hasBuiltClient = true;
                         }
                     },
                     stderr: true
