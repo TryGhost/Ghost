@@ -7,7 +7,7 @@ export default AuthenticatedRoute.extend(styleBody, {
     config: service(),
     settings: service(),
 
-    titleToken: 'Settings - Apps - Unsplash',
+    titleToken: 'Unsplash',
     classNames: ['settings-view-apps-unsplash'],
 
     beforeModel() {

@@ -5,7 +5,7 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(styleBody, {
     settings: service(),
 
-    titleToken: 'Settings - Apps - Slack',
+    titleToken: 'Slack',
 
     classNames: ['settings-view-apps-slack'],
 
