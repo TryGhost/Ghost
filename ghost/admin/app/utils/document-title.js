@@ -39,7 +39,7 @@ export default function () {
                         finalTitle = this.title;
                     }
 
-                    this.router.setTitle(finalTitle);
+                    window.document.title = finalTitle;
                 } else {
                     return true;
                 }
@@ -50,10 +50,6 @@ export default function () {
     Router.reopen({
         updateTitle: on('didTransition', function () {
             this.send('collectTitleTokens', []);
-        }),
-
-        setTitle(title) {
-            window.document.title = title;
-        }
+        })
     });
 }
