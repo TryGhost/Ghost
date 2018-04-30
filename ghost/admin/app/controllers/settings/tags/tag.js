@@ -1,4 +1,5 @@
 import Controller, {inject as controller} from '@ember/controller';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
@@ -28,6 +29,7 @@ export default Controller.extend({
 
     _saveTagProperty(propKey, newValue) {
         let tag = this.get('tag');
+        let isNewTag = tag.get('isNew');
         let currentValue = tag.get(propKey);
 
         if (newValue) {
@@ -46,6 +48,17 @@ export default Controller.extend({
         tag.save().then((savedTag) => {
             // replace 'new' route with 'tag' route
             this.replaceRoute('settings.tags.tag', savedTag);
+
+            // update the URL if the slug changed
+            if (propKey === 'slug' && !isNewTag) {
+                let currentPath = window.location.hash;
+
+                let newPath = currentPath.split('/');
+                newPath[newPath.length - 1] = savedTag.get('slug');
+                newPath = newPath.join('/');
+
+                windowProxy.replaceState({path: newPath}, '', newPath);
+            }
         }).catch((error) => {
             if (error) {
                 this.get('notifications').showAPIError(error, {key: 'tag.save'});
