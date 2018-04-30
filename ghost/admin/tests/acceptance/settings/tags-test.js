@@ -3,6 +3,7 @@ import $ from 'jquery';
 import destroyApp from '../../helpers/destroy-app';
 import startApp from '../../helpers/start-app';
 import wait from 'ember-test-helpers/wait';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
@@ -77,11 +78,23 @@ describe('Acceptance: Settings - Tags', function () {
     });
 
     describe('when logged in', function () {
+        let newLocation, originalReplaceState;
+
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role]});
 
+            originalReplaceState = windowProxy.replaceState;
+            windowProxy.replaceState = function (params, title, url) {
+                newLocation = url;
+            };
+            newLocation = undefined;
+
             return authenticateSession(application);
+        });
+
+        afterEach(function () {
+            windowProxy.replaceState = originalReplaceState;
         });
 
         it('it renders, can be navigated, can edit, create & delete tags', async function () {
@@ -265,6 +278,25 @@ describe('Acceptance: Settings - Tags', function () {
 
             expect(find('.settings-tags .settings-tag:first .label.label-blue').text().trim(), 'internal tag label text')
                 .to.equal('internal');
+        });
+
+        it('updates the URL when slug changes', async function () {
+            server.createList('tag', 2);
+
+            await visit('/settings/tags/tag-1');
+
+            // second wait is needed for the vertical-collection to settle
+            await wait();
+
+            expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-1');
+
+            // update the slug
+            await fillIn('.tag-settings-pane input[name="slug"]', 'test');
+            await triggerEvent('.tag-settings-pane input[name="slug"]', 'blur');
+
+            // tests don't have a location.hash so we can only check that the
+            // slug portion is updated correctly
+            expect(newLocation, 'URL after slug change').to.equal('test');
         });
 
         it('redirects to 404 when tag does not exist', async function () {

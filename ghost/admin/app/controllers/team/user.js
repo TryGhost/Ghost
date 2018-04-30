@@ -435,17 +435,14 @@ export default Controller.extend({
         }
 
         try {
-            let currentPath,
-                newPath;
-
             user = yield user.save({format: false});
 
             // If the user's slug has changed, change the URL and replace
             // the history so refresh and back button still work
             if (slugChanged) {
-                currentPath = window.location.hash;
+                let currentPath = window.location.hash;
 
-                newPath = currentPath.split('/');
+                let newPath = currentPath.split('/');
                 newPath[newPath.length - 1] = user.get('slug');
                 newPath = newPath.join('/');
 
