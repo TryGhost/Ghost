@@ -35,12 +35,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     feature: service(),
     ghostPaths: service(),
     notifications: service(),
+    router: service(),
     settings: service(),
     tour: service(),
     ui: service(),
-    // TODO: rename to `router` when we drop using of Route#router in our
-    // document-title util
-    routerService: service('router'),
 
     shortcuts,
 
@@ -197,7 +195,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
 
                 let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
-                let router = this.get('routerService');
+                let router = this.get('router');
                 let params = [];
 
                 for (let key of Object.keys(routeInfo.params)) {
