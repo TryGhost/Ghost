@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),

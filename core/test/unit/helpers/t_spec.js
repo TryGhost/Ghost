@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'),
     path = require('path'),
     settingsCache = require('../../../server/services/settings/cache'),

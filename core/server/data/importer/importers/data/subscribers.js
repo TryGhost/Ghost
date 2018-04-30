@@ -1,5 +1,3 @@
-'use strict';
-
 const debug = require('ghost-ignition').debug('importer:subscribers'),
     BaseImporter = require('./base');
 

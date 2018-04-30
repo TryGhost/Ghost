@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * This is a feature request in knex for 1.0.
  * https://github.com/tgriesser/knex/issues/1641

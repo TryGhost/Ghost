@@ -1,5 +1,3 @@
-'use strict';
-
 // # Notifications API
 // RESTful API for creating notifications
 

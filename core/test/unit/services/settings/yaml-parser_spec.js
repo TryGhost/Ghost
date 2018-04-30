@@ -1,5 +1,3 @@
-'use strict';
-
 const sinon = require('sinon'),
     should = require('should'),
     fs = require('fs-extra'),

@@ -1,4 +1,3 @@
-'use strict';
 /* eslint-disable */
 
 const mockKnex = require('mock-knex'),
