@@ -11,17 +11,24 @@ export default Component.extend({
     tagName: '',
     triggerId: '',
 
+    // internal attrs
+    availableAuthors: null,
+
     // closure actions
     updateAuthors() {},
-
-    // live-query of all users for author input autocomplete
-    availableAuthors: computed(function () {
-        return this.get('store').filter('user', {limit: 'all'}, () => true);
-    }),
 
     availableAuthorNames: computed('availableAuthors.@each.name', function () {
         return this.get('availableAuthors').map(author => author.get('name').toLowerCase());
     }),
+
+    init() {
+        this._super(...arguments);
+        // perform a background query to fetch all users and set `availableAuthors`
+        // to a live-query that will be immediately populated with what's in the
+        // store and be updated when the above query returns
+        this.store.query('user', {limit: 'all'});
+        this.set('availableAuthors', this.store.peekAll('user'));
+    },
 
     actions: {
         updateAuthors(newAuthors) {

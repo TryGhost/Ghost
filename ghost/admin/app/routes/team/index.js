@@ -31,7 +31,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
             // authors do not have permission to hit the invites or suspended users endpoint
             if (!user.get('isAuthorOrContributor')) {
                 modelPromises.invites = this.store.query('invite', {limit: 'all'})
-                    .then(() => this.store.filter('invite', invite => !invite.get('isNew')));
+                    .then(() => this.store.peekAll('invite'));
 
                 // fetch suspended users separately so that infinite scroll still works
                 modelPromises.suspendedUsers = this.store.query('user', {limit: 'all', filter: 'status:inactive'});
