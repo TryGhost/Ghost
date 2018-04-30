@@ -38,6 +38,9 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     settings: service(),
     tour: service(),
     ui: service(),
+    // TODO: rename to `router` when we drop using of Route#router in our
+    // document-title util
+    routerService: service('router'),
 
     shortcuts,
 
@@ -194,14 +197,19 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
 
                 let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
-                let router = this.get('router');
+                let router = this.get('routerService');
                 let params = [];
 
                 for (let key of Object.keys(routeInfo.params)) {
                     params.push(routeInfo.params[key]);
                 }
 
-                return this.transitionTo('error404', router.generate(routeInfo.name, ...params).replace('/ghost/', '').replace(/^\//g, ''));
+                let url = router.urlFor(routeInfo.name, ...params)
+                    .replace(/^#\//, '')
+                    .replace(/^\//, '')
+                    .replace(/^ghost\//, '');
+
+                return this.replaceWith('error404', url);
             }
 
             if (isVersionMismatchError(error)) {
