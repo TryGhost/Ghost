@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),

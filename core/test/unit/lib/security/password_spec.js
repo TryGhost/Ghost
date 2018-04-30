@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'), // jshint ignore:line
     security = require('../../../../server/lib/security');
 

@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'),
     settingsCache = require('../../../server/services/settings/cache'),
     helpers = require('../../../server/helpers'),

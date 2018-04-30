@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Settings Lib
  * A collection of utilities for handling settings including a cache

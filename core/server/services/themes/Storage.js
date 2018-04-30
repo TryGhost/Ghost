@@ -1,5 +1,3 @@
-'use strict';
-
 var fs = require('fs-extra'),
     os = require('os'),
     path = require('path'),

@@ -1,5 +1,3 @@
-'use strict';
-
 // # Base Model
 // This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
 // several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.

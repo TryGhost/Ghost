@@ -1,5 +1,3 @@
-'use strict';
-
 const ghostBookshelf = require('./base');
 let Tag, Tags;
 

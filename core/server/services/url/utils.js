@@ -1,5 +1,3 @@
-'use strict';
-
 // Contains all path information to be used throughout the codebase.
 // Assumes that config.url is set, and is valid
 const moment = require('moment-timezone'),

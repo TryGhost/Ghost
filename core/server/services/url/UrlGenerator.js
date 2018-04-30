@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),

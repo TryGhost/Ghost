@@ -1,5 +1,3 @@
-'use strict';
-
 const constants = require('../lib/constants'),
     security = require('../lib/security'),
     settingsCache = require('../services/settings/cache'),

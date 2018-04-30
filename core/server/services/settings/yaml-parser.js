@@ -1,5 +1,3 @@
-'use strict';
-
 const yaml = require('js-yaml'),
     debug = require('ghost-ignition').debug('services:settings:yaml-parser'),
     common = require('../../lib/common');
