@@ -3292,12 +3292,6 @@ ember-browserify@1.2.2:
     through2 "^2.0.0"
     walk-sync "^0.2.7"
 
-ember-cli-active-link-wrapper@0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/ember-cli-active-link-wrapper/-/ember-cli-active-link-wrapper-0.3.2.tgz#43582f6b1c157ab9f0a5a5f66348e5a3b65de1dc"
-  dependencies:
-    ember-cli-babel "^5.1.5"
-
 ember-cli-app-version@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/ember-cli-app-version/-/ember-cli-app-version-3.2.0.tgz#7b9ad0e1b63ae0518648356ee24c703e922bc26e"
@@ -3341,7 +3335,7 @@ ember-cli-babel@6.12.0, ember-cli-babel@^6.0.0, ember-cli-babel@^6.0.0-beta.10, 
     ember-cli-version-checker "^2.1.0"
     semver "^5.4.1"
 
-ember-cli-babel@^5.1.5, ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7, ember-cli-babel@^5.2.4:
+ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7, ember-cli-babel@^5.2.4:
   version "5.2.8"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-5.2.8.tgz#0356b03cc3fdff5d0f2ecaa46a0e1cfaebffd876"
   dependencies:
