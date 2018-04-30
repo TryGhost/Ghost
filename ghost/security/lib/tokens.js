@@ -1,5 +1,3 @@
-'use strict';
-
 const crypto = require('crypto');
 
 module.exports.generateHash = function generateHash(options) {
