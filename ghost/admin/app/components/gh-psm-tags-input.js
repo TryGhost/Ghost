@@ -10,14 +10,21 @@ export default Component.extend({
     post: null,
     tagName: '',
 
-    // live-query of all tags for tag input autocomplete
-    availableTags: computed(function () {
-        return this.get('store').filter('tag', {limit: 'all'}, () => true);
-    }),
+    // internal attrs
+    availableTags: null,
 
     availableTagNames: computed('availableTags.@each.name', function () {
         return this.get('availableTags').map(tag => tag.get('name').toLowerCase());
     }),
+
+    init() {
+        this._super(...arguments);
+        // perform a background query to fetch all users and set `availableTags`
+        // to a live-query that will be immediately populated with what's in the
+        // store and be updated when the above query returns
+        this.store.query('tag', {limit: 'all'});
+        this.set('availableTags', this.store.peekAll('tag'));
+    },
 
     actions: {
         matchTags(tagName, term) {

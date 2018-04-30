@@ -1,5 +1,6 @@
 import Controller, {inject as controller} from '@ember/controller';
 import {alias, equal, sort} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
 
 export default Controller.extend({
@@ -12,8 +13,12 @@ export default Controller.extend({
     tagListFocused: equal('keyboardFocus', 'tagList'),
     tagContentFocused: equal('keyboardFocus', 'tagContent'),
 
+    filteredTags: computed('tags.@each.isNew', function () {
+        return this.get('tags').filterBy('isNew', false);
+    }),
+
     // TODO: replace with ordering by page count once supported by the API
-    sortedTags: sort('tags', function (a, b) {
+    sortedTags: sort('filteredTags', function (a, b) {
         let idA = +a.get('id');
         let idB = +b.get('id');
 

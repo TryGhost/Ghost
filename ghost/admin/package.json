@@ -69,7 +69,6 @@
     "ember-composable-helpers": "2.1.0",
     "ember-concurrency": "0.8.17",
     "ember-data": "3.1.1",
-    "ember-data-filter": "1.13.0",
     "ember-drag-drop": "0.4.7",
     "ember-element-resize-detector": "0.1.5",
     "ember-export-application-global": "2.0.0",
