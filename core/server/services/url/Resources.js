@@ -1,5 +1,3 @@
-'use strict';
-
 const debug = require('ghost-ignition').debug('services:url:resources'),
     Promise = require('bluebird'),
     _ = require('lodash'),

@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = {
     activate() {
         // needed by ghost

@@ -1,5 +1,3 @@
-'use strict';
-
 const debug = require('ghost-ignition').debug('services:url:queue'),
     EventEmitter = require('events').EventEmitter,
     _ = require('lodash'),

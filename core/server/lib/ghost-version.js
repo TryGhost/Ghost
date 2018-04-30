@@ -1,5 +1,3 @@
-'use strict';
-
 const semver = require('semver'),
     packageInfo = require('../../../package.json'),
     version = packageInfo.version,

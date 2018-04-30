@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash'),
     Promise = require('bluebird'),
     common = require('../../lib/common/index');
