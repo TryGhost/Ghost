@@ -4191,9 +4191,9 @@ ember-source@3.1.1:
     jquery "^3.3.1"
     resolve "^1.5.0"
 
-ember-sticky-element@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ember-sticky-element/-/ember-sticky-element-0.2.0.tgz#0f85b29e3d31313b05094cca6fe0ab152caab668"
+ember-sticky-element@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ember-sticky-element/-/ember-sticky-element-0.2.1.tgz#ba120f4c81df27c66aa556605c84f19d561f293f"
   dependencies:
     ember-cli-babel "^6.8.2"
     ember-cli-htmlbars "^2.0.1"

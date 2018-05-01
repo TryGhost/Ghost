@@ -23,6 +23,7 @@ export default Component.extend({
     // Internal attributes
     droppedFiles: null,
     headerClass: '',
+    headerHeight: 0,
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
     isDraggedOver: false,
@@ -106,6 +107,20 @@ export default Component.extend({
             this.set('headerClass', smallHeaderClass);
             return;
         }
+
+        // grab height of header so that we can pass it as an offset to other
+        // editor components
+        run.scheduleOnce('afterRender', this, function () {
+            if (this.headerClass) {
+                let headerElement = this.element.querySelector(`.${this.headerClass}`);
+                if (headerElement) {
+                    let height = headerElement.offsetHeight;
+                    return this.set('headerHeight', height);
+                }
+            }
+
+            this.set('headerHeight', 0);
+        });
 
         if ($editorTitle.length > 0) {
             let boundingRect = $editorTitle[0].getBoundingClientRect();

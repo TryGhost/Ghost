@@ -16,6 +16,7 @@ export default Component.extend({
     payload: null,
     isSelected: false,
     isEditing: false,
+    headerOffset: 0,
 
     // internal attrs
     bottomOffset: 0,
