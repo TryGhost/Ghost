@@ -3341,7 +3341,7 @@ ember-cli-babel@6.12.0, ember-cli-babel@^6.0.0, ember-cli-babel@^6.0.0-beta.10, 
     ember-cli-version-checker "^2.1.0"
     semver "^5.4.1"
 
-ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7, ember-cli-babel@^5.2.4:
+ember-cli-babel@^5.1.6, ember-cli-babel@^5.1.7:
   version "5.2.8"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-5.2.8.tgz#0356b03cc3fdff5d0f2ecaa46a0e1cfaebffd876"
   dependencies:
@@ -3829,11 +3829,11 @@ ember-data@3.1.1:
     semver "^5.1.0"
     silent-error "^1.0.0"
 
-ember-drag-drop@0.4.7:
-  version "0.4.7"
-  resolved "https://registry.yarnpkg.com/ember-drag-drop/-/ember-drag-drop-0.4.7.tgz#e4d78c8fcde5c54e327c88d6b6508eb99f6b2e26"
+ember-drag-drop@0.4.8:
+  version "0.4.8"
+  resolved "https://registry.yarnpkg.com/ember-drag-drop/-/ember-drag-drop-0.4.8.tgz#59d0d89c30068abd3edcdec47f84edd26fa8ef02"
   dependencies:
-    ember-cli-babel "^5.2.4"
+    ember-cli-babel "^6.6.0"
 
 ember-element-resize-detector@0.1.5:
   version "0.1.5"
