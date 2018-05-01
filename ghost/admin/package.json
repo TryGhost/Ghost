@@ -88,7 +88,7 @@
     "ember-simple-auth": "1.6.0",
     "ember-sinon": "2.1.0",
     "ember-source": "3.1.1",
-    "ember-sticky-element": "^0.2.0",
+    "ember-sticky-element": "0.2.1",
     "ember-svg-jar": "1.1.1",
     "ember-test-selectors": "1.0.0",
     "ember-truth-helpers": "2.0.0",

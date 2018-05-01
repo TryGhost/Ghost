@@ -89,6 +89,7 @@ export default Component.extend({
     spellcheck: true,
     options: null,
     scrollContainer: '',
+    headerOffset: 0,
 
     // internal properties
     editor: null,

@@ -1,4 +1,8 @@
-{{#if icon}}{{svg-jar icon class=iconClass}}{{/if}}
+{{#if icon}}
+    {{#sticky-element top=iconTop bottom=36}}
+        {{svg-jar icon class=iconClass}}
+    {{/sticky-element}}
+{{/if}}
 
 {{yield}}
 

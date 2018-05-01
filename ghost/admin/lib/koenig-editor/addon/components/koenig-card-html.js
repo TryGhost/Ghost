@@ -12,6 +12,7 @@ export default Component.extend({
     payload: null,
     isSelected: false,
     isEditing: false,
+    headerOffset: 0,
 
     // closure actions
     editCard() {},

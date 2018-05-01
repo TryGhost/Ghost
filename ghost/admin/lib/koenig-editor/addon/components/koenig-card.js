@@ -18,6 +18,7 @@ export default Component.extend({
     isSelected: false,
     isEditing: false,
     hasEditMode: true,
+    headerOffset: 0,
 
     // properties
     showToolbar: false,
@@ -57,6 +58,10 @@ export default Component.extend({
         }
 
         return htmlSafe(styles.join('; '));
+    }),
+
+    iconTop: computed('headerOffset', function () {
+        return this.headerOffset + 24;
     }),
 
     didReceiveAttrs() {
