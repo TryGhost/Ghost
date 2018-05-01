@@ -3,11 +3,11 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     moment = require('moment'),
     user = testUtils.DataGenerator.forModel.users[0],
-    userForKnex = testUtils.DataGenerator.forKnex.users[0],
     models = require('../../../../../core/server/models'),
     constants = require('../../../../../core/server/lib/constants'),
     config = require('../../../../../core/server/config'),
     security = require('../../../../../core/server/lib/security'),
+    settingsCache = require('../../../../../core/server/services/settings/cache'),
     ghost = testUtils.startGhost,
     request;
 
@@ -217,14 +217,13 @@ describe('Authentication API', function () {
     });
 
     it('reset password', function (done) {
-        models.Settings
-            .findOne({key: 'db_hash'})
-            .then(function (response) {
+        models.User.getOwnerUser(testUtils.context.internal)
+            .then(function (ownerUser) {
                 var token = security.tokens.resetToken.generateHash({
                     expires: Date.now() + (1000 * 60),
                     email: user.email,
-                    dbHash: response.attributes.value,
-                    password: userForKnex.password
+                    dbHash: settingsCache.get('db_hash'),
+                    password: ownerUser.get('password')
                 });
 
                 request.put(testUtils.API.getApiQuery('authentication/passwordreset'))

@@ -1,5 +1,3 @@
-'use strict';
-
 var should = require('should'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),

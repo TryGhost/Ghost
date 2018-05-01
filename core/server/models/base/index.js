@@ -1,5 +1,3 @@
-'use strict';
-
 // # Base Model
 // This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
 // several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.
@@ -62,6 +60,11 @@ ghostBookshelf.plugin('bookshelf-relations', {
                         where: {}
                     }
                 };
+
+                // CASE: disable after hook for specific relations
+                if (['permissions_roles'].indexOf(existing.relatedData.joinTableName) !== -1) {
+                    return Promise.resolve();
+                }
 
                 return Promise.each(targets.models, function (target, index) {
                     queryOptions.query.where[existing.relatedData.otherKey] = target.id;

@@ -1,5 +1,3 @@
-'use strict';
-
 const Promise = require('bluebird'),
     ghostBookshelf = require('./base'),
     common = require('../lib/common');

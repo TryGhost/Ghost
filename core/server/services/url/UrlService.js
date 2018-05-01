@@ -1,5 +1,3 @@
-'use strict';
-
 const _debug = require('ghost-ignition').debug._base,
     debug = _debug('ghost:services:url:service'),
     _ = require('lodash'),
@@ -117,7 +115,7 @@ class UrlService {
     /**
      * Get url by resource id.
      */
-    getUrl(id) {
+    getUrlByResourceId(id) {
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {

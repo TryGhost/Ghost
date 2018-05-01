@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'),
     sinon = require('sinon'),
     models = require('../../../server/models'),

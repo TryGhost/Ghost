@@ -1,11 +1,9 @@
-'use strict';
-
 const should = require('should'), // jshint ignore:line
     sinon = require('sinon'),
-    testUtils = require('../utils/index'),
-    configUtils = require('../utils/configUtils'),
-    siteApp = require('../../server/web/site/app'),
-    models = require('../../server/models'),
+    testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
+    siteApp = require('../../../server/web/site/app'),
+    models = require('../../../server/models'),
     sandbox = sinon.sandbox.create();
 
 describe('Integration - Web - Site', function () {

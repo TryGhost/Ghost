@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs-extra'),
     path = require('path'),
     debug = require('ghost-ignition').debug('services:settings:settings-loader'),

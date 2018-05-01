@@ -1,5 +1,3 @@
-'use strict';
-
 // # Post Model
 var _ = require('lodash'),
     uuid = require('uuid'),
@@ -375,7 +373,7 @@ Post = ghostBookshelf.Model.extend({
      *     - `author_id`: /:author/:slug, /:primary_author/:slug
      *   - @TODO: with channels, we no longer need these
      *     - because the url service pre-generates urls based on the resources
-     *     - you can ask `urlService.getUrl(post.id)`
+     *     - you can ask `urlService.getUrlByResourceId(post.id)`
      *   - @TODO: there is currently a bug in here
      *     - you request `fields=title,url`
      *     - you don't use `include=tags`

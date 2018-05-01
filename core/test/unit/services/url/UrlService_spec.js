@@ -1,5 +1,3 @@
-'use strict';
-
 // jshint unused: false
 const _ = require('lodash');
 const Promise = require('bluebird');
@@ -167,43 +165,43 @@ describe('Unit: services/url/UrlService', function () {
                 }
             });
 
-            let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
+            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
             url.should.eql('/html-ipsum/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
             url.should.eql('/ghostly-kitchen-sink/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
             should.not.exist(url);
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
             url.should.eql('/tag/kitchen-sink/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
             url.should.eql('/tag/bacon/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
             url.should.eql('/tag/chorizo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
             url.should.eql('/tag/pollo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
             url.should.eql('/tag/injection/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/author/joe-bloggs/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
             url.should.eql('/author/smith-wellingsworth/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
             url.should.eql('/author/jimothy-bogendath/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/author/slimer-mcectoplasm/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/author/contributor/');
         });
 
@@ -220,7 +218,7 @@ describe('Unit: services/url/UrlService', function () {
                 return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
                         // There is no collection which owns featured posts.
-                        let url = urlService.getUrl(post.id);
+                        let url = urlService.getUrlByResourceId(post.id);
                         should.not.exist(url);
 
                         urlService.urlGenerators.forEach(function (generator) {
@@ -238,7 +236,7 @@ describe('Unit: services/url/UrlService', function () {
             it('page: false => page:true', function () {
                 return models.Post.edit({page: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
-                        let url = urlService.getUrl(post.id);
+                        let url = urlService.getUrlByResourceId(post.id);
 
                         url.should.eql('/ghostly-kitchen-sink/');
 
@@ -257,7 +255,7 @@ describe('Unit: services/url/UrlService', function () {
             it('page: true => page:false', function () {
                 return models.Post.edit({page: false}, {id: testUtils.DataGenerator.forKnex.posts[5].id})
                     .then(function (post) {
-                        let url = urlService.getUrl(post.id);
+                        let url = urlService.getUrlByResourceId(post.id);
 
                         url.should.eql('/static-page-test/');
 
@@ -283,7 +281,7 @@ describe('Unit: services/url/UrlService', function () {
                     title: 'Brand New Story!',
                     author_id: testUtils.DataGenerator.forKnex.users[4].id
                 }).then(function (post) {
-                    let url = urlService.getUrl(post.id);
+                    let url = urlService.getUrlByResourceId(post.id);
                     url.should.eql('/brand-new-story/');
 
                     let resource = urlService.getResource(url);
@@ -299,7 +297,7 @@ describe('Unit: services/url/UrlService', function () {
                     title: 'Brand New Story!',
                     author_id: testUtils.DataGenerator.forKnex.users[4].id
                 }).then(function (post) {
-                    let url = urlService.getUrl(post.id);
+                    let url = urlService.getUrlByResourceId(post.id);
                     should.not.exist(url);
 
                     let resource = urlService.getResource(url);
@@ -461,44 +459,44 @@ describe('Unit: services/url/UrlService', function () {
                 }
             });
 
-            let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
+            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
             url.should.eql('/collection/2015/html-ipsum/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
             url.should.eql('/collection/2015/ghostly-kitchen-sink/');
 
             // featured
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
             url.should.eql('/podcast/short-and-sweet/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
             url.should.eql('/category/kitchen-sink/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
             url.should.eql('/category/bacon/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
             url.should.eql('/category/chorizo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
             url.should.eql('/category/pollo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
             url.should.eql('/category/injection/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/persons/joe-bloggs/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
             url.should.eql('/persons/smith-wellingsworth/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
             url.should.eql('/persons/jimothy-bogendath/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/persons/slimer-mcectoplasm/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/persons/contributor/');
         });
 
@@ -507,7 +505,7 @@ describe('Unit: services/url/UrlService', function () {
                 return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
                         // There is no collection which owns featured posts.
-                        let url = urlService.getUrl(post.id);
+                        let url = urlService.getUrlByResourceId(post.id);
                         url.should.eql('/podcast/ghostly-kitchen-sink/');
 
                         urlService.urlGenerators.forEach(function (generator) {
@@ -526,7 +524,7 @@ describe('Unit: services/url/UrlService', function () {
                 return models.Post.edit({featured: false}, {id: testUtils.DataGenerator.forKnex.posts[2].id})
                     .then(function (post) {
                         // There is no collection which owns featured posts.
-                        let url = urlService.getUrl(post.id);
+                        let url = urlService.getUrlByResourceId(post.id);
                         url.should.eql('/collection/2015/short-and-sweet/');
 
                         urlService.urlGenerators.forEach(function (generator) {
@@ -698,44 +696,44 @@ describe('Unit: services/url/UrlService', function () {
                 }
             });
 
-            let url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[0].id);
+            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
             url.should.eql('/blog/collection/2015/html-ipsum/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
             url.should.eql('/blog/collection/2015/ghostly-kitchen-sink/');
 
             // featured
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.posts[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
             url.should.eql('/blog/podcast/short-and-sweet/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
             url.should.eql('/blog/category/kitchen-sink/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
             url.should.eql('/blog/category/bacon/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
             url.should.eql('/blog/category/chorizo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
             url.should.eql('/blog/category/pollo/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.tags[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
             url.should.eql('/blog/category/injection/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[0].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/blog/persons/joe-bloggs/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[1].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
             url.should.eql('/blog/persons/smith-wellingsworth/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[2].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
             url.should.eql('/blog/persons/jimothy-bogendath/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[3].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/blog/persons/slimer-mcectoplasm/');
 
-            url = urlService.getUrl(testUtils.DataGenerator.forKnex.users[4].id);
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/blog/persons/contributor/');
         });
     });
