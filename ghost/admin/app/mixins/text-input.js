@@ -61,10 +61,12 @@ export default Mixin.create({
     },
 
     keyUp(event) {
-        let methodName = this._getMethodFromKeyCode(event.keyCode);
-        let method = this.get(`keyEvents.${methodName}`);
-        if (method) {
-            method(event.target.value);
+        if (event.keyCode) {
+            let methodName = this._getMethodFromKeyCode(event.keyCode);
+            let method = this.get(`keyEvents.${methodName}`);
+            if (method) {
+                method(event.target.value);
+            }
         }
     },
 
