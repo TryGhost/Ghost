@@ -45,9 +45,9 @@ export default Component.extend({
     }),
 
     toolbarStyle: computed('showToolbar', 'toolbarWidth', 'toolbarHeight', function () {
-        let showToolbar = this.get('showToolbar');
-        let width = this.get('toolbarWidth');
-        let height = this.get('toolbarHeight');
+        let showToolbar = this.showToolbar;
+        let width = this.toolbarWidth;
+        let height = this.toolbarHeight;
         let styles = [];
 
         styles.push(`top: -${height}px`);
@@ -67,9 +67,9 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
-        let isSelected = this.get('isSelected');
-        let isEditing = this.get('isEditing');
-        let hasEditMode = this.get('hasEditMode');
+        let isSelected = this.isSelected;
+        let isEditing = this.isEditing;
+        let hasEditMode = this.hasEditMode;
 
         if (isSelected !== this._lastIsSelected) {
             if (isSelected) {
@@ -105,9 +105,9 @@ export default Component.extend({
     },
 
     mouseDown(event) {
-        let isSelected = this.get('isSelected');
-        let isEditing = this.get('isEditing');
-        let hasEditMode = this.get('hasEditMode');
+        let isSelected = this.isSelected;
+        let isEditing = this.isEditing;
+        let hasEditMode = this.hasEditMode;
 
         // if we perform an action we want to prevent the mousedown from
         // triggering a cursor position change which can result in multiple
@@ -134,7 +134,7 @@ export default Component.extend({
     },
 
     doubleClick() {
-        if (this.get('hasEditMode') && !this.get('isEditing')) {
+        if (this.hasEditMode && !this.isEditing) {
             this.editCard();
             this.set('showToolbar', true);
         }
@@ -163,7 +163,7 @@ export default Component.extend({
     },
 
     _setToolbarProperties() {
-        if (this.get('toolbar')) {
+        if (this.toolbar) {
             let toolbar = this.element.querySelector('[data-toolbar="true"]');
             let {width, height} = toolbar.getBoundingClientRect();
 
@@ -176,10 +176,10 @@ export default Component.extend({
 
     _showToolbar() {
         // only show a toolbar if we have one
-        if (this.get('toolbar')) {
+        if (this.toolbar) {
             this._setToolbarProperties();
 
-            if (!this.get('showToolbar') && !this._onMousemoveHandler) {
+            if (!this.showToolbar && !this._onMousemoveHandler) {
                 this._onMousemoveHandler = run.bind(this, this._handleMousemove);
                 window.addEventListener('mousemove', this._onMousemoveHandler);
             }
@@ -192,7 +192,7 @@ export default Component.extend({
     },
 
     _handleKeydown(event) {
-        if (event.code === 'Escape' && this.get('isEditing')) {
+        if (event.code === 'Escape' && this.isEditing) {
             // run the select card routine with isEditing=false to exit edit mode
             this.selectCard(false);
             event.preventDefault();
@@ -200,7 +200,7 @@ export default Component.extend({
     },
 
     _handleMousemove() {
-        if (!this.get('showToolbar')) {
+        if (!this.showToolbar) {
             this.set('showToolbar', true);
             this._removeMousemoveHandler();
         }

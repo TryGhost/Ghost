@@ -62,12 +62,12 @@ export default Component.extend({
     replaceWithCardSection() {},
 
     style: computed('top', function () {
-        return htmlSafe(`top: ${this.get('top')}px`);
+        return htmlSafe(`top: ${this.top}px`);
     }),
 
     init() {
         this._super(...arguments);
-        let editor = this.get('editor');
+        let editor = this.editor;
 
         // register `/` text input for positioning & showing the menu
         editor.onTextInput({
@@ -79,7 +79,7 @@ export default Component.extend({
 
     didReceiveAttrs() {
         this._super(...arguments);
-        let editorRange = this.get('editorRange');
+        let editorRange = this.editorRange;
 
         // re-position the menu and update the query if necessary when the
         // cursor position changes
@@ -111,7 +111,7 @@ export default Component.extend({
         // update menu position to match cursor position
         this._positionMenu(editorRange);
 
-        if (this.get('showMenu') && editorRange) {
+        if (this.showMenu && editorRange) {
             let {head: {section}} = editorRange;
 
             // close the menu if we're on a non-slash section (eg, when / is deleted)
@@ -155,11 +155,11 @@ export default Component.extend({
     },
 
     _showMenu() {
-        let editorRange = this.get('editorRange');
+        let editorRange = this.editorRange;
         let {head: {section}} = editorRange;
 
         // only show the menu if the slash is on an otherwise empty paragraph
-        if (!this.get('showMenu') && editorRange.isCollapsed && section && !section.isListItem && section.text === '/') {
+        if (!this.showMenu && editorRange.isCollapsed && section && !section.isListItem && section.text === '/') {
             this.set('showMenu', true);
 
             // ensure all items are shown before we have a query filter
@@ -167,7 +167,7 @@ export default Component.extend({
 
             // store a ref to the range when the menu was triggered so that we
             // can query text after the slash
-            this._openRange = this.get('editorRange');
+            this._openRange = this.editorRange;
 
             // set up key handlers for selection & closing
             this._registerKeyboardNavHandlers();
@@ -184,7 +184,7 @@ export default Component.extend({
     },
 
     _hideMenu() {
-        if (this.get('showMenu')) {
+        if (this.showMenu) {
             this.set('showMenu', false);
             this._unregisterKeyboardNavHandlers();
             window.removeEventListener('mousedown', this._onWindowMousedownHandler);
@@ -223,7 +223,7 @@ export default Component.extend({
     _registerKeyboardNavHandlers() {
         // ESC = close menu
         // ARROWS = selection
-        let editor = this.get('editor');
+        let editor = this.editor;
 
         editor.registerKeyCommand({
             str: 'ESC',
@@ -271,7 +271,7 @@ export default Component.extend({
     },
 
     _getSelectedItem() {
-        let items = this.get('items');
+        let items = this.items;
 
         if (items.length <= 0) {
             return;
@@ -281,7 +281,7 @@ export default Component.extend({
     },
 
     _moveSelection(direction) {
-        let items = this.get('items');
+        let items = this.items;
         let selectedItem = this._getSelectedItem();
         let selectedIndex = items.indexOf(selectedItem);
         let lastIndex = items.length - 1;
@@ -318,7 +318,7 @@ export default Component.extend({
     },
 
     _unregisterKeyboardNavHandlers() {
-        let editor = this.get('editor');
+        let editor = this.editor;
         editor.unregisterKeyCommands('slash-menu');
     }
 });

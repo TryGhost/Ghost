@@ -118,9 +118,9 @@ export default Component.extend({
     // merge in named options with the `options` property data-bag
     // TODO: what is the `options` property data-bag and when/where does it get set?
     editorOptions: computed(function () {
-        let options = this.get('options') || {};
-        let atoms = this.get('atoms') || [];
-        let cards = this.get('cards') || [];
+        let options = this.options || {};
+        let atoms = this.atoms || [];
+        let cards = this.cards || [];
 
         // add our default atoms and cards, we want the defaults to be first so
         // that they can be overridden by any passed-in atoms or cards.
@@ -129,9 +129,9 @@ export default Component.extend({
         cards = Array.concat(defaultCards, cards);
 
         return assign({
-            placeholder: this.get('placeholder'),
-            spellcheck: this.get('spellcheck'),
-            autofocus: this.get('autofocus'),
+            placeholder: this.placeholder,
+            spellcheck: this.spellcheck,
+            autofocus: this.autofocus,
             atoms,
             cards
         }, options);
@@ -143,7 +143,7 @@ export default Component.extend({
         this._super(...arguments);
 
         // set a blank mobiledoc if we didn't receive anything
-        let mobiledoc = this.get('mobiledoc');
+        let mobiledoc = this.mobiledoc;
         if (!mobiledoc) {
             mobiledoc = BLANK_DOC;
             this.set('mobiledoc', mobiledoc);
@@ -158,12 +158,12 @@ export default Component.extend({
 
     willRender() {
         // use a default mobiledoc. If there are no changes then return early
-        let mobiledoc = this.get('mobiledoc') || BLANK_DOC;
+        let mobiledoc = this.mobiledoc || BLANK_DOC;
         let mobiledocIsSame =
             (this._localMobiledoc && this._localMobiledoc === mobiledoc) ||
             (this._upstreamMobiledoc && this._upstreamMobiledoc === mobiledoc);
         let isEditingDisabledIsSame =
-            this._lastIsEditingDisabled === this.get('isEditingDisabled');
+            this._lastIsEditingDisabled === this.isEditingDisabled;
 
         // no change to mobiledoc, no need to recreate the editor
         if (mobiledocIsSame && isEditingDisabledIsSame) {
@@ -171,7 +171,7 @@ export default Component.extend({
         }
 
         // update our internal references
-        this._lastIsEditingDisabled = this.get('isEditingDisabled');
+        this._lastIsEditingDisabled = this.isEditingDisabled;
         this._upstreamMobiledoc = mobiledoc;
         this._localMobiledoc = null;
 
@@ -179,13 +179,13 @@ export default Component.extend({
         this.willCreateEditor();
 
         // teardown any old editor that might be around
-        let editor = this.get('editor');
+        let editor = this.editor;
         if (editor) {
             editor.destroy();
         }
 
         // create a new editor
-        let editorOptions = this.get('editorOptions');
+        let editorOptions = this.editorOptions;
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
@@ -226,7 +226,7 @@ export default Component.extend({
 
                 // after render we render the full ember card via {{-in-element}}
                 run.schedule('afterRender', () => {
-                    this.get('componentCards').pushObject(card);
+                    this.componentCards.pushObject(card);
                 });
 
                 // render the destination element inside the editor
@@ -234,7 +234,7 @@ export default Component.extend({
             },
             // triggered when a card section is removed from the mobiledoc
             [REMOVE_CARD_HOOK]: (card) => {
-                this.get('componentCards').removeObject(card);
+                this.componentCards.removeObject(card);
             }
         };
         editorOptions.cardOptions = componentHooks;
@@ -327,7 +327,7 @@ export default Component.extend({
             });
         });
 
-        if (this.get('isEditingDisabled')) {
+        if (this.isEditingDisabled) {
             editor.disableEditing();
         }
 
@@ -347,7 +347,7 @@ export default Component.extend({
     // editor itself if necessary
     didRender() {
         this._super(...arguments);
-        let editor = this.get('editor');
+        let editor = this.editor;
         if (!editor.hasRendered) {
             let editorElement = this.element.querySelector('.koenig-editor__editor');
             this._isRenderingEditor = true;
@@ -357,7 +357,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
-        let editor = this.get('editor');
+        let editor = this.editor;
         let editorElement = this.element.querySelector('.koenig-editor__editor');
 
         editorElement.removeEventListener('paste', this._pasteHandler);
@@ -367,17 +367,17 @@ export default Component.extend({
 
     actions: {
         toggleMarkup(markupTagName) {
-            let editor = this.get('editor');
+            let editor = this.editor;
             editor.toggleMarkup(markupTagName);
         },
 
         toggleSection(sectionTagName) {
-            let editor = this.get('editor');
+            let editor = this.editor;
             editor.toggleSection(sectionTagName);
         },
 
         replaceWithCardSection(cardName, range) {
-            let editor = this.get('editor');
+            let editor = this.editor;
             let {head: {section}} = range;
 
             editor.run((postEditor) => {
@@ -403,10 +403,10 @@ export default Component.extend({
             // select. Needs to be scheduled afterRender so that the new card
             // is actually present
             run.schedule('afterRender', this, function () {
-                let card = this.get('componentCards.lastObject');
-                if (card.get('koenigOptions.hasEditMode')) {
+                let card = this.componentCards.lastObject;
+                if (card.koenigOptions.hasEditMode) {
                     this.editCard(card);
-                } else if (card.get('koenigOptions.selectAfterInsert')) {
+                } else if (card.koenigOptions.selectAfterInsert) {
                     this.selectCard(card);
                 }
             });
@@ -464,7 +464,7 @@ export default Component.extend({
         },
 
         addParagraphAfterCard(card) {
-            let editor = this.get('editor');
+            let editor = this.editor;
             let section = this._getSectionFromCard(card);
             let collection = section.parent.sections;
             let nextSection = section.next;
@@ -489,7 +489,7 @@ export default Component.extend({
     /* public methods ------------------------------------------------------- */
 
     postDidChange(editor) {
-        let serializeVersion = this.get('serializeVersion');
+        let serializeVersion = this.serializeVersion;
         let updatedMobiledoc = editor.serialize(serializeVersion);
         this._localMobiledoc = updatedMobiledoc;
 
@@ -780,7 +780,7 @@ export default Component.extend({
 
     // if a URL is pasted and we have a selection, make that selection a link
     handlePaste(event) {
-        let editor = this.get('editor');
+        let editor = this.editor;
         let range = editor.range;
 
         // only attempt link if we have a text selection in a single section
@@ -860,7 +860,7 @@ export default Component.extend({
         }
 
         let cardId = section.renderNode.element.querySelector('.__mobiledoc-card').firstChild.id;
-        let cards = this.get('componentCards');
+        let cards = this.componentCards;
 
         return cards.findBy('destinationElementId', cardId);
     },

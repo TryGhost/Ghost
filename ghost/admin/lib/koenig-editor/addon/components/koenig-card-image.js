@@ -29,7 +29,7 @@ export default Component.extend({
     addParagraphAfterCard() {},
 
     kgImgStyle: computed('payload.imageStyle', function () {
-        let imageStyle = this.get('payload.imageStyle');
+        let imageStyle = this.payload.imageStyle;
 
         if (imageStyle === 'wide') {
             return 'image-wide';
@@ -43,7 +43,7 @@ export default Component.extend({
     }),
 
     toolbar: computed('payload.{imageStyle,src}', function () {
-        let imageStyle = this.get('payload.imageStyle');
+        let imageStyle = this.payload.imageStyle;
         let items = [];
 
         items.push({
@@ -67,7 +67,7 @@ export default Component.extend({
             action: run.bind(this, this._changeImageStyle, 'full')
         });
 
-        if (this.get('payload.src')) {
+        if (this.payload.src) {
             items.push({divider: true});
 
             items.push({
@@ -80,6 +80,14 @@ export default Component.extend({
 
         return {items};
     }),
+
+    init() {
+        this._super(...arguments);
+
+        if (!this.payload) {
+            this.set('payload', {});
+        }
+    },
 
     willDestroyElement() {
         this._super(...arguments);
@@ -138,8 +146,8 @@ export default Component.extend({
     },
 
     _updatePayloadAttr(attr, value) {
-        let payload = this.get('payload');
-        let save = this.get('saveCard');
+        let payload = this.payload;
+        let save = this.saveCard;
 
         set(payload, attr, value);
 

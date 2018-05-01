@@ -71,14 +71,14 @@ export default Component.extend({
 
         // record the range now because the property is bound and will update
         // as we make changes whilst calculating the link position
-        this._selectedRange = this.get('selectedRange');
-        this._linkRange = this.get('linkRange');
+        this._selectedRange = this.selectedRange;
+        this._linkRange = this.linkRange;
 
         // grab a window range so that we can use getBoundingClientRect. Using
         // document.createRange is more efficient than doing editor.setRange
         // because it doesn't trigger all of the selection changing side-effects
         // TODO: extract MobiledocRange->NativeRange into a util
-        let editor = this.get('editor');
+        let editor = this.editor;
         let cursor = editor.cursor;
         let {head, tail} = this._linkRange;
         let {node: headNode, offset: headOffset} = cursor._findNodeForPosition(head);
@@ -120,11 +120,11 @@ export default Component.extend({
                 // prevent Enter from triggering in the editor and removing text
                 event.preventDefault();
 
-                let href = this.get('href');
+                let href = this.href;
 
                 // create a single editor runloop here so that we don't get
                 // separate remove and replace ops pushed onto the undo stack
-                this.get('editor').run((postEditor) => {
+                this.editor.run((postEditor) => {
                     if (href) {
                         this._replaceLink(href, postEditor);
                     } else {
@@ -161,7 +161,7 @@ export default Component.extend({
     // loop over all markers that are touched by linkRange, removing any 'a'
     // markups on them to clear all links
     _removeLinks(postEditor) {
-        let {headMarker, tailMarker} = this.get('linkRange');
+        let {headMarker, tailMarker} = this.linkRange;
         let curMarker = headMarker;
 
         while (curMarker && curMarker !== tailMarker.next) {
@@ -176,7 +176,7 @@ export default Component.extend({
     _cancelAndReselect() {
         this.cancel();
         if (this._selectedRange) {
-            this.get('editor').selectRange(this._selectedRange);
+            this.editor.selectRange(this._selectedRange);
         }
     },
 
