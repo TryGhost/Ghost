@@ -43,7 +43,7 @@ export default Component.extend({
     layout,
 
     // public attrs
-    classNames: 'koenig-slash-menu',
+    classNames: 'absolute',
     attributeBindings: ['style'],
     editor: null,
     editorRange: null,

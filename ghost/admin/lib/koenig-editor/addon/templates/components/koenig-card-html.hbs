@@ -1,6 +1,6 @@
 {{#koenig-card
     icon="koenig/card-indicator-html"
-    class=(concat (kg-style "container-card") " mih10 miw-100 relative koenig-card-html-rendered")
+    class=(concat (kg-style "container-card") " mih10 miw-100 relative")
     headerOffset=headerOffset
     toolbar=toolbar
     isSelected=isSelected
@@ -17,7 +17,7 @@
             update=(action "updateHtml")
         }}
     {{else}}
-        {{{payload.html}}}
+        <div class="koenig-card-html-rendered">{{{payload.html}}}</div>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 {{/koenig-card}}
