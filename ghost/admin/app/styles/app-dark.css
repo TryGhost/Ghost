@@ -9,7 +9,6 @@
 /* Patterns: Groups of Styles
 /* ---------------------------------------------------------- */
 @import "patterns/global.css";
-@import "patterns/_shame.css";
 @import "patterns/icons.css";
 @import "patterns/forms.css";
 @import "patterns/buttons.css";
@@ -37,7 +36,6 @@
 @import "components/popovers.css";
 @import "components/tour.css";
 @import "components/unsplash.css";
-@import "components/koenig";
 
 
 /* Layouts: Groups of Components

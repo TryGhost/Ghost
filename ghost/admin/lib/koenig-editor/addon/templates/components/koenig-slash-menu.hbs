@@ -1,9 +1,9 @@
 {{#if showMenu}}
-    <div class="koenig-cardmenu">
+    <div class="koenig-cardmenu {{kg-style "cardmenu"}}">
         {{#each items as |item|}}
-            <div class="koenig-cardmenu-card {{if item.selected "selected"}}" {{action "itemClicked" item on="click"}}>
-                <div class="koenig-cardmenu-icon">{{svg-jar item.icon}}</div>
-                <div class="koenig-cardmenu-label">{{item.label}}</div>
+            <div class="koenig-cardmenu-card {{if item.selected "kg-blue-selected"}} {{kg-style "cardmenu-card"}}" {{action "itemClicked" item on="click"}}>
+                <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar item.icon class="w8 h8 stroke-midgrey"}}</div>
+                <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
             </div>
         {{/each}}
     </div>

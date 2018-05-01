@@ -8,7 +8,7 @@ export default Component.extend({
     layout,
 
     // public attrs
-    classNames: 'koenig-plus-menu',
+    classNames: ['koenig-plus-menu', 'absolute'],
     attributeBindings: ['style'],
     editor: null,
     editorRange: null,

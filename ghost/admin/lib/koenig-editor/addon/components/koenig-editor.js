@@ -80,7 +80,7 @@ export default Component.extend({
     layout,
 
     tagName: 'article',
-    classNames: ['koenig-editor'],
+    classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
 
     // public attrs
     mobiledoc: null,

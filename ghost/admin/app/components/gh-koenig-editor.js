@@ -3,7 +3,7 @@ import Component from '@ember/component';
 export default Component.extend({
 
     // public attrs
-    classNames: ['gh-koenig-editor'],
+    classNames: ['gh-koenig-editor', 'relative', 'w-100', 'vh-100', 'overflow-x-hidden', 'overflow-y-auto', 'z-0'],
     title: '',
     titlePlaceholder: '',
     body: null,
