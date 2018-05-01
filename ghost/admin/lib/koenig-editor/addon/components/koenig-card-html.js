@@ -21,7 +21,7 @@ export default Component.extend({
     deleteCard() {},
 
     toolbar: computed('isEditing', function () {
-        if (!this.get('isEditing')) {
+        if (!this.isEditing) {
             return {
                 items: [{
                     buttonClass: 'fw4 flex items-center white',
@@ -29,7 +29,7 @@ export default Component.extend({
                     iconClass: 'stroke-white',
                     title: 'Edit',
                     text: '',
-                    action: run.bind(this, this.get('editCard'))
+                    action: run.bind(this, this.editCard)
                 }]
             };
         }
@@ -37,10 +37,13 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+        let payload = this.payload || {};
 
-        if (!this.get('payload.html')) {
-            this.set('payload.html', '');
+        if (!payload.html) {
+            payload.set('html', '');
         }
+
+        this.set('payload', payload);
     },
 
     actions: {
@@ -49,7 +52,7 @@ export default Component.extend({
         },
 
         leaveEditMode() {
-            if (isBlank(this.get('payload.html'))) {
+            if (isBlank(this.payload.html)) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
                 run.scheduleOnce('afterRender', this, function () {
@@ -60,8 +63,8 @@ export default Component.extend({
     },
 
     _updatePayloadAttr(attr, value) {
-        let payload = this.get('payload');
-        let save = this.get('saveCard');
+        let payload = this.payload;
+        let save = this.saveCard;
 
         set(payload, attr, value);
 

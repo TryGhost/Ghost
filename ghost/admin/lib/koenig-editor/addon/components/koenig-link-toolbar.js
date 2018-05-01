@@ -53,7 +53,7 @@ export default Component.extend({
         });
 
         // ensure hidden toolbar is non-interactive
-        if (this.get('showToolbar')) {
+        if (this.showToolbar) {
             styles.push('pointer-events: auto !important');
             // add margin-bottom so that there's no gap between the link and
             // the toolbar to avoid closing when mouse moves between elements
@@ -77,7 +77,7 @@ export default Component.extend({
 
         // don't show popups if link edit or formatting toolbar is shown
         // TODO: have a service for managing UI state?
-        if (this.get('linkRange') || (this.get('selectedRange') && !this.get('selectedRange').isCollapsed)) {
+        if (this.linkRange || (this.selectedRange && !this.selectedRange.isCollapsed)) {
             this._cancelTimeouts();
             this.set('showToolbar', false);
             this._canShowToolbar = false;
@@ -89,7 +89,7 @@ export default Component.extend({
     didInsertElement() {
         this._super(...arguments);
 
-        let container = this.get('container');
+        let container = this.container;
         this._addEventListener(container, 'mouseover', this._handleMouseover);
         this._addEventListener(container, 'mouseout', this._handleMouseout);
     },
@@ -109,7 +109,7 @@ export default Component.extend({
         },
 
         remove() {
-            let editor = this.get('editor');
+            let editor = this.editor;
             let linkRange = this._getLinkRange();
             let editorRange = editor.range;
             editor.run((postEditor) => {
@@ -127,7 +127,7 @@ export default Component.extend({
             return;
         }
 
-        let editor = this.get('editor');
+        let editor = this.editor;
         let rect = this._target.getBoundingClientRect();
         let x = rect.x + rect.width / 2;
         let y = rect.y + rect.height / 2;
@@ -141,7 +141,7 @@ export default Component.extend({
 
     _handleMouseover(event) {
         if (this._canShowToolbar) {
-            let target = getEventTargetMatchingTag('a', event.target, this.get('container'));
+            let target = getEventTargetMatchingTag('a', event.target, this.container);
             if (target && target.isContentEditable) {
                 this._timeout = run.later(this, function () {
                     this._showToolbar(target);
@@ -153,7 +153,7 @@ export default Component.extend({
     _handleMouseout(event) {
         this._cancelTimeouts();
 
-        if (this.get('showToolbar')) {
+        if (this.showToolbar) {
             let toElement = event.toElement || event.relatedTarget;
             if (toElement && !(toElement === this.element || toElement === this._target || toElement.closest(`#${this.elementId}`))) {
                 this.set('showToolbar', false);

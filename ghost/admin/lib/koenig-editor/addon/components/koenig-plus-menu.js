@@ -30,7 +30,7 @@ export default Component.extend({
     replaceWithCardSection() {},
 
     style: computed('top', function () {
-        return htmlSafe(`top: ${this.get('top')}px`);
+        return htmlSafe(`top: ${this.top}px`);
     }),
 
     init() {
@@ -46,17 +46,17 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
-        let editorRange = this.get('editorRange');
+        let editorRange = this.editorRange;
 
         // show the (+) button when the cursor is on a blank P tag
-        if (!this.get('showMenu') && editorRange !== this._lastEditorRange) {
+        if (!this.showMenu && editorRange !== this._lastEditorRange) {
             this._showOrHideButton(editorRange);
-            this._hasCursorButton = this.get('showButton');
+            this._hasCursorButton = this.showButton;
         }
 
         // re-position again on next runloop, prevents incorrect position after
         // adding a card at the bottom of the doc
-        if (this.get('showButton')) {
+        if (this.showButton) {
             run.next(this, this._positionMenu);
         }
 
@@ -126,7 +126,7 @@ export default Component.extend({
     _positionMenu() {
         // use the cached range if available because `editorRange` may have been
         // lost due to clicks on the open menu
-        let {head: {section}} = this._editorRange || this.get('editorRange');
+        let {head: {section}} = this._editorRange || this.editorRange;
 
         if (section) {
             let containerRect = this.element.parentNode.getBoundingClientRect();
@@ -165,7 +165,7 @@ export default Component.extend({
     },
 
     _hideMenu() {
-        if (this.get('showMenu')) {
+        if (this.showMenu) {
             // reset our cached editorRange
             this._editorRange = null;
 
@@ -200,9 +200,9 @@ export default Component.extend({
 
     // show the (+) button when the mouse is over a blank P tag
     _handleMousemove(event) {
-        if (!this.get('showMenu')) {
+        if (!this.showMenu) {
             let {pageX, pageY} = event;
-            let editor = this.get('editor');
+            let editor = this.editor;
 
             // add a horizontal buffer to the pointer position so that the
             // (+) button doesn't disappear when the mouse hovers over it due
@@ -223,8 +223,8 @@ export default Component.extend({
             // if the button is hidden due to the pointer not being over a blank
             // P but we have a valid cursor position then fall back to the cursor
             // positioning
-            if (!this.get('showButton') && this._hasCursorButton) {
-                this._showOrHideButton(this.get('editorRange'));
+            if (!this.showButton && this._hasCursorButton) {
+                this._showOrHideButton(this.editorRange);
             }
         }
 
@@ -240,14 +240,14 @@ export default Component.extend({
     },
 
     _handleResize() {
-        if (this.get('showButton')) {
+        if (this.showButton) {
             this._throttleResize = run.throttle(this, this._positionMenu, 100);
         }
     },
 
     _moveCaretToCachedEditorRange() {
         this.set('editorRange', this._editorRange);
-        this.get('editor').run((postEditor) => {
+        this.editor.run((postEditor) => {
             postEditor.setRange(this._editorRange);
         });
     }

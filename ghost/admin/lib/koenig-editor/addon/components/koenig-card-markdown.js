@@ -28,11 +28,11 @@ export default Component.extend({
     deleteCard() {},
 
     renderedMarkdown: computed('payload.markdown', function () {
-        return htmlSafe(formatMarkdown(this.get('payload.markdown')));
+        return htmlSafe(formatMarkdown(this.payload.markdown));
     }),
 
     toolbar: computed('isEditing', function () {
-        if (!this.get('isEditing')) {
+        if (!this.isEditing) {
             return {
                 items: [{
                     buttonClass: 'fw4 flex items-center white',
@@ -40,7 +40,7 @@ export default Component.extend({
                     iconClass: 'stroke-white',
                     title: 'Edit',
                     text: '',
-                    action: run.bind(this, this.get('editCard'))
+                    action: run.bind(this, this.editCard)
                 }]
             };
         }
@@ -48,6 +48,11 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+
+        if (!this.payload) {
+            this.set('payload', {});
+        }
+
         // subtract toolbar height from MIN_HEIGHT so the trigger happens at
         // the expected position without forcing the min height to be too small
         this.set('bottomOffset', -MIN_HEIGHT - 49);
@@ -64,7 +69,7 @@ export default Component.extend({
         },
 
         leaveEditMode() {
-            if (isBlank(this.get('payload.markdown'))) {
+            if (isBlank(this.payload.markdown)) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
                 run.scheduleOnce('afterRender', this, function () {
@@ -74,8 +79,8 @@ export default Component.extend({
         },
 
         updateMarkdown(markdown) {
-            let payload = this.get('payload');
-            let save = this.get('saveCard');
+            let payload = this.payload;
+            let save = this.saveCard;
 
             set(payload, 'markdown', markdown);
 

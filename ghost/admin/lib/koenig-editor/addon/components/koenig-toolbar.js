@@ -60,7 +60,7 @@ export default Component.extend({
         });
 
         // ensure hidden toolbar is non-interactive
-        if (this.get('showToolbar')) {
+        if (this.showToolbar) {
             styles.push('pointer-events: auto !important');
         } else {
             styles.push('pointer-events: none !important');
@@ -87,7 +87,7 @@ export default Component.extend({
 
     didReceiveAttrs() {
         this._super(...arguments);
-        let range = this.get('editorRange');
+        let range = this.editorRange;
 
         if (range && !range.isCollapsed) {
             this._hasSelectedRange = true;
@@ -95,7 +95,7 @@ export default Component.extend({
             this._hasSelectedRange = false;
         }
 
-        this.get('_toggleVisibility').perform();
+        this._toggleVisibility.perform();
     },
 
     willDestroyElement() {
@@ -110,7 +110,7 @@ export default Component.extend({
 
     actions: {
         toggleMarkup(markupName) {
-            if (markupName === 'em' && this.get('activeMarkupTagNames.isI')) {
+            if (markupName === 'em' && this.activeMarkupTagNames.isI) {
                 markupName = 'i';
             }
 
@@ -122,7 +122,7 @@ export default Component.extend({
         },
 
         editLink() {
-            this.editLink(this.get('editorRange'));
+            this.editLink(this.editorRange);
         }
     },
 
@@ -137,7 +137,7 @@ export default Component.extend({
         // re-rendering unnecessarily which can cause minor position jumps when
         // styles are toggled because getBoundingClientRect on getSelection
         // changes slightly depending on the style of selected text
-        if (this.get('editorRange') === this._lastRange) {
+        if (this.editorRange === this._lastRange) {
             return;
         }
 
@@ -157,7 +157,7 @@ export default Component.extend({
     },
 
     _handleMousemove() {
-        if (!this.get('showToolbar')) {
+        if (!this.showToolbar) {
             this.set('showToolbar', true);
         }
 
@@ -175,12 +175,12 @@ export default Component.extend({
             // we want to skip the mousemove handler here because we know the
             // selection (if there was one) was via the mouse and we don't want
             // to wait for another mousemove before showing the toolbar
-            this.get('_toggleVisibility').perform(true);
+            this._toggleVisibility.perform(true);
         }
     },
 
     _handleResize() {
-        if (this.get('showToolbar')) {
+        if (this.showToolbar) {
             this._throttleResize = run.throttle(this, this._positionToolbar, 100);
         }
     },
@@ -192,13 +192,13 @@ export default Component.extend({
             this.set('showToolbar', true);
         }
 
-        if (!this.get('showToolbar') && !this._onMousemoveHandler) {
+        if (!this.showToolbar && !this._onMousemoveHandler) {
             this._onMousemoveHandler = run.bind(this, this._handleMousemove);
             window.addEventListener('mousemove', this._onMousemoveHandler);
         }
 
         // track displayed range so that we don't re-position unnecessarily
-        this._lastRange = this.get('editorRange');
+        this._lastRange = this.editorRange;
     },
 
     _hideToolbar() {
