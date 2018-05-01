@@ -9342,7 +9342,7 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#306336f5be3f80cfc616fdc9a0fde4d7b328faa3"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#45bcad0c8bfe8da88d3946013d747ecb14f76b53"
 
 sinon@^4.4.5:
   version "4.5.0"
