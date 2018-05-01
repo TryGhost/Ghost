@@ -23,7 +23,7 @@
     "test": "grunt validate --verbose"
   },
   "engines": {
-    "node": "^4.5.0 || ^6.9.0"
+    "node": "^6.9.0"
   },
   "dependencies": {
     "amperize": "0.3.5",
