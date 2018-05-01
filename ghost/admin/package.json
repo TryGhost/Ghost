@@ -38,7 +38,7 @@
     "codemirror": "5.37.0",
     "coveralls": "3.0.0",
     "csscomb": "4.2.0",
-    "current-device": "0.7.7",
+    "current-device": "0.7.2",
     "deparam": "1.0.5",
     "element-resize-detector": "^1.1.14",
     "ember-ajax": "3.1.0",
