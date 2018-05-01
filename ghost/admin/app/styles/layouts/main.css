@@ -154,6 +154,10 @@
     vertical-align: -1px;
 }
 
+.gh-nav-search-button svg path {
+    stroke: inherit;
+}
+
 .gh-nav-search-button:hover svg {
     fill: var(--darkgrey);
 }
