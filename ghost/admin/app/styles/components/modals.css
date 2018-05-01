@@ -10,7 +10,7 @@
     display: flex;
     justify-content: center;
     visibility: hidden;
-    position: fixed;
+    position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
@@ -21,7 +21,7 @@
 }
 
 .fullscreen-modal-background {
-    position: fixed;
+    position: absolute;
     top: 0;
     right: 0;
     bottom: 0;

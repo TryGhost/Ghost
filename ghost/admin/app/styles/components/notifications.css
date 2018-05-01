@@ -3,7 +3,7 @@
 
 /* Base notification style */
 .gh-notifications {
-    position: fixed;
+    position: absolute;
     bottom: 20px;
     left: 20px;
     z-index: 7000;
