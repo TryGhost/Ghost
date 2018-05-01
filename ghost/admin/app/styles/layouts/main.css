@@ -1,24 +1,15 @@
 /* Global Layout
 /* ---------------------------------------------------------- */
 
-/*
-  Ember's app container. Use `position: fixed`, covering full window area so
-  that scrolling on mobile doesn't trigger elastic scroll
 
-  TODO: Once we have routable components it should be possible to remove this
-  by moving the gh-app component functionality into the application component
-  which would remove the extra div that this targets.
-*/
-body > .ember-view:not(.default-liquid-destination) {
+/* Main viewport, contains main content, and alerts */
+/* Use `position: fixed`, covering full window area so scrolling on mobile doesn't trigger elastic scroll */
+.gh-app {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-}
-
-/* Main viewport, contains main content, and alerts */
-.gh-app {
     display: flex;
     flex-direction: column;
     overflow: hidden;
