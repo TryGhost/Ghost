@@ -198,7 +198,7 @@ export default Component.extend({
 
         // clicks on the menu but not on a button should be ignored so that the
         // cursor position isn't lost
-        } else if (!event.target.closest('.koenig-cardmenu-card')) {
+        } else if (!event.target.closest('[data-kg="cardmenu-card"]')) {
             event.preventDefault();
         }
     },
