@@ -1512,6 +1512,13 @@ broccoli-file-creator@^1.0.0, broccoli-file-creator@^1.1.1:
     broccoli-plugin "^1.1.0"
     mkdirp "^0.5.1"
 
+broccoli-file-creator@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-file-creator/-/broccoli-file-creator-2.1.1.tgz#7351dd2496c762cfce7736ce9b49e3fce0c7b7db"
+  dependencies:
+    broccoli-plugin "^1.1.0"
+    mkdirp "^0.5.1"
+
 broccoli-filter@^0.1.11:
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/broccoli-filter/-/broccoli-filter-0.1.14.tgz#23cae3891ff9ebb7b4d7db00c6dcf03535daf7ad"
@@ -3396,7 +3403,7 @@ ember-cli-chai@0.5.0:
     rollup-plugin-commonjs "^8.0.2"
     rollup-plugin-node-resolve "^3.0.0"
 
-ember-cli-cjs-transform@1.2.0, ember-cli-cjs-transform@^1.1.1:
+ember-cli-cjs-transform@1.2.0, ember-cli-cjs-transform@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/ember-cli-cjs-transform/-/ember-cli-cjs-transform-1.2.0.tgz#34a0d2667673caec0248f500a954f45668027e8b"
   dependencies:
@@ -3455,17 +3462,17 @@ ember-cli-get-component-path-option@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-get-component-path-option/-/ember-cli-get-component-path-option-1.0.0.tgz#0d7b595559e2f9050abed804f1d8eff1b08bc771"
 
-ember-cli-ghost-spirit@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-ghost-spirit/-/ember-cli-ghost-spirit-0.0.1.tgz#14ccefb3ff8f7f5b4a1deb863368a2a63a533c5f"
+ember-cli-ghost-spirit@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-ghost-spirit/-/ember-cli-ghost-spirit-0.0.2.tgz#2b5fd53ef56214e6fbf65a0b2039360978db91f4"
   dependencies:
-    broccoli-file-creator "^1.1.1"
+    broccoli-file-creator "^2.1.1"
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^3.0.0"
     ember-cli-babel "^6.6.0"
-    ember-cli-cjs-transform "^1.1.1"
+    ember-cli-cjs-transform "^1.2.0"
     ember-cli-postcss "3.7.1"
-    ghost-spirit "^0.0.9"
+    ghost-spirit "^0.0.14"
 
 ember-cli-htmlbars-inline-precompile@1.0.2, ember-cli-htmlbars-inline-precompile@^1.0.0:
   version "1.0.2"
@@ -5238,28 +5245,9 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.13.tgz#a80ae272bd5034d6da64f6ed8037346667281332"
-  dependencies:
-    autoprefixer "8.2.0"
-    bluebird "^3.4.6"
-    connect-slashes "^1.3.1"
-    cssnano "^4.0.0-rc.2"
-    express "^4.14.0"
-    express-hbs "^1.0.2"
-    ghost-ignition "^2.7.0"
-    gulp-postcss "7.0.1"
-    lodash "^4.15.0"
-    postcss-color-mod-function "2.4.2"
-    postcss-custom-media "6.0.0"
-    postcss-custom-properties "7.0.0"
-    postcss-easy-import "3.0.0"
-    postcss-prefix-selector "1.6.0"
-
-ghost-spirit@^0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.9.tgz#0281357da1e11b5238b1121b535b52339f979897"
+ghost-spirit@0.0.14, ghost-spirit@^0.0.14:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.14.tgz#d5db6bd9a8eb4bcfb224aeb591240c6c3f5c4a84"
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"
