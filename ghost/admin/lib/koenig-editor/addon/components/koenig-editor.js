@@ -337,7 +337,7 @@ export default Component.extend({
 
     didInsertElement() {
         this._super(...arguments);
-        let editorElement = this.element.querySelector('.koenig-editor__editor');
+        let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
@@ -349,7 +349,7 @@ export default Component.extend({
         this._super(...arguments);
         let editor = this.editor;
         if (!editor.hasRendered) {
-            let editorElement = this.element.querySelector('.koenig-editor__editor');
+            let editorElement = this.element.querySelector('[data-kg="editor"]');
             this._isRenderingEditor = true;
             editor.render(editorElement);
             this._isRenderingEditor = false;
@@ -358,7 +358,7 @@ export default Component.extend({
 
     willDestroyElement() {
         let editor = this.editor;
-        let editorElement = this.element.querySelector('.koenig-editor__editor');
+        let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         editorElement.removeEventListener('paste', this._pasteHandler);
         editor.destroy();
