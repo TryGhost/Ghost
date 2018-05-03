@@ -26,6 +26,8 @@ class Base {
             });
         };
 
+        this.requiredUserReferenceFields = options.requiredUserReferenceFields || ['updated_by', 'created_by'];
+
         this.dataKeyToImport = options.dataKeyToImport;
         this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
 
@@ -191,7 +193,7 @@ class Base {
 
         const handleObject = (obj, key) => {
             if (!obj.hasOwnProperty(key)) {
-                return;
+                obj[key] = ownerUserId;
             }
 
             // CASE: you import null, fallback to owner
@@ -276,12 +278,7 @@ class Base {
 
         // Iterate over all possible user relations
         _.each(this.dataToImport, (obj) => {
-            _.each([
-                'author_id',
-                'published_by',
-                'created_by',
-                'updated_by'
-            ], (key) => {
+            _.each(this.requiredUserReferenceFields, (key) => {
                 return handleObject(obj, key);
             });
         });

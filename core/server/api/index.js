@@ -6,7 +6,6 @@
 
 var _ = require('lodash'),
     Promise = require('bluebird'),
-    models = require('../models'),
     urlService = require('../services/url'),
     configuration = require('./configuration'),
     db = require('./db'),
@@ -252,7 +251,7 @@ http = function http(apiMethod) {
             options = _.extend({}, req.file, {ip: req.ip}, req.query, req.params, {
                 context: {
                     // @TODO: forward the client and user obj in 1.0 (options.context.user.id)
-                    user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
+                    user: req.user && req.user.id ? req.user.id : null,
                     client: (req.client && req.client.slug) ? req.client.slug : null,
                     client_id: (req.client && req.client.id) ? req.client.id : null
                 }

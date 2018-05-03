@@ -670,7 +670,7 @@ describe('User Model', function run() {
                 password: 'thisissupersafe'
             };
 
-            UserModel.setup(userData, {id: 1})
+            UserModel.setup(userData, {id: testUtils.DataGenerator.Content.users[0].id})
                 .then(function (user) {
                     user.get('name').should.eql(userData.name);
                     user.get('email').should.eql(userData.email);

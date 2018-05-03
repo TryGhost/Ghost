@@ -486,7 +486,7 @@ describe('Import', function () {
             }).then(function (importedData) {
                 // NOTE: we detect invalid author references as warnings, because ember can handle this
                 // The owner can simply update the author reference in the UI
-                importedData.problems.length.should.eql(3);
+                importedData.problems.length.should.eql(6);
 
                 importedData.problems[0].message.should.eql('Entry was imported, but we were not able to resolve the ' +
                     'following user references: updated_by. The user does not exist, fallback to owner user.');
@@ -495,9 +495,16 @@ describe('Import', function () {
                 importedData.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
                 importedData.problems[1].help.should.eql('User');
 
-                importedData.problems[2].message.should.eql('Entry was imported, but we were not able to ' +
-                    'resolve the following user references: author_id, published_by. The user does not exist, fallback to owner user.');
-                importedData.problems[2].help.should.eql('Post');
+                // they all have a user ref "1", which was not imported
+                importedData.problems[2].help.should.eql('Role');
+                importedData.problems[3].help.should.eql('Role');
+                importedData.problems[4].help.should.eql('Role');
+
+                importedData.problems[5].message.should.eql('Entry was imported, but we were not able to ' +
+                    'resolve the following user references: author_id, published_by, created_by, updated_by. ' +
+                    'The user does not exist, fallback to owner user.');
+
+                importedData.problems[5].help.should.eql('Post');
 
                 // Grab the data from tables
                 return Promise.all([
@@ -531,7 +538,7 @@ describe('Import', function () {
 
                     // we fallback to owner user
                     // NOTE: ember can handle unknown author_id, but still a fallback to an existing user is better.
-                    posts[0].author_id.should.eql('1');
+                    posts[0].author_id.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     // test tags
                     tags.length.should.equal(0, 'no tags');

@@ -250,7 +250,7 @@ describe('Tags API', function () {
         });
 
         it('can browse (owner)', function (done) {
-            TagAPI.browse({context: {user: 1}}).then(function (results) {
+            TagAPI.browse(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
@@ -298,7 +298,7 @@ describe('Tags API', function () {
         });
 
         it('can browse with include count.posts', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'count.posts'}).then(function (results) {
+            TagAPI.browse(_.merge({include: 'count.posts'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(15);
@@ -319,7 +319,7 @@ describe('Tags API', function () {
         });
 
         it('can browse page 4 with include count.posts', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'count.posts', page: 4}).then(function (results) {
+            TagAPI.browse(_.merge({include: 'count.posts',  page: 4}, testUtils.context.owner)).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(10);
@@ -340,13 +340,13 @@ describe('Tags API', function () {
         it('can browse and order by slug using asc', function (done) {
             var expectedTags;
 
-            TagAPI.browse({context: {user: 1}})
+            TagAPI.browse(testUtils.context.owner)
                 .then(function (results) {
                     should.exist(results);
 
                     expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().value();
 
-                    return TagAPI.browse({context: {user: 1}, order: 'slug asc'});
+                    return TagAPI.browse(_.merge({order: 'slug asc'}, testUtils.context.owner));
                 })
                 .then(function (results) {
                     var tags;
@@ -363,13 +363,13 @@ describe('Tags API', function () {
         it('can browse and order by slug using desc', function (done) {
             var expectedTags;
 
-            TagAPI.browse({context: {user: 1}})
+            TagAPI.browse(testUtils.context.owner)
                 .then(function (results) {
                     should.exist(results);
 
                     expectedTags = _(results.tags).map('slug').filter(onlyFixtures).sortBy().reverse().value();
 
-                    return TagAPI.browse({context: {user: 1}, order: 'slug desc'});
+                    return TagAPI.browse(_.merge({order: 'slug desc'}, testUtils.context.owner));
                 })
                 .then(function (results) {
                     var tags;
@@ -388,7 +388,7 @@ describe('Tags API', function () {
         before(testUtils.setup('users:roles', 'posts'));
 
         it('returns count.posts with include count.posts', function (done) {
-            TagAPI.read({context: {user: 1}, include: 'count.posts', slug: 'kitchen-sink'}).then(function (results) {
+            TagAPI.read(_.merge({include: 'count.posts', slug: 'kitchen-sink'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
@@ -402,14 +402,14 @@ describe('Tags API', function () {
         });
 
         it('with slug', function (done) {
-            TagAPI.browse({context: {user: 1}}).then(function (results) {
+            TagAPI.browse(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
 
                 var firstTag = _.find(results.tags, {id: testUtils.DataGenerator.Content.tags[0].id});
 
-                return TagAPI.read({context: {user: 1}, slug: firstTag.slug});
+                return TagAPI.read(_.merge({slug: firstTag.slug}, testUtils.context.owner));
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.tags[0], 'tag');

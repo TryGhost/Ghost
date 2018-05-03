@@ -390,7 +390,7 @@ describe('Public API', function () {
     });
 
     it('browse user by id: count.posts', function (done) {
-        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -429,7 +429,7 @@ describe('Public API', function () {
     });
 
     it('browse user by id: ignores fetching roles', function (done) {
-        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/?client_id=ghost-admin&client_secret=not_available&include=roles'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

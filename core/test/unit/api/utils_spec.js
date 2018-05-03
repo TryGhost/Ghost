@@ -222,9 +222,9 @@ describe('API Utils', function () {
             });
         }
 
-        it('can validate `id`', function () {
-            valid = [ObjectId.generate(), '1', 1];
-            invalid = ['test', 'de305d54', 300, '304'];
+        it('can\'t validate `id` 1', function () {
+            valid = [ObjectId.generate()];
+            invalid = ['test', 'de305d54', 300, '304', '1', 1];
 
             check('id', valid, invalid);
         });

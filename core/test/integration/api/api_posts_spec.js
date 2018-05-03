@@ -95,7 +95,7 @@ describe('Post API', function () {
         });
 
         it('can limit the number of posts', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', limit: 3}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 3}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(3);
                 results.meta.pagination.limit.should.eql(3);
@@ -105,7 +105,7 @@ describe('Post API', function () {
         });
 
         it('can fetch only static posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: true}).then(function (results) {
+            PostAPI.browse(_.merge({staticPages: true}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
                 results.posts[0].page.should.eql(true);
@@ -115,7 +115,7 @@ describe('Post API', function () {
         });
 
         it('can fetch only static posts with string \'true\'', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: 'true'}).then(function (results) {
+            PostAPI.browse(_.merge({staticPages: 'true'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
                 results.posts[0].page.should.eql(true);
@@ -125,7 +125,7 @@ describe('Post API', function () {
         });
 
         it('can fetch only static posts with string \'1\'', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: '1'}).then(function (results) {
+            PostAPI.browse(_.merge({staticPages: '1'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
                 results.posts[0].page.should.eql(true);
@@ -135,7 +135,7 @@ describe('Post API', function () {
         });
 
         it('can exclude static posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: false}).then(function (results) {
+            PostAPI.browse(_.merge({staticPages: false}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(4);
                 results.posts[0].page.should.eql(false);
@@ -145,7 +145,7 @@ describe('Post API', function () {
         });
 
         it('can fetch static and normal posts', function (done) {
-            PostAPI.browse({context: {user: 1}, staticPages: 'all'}).then(function (results) {
+            PostAPI.browse(_.merge({staticPages: 'all'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(5);
 
@@ -154,7 +154,7 @@ describe('Post API', function () {
         });
 
         it('can fetch static and normal posts (filter version)', function (done) {
-            PostAPI.browse({context: {user: 1}, filter: 'page:[false,true]'}).then(function (results) {
+            PostAPI.browse(_.merge({filter: 'page:[false,true]'}, testUtils.context.owner)).then(function (results) {
                 // should be the same as the current staticPages: 'all'
                 should.exist(results.posts);
                 results.posts.length.should.eql(5);
@@ -163,7 +163,7 @@ describe('Post API', function () {
         });
 
         it('can fetch page 1', function (done) {
-            PostAPI.browse({context: {user: 1}, page: 1, limit: 2, status: 'all'}).then(function (results) {
+            PostAPI.browse(_.merge({page: 1, limit: 2, status: 'all'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
                 results.posts[0].slug.should.eql('scheduled-post');
@@ -176,7 +176,7 @@ describe('Post API', function () {
         });
 
         it('can fetch page 2', function (done) {
-            PostAPI.browse({context: {user: 1}, page: 2, limit: 2, status: 'all'}).then(function (results) {
+            PostAPI.browse(_.merge({page: 2, limit: 2, status: 'all'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(2);
                 results.posts[0].slug.should.eql('not-so-short-bit-complex');
@@ -223,7 +223,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch drafts', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'draft'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'draft'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'posts');
                 should.exist(results.posts);
@@ -236,7 +236,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch all posts', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'posts');
                 should.exist(results.posts);
@@ -249,7 +249,7 @@ describe('Post API', function () {
         });
 
         it('can include tags', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: 'tags'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', include: 'tags'}, testUtils.context.owner)).then(function (results) {
                 results.posts[0].tags.length.should.eql(0);
                 results.posts[1].tags.length.should.eql(1);
 
@@ -259,7 +259,7 @@ describe('Post API', function () {
         });
 
         it('[DEPRECATED] can include author (using status:all)', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: 'author'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', include: 'author'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 should.exist(results.posts[0].author.name);
                 results.posts[0].author.name.should.eql('Joe Bloggs');
@@ -281,7 +281,7 @@ describe('Post API', function () {
         });
 
         it('can include authors', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: 'authors'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', include: 'authors'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 should.exist(results.posts[0].authors);
                 should.exist(results.posts[0].authors[0]);
@@ -292,25 +292,22 @@ describe('Post API', function () {
         });
 
         it('can fetch all posts for a tag', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                filter: 'tags:kitchen-sink',
-                include: 'tags'
-            }).then(function (results) {
-                results.posts.length.should.be.eql(2);
+            PostAPI.browse(_.merge({status: 'all', filter: 'tags:kitchen-sink', include: 'tags'}, testUtils.context.owner))
+                    .then(function (results) {
+                    results.posts.length.should.be.eql(2);
 
-                _.each(results.posts, function (post) {
-                    var slugs = _.map(post.tags, 'slug');
-                    slugs.should.containEql('kitchen-sink');
-                });
+                    _.each(results.posts, function (post) {
+                        var slugs = _.map(post.tags, 'slug');
+                        slugs.should.containEql('kitchen-sink');
+                    });
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
 
         it('can include authors and be case insensitive', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: 'Authors'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', include: 'Authors'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 should.exist(results.posts[0].authors);
                 should.exist(results.posts[0].authors[0]);
@@ -321,7 +318,7 @@ describe('Post API', function () {
         });
 
         it('can include authors and ignore space in include', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', include: ' authors'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', include: ' authors'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 should.exist(results.posts[0].authors);
                 should.exist(results.posts[0].authors[0]);
@@ -332,42 +329,36 @@ describe('Post API', function () {
         });
 
         it('[DEPRECATED] can fetch all posts for an author', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                filter: 'author:joe-bloggs',
-                include: 'author'
-            }).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(6);
+            PostAPI.browse(_.merge({status: 'all', include: ' author', filter: 'author:joe-bloggs'}, testUtils.context.owner))
+                .then(function (results) {
+                    should.exist(results.posts);
+                    results.posts.length.should.eql(6);
 
-                _.each(results.posts, function (post) {
-                    post.author.slug.should.eql('joe-bloggs');
-                });
+                    _.each(results.posts, function (post) {
+                        post.author.slug.should.eql('joe-bloggs');
+                    });
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
 
         it('can fetch all posts for an author', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                filter: 'authors:joe-bloggs',
-                include: 'authors'
-            }).then(function (results) {
-                should.exist(results.posts);
-                results.posts.length.should.eql(6);
+            PostAPI.browse(_.merge({status: 'all', include: ' authors', filter: 'authors:joe-bloggs'}, testUtils.context.owner))
+                .then(function (results) {
+                    should.exist(results.posts);
+                    results.posts.length.should.eql(6);
 
-                _.each(results.posts, function (post) {
-                    post.primary_author.slug.should.eql('joe-bloggs');
-                });
+                    _.each(results.posts, function (post) {
+                        post.primary_author.slug.should.eql('joe-bloggs');
+                    });
 
-                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[0].id}).authors.length.should.eql(1);
-                _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[3].id}).authors.length.should.eql(2);
+                    _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[0].id}).authors.length.should.eql(1);
+                    _.find(results.posts, {id: testUtils.DataGenerator.forKnex.posts[3].id}).authors.length.should.eql(2);
 
-                done();
-            }).catch(done);
+                    done();
+                })
+                .catch(done);
         });
 
         // @TODO: ensure filters are fully validated
@@ -394,7 +385,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch a single field', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'title'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5, fields: 'title'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 should.exist(results.posts[0].title);
@@ -405,12 +396,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch multiple fields', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                limit: 5,
-                fields: 'slug,published_at'
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5, fields: 'slug,published_at'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 should.exist(results.posts[0].published_at);
@@ -422,7 +408,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch url and author fields', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 should.exist(results.posts[0].url);
@@ -434,12 +420,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch multiple fields and be case insensitive', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                limit: 5,
-                fields: 'Slug,Published_At'
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5, fields: 'Slug,Published_At'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 should.exist(results.posts[0].published_at);
@@ -451,12 +432,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch multiple fields ignoring spaces', function (done) {
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                limit: 5,
-                fields: ' slug , published_at  '
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5, fields: ' slug , published_at  '}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 should.exist(results.posts[0].published_at);
@@ -468,7 +444,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch a field and not return invalid field', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'foo,title'}).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', limit: 5, fields: 'foo,title'}, testUtils.context.owner)).then(function (results) {
                 var objectKeys;
                 should.exist(results.posts);
 
@@ -487,12 +463,7 @@ describe('Post API', function () {
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).map('title').sortBy().value();
 
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                order: 'title asc',
-                fields: 'title'
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', order: 'title asc', fields: 'title'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 var titles = _.map(results.posts, 'title');
@@ -508,12 +479,7 @@ describe('Post API', function () {
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).map('title').sortBy().reverse().value();
 
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                order: 'title DESC',
-                fields: 'title'
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', order: 'title DESC', fields: 'title'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 var titles = _.map(results.posts, 'title');
@@ -529,12 +495,7 @@ describe('Post API', function () {
             posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).map('title').sortBy().value();
 
-            PostAPI.browse({
-                context: {user: 1},
-                status: 'all',
-                order: 'bunny DESC, title ASC',
-                fields: 'title'
-            }).then(function (results) {
+            PostAPI.browse(_.merge({status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
 
                 var titles = _.map(results.posts, 'title');
@@ -584,7 +545,7 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch a draft', function (done) {
-            PostAPI.read({context: {user: 1}, slug: 'unfinished', status: 'draft'}).then(function (results) {
+            PostAPI.read(_.merge({slug: 'unfinished', status: 'draft'}, testUtils.context.owner)).then(function (results) {
                 should.exist(results.posts);
                 results.posts[0].status.should.eql('draft');
 
@@ -601,7 +562,7 @@ describe('Post API', function () {
         });
 
         it('cannot fetch post with unknown id', function (done) {
-            PostAPI.read({context: {user: 1}, slug: 'not-a-post'}).then(function () {
+            PostAPI.read(_.merge({slug: 'not-a-post'}, testUtils.context.owner)).then(function () {
                 done(new Error('Should not return a result with unknown id'));
             }).catch(function (err) {
                 should.exist(err);

@@ -34,14 +34,17 @@ describe('Frontend Routing', function () {
         };
     }
 
-    function addPosts(done) {
-        testUtils.clearData().then(function () {
-            return testUtils.initData();
-        }).then(function () {
-            return testUtils.fixtures.insertPostsAndTags();
-        }).then(function () {
-            done();
-        });
+    function addPosts() {
+        return testUtils.clearData()
+            .then(function () {
+                return testUtils.initData();
+            })
+            .then(function () {
+                return testUtils.fixtures.overrideOwnerUser();
+            })
+            .then(function () {
+                return testUtils.fixtures.insertPostsAndTags();
+            });
     }
 
     afterEach(function () {
@@ -484,15 +487,7 @@ describe('Frontend Routing', function () {
     });
 
     describe('Site Map', function () {
-        before(function (done) {
-            testUtils.clearData().then(function () {
-                return testUtils.initData();
-            }).then(function () {
-                return testUtils.fixtures.insertPostsAndTags();
-            }).then(function () {
-                done();
-            }).catch(done);
-        });
+        before(addPosts);
 
         it('should serve sitemap.xml', function (done) {
             request.get('/sitemap.xml')

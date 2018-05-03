@@ -5,7 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     SettingsAPI = require('../../../server/api/settings'),
     settingsCache = require('../../../server/services/settings/cache'),
-    defaultContext = {user: 1},
+    defaultContext = testUtils.context.owner.context,
     internalContext = {internal: true},
     callApiWithContext,
     getErrorDetails;

@@ -1,6 +1,6 @@
 var should = require('should'),
+    _ = require('lodash'),
     testUtils = require('../../utils'),
-
     SlugAPI = require('../../../server/api/slugs');
 
 describe('Slug API', function () {
@@ -13,7 +13,7 @@ describe('Slug API', function () {
     should.exist(SlugAPI);
 
     it('can generate post slug', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'post', name: 'A fancy Title'})
+        SlugAPI.generate(_.merge({type: 'post', name: 'A fancy Title'}, testUtils.context.owner))
             .then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'slugs');
@@ -25,7 +25,7 @@ describe('Slug API', function () {
     });
 
     it('can generate tag slug', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'tag', name: 'A fancy Title'})
+        SlugAPI.generate(_.merge({type: 'tag', name: 'A fancy Title'}, testUtils.context.owner))
             .then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'slugs');
@@ -37,7 +37,7 @@ describe('Slug API', function () {
     });
 
     it('can generate user slug', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'user', name: 'user name'})
+        SlugAPI.generate(_.merge({type: 'user', name: 'user name'}, testUtils.context.owner))
             .then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'slugs');
@@ -49,7 +49,7 @@ describe('Slug API', function () {
     });
 
     it('can generate app slug', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'tag', name: 'app name'})
+        SlugAPI.generate(_.merge({type: 'tag', name: 'app name'}, testUtils.context.owner))
             .then(function (results) {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'slugs');
@@ -61,7 +61,7 @@ describe('Slug API', function () {
     });
 
     it('rejects unknown types with BadRequestError', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'unknown-type', name: 'A fancy Title'})
+        SlugAPI.generate(_.merge({type: 'unknown-type', name: 'A fancy Title'}, testUtils.context.owner))
             .then(function () {
                 done(new Error('Generate a slug for an unknown type is not rejected.'));
             }).catch(function (error) {
@@ -71,7 +71,7 @@ describe('Slug API', function () {
     });
 
     it('rejects invalid types with ValidationError', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'unknown type', name: 'A fancy Title'})
+        SlugAPI.generate(_.merge({type: 'unknown type', name: 'A fancy Title'}, testUtils.context.owner))
             .then(function () {
                 done(new Error('Generate a slug for an unknown type is not rejected.'));
             }).catch(function (errors) {

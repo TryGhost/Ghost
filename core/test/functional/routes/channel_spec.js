@@ -95,7 +95,7 @@ describe('Channel Routes', function () {
 
             before(function (done) {
                 testUtils.initData().then(function () {
-                    return testUtils.fixtures.overrideOwnerUser();
+                    //return testUtils.fixtures.overrideOwnerUser();
                 }).then(function () {
                     done();
                 });
@@ -143,14 +143,11 @@ describe('Channel Routes', function () {
 
         describe('Paged', function () {
             // Add enough posts to trigger pages for both the index (25 pp) and rss (15 pp)
-            before(function (done) {
-                testUtils.initData().then(function () {
-                    return testUtils.fixtures.insertPostsAndTags();
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPosts(25);
-                }).then(function () {
-                    done();
-                }).catch(done);
+            before(function () {
+                return testUtils.initData()
+                    .then(function () {
+                        return testUtils.fixtures.insertExtraPosts(25);
+                    });
             });
 
             after(testUtils.teardown);
@@ -329,16 +326,17 @@ describe('Channel Routes', function () {
             before(testUtils.teardown);
 
             // Add enough posts to trigger pages
-            before(function (done) {
-                testUtils.initData().then(function () {
-                    return testUtils.fixtures.insertPostsAndTags();
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPosts(22);
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPostsTags(22);
-                }).then(function () {
-                    done();
-                }).catch(done);
+            before(function () {
+                return testUtils.initData()
+                    .then(function () {
+                        return testUtils.fixtures.insertTags();
+                    })
+                    .then(function () {
+                        return testUtils.fixtures.insertExtraPosts(22);
+                    })
+                    .then(function () {
+                        return testUtils.fixtures.insertExtraPostsTags(22);
+                    });
             });
 
             after(testUtils.teardown);
@@ -551,19 +549,14 @@ describe('Channel Routes', function () {
 
         describe('Paged', function () {
             // Add enough posts to trigger pages
-            before(function (done) {
-                testUtils.clearData().then(function () {
-                    // we initialise data, but not a user. No user should be required for navigating the frontend
-                    return testUtils.initData();
-                }).then(function () {
-                    return testUtils.fixtures.insertPostsAndTags();
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPosts(9);
-                }).then(function () {
-                    return testUtils.fixtures.overrideOwnerUser('ghost-owner');
-                }).then(function () {
-                    done();
-                }).catch(done);
+            before(function () {
+                return testUtils.initData()
+                    .then(function () {
+                        return testUtils.fixtures.overrideOwnerUser('ghost-owner');
+                    })
+                    .then(function () {
+                        return testUtils.fixtures.insertExtraPosts(9);
+                    });
             });
 
             after(testUtils.teardown);

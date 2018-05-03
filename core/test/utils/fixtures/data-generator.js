@@ -127,8 +127,7 @@ DataGenerator.Content = {
     // Password = Sl1m3rson99
     users: [
         {
-            // owner (owner is still id 1 because of permissions)
-            id: '1',
+            id: ObjectId.generate(),
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',

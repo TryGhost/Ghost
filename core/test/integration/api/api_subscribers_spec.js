@@ -272,13 +272,13 @@ describe('Subscribers API', function () {
         });
 
         it('with id', function (done) {
-            SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
+            SubscribersAPI.browse(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 should.exist(results.subscribers);
                 results.subscribers.length.should.be.above(0);
 
                 var firstSubscriber = _.find(results.subscribers, {id: testUtils.DataGenerator.Content.subscribers[0].id});
-                return SubscribersAPI.read({context: {user: 1}, id: firstSubscriber.id});
+                return SubscribersAPI.read(_.merge({id: firstSubscriber.id}, testUtils.context.owner));
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.subscribers[0], 'subscriber');
@@ -288,13 +288,13 @@ describe('Subscribers API', function () {
         });
 
         it('with email', function (done) {
-            SubscribersAPI.browse({context: {user: 1}}).then(function (results) {
+            SubscribersAPI.browse(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 should.exist(results.subscribers);
                 results.subscribers.length.should.be.above(0);
 
                 var firstSubscriber = _.find(results.subscribers, {id: testUtils.DataGenerator.Content.subscribers[0].id});
-                return SubscribersAPI.read({context: {user: 1}, email: firstSubscriber.email});
+                return SubscribersAPI.read(_.merge({email: firstSubscriber.email}, testUtils.context.owner));
             }).then(function (found) {
                 should.exist(found);
                 testUtils.API.checkResponse(found.subscribers[0], 'subscriber');

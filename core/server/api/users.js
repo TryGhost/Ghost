@@ -163,7 +163,7 @@ users = {
                         }));
                     }
 
-                    return models.User.findOne({role: 'Owner'}).then(function (owner) {
+                    return models.User.getOwnerUser().then(function (owner) {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {

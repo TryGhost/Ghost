@@ -77,7 +77,7 @@ function setupTasks(setupData) {
         var context = {context: {internal: true}},
             User = models.User;
 
-        return User.findOne({role: 'Owner', status: 'all'}).then(function then(owner) {
+        return User.getOwnerUser(context).then(function then(owner) {
             if (!owner) {
                 throw new common.errors.GhostError({
                     message: common.i18n.t('errors.api.authentication.setupUnableToRun')
@@ -581,7 +581,7 @@ authentication = {
         }
 
         function checkPermission(options) {
-            return models.User.findOne({role: 'Owner', status: 'all'})
+            return models.User.getOwnerUser()
                 .then(function (owner) {
                     if (owner.id !== options.context.user) {
                         throw new common.errors.NoPermissionError({message: common.i18n.t('errors.api.authentication.notTheBlogOwner')});

@@ -11,7 +11,13 @@ class PostsImporter extends BaseImporter {
             dataKeyToImport: 'posts',
             requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors'],
             requiredImportedData: ['tags'],
-            requiredExistingData: ['tags']
+            requiredExistingData: ['tags'],
+            requiredUserReferenceFields: [
+                'author_id',
+                'published_by',
+                'created_by',
+                'updated_by'
+            ]
         });
 
         this.legacyKeys = {
@@ -134,6 +140,7 @@ class PostsImporter extends BaseImporter {
             }
         };
 
+        // @TODO: if you don't supply `author_id`, we have to add it!!!!!!
         _.each(this.dataToImport, (postToImport, postIndex) => {
             run(postToImport, postIndex, 'tags', 'tags');
             run(postToImport, postIndex, 'authors', 'users');

@@ -107,7 +107,7 @@ utils = {
 
     validateOptions: function validateOptions(options) {
         var globalValidations = {
-                id: {matches: /^[a-f\d]{24}$|^1$|me/i},
+                id: {matches: /^[a-f\d]{24}$|me/i},
                 uuid: {isUUID: true},
                 slug: {isSlug: true},
                 page: {matches: /^\d+$/},

@@ -386,24 +386,29 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         });
     },
 
-    // Get the user from the options object
+    /**
+     * A resource get's added/updated within a context.
+     *
+     * A context can be:
+     *   - a logged in user
+     *   - an internal change e.g. event based
+     *   - an external change e.g. via apps (currently unused)
+     *
+     * So e.g. if a logged in user changes a resource, we want to set `updated_by` with the value of
+     * `options.context.user`.
+     *
+     * If a resource get's updated in a none logged in user scope, we fallback to the user id the resource
+     * was created with or to the resource id as super fallback e.g. you create a user in an internal context.
+     */
     contextUser: function contextUser(options) {
         options = options || {};
         options.context = options.context || {};
 
-        if (options.context.user || ghostBookshelf.Model.isExternalUser(options.context.user)) {
+        if (options.context.user) {
             return options.context.user;
-        } else if (options.context.internal) {
-            return ghostBookshelf.Model.internalUser;
-        } else if (this.get('id')) {
-            return this.get('id');
-        } else if (options.context.external) {
-            return ghostBookshelf.Model.externalUser;
         } else {
-            throw new common.errors.NotFoundError({
-                message: common.i18n.t('errors.models.base.index.missingContext'),
-                level: 'critical'
-            });
+            // @TODO: consider: load owner user into process and use owner id
+            return this.get('created_by') || this.get('id');
         }
     },
 
@@ -465,22 +470,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     }
 }, {
     // ## Data Utility Functions
-
-    /**
-     * please use these static definitions when comparing id's
-     * we keep type Number, because we have too many check's where we rely on Number
-     * context.user ? true : false (if context.user is 0 as number, this condition is false)
-     */
-    internalUser: 1,
-    externalUser: 0,
-
-    isInternalUser: function isInternalUser(id) {
-        return id === ghostBookshelf.Model.internalUser || id === ghostBookshelf.Model.internalUser.toString();
-    },
-
-    isExternalUser: function isExternalUser(id) {
-        return id === ghostBookshelf.Model.externalUser || id === ghostBookshelf.Model.externalUser.toString();
-    },
 
     /**
      * Returns an array of keys permitted in every method's `options` hash.

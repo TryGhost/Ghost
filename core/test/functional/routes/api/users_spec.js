@@ -90,13 +90,26 @@ describe('User API', function () {
                         jsonResponse.users.should.have.length(5);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        testUtils.API.isISO8601(jsonResponse.users[0].last_seen).should.be.true();
+
+                        // @NOTE: we order by id !
+
+                        // ghost author
+                        should.not.exist(jsonResponse.users[0].last_seen);
                         testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true();
+
+                        // owner
+                        testUtils.API.isISO8601(jsonResponse.users[1].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[1].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[1].updated_at).should.be.true();
 
                         testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
                         testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
+
+                        testUtils.API.isISO8601(jsonResponse.users[3].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[3].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[3].updated_at).should.be.true();
 
                         done();
                     });
@@ -334,7 +347,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id with count.posts', function (done) {
-                request.get(testUtils.API.getApiQuery('users/1/?include=count.posts'))
+                request.get(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/?include=count.posts'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -494,8 +507,8 @@ describe('User API', function () {
                         existingUserData = _.cloneDeep(jsonResponse.users[0]);
                         modifiedUserData = _.cloneDeep(jsonResponse);
 
-                        existingUserData.created_by.should.eql('1');
-                        existingUserData.updated_by.should.eql('1');
+                        existingUserData.created_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
+                        existingUserData.updated_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                         modifiedUserData.users[0].created_at = moment().add(2, 'days').format();
                         modifiedUserData.users[0].updated_at = moment().add(2, 'days').format();

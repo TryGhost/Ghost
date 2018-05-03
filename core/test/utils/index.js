@@ -240,15 +240,23 @@ fixtures = {
     },
 
     overrideOwnerUser: function overrideOwnerUser(slug) {
+        let ownerRole;
+
         return models.User.getOwnerUser(module.exports.context.internal)
             .then(function (ownerUser) {
-                var user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+                ownerUser = ownerUser.toJSON();
+                ownerRole = ownerUser.roles[0];
+                return models.User.destroy(_.merge({id: ownerUser.id}, module.exports.context.internal));
+            })
+            .then(function () {
+                const user = _.cloneDeep(DataGenerator.Content.users[0]);
 
                 if (slug) {
                     user.slug = slug;
                 }
 
-                return models.User.edit(user, _.merge({id: ownerUser.id}, module.exports.context.internal));
+                user.roles = [ownerRole];
+                return models.User.add(user, module.exports.context.internal);
             });
     },
 
@@ -705,11 +713,11 @@ doAuth = function doAuth() {
     delete options[0];
 
     // No DB setup, but override the owner
-    options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
+    options = _.transform(options, function (result, val) {
         if (val) {
             result[val] = true;
         }
-    }));
+    });
 
     fixtureOps = getFixtureOps(options);
 
@@ -879,6 +887,8 @@ var ghostServer;
  * 2. start the server once
  *
  * @TODO: tidy up the tmp folders
+ * @TODO: knex-migrator should not insert the ghost fixtures, instead it should insert the test fixtures
+ *        we always need to override the owner user and we always receive and respect that there is another ghost author user
  */
 startGhost = function startGhost(options) {
     options = _.merge({
@@ -922,6 +932,13 @@ startGhost = function startGhost(options) {
                 return knexMigrator.init({only: 2});
             })
             .then(function () {
+                /**
+                 * By default we ensure that the test owner user is present in the database.
+                 * `testUtils.DataGenerator.Content.users[0]` is the owner user of the blog which get's started here.
+                 */
+                return fixtures.overrideOwnerUser();
+            })
+            .then(function () {
                 SettingsCache.shutdown();
                 return SettingsLib.init();
             })
@@ -958,6 +975,13 @@ startGhost = function startGhost(options) {
             }
 
             return ghostServer.start();
+        })
+        .then(function () {
+            /**
+             * By default we ensure that the test owner user is present in the database.
+             * `testUtils.DataGenerator.Content.users[0]` is the owner user of the blog which get's started here.
+             */
+            return fixtures.overrideOwnerUser();
         })
         .then(function returnGhost() {
             return ghostServer;
