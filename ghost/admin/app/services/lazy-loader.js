@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import Ember from 'ember';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import config from 'ghost-admin/config/environment';
 
 export default Service.extend({
     ajax: service(),
@@ -17,7 +17,7 @@ export default Service.extend({
         this.scriptPromises = {};
 
         if (this.testing === undefined) {
-            this.testing = Ember.testing; // eslint-disable-line
+            this.testing = config.environment === 'test';
         }
     },
 

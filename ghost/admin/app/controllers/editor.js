@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
-import Ember from 'ember';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
 import {BLANK_MARKDOWN} from 'ghost-admin/models/post';
 import {alias, mapBy, reads} from '@ember/object/computed';
@@ -24,7 +24,13 @@ const AUTOSAVE_TIMEOUT = 3000;
 const TIMEDSAVE_TIMEOUT = 60000;
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
-let watchedProps = ['post.scratch', 'post.titleScratch', 'post.hasDirtyAttributes', 'post.tags.[]', 'post.isError'];
+let watchedProps = [
+    'post.scratch',
+    'post.titleScratch',
+    'post.hasDirtyAttributes',
+    'post.tags.[]',
+    'post.isError'
+];
 
 // add all post model attrs to the watchedProps array, easier to do it this way
 // than remember to update every time we add a new attr
@@ -132,17 +138,14 @@ export default Controller.extend({
         }
     }),
 
-    // computed.apply is a bit of an ugly hack, but necessary to watch all the
-    // post's attributes and more without having to be explicit and remember
-    // to update the watched props list every time we add a new post attr
-    hasDirtyAttributes: computed.apply(Ember, watchedProps.concat({
+    hasDirtyAttributes: computed(...watchedProps, {
         get() {
             return this._hasDirtyAttributes();
         },
         set(key, value) {
             return value;
         }
-    })),
+    }),
 
     _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
         let autosave = this.get('_autosave.isRunning');
@@ -152,7 +155,7 @@ export default Controller.extend({
     }),
 
     _canAutosave: computed('post.isDraft', function () {
-        return !Ember.testing && this.get('post.isDraft');
+        return config.environment !== 'test' && this.get('post.isDraft');
     }),
 
     /* actions ---------------------------------------------------------------*/
@@ -655,7 +658,7 @@ export default Controller.extend({
             return;
         }
 
-        while (!Ember.testing && true) {
+        while (config.environment !== 'test' && true) {
             yield timeout(TIMEDSAVE_TIMEOUT);
             this.get('autosave').perform();
         }

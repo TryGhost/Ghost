@@ -1,8 +1,8 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import $ from 'jquery';
 import Controller from '@ember/controller';
-import Ember from 'ember';
 import RSVP from 'rsvp';
+import config from 'ghost-admin/config/environment';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -207,7 +207,7 @@ export default Controller.extend({
         this.set('redirectSuccess', success);
         this.set('redirectFailure', !success);
 
-        yield timeout(Ember.testing ? 100 : 5000); // eslint-disable-line
+        yield timeout(config.environment === 'test' ? 100 : 5000);
 
         this.set('redirectSuccess', null);
         this.set('redirectFailure', null);

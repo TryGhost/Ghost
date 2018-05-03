@@ -80,7 +80,7 @@ export default Controller.extend(ValidationEngine, {
     /**
      * Uploads the given data image, then sends the changed user image property to the server
      * @param  {Object} user User object, returned from the 'setup' api call
-     * @return {Ember.RSVP.Promise} A promise that takes care of both calls
+     * @return {RSVP.Promise} A promise that takes care of both calls
      */
     _sendImage(user) {
         let formData = new FormData();

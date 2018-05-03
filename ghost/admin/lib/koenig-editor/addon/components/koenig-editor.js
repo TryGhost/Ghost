@@ -5,8 +5,7 @@
 
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
-import Ember from 'ember';
-import EmberObject from '@ember/object';
+import EmberObject, {computed} from '@ember/object';
 import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
 import layout from '../templates/components/koenig-editor';
@@ -17,10 +16,11 @@ import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
-import {computed} from '@ember/object';
 import {copy} from '@ember/object/internals';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
+import {getOwner} from '@ember/application';
+import {guidFor} from '@ember/object/internals';
 import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
@@ -193,16 +193,8 @@ export default Component.extend({
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
             [ADD_CARD_HOOK]: ({env, options, payload}, koenigOptions) => {
-                let cardId = Ember.uuid();
                 let cardName = env.name;
                 let componentName = CARD_COMPONENT_MAP[cardName];
-
-                // the desination element is the container that gets rendered
-                // inside the editor, once rendered we use {{-in-element}} to
-                // wormhole in the actual ember component
-                let destinationElementId = `koenig-editor-card-${cardId}`;
-                let destinationElement = document.createElement('div');
-                destinationElement.id = destinationElementId;
 
                 // the payload must be copied to avoid sharing the reference
                 payload = copy(payload, true);
@@ -210,8 +202,6 @@ export default Component.extend({
                 // all of the properties that will be passed through to the
                 // component cards via the template
                 let card = EmberObject.create({
-                    destinationElement,
-                    destinationElementId,
                     cardName,
                     componentName,
                     koenigOptions,
@@ -222,6 +212,19 @@ export default Component.extend({
                     postModel: env.postModel,
                     isSelected: false,
                     isEditing: false
+                });
+
+                // the desination element is the container that gets rendered
+                // inside the editor, once rendered we use {{-in-element}} to
+                // wormhole in the actual ember component
+                let cardId = guidFor(card);
+                let destinationElementId = `koenig-editor-card-${cardId}`;
+                let destinationElement = document.createElement('div');
+                destinationElement.id = destinationElementId;
+
+                card.setProperties({
+                    destinationElementId,
+                    destinationElement
                 });
 
                 // after render we render the full ember card via {{-in-element}}
@@ -920,7 +923,8 @@ export default Component.extend({
 
     // store a reference to the editor for the acceptance test helpers
     _setExpandoProperty(editor) {
-        if (this.element && Ember.testing) {
+        let config = getOwner(this).resolveRegistration('config:environment');
+        if (this.element && config.environment === 'test') {
             this.element[TESTING_EXPANDO_PROPERTY] = editor;
         }
     }

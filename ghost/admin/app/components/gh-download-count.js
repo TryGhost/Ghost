@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import Ember from 'ember';
+import config from 'ghost-admin/config/environment';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -28,7 +28,7 @@ export default Component.extend({
 
             this.set('count', count);
 
-            if (!Ember.testing) { // eslint-disable-line
+            if (config.environment !== 'test') {
                 yield timeout(2000);
                 this.get('_poll').perform();
             }
