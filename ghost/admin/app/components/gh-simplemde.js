@@ -1,6 +1,6 @@
 /* global SimpleMDE */
-import Ember from 'ember';
 import TextArea from '@ember/component/text-area';
+import config from 'ghost-admin/config/environment';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
@@ -69,7 +69,7 @@ export default TextArea.extend({
 
         // disable spellchecker when testing so that the exterally loaded plugin
         // doesn't fail
-        if (Ember.testing) { // eslint-disable-line
+        if (config.environment === 'test') {
             editorOptions.spellChecker = false;
         }
 

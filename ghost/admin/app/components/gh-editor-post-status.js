@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import Ember from 'ember';
+import config from 'ghost-admin/config/environment';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
@@ -33,7 +33,7 @@ export default Component.extend({
 
     showSavingMessage: task(function* () {
         this.set('_isSaving', true);
-        yield timeout(Ember.testing ? 0 : 3000); // eslint-disable-line
+        yield timeout(config.environment === 'test' ? 0 : 3000);
         this.set('_isSaving', false);
     }).drop()
 });

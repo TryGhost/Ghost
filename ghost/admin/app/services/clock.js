@@ -1,5 +1,5 @@
-import Ember from 'ember';
 import Service from '@ember/service';
+import config from 'ghost-admin/config/environment';
 import moment from 'moment';
 import {run} from '@ember/runloop';
 
@@ -26,7 +26,7 @@ export default Service.extend({
             hour: now.hours()
         });
 
-        if (!Ember.testing) { // eslint-disable-line
+        if (config.environment !== 'test') {
             run.later(() => {
                 this.tick();
             }, ONE_SECOND);
