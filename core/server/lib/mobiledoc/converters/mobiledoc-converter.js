@@ -36,11 +36,38 @@ var SimpleDom = require('simple-dom'),
 // }
 
 module.exports = {
-    render: function (mobiledoc) {
-        var renderer = new Renderer(options),
-            rendered = renderer.render(mobiledoc),
-            serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap),
-            html = serializer.serializeChildren(rendered.result);
+    // version 1 === Ghost 1.0 markdown-only mobiledoc
+    // version 2 === Ghost 2.0 full mobiledoc
+    render: function (mobiledoc, version) {
+        version = version || 1;
+
+        // pass the version through to the card renderers.
+        // create a new object here to avoid modifying the default options
+        // object because the version can change per-render until 2.0 is released
+        let versionedOptions = Object.assign({}, options, {
+            cardOptions: {version}
+        });
+
+        let renderer = new Renderer(versionedOptions);
+        let rendered = renderer.render(mobiledoc);
+        let serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
+
+        // Koenig keeps a blank paragraph at the end of a doc but we want to
+        // make sure it doesn't get rendered
+        let lastChild = rendered.result.lastChild;
+        if (lastChild && lastChild.tagName === 'P' && !lastChild.firstChild) {
+            rendered.result.removeChild(lastChild);
+        }
+
+        let html = serializer.serializeChildren(rendered.result);
+
+        // full version of Koenig wraps the content with a specific class to
+        // be targetted with our default stylesheet for vertical rhythm and
+        // card-specific styles
+        if (version === 2) {
+            html = `<div class="kg-post">\n${html}\n</div>`;
+        }
+
         return html;
     }
 };
