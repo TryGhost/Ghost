@@ -3,12 +3,20 @@ module.exports = {
     type: 'dom',
     render(opts) {
         let payload = opts.payload;
+        // let version = opts.options.version;
         let dom = opts.env.dom;
+
         let figure = dom.createElement('figure');
+        figure.setAttribute('class', 'kg-image-card');
 
         let img = dom.createElement('img');
-        img.className = 'kg-card-image';
+        let imgClass = 'kg-image';
+        if (payload.imageStyle) {
+            imgClass = `${imgClass} kg-image--${payload.imageStyle}`;
+        }
         img.setAttribute('src', payload.src);
+        img.setAttribute('class', imgClass);
+
         figure.appendChild(img);
 
         if (payload.caption) {
