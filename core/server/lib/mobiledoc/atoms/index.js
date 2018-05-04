@@ -1,3 +1,5 @@
-var softReturn = require('./soft-return');
+'use strict';
+
+const softReturn = require('./soft-return');
 
 module.exports = [softReturn];

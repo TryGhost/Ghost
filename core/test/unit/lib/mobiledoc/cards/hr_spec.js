@@ -1,17 +1,18 @@
-var should = require('should'), // jshint ignore:line
-    card = require('../../../../../server/lib/mobiledoc/cards/hr'),
-    SimpleDom = require('simple-dom'),
-    opts;
+'use strict';
+
+const should = require('should'); // jshint ignore:line
+const card = require('../../../../../server/lib/mobiledoc/cards/hr');
+const SimpleDom = require('simple-dom');
+const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 describe('HR card', function () {
     it('generates a horizontal rule', function () {
-        opts = {
+        let opts = {
             env: {
                 dom: new SimpleDom.Document()
             }
         };
 
-        var serializer = new SimpleDom.HTMLSerializer([]);
-        serializer.serialize(card.render(opts)).should.match('<hr></hr>');
+        serializer.serialize(card.render(opts)).should.match('<hr>');
     });
 });
