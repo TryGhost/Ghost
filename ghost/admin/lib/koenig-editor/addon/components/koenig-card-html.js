@@ -39,8 +39,9 @@ export default Component.extend({
         this._super(...arguments);
         let payload = this.payload || {};
 
+        // CodeMirror errors on a `null` or `undefined` value
         if (!payload.html) {
-            payload.set('html', '');
+            set(payload, 'html', '');
         }
 
         this.set('payload', payload);
