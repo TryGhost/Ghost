@@ -5,6 +5,7 @@
     color: var(--blue);
     border: none;
     cursor: pointer;
+    text-shadow: none;
 }
 
 .gh-publishmenu-trigger svg {
