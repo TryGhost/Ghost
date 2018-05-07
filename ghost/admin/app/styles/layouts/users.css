@@ -129,7 +129,9 @@
 }
 
 .gh-badge.suspended {
-    margin-left: 15px;
+    font-size: 13px;
+    margin-left: 16px;
+    margin-top: 5px;
     border: color-mod(var(--red) blackness(+8%)) 1px solid;
     background: linear-gradient(
     color-mod(var(--red) whiteness(+10%)),
