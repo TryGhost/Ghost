@@ -3462,9 +3462,9 @@ ember-cli-get-component-path-option@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-get-component-path-option/-/ember-cli-get-component-path-option-1.0.0.tgz#0d7b595559e2f9050abed804f1d8eff1b08bc771"
 
-ember-cli-ghost-spirit@0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/ember-cli-ghost-spirit/-/ember-cli-ghost-spirit-0.0.3.tgz#e8cd63b073196a4dca7478ae55dd8f1369e7db14"
+ember-cli-ghost-spirit@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/ember-cli-ghost-spirit/-/ember-cli-ghost-spirit-0.0.4.tgz#46405919379e6d2e54e7251e4ae1329e17e6a044"
   dependencies:
     broccoli-file-creator "^2.1.1"
     broccoli-funnel "^2.0.1"
@@ -3472,7 +3472,7 @@ ember-cli-ghost-spirit@0.0.3:
     ember-cli-babel "^6.6.0"
     ember-cli-cjs-transform "^1.2.0"
     ember-cli-postcss "3.7.1"
-    ghost-spirit ">=0.0.14"
+    ghost-spirit ">=0.0.16"
 
 ember-cli-htmlbars-inline-precompile@1.0.2, ember-cli-htmlbars-inline-precompile@^1.0.0:
   version "1.0.2"
@@ -5245,9 +5245,9 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.15, ghost-spirit@>=0.0.14:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.15.tgz#82f499b6e19c92d5d0913cb558bb93006150f9bc"
+ghost-spirit@0.0.16, ghost-spirit@>=0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.16.tgz#bb64ca9f23624850f449ece3150ce42151a6f3ae"
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"
