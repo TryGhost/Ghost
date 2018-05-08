@@ -20,7 +20,7 @@
     }}
         <div class="relative">
             {{#if (or previewSrc payload.src)}}
-                <img src={{or previewSrc payload.src}} class={{kg-style kgImgStyle}} alt={{payload.alt}}>
+                <img src={{or previewSrc payload.src}} class="{{kg-style kgImgStyle sidebar=ui.hasSideNav}}" alt={{payload.alt}}>
             {{/if}}
 
             {{#if (or uploader.errors uploader.isUploading (not payload.src))}}

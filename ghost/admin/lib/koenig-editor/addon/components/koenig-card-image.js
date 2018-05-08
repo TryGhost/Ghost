@@ -8,9 +8,11 @@ import {
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 
 export default Component.extend({
+    ui: service(),
     layout,
 
     // attrs
