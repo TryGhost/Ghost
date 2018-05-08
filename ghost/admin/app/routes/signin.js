@@ -6,17 +6,21 @@ import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Errors} = DS;
 
+const defaultModel = function defaultModel() {
+    return EmberObject.create({
+        identification: '',
+        password: '',
+        errors: Errors.create()
+    });
+};
+
 export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
     titleToken: 'Sign In',
 
     classNames: ['ghost-login'],
 
     model() {
-        return EmberObject.create({
-            identification: '',
-            password: '',
-            errors: Errors.create()
-        });
+        return defaultModel();
     },
 
     // the deactivate hook is called after a route has been exited.
@@ -26,7 +30,6 @@ export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
         this._super(...arguments);
 
         // clear the properties that hold the credentials when we're no longer on the signin screen
-        controller.set('signin.identification', '');
-        controller.set('signin.password', '');
+        controller.set('signin', defaultModel());
     }
 });
