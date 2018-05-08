@@ -900,15 +900,24 @@ export default Component.extend({
             let nextPosition;
 
             if (cursorDirection === CURSOR_BEFORE) {
-                nextPosition = section.prev.tailPosition();
+                nextPosition = section.prev && section.prev.tailPosition();
             } else {
-                nextPosition = section.next.headPosition();
+                nextPosition = section.next && section.next.headPosition();
             }
 
             postEditor.removeSection(section);
 
+            // if there's no prev or next section then the doc is empty, we want
+            // to add a blank paragraph and place the cursor in it
+            if (cursorDirection !== NO_CURSOR_MOVEMENT && !nextPosition) {
+                let {builder} = postEditor;
+                let newPara = builder.createMarkupSection('p');
+                postEditor.insertSectionAtEnd(newPara);
+                return postEditor.setRange(newPara.tailPosition());
+            }
+
             if (cursorDirection !== NO_CURSOR_MOVEMENT) {
-                postEditor.setRange(nextPosition);
+                return postEditor.setRange(nextPosition);
             }
         });
     },
