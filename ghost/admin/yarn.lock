@@ -2682,9 +2682,9 @@ cosmiconfig@^2.0.0, cosmiconfig@^2.1.0, cosmiconfig@^2.1.1:
     parse-json "^2.2.0"
     require-from-string "^1.1.0"
 
-coveralls@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/coveralls/-/coveralls-3.0.0.tgz#22ef730330538080d29b8c151dc9146afde88a99"
+coveralls@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/coveralls/-/coveralls-3.0.1.tgz#12e15914eaa29204e56869a5ece7b9e1492d2ae2"
   dependencies:
     js-yaml "^3.6.1"
     lcov-parse "^0.0.10"
@@ -3688,9 +3688,9 @@ ember-cli-version-checker@^2.0.0, ember-cli-version-checker@^2.1.0, ember-cli-ve
     resolve "^1.3.3"
     semver "^5.3.0"
 
-ember-cli@3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.1.3.tgz#cd5b580441489df17bbd23d10d39398203259d64"
+ember-cli@3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.1.4.tgz#95f7ff4302d535619b5d5ff1c7040877a67d4468"
   dependencies:
     amd-name-resolver "^1.2.0"
     babel-plugin-transform-es2015-modules-amd "^6.24.0"
@@ -3805,7 +3805,15 @@ ember-composable-helpers@2.1.0, ember-composable-helpers@^2.0.1:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^6.6.0"
 
-ember-concurrency@0.8.18, ember-concurrency@^0.8.1, ember-concurrency@^0.8.12:
+ember-concurrency@0.8.19:
+  version "0.8.19"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.8.19.tgz#71b9c175ba077865310029cb4bdb880e17d5155e"
+  dependencies:
+    babel-core "^6.24.1"
+    ember-cli-babel "^6.8.2"
+    ember-maybe-import-regenerator "^0.1.5"
+
+ember-concurrency@^0.8.1, ember-concurrency@^0.8.12:
   version "0.8.18"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.8.18.tgz#20a9ac4ced6496ea4ebe52e88f4524a473871396"
   dependencies:
@@ -4180,9 +4188,9 @@ ember-sinon@2.1.0:
     ember-cli-babel "^6.6.0"
     sinon "^4.4.5"
 
-ember-source@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.1.1.tgz#9cf95e8a6d7568d60b8eda2aeda17ac8944e654b"
+ember-source@3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.1.2.tgz#3c25e63f1e4ff2b83bb3fbfb350625de2a1a521f"
   dependencies:
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^2.0.0"
