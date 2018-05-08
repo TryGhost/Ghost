@@ -1,13 +1,13 @@
 {{#if showToolbar}}
-    <ul class="bg-darkgrey inline-flex pa0 ma0 list br3 shadow-2 items-center relative white f-small fw3 tracked-2">
+    <ul class="bg-darkgrey-d1 inline-flex pa0 ma0 list br3 shadow-2 items-center relative white f-small fw3 tracked-2 nudge-top--1">
         <li class="mw70 ma0 truncate">
-            <a href="{{url}}" class="dib dim-lite pa2 pr1 link white" target="_blank" rel="noopener noreferrer">{{url}}</a>
+            <a href="{{url}}" class="dib dim-lite pa3 pr1 link white" target="_blank" rel="noopener noreferrer">{{url}}</a>
         </li>
         <li class="ma0">
             <button
                 type="button"
                 title="Edit"
-                class="dib dim-lite pa1 link"
+                class="dib dim-lite pa2 pl1 pr1 link"
                 {{action "edit"}}
             >
                 {{!-- TODO: get correct icon --}}
@@ -18,7 +18,7 @@
             <button
                 type="button"
                 title="Remove"
-                class="dib dim-lite pa1 pr2 link"
+                class="dib dim-lite pa2 pl1 pr1 link mr2"
                 {{action "remove"}}
             >
                 {{!-- TODO: get correct icon --}}
