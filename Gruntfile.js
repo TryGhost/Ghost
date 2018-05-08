@@ -233,7 +233,10 @@ var config = require('./core/server/config'),
                             hasBuiltClient = true;
                         }
                     },
-                    stderr: true
+                    stderr: function (chunk) {
+                        hasBuiltClient = true;
+                        grunt.log.error(chunk);
+                    }
                 }
             },
 
