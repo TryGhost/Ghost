@@ -659,7 +659,7 @@ export default Component.extend({
 
         // if cursor is at the beginning of a heading and previous section is a
         // blank paragraph, delete the blank paragraph
-        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && section.prev.tagName === 'p' && section.prev.isBlank) {
+        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && section.prev && section.prev.tagName === 'p' && section.prev.isBlank) {
             editor.run((postEditor) => {
                 postEditor.removeSection(section.prev);
             });
