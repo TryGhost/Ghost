@@ -54,13 +54,13 @@ export const CARD_COMPONENT_MAP = {
     html: 'koenig-card-html'
 };
 
-const CURSOR_BEFORE = -1;
-const CURSOR_AFTER = 1;
-const NO_CURSOR_MOVEMENT = 0;
+export const CURSOR_BEFORE = -1;
+export const CURSOR_AFTER = 1;
+export const NO_CURSOR_MOVEMENT = 0;
 
 // markups that should not be continued when typing and reverted to their
-// text expansion style when backspacing over findal char of markup
-const SPECIAL_MARKUPS = {
+// text expansion style when backspacing over final char of markup
+export const SPECIAL_MARKUPS = {
     S: '~~',
     CODE: '`'
 };
@@ -98,6 +98,7 @@ export default Component.extend({
     selectedRange: null,
     componentCards: null,
     linkRange: null,
+    selectedCard: null,
 
     // private properties
     _localMobiledoc: null,
@@ -105,7 +106,7 @@ export default Component.extend({
     _startedRunLoop: false,
     _lastIsEditingDisabled: false,
     _isRenderingEditor: false,
-    _selectedCard: null,
+    _skipCursorChange: false,
 
     // closure actions
     willCreateEditor() {},
@@ -249,42 +250,6 @@ export default Component.extend({
         // default behaviour to be overridden by addon consumers
         registerKeyCommands(editor, this);
         registerTextExpansions(editor, this);
-
-        editor.registerKeyCommand({
-            str: 'ENTER',
-            run: run.bind(this, this.handleEnterKey, editor)
-        }),
-
-        // the cursor is always positioned after a selected card so DELETE wont
-        // work to remove the card like BACKSPACE does. Add a custom command to
-        // override the default behaviour when a card is selected
-        editor.registerKeyCommand({
-            str: 'DEL',
-            run: run.bind(this, this.handleDelKey, editor)
-        }),
-
-        // by default mobiledoc-kit will remove the selected card but replace it
-        // with a blank paragraph, we want the cursor to go to the previous
-        // section instead
-        editor.registerKeyCommand({
-            str: 'BACKSPACE',
-            run: run.bind(this, this.handleBackspaceKey, editor)
-        }),
-
-        editor.registerKeyCommand({
-            str: 'UP',
-            run: run.bind(this, this.handleUpKey, editor)
-        });
-
-        editor.registerKeyCommand({
-            str: 'LEFT',
-            run: run.bind(this, this.handleLeftKey, editor)
-        });
-
-        editor.registerKeyCommand({
-            str: 'META+ENTER',
-            run: run.bind(this, this.handleCmdEnter, editor)
-        });
 
         // set up editor hooks
         editor.willRender(() => {
@@ -443,24 +408,24 @@ export default Component.extend({
         },
 
         deleteCard(card, cursorMovement = NO_CURSOR_MOVEMENT) {
-            this._deleteCard(card, cursorMovement);
+            this.deleteCard(card, cursorMovement);
         },
 
         moveCursorToPrevSection(card) {
-            let section = this._getSectionFromCard(card);
+            let section = this.getSectionFromCard(card);
 
             if (section.prev) {
                 this.deselectCard(card);
-                this._moveCaretToTailOfSection(section.prev, false);
+                this.moveCaretToTailOfSection(section.prev, false);
             }
         },
 
         moveCursorToNextSection(card) {
-            let section = this._getSectionFromCard(card);
+            let section = this.getSectionFromCard(card);
 
             if (section.next) {
                 this.deselectCard(card);
-                this._moveCaretToHeadOfSection(section.next, false);
+                this.moveCaretToHeadOfSection(section.next, false);
             } else {
                 this.send('addParagraphAfterCard', card);
             }
@@ -468,7 +433,7 @@ export default Component.extend({
 
         addParagraphAfterCard(card) {
             let editor = this.editor;
-            let section = this._getSectionFromCard(card);
+            let section = this.getSectionFromCard(card);
             let collection = section.parent.sections;
             let nextSection = section.next;
 
@@ -489,7 +454,7 @@ export default Component.extend({
         }
     },
 
-    /* public methods ------------------------------------------------------- */
+    /* mobiledoc event handlers --------------------------------------------- */
 
     postDidChange(editor) {
         let serializeVersion = this.serializeVersion;
@@ -516,7 +481,7 @@ export default Component.extend({
         // card section, clicking and other interactions within a card can cause
         // this to happen and we don't want to select/deselect accidentally.
         // See the up/down/left/right key handlers for the card selection
-        if (this._selectedCard && this._selectedCard.postModel === section) {
+        if (this.selectedCard && this.selectedCard.postModel === section) {
             return;
         }
 
@@ -526,7 +491,7 @@ export default Component.extend({
                 // select card after render to ensure that our componentCards
                 // attr is populated
                 run.schedule('afterRender', this, () => {
-                    let card = this._getCardFromSection(section);
+                    let card = this.getCardFromSection(section);
                     this.selectCard(card);
                     this.set('selectedRange', editor.range);
                 });
@@ -535,8 +500,8 @@ export default Component.extend({
         }
 
         // deselect any selected card because the cursor is no longer on a card
-        if (this._selectedCard && !editor.range.isBlank) {
-            this.deselectCard(this._selectedCard);
+        if (this.selectedCard && !editor.range.isBlank) {
+            this.deselectCard(this.selectedCard);
         }
 
         // if we have `code` or ~strike~ formatting to the left but not the right
@@ -605,181 +570,7 @@ export default Component.extend({
         }
     },
 
-    handleEnterKey(editor) {
-        let {isCollapsed, head: {offset, section}} = editor.range;
-
-        // if cursor is at beginning of a heading, insert a blank paragraph above
-        if (isCollapsed && offset === 0 && section.tagName && section.tagName.match(/^h\d$/)) {
-            editor.run((postEditor) => {
-                let newPara = postEditor.builder.createMarkupSection('p');
-                let collection = section.parent.sections;
-                postEditor.insertSectionBefore(collection, newPara, section);
-            });
-            return;
-        }
-
-        return false;
-    },
-
-    handleBackspaceKey(editor) {
-        let {head, isCollapsed, head: {marker, offset, section}} = editor.range;
-
-        // if a card is selected we should delete the card then place the cursor
-        // at the end of the previous section
-        if (this._selectedCard) {
-            let cursorPosition = section.prev ? CURSOR_BEFORE : CURSOR_AFTER;
-            this._deleteCard(this._selectedCard, cursorPosition);
-            return;
-        }
-
-        // if the caret is at the beginning of the doc, on a blank para, and
-        // there are more sections then delete the para and trigger the
-        // `cursorDidExitAtTop` closure action
-        let isFirstSection = section === section.parent.sections.head;
-        if (isFirstSection && isCollapsed && offset === 0 && (section.isBlank || section.text === '') && section.next) {
-            this.editor.run((postEditor) => {
-                postEditor.removeSection(section);
-            });
-
-            // allow default behaviour which will trigger `cursorDidChange` and
-            // fire our `cursorDidExitAtTop` action
-            return;
-        }
-
-        // if the section about to be deleted by a backspace is a card then
-        // actually delete the card rather than selecting it.
-        // However, if the current paragraph is blank then delete the paragraph
-        // instead - allows blank paragraphs between cards to be deleted and
-        // feels more natural
-        if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section' && !section.isBlank) {
-            let card = this._getCardFromSection(section.prev);
-            this._deleteCard(card, CURSOR_AFTER);
-            return;
-        }
-
-        // if cursor is at the beginning of a heading and previous section is a
-        // blank paragraph, delete the blank paragraph
-        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && section.prev && section.prev.tagName === 'p' && section.prev.isBlank) {
-            editor.run((postEditor) => {
-                postEditor.removeSection(section.prev);
-            });
-            return;
-        }
-
-        // if the markup about to be deleted is a special format (code, strike)
-        // then undo the text expansion to allow it to be extended
-        if (isCollapsed && marker) {
-            let specialMarkupTagNames = Object.keys(SPECIAL_MARKUPS);
-            let hasReversed = false;
-            specialMarkupTagNames.forEach((tagName) => {
-                // only continue if we're about to delete a special markup
-                let markup = marker.markups.find(markup => markup.tagName.toUpperCase() === tagName);
-                if (markup) {
-                    let nextMarker = head.markerIn(1);
-                    // ensure we're at the end of the markup not inside it
-                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
-                        // wrap with the text expansion, remove formatting, then delete the last char
-                        editor.run((postEditor) => {
-                            let markdown = SPECIAL_MARKUPS[tagName];
-                            let range = editor.range.expandByMarker(marker => !!marker.markups.includes(markup));
-                            postEditor.insertText(range.head, markdown);
-                            range = range.extend(markdown.length);
-                            let endPos = postEditor.insertText(range.tail, markdown);
-                            range = range.extend(markdown.length);
-                            postEditor.toggleMarkup(tagName, range);
-                            endPos = postEditor.deleteAtPosition(endPos, -1);
-                            postEditor.setRange(endPos);
-                        });
-                        hasReversed = true;
-                    }
-                }
-            });
-            if (hasReversed) {
-                return;
-            }
-        }
-
-        return false;
-    },
-
-    handleDelKey(editor) {
-        let {isCollapsed, head: {offset, section}} = editor.range;
-
-        // if a card is selected we should delete the card then place the cursor
-        // at the beginning of the next section or select the following card
-        if (this._selectedCard) {
-            let selectNextCard = section.next.type === 'card-section';
-            let nextCard = this._getCardFromSection(section.next);
-
-            this._deleteCard(this._selectedCard, CURSOR_AFTER);
-
-            if (selectNextCard) {
-                this.selectCard(nextCard);
-            }
-            return;
-        }
-
-        // if the section about to be deleted by a DEL is a card then actually
-        // delete the card rather than selecting it
-        // However, if the current paragraph is blank then delete the paragraph
-        // instead - allows blank paragraphs between cards to be deleted and
-        // feels more natural
-        if (isCollapsed && offset === section.length && section.next && section.next.type === 'card-section' && !section.isBlank) {
-            let card = this._getCardFromSection(section.next);
-            this._deleteCard(card, CURSOR_BEFORE);
-            return;
-        }
-
-        return false;
-    },
-
-    // trigger a closure action to indicate that the caret "left" the top of
-    // the editor canvas when pressing UP with the caret at the beginning of
-    // the doc
-    handleUpKey(editor) {
-        let {isCollapsed, head: {offset, section}} = editor.range;
-        let prevSection = section.isListItem ? section.parent.prev : section.prev;
-
-        if (isCollapsed && offset === 0 && !prevSection) {
-            this.cursorDidExitAtTop();
-        }
-
-        return false;
-    },
-
-    handleLeftKey(editor) {
-        let {isCollapsed, head: {offset, section}} = editor.range;
-
-        // trigger a closure action to indicate that the caret "left" the top of
-        // the editor canvas if the caret is at the very beginning of the doc
-        let prevSection = section.isListItem ? section.parent.prev : section.prev;
-        if (isCollapsed && offset === 0 && !prevSection) {
-            this.cursorDidExitAtTop();
-            return;
-        }
-
-        // if we have a selected card move the caret to end of the previous
-        // section because the cursor will likely be at the end of the card
-        // section meaning the default behaviour would move the cursor to the
-        // beginning and require two key presses instead of one
-        if (this._selectedCard && this._selectedCard.postModel === section) {
-            this._moveCaretToTailOfSection(section.prev, false);
-            return;
-        }
-
-        return false;
-    },
-
-    // CMD+ENTER is our keyboard shortcut for putting a selected card into
-    // edit mode
-    handleCmdEnter() {
-        if (this._selectedCard) {
-            this.editCard(this._selectedCard);
-            return;
-        }
-
-        return false;
-    },
+    /* custom event handlers ------------------------------------------------ */
 
     // if a URL is pasted and we have a selection, make that selection a link
     handlePaste(event) {
@@ -802,15 +593,25 @@ export default Component.extend({
         }
     },
 
+    /* Ember event handlers ------------------------------------------------- */
+
+    // disable dragging
+    // TODO: needs testing for how this interacts with cards that have drag behaviour
+    dragStart(event) {
+        event.preventDefault();
+    },
+
+    /* public methods ------------------------------------------------------- */
+
     selectCard(card, isEditing = false) {
         // no-op if card is already selected
-        if (card === this._selectedCard && isEditing === card.isEditing) {
+        if (card === this.selectedCard && isEditing === card.isEditing) {
             return;
         }
 
         // deselect any already selected card
-        if (this._selectedCard && card !== this._selectedCard) {
-            this.deselectCard(this._selectedCard);
+        if (this.selectedCard && card !== this.selectedCard) {
+            this.deselectCard(this.selectedCard);
         }
 
         // setting a card as selected trigger's the cards didReceiveAttrs
@@ -820,19 +621,19 @@ export default Component.extend({
             isEditing,
             isSelected: true
         });
-        this._selectedCard = card;
+        this.selectedCard = card;
 
         // hide the cursor and place it after the card so that ENTER can
         // create a new paragraph and cursorDidExitAtTop gets fired on LEFT
         // if the card is at the top of the document
         this._hideCursor();
-        let section = this._getSectionFromCard(card);
-        this._moveCaretToTailOfSection(section);
+        let section = this.getSectionFromCard(card);
+        this.moveCaretToTailOfSection(section);
     },
 
     editCard(card) {
         // no-op if card is already being edited
-        if (card === this._selectedCard && card.isEditing) {
+        if (card === this.selectedCard && card.isEditing) {
             return;
         }
 
@@ -843,58 +644,11 @@ export default Component.extend({
     deselectCard(card) {
         card.set('isEditing', false);
         card.set('isSelected', false);
-        this._selectedCard = null;
+        this.selectedCard = null;
         this._showCursor();
     },
 
-    /* Ember event handlers ------------------------------------------------- */
-
-    // disable dragging
-    // TODO: needs testing for how this interacts with cards that have drag behaviour
-    dragStart(event) {
-        event.preventDefault();
-    },
-
-    /* internal methods ----------------------------------------------------- */
-
-    _getCardFromSection(section) {
-        if (!section || section.type !== 'card-section') {
-            return;
-        }
-
-        let cardId = section.renderNode.element.querySelector('.__mobiledoc-card').firstChild.id;
-        let cards = this.componentCards;
-
-        return cards.findBy('destinationElementId', cardId);
-    },
-
-    _getSectionFromCard(card) {
-        return card.env.postModel;
-    },
-
-    _moveCaretToHeadOfSection(section, skipCursorChange = true) {
-        this._moveCaretToSection('head', section, skipCursorChange);
-    },
-
-    _moveCaretToTailOfSection(section, skipCursorChange = true) {
-        this._moveCaretToSection('tail', section, skipCursorChange);
-    },
-
-    _moveCaretToSection(position, section, skipCursorChange = true) {
-        this.editor.run((postEditor) => {
-            let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
-            let range = sectionPosition.toRange();
-
-            // don't trigger another cursor change selection after selecting
-            if (skipCursorChange && !range.isEqual(this.editor.range)) {
-                this._skipCursorChange = true;
-            }
-
-            postEditor.setRange(range);
-        });
-    },
-
-    _deleteCard(card, cursorDirection) {
+    deleteCard(card, cursorDirection) {
         this.editor.run((postEditor) => {
             let section = card.env.postModel;
             let nextPosition;
@@ -921,6 +675,44 @@ export default Component.extend({
             }
         });
     },
+
+    getCardFromSection(section) {
+        if (!section || section.type !== 'card-section') {
+            return;
+        }
+
+        let cardId = section.renderNode.element.querySelector('.__mobiledoc-card').firstChild.id;
+
+        return this.componentCards.findBy('destinationElementId', cardId);
+    },
+
+    getSectionFromCard(card) {
+        return card.env.postModel;
+    },
+
+    moveCaretToHeadOfSection(section, skipCursorChange = true) {
+        this.moveCaretToSection(section, 'head', skipCursorChange);
+    },
+
+    moveCaretToTailOfSection(section, skipCursorChange = true) {
+        this.moveCaretToSection(section, 'tail', skipCursorChange);
+    },
+
+    moveCaretToSection(section, position, skipCursorChange = true) {
+        this.editor.run((postEditor) => {
+            let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
+            let range = sectionPosition.toRange();
+
+            // don't trigger another cursor change selection after selecting
+            if (skipCursorChange && !range.isEqual(this.editor.range)) {
+                this._skipCursorChange = true;
+            }
+
+            postEditor.setRange(range);
+        });
+    },
+
+    /* internal methods ----------------------------------------------------- */
 
     _hideCursor() {
         this.editor.element.style.caretColor = 'transparent';
