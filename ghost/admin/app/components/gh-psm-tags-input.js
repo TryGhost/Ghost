@@ -61,23 +61,21 @@ export default Component.extend({
                 return;
             }
 
-            // add existing tag or create new one
-            return this._findTagByName(tagName).then((matchedTag) => {
-                tagToAdd = matchedTag;
+            // find existing tag if there is one
+            tagToAdd = this._findTagByName(tagName);
 
-                // create new tag if no match
-                if (!tagToAdd) {
-                    tagToAdd = this.get('store').createRecord('tag', {
-                        name: tagName
-                    });
+            // create new tag if no match
+            if (!tagToAdd) {
+                tagToAdd = this.store.createRecord('tag', {
+                    name: tagName
+                });
 
-                    // set to public/internal based on the tag name
-                    tagToAdd.updateVisibility();
-                }
+                // set to public/internal based on the tag name
+                tagToAdd.updateVisibility();
+            }
 
-                // push tag onto post relationship
-                return currentTags.pushObject(tagToAdd);
-            });
+            // push tag onto post relationship
+            return currentTags.pushObject(tagToAdd);
         }
     },
 
@@ -85,8 +83,8 @@ export default Component.extend({
 
     _findTagByName(name) {
         let withMatchingName = function (tag) {
-            return tag.get('name').toLowerCase() === name.toLowerCase();
+            return tag.name.toLowerCase() === name.toLowerCase();
         };
-        return this.get('availableTags').then(availableTags => availableTags.find(withMatchingName));
+        return this.availableTags.find(withMatchingName);
     }
 });
