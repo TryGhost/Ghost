@@ -1,0 +1,141 @@
+'use strict';
+
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+
+const themes = require('../../../../server/services/themes');
+const validate = themes.validate;
+
+const gscan = require('gscan');
+const common = require('../../../../server/lib/common');
+const sandbox = sinon.sandbox.create();
+
+describe('Themes', function () {
+    let checkZipStub;
+    let checkStub;
+    let formatStub;
+
+    beforeEach(function () {
+        checkZipStub = sandbox.stub(gscan, 'checkZip');
+        checkStub = sandbox.stub(gscan, 'check');
+        formatStub = sandbox.stub(gscan, 'format');
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    describe('Validate', function () {
+        const testTheme = {
+            name: 'supertheme',
+            version: '1.0.0',
+            path: '/path/to/theme'
+        };
+
+        it('[success] validates a valid zipped theme', function () {
+            checkZipStub.resolves({});
+            formatStub.returns({results: {error: []}});
+
+            return validate.check(testTheme, true)
+                .then((checkedTheme) => {
+                    checkZipStub.calledOnce.should.be.true();
+                    checkZipStub.calledWith(testTheme).should.be.true();
+                    checkStub.callCount.should.be.equal(0);
+                    formatStub.calledOnce.should.be.true();
+                    checkedTheme.should.be.an.Object();
+                });
+        });
+
+        it('[success] validates a valid unzipped theme', function () {
+            checkStub.resolves({});
+            formatStub.returns({results: {error: []}});
+
+            return validate.check(testTheme, false)
+                .then((checkedTheme) => {
+                    checkZipStub.callCount.should.be.equal(0);
+                    checkStub.calledOnce.should.be.true();
+                    checkStub.calledWith(testTheme.path).should.be.true();
+                    formatStub.calledOnce.should.be.true();
+                    checkedTheme.should.be.an.Object();
+                });
+        });
+
+        it('[failure] validates an invalid zipped theme', function () {
+            checkZipStub.resolves({});
+            formatStub.returns({
+                results: {
+                    error: [
+                        {
+                            fatal: true,
+                            level: 'error',
+                            rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
+                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://themes.ghost.org/docs/author-context#section-author-object-attributes" target=_blank>here</a>.',
+                            failures: [ {} ],
+                            code: 'GS001-DEPR-CON-AC'
+                        }
+                    ]
+                }
+            });
+
+            return validate.check(testTheme, true)
+                .then((checkedTheme) => {
+                    checkedTheme.should.not.exist();
+                }).catch((error) => {
+                    error.should.be.an.Object();
+                    (error instanceof common.errors.ThemeValidationError).should.eql(true);
+                    checkZipStub.calledOnce.should.be.true();
+                    checkZipStub.calledWith(testTheme).should.be.true();
+                    checkStub.callCount.should.be.equal(0);
+                    formatStub.calledOnce.should.be.true();
+                });
+        });
+
+        it('[failure] validates an invalid unzipped theme', function () {
+            checkStub.resolves({});
+            formatStub.returns({
+                results: {
+                    error: [
+                        {
+                            fatal: true,
+                            level: 'error',
+                            rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
+                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://themes.ghost.org/docs/author-context#section-author-object-attributes" target=_blank>here</a>.',
+                            failures: [ {} ],
+                            code: 'GS001-DEPR-CON-AC'
+                        }
+                    ]
+                }
+            });
+
+            return validate.check(testTheme, false)
+                .then((checkedTheme) => {
+                    checkedTheme.should.not.exist();
+                }).catch((error) => {
+                    error.should.be.an.Object();
+                    (error instanceof common.errors.ThemeValidationError).should.eql(true);
+                    checkStub.calledOnce.should.be.true();
+                    checkStub.calledWith(testTheme.path).should.be.true();
+                    checkZipStub.callCount.should.be.equal(0);
+                    formatStub.calledOnce.should.be.true();
+                });
+        });
+
+        it('[failure] can handle a corrupt zip file', function () {
+            checkZipStub.rejects(new Error('invalid zip file'));
+            formatStub.returns({results: {error: []}});
+
+            return validate.check(testTheme, true)
+                .then((checkedTheme) => {
+                    checkedTheme.should.not.exist();
+                }).catch((error) => {
+                    error.should.be.an.Object();
+                    error.message.should.be.equal('invalid zip file');
+                    checkZipStub.calledOnce.should.be.true();
+                    checkZipStub.calledWith(testTheme).should.be.true();
+                    checkStub.callCount.should.be.equal(0);
+                    formatStub.calledOnce.should.be.false();
+                });
+        });
+    });
+});
