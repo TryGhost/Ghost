@@ -70,7 +70,7 @@ privateBlogging = {
         // NOTE: Redirect to /private if the session does not exist.
         privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
-            if (req.path.lastIndexOf('/rss/', 0) === 0 || req.path.lastIndexOf('/rss/') === req.url.length - 5) {
+            if (req.path.match(/\/rss\/?/)) {
                 return next(new common.errors.NotFoundError({
                     message: common.i18n.t('errors.errors.pageNotFound')
                 }));
