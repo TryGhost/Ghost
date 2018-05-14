@@ -6,6 +6,7 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import EmberObject, {computed} from '@ember/object';
+import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
 import layout from '../templates/components/koenig-editor';
@@ -466,7 +467,7 @@ export default Component.extend({
     },
 
     cursorDidChange(editor) {
-        let {head, isCollapsed, head: {section}} = editor.range;
+        let {head, tail, direction, isCollapsed, head: {section}} = editor.range;
 
         // sometimes we perform a programatic edit that causes a cursor change
         // but we actually want to skip the default behaviour because we've
@@ -519,6 +520,18 @@ export default Component.extend({
                         });
                     }
                 }
+            });
+        }
+
+        // do not include the tail section if it's offset is 0
+        // fixes triple-click unexpectedly selecting two sections for section-level formatting
+        // https://github.com/bustle/mobiledoc-kit/issues/597
+        if (direction === 1 && !isCollapsed && tail.offset === 0) {
+            let finalSection = tail.section.prev;
+            let newRange = new MobiledocRange(head, finalSection.tailPosition());
+
+            return editor.run((postEditor) => {
+                postEditor.setRange(newRange);
             });
         }
 
