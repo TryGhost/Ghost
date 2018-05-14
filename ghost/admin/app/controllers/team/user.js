@@ -12,9 +12,6 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, taskGroup} from 'ember-concurrency';
 
-// ember-cli-shims doesn't export this
-const {Handlebars} = Ember;
-
 export default Controller.extend({
     ajax: service(),
     config: service(),
@@ -65,29 +62,15 @@ export default Controller.extend({
     }),
 
     // duplicated in gh-user-active -- find a better home and consolidate?
-    userDefault: computed('ghostPaths', function () {
-        let defaultImage = '/img/user-image.png';
-        return `${this.get('ghostPaths.assetRoot')}${defaultImage}`;
-    }),
-
-    userImageBackground: computed('user.profileImage', 'userDefault', function () {
-        let url = this.get('user.profileImage') || this.get('userDefault');
-        let safeUrl = Handlebars.Utils.escapeExpression(url);
-
-        return htmlSafe(`background-image: url(${safeUrl})`);
+    userImageBackground: computed('user.profileImageUrl', function () {
+        let url = encodeURI(decodeURI(this.user.get('profileImageUrl')));
+        return htmlSafe(`background-image: url(${url})`);
     }),
     // end duplicated
 
-    coverDefault: computed('ghostPaths', function () {
-        let defaultCover = '/img/user-cover.png';
-        return `${this.get('ghostPaths.assetRoot')}${defaultCover}`;
-    }),
-
-    coverImageBackground: computed('user.coverImage', 'coverDefault', function () {
-        let url = this.get('user.coverImage') || this.get('coverDefault');
-        let safeUrl = Handlebars.Utils.escapeExpression(url);
-
-        return htmlSafe(`background-image: url(${safeUrl})`);
+    coverImageBackground: computed('user.coverImage', function () {
+        let url = encodeURI(decodeURI(this.user.get('coverImageUrl')));
+        return htmlSafe(`background-image: url(${url})`);
     }),
 
     coverTitle: computed('user.name', function () {

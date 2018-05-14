@@ -107,7 +107,7 @@
           </figure>
 
           <figure class="user-image">
-              <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
+              <div id="user-image" class="img" style="{{userImageBackground}}"><span class="hidden">{{user.name}}"s Picture</span></div>
               <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
               {{#if showUploadImageModal}}
                   {{gh-fullscreen-modal "upload-image"
