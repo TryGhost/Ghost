@@ -115,7 +115,7 @@ export default Component.extend({
             let {head: {section}} = editorRange;
 
             // close the menu if we're on a non-slash section (eg, when / is deleted)
-            if (section && section.text && section.text.indexOf('/') !== 0) {
+            if (section && (section.text || section.text === '') && section.text.indexOf('/') !== 0) {
                 this._hideMenu();
                 return;
             }
