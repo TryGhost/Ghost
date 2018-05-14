@@ -9,42 +9,40 @@ import {run} from '@ember/runloop';
 // https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input
 
 export default function (editor, koenig) {
-    // We don't want to run all our content rules on every text entry event,
-    // instead we check to see if this text entry event could match a content
-    // rule, and only then run the rules. Right now we only want to match
-    // content ending with *, _, ), ~, and `. This could increase as we support
-    // more markdown.
+    /* block level markdown ------------------------------------------------- */
 
+    editor.unregisterTextInputHandler('heading');
     editor.onTextInput({
-        name: 'inline_markdown',
-        match: /[*_)~`]$/,
+        name: 'md_heading',
+        match: /^(#{1,6}) /,
         run(editor, matches) {
+            let hashes = matches[1];
+            let headingTag = `h${hashes.length}`;
+            let {range} = editor;
             let text = editor.range.head.section.textUntil(editor.range.head);
 
-            switch (matches[0]) {
-            case '*':
-                matchStrongStar(editor, text);
-                matchEmStar(editor, text);
-                break;
-            case '_':
-                matchStrongUnderscore(editor, text);
-                matchEmUnderscore(editor, text);
-                break;
-            case ')':
-                matchLink(editor, text);
-                matchImage(editor, text);
-                break;
-            case '~':
-                matchStrikethrough(editor, text);
-                break;
-            case '`':
-                matchCode(editor, text);
-                break;
+            // we don't want to convert to a heading if the user has not just
+            // finished typing the markdown (eg, they've made a previous
+            // heading expansion then Cmd-Z'ed it to get the text back then
+            // starts typing at the end of the heading)
+            if (text !== matches[0]) {
+                return;
             }
+
+            editor.run((postEditor) => {
+                range = range.extend(-(matches[0].length));
+                let position = postEditor.deleteRange(range);
+                postEditor.setRange(position);
+
+                // skip toggle if we already have the same heading level
+                if (editor.activeSection.tagName === headingTag) {
+                    return;
+                }
+
+                postEditor.toggleSection(headingTag);
+            });
         }
     });
-
-    /* block level markdown ------------------------------------------------- */
 
     // mobiledoc-kit has `* ` already built-in so we only need to add `- `
     editor.onTextInput({
@@ -84,6 +82,41 @@ export default function (editor, koenig) {
     });
 
     /* inline markdown ------------------------------------------------------ */
+
+    // We don't want to run all our content rules on every text entry event,
+    // instead we check to see if this text entry event could match a content
+    // rule, and only then run the rules. Right now we only want to match
+    // content ending with *, _, ), ~, and `. This could increase as we support
+    // more markdown.
+
+    editor.onTextInput({
+        name: 'inline_markdown',
+        match: /[*_)~`]$/,
+        run(editor, matches) {
+            let text = editor.range.head.section.textUntil(editor.range.head);
+
+            switch (matches[0]) {
+            case '*':
+                matchStrongStar(editor, text);
+                matchEmStar(editor, text);
+                break;
+            case '_':
+                matchStrongUnderscore(editor, text);
+                matchEmUnderscore(editor, text);
+                break;
+            case ')':
+                matchLink(editor, text);
+                matchImage(editor, text);
+                break;
+            case '~':
+                matchStrikethrough(editor, text);
+                break;
+            case '`':
+                matchCode(editor, text);
+                break;
+            }
+        }
+    });
 
     // --\s = en dash –
     // ---. = em dash —
