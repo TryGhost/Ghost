@@ -5,7 +5,6 @@ import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -45,16 +44,6 @@ export default Component.extend(SettingsMenuMixin, {
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
-
-    twitterImageStyle: computed('twitterImage', function () {
-        let image = this.get('twitterImage');
-        return htmlSafe(`background-image: url(${image})`);
-    }),
-
-    facebookImageStyle: computed('facebookImage', function () {
-        let image = this.get('facebookImage');
-        return htmlSafe(`background-image: url(${image})`);
-    }),
 
     seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';

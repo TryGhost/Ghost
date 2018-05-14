@@ -96,7 +96,7 @@
     <div class="gm-main view-container settings-user">
         <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform save) on="submit"}}>
 
-          <figure class="user-cover" style={{coverImageBackground}}>
+          <figure class="user-cover" style={{background-image-style user.coverImageUrl}}>
               <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
               {{#if showUploadCoverModal}}
                   {{gh-fullscreen-modal "upload-image"
@@ -107,7 +107,7 @@
           </figure>
 
           <figure class="user-image">
-              <div id="user-image" class="img" style="{{userImageBackground}}"><span class="hidden">{{user.name}}"s Picture</span></div>
+              <div id="user-image" class="img" style={{background-image-style user.profileImageUrl}}><span class="hidden">{{user.name}}"s Picture</span></div>
               <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
               {{#if showUploadImageModal}}
                   {{gh-fullscreen-modal "upload-image"
