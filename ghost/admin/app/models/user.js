@@ -81,14 +81,14 @@ export default Model.extend(ValidationEngine, {
     }),
 
     profileImageUrl: computed('ghostPaths.assetRoot', 'profileImage', function () {
-        // keep oath separate so asset rewriting correctly picks it up
+        // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-image.png';
         let defaultPath = `${this.ghostPaths.assetRoot.replace(/\/$/, '')}${defaultImage}`;
         return this.profileImage || defaultPath;
     }),
 
     coverImageUrl: computed('ghostPaths.assetRoot', 'coverImage', function () {
-        // keep oath separate so asset rewriting correctly picks it up
+        // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-cover.png';
         let defaultPath = `${this.ghostPaths.assetRoot.replace(/\/$/, '')}${defaultImage}`;
         return this.coverImage || defaultPath;

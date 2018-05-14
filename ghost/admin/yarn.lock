@@ -1712,7 +1712,7 @@ broccoli-plugin@^1.0.0, broccoli-plugin@^1.1.0, broccoli-plugin@^1.2.0, broccoli
     rimraf "^2.3.4"
     symlink-or-copy "^1.1.8"
 
-broccoli-postcss-single@1.6.0:
+broccoli-postcss-single@1.6.0, broccoli-postcss-single@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/broccoli-postcss-single/-/broccoli-postcss-single-1.6.0.tgz#da008ba24087f5cd1d7ec851d3d8921c9896a8ff"
   dependencies:
@@ -1730,6 +1730,15 @@ broccoli-postcss@3.5.2:
     broccoli-persistent-filter "1.4.3"
     object-assign "4.1.1"
     postcss "6.0.14"
+
+broccoli-postcss@^3.5.3:
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/broccoli-postcss/-/broccoli-postcss-3.5.3.tgz#bfbb12531d8c774d23651b462c3ed23f0227a8e8"
+  dependencies:
+    broccoli-funnel "2.0.1"
+    broccoli-persistent-filter "1.4.3"
+    object-assign "4.1.1"
+    postcss "6.0.22"
 
 broccoli-replace@^0.12.0:
   version "0.12.0"
@@ -3523,9 +3532,9 @@ ember-cli-lodash-subset@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-2.0.1.tgz#20cb68a790fe0fde2488ddfd8efbb7df6fe766f2"
 
-ember-cli-mirage@0.4.6:
-  version "0.4.6"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.4.6.tgz#058084609536c339ffed1057ac9db0a0a36ab986"
+ember-cli-mirage@0.4.7:
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-0.4.7.tgz#aa7cf2d7247703b03d216b2fe6ca5b9d514eaf84"
   dependencies:
     broccoli-funnel "^1.0.2"
     broccoli-merge-trees "^1.1.0"
@@ -3596,7 +3605,7 @@ ember-cli-path-utils@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-path-utils/-/ember-cli-path-utils-1.0.0.tgz#4e39af8b55301cddc5017739b77a804fba2071ed"
 
-ember-cli-postcss@3.7.1, ember-cli-postcss@^3.7.1:
+ember-cli-postcss@3.7.1:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/ember-cli-postcss/-/ember-cli-postcss-3.7.1.tgz#95e30ddf1924a88bb63c7749b8d128c7382fc807"
   dependencies:
@@ -3606,6 +3615,17 @@ ember-cli-postcss@3.7.1, ember-cli-postcss@^3.7.1:
     broccoli-postcss-single "1.6.0"
     ember-cli-babel "6.11.0"
     merge "1.2.0"
+
+ember-cli-postcss@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-postcss/-/ember-cli-postcss-4.0.0.tgz#d32c4ab5539122e3bc8fe26bb9cc18d8ac377739"
+  dependencies:
+    broccoli-file-creator "^2.1.1"
+    broccoli-merge-trees "^3.0.0"
+    broccoli-postcss "^3.5.3"
+    broccoli-postcss-single "^1.6.0"
+    ember-cli-babel "^6.12.0"
+    merge "^1.2.0"
 
 ember-cli-preprocess-registry@^3.1.0:
   version "3.1.1"
@@ -3939,18 +3959,18 @@ ember-in-viewport@2.1.1:
     ember-cli-babel "^5.1.6"
     ember-getowner-polyfill "^1.1.1"
 
-ember-in-viewport@3.0.3, ember-in-viewport@^3.0.0, ember-in-viewport@~3.0.2:
+ember-in-viewport@3.0.3, ember-in-viewport@^3.0.0, ember-in-viewport@~3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.0.3.tgz#49c60b52525795246761742ed4495ad6cd9bf70d"
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-infinity@1.0.0-beta.4:
-  version "1.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.0.0-beta.4.tgz#616d16b5de965513ac9f1e94c495a31658313c25"
+ember-infinity@1.0.0-beta.6:
+  version "1.0.0-beta.6"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.0.0-beta.6.tgz#62831198387e3ae1f8ae355712c3e0aab0f487da"
   dependencies:
     ember-cli-babel "^6.6.0"
-    ember-in-viewport "~3.0.2"
+    ember-in-viewport "~3.0.3"
 
 ember-inflector@^2.0.0:
   version "2.3.0"
@@ -7262,7 +7282,7 @@ merge-trees@^2.0.0:
     fs-updater "^1.0.4"
     heimdalljs "^0.2.5"
 
-merge@1.2.0, merge@^1.1.3:
+merge@1.2.0, merge@^1.1.3, merge@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.0.tgz#7531e39d4949c281a66b8c5a6e0265e8b05894da"
 
@@ -8479,6 +8499,14 @@ postcss@6.0.16:
     source-map "^0.6.1"
     supports-color "^5.1.0"
 
+postcss@6.0.22, postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.11, postcss@^6.0.18, postcss@^6.0.19, postcss@^6.0.20:
+  version "6.0.22"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.22.tgz#e23b78314905c3b90cbd61702121e7a78848f2a3"
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.4.0"
+
 postcss@^5.0.8:
   version "5.2.18"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-5.2.18.tgz#badfa1497d46244f6390f58b319830d9107853c5"
@@ -8487,14 +8515,6 @@ postcss@^5.0.8:
     js-base64 "^2.1.9"
     source-map "^0.5.6"
     supports-color "^3.2.3"
-
-postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.11, postcss@^6.0.18, postcss@^6.0.19, postcss@^6.0.20:
-  version "6.0.22"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.22.tgz#e23b78314905c3b90cbd61702121e7a78848f2a3"
-  dependencies:
-    chalk "^2.4.1"
-    source-map "^0.6.1"
-    supports-color "^5.4.0"
 
 prelude-ls@~1.1.2:
   version "1.1.2"
