@@ -26,6 +26,7 @@ export default Component.extend({
     classNames: ['absolute', 'z-999'],
 
     // public attrs
+    editor: null,
     editorRange: null,
     activeMarkupTagNames: null,
     activeSectionTagNames: null,
@@ -120,7 +121,11 @@ export default Component.extend({
         },
 
         toggleSection(sectionName) {
+            let range = this.editorRange;
             this.toggleSection(sectionName);
+            this.editor.run((postEditor) => {
+                postEditor.setRange(range);
+            });
         },
 
         editLink() {
