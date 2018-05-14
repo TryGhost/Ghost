@@ -85,6 +85,55 @@ export default function (editor, koenig) {
 
     /* inline markdown ------------------------------------------------------ */
 
+    // --\s = en dash –
+    // ---. = em dash —
+    // separate to the grouped replacement functions because we're matching on
+    // the trailing character which can be anything
+    editor.onTextInput({
+        name: 'hyphens',
+        match: /---?.$/,
+        run(editor) {
+            let {range} = editor;
+
+            let text = editor.range.head.section.textUntil(editor.range.head);
+
+            // do not match if we're in code formatting
+            if (editor.hasActiveMarkup('code') || text.match(/[^\s]?`[^\s]/)) {
+                return;
+            }
+
+            let ndashMatch = text.match(/[^-]--(\s)$/);
+            if (ndashMatch) {
+                let match = ndashMatch[0];
+                range = range.extend(-(match.length - 1));
+
+                if (editor.detectMarkupInRange(range, 'code')) {
+                    return;
+                }
+
+                return editor.run((postEditor) => {
+                    let position = postEditor.deleteRange(range);
+                    postEditor.insertText(position, `–${ndashMatch[1]}`);
+                });
+            }
+
+            let mdashMatch = text.match(/---([^-])$/);
+            if (mdashMatch) {
+                let match = mdashMatch[0];
+                range = range.extend(-(match.length));
+
+                if (editor.detectMarkupInRange(range, 'code')) {
+                    return;
+                }
+
+                return editor.run((postEditor) => {
+                    let position = postEditor.deleteRange(range);
+                    postEditor.insertText(position, `—${mdashMatch[1]}`);
+                });
+            }
+        }
+    });
+
     function matchStrongStar(editor, text) {
         let {range} = editor;
         let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*/);
