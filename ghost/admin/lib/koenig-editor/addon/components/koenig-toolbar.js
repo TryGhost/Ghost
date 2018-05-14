@@ -95,7 +95,9 @@ export default Component.extend({
             this._hasSelectedRange = false;
         }
 
-        this._toggleVisibility.perform();
+        if ((this._hasSelectedRange && !this.showToolbar) || (!this._hasSelectedRange && this.showToolbar)) {
+            this._toggleVisibility.perform();
+        }
     },
 
     willDestroyElement() {
@@ -129,6 +131,13 @@ export default Component.extend({
     /* private methods ------------------------------------------------------ */
 
     _toggleVisibility: task(function* (skipMousemove = false) {
+        // double-taps will often trigger before the selection change event so
+        // we want to keep the truthy mousemove skip around so that re-triggers
+        // within the 50ms timeout do not reset it
+        if (skipMousemove) {
+            this._skipMousemove = true;
+        }
+
         // debounce for 50ms to account for "click to deselect" otherwise we
         // run twice and the fade out animation jumps position
         yield timeout(50);
@@ -137,16 +146,18 @@ export default Component.extend({
         // re-rendering unnecessarily which can cause minor position jumps when
         // styles are toggled because getBoundingClientRect on getSelection
         // changes slightly depending on the style of selected text
-        if (this.editorRange === this._lastRange) {
+        if (this._hasSelectedRange && this.editorRange === this._lastRange) {
             return;
         }
 
         // if we have a range, show the toolbnar once the mouse is lifted
         if (this._hasSelectedRange && !this._isMouseDown) {
-            this._showToolbar(skipMousemove);
+            this._showToolbar(this._skipMousemove);
         } else {
             this._hideToolbar();
         }
+
+        this._skipMousemove = false;
     }).restartable(),
 
     _handleMousedown(event) {
@@ -157,7 +168,7 @@ export default Component.extend({
     },
 
     _handleMousemove() {
-        if (!this.showToolbar) {
+        if (this._hasSelectedRange && !this.showToolbar) {
             this.set('showToolbar', true);
         }
 
