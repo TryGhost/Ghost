@@ -1,12 +1,10 @@
 import Controller from '@ember/controller';
-import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
 import validator from 'npm:validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -59,18 +57,6 @@ export default Controller.extend({
             || this.get('user.isAuthorOrContributor')))) {
             return true;
         }
-    }),
-
-    // duplicated in gh-user-active -- find a better home and consolidate?
-    userImageBackground: computed('user.profileImageUrl', function () {
-        let url = encodeURI(decodeURI(this.user.get('profileImageUrl')));
-        return htmlSafe(`background-image: url(${url})`);
-    }),
-    // end duplicated
-
-    coverImageBackground: computed('user.coverImage', function () {
-        let url = encodeURI(decodeURI(this.user.get('coverImageUrl')));
-        return htmlSafe(`background-image: url(${url})`);
     }),
 
     coverTitle: computed('user.name', function () {
