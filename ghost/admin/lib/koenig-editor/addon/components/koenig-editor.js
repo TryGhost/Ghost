@@ -52,7 +52,8 @@ export const CARD_COMPONENT_MAP = {
     image: 'koenig-card-image',
     markdown: 'koenig-card-markdown',
     'card-markdown': 'koenig-card-markdown', // backwards-compat with markdown editor
-    html: 'koenig-card-html'
+    html: 'koenig-card-html',
+    code: 'koenig-card-code'
 };
 
 export const CURSOR_BEFORE = -1;

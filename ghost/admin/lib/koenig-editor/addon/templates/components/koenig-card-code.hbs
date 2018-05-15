@@ -1,0 +1,24 @@
+{{#koenig-card
+    class=(concat "ba b--white relative kg-card-hover miw-100 relative" (if isEditing "pt1 pb1 pl6 nl6 pr6 nr6"))
+    headerOffset=headerOffset
+    toolbar=toolbar
+    isSelected=isSelected
+    isEditing=isEditing
+    selectCard=(action selectCard)
+    editCard=(action editCard)
+    onLeaveEdit=(action "leaveEditMode")
+}}
+    {{#if isEditing}}
+        {{gh-cm-editor payload.code
+            class="koenig-card-html--editor"
+            autofocus=true
+            lineWrapping=true
+            update=(action "updateCode")
+        }}
+    {{else}}
+        <div class="koenig-card-html-rendered">
+            <pre><code class="line-numbers {{if payload.language (concat "language-" payload.language)}}">{{escapedCode}}</code></pre>
+        </div>
+        <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+{{/koenig-card}}
