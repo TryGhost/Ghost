@@ -48,6 +48,7 @@ export default Component.extend({
     // closure actions
     toggleMarkup() {},
     toggleSection() {},
+    toggleHeaderSection() {},
     editLink() {},
 
     /* computed properties -------------------------------------------------- */
@@ -122,8 +123,16 @@ export default Component.extend({
 
         toggleSection(sectionName) {
             let range = this.editorRange;
-            this.toggleSection(sectionName);
             this.editor.run((postEditor) => {
+                this.toggleSection(sectionName, postEditor);
+                postEditor.setRange(range);
+            });
+        },
+
+        toggleHeaderSection(headingTagName) {
+            let range = this.editorRange;
+            this.editor.run((postEditor) => {
+                this.toggleHeaderSection(headingTagName, postEditor);
                 postEditor.setRange(range);
             });
         },

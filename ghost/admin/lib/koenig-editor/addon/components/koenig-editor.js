@@ -335,14 +335,33 @@ export default Component.extend({
     },
 
     actions: {
-        toggleMarkup(markupTagName) {
-            let editor = this.editor;
-            editor.toggleMarkup(markupTagName);
+        toggleMarkup(markupTagName, postEditor) {
+            (postEditor || this.editor).toggleMarkup(markupTagName);
         },
 
-        toggleSection(sectionTagName) {
+        toggleSection(sectionTagName, postEditor) {
+            (postEditor || this.editor).toggleSection(sectionTagName);
+        },
+
+        toggleHeaderSection(headingTagName, postEditor) {
             let editor = this.editor;
-            editor.toggleSection(sectionTagName);
+
+            // skip toggle if we already have the same heading level
+            if (editor.activeSection.tagName === headingTagName) {
+                return;
+            }
+
+            let operation = function (postEditor) {
+                // strip all formatting aside from links
+                postEditor.removeMarkupFromRange(
+                    editor.activeSection.toRange(),
+                    m => m.tagName !== 'a'
+                );
+
+                postEditor.toggleSection(headingTagName);
+            };
+
+            this._performEdit(operation, postEditor);
         },
 
         replaceWithCardSection(cardName, range) {
@@ -726,6 +745,18 @@ export default Component.extend({
     },
 
     /* internal methods ----------------------------------------------------- */
+
+    // nested editor.run loops will create additional undo steps so this is a
+    // shortcut for when we already have a postEditor
+    _performEdit(editOperation, postEditor) {
+        if (postEditor) {
+            editOperation(postEditor);
+        } else {
+            this.editor.run((postEditor) => {
+                editOperation(postEditor);
+            });
+        }
+    },
 
     _hideCursor() {
         this.editor.element.style.caretColor = 'transparent';
