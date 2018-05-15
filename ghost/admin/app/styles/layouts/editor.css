@@ -64,7 +64,7 @@
     position: relative;
     z-index: 1000;
     display: inline-block;
-    padding: 15px 0 15px 15px;
+    padding: 10px;
     color: var(--midgrey);
     line-height: 0;
     transition: all 0.15s ease-out 0s;
@@ -286,11 +286,15 @@
     right: 0;
     left: 0;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    height: 80px;
-    padding: 0 30px;
+    height: 36px;
+    padding: 0;
+    margin: 24px;
+    z-index: 799;
 }
+
 @media (max-width: 750px) {
     .gh-editor-header {
         padding: 0 4vw;
@@ -304,6 +308,8 @@
     padding-left: 15px;
     border-bottom: var(--lightgrey) 1px solid;
     background-color: #fff;
+    margin: 0;
+    border-radius: 0;
 }
 
 .gh-editor-header-small .gh-publishmenu {
@@ -312,6 +318,15 @@
 
 .gh-editor-header-small .post-settings {
     padding: 13px 15px;
+}
+
+.gh-editor-header-small .gh-koenig-info {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    padding: 0 8px;
 }
 
 .gh-editor-status {

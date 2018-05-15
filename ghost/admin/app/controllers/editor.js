@@ -94,6 +94,7 @@ export default Controller.extend({
 
     /* public properties -----------------------------------------------------*/
 
+    infoMessage: null,
     leaveEditorTransition: null,
     shouldFocusEditor: false,
     showDeletePostModal: false,
@@ -512,12 +513,6 @@ export default Controller.extend({
         let postIsMarkdownCompatible = post.isCompatibleWithMarkdownEditor();
         if (koenigEnabled || !postIsMarkdownCompatible) {
             this.set('useKoenig', true);
-
-            // display an alert if koenig is disabled but we use it anyway
-            // because the post is incompatible with the markdown editor
-            if (!koenigEnabled) {
-                alert('This post will be opened with the Koenig editor because it\'s not compatible with the markdown editor');
-            }
         } else {
             this.set('useKoenig', false);
         }
@@ -533,6 +528,12 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
+
+        // display an info message if Koenig is disabled by we had to use it
+        // for post compatibility
+        if (!koenigEnabled && this.useKoenig) {
+            // this.set('infoMessage', 'This post can only be edited with the Koenig editor.');
+        }
 
         // autofocus the editor if we have a new post
         this.set('shouldFocusEditor', post.get('isNew'));
@@ -629,6 +630,7 @@ export default Controller.extend({
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusEditor', false);
         this.set('leaveEditorTransition', null);
+        this.set('infoMessage', null);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route

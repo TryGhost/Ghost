@@ -239,3 +239,10 @@
 .mobile-menu-expanded .content-cover {
     transform: translate3d(205px, 0px, 0px);
 }
+
+
+/* Badges
+/* ---------------------------------------------------------- */
+.gh-setting-title .gh-badge {
+    font-size: 13px;
+}

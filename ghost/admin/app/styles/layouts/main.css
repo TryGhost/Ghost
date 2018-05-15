@@ -347,9 +347,9 @@
 .gh-menu-toggle {
     display: block;
     position: absolute;
-    top: 25px;
+    top: 24px;
     right: -8px;
-    height: 34px;
+    height: 36px;
     width: 25px;
     border: color-mod(var(--lightgrey) l(+4%)) 5px solid;
     border-radius: 4px;
@@ -636,10 +636,6 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-}
-
-.view-actions .gh-btn {
-    margin-left: 8px;
 }
 
 .view-container,
