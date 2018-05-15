@@ -1891,7 +1891,6 @@ describe('Unit: models/post', function () {
     });
 
     describe('Mobiledoc conversion', function () {
-        let configUtils = require('../../utils/configUtils');
         let labs = require('../../../server/services/labs');
         let origLabs = _.cloneDeep(labs);
         let events;
@@ -1906,10 +1905,7 @@ describe('Unit: models/post', function () {
             });
         });
 
-        afterEach(configUtils.restore);
-
         it('uses v2 if Koenig is enabled', function () {
-            configUtils.set('enableDeveloperExperiments', true);
             sandbox.stub(labs, 'isSet').callsFake(function (key) {
                 if (key === 'koenigEditor') {
                     return true;

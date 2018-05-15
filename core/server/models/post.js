@@ -256,7 +256,6 @@ Post = ghostBookshelf.Model.extend({
         // TODO: re-render all content and remove the version toggle for Ghost 2.0
         if (mobiledoc) {
             let version = 1;
-            let devExperimentsEnabled = config.get('enableDeveloperExperiments');
             let koenigEnabled = labs.isSet('koenigEditor') === true;
 
             let mobiledocIsCompatibleWithV1 = function mobiledocIsCompatibleWithV1(doc) {
@@ -275,7 +274,7 @@ Post = ghostBookshelf.Model.extend({
                 return false;
             };
 
-            if ((devExperimentsEnabled && koenigEnabled) || !mobiledocIsCompatibleWithV1(mobiledoc)) {
+            if (koenigEnabled || !mobiledocIsCompatibleWithV1(mobiledoc)) {
                 version = 2;
             }
 
