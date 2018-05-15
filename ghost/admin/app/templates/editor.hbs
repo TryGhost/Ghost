@@ -5,19 +5,34 @@
         navIsClosed=navIsClosed
         as |editor|
     }}
-        <header class="gh-editor-header {{editor.headerClass}}">
-            <div class="gh-editor-status">
-                {{gh-editor-post-status
-                    post=post
-                    isSaving=(or autosave.isRunning saveTasks.isRunning)
-                }}
+        <header class="gh-editor-header br2 {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
+            <div class="flex items-center br2 h9 pa2 pl4 pr4 {{unless infoMessage "bg-white-90"}}">
+                <div class="gh-editor-status">
+                    {{gh-editor-post-status
+                        post=post
+                        isSaving=(or autosave.isRunning saveTasks.isRunning)
+                    }}
+                </div>
+                {{#gh-scheduled-post-countdown post=post as |post countdown|}}
+                    <time datetime="{{post.publishedAtUTC}}" class="green f8 nudge-bottom--1 ml3" data-test-schedule-countdown>
+                        Post will go live {{countdown}}.
+                    </time>
+                {{/gh-scheduled-post-countdown}}
             </div>
-            {{#gh-scheduled-post-countdown post=post as |post countdown|}}
-                <time datetime="{{post.publishedAtUTC}}" class="gh-notification gh-notification-schedule" data-test-schedule-countdown>
-                    Post will be published {{countdown}}.
-                </time>
-            {{/gh-scheduled-post-countdown}}
-            <section class="view-actions">
+
+            {{#if infoMessage}}
+            <div class="gh-koenig-info miw88 flex flex-auto justify-center">
+                <div class="midgrey inline-flex tracked-1 center pa1 pl4 pr4 br3 justify-center items-start {{if (eq editor.headerClass "gh-editor-header-small") "bg-white-90"}}">
+                    {{svg-jar "idea" class="w7 h7 fill-blue"}}
+                    <p class="ma0 pa0 ml1 nudge-top--2">
+                        {{infoMessage}}
+                        <button type="button" class="blue fw5" {{action (mut infoMessage "")}}>Got it</button>
+                    </p>
+                </div>
+            </div>
+            {{/if}}
+
+            <section class="view-actions br2 {{unless infoMessage "bg-white-90"}}">
                 {{#unless post.isNew}}
                     {{#if session.user.isContributor}}
                         {{gh-task-button "Save"
