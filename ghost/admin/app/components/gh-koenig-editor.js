@@ -26,22 +26,37 @@ export default Component.extend({
 
         // triggered when a click is registered on .gh-koenig-editor-pane
         focusEditor(event) {
-            // if a click occurs on the editor canvas, focus the editor and put
-            // the cursor at the end of the document. Allows for a much larger
-            // hit area for focusing the editor when it has no or little content
-            if (event.target.tagName === 'ARTICLE' && event.target.classList.contains('koenig-editor')) {
-                let {post} = this._editor;
-                let range = post.toRange();
+            if (event.target.classList.contains('gh-koenig-editor-pane')) {
+                let editorCanvas = this._editor.element;
+                let {bottom} = editorCanvas.getBoundingClientRect();
 
-                event.preventDefault();
+                // if a click occurs below the editor canvas, focus the editor and put
+                // the cursor at the end of the document
+                if (event.clientY > bottom) {
+                    let {post} = this._editor;
+                    let range = post.toRange();
 
-                this._editor.focus();
-                this._editor.run((postEditor) => {
-                    postEditor.setRange(range.tail.section.tailPosition());
-                });
+                    event.preventDefault();
 
-                // ensure we're scrolled to the bottom
-                this.element.scrollTop = this.element.scrollHeight;
+                    this._editor.focus();
+                    this._editor.run((postEditor) => {
+                        let tailSection = range.tailSection;
+
+                        // we should always have a visible cursor when focusing
+                        // at the bottom so create an empty paragraph if last
+                        // section is a card
+                        if (tailSection.isCardSection) {
+                            let newSection = postEditor.builder.createMarkupSection('p');
+                            postEditor.insertSectionAtEnd(newSection);
+                            tailSection = newSection;
+                        }
+
+                        postEditor.setRange(tailSection.tailPosition());
+                    });
+
+                    // ensure we're scrolled to the bottom
+                    this.element.scrollTop = this.element.scrollHeight;
+                }
             }
         },
 
