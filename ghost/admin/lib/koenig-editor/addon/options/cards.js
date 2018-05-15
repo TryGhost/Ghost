@@ -5,5 +5,6 @@ export default [
     createComponentCard('image', {hasEditMode: false}),
     createComponentCard('markdown'),
     createComponentCard('card-markdown'), // backwards-compat with markdown editor
-    createComponentCard('html')
+    createComponentCard('html'),
+    createComponentCard('code')
 ];
