@@ -72,5 +72,21 @@ describe('Markdown card', function () {
 
             serializer.serialize(card.render(opts)).should.match('<h1 id="heading">HEADING</h1>\n<h2>Heading 2>');
         });
+
+        it('Renders nothing when payload is undefined', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    markdown: undefined
+                },
+                options: {
+                    version: 2
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match('');
+        });
     });
 });
