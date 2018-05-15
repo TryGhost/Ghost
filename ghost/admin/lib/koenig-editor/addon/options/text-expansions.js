@@ -34,12 +34,7 @@ export default function (editor, koenig) {
                 let position = postEditor.deleteRange(range);
                 postEditor.setRange(position);
 
-                // skip toggle if we already have the same heading level
-                if (editor.activeSection.tagName === headingTag) {
-                    return;
-                }
-
-                postEditor.toggleSection(headingTag);
+                koenig.send('toggleHeaderSection', headingTag, postEditor);
             });
         }
     });
