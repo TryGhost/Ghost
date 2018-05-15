@@ -25,6 +25,7 @@ function getAboutConfig() {
 
 function getBaseConfig() {
     return {
+        default_locale: settingsCache.get('default_locale'),
         useGravatar: !config.isPrivacyDisabled('useGravatar'),
         publicAPI: config.get('publicAPI') === true,
         blogUrl: urlService.utils.urlFor('home', true),
