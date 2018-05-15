@@ -155,20 +155,18 @@
             {{/gh-uploader}}
         </div>
 
-        {{#if config.enableDeveloperExperiments}}
-            <div class="gh-setting-header">⚠️ Developer-only Feature Testing ⚠️</div>
-            <div class="gh-setting">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Koenig Editor</div>
-                    <div class="gh-setting-desc">
-                        Highly experimental (i.e. broken) editor. For developer use only.<br>
-                        <strong>Warning:</strong> Stories created or edited with Koenig will no longer be compatible with the old markdown editor.</div>
-                </div>
-                <div class="gh-setting-action">
-                    <div class="for-checkbox">{{gh-feature-flag "koenigEditor"}}</div>
-                </div>
+        <div class="gh-setting-header">⚠️ Developer-only Feature Testing ⚠️</div>
+        <div class="gh-setting">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Koenig Editor</div>
+                <div class="gh-setting-desc">
+                    Highly experimental (i.e. broken) editor. For developer use only.<br>
+                    <strong>Warning:</strong> Stories created or edited with Koenig will no longer be compatible with the old markdown editor.</div>
             </div>
-        {{/if}}
+            <div class="gh-setting-action">
+                <div class="for-checkbox">{{gh-feature-flag "koenigEditor"}}</div>
+            </div>
+        </div>
 
     </section>
 </section>
