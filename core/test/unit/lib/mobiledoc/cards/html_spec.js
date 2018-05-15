@@ -44,4 +44,17 @@ describe('HTML card', function () {
 
         serializer.serialize(card.render(opts)).should.match('<h1>HEADING<');
     });
+
+    it('Renders nothing when payload is undefined', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                html: undefined
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.match('');
+    });
 });
