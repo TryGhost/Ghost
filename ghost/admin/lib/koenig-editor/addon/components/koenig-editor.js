@@ -537,15 +537,19 @@ export default Component.extend({
         // if we have `code` or ~strike~ formatting to the left but not the right
         // then toggle the formatting - these formats should only be creatable
         // through the text expansions
-        // HACK: this is largely duplicated in `inputModeDidChange` to work
-        // around an event ordering bug - see comments there
+        // HACK: this is duplicated in `inputModeDidChange` to work around an
+        //       event ordering bug - see comments there
         if (isCollapsed && head.marker) {
             Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
-                if (head.marker.hasMarkup(tagName)) {
+                tagName = tagName.toLowerCase();
+                if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName.toLowerCase())) {
                     let nextMarker = head.markerIn(1);
                     if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
-                        run.next(this, function () {
-                            editor.toggleMarkup(tagName);
+                        // there is a bug/odd behaviour in mobiledoc-kit where after
+                        // pasting content the _editState can end up with multiple
+                        // instances of the markup so we need to toggle all of them
+                        editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
+                            editor._editState.toggleMarkupState(markup);
                         });
                     }
                 }
@@ -581,18 +585,23 @@ export default Component.extend({
         let sectionParentTagNames = editor.activeSections.map(s => s.isNested ? s.parent.tagName : s.tagName);
         let sectionTags = arrayToMap(sectionParentTagNames);
 
-        // HACK: this is largly duplicated with our `cursorDidChange` handling.
+        // HACK: this is duplicated with our `cursorDidChange` handling.
         // On keyboard cursor movement our `cursorDidChange` toggle for special
         // formats happens before mobiledoc's readstate updates activeMarkups
         // so we have to re-do it here
         let {head, isCollapsed} = editor.range;
         if (isCollapsed) {
-            let activeMarkupTagNames = editor.activeMarkups.mapBy('tagName');
             Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
-                if (activeMarkupTagNames.includes(tagName.toLowerCase())) {
+                tagName = tagName.toLowerCase();
+                if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
                     let nextMarker = head.markerIn(1);
                     if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
-                        return editor.toggleMarkup(tagName);
+                        // there is a bug/odd behaviour in mobiledoc-kit where after
+                        // pasting content the _editState can end up with multiple
+                        // instances of the markup so we need to toggle all of them
+                        editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
+                            editor._editState.toggleMarkupState(markup);
+                        });
                     }
                 }
             });
