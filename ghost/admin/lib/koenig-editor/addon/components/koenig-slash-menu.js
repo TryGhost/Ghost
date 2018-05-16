@@ -6,7 +6,7 @@ import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 
-const ROW_LENGTH = 4;
+const ROW_LENGTH = 3;
 
 const ITEM_MAP = [
     {
@@ -29,6 +29,13 @@ const ITEM_MAP = [
         matches: ['embed', 'html'],
         type: 'card',
         replaceArg: 'html'
+    },
+    {
+        label: 'Code Block',
+        icon: 'koenig/code-block',
+        matches: ['embed', 'code'],
+        type: 'card',
+        replaceArg: 'code'
     },
     {
         label: 'Divider',
