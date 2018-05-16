@@ -6,9 +6,11 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import EmberObject, {computed} from '@ember/object';
+import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
+import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-editor';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
@@ -109,6 +111,7 @@ export default Component.extend({
     _lastIsEditingDisabled: false,
     _isRenderingEditor: false,
     _skipCursorChange: false,
+    _modifierKeys: null,
 
     // closure actions
     willCreateEditor() {},
@@ -155,6 +158,12 @@ export default Component.extend({
         this.set('componentCards', A([]));
         this.set('activeMarkupTagNames', {});
         this.set('activeSectionTagNames', {});
+
+        this._modifierKeys = {
+            shift: false,
+            alt: false,
+            ctrl: false
+        };
 
         this._startedRunLoop = false;
     },
@@ -605,12 +614,11 @@ export default Component.extend({
 
     /* custom event handlers ------------------------------------------------ */
 
-    // if a URL is pasted and we have a selection, make that selection a link
     handlePaste(event) {
         let editor = this.editor;
         let range = editor.range;
 
-        // only attempt link if we have a text selection in a single section
+        // if a URL is pasted and we have a selection, make that selection a link
         if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
             let {text} = getContentFromPasteEvent(event);
             if (text && validator.isURL(text)) {
@@ -622,7 +630,36 @@ export default Component.extend({
                 // prevent mobiledoc's default paste event handler firing
                 event.preventDefault();
                 event.stopImmediatePropagation();
+                return;
             }
+        }
+
+        // if plain text is pasted we run it through our markdown parser so that
+        // we get better output than mobiledoc's default text parsing and we can
+        // provide an easier MD->Mobiledoc conversion route
+        // NOTE: will not work in IE/Edge which only ever expose `html`
+        let {html, text} = getContentFromPasteEvent(event);
+        if (text && !html && !this._modifierKeys.shift) {
+            // prevent mobiledoc's default paste event handler firing
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            // we can't modify the paste event itself so we trigger a mock
+            // paste event with our own data
+            let pasteEvent = {
+                type: 'paste',
+                preventDefault() {},
+                target: editor.element,
+                clipboardData: {
+                    getData(type) {
+                        if (type === 'text/html') {
+                            return formatMarkdown(text, false);
+                        }
+                    }
+                }
+            };
+
+            editor.triggerEvent(editor.element, 'paste', pasteEvent);
         }
     },
 
@@ -632,6 +669,19 @@ export default Component.extend({
     // TODO: needs testing for how this interacts with cards that have drag behaviour
     dragStart(event) {
         event.preventDefault();
+    },
+
+    // we keep track of the modifier keys that are pressed so that in other event
+    // handlers we can adjust the behaviour. Necessary because the browser doesn't
+    // natively provide any info on non-key events about which keys are pressed
+    keyDown(event) {
+        let key = Key.fromEvent(event);
+        this._updateModifiersFromKey(key, {isDown: true});
+    },
+
+    keyUp(event) {
+        let key = Key.fromEvent(event);
+        this._updateModifiersFromKey(key, {isDown: false});
     },
 
     /* public methods ------------------------------------------------------- */
@@ -765,6 +815,16 @@ export default Component.extend({
 
     _showCursor() {
         this.editor.element.style.caretColor = 'auto';
+    },
+
+    _updateModifiersFromKey(key, {isDown}) {
+        if (key.isShiftKey()) {
+            this._modifierKeys.shift = isDown;
+        } else if (key.isAltKey()) {
+            this._modifierKeys.alt = isDown;
+        } else if (key.isCtrlKey()) {
+            this._modifierKeys.ctrl = isDown;
+        }
     },
 
     // store a reference to the editor for the acceptance test helpers
