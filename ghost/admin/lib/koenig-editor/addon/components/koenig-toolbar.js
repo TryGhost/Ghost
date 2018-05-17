@@ -132,7 +132,7 @@ export default Component.extend({
         toggleHeaderSection(headingTagName) {
             let range = this.editorRange;
             this.editor.run((postEditor) => {
-                this.toggleHeaderSection(headingTagName, postEditor);
+                this.toggleHeaderSection(headingTagName, postEditor, {force: true});
                 postEditor.setRange(range);
             });
         },

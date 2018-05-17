@@ -377,11 +377,11 @@ export default Component.extend({
             (postEditor || this.editor).toggleSection(sectionTagName);
         },
 
-        toggleHeaderSection(headingTagName, postEditor) {
+        toggleHeaderSection(headingTagName, postEditor, options = {}) {
             let editor = this.editor;
 
             // skip toggle if we already have the same heading level
-            if (editor.activeSection.tagName === headingTagName) {
+            if (!options.force && editor.activeSection.tagName === headingTagName) {
                 return;
             }
 
