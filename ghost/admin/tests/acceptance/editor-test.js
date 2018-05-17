@@ -349,9 +349,9 @@ describe('Acceptance: Editor', function () {
                 'publish menu is not shown after closed'
             ).to.not.exist;
 
-            // expect countdown to show warning, that post will be published in x minutes
+            // expect countdown to show warning, that post will go live in x minutes
             expect(find('[data-test-schedule-countdown]').text().trim(), 'notification countdown')
-                .to.contain('Post will be published in');
+                .to.contain('Post will go live in');
 
             expect(
                 find('[data-test-publishmenu-trigger]').text().trim(),
@@ -541,9 +541,9 @@ describe('Acceptance: Editor', function () {
             // Dropdown menu should be 'Update Post' and 'Unschedule'
             expect(find('[data-test-publishmenu-trigger]').text().trim(), 'text in save button for scheduled post')
                 .to.equal('Scheduled');
-            // expect countdown to show warning, that post will be published in x minutes
+            // expect countdown to show warning, that post will go live in x minutes
             expect(find('[data-test-schedule-countdown]').text().trim(), 'notification countdown')
-                .to.contain('Post will be published in');
+                .to.contain('Post will go live in');
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
