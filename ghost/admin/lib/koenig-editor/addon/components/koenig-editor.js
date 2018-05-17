@@ -661,6 +661,40 @@ export default Component.extend({
 
             editor.triggerEvent(editor.element, 'paste', pasteEvent);
         }
+
+        // we need to standardise HTML here because parserPlugins do not get
+        // passed inline markup such as `<b>` or `<i>`
+        if (html) {
+            // prevent mobiledoc's default paste event handler firing
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            let normalizedHtml = html
+                .replace(/<b(\s|>)/gi, '<strong$1')
+                .replace(/<\/b>/gi, '</strong>')
+                .replace(/<i(\s|>)/gi, '<em$1')
+                .replace(/<\/i>/gi, '</em>');
+
+            // we can't modify the paste event itself so we trigger a mock
+            // paste event with our own data
+            let pasteEvent = {
+                type: 'paste',
+                preventDefault() {},
+                target: editor.element,
+                clipboardData: {
+                    getData(type) {
+                        if (type === 'text/plain') {
+                            return text;
+                        }
+                        if (type === 'text/html') {
+                            return normalizedHtml;
+                        }
+                    }
+                }
+            };
+
+            editor.triggerEvent(editor.element, 'paste', pasteEvent);
+        }
     },
 
     /* Ember event handlers ------------------------------------------------- */
