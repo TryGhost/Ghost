@@ -214,10 +214,19 @@ export default Component.extend({
 
             // grab a range from the editor position under the pointer. We can
             // rely on the same show/hide behaviour of our cursor implementation
-            let position = editor.positionAtPoint(pageX, pageY);
-            if (position) {
-                let pointerRange = position.toRange();
-                this._showOrHideButton(pointerRange);
+            try {
+                let position = editor.positionAtPoint(pageX, pageY);
+                if (position) {
+                    let pointerRange = position.toRange();
+                    this._showOrHideButton(pointerRange);
+                }
+            } catch (e) {
+                // mobiledoc-kit can generate the following harmless error
+                // from positionAtPoint(x,y) whilst dragging a selection
+                // TypeError: Failed to execute 'compareDocumentPosition' on 'Node': parameter 1 is not of type 'Node'.
+                if (e instanceof TypeError === false) {
+                    throw e;
+                }
             }
 
             // if the button is hidden due to the pointer not being over a blank
