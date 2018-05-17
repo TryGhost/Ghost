@@ -80,6 +80,30 @@ function arrayToMap(array) {
     return map;
 }
 
+// if the cursor is at the end of one of our "special" markups that can only be
+// toggled via markdown expansions then we want to ensure that the markup is
+// removed from the edit state so that you can type without being stuck with
+// the special formatting
+function toggleSpecialFormatEditState(editor) {
+    let {head, isCollapsed} = editor.range;
+    if (isCollapsed) {
+        Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
+            tagName = tagName.toLowerCase();
+            if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
+                let nextMarker = head.markerIn(1);
+                if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                    // there is a bug somehwhere that means after pasting
+                    // content the _editState can end up with multiple
+                    // instances of the markup so we need to toggle all of them
+                    editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
+                        editor._editState.toggleMarkupState(markup);
+                    });
+                }
+            }
+        });
+    }
+}
+
 export default Component.extend({
     layout,
 
@@ -537,24 +561,7 @@ export default Component.extend({
         // if we have `code` or ~strike~ formatting to the left but not the right
         // then toggle the formatting - these formats should only be creatable
         // through the text expansions
-        // HACK: this is duplicated in `inputModeDidChange` to work around an
-        //       event ordering bug - see comments there
-        if (isCollapsed && head.marker) {
-            Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
-                tagName = tagName.toLowerCase();
-                if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName.toLowerCase())) {
-                    let nextMarker = head.markerIn(1);
-                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
-                        // there is a bug/odd behaviour in mobiledoc-kit where after
-                        // pasting content the _editState can end up with multiple
-                        // instances of the markup so we need to toggle all of them
-                        editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
-                            editor._editState.toggleMarkupState(markup);
-                        });
-                    }
-                }
-            });
-        }
+        toggleSpecialFormatEditState(editor);
 
         // do not include the tail section if it's offset is 0
         // fixes triple-click unexpectedly selecting two sections for section-level formatting
@@ -585,27 +592,11 @@ export default Component.extend({
         let sectionParentTagNames = editor.activeSections.map(s => s.isNested ? s.parent.tagName : s.tagName);
         let sectionTags = arrayToMap(sectionParentTagNames);
 
-        // HACK: this is duplicated with our `cursorDidChange` handling.
         // On keyboard cursor movement our `cursorDidChange` toggle for special
-        // formats happens before mobiledoc's readstate updates activeMarkups
+        // formats happens before mobiledoc's readstate updates the edit states
         // so we have to re-do it here
-        let {head, isCollapsed} = editor.range;
-        if (isCollapsed) {
-            Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
-                tagName = tagName.toLowerCase();
-                if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
-                    let nextMarker = head.markerIn(1);
-                    if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
-                        // there is a bug/odd behaviour in mobiledoc-kit where after
-                        // pasting content the _editState can end up with multiple
-                        // instances of the markup so we need to toggle all of them
-                        editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
-                            editor._editState.toggleMarkupState(markup);
-                        });
-                    }
-                }
-            });
-        }
+        // TODO: can we make the event order consistent in mobiledoc-kit?
+        toggleSpecialFormatEditState(editor);
 
         // Avoid updating this component's properties synchronously while
         // rendering the editor (after rendering the component) because it
