@@ -12,6 +12,7 @@ import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-editor';
+import parserPlugins from '../options/parser-plugins';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'npm:validator';
@@ -225,6 +226,7 @@ export default Component.extend({
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
+        editorOptions.parserPlugins = parserPlugins;
 
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
