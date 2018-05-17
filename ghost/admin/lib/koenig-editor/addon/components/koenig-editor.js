@@ -566,7 +566,7 @@ export default Component.extend({
         // do not include the tail section if it's offset is 0
         // fixes triple-click unexpectedly selecting two sections for section-level formatting
         // https://github.com/bustle/mobiledoc-kit/issues/597
-        if (direction === 1 && !isCollapsed && tail.offset === 0) {
+        if (direction === 1 && !isCollapsed && tail.offset === 0 && tail.section.prev) {
             let finalSection = tail.section.prev;
             let newRange = new MobiledocRange(head, finalSection.tailPosition());
 
