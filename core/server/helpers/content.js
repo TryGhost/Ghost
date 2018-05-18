@@ -20,7 +20,7 @@ module.exports = function content(options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
-    var html = this.html
+    var html = this.html;
     if (config.get('images').optimize) {
         html = responsive.imgs(this.html);
     }

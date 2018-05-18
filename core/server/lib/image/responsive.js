@@ -11,22 +11,22 @@ var path = require('path'),
 // Effectively delegating decision to consume higher resolution image assets to client
 // @see https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images
 module.exports.imgs = function imgs(html) {
-  var content = cheerio.load(html, {decodeEntities: false}),
-      re = new RegExp('^/' + url.STATIC_IMAGE_URL_PREFIX);
+    var content = cheerio.load(html, {decodeEntities: false}),
+        re = new RegExp('^/' + url.STATIC_IMAGE_URL_PREFIX);
 
-  content('img').each(function(i, img) {
-    img = content(img)
-    var uri = img.attr('src');
-    // local image without an existing srcset
-    if (uri.match(re) && !img.attr('srcset')) {
-        img.attr('srcset', srcset(uri));
-        img.attr('sizes', sizes(uri));
-        img.attr('src', src(uri));
-    }
-  });
+    content('img').each(function (i, img) {
+        img = content(img);
+        var uri = img.attr('src');
+        // local image without an existing srcset
+        if (uri.match(re) && !img.attr('srcset')) {
+            img.attr('srcset', srcset(uri));
+            img.attr('sizes', sizes());
+            img.attr('src', src(uri));
+        }
+    });
 
-  return content.html();
-}
+    return content.html();
+};
 
 // Return the local filesystem path for an image src path
 function systemPath(src) {
@@ -60,35 +60,33 @@ function resizedImage(src, size, quality) {
     };
 
     if (!fs.existsSync(paths.resized)) {
-        jimp.read(paths.original).then(function(image) {
+        jimp.read(paths.original).then(function (image) {
             image.scaleToFit(size, size)
-                 .quality(quality)
-                 .write(paths.resized);
-        }).catch(function(error) {
-            console.error(error);
+                .quality(quality)
+                .write(paths.resized);
         });
     }
 
-  return resized;
+    return resized;
 }
 
 // Return a string for use with `img.srcset` html attribute
 function srcset(src) {
-    return imageSizes.map(function(px, n) {
+    return imageSizes.map(function (px) {
         var density = px + 'w';
         return [resizedImage(src, px, quality), density].join(' ');
     }).join(', ');
 }
 
 // Return a string for use with `img.sizes` html attribute
-function sizes(src) {
-  return imageSizes.map(function(px, n) {
-      var w = px + 'px';
-      if (n === imageSizes.length) {
-          return w
-      }
-      return ['(max-width: ' + w + ')', w].join(' ');
-  }).join(', ');
+function sizes() {
+    return imageSizes.map(function (px, i) {
+        var w = px + 'px';
+        if (i === imageSizes.length) {
+            return w;
+        }
+        return ['(max-width: ' + w + ')', w].join(' ');
+    }).join(', ');
 }
 
 // Return an optimized default for an original for use with `img.src` attribute
