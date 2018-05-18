@@ -78,5 +78,15 @@
         "robotstxt": {
             "maxAge": 3600000
         }
+    },
+    "images": {
+        "optimize": true,
+        "quality": 60,
+        "sizes": [
+            260,
+            520,
+            1040,
+            2080
+        ]
     }
 }

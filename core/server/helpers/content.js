@@ -9,7 +9,9 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     downsize = require('downsize'),
-    SafeString = proxy.SafeString;
+    SafeString = proxy.SafeString,
+    config = proxy.config,
+    responsive = require('../lib/image/responsive');
 
 module.exports = function content(options) {
     var truncateOptions = (options || {}).hash || {};
@@ -18,11 +20,16 @@ module.exports = function content(options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    var html = this.html
+    if (config.get('images').optimize) {
+        html = responsive.imgs(this.html);
+    }
+
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         return new SafeString(
-            downsize(this.html, truncateOptions)
+            downsize(html, truncateOptions)
         );
     }
 
-    return new SafeString(this.html);
+    return new SafeString(html);
 };
