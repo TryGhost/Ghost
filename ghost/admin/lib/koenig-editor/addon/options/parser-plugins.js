@@ -42,9 +42,25 @@ export function hrToCard(node, builder, {addSection, nodeFinished}) {
     nodeFinished();
 }
 
+export function preCodeToCard(node, builder, {addSection, nodeFinished}) {
+    if (node.nodeType !== 1 || node.tagName !== 'PRE') {
+        return;
+    }
+
+    let [codeElement] = node.children;
+
+    if (codeElement && codeElement.tagName === 'CODE') {
+        let payload = {code: codeElement.textContent};
+        let cardSection = builder.createCardSection('code', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+}
+
 export default [
     brToSoftBreakAtom,
     removeLeadingNewline,
     imgToCard,
-    hrToCard
+    hrToCard,
+    preCodeToCard
 ];
