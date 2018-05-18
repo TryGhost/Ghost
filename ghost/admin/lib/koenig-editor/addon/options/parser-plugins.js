@@ -21,7 +21,30 @@ export function removeLeadingNewline(node) {
     node.nodeValue = node.nodeValue.replace(/^\n/, '');
 }
 
+export function imgToCard(node, builder, {addSection, nodeFinished}) {
+    if (node.nodeType !== 1 || node.tagName !== 'IMG') {
+        return;
+    }
+
+    let payload = {src: node.src};
+    let cardSection = builder.createCardSection('image', payload);
+    addSection(cardSection);
+    nodeFinished();
+}
+
+export function hrToCard(node, builder, {addSection, nodeFinished}) {
+    if (node.nodeType !== 1 || node.tagName !== 'HR') {
+        return;
+    }
+
+    let cardSection = builder.createCardSection('hr');
+    addSection(cardSection);
+    nodeFinished();
+}
+
 export default [
     brToSoftBreakAtom,
     removeLeadingNewline,
+    imgToCard,
+    hrToCard
 ];
