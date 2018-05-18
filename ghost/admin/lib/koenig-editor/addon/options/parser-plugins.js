@@ -27,6 +27,16 @@ export function imgToCard(node, builder, {addSection, nodeFinished}) {
     }
 
     let payload = {src: node.src};
+
+    // TODO: this is a workaround for grabbing a figure>img+figcaption until
+    // https://github.com/bustle/mobiledoc-kit/issues/494 is resolved
+    // NOTE: it will only work in a strict <figure><img><figcaption></figure> case
+    let nextSibling = node.nextSibling;
+    if (nextSibling && nextSibling.tagName === 'FIGCAPTION') {
+        payload.caption = nextSibling.textContent;
+        node.parentNode.removeChild(nextSibling);
+    }
+
     let cardSection = builder.createCardSection('image', payload);
     addSection(cardSection);
     nodeFinished();
