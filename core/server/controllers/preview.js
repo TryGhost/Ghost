@@ -30,7 +30,7 @@ module.exports = function previewController(req, res, next) {
 
         if (req.params.options && req.params.options.toLowerCase() === 'edit') {
             // CASE: last param is of url is /edit, redirect to admin
-            return urlService.utils.redirectToAdmin(302, res, '#/editor/' + post.id);
+            return urlService.utils.redirectToAdmin(302, res, '/editor/' + post.id);
         } else if (req.params.options) {
             // CASE: unknown options param detected. Ignore and end in 404.
             return next();

@@ -178,7 +178,7 @@ describe('Controllers', function () {
             res.redirect = function (url) {
                 res.render.called.should.be.false();
                 res.set.called.should.be.false();
-                url.should.eql('/ghost/#/editor/1/');
+                url.should.eql('/ghost/editor/1/');
 
                 done();
             };
