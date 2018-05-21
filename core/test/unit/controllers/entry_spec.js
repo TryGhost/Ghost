@@ -17,7 +17,7 @@ var should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Controllers', function () {
-    var adminEditPagePath = '/ghost/#/editor/',
+    var adminEditPagePath = '/ghost/editor/',
         localSettingsCache = {},
         hasTemplateStub;
 
