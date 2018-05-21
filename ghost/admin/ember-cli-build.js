@@ -92,7 +92,7 @@ module.exports = function (defaults) {
             }
         },
         fingerprint: {
-            enabled: true,
+            enabled: isProduction,
             extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map']
         },
         minifyJS: {
