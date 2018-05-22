@@ -12,7 +12,7 @@ module.exports = {
         let img = dom.createElement('img');
         let imgClass = 'kg-image';
         if (payload.imageStyle) {
-            imgClass = `${imgClass} kg-image--${payload.imageStyle}`;
+            imgClass = `${imgClass} kg-image-${payload.imageStyle}`;
         }
         img.setAttribute('src', payload.src);
         img.setAttribute('class', imgClass);
