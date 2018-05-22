@@ -59,7 +59,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image kg-image--wide"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image kg-image-wide"></figure>');
         });
 
         it('full', function () {
@@ -73,7 +73,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image kg-image--full"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image kg-image-full"></figure>');
         });
     });
 });
