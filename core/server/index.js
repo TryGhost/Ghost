@@ -29,7 +29,6 @@ var debug = require('ghost-ignition').debug('boot:init'),
 
     // Services that need initialisation
     apps = require('./services/apps'),
-    xmlrpc = require('./services/xmlrpc'),
     slack = require('./services/slack'),
     webhooks = require('./services/webhooks');
 
@@ -70,15 +69,13 @@ function init() {
             themes.init(),
             // Initialize apps
             apps.init(),
-            // Initialize xmrpc ping
-            xmlrpc.listen(),
             // Initialize slack ping
             slack.listen(),
             // Initialize webhook pings
             webhooks.listen()
         );
     }).then(function () {
-        debug('Apps, XMLRPC, Slack done');
+        debug('Apps, Slack done');
 
         // Setup our collection of express apps
         parentApp = require('./web/parent-app')();
