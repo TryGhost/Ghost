@@ -63,6 +63,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     str: 'BACKSPACE',
     run(editor, koenig) {
         let {head, isCollapsed, head: {marker, offset, section}} = editor.range;
+        let {next, prev} = section;
 
         // if a card is selected we should delete the card then place the cursor
         // at the end of the previous section
@@ -72,13 +73,25 @@ export const DEFAULT_KEY_COMMANDS = [{
             return;
         }
 
-        // if the caret is at the beginning of the doc, on a blank para, and
-        // there are more sections then delete the para and trigger the
-        // `cursorDidExitAtTop` closure action
+        // if the cursor is at the beginning of the doc and on a blank paragraph,
+        // then delete or re-create the paragraph to remove formatting
         let isFirstSection = section === section.parent.sections.head;
-        if (isFirstSection && isCollapsed && offset === 0 && (section.isBlank || section.text === '') && section.next) {
+        if (isFirstSection && isCollapsed && offset === 0 && (section.isBlank || section.text === '')) {
             editor.run((postEditor) => {
+                // remove the current section
                 postEditor.removeSection(section);
+
+                // select the next section
+                if (next) {
+                    return;
+                }
+
+                // we don't have another section so create a blank paragraph
+                // which will have the effect of removing any formatting
+                let {builder} = postEditor;
+                let p = builder.createMarkupSection('p');
+                postEditor.insertSectionAtEnd(p);
+                postEditor.setRange(p.tailPosition());
             });
 
             // allow default behaviour which will trigger `cursorDidChange` and
@@ -91,17 +104,17 @@ export const DEFAULT_KEY_COMMANDS = [{
         // However, if the current paragraph is blank then delete the paragraph
         // instead - allows blank paragraphs between cards to be deleted and
         // feels more natural
-        if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section' && !section.isBlank) {
-            let card = koenig.getCardFromSection(section.prev);
+        if (isCollapsed && offset === 0 && prev && prev.type === 'card-section' && !section.isBlank) {
+            let card = koenig.getCardFromSection(prev);
             koenig.deleteCard(card);
             return;
         }
 
         // if cursor is at the beginning of a heading and previous section is a
         // blank paragraph, delete the blank paragraph
-        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && section.prev && section.prev.tagName === 'p' && section.prev.isBlank) {
+        if (isCollapsed && offset === 0 && section.tagName.match(/^h\d$/) && prev && prev.tagName === 'p' && prev.isBlank) {
             editor.run((postEditor) => {
-                postEditor.removeSection(section.prev);
+                postEditor.removeSection(prev);
             });
             return;
         }
