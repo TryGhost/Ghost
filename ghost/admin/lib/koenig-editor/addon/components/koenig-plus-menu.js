@@ -257,9 +257,7 @@ export default Component.extend({
 
     _moveCaretToCachedEditorRange() {
         this.set('editorRange', this._editorRange);
-        this.editor.run((postEditor) => {
-            postEditor.setRange(this._editorRange);
-        });
+        this.editor.selectRange(this._editorRange);
     }
 
 });
