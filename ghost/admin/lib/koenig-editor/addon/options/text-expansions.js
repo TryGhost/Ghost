@@ -1,5 +1,4 @@
 import {
-    replaceWithHeaderSection,
     replaceWithListSection
 } from 'mobiledoc-kit/editor/text-input-handlers';
 import {run} from '@ember/runloop';
@@ -19,7 +18,7 @@ export default function (editor, koenig) {
             let hashes = matches[1];
             let headingTag = `h${hashes.length}`;
             let {range} = editor;
-            let text = editor.range.head.section.textUntil(editor.range.head);
+            let text = range.head.section.textUntil(range.head);
 
             // we don't want to convert to a heading if the user has not just
             // finished typing the markdown (eg, they've made a previous
@@ -34,6 +33,7 @@ export default function (editor, koenig) {
                 let position = postEditor.deleteRange(range);
                 postEditor.setRange(position);
 
+                // toggleHeaderSection will remove all formatting except links
                 koenig.send('toggleHeaderSection', headingTag, postEditor);
             });
         }
@@ -50,9 +50,24 @@ export default function (editor, koenig) {
 
     editor.onTextInput({
         name: 'md_blockquote',
-        match: /^> $/,
-        run(editor) {
-            replaceWithHeaderSection(editor, 'blockquote');
+        match: /^> /,
+        run(editor, matches) {
+            let {range} = editor;
+            let {head, head: {section}} = range;
+            let text = section.textUntil(head);
+
+            // ensure cursor is at the end of the matched text so we don't
+            // convert text the users wants to start with `> ` and that we're
+            // not already on a blockquote section
+            if (text === matches[0] && section.tagName !== 'blockquote') {
+                editor.run((postEditor) => {
+                    range = range.extend(-(matches[0].length));
+                    let position = postEditor.deleteRange(range);
+                    postEditor.setRange(position);
+
+                    koenig.send('toggleSection', 'blockquote', postEditor);
+                });
+            }
         }
     });
 
