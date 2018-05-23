@@ -35,24 +35,23 @@ export default Component.extend({
                 if (event.clientY > bottom) {
                     let {post} = this._editor;
                     let range = post.toRange();
+                    let {tailSection} = range;
 
                     event.preventDefault();
-
                     this._editor.focus();
-                    this._editor.run((postEditor) => {
-                        let tailSection = range.tailSection;
 
-                        // we should always have a visible cursor when focusing
-                        // at the bottom so create an empty paragraph if last
-                        // section is a card
-                        if (tailSection.isCardSection) {
+                    // we should always have a visible cursor when focusing
+                    // at the bottom so create an empty paragraph if last
+                    // section is a card
+                    if (tailSection.isCardSection) {
+                        this._editor.run((postEditor) => {
                             let newSection = postEditor.builder.createMarkupSection('p');
                             postEditor.insertSectionAtEnd(newSection);
                             tailSection = newSection;
-                        }
+                        });
+                    }
 
-                        postEditor.setRange(tailSection.tailPosition());
-                    });
+                    this._editor.selectRange(tailSection.tailPosition());
 
                     // ensure we're scrolled to the bottom
                     this.element.scrollTop = this.element.scrollHeight;

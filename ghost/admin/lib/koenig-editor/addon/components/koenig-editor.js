@@ -596,10 +596,7 @@ export default Component.extend({
         if (direction === 1 && !isCollapsed && tail.offset === 0 && tail.section.prev) {
             let finalSection = tail.section.prev;
             let newRange = new MobiledocRange(head, finalSection.tailPosition());
-
-            return editor.run((postEditor) => {
-                postEditor.setRange(newRange);
-            });
+            return editor.selectRange(newRange);
         }
 
         // pass the selected range through to the toolbar + menu components
@@ -855,17 +852,15 @@ export default Component.extend({
     },
 
     moveCaretToSection(section, position, skipCursorChange = true) {
-        this.editor.run((postEditor) => {
-            let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
-            let range = sectionPosition.toRange();
+        let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
+        let range = sectionPosition.toRange();
 
-            // don't trigger another cursor change selection after selecting
-            if (skipCursorChange && !range.isEqual(this.editor.range)) {
-                this._skipCursorChange = true;
-            }
+        // don't trigger another cursor change selection after selecting
+        if (skipCursorChange && !range.isEqual(this.editor.range)) {
+            this._skipCursorChange = true;
+        }
 
-            postEditor.setRange(range);
-        });
+        this.editor.selectRange(range);
     },
 
     /* internal methods ----------------------------------------------------- */
