@@ -523,8 +523,6 @@ export default Component.extend({
 
     cursorDidChange(editor) {
         let {head, tail, direction, isCollapsed, head: {section}} = editor.range;
-        let isPasting = this._isPasting;
-        this._isPasting = false;
 
         // sometimes we perform a programatic edit that causes a cursor change
         // but we actually want to skip the default behaviour because we've
@@ -545,29 +543,6 @@ export default Component.extend({
 
         // select the card if the cursor is on the before/after &zwnj; char
         if (section && isCollapsed && section.type === 'card-section') {
-            if (isPasting) {
-                // when pasting, if the last section added is a card we don't want to
-                // select it (it breaks the undo stack) but rather create an empty
-                // paragraph underneath
-                // TODO: why does the undo stack break?
-                let collection = section.parent.sections;
-                let nextSection = section.next;
-                editor.run((postEditor) => {
-                    let newSection = postEditor.builder.createMarkupSection('p');
-
-                    if (nextSection) {
-                        postEditor.insertSectionBefore(collection, newSection, nextSection);
-                    } else {
-                        postEditor.insertSectionAtEnd(newSection);
-                    }
-
-                    postEditor.setRange(newSection.tailPosition());
-                    this.set('selectedRange', newSection.tailPosition());
-                    this._skipCursorChange = true;
-                });
-                return;
-            }
-
             if (head.offset === 0 || head.offset === 1) {
                 // select card after render to ensure that our componentCards
                 // attr is populated
@@ -641,11 +616,6 @@ export default Component.extend({
     handlePaste(event) {
         let editor = this.editor;
         let range = editor.range;
-
-        // when pasting, if the last section added is a card we don't want to
-        // select it (it breaks the undo stack) but rather create an empty
-        // paragraph underneath
-        this._isPasting = true;
 
         // if a URL is pasted and we have a selection, make that selection a link
         if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
