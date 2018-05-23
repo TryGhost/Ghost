@@ -24,6 +24,7 @@ export default Component.extend({
 
     // closure actions
     selectCard() {},
+    deselectCard() {},
     editCard() {},
     saveCard() {},
     moveCursorToNextSection() {},
