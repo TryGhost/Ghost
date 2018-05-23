@@ -22,6 +22,7 @@ export default Component.extend({
     editCard() {},
     saveCard() {},
     selectCard() {},
+    deselectCard() {},
     deleteCard() {},
 
     toolbar: computed('isEditing', function () {

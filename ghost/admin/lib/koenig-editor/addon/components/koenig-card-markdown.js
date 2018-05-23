@@ -25,6 +25,7 @@ export default Component.extend({
     editCard() {},
     saveCard() {},
     selectCard() {},
+    deselectCard() {},
     deleteCard() {},
 
     renderedMarkdown: computed('payload.markdown', function () {

@@ -15,9 +15,10 @@ export default Component.extend({
     headerOffset: 0,
 
     // closure actions
+    selectCard() {},
+    deselectCard() {},
     editCard() {},
     saveCard() {},
-    selectCard() {},
     deleteCard() {},
 
     toolbar: computed('isEditing', function () {
