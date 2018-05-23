@@ -371,6 +371,14 @@ export default Component.extend({
     },
 
     actions: {
+        exitCursorAtTop() {
+            if (this.selectedCard) {
+                this.deselectCard(this.selectedCard);
+            }
+
+            this.cursorDidExitAtTop();
+        },
+
         toggleMarkup(markupTagName, postEditor) {
             (postEditor || this.editor).toggleMarkup(markupTagName);
         },

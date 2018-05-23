@@ -182,8 +182,8 @@ export const DEFAULT_KEY_COMMANDS = [{
         let {isCollapsed, head: {offset, section}} = editor.range;
         let prevSection = section.isListItem ? section.parent.prev : section.prev;
 
-        if (isCollapsed && offset === 0 && !prevSection) {
-            koenig.cursorDidExitAtTop();
+        if (isCollapsed && (offset === 0 || section.isCardSection) && !prevSection) {
+            koenig.send('exitCursorAtTop');
         }
 
         return false;
@@ -196,8 +196,8 @@ export const DEFAULT_KEY_COMMANDS = [{
         // trigger a closure action to indicate that the caret "left" the top of
         // the editor canvas if the caret is at the very beginning of the doc
         let prevSection = section.isListItem ? section.parent.prev : section.prev;
-        if (isCollapsed && offset === 0 && !prevSection) {
-            koenig.cursorDidExitAtTop();
+        if (isCollapsed && (offset === 0 || section.isCardSection) && !prevSection) {
+            koenig.send('exitCursorAtTop');
             return;
         }
 
