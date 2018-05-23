@@ -93,7 +93,7 @@ export const DEFAULT_KEY_COMMANDS = [{
         // feels more natural
         if (isCollapsed && offset === 0 && section.prev && section.prev.type === 'card-section' && !section.isBlank) {
             let card = koenig.getCardFromSection(section.prev);
-            koenig.deleteCard(card, CURSOR_AFTER);
+            koenig.deleteCard(card);
             return;
         }
 
@@ -152,7 +152,7 @@ export const DEFAULT_KEY_COMMANDS = [{
             let selectNextCard = section.next.type === 'card-section';
             let nextCard = koenig.getCardFromSection(section.next);
 
-            koenig.deleteCard(koenig.selectedCard, CURSOR_AFTER);
+            koenig.deleteCard(koenig.selectedCard);
 
             if (selectNextCard) {
                 koenig.selectCard(nextCard);

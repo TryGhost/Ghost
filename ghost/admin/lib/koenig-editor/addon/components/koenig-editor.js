@@ -471,7 +471,7 @@ export default Component.extend({
             this.set('linkRange', null);
         },
 
-        deleteCard(card, cursorMovement = NO_CURSOR_MOVEMENT) {
+        deleteCard(card, cursorMovement = CURSOR_AFTER) {
             this.deleteCard(card, cursorMovement);
         },
 
