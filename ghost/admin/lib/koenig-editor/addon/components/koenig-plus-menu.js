@@ -8,8 +8,8 @@ export default Component.extend({
     layout,
 
     // public attrs
-    classNames: ['koenig-plus-menu', 'absolute'],
-    attributeBindings: ['style'],
+    classNames: ['absolute'],
+    attributeBindings: ['style', 'data-kg'],
     editor: null,
     editorRange: null,
 
@@ -17,6 +17,7 @@ export default Component.extend({
     showButton: false,
     showMenu: false,
     top: 0,
+    'data-kg': 'plus-menu',
 
     // private properties
     _onResizeHandler: null,
@@ -122,7 +123,7 @@ export default Component.extend({
 
     // find the "top" position by grabbing the current sections
     // render node and querying it's bounding rect. Setting "top"
-    // positions the button+menu container element .koenig-plus-menu
+    // positions the button+menu container element [data-kg="plus-menu"]
     _positionMenu() {
         // use the cached range if available because `editorRange` may have been
         // lost due to clicks on the open menu

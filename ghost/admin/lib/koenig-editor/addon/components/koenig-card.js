@@ -205,11 +205,15 @@ export default Component.extend({
     },
 
     // exit edit mode any time we have a click outside of the card unless it's
-    // a click inside one of our modals
+    // a click inside one of our modals or on the plus menu
     _handleClick({target, path}) {
-        let liquidDestination = element => element.closest && element.closest('.liquid-destination');
+        let searchPath = function (selector) {
+            return element => element.closest && element.closest(selector);
+        };
 
-        if (this.element.contains(target) || path.find(liquidDestination)) {
+        if (this.element.contains(target)
+            || path.find(searchPath('[data-kg="plus-menu"]'))
+            || path.find(searchPath('.liquid-destination'))) {
             return;
         }
 
