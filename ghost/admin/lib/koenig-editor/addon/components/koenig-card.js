@@ -30,6 +30,7 @@ export default Component.extend({
 
     // closure actions
     selectCard() {},
+    deselectCard() {},
     editCard() {},
     // hooks - when attached these will be fired on the individual card components
     onSelect() {},
@@ -101,6 +102,7 @@ export default Component.extend({
     willDestroyElement() {
         this._super(...arguments);
         window.removeEventListener('keydown', this._onKeydownHandler);
+        window.removeEventListener('click', this._onClickHandler);
         this._removeMousemoveHandler();
     },
 
@@ -154,11 +156,14 @@ export default Component.extend({
     _onEnterEdit() {
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
+        this._onClickHandler = run.bind(this, this._handleClick);
+        window.addEventListener('click', this._onClickHandler);
         this.onEnterEdit();
     },
 
     _onLeaveEdit() {
         window.removeEventListener('keydown', this._onKeydownHandler);
+        window.removeEventListener('click', this._onClickHandler);
         this.onLeaveEdit();
     },
 
@@ -197,6 +202,18 @@ export default Component.extend({
             this.selectCard(false);
             event.preventDefault();
         }
+    },
+
+    // exit edit mode any time we have a click outside of the card unless it's
+    // a click inside one of our modals
+    _handleClick({target, path}) {
+        let liquidDestination = element => element.closest && element.closest('.liquid-destination');
+
+        if (this.element.contains(target) || path.find(liquidDestination)) {
+            return;
+        }
+
+        this.deselectCard();
     },
 
     _handleMousemove() {

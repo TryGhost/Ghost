@@ -66,8 +66,9 @@
             cancelCard=(action card.env.cancel)
             removeCard=(action card.env.remove)
             isSelected=card.isSelected
-            selectCard=(action "selectCard" card)
             isEditing=card.isEditing
+            selectCard=(action "selectCard" card)
+            deselectCard=(action "deselectCard" card)
             editCard=(action "editCard" card)
             deleteCard=(action "deleteCard" card)
             moveCursorToPrevSection=(action "moveCursorToPrevSection" card)
