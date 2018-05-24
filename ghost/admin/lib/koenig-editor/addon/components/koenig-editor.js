@@ -117,7 +117,6 @@ export default Component.extend({
     autofocus: false,
     spellcheck: true,
     options: null,
-    scrollContainer: '',
     headerOffset: 0,
 
     // internal properties
@@ -146,8 +145,7 @@ export default Component.extend({
 
     /* computed properties -------------------------------------------------- */
 
-    // merge in named options with the `options` property data-bag
-    // TODO: what is the `options` property data-bag and when/where does it get set?
+    // merge in named options with any passed in `options` property data-bag
     editorOptions: computed(function () {
         let options = this.options || {};
         let atoms = this.atoms || [];
@@ -189,6 +187,16 @@ export default Component.extend({
             alt: false,
             ctrl: false
         };
+
+        // track mousedown/mouseup on the window rather than the ember component
+        // so that we're sure to get the events even when they start outside of
+        // this component or end outside the window.
+        // Mouse events are used to track when a mousebutton is down so that we
+        // can disable automatic cursor-in-viewport scrolling
+        this._onMousedownHandler = run.bind(this, this.handleMousedown);
+        window.addEventListener('mousedown', this._onMousedownHandler);
+        this._onMouseupHandler = run.bind(this, this.handleMouseup);
+        window.addEventListener('mouseup', this._onMouseupHandler);
 
         this._startedRunLoop = false;
     },
@@ -346,6 +354,10 @@ export default Component.extend({
 
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
+
+        if (this.scrollContainerSelector) {
+            this._scrollContainer = document.querySelector(this.scrollContainerSelector);
+        }
     },
 
     // our ember component has rendered, now we need to render the mobiledoc
@@ -538,6 +550,7 @@ export default Component.extend({
         if (this._skipCursorChange) {
             this._skipCursorChange = false;
             this.set('selectedRange', editor.range);
+            this._scrollCursorIntoView();
             return;
         }
 
@@ -584,6 +597,7 @@ export default Component.extend({
 
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
+        this._scrollCursorIntoView();
     },
 
     // fired when the active section(s) or markup(s) at the current cursor
@@ -708,6 +722,19 @@ export default Component.extend({
             };
 
             editor.triggerEvent(editor.element, 'paste', pasteEvent);
+        }
+    },
+
+    handleMousedown(event) {
+        // we only care about the left mouse button
+        if (event.which === 1) {
+            this._isMouseDown = true;
+        }
+    },
+
+    handleMouseup(event) {
+        if (event.which === 1) {
+            this._isMouseDown = false;
         }
     },
 
@@ -878,6 +905,74 @@ export default Component.extend({
         let config = getOwner(this).resolveRegistration('config:environment');
         if (this.element && config.environment === 'test') {
             this.element[TESTING_EXPANDO_PROPERTY] = editor;
+        }
+    },
+
+    _scrollCursorIntoView() {
+        // disable auto-scroll if the mouse or shift key is being used to create
+        // a selection - the browser handles scrolling well in this case
+        if (!this._scrollContainer || this._isMouseDown || this._modifierKeys.shift) {
+            return;
+        }
+
+        let {range} = this.editor;
+        let selection = window.getSelection();
+        let windowRange = selection && selection.getRangeAt(0);
+        let element = range.head && range.head.section && range.head.section.renderNode && range.head.section.renderNode.element;
+
+        if (windowRange) {
+            // cursorTop is relative to the window rather than document or scroll container
+            let {top: cursorTop, height: cursorHeight} = windowRange.getBoundingClientRect();
+            let viewportHeight = window.innerHeight;
+            let offsetTop = 0;
+            let offsetBottom = 0;
+            let scrollTop = this._scrollContainer.scrollTop;
+
+            if (this.scrollOffsetTopSelector) {
+                let topElement = document.querySelector(this.scrollOffsetTopSelector);
+                offsetTop = topElement ? topElement.offsetHeight : 0;
+            }
+
+            if (this.scrollOffsetBottomSelector) {
+                let bottomElement = document.querySelector(this.scrollOffsetBottomSelector);
+                offsetBottom = bottomElement ? bottomElement.offsetHeight : 0;
+            }
+
+            // for empty paragraphs the window selection range will be 0,0,0,0
+            // so grab the element's bounding rect instead
+            if (cursorTop === 0 && cursorHeight === 0) {
+                if (!element) {
+                    return;
+                }
+
+                ({top: cursorTop, height: cursorHeight} = element.getBoundingClientRect());
+            }
+
+            // keep cursor in view at the top
+            if (cursorTop < 0 + offsetTop) {
+                this._scrollContainer.scrollTop = scrollTop - offsetTop + cursorTop - 20;
+                return;
+            }
+
+            let cursorBottom = cursorTop + cursorHeight;
+            let paddingBottom = 0;
+            let distanceFromViewportBottom = cursorBottom - viewportHeight;
+            let atBottom = false;
+
+            // if we're at the bottom of the doc we should keep the bottom
+            // padding in view, otherwise just scroll to keep the cursor in view
+            if (this._scrollContainer.scrollTop + this._scrollContainer.offsetHeight + 200 >= this._scrollContainer.scrollHeight) {
+                atBottom = true;
+                paddingBottom = parseFloat(getComputedStyle(this.element.parentNode).getPropertyValue('padding-bottom'));
+            }
+
+            if (cursorBottom > viewportHeight - offsetBottom - paddingBottom) {
+                if (atBottom) {
+                    this._scrollContainer.scrollTop = this._scrollContainer.scrollHeight;
+                } else {
+                    this._scrollContainer.scrollTop = scrollTop + offsetBottom + distanceFromViewportBottom + 20;
+                }
+            }
         }
     }
 });

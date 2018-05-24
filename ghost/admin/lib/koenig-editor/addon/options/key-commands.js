@@ -10,7 +10,7 @@ import {
 
 export const DEFAULT_KEY_COMMANDS = [{
     str: 'ENTER',
-    run(editor) {
+    run(editor, koenig) {
         let {isCollapsed, head: {offset, section}} = editor.range;
 
         // if cursor is at beginning of a heading, insert a blank paragraph above
@@ -20,6 +20,7 @@ export const DEFAULT_KEY_COMMANDS = [{
                 let collection = section.parent.sections;
                 postEditor.insertSectionBefore(collection, newPara, section);
             });
+            koenig._scrollCursorIntoView();
             return;
         }
 
