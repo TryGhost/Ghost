@@ -37,7 +37,7 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
         queryParameters = options.queryParameters,
         secure = options.secure;
 
-    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithProtocol);
+    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithoutProtocol, blogHostWithoutProtocol, urlService.utils.urlJoin(blogHostWithoutProtocol, 'ghost/'));
 
     // CASE: we only redirect the admin access if `admin.url` is configured
     // If url and admin.url are not equal AND the requested host does not match, redirect.

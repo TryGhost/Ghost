@@ -92,6 +92,12 @@ describe('Url', function () {
             urlService.utils.urlJoin('my/blog', 'my/blog/about').should.equal('my/blog/about');
             urlService.utils.urlJoin('my/blog/', 'my/blog/about').should.equal('my/blog/about');
         });
+
+        it('should handle subdir matching tld', function () {
+            configUtils.set({url: 'http://ghost.blog/blog'});
+            urlService.utils.urlJoin('ghost.blog/blog', 'ghost/').should.equal('ghost.blog/blog/ghost/');
+            urlService.utils.urlJoin('ghost.blog', 'blog', 'ghost/').should.equal('ghost.blog/blog/ghost/');
+        });
     });
 
     describe('urlFor', function () {
