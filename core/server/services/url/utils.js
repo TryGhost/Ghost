@@ -63,9 +63,11 @@ function deduplicateSubDir(url) {
     }
 
     subDir = subDir.replace(/^\/|\/+$/, '');
-    subDirRegex = new RegExp(subDir + '\/' + subDir + '\/');
+    // we can have subdirs that match TLDs so we need to restrict matches to
+    // duplicates that start with a / or the beginning of the url
+    subDirRegex = new RegExp('(^|\/)' + subDir + '\/' + subDir + '\/');
 
-    return url.replace(subDirRegex, subDir + '/');
+    return url.replace(subDirRegex, '$1' + subDir + '/');
 }
 
 function getProtectedSlugs() {
