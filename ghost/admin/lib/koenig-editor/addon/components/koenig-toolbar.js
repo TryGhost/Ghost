@@ -227,7 +227,9 @@ export default Component.extend({
     },
 
     _hideToolbar() {
-        this.set('showToolbar', false);
+        if (!this.isDestroyed || !this.isDestroying) {
+            this.set('showToolbar', false);
+        }
         this._lastRange = null;
         this._removeMousemoveHandler();
     },
