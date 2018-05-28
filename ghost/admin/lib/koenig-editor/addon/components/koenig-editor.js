@@ -637,11 +637,20 @@ export default Component.extend({
 
     handlePaste(event) {
         let editor = this.editor;
+        let {target: element} = event;
+
+        // don't trigger our paste handling for pastes within cards or outside
+        // of the editor canvas. Avoids double-paste of content when pasting
+        // into cards
+        if (!editor.cursor.isAddressable(element)) {
+            return;
+        }
+
         let range = editor.range;
+        let {html, text} = getContentFromPasteEvent(event);
 
         // if a URL is pasted and we have a selection, make that selection a link
         if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
-            let {text} = getContentFromPasteEvent(event);
             if (text && validator.isURL(text)) {
                 let linkMarkup = editor.builder.createMarkup('a', {href: text});
                 editor.run((postEditor) => {
@@ -659,7 +668,6 @@ export default Component.extend({
         // we get better output than mobiledoc's default text parsing and we can
         // provide an easier MD->Mobiledoc conversion route
         // NOTE: will not work in IE/Edge which only ever expose `html`
-        let {html, text} = getContentFromPasteEvent(event);
         if (text && !html && !this._modifierKeys.shift) {
             // prevent mobiledoc's default paste event handler firing
             event.preventDefault();
