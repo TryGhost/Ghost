@@ -1849,6 +1849,27 @@ describe('Import (new test structure)', function () {
 
         afterEach(testUtils.teardown);
 
+        describe('edge cases', function () {
+            before(function doImport() {
+                return testUtils.initFixtures('roles', 'owner', 'settings');
+            });
+
+            it('uppercase tag slugs', function () {
+                return testUtils.fixtures.loadExportFixture('uppercase-tags')
+                    .then(function (exported) {
+                        exportData = exported.db[0];
+                        return dataImporter.doImport(exportData, importOptions);
+                    })
+                    .then(function (imported) {
+                        imported.problems.length.should.eql(0);
+                        return models.Post.findAll({withRelated: ['tags']});
+                    })
+                    .then(function (posts) {
+                        posts.toJSON()[0].tags.length.should.eql(1);
+                    });
+            });
+        });
+
         describe('amp/comment', function () {
             before(function doImport() {
                 // initialize the blog with some data

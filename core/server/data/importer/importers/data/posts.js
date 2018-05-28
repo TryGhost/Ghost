@@ -85,6 +85,7 @@ class PostsImporter extends BaseImporter {
 
             let indexesToRemove = [];
             _.each(postToImport[targetProperty], (object, index) => {
+                // this is the original relational object (old id)
                 let objectInFile = _.find(this.requiredFromFile[tableName], {id: object.id});
 
                 if (!objectInFile) {
@@ -100,8 +101,9 @@ class PostsImporter extends BaseImporter {
                     }
                 }
 
-                // CASE: search through imported data
-                let importedObject = _.find(this.requiredImportedData[tableName], {slug: objectInFile.slug});
+                // CASE: search through imported data.
+                // EDGE CASE: uppercase tag slug was imported and auto modified
+                let importedObject = _.find(this.requiredImportedData[tableName], {originalSlug: objectInFile.slug});
 
                 if (importedObject) {
                     this.dataToImport[postIndex][targetProperty][index].id = importedObject.id;
