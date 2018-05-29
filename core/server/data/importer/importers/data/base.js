@@ -317,6 +317,7 @@ class Base {
                         this.importedData.push({
                             id: importedModel.id,
                             slug: importedModel.get('slug'),
+                            originalSlug: obj.slug,
                             email: importedModel.get('email')
                         });
 
