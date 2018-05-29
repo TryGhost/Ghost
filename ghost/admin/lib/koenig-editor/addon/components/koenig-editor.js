@@ -243,7 +243,11 @@ export default Component.extend({
                 let componentName = CARD_COMPONENT_MAP[cardName];
 
                 // the payload must be copied to avoid sharing the reference
-                payload = copy(payload, true);
+                // `payload.files` is special because it's set by paste/drag-n-drop
+                // events and can't be copied for security reasons
+                let {files} = payload;
+                let payloadCopy = copy(payload, true);
+                payloadCopy.files = files;
 
                 // all of the properties that will be passed through to the
                 // component cards via the template
@@ -251,7 +255,7 @@ export default Component.extend({
                     cardName,
                     componentName,
                     koenigOptions,
-                    payload,
+                    payload: payloadCopy,
                     env,
                     options,
                     editor,
@@ -643,6 +647,35 @@ export default Component.extend({
         // of the editor canvas. Avoids double-paste of content when pasting
         // into cards
         if (!editor.cursor.isAddressable(element)) {
+            return;
+        }
+
+        // if we have image files pasted, create an image card for each and set
+        // the payload.files property which will cause the image to be auto-uploaded
+        // NOTE: browser support varies as of May 2018:
+        // - Safari: will paste all images
+        // - Chrome: will only paste the first image
+        // - Firefox: will not paste any images
+        let images = Array.from(event.clipboardData.files).filter(file => file.type.indexOf('image') > -1);
+        if (images.length > 0) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            editor.run((postEditor) => {
+                let {builder} = postEditor;
+
+                if (editor.activeSection.isBlank) {
+                    postEditor.removeSection(editor.activeSection);
+                }
+
+                images.forEach((image) => {
+                    let payload = {
+                        files: [image]
+                    };
+                    let imageCard = builder.createCardSection('image', payload);
+                    postEditor.insertSection(imageCard);
+                });
+            });
             return;
         }
 
