@@ -5,17 +5,18 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {computed} from '@ember/object';
+import {computed, set} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {set} from '@ember/object';
 
 export default Component.extend({
     ui: service(),
     layout,
 
     // attrs
+    files: null,
     payload: null,
     isSelected: false,
     isEditing: false,
@@ -89,6 +90,21 @@ export default Component.extend({
 
         if (!this.payload) {
             this.set('payload', {});
+        }
+    },
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        // `payload.files` can be set if we have an externaly set image that
+        // should be uploaded. Typical example would be from a paste or drag/drop
+        if (!isEmpty(this.payload.files)) {
+            run.schedule('afterRender', this, function () {
+                this.set('files', this.payload.files);
+
+                // we don't want to  persist any file data in the document
+                delete this.payload.files;
+            });
         }
     },
 
