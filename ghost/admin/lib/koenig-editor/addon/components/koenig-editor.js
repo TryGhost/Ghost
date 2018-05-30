@@ -105,6 +105,26 @@ function toggleSpecialFormatEditState(editor) {
     }
 }
 
+// helper function to insert image cards at or after the current active section
+// used when pasting or dropping image files
+function insertImageCards(files, postEditor) {
+    let {builder, editor} = postEditor;
+
+    // remove the current section if it's blank - avoids unexpected blank line
+    // after the insert is complete
+    if (editor.activeSection && editor.activeSection.isBlank) {
+        postEditor.removeSection(editor.activeSection);
+    }
+
+    files.forEach((file) => {
+        let payload = {
+            files: [file]
+        };
+        let imageCard = builder.createCardSection('image', payload);
+        postEditor.insertSection(imageCard);
+    });
+}
+
 export default Component.extend({
     layout,
 
@@ -118,6 +138,10 @@ export default Component.extend({
     spellcheck: true,
     options: null,
     headerOffset: 0,
+    dropTargetSelector: null,
+    scrollContainerSelector: null,
+    scrollOffsetTopSelector: null,
+    scrollOffsetBottomSelector: null,
 
     // internal properties
     editor: null,
@@ -362,6 +386,14 @@ export default Component.extend({
         if (this.scrollContainerSelector) {
             this._scrollContainer = document.querySelector(this.scrollContainerSelector);
         }
+
+        this._dropTarget = document.querySelector(this.dropTargetSelector) || this.element;
+        this._dragOverHandler = run.bind(this, this.handleDragOver);
+        this._dragLeaveHandler = run.bind(this, this.handleDragLeave);
+        this._dropHandler = run.bind(this, this.handleDrop);
+        this._dropTarget.addEventListener('dragover', this._dragOverHandler);
+        this._dropTarget.addEventListener('dragleave', this._dragLeaveHandler);
+        this._dropTarget.addEventListener('drop', this._dropHandler);
     },
 
     // our ember component has rendered, now we need to render the mobiledoc
@@ -378,10 +410,15 @@ export default Component.extend({
     },
 
     willDestroyElement() {
-        let editor = this.editor;
-        let editorElement = this.element.querySelector('[data-kg="editor"]');
+        let {editor, _dropTarget} = this;
 
+        _dropTarget.removeEventListener('dragover', this._dragOverHandler);
+        _dropTarget.removeEventListener('dragleave', this._dragLeaveHandler);
+        _dropTarget.removeEventListener('drop', this._dropHandler);
+
+        let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
+
         editor.destroy();
         this._super(...arguments);
     },
@@ -640,13 +677,12 @@ export default Component.extend({
     /* custom event handlers ------------------------------------------------ */
 
     handlePaste(event) {
-        let editor = this.editor;
-        let {target: element} = event;
+        let {editor} = this;
 
         // don't trigger our paste handling for pastes within cards or outside
         // of the editor canvas. Avoids double-paste of content when pasting
         // into cards
-        if (!editor.cursor.isAddressable(element)) {
+        if (!editor.cursor.isAddressable(event.target)) {
             return;
         }
 
@@ -662,19 +698,7 @@ export default Component.extend({
             event.stopImmediatePropagation();
 
             editor.run((postEditor) => {
-                let {builder} = postEditor;
-
-                if (editor.activeSection.isBlank) {
-                    postEditor.removeSection(editor.activeSection);
-                }
-
-                images.forEach((image) => {
-                    let payload = {
-                        files: [image]
-                    };
-                    let imageCard = builder.createCardSection('image', payload);
-                    postEditor.insertSection(imageCard);
-                });
+                insertImageCards(images, postEditor);
             });
             return;
         }
@@ -776,6 +800,51 @@ export default Component.extend({
     handleMouseup(event) {
         if (event.which === 1) {
             this._isMouseDown = false;
+        }
+    },
+
+    handleDragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        if (navigator.userAgent.indexOf('Chrome') > -1) {
+            let eA = event.dataTransfer.effectAllowed;
+            event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+        }
+
+        // indicate to the browser that we want to handle drop behaviour here
+        event.stopPropagation();
+        event.preventDefault();
+    },
+
+    handleDragLeave(event) {
+        event.preventDefault();
+    },
+
+    handleDrop(event) {
+        // drops on cards that are in an edit state should be cancelled
+        // editable cards should handle drag-n-drop themselves if needed
+        let cardElem = event.target.closest('.__mobiledoc-card');
+        if (cardElem) {
+            let cardId = cardElem.firstChild.id;
+            let card = this.componentCards.findBy('destinationElementId', cardId);
+            if (card.isEditing) {
+                return;
+            }
+        }
+
+        event.preventDefault();
+
+        if (event.dataTransfer.files) {
+            let images = Array.from(event.dataTransfer.files).filter(file => file.type.indexOf('image') > -1);
+            if (images.length > 0) {
+                this.editor.run((postEditor) => {
+                    insertImageCards(images, postEditor);
+                });
+            }
         }
     },
 
@@ -941,14 +1010,6 @@ export default Component.extend({
         }
     },
 
-    // store a reference to the editor for the acceptance test helpers
-    _setExpandoProperty(editor) {
-        let config = getOwner(this).resolveRegistration('config:environment');
-        if (this.element && config.environment === 'test') {
-            this.element[TESTING_EXPANDO_PROPERTY] = editor;
-        }
-    },
-
     _scrollCursorIntoView() {
         // disable auto-scroll if the mouse or shift key is being used to create
         // a selection - the browser handles scrolling well in this case
@@ -1014,6 +1075,14 @@ export default Component.extend({
                     this._scrollContainer.scrollTop = scrollTop + offsetBottom + distanceFromViewportBottom + 20;
                 }
             }
+        }
+    },
+
+    // store a reference to the editor for the acceptance test helpers
+    _setExpandoProperty(editor) {
+        let config = getOwner(this).resolveRegistration('config:environment');
+        if (this.element && config.environment === 'test') {
+            this.element[TESTING_EXPANDO_PROPERTY] = editor;
         }
     }
 });

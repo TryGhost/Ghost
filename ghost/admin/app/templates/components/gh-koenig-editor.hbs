@@ -17,10 +17,11 @@
         placeholder=bodyPlaceholder
         autofocus=bodyAutofocus
         spellcheck=true
-        headerOffset=headerOffset
         onChange=(action "onBodyChange")
         didCreateEditor=(action "onEditorCreated")
         cursorDidExitAtTop=(action "focusTitle")
+        headerOffset=headerOffset
+        dropTargetSelector=".gh-koenig-editor-pane"
         scrollContainerSelector=scrollContainerSelector
         scrollOffsetTopSelector=scrollOffsetTopSelector
         scrollOffsetBottomSelector=scrollOffsetBottomSelector
