@@ -90,8 +90,16 @@ export default Component.extend({
             }
         }
 
+        // show the toolbar immediately if it changes whilst the card is selected
+        // caters for situations such as only showing image style buttons once an
+        // image has been uploaded
+        if (isSelected && this._lastIsSelected && this.toolbar && this.toolbar !== this._lastToolbar) {
+            run.scheduleOnce('afterRender', this, this._showToolbar);
+        }
+
         this._lastIsSelected = isSelected;
         this._lastIsEditing = isEditing;
+        this._lastToolbar = this.toolbar;
     },
 
     didInsertElement() {
