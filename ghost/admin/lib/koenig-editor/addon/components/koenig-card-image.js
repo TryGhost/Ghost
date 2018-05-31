@@ -50,28 +50,28 @@ export default Component.extend({
         let imageStyle = this.payload.imageStyle;
         let items = [];
 
-        items.push({
-            title: 'Regular',
-            icon: 'koenig/kg-img-regular',
-            iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'}`,
-            action: run.bind(this, this._changeImageStyle, '')
-        });
-
-        items.push({
-            title: 'Wide',
-            icon: 'koenig/kg-img-wide',
-            iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
-            action: run.bind(this, this._changeImageStyle, 'wide')
-        });
-
-        items.push({
-            title: 'Full',
-            icon: 'koenig/kg-img-full',
-            iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
-            action: run.bind(this, this._changeImageStyle, 'full')
-        });
-
         if (this.payload.src) {
+            items.push({
+                title: 'Regular',
+                icon: 'koenig/kg-img-regular',
+                iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeImageStyle, '')
+            });
+
+            items.push({
+                title: 'Wide',
+                icon: 'koenig/kg-img-wide',
+                iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeImageStyle, 'wide')
+            });
+
+            items.push({
+                title: 'Full',
+                icon: 'koenig/kg-img-full',
+                iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeImageStyle, 'full')
+            });
+
             items.push({divider: true});
 
             items.push({
@@ -82,7 +82,9 @@ export default Component.extend({
             });
         }
 
-        return {items};
+        if (items.length > 0) {
+            return {items};
+        }
     }),
 
     init() {
