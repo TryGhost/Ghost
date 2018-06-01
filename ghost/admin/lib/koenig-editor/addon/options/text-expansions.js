@@ -113,41 +113,6 @@ export default function (editor, koenig) {
 
     /* inline markdown ------------------------------------------------------ */
 
-    // We don't want to run all our content rules on every text entry event,
-    // instead we check to see if this text entry event could match a content
-    // rule, and only then run the rules. Right now we only want to match
-    // content ending with *, _, ), ~, and `. This could increase as we support
-    // more markdown.
-
-    editor.onTextInput({
-        name: 'inline_markdown',
-        match: /[*_)~`]$/,
-        run(editor, matches) {
-            let text = editor.range.head.section.textUntil(editor.range.head);
-
-            switch (matches[0]) {
-            case '*':
-                matchStrongStar(editor, text);
-                matchEmStar(editor, text);
-                break;
-            case '_':
-                matchStrongUnderscore(editor, text);
-                matchEmUnderscore(editor, text);
-                break;
-            case ')':
-                matchLink(editor, text);
-                matchImage(editor, text);
-                break;
-            case '~':
-                matchStrikethrough(editor, text);
-                break;
-            case '`':
-                matchCode(editor, text);
-                break;
-            }
-        }
-    });
-
     // --\s = en dash –
     // ---. = em dash —
     // separate to the grouped replacement functions because we're matching on
@@ -193,6 +158,45 @@ export default function (editor, koenig) {
                     let position = postEditor.deleteRange(range);
                     postEditor.insertText(position, `—${mdashMatch[1]}`);
                 });
+            }
+        }
+    });
+
+    // We don't want to run all our content rules on every text entry event,
+    // instead we check to see if this text entry event could match a content
+    // rule, and only then run the rules. Right now we only want to match
+    // content ending with *, _, ), ~, and `. This could increase as we support
+    // more markdown.
+
+    editor.onTextInput({
+        name: 'inline_markdown',
+        match: /[*_)~`^]$/,
+        run(editor, matches) {
+            let text = editor.range.head.section.textUntil(editor.range.head);
+
+            switch (matches[0]) {
+            case '*':
+                matchStrongStar(editor, text);
+                matchEmStar(editor, text);
+                break;
+            case '_':
+                matchStrongUnderscore(editor, text);
+                matchEmUnderscore(editor, text);
+                break;
+            case ')':
+                matchLink(editor, text);
+                matchImage(editor, text);
+                break;
+            case '~':
+                matchSub(editor, text);
+                matchStrikethrough(editor, text);
+                break;
+            case '`':
+                matchCode(editor, text);
+                break;
+            case '^':
+                matchSup(editor, text);
+                break;
             }
         }
     });
@@ -291,6 +295,27 @@ export default function (editor, koenig) {
         }
     }
 
+    function matchSub(editor, text) {
+        let {range} = editor;
+        let matches = text.match(/(^|[^~])~([^\s~]+|[^\s~][^~]*[^\s])~/);
+        console.log(matches);
+        if (matches) {
+            let match = matches[0].trim();
+            range = range.extend(-(match.length - matches[1].trim().length));
+
+            editor.run((postEditor) => {
+                let position = postEditor.deleteRange(range);
+                let sub = postEditor.builder.createMarkup('sub');
+                postEditor.insertTextWithMarkup(position, matches[2], [sub]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('sub');
+            });
+        }
+    }
+
     function matchStrikethrough(editor, text) {
         let {range} = editor;
         let matches = text.match(/(?:^|\s)~~([^\s~]+|[^\s~][^~]*[^\s])~~/);
@@ -327,6 +352,26 @@ export default function (editor, koenig) {
             // must be scheduled so that the toggle isn't reset automatically
             run.schedule('actions', this, function () {
                 editor.toggleMarkup('code');
+            });
+        }
+    }
+
+    function matchSup(editor, text) {
+        let {range} = editor;
+        let matches = text.match(/\^([^\s^]+|[^\s^][^^]*[^\s^])\^/);
+        if (matches) {
+            let match = matches[0].trim();
+            range = range.extend(-(match.length));
+
+            editor.run((postEditor) => {
+                let position = postEditor.deleteRange(range);
+                let sup = postEditor.builder.createMarkup('sup');
+                postEditor.insertTextWithMarkup(position, matches[1], [sup]);
+            });
+
+            // must be scheduled so that the toggle isn't reset automatically
+            run.schedule('actions', this, function () {
+                editor.toggleMarkup('sup');
             });
         }
     }
