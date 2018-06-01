@@ -16,7 +16,7 @@ collections:
       - home
       - index
 
-resources:
+taxonomies:
   tag: /tag/{slug}/
   author: /author/{slug}/
 ```
