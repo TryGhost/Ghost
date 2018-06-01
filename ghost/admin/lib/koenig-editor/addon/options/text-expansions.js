@@ -298,7 +298,6 @@ export default function (editor, koenig) {
     function matchSub(editor, text) {
         let {range} = editor;
         let matches = text.match(/(^|[^~])~([^\s~]+|[^\s~][^~]*[^\s])~/);
-        console.log(matches);
         if (matches) {
             let match = matches[0].trim();
             range = range.extend(-(match.length - matches[1].trim().length));
