@@ -67,7 +67,9 @@ export const NO_CURSOR_MOVEMENT = 0;
 // text expansion style when backspacing over final char of markup
 export const SPECIAL_MARKUPS = {
     S: '~~',
-    CODE: '`'
+    CODE: '`',
+    SUP: '^',
+    SUB: '~'
 };
 
 function arrayToMap(array) {
