@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     path = require('path'),
     fs = require('fs-extra'),
     extract = require('extract-zip'),
