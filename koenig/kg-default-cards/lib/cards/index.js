@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = [
     require('./card-markdown'),
     require('./code'),
