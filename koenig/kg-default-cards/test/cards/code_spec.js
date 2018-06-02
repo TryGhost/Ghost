@@ -1,4 +1,4 @@
-const should = require('should'); // jshint ignore:line
+const should = require('should');
 const card = require('../../../../../server/lib/mobiledoc/cards/code');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
