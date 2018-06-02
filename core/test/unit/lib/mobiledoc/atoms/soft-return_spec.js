@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'); // jshint ignore:line
 const atom = require('../../../../../server/lib/mobiledoc/atoms/soft-return');
 const SimpleDom = require('simple-dom');

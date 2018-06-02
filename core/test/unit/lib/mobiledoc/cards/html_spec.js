@@ -1,5 +1,3 @@
-'use strict';
-
 const should = require('should'); // jshint ignore:line
 const card = require('../../../../../server/lib/mobiledoc/cards/html');
 const SimpleDom = require('simple-dom');
