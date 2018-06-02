@@ -1,5 +1,5 @@
 /*globals describe, beforeEach, afterEach, it*/
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     crypto = require('crypto'),
     fs = require('fs-extra'),

@@ -1,6 +1,6 @@
 /* eslint no-invalid-this:0 */
 
-const should = require('should'), // jshint ignore:line
+const should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     testUtils = require('../../utils'),

@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     fs = require('fs-extra'),
     StorageBase = require('ghost-storage-base'),
     configUtils = require('../../../utils/configUtils'),

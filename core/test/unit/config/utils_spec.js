@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     configUtils = require('../../../server/config/utils');
 
 describe('UNIT: Config utils', function () {
