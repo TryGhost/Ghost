@@ -101,7 +101,6 @@ describe('Apps', function () {
             sandbox.stub(perms, 'getPackageContents').returns(Promise.reject(new Error('package.json file is malformed')));
 
             perms.read().then(function (readPerms) {
-                /*jshint unused:false*/
                 done(new Error('should not resolve'));
             }).catch(function (err) {
                 err.message.should.equal('package.json file is malformed');

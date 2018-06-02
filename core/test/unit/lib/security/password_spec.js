@@ -1,4 +1,4 @@
-const should = require('should'), // jshint ignore:line
+const should = require('should'),
     security = require('../../../../server/lib/security');
 
 describe('Lib: Security - Password', function () {

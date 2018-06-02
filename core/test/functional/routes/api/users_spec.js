@@ -466,8 +466,7 @@ describe('User API', function () {
                             .set('Authorization', 'Bearer ' + 'invalidtoken')
                             .send(jsonResponse)
                             .expect(401)
-                            .end(function (err, res) {
-                                /*jshint unused:false*/
+                            .end(function (err) {
                                 if (err) {
                                     return done(err);
                                 }
@@ -509,7 +508,6 @@ describe('User API', function () {
                             .send(jsonResponse)
                             .expect(200)
                             .end(function (err, res) {
-                                /*jshint unused:false*/
                                 if (err) {
                                     return done(err);
                                 }

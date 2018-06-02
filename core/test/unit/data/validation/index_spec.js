@@ -126,11 +126,9 @@ describe('Validation', function () {
         var validator = validation.validator;
 
         it('isEmptyOrUrl filters javascript urls', function () {
-            /*jshint scripturl:true */
             validator.isEmptyOrURL('javascript:alert(0)').should.be.false();
             validator.isEmptyOrURL('http://example.com/lol/<script>lalala</script>/').should.be.false();
             validator.isEmptyOrURL('http://example.com/lol?somequery=<script>lalala</script>').should.be.false();
-            /*jshint scripturl:false */
             validator.isEmptyOrURL('').should.be.true();
             validator.isEmptyOrURL('http://localhost:2368').should.be.true();
             validator.isEmptyOrURL('http://example.com/test/').should.be.true();

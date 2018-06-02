@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     getCanonicalUrl = require('../../../../server/data/meta/canonical_url'),
     markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 

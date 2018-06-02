@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     nock = require('nock'),
     configUtils = require('../../../utils/configUtils'),
     gravatar = require('../../../../server/lib/image/gravatar');

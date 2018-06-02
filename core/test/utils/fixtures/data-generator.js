@@ -22,8 +22,6 @@ DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
     return JSON.stringify(mobiledoc);
 };
 
-/*jshint quotmark:false*/
-// jscs:disable validateQuoteMarks, requireCamelCaseOrUpperCaseIdentifiers
 DataGenerator.Content = {
     posts: [
         {

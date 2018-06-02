@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     common = require('../../../../server/lib/common');
 
 describe('Errors', function () {
