@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     _ = require('lodash'),
     common = require('../../../../server/lib/common'),
     applyPublicRules = require('../../../../server/services/permissions/public');

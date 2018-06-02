@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     getAssetUrl = require('../../../../server/data/meta/asset_url'),
     settingsCache = require('../../../../server/services/settings/cache'),

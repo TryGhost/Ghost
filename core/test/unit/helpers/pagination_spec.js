@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     hbs = require('../../../server/services/themes/engine'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),

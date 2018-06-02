@@ -1,5 +1,4 @@
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     _ = require('lodash'),
     hbs = require.main.require('core/server/services/themes/engine'),
 

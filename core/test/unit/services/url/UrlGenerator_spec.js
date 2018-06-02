@@ -1,4 +1,4 @@
-// jshint unused: false
+
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');

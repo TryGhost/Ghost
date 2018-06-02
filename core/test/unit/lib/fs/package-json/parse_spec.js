@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     tmp = require('tmp'),
     fs = require('fs-extra'),
     packageJSON = require('../../../../../server/lib/fs/package-json');

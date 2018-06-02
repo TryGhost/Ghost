@@ -1,4 +1,4 @@
-const should = require('should'), // jshint ignore:line
+const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),

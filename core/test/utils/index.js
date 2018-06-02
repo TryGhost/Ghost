@@ -89,7 +89,6 @@ fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts(max) {
-        /*jshint unused:false*/
         let i, j, k = 0,
             posts = [];
 

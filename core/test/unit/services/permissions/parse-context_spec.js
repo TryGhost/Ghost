@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     parseContext = require('../../../../server/services/permissions/parse-context');
 
 describe('Permissions', function () {

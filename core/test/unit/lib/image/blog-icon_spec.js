@@ -1,4 +1,3 @@
-// jshint unused: false
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),

@@ -1011,7 +1011,6 @@ describe('Post API', function () {
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
-                        /*jshint unused:false*/
                         if (err) {
                             return done(err);
                         }
@@ -1023,8 +1022,7 @@ describe('Post API', function () {
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .expect(401)
-                            .end(function (err, res) {
-                                /*jshint unused:false*/
+                            .end(function (err) {
                                 if (err) {
                                     return done(err);
                                 }
@@ -1054,7 +1052,6 @@ describe('Post API', function () {
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .expect(400)
                             .end(function (err, res) {
-                                /*jshint unused:false*/
                                 if (err) {
                                     return done(err);
                                 }
@@ -1300,8 +1297,7 @@ describe('Post API', function () {
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
-                            .end(function (err, res) {
-                                /*jshint unused:false*/
+                            .end(function (err) {
                                 if (err) {
                                     return done(err);
                                 }
@@ -1329,7 +1325,6 @@ describe('Post API', function () {
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .send(jsonResponse)
                             .end(function (err, res) {
-                                /*jshint unused:false*/
                                 if (err) {
                                     return done(err);
                                 }
