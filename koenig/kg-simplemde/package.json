@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "browserify": "16.2.0",
-    "codemirror": "5.37.0",
+    "codemirror": "5.38.0",
     "codemirror-spell-checker": "*",
     "debug": "*",
     "eslint": "4.19.1",
