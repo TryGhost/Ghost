@@ -1,6 +1,18 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
+    beforeModel(transition) {
+        this._super(...arguments);
+
+        // if the transition is not new->edit, reset the post on the controller
+        // so that the editor view is cleared before showing the loading state
+        if (transition.urlMethod !== 'replace') {
+            let editor = this.controllerFor('editor');
+            editor.set('post', null);
+            editor.reset();
+        }
+    },
+
     model(params) {
         let query = {
             id: params.post_id,
