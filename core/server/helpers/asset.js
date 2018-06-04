@@ -7,10 +7,12 @@ const proxy = require('./proxy'),
     getAssetUrl = proxy.metaData.getAssetUrl,
     SafeString = proxy.SafeString;
 
-module.exports = (path, options) => {
+module.exports = function asset(path, options) {
     const hasMinFile = _.get(options, 'hash.hasMinFile');
 
     return new SafeString(
         getAssetUrl(path, hasMinFile)
     );
 };
+
+console.log(module.exports)
