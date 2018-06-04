@@ -327,6 +327,23 @@ describe('Private Blogging', function () {
                     next.firstCall.args.length.should.equal(0);
                 });
 
+                it('filterPrivateRoutes should not 404 for very short post url', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/ab/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.equal(0);
+                });
+
                 it('filterPrivateRoutes: allow private /rss/ feed', function () {
                     settingsStub.withArgs('public_hash').returns('777aaa');
 
