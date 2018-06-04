@@ -17,9 +17,9 @@ const {SafeString, templates, url, hbs: {handlebars}} = require('./proxy'),
 /**
  * @deprecated: will be removed in Ghost 2.0
  */
- module.exports = function author(options) {
-   const {fn, hash: {autolink}} = options;
-   const {author} = this;
+module.exports = function author(options) {
+    const {fn, hash: {autolink}} = options;
+    const {author} = this;
     if (fn) {
         return handlebars.helpers.with.call(this, author, options);
     }
