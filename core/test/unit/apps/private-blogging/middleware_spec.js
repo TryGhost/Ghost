@@ -259,6 +259,23 @@ describe('Private Blogging', function () {
                     (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
+                it('filterPrivateRoutes should 404 for rss with pagination requests', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/rss/1';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                });
+
                 it('filterPrivateRoutes should 404 for tag rss requests', function () {
                     var salt = Date.now().toString();
                     req.url = req.path = '/tag/welcome/rss/';
@@ -274,6 +291,57 @@ describe('Private Blogging', function () {
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
                     (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                });
+
+                it('filterPrivateRoutes should 404 for tag rss with pagination requests', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/tag/welcome/rss/2';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                });
+
+                it('filterPrivateRoutes should return next if tag contains rss', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/tag/rss-test/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.equal(0);
+                });
+
+                it('filterPrivateRoutes should not 404 for very short post url', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/ab/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.equal(0);
                 });
 
                 it('filterPrivateRoutes: allow private /rss/ feed', function () {
