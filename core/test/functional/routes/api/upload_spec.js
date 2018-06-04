@@ -38,7 +38,7 @@ describe('Upload API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -54,7 +54,7 @@ describe('Upload API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -70,7 +70,7 @@ describe('Upload API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
-                .expect(200)
+                .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);

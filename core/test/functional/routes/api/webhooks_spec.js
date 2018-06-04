@@ -76,14 +76,15 @@ describe('Webhooks API', function () {
                             return done(err);
                         }
 
-                        var location = res.headers.location;
-                        var jsonResponse = res.body;
+                        should.exist(res.body.webhooks);
+                        var createdWebhook = res.body.webhooks[0];
 
-                        should.exist(jsonResponse.webhooks);
-                        testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
+                        testUtils.API.checkResponse(createdWebhook, 'webhook');
 
-                        jsonResponse.webhooks[0].event.should.equal(newWebhook.event);
-                        jsonResponse.webhooks[0].target_url.should.equal(newWebhook.target_url);
+                        createdWebhook.event.should.equal(newWebhook.event);
+                        createdWebhook.target_url.should.equal(newWebhook.target_url);
+
+                        var location = testUtils.API.getApiQuery('webhooks/') + createdWebhook.id;
 
                         // begin delete test
                         request.del(location)

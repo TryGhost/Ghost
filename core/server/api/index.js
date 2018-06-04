@@ -33,7 +33,6 @@ var _ = require('lodash'),
     http,
     addHeaders,
     cacheInvalidationHeader,
-    locationHeader,
     contentDispositionHeaderExport,
     contentDispositionHeaderSubscribers,
     contentDispositionHeaderRedirects;
@@ -110,46 +109,6 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
 };
 
 /**
- * ### Location Header
- *
- * If the API request results in the creation of a new object, construct a Location: header which points to the new
- * resource.
- *
- * @private
- * @param {Express.request} req Original HTTP Request
- * @param {Object} result API method result
- * @return {String} Resolves to header string
- */
-locationHeader = function locationHeader(req, result) {
-    var apiRoot = urlService.utils.urlFor('api'),
-        location,
-        newObject,
-        statusQuery;
-
-    if (req.method === 'POST') {
-        if (result.hasOwnProperty('posts')) {
-            newObject = result.posts[0];
-            statusQuery = '/?status=' + newObject.status;
-            location = urlService.utils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
-        } else if (result.hasOwnProperty('notifications')) {
-            newObject = result.notifications[0];
-            location = urlService.utils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
-        } else if (result.hasOwnProperty('users')) {
-            newObject = result.users[0];
-            location = urlService.utils.urlJoin(apiRoot, 'users', newObject.id, '/');
-        } else if (result.hasOwnProperty('tags')) {
-            newObject = result.tags[0];
-            location = urlService.utils.urlJoin(apiRoot, 'tags', newObject.id, '/');
-        } else if (result.hasOwnProperty('webhooks')) {
-            newObject = result.webhooks[0];
-            location = urlService.utils.urlJoin(apiRoot, 'webhooks', newObject.id, '/');
-        }
-    }
-
-    return location;
-};
-
-/**
  * ### Content Disposition Header
  * create a header that invokes the 'Save As' dialog in the browser when exporting the database to file. The 'filename'
  * parameter is governed by [RFC6266](http://tools.ietf.org/html/rfc6266#section-4.3).
@@ -181,22 +140,11 @@ contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects()
 
 addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
-        location,
         contentDisposition;
 
     cacheInvalidation = cacheInvalidationHeader(req, result);
     if (cacheInvalidation) {
         res.set({'X-Cache-Invalidate': cacheInvalidation});
-    }
-
-    if (req.method === 'POST') {
-        location = locationHeader(req, result);
-        if (location) {
-            res.set({Location: location});
-            // The location header indicates that a new object was created.
-            // In this case the status code should be 201 Created
-            res.status(201);
-        }
     }
 
     // Add Export Content-Disposition Header
@@ -263,6 +211,15 @@ http = function http(apiMethod) {
         if (_.isEmpty(object)) {
             object = options;
             options = {};
+        }
+
+        if (req.method === 'POST') {
+            var path = req.route.path;
+            if (path === '/authentication/passwordreset' || path === '/authentication/revoke') {
+                res.status(200);
+            } else {
+                res.status(201);
+            }
         }
 
         return apiMethod(object, options).tap(function onSuccess(response) {
