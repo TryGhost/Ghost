@@ -10,32 +10,32 @@
 // Block helper: `{{#author}}{{/author}}`
 // This is the default handlebars behaviour of dropping into the author object scope
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString,
-    handlebars = proxy.hbs.handlebars,
-    templates = proxy.templates,
-    url = proxy.url;
+const { SafeString, templates, url, hbs: { handlebars } } = require('./proxy'),
+    isString = require('lodash.isString'),
+    ESCAPE = require('lodash/escape'); // must be capital to avoid naming collision
 
 /**
  * @deprecated: will be removed in Ghost 2.0
  */
+
 module.exports = function author(options) {
-    if (options.fn) {
-        return handlebars.helpers.with.call(this, this.author, options);
+  const { fn, hash: { autolink } } = options;
+  const { author } = this;
+    if (fn) {
+        return handlebars.helpers.with.call(this, author, options);
     }
 
-    var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
-        output = '';
+    const autolink_check = isString(autolink) && autolink === 'false' ? false : true;
+    let output = '';
 
-    if (this.author && this.author.name) {
-        if (autolink) {
+    if (author && author.name) {
+        if (autolink_check) {
             output = templates.link({
-                url: url.urlFor('author', {author: this.author}),
-                text: _.escape(this.author.name)
+                url: url.urlFor('author', { author }),
+                text: ESCAPE(author.name)
             });
         } else {
-            output = _.escape(this.author.name);
+            output = ESCAPE(author.name);
         }
     }
 
