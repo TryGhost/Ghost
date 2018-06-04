@@ -34,7 +34,7 @@ ghost().then(function (ghostServer) {
     });
 }).catch(function (err) {
     if (!common.errors.utils.isIgnitionError(err)) {
-        err = new common.errors.GhostError({err: err});
+        err = new common.errors.GhostError({message: err.message, err: err});
     }
 
     common.logging.error(err);
