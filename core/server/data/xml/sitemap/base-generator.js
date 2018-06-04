@@ -1,77 +1,30 @@
-var _ = require('lodash'),
+'use strict';
+
+const _ = require('lodash'),
     xml = require('xml'),
     moment = require('moment'),
-    Promise = require('bluebird'),
     path = require('path'),
     urlService = require('../../../services/url'),
-    common = require('../../../lib/common'),
     localUtils = require('./utils'),
-    CHANGE_FREQ = 'weekly',
-    XMLNS_DECLS;
+    CHANGE_FREQ = 'weekly';
 
 // Sitemap specific xml namespace declarations that should not change
-XMLNS_DECLS = {
+const XMLNS_DECLS = {
     _attr: {
         xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
         'xmlns:image': 'http://www.google.com/schemas/sitemap-image/1.1'
     }
 };
 
-function BaseSiteMapGenerator() {
-    this.lastModified = 0;
-    this.nodeLookup = {};
-    this.nodeTimeLookup = {};
-    this.siteMapContent = '';
-    this.dataEvents = common.events;
-}
+class BaseSiteMapGenerator {
+    constructor() {
+        this.nodeLookup = {};
+        this.nodeTimeLookup = {};
+        this.siteMapContent = null;
+        this.lastModified = 0;
+    }
 
-_.extend(BaseSiteMapGenerator.prototype, {
-    init: function () {
-        var self = this;
-        return this.refreshAll().then(function () {
-            return self.bindEvents();
-        });
-    },
-
-    bindEvents: _.noop,
-
-    getData: function () {
-        return Promise.resolve([]);
-    },
-
-    refreshAll: function () {
-        var self = this;
-
-        // Load all data
-        return this.getData().then(function (data) {
-            // Generate SiteMap from data
-            return self.generateXmlFromData(data);
-        }).then(function (generatedXml) {
-            self.siteMapContent = generatedXml;
-        });
-    },
-
-    generateXmlFromData: function (data) {
-        // Create all the url elements in JSON
-        var self = this,
-            nodes;
-
-        nodes = _.reduce(data, function (nodeArr, datum) {
-            var node = self.createUrlNodeFromDatum(datum);
-
-            if (node) {
-                self.updateLastModified(datum);
-                self.updateLookups(datum, node);
-                nodeArr.push(node);
-            }
-
-            return nodeArr;
-        }, []);
-
-        return this.generateXmlFromNodes(nodes);
-    },
-
-    generateXmlFromNodes: function () {
+    generateXmlFromNodes() {
         var self = this,
             // Get a mapping of node to timestamp
             timedNodes = _.map(this.nodeLookup, function (node, id) {
@@ -93,70 +46,46 @@ _.extend(BaseSiteMapGenerator.prototype, {
 
         // Return the xml
         return localUtils.getDeclarations() + xml(data);
-    },
+    }
 
-    updateXmlFromNodes: function (urlElements) {
-        var content = this.generateXmlFromNodes(urlElements);
-
-        this.setSiteMapContent(content);
-
-        return content;
-    },
-
-    addOrUpdateUrl: function (model) {
-        var datum = model.toJSON(),
-            node = this.createUrlNodeFromDatum(datum);
+    addUrl(url, datum) {
+        const node = this.createUrlNodeFromDatum(url, datum);
 
         if (node) {
             this.updateLastModified(datum);
-            // TODO: Check if the node values changed, and if not don't regenerate
             this.updateLookups(datum, node);
-            this.updateXmlFromNodes();
+            // force regeneration of xml
+            this.siteMapContent = null;
         }
-    },
+    }
 
-    removeUrl: function (model) {
-        var datum = model.toJSON();
-        // When the model is destroyed we need to fetch previousAttributes
-        if (!datum.id) {
-            datum = model.previousAttributes();
-        }
+    removeUrl(url, datum) {
         this.removeFromLookups(datum);
 
+        // force regeneration of xml
+        this.siteMapContent = null;
         this.lastModified = Date.now();
+    }
 
-        this.updateXmlFromNodes();
-    },
-
-    validateDatum: function () {
-        return true;
-    },
-
-    getUrlForDatum: function () {
-        return urlService.utils.urlFor('home', true);
-    },
-
-    getUrlForImage: function (image) {
-        return urlService.utils.urlFor('image', {image: image}, true);
-    },
-
-    getPriorityForDatum: function () {
+    getPriorityForDatum() {
         return 1.0;
-    },
+    }
 
-    getLastModifiedForDatum: function (datum) {
+    getLastModifiedForDatum(datum) {
         return datum.updated_at || datum.published_at || datum.created_at;
-    },
+    }
 
-    createUrlNodeFromDatum: function (datum) {
-        if (!this.validateDatum(datum)) {
-            return false;
+    updateLastModified(datum) {
+        const lastModified = this.getLastModifiedForDatum(datum);
+
+        if (lastModified > this.lastModified) {
+            this.lastModified = lastModified;
         }
+    }
 
-        var url = this.getUrlForDatum(datum),
-            priority = this.getPriorityForDatum(datum),
-            node,
-            imgNode;
+    createUrlNodeFromDatum(url, datum) {
+        const priority = this.getPriorityForDatum(datum);
+        let node, imgNode;
 
         node = {
             url: [
@@ -174,9 +103,9 @@ _.extend(BaseSiteMapGenerator.prototype, {
         }
 
         return node;
-    },
+    }
 
-    createImageNodeFromDatum: function (datum) {
+    createImageNodeFromDatum(datum) {
         // Check for cover first because user has cover but the rest only have image
         var image = datum.cover_image || datum.profile_image || datum.feature_image,
             imageUrl,
@@ -187,7 +116,7 @@ _.extend(BaseSiteMapGenerator.prototype, {
         }
 
         // Grab the image url
-        imageUrl = this.getUrlForImage(image);
+        imageUrl = urlService.utils.urlFor('image', {image: image}, true);
 
         // Verify the url structure
         if (!this.validateImageUrl(imageUrl)) {
@@ -204,36 +133,37 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return {
             'image:image': imageEl
         };
-    },
+    }
 
-    validateImageUrl: function (imageUrl) {
+    validateImageUrl(imageUrl) {
         return !!imageUrl;
-    },
+    }
 
-    setSiteMapContent: function (content) {
-        this.siteMapContent = content;
-    },
-
-    updateLastModified: function (datum) {
-        var lastModified = this.getLastModifiedForDatum(datum);
-
-        if (lastModified > this.lastModified) {
-            this.lastModified = lastModified;
+    getXml() {
+        if (this.siteMapContent) {
+            return this.siteMapContent;
         }
-    },
 
-    updateLookups: function (datum, node) {
+        const content = this.generateXmlFromNodes();
+        this.siteMapContent = content;
+        return content;
+    }
+
+    /**
+     * @NOTE
+     * The url service currently has no url update event.
+     * It removes and adds the url. If the url service extends it's
+     * feature set, we can detect if a node has changed.
+     */
+    updateLookups(datum, node) {
         this.nodeLookup[datum.id] = node;
         this.nodeTimeLookup[datum.id] = this.getLastModifiedForDatum(datum);
-    },
-
-    removeFromLookups: function (datum) {
-        var lookup = this.nodeLookup;
-        delete lookup[datum.id];
-
-        lookup = this.nodeTimeLookup;
-        delete lookup[datum.id];
     }
-});
+
+    removeFromLookups(datum) {
+        delete this.nodeLookup[datum.id];
+        delete this.nodeTimeLookup[datum.id];
+    }
+}
 
 module.exports = BaseSiteMapGenerator;
