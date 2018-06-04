@@ -14,5 +14,3 @@ module.exports = function asset(path, options) {
         getAssetUrl(path, hasMinFile)
     );
 };
-
-console.log(module.exports)
