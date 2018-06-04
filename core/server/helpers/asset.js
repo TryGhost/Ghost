@@ -3,12 +3,12 @@
 //
 // Returns the path to the specified asset. The ghost flag outputs the asset path for the Ghost admin
 const proxy = require('./proxy'),
-    _ = require('lodash/get'),
+    get = require('lodash.get'),
     getAssetUrl = proxy.metaData.getAssetUrl,
     SafeString = proxy.SafeString;
 
 module.exports = function asset(path, options) {
-    const hasMinFile = _.get(options, 'hash.hasMinFile');
+    const hasMinFile = get(options, 'hash.hasMinFile');
 
     return new SafeString(
         getAssetUrl(path, hasMinFile)
