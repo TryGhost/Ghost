@@ -11,7 +11,7 @@
 // This is the default handlebars behaviour of dropping into the author object scope
 
 const { SafeString, templates, url, hbs: { handlebars } } = require('./proxy'),
-    isString = require('lodash.isString'),
+    isString = require('lodash/isString'),
     ESCAPE = require('lodash/escape'); // must be capital to avoid naming collision
 
 /**
