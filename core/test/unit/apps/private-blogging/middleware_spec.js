@@ -276,6 +276,23 @@ describe('Private Blogging', function () {
                     (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
+                it('filterPrivateRoutes should return next if tag contains rss', function () {
+                    var salt = Date.now().toString();
+                    req.url = req.path = '/tag/rss-test/';
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    res.isPrivateBlog = true;
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    next.called.should.be.true();
+                    next.firstCall.args.length.should.equal(0);
+                });
+
                 it('filterPrivateRoutes: allow private /rss/ feed', function () {
                     settingsStub.withArgs('public_hash').returns('777aaa');
 
