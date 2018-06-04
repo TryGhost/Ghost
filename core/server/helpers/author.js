@@ -20,22 +20,21 @@ const {SafeString, templates, url, hbs: {handlebars}} = require('./proxy'),
 
 module.exports = function author(options) {
     const {fn, hash: {autolink}} = options;
-    const {author} = this;
     if (fn) {
-        return handlebars.helpers.with.call(this, author, options);
+        return handlebars.helpers.with.call(this, this.author, options);
     }
 
     const autolinkCheck = isString(autolink) && autolink === 'false' ? false : true;
     let output = '';
 
-    if (author && author.name) {
+    if (this.author && this.author.name) {
         if (autolinkCheck) {
             output = templates.link({
-                url: url.urlFor('author', {author}),
-                text: ESCAPE(author.name)
+                url: url.urlFor('author', {author: this.author}),
+                text: ESCAPE(this.author.name)
             });
         } else {
-            output = ESCAPE(author.name);
+            output = ESCAPE(this.author.name);
         }
     }
 
