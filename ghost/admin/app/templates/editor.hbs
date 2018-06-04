@@ -5,8 +5,8 @@
         navIsClosed=navIsClosed
         as |editor|
     }}
-        <header class="gh-editor-header br2 {{editor.headerClass}} {{if infoMessage "bg-white-90"}}" style="pointer-events: none">
-            <div class="flex items-center br2 h9 pa2 pl4 pr4 {{unless infoMessage "bg-white-90"}}" style="pointer-events: auto">
+        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
+            <div class="flex items-center br2 h9 pa2 pl4 pr4 pe-auto {{unless infoMessage "bg-white-90"}}">
                 <div class="gh-editor-status">
                     {{gh-editor-post-status
                         post=post
