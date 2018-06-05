@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     uuid = require('uuid'),
     security = require('../../../../server/lib/security');
 

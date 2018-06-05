@@ -1,6 +1,4 @@
-'use strict';
-
-const should = require('should'); // jshint ignore:line
+const should = require('should');
 const converter = require('../../../../../server/lib/mobiledoc/converters/mobiledoc-converter');
 
 describe('Mobiledoc converter', function () {

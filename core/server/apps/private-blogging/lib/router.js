@@ -1,12 +1,10 @@
-var path                = require('path'),
-    express             = require('express'),
-    middleware          = require('./middleware'),
-    bodyParser          = require('body-parser'),
-    renderer            = require('../../../controllers/frontend/renderer'),
-    brute               = require('../../../web/middleware/brute'),
-
+const path = require('path'),
+    express = require('express'),
+    middleware = require('./middleware'),
+    bodyParser = require('body-parser'),
+    routing = require('../../../services/routing'),
+    brute = require('../../../web/middleware/brute'),
     templateName = 'private',
-
     privateRouter = express.Router();
 
 function _renderer(req, res) {
@@ -27,7 +25,7 @@ function _renderer(req, res) {
     }
 
     // Render Call
-    return renderer(req, res, data);
+    return routing.helpers.renderer(req, res, data);
 }
 
 // password-protected frontend route

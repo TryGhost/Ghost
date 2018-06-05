@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     EventEmitter = require('events').EventEmitter,
     _ = require('lodash'),

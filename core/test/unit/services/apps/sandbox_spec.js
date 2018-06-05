@@ -1,11 +1,7 @@
-var should = require('should'),
+const should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
-
-    // Stuff we are testing
-    AppProxy = require('../../../../server/services/apps/proxy'),
     AppSandbox = require('../../../../server/services/apps/sandbox'),
-
     sandbox = sinon.sandbox.create();
 
 describe('Apps', function () {
@@ -22,10 +18,7 @@ describe('Apps', function () {
             var appBox = new AppSandbox(),
                 appPath = makeAppPath('good.js'),
                 GoodApp,
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {}
-                }),
+                appProxy = sandbox.stub(),
                 app;
 
             GoodApp = appBox.loadApp(appPath);
@@ -56,10 +49,7 @@ describe('Apps', function () {
             var appBox = new AppSandbox(),
                 badAppPath = makeAppPath('badinstall.js'),
                 BadApp,
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {}
-                }),
+                appProxy = sandbox.stub(),
                 app,
                 installApp = function () {
                     app.install(appProxy);

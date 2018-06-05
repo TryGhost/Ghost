@@ -122,7 +122,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (!model.ghostEvents) {
             model.ghostEvents = [];
 
-            if (options.importing) {
+            // CASE: when importing or deleting content, lot's of model queries are happening in one transaction
+            //       lot's of model events will be triggered. we ensure we set the max listeners to infinity.
+            //       we are using `once` - we auto remove the listener afterwards
+            if (options.importing || options.destroyAll) {
                 options.transacting.setMaxListeners(0);
             }
 
@@ -1045,7 +1048,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                         relation: 'posts_tags',
                         condition: ['posts_tags.tag_id', '=', 'tags.id']
                     },
-                    select: ['posts_tags.post_id as post_id'],
+                    select: ['posts_tags.post_id as post_id', 'tags.visibility'],
                     whereIn: 'posts_tags.post_id',
                     whereInKey: 'post_id',
                     orderBy: 'sort_order'

@@ -1,14 +1,14 @@
-// jshint unused: false
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
 const jsonpath = require('jsonpath');
 const sinon = require('sinon');
+const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/UrlGenerator', function () {
-    let queue, routingType, urls, resources, resource, resource2;
+    let queue, router, urls, resources, resource, resource2;
 
     beforeEach(function () {
         queue = {
@@ -16,7 +16,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             start: sandbox.stub()
         };
 
-        routingType = {
+        router = {
             getFilter: sandbox.stub(),
             addListener: sandbox.stub(),
             getType: sandbox.stub(),
@@ -57,21 +57,21 @@ describe('Unit: services/url/UrlGenerator', function () {
     });
 
     it('ensure listeners', function () {
-        const urlGenerator = new UrlGenerator(routingType, queue);
+        const urlGenerator = new UrlGenerator(router, queue);
 
         queue.register.calledTwice.should.be.true();
-        routingType.addListener.calledOnce.should.be.true();
+        router.addListener.calledOnce.should.be.true();
         should.not.exist(urlGenerator.filter);
     });
 
     it('routing type has filter', function () {
-        routingType.getFilter.returns('featured:true');
-        const urlGenerator = new UrlGenerator(routingType, queue);
+        router.getFilter.returns('featured:true');
+        const urlGenerator = new UrlGenerator(router, queue);
         urlGenerator.filter.should.eql('$[?(@.featured == true)]');
     });
 
     it('routing type has changed', function () {
-        const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+        const urlGenerator = new UrlGenerator(router, queue, resources, urls);
 
         sandbox.stub(urlGenerator, '_try');
 
@@ -93,7 +93,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             id: 'object-id-1'
         };
 
-        routingType.addListener.args[0][1]();
+        router.addListener.args[0][1]();
         urls.removeResourceId.calledTwice.should.be.true();
         resource.release.calledOnce.should.be.true();
         resource2.release.calledOnce.should.be.true();
@@ -102,10 +102,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onInit', function () {
         it('1 resource', function () {
-            routingType.getType.returns('posts');
+            router.getType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([resource]);
 
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
@@ -113,10 +113,10 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('no resource', function () {
-            routingType.getType.returns('posts');
+            router.getType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([]);
 
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
@@ -126,10 +126,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onAdded', function () {
         it('type is equal', function () {
-            routingType.getType.returns('posts');
+            router.getType.returns('posts');
             resources.getByIdAndType.withArgs('posts', 1).returns(resource);
 
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
@@ -137,9 +137,9 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('type is not equal', function () {
-            routingType.getType.returns('pages');
+            router.getType.returns('pages');
 
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
@@ -150,12 +150,12 @@ describe('Unit: services/url/UrlGenerator', function () {
     describe('fn: _try', function () {
         describe('no filter', function () {
             it('resource is not taken', function () {
-                routingType.getFilter.returns(false);
-                routingType.getType.returns('posts');
+                router.getFilter.returns(false);
+                router.getType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query');
 
-                const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+                const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -169,12 +169,12 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('resource is taken', function () {
-                routingType.getFilter.returns(false);
-                routingType.getType.returns('posts');
+                router.getFilter.returns(false);
+                router.getType.returns('posts');
                 resource.isReserved.returns(true);
                 sandbox.stub(jsonpath, 'query');
 
-                const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+                const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -190,12 +190,12 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         describe('custom filter', function () {
             it('matches', function () {
-                routingType.getFilter.returns('featured:true');
-                routingType.getType.returns('posts');
+                router.getFilter.returns('featured:true');
+                router.getType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query').returns([true]);
 
-                const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+                const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -209,12 +209,12 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('no match', function () {
-                routingType.getFilter.returns('featured:true');
-                routingType.getType.returns('posts');
+                router.getFilter.returns('featured:true');
+                router.getType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query').returns([]);
 
-                const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+                const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -228,12 +228,12 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('resource is taken', function () {
-                routingType.getFilter.returns('featured:true');
-                routingType.getType.returns('posts');
+                router.getFilter.returns('featured:true');
+                router.getType.returns('posts');
                 resource.isReserved.returns(true);
                 sandbox.stub(jsonpath, 'query').returns([]);
 
-                const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+                const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -250,68 +250,23 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _generateUrl', function () {
         it('returns url', function () {
-            routingType.getPermalinks.returns({
+            router.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
 
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_replacePermalink').returns('/url');
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+            sandbox.stub(urlUtils, 'replacePermalink').returns('/url');
 
-            urlGenerator._generateUrl(resource).should.eql('/url');
-            urlGenerator._replacePermalink.calledWith('/:slug/', resource).should.be.true();
-        });
-    });
-
-    describe('fn: _replacePermalink', function () {
-        it('/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome'
-            };
-
-            urlGenerator._replacePermalink('/:slug/', resource).should.eql('/welcome/');
-        });
-
-        it('/:year/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                published_at: '2017-04-13T20:00:53.584Z'
-            };
-
-            urlGenerator._replacePermalink('/:year/:slug/', resource).should.eql('/2017/welcome/');
-        });
-
-        it('/:author/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                primary_author: {
-                    slug: 'joe'
-                }
-            };
-
-            urlGenerator._replacePermalink('/:author/:slug/', resource).should.eql('/joe/welcome/');
-        });
-
-        it('/:primary_tag/:slug/', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
-            resource.data = {
-                slug: 'welcome',
-                primary_tag: {
-                    slug: 'football'
-                }
-            };
-
-            urlGenerator._replacePermalink('/:primary_tag/:slug/', resource).should.eql('/football/welcome/');
+            urlGenerator._generateUrl(resource).should.eql('/url/');
+            urlUtils.replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
         });
     });
 
     describe('fn: _resourceListeners', function () {
         it('ensure events', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
 
             urlGenerator._resourceListeners(resource);
             resource.removeAllListeners.calledOnce.should.be.true();
@@ -319,7 +274,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('url has not changed', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_generateUrl').returns('/welcome/');
             sandbox.stub(urlGenerator, '_try').returns(true);
 
@@ -337,7 +292,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('url has changed, but is still mine', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
             sandbox.stub(urlGenerator, '_try').returns(true);
 
@@ -355,7 +310,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('url has changed and is no longer mine (e.g. filter does not match anymore)', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
             sandbox.stub(urlGenerator, '_try').returns(false);
 
@@ -374,7 +329,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('resource got removed', function () {
-            const urlGenerator = new UrlGenerator(routingType, queue, resources, urls);
+            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             urlGenerator._resourceListeners(resource);
 
             resource.data = {

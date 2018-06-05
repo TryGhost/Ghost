@@ -1,5 +1,4 @@
-// jshint unused: false
-var should = require('should'),
+const should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     moment = require('moment-timezone'),
@@ -9,7 +8,6 @@ var should = require('should'),
     configUtils = require('../../../utils/configUtils'),
     testUtils = require('../../../utils'),
     config = configUtils.config,
-
     sandbox = sinon.sandbox.create();
 
 describe('Url', function () {
@@ -166,18 +164,6 @@ describe('Url', function () {
             }, true).should.equal('https://my-ghost-blog.com/blog');
         });
 
-        it('should return rss url when asked for', function () {
-            var testContext = 'rss';
-
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            urlService.utils.urlFor(testContext).should.equal('/rss/');
-            urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            urlService.utils.urlFor(testContext).should.equal('/blog/rss/');
-            urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
-        });
-
         it('should handle weird cases by always returning /', function () {
             urlService.utils.urlFor('').should.equal('/');
             urlService.utils.urlFor('post', {}).should.equal('/');
@@ -216,51 +202,6 @@ describe('Url', function () {
             configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
             urlService.utils.urlFor(testContext).should.equal('/blog/about/');
             urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
-        });
-
-        it('should return url for a post from post object', function () {
-            var testContext = 'post',
-                testData = {post: _.cloneDeep(testUtils.DataGenerator.Content.posts[2])};
-
-            // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
-            testData.post.url = '/short-and-sweet/';
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/short-and-sweet/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
-
-            testData.post.url = '/blog-one/';
-            urlService.utils.urlFor(testContext, testData).should.equal('/blog/blog-one/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/blog-one/');
-        });
-
-        it('should return url for a tag when asked for', function () {
-            var testContext = 'tag',
-                testData = {tag: testUtils.DataGenerator.Content.tags[0]};
-
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/tag/kitchen-sink/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/tag/kitchen-sink/');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
-        });
-
-        it('should return url for an author when asked for', function () {
-            var testContext = 'author',
-                testData = {author: testUtils.DataGenerator.Content.users[0]};
-
-            configUtils.set({url: 'http://my-ghost-blog.com'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/author/joe-bloggs/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/author/joe-bloggs/');
-
-            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
-            urlService.utils.urlFor(testContext, testData).should.equal('/blog/author/joe-bloggs/');
-            urlService.utils.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/author/joe-bloggs/');
         });
 
         it('should return url for an image when asked for', function () {
@@ -549,10 +490,8 @@ describe('Url', function () {
         });
     });
 
-    describe('urlPathForPost', function () {
-        var localSettingsCache = {
-            permalinks: '/:slug/'
-        };
+    describe('replacePermalink', function () {
+        const localSettingsCache = {};
 
         beforeEach(function () {
             sandbox.stub(settingsCache, 'get').callsFake(function (key) {
@@ -564,100 +503,81 @@ describe('Url', function () {
             var testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/short-and-sweet/';
 
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:slug/', testData).should.equal(postLink);
         });
 
-        it('permalink is /:year/:month/:day/:slug, blog timezone is Los Angeles', function () {
+        it('permalink is /:year/:month/:day/:slug/, blog timezone is Los Angeles', function () {
             localSettingsCache.active_timezone = 'America/Los_Angeles';
-            localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/2016/05/17/short-and-sweet/';
 
             testData.published_at = new Date('2016-05-18T06:30:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:year/:month/:day/:slug/', testData).should.equal(postLink);
         });
 
-        it('permalink is /:year/:month/:day/:slug, blog timezone is Asia Tokyo', function () {
+        it('permalink is /:year/:month/:day/:slug/, blog timezone is Asia Tokyo', function () {
             localSettingsCache.active_timezone = 'Asia/Tokyo';
-            localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/2016/05/18/short-and-sweet/';
 
             testData.published_at = new Date('2016-05-18T06:30:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:year/:month/:day/:slug/', testData).should.equal(postLink);
         });
 
-        it('post is page, no permalink usage allowed at all', function () {
+        it('permalink is /:year/:id/:author/, TZ is LA', function () {
             localSettingsCache.active_timezone = 'America/Los_Angeles';
-            localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
-            var testData = testUtils.DataGenerator.Content.posts[5],
-                postLink = '/static-page-test/';
-
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
-        });
-
-        it('permalink is /:year/:id:/:author', function () {
-            localSettingsCache.active_timezone = 'America/Los_Angeles';
-            localSettingsCache.permalinks = '/:year/:id/:author/';
-
-            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {primary_author: {slug: 'joe-blog'}}),
                 postLink = '/2015/3/joe-blog/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:year/:id/:author/', testData).should.equal(postLink);
         });
 
-        it('permalink is /:year/:id:/:author', function () {
+        it('permalink is /:year/:id:/:author/, TZ is Berlin', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
-            localSettingsCache.permalinks = '/:year/:id/:author/';
 
-            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-blog'}}),
+            var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {primary_author: {slug: 'joe-blog'}}),
                 postLink = '/2016/3/joe-blog/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:year/:id/:author/', testData).should.equal(postLink);
         });
 
         it('permalink is /:primary_tag/:slug/ and there is a primary_tag', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
-            localSettingsCache.permalinks = '/:primary_tag/:slug/';
 
             var testData = _.merge({}, testUtils.DataGenerator.Content.posts[2], {primary_tag: {slug: 'bitcoin'}}),
                 postLink = '/bitcoin/short-and-sweet/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:primary_tag/:slug/', testData).should.equal(postLink);
         });
 
         it('permalink is /:primary_tag/:slug/ and there is NO primary_tag', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
-            localSettingsCache.permalinks = '/:primary_tag/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/all/short-and-sweet/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:primary_tag/:slug/', testData).should.equal(postLink);
         });
 
         it('shows "undefined" for unknown route segments', function () {
             localSettingsCache.active_timezone = 'Europe/Berlin';
-            localSettingsCache.permalinks = '/:tag/:slug/';
 
             var testData = testUtils.DataGenerator.Content.posts[2],
-                // @TODO: is this the correct behaviour?
                 postLink = '/undefined/short-and-sweet/';
 
             testData.published_at = new Date('2016-01-01T00:00:00.000Z');
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:tag/:slug/', testData).should.equal(postLink);
         });
 
         it('post is not published yet', function () {
             localSettingsCache.active_timezone = 'Europe/London';
-            localSettingsCache.permalinks = '/:year/:month/:day/:slug/';
 
             var testData = _.merge(testUtils.DataGenerator.Content.posts[2], {id: 3, published_at: null}),
                 nowMoment = moment().tz('Europe/London'),
@@ -667,7 +587,7 @@ describe('Url', function () {
             postLink = postLink.replace('MM', nowMoment.format('MM'));
             postLink = postLink.replace('DD', nowMoment.format('DD'));
 
-            urlService.utils.urlPathForPost(testData).should.equal(postLink);
+            urlService.utils.replacePermalink('/:year/:month/:day/:slug/', testData).should.equal(postLink);
         });
     });
 
