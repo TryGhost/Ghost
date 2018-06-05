@@ -206,5 +206,8 @@ module.exports = function apiRoutes() {
     apiRouter.post('/webhooks', mw.authenticatePrivate, api.http(api.webhooks.add));
     apiRouter.del('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
 
+    // ## Oembed (fetch response from oembed provider)
+    apiRouter.get('/oembed', mw.authenticatePrivate, api.http(api.oembed.read));
+
     return apiRouter;
 };

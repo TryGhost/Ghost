@@ -424,6 +424,10 @@
             },
             "webhooks": {
                 "webhookAlreadyExists": "A webhook for requested event with supplied target_url already exists."
+            },
+            "oembed": {
+                "noUrlProvided": "No url provided.",
+                "unknownProvider": "No provider found for supplied URL."
             }
         },
         "data": {
