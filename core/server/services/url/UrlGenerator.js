@@ -1,9 +1,7 @@
 const _ = require('lodash'),
-    moment = require('moment-timezone'),
     jsonpath = require('jsonpath'),
     debug = require('ghost-ignition').debug('services:url:generator'),
     localUtils = require('./utils'),
-    settingsCache = require('../settings/cache'),
     /**
      * @TODO: This is a fake version of the upcoming GQL tool.
      * GQL will offer a tool to match a JSON against a filter.
@@ -20,8 +18,8 @@ const _ = require('lodash'),
     };
 
 class UrlGenerator {
-    constructor(routingType, queue, resources, urls, position) {
-        this.routingType = routingType;
+    constructor(router, queue, resources, urls, position) {
+        this.router = router;
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
@@ -29,9 +27,9 @@ class UrlGenerator {
 
         debug('constructor', this.toString());
 
-        // CASE: channels can define custom filters, but not required.
-        if (this.routingType.getFilter()) {
-            this.filter = transformFilter(this.routingType.getFilter());
+        // CASE: routers can define custom filters, but not required.
+        if (this.router.getFilter()) {
+            this.filter = transformFilter(this.router.getFilter());
             debug('filter', this.filter);
         }
 
@@ -43,7 +41,7 @@ class UrlGenerator {
          * @NOTE: currently only used if the permalink setting changes and it's used for this url generator.
          * @TODO: remove in Ghost 2.0
          */
-        this.routingType.addListener('updated', () => {
+        this.router.addListener('updated', () => {
             const myResources = this.urls.getByGeneratorId(this.uid);
 
             myResources.forEach((object) => {
@@ -74,7 +72,7 @@ class UrlGenerator {
         debug('_onInit', this.toString());
 
         // @NOTE: get the resources of my type e.g. posts.
-        const resources = this.resources.getAllByType(this.routingType.getType());
+        const resources = this.resources.getAllByType(this.router.getType());
 
         _.each(resources, (resource) => {
             this._try(resource);
@@ -85,7 +83,7 @@ class UrlGenerator {
         debug('onAdded', this.toString());
 
         // CASE: you are type "pages", but the incoming type is "users"
-        if (event.type !== this.routingType.getType()) {
+        if (event.type !== this.router.getType()) {
             return;
         }
 
@@ -138,57 +136,10 @@ class UrlGenerator {
      * We currently generate relative urls.
      */
     _generateUrl(resource) {
-        let url = this.routingType.getPermalinks().getValue();
-        url = this._replacePermalink(url, resource);
+        const permalink = this.router.getPermalinks().getValue();
+        const url = localUtils.replacePermalink(permalink, resource.data);
 
-        return localUtils.createUrl(url, false, false);
-    }
-
-    /**
-     * @TODO:
-     * This is a copy of `replacePermalink` of our url utility, see ./utils.
-     * But it has modifications, because the whole url utility doesn't work anymore.
-     * We will rewrite some of the functions in the utility.
-     */
-    _replacePermalink(url, resource) {
-        var output = url,
-            primaryTagFallback = 'all',
-            publishedAtMoment = moment.tz(resource.data.published_at || Date.now(), settingsCache.get('active_timezone')),
-            permalink = {
-                year: function () {
-                    return publishedAtMoment.format('YYYY');
-                },
-                month: function () {
-                    return publishedAtMoment.format('MM');
-                },
-                day: function () {
-                    return publishedAtMoment.format('DD');
-                },
-                author: function () {
-                    return resource.data.primary_author.slug;
-                },
-                primary_author: function () {
-                    return resource.data.primary_author ? resource.data.primary_author.slug : primaryTagFallback;
-                },
-                primary_tag: function () {
-                    return resource.data.primary_tag ? resource.data.primary_tag.slug : primaryTagFallback;
-                },
-                slug: function () {
-                    return resource.data.slug;
-                },
-                id: function () {
-                    return resource.data.id;
-                }
-            };
-
-        // replace tags like :slug or :year with actual values
-        output = output.replace(/(:[a-z_]+)/g, function (match) {
-            if (_.has(permalink, match.substr(1))) {
-                return permalink[match.substr(1)]();
-            }
-        });
-
-        return output;
+        return localUtils.createUrl(url, false, false, true);
     }
 
     /**
@@ -218,7 +169,7 @@ class UrlGenerator {
                     action: 'added:' + resource.data.id,
                     eventData: {
                         id: resource.data.id,
-                        type: this.routingType.getType()
+                        type: this.router.getType()
                     }
                 });
             }
@@ -234,12 +185,22 @@ class UrlGenerator {
         resource.addListener('removed', onRemoved.bind(this));
     }
 
+    hasUrl(url) {
+        const existingUrl = this.urls.getByUrl(url);
+
+        if (existingUrl.length && existingUrl[0].generatorId === this.uid) {
+            return true;
+        }
+
+        return false;
+    }
+
     getUrls() {
         return this.urls.getByGeneratorId(this.uid);
     }
 
     toString() {
-        return this.routingType.toString();
+        return this.router.toString();
     }
 }
 

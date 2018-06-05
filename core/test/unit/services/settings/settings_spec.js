@@ -26,7 +26,7 @@ describe('UNIT > Settings Service:', function () {
             routes: null,
             collections: {
               '/': {
-                route: '{globals.permalinks}',
+                permalink: '{globals.permalinks}',
                 template: [ 'home', 'index' ]
               }
             },
@@ -86,7 +86,7 @@ describe('UNIT > Settings Service:', function () {
                 routes: null,
                 collections: {
                   '/': {
-                    route: '{globals.permalinks}',
+                    permalink: '{globals.permalinks}',
                     template: [ 'home', 'index' ]
                   }
                 },

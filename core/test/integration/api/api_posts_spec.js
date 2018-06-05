@@ -9,6 +9,7 @@ var should = require('should'),
     db = require('../../../server/data/db'),
     models = require('../../../server/models'),
     PostAPI = require('../../../server/api/posts'),
+    urlService = require('../../../server/services/url'),
     settingsCache = require('../../../server/services/settings/cache'),
 
     sandbox = sinon.sandbox.create();
@@ -422,6 +423,8 @@ describe('Post API', function () {
         });
 
         it('with context.user can fetch url and author fields', function (done) {
+            sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[7].id).returns('/html-ipsum/');
+
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5}).then(function (results) {
                 should.exist(results.posts);
 

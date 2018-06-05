@@ -1,25 +1,34 @@
-var should = require('should'),
+const should = require('should'),
+    sinon = require('sinon'),
+    sandbox = sinon.sandbox.create(),
+    routing = require('../../../../server/services/routing'),
     getRssUrl = require('../../../../server/data/meta/rss_url');
 
 describe('getRssUrl', function () {
+    let firstCollection;
+
+    beforeEach(function () {
+        sandbox.restore();
+
+        firstCollection = sandbox.stub();
+        firstCollection.getRssUrl = sandbox.stub().returns('/rss/');
+
+        sandbox.stub(routing.registry, 'getFirstCollectionRouter').returns(firstCollection);
+    });
+
     it('should return rss url', function () {
-        var rssUrl = getRssUrl({
+        const rssUrl = getRssUrl({
             secure: false
         });
+
         should.equal(rssUrl, '/rss/');
     });
 
-    it('should return absolute rss url', function () {
-        var rssUrl = getRssUrl({
+    it('forwards absolute/secure flags', function () {
+        const rssUrl = getRssUrl({
             secure: false
         }, true);
-        should.equal(rssUrl, 'http://127.0.0.1:2369/rss/');
-    });
 
-    it('should return absolute rss url with https if secure', function () {
-        var rssUrl = getRssUrl({
-            secure: true
-        }, true);
-        should.equal(rssUrl, 'https://127.0.0.1:2369/rss/');
+        firstCollection.getRssUrl.calledWith({secure: false, absolute: true}).should.be.true();
     });
 });

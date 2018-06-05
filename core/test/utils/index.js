@@ -10,6 +10,7 @@ var Promise = require('bluebird'),
     uuid = require('uuid'),
     KnexMigrator = require('knex-migrator'),
     ghost = require('../../server'),
+    api = require('../../server/api'),
     common = require('../../server/lib/common'),
     fixtureUtils = require('../../server/data/schema/fixtures/utils'),
     db = require('../../server/data/db'),
@@ -17,8 +18,10 @@ var Promise = require('bluebird'),
     schemaTables = Object.keys(schema),
     models = require('../../server/models'),
     urlService = require('../../server/services/url'),
-    SettingsLib = require('../../server/services/settings'),
-    SettingsCache = require('../../server/services/settings/cache'),
+    routingService = require('../../server/services/routing'),
+    settingsService = require('../../server/services/settings'),
+    settingsCache = require('../../server/services/settings/cache'),
+    imageLib = require('../../server/lib/image'),
     customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
     permissions = require('../../server/services/permissions'),
     sequence = require('../../server/lib/promise/sequence'),
@@ -26,7 +29,7 @@ var Promise = require('bluebird'),
     DataGenerator = require('./fixtures/data-generator'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
-    API = require('./api'),
+    APIAssertions = require('./api'),
     mocks = require('./mocks'),
     config = require('../../server/config'),
     knexMigrator = new KnexMigrator(),
@@ -482,7 +485,24 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
-    return knexMigrator.init();
+    return knexMigrator.init()
+        .then(function () {
+            common.events.emit('db.ready');
+
+            let timeout;
+
+            return new Promise(function (resolve) {
+                (function retry() {
+                    clearTimeout(timeout);
+
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
+
+                    timeout = setTimeout(retry, 50);
+                })();
+            });
+        });
 };
 
 clearBruteData = function clearBruteData() {
@@ -506,7 +526,10 @@ truncate = function truncate(tableName) {
 // we must always try to delete all tables
 clearData = function clearData() {
     debug('Database reset');
-    return knexMigrator.reset({force: true});
+    return knexMigrator.reset({force: true})
+        .then(function () {
+            urlService.softReset();
+        });
 };
 
 toDoList = {
@@ -556,8 +579,8 @@ toDoList = {
         return fixtures.insertApps();
     },
     settings: function populateSettings() {
-        SettingsCache.shutdown();
-        return SettingsLib.init();
+        settingsCache.shutdown();
+        return settingsService.init();
     },
     'users:roles': function createUsersWithRoles() {
         return fixtures.createUsersWithRoles();
@@ -813,6 +836,8 @@ togglePermalinks = function togglePermalinks(request, toggle) {
  */
 teardown = function teardown() {
     debug('Database teardown');
+    urlService.softReset();
+
     var tables = schemaTables.concat(['migrations']);
 
     if (config.get('database:client') === 'sqlite3') {
@@ -884,6 +909,7 @@ startGhost = function startGhost(options) {
         redirectsFile: true,
         forceStart: false,
         copyThemes: true,
+        copySettings: true,
         contentFolder: path.join(os.tmpdir(), uuid.v1(), 'ghost-test'),
         subdir: false
     }, options);
@@ -903,6 +929,7 @@ startGhost = function startGhost(options) {
     fs.ensureDirSync(path.join(contentFolderForTests, 'images'));
     fs.ensureDirSync(path.join(contentFolderForTests, 'logs'));
     fs.ensureDirSync(path.join(contentFolderForTests, 'adapters'));
+    fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
         // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
@@ -913,6 +940,10 @@ startGhost = function startGhost(options) {
         fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
     }
 
+    if (options.copySettings) {
+        fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+    }
+
     // truncate database and re-run fixtures
     // we have to ensure that some components in Ghost are reloaded
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
@@ -921,11 +952,29 @@ startGhost = function startGhost(options) {
                 return knexMigrator.init({only: 2});
             })
             .then(function () {
-                SettingsCache.shutdown();
-                return SettingsLib.init();
+                settingsCache.shutdown();
+                return settingsService.init();
             })
             .then(function () {
                 return themes.init();
+            })
+            .then(function () {
+                urlService.softReset();
+                common.events.emit('db.ready');
+
+                let timeout;
+
+                return new Promise(function (resolve) {
+                    (function retry() {
+                        clearTimeout(timeout);
+
+                        if (urlService.hasFinished()) {
+                            return resolve();
+                        }
+
+                        timeout = setTimeout(retry, 50);
+                    })();
+                });
             })
             .then(function () {
                 customRedirectsMiddleware.reload();
@@ -945,6 +994,8 @@ startGhost = function startGhost(options) {
             return knexMigrator.init();
         })
         .then(function initializeGhost() {
+            urlService.resetGenerators();
+
             return ghost();
         })
         .then(function startGhost(_ghostServer) {
@@ -958,33 +1009,106 @@ startGhost = function startGhost(options) {
 
             return ghostServer.start();
         })
+        .then(function () {
+            let timeout;
+
+            return new Promise(function (resolve) {
+                (function retry() {
+                    clearTimeout(timeout);
+
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
+
+                    timeout = setTimeout(retry, 50);
+                })();
+            });
+        })
         .then(function returnGhost() {
             return ghostServer;
         });
 };
 
-/**
- * Minimal configuration to start integration/unit tests.
- */
-configureGhost = function configureGhost(sandbox) {
-    models.init();
-
-    const cacheStub = sandbox.stub(SettingsCache, 'get');
-
-    cacheStub.withArgs('active_theme').returns('casper');
-    cacheStub.withArgs('active_timezone').returns('Etc/UTC');
-    cacheStub.withArgs('permalinks').returns('/:slug/');
-
-    configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
-
-    configUtils.set('times:getImageSizeTimeoutInMS', 1);
-
-    return themes.init();
-};
-
 module.exports = {
     startGhost: startGhost,
-    configureGhost: configureGhost,
+    integrationTesting: {
+        overrideGhostConfig: function overrideGhostConfig(configUtils) {
+            configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+            configUtils.set('times:getImageSizeTimeoutInMS', 1);
+        },
+
+        defaultMocks: function defaultMocks(sandbox, options) {
+            options = options || {};
+
+            configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+
+            const cacheStub = sandbox.stub(settingsCache, 'get');
+
+            cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
+            cacheStub.withArgs('active_timezone').returns('Etc/UTC');
+            cacheStub.withArgs('permalinks').returns('/:slug/');
+            cacheStub.withArgs('labs').returns({publicAPI: true});
+
+            sandbox.stub(api.clients, 'read').returns(Promise.resolve({
+                clients: [
+                    {slug: 'ghost-frontend', secret: 'a1bcde23cfe5', status: 'enabled'}
+                ]
+            }));
+
+            sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        },
+
+        initGhost: function () {
+            models.init();
+            return themes.init();
+        },
+
+        routing: {
+            reset: function () {
+                routingService.registry.resetAll();
+            }
+        },
+
+        urlService: {
+            waitTillFinished: function () {
+                let timeout;
+
+                common.events.emit('db.ready');
+
+                return new Promise(function (resolve) {
+                    (function retry() {
+                        clearTimeout(timeout);
+
+                        if (urlService.hasFinished()) {
+                            return resolve();
+                        }
+
+                        timeout = setTimeout(retry, 50);
+                    })();
+                });
+            },
+
+            init: function () {
+                const routes = settingsService.get('routes');
+
+                const collectionRouter = new routingService.CollectionRouter('/', routes.collections['/']);
+                const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
+                const authorRouter = new routingService.TaxonomyRouter('author', routes.taxonomies.author);
+
+                common.events.emit('db.ready');
+
+                return this.waitTillFinished();
+            },
+
+            reset: function () {
+                urlService.softReset();
+            },
+
+            resetGenerators: function () {
+                urlService.resetGenerators();
+            }
+        },
+    },
     teardown: teardown,
     truncate: truncate,
     setup: setup,
@@ -1035,7 +1159,7 @@ module.exports = {
 
     DataGenerator: DataGenerator,
     filterData: filterData,
-    API: API,
+    API: APIAssertions,
 
     // Helpers to make it easier to write tests which are easy to read
     context: {

@@ -3,7 +3,8 @@ const fs = require('fs-extra'),
     debug = require('ghost-ignition').debug('services:settings:settings-loader'),
     common = require('../../lib/common'),
     config = require('../../config'),
-    yamlParser = require('./yaml-parser');
+    yamlParser = require('./yaml-parser'),
+    validate = require('./validate');
 
 /**
  * Reads the desired settings YAML file and passes the
@@ -21,8 +22,8 @@ module.exports = function loadSettings(setting) {
         const file = fs.readFileSync(filePath, 'utf8');
         debug('settings file found for', setting);
 
-        // yamlParser returns a JSON object
-        return yamlParser(file, fileName);
+        const object = yamlParser(file, fileName);
+        return validate(object);
     } catch (err) {
         if (common.errors.utils.isIgnitionError(err)) {
             throw err;

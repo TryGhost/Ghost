@@ -8,7 +8,7 @@
 // `absolute` flag outputs absolute URL, else URL is relative.
 
 var proxy = require('./proxy'),
-    url = proxy.url;
+    urlService = proxy.urlService;
 
 module.exports = function imgUrl(attr, options) {
     // CASE: if no attribute is passed, e.g. `{{img_url}}` we show a warning
@@ -27,7 +27,7 @@ module.exports = function imgUrl(attr, options) {
     }
 
     if (attr) {
-        return url.urlFor('image', {image: attr}, absolute);
+        return urlService.utils.urlFor('image', {image: attr}, absolute);
     }
 
     // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!

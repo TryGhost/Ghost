@@ -7,10 +7,10 @@ const mockKnex = require('mock-knex'),
     knex = require('../../../server/data/db').knex;
 
 /**
- * Knex mock. The database is our Datagenerator.
+ * Knex mock. The database values are taken from our Datagenerator.
  * You can either self register queries or you simply rely on the data generator data.
  *
- * Please extend if you use-case does not work.
+ * Please extend if your use-case does not work.
  *
  * @TODO: sqlite3 :memory: mode wasn't working for me
  */
@@ -103,7 +103,7 @@ class KnexMock {
 
                             if (targetEntries && targetEntries.length) {
                                 _.each(targetEntries, ((target) => {
-                                    const found = _.cloneDeep(_.find(this.db[joinTable], ((joinEntry) => {
+                                    let found = _.cloneDeep(_.find(this.db[joinTable], ((joinEntry) => {
                                         if (joinEntry[joinAttribute] === target[targetAttribute]) {
                                             return true;
                                         }
@@ -112,13 +112,23 @@ class KnexMock {
                                     _.each(target, function (value, key) {
                                         let match = query.sql.match(new RegExp('\\"' + targetTable + '\\"\\.\\"' + key + '"\\sas\\s(\\"\\w+\\")'));
 
-                                        // CASE: e.g. id
+                                        // CASE: "posts_tags"."post_id" as "post_id"
                                         if (match) {
                                             match = match[1];
                                             match = match.replace(/"/g, '');
                                             found[match] = value;
                                         }
                                     });
+
+                                    let keys = query.sql.match(/select\s(\".*\"\,?)+\sfrom/)[1];
+
+                                    if (!keys.match(/\.*/)) {
+                                        _.each(found, (value, key)=> {
+                                            if (keys.indexOf(key) === -1) {
+                                                delete found[key];
+                                            }
+                                        });
+                                    }
 
                                     if (found) {
                                         toReturn.push(found);
@@ -144,24 +154,14 @@ class KnexMock {
                             if (!where) {
                                 where = query.sql.match(/\"\w+\"\.\"(\w+)\"\sin\s\(\?\)/)[1];
                             } else {
-                                // 3 wheres
-                                let wheresMatch = query.sql.match(/\"(\w+)\"\s\=\s\?\sand\s\"\w+\"\.\"(\w+)\"\s\=\s\?\sand\s\"\w+\"\.\"(\w+)\"\s\=\s\?/);
+                                let wheresMatch = query.sql.match(/\(?\"(\w+)\"\.?\"?(\w+)?\"?\s=\s\?\)?/g);
 
-                                if (wheresMatch) {
-                                    wheres.push(wheresMatch[1]);
-                                    wheres.push(wheresMatch[2]);
-                                    wheres.push(wheresMatch[3]);
-                                } else {
-                                    // 2 wheres
-                                    let wheresMatch = query.sql.match(/\"(\w+)\"\s\=\s\?\sand\s\"\w+\"\.\"(\w+)\"\s\=\s\?/);
-
-                                    if (wheresMatch) {
-                                        wheres.push(wheresMatch[1]);
-                                        wheres.push(wheresMatch[2]);
-                                    } else {
-                                        wheres.push(where[1]);
-                                    }
-                                }
+                                // e.g. [ '("posts"."status" = ?)', '("posts"."page" = ?)' ]
+                                // e.g. [ '"status" = ?' ]
+                                _.each(wheresMatch, (result)=> {
+                                    let attr = result.match(/\(?\"(\w+)\"\.?\"?(\w+)?\"?\s=\s\?\)?/);
+                                    wheres.push(attr[2] || attr[1]);
+                                });
                             }
 
                             values = query.bindings.slice(0, wheres.length);
@@ -189,6 +189,30 @@ class KnexMock {
 
                                     return obj;
                                 });
+
+                                if (query.sql.match(/count\(/)) {
+                                    const as = query.sql.match(/count\(.*\)\sas\s(\w+)/)[1];
+                                    return query.response([{[as]: dbEntry.length}]);
+                                }
+
+                                if (query.sql.match(/limit\s\?\soffset\s\?/)) {
+                                    const limit = query.bindings[query.bindings.length - 2];
+                                    const offset = query.bindings[query.bindings.length - 1];
+
+                                    function separateIt(arr, size) {
+                                        const newArr = [];
+                                        for (let i = 0; i < arr.length; i += size) {
+                                            let sliceIt = arr.slice(i, i + size);
+                                            newArr.push(sliceIt);
+                                        }
+                                        return newArr;
+                                    }
+
+                                    dbEntry = separateIt(dbEntry, limit)[offset - 1];
+                                } else if (query.sql.match(/limit\s\?$/)) {
+                                    const limit = query.bindings[query.bindings.length - 1];
+                                    dbEntry = dbEntry.splice(0, limit);
+                                }
 
                                 query.response(dbEntry);
                                 debug('#### Query end.\n');

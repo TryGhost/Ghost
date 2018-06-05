@@ -9,15 +9,8 @@ const _debug = require('ghost-ignition').debug._base,
     localUtils = require('./utils');
 
 class UrlService {
-    constructor(options) {
-        options = options || {};
-
+    constructor() {
         this.utils = localUtils;
-
-        // You can disable the url preload, in case we encounter a problem with the new url service.
-        if (options.disableUrlPreload) {
-            return;
-        }
 
         this.finished = false;
         this.urlGenerators = [];
@@ -31,10 +24,10 @@ class UrlService {
 
     _listeners() {
         /**
-         * The purpose of this event is to notify the url service as soon as a channel get's created.
+         * The purpose of this event is to notify the url service as soon as a router get's created.
          */
-        this._onRoutingTypeListener = this._onRoutingType.bind(this);
-        common.events.on('routingType.created', this._onRoutingTypeListener);
+        this._onRouterAddedListener = this._onRouterAddedType.bind(this);
+        common.events.on('router.created', this._onRouterAddedListener);
 
         /**
          * The queue will notify us if url generation has started/finished.
@@ -44,9 +37,6 @@ class UrlService {
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
         this.queue.addListener('ended', this._onQueueEnded.bind(this));
-
-        this._resetListener = this.reset.bind(this);
-        common.events.on('server.stop', this._resetListener);
     }
 
     _onQueueStarted(event) {
@@ -61,21 +51,42 @@ class UrlService {
         }
     }
 
-    _onRoutingType(routingType) {
-        debug('routingType.created');
+    _onRouterAddedType(router) {
+        // CASE: there are router types which do not generate resource urls
+        //       e.g. static route router
+        //       we are listening on the general `router.created` event - every router throws this event
+        if (!router || !router.getPermalinks()) {
+            return;
+        }
 
-        let urlGenerator = new UrlGenerator(routingType, this.queue, this.resources, this.urls, this.urlGenerators.length);
+        debug('router.created');
+
+        let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
         this.urlGenerators.push(urlGenerator);
     }
 
     /**
      * You have a url and want to know which the url belongs to.
+     *
      * It's in theory possible that multiple resources generate the same url,
-     * but they both would serve different content e.g. static pages and collections.
+     * but they both would serve different content.
+     *
+     * e.g. if we remove the slug uniqueness and you create a static
+     * page and a post with the same slug. And both are served under `/` with the permalink `/:slug/`.
+     *
+     *
+     * Each url is unique and it depends on the hierarchy of router registration is configured.
+     * There is no url collision, everything depends on registration order.
+     *
+     * e.g. posts which live in a collection are stronger than a static page.
      *
      * We only return the resource, which would be served.
+     *
+     * @NOTE: only accepts relative urls at the moment.
      */
-    getResource(url) {
+    getResource(url, options) {
+        options = options || {};
+
         let objects = this.urls.getByUrl(url);
 
         if (!objects.length) {
@@ -102,7 +113,13 @@ class UrlService {
                         toReturn.push(object);
                     }
                 }
+
+                return toReturn;
             }, []);
+        }
+
+        if (options.returnEverything) {
+            return objects[0];
         }
 
         return objects[0].resource;
@@ -114,18 +131,71 @@ class UrlService {
 
     /**
      * Get url by resource id.
+     * e.g. tags, authors, posts, pages
+     *
+     * If we can't find a url for an id, we have to return a url.
+     * There are many components in Ghost which call `getUrlByResourceId` and
+     * based on the return value, they set the resource url somewhere e.g. meta data.
+     * Or if you define no collections in your yaml file and serve a page.
+     * You will see a suggestion of posts, but they all don't belong to a collection.
+     * They would show localhost:2368/null/.
      */
-    getUrlByResourceId(id) {
+    getUrlByResourceId(id, options) {
+        options = options || {};
+
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {
+            if (options.absolute) {
+                return this.utils.createUrl(obj.url, options.absolute, options.secure);
+            }
+
             return obj.url;
         }
 
-        return null;
+        if (options.absolute) {
+            return this.utils.createUrl('/404/', options.absolute, options.secure);
+        }
+
+        return '/404/';
+    }
+
+    owns(routerId, url) {
+        debug('owns', routerId, url);
+
+        let urlGenerator;
+
+        this.urlGenerators.every((_urlGenerator) => {
+            if (_urlGenerator.router.identifier === routerId) {
+                urlGenerator = _urlGenerator;
+                return false;
+            }
+
+            return true;
+        });
+
+        if (!urlGenerator) {
+            return false;
+        }
+
+        return urlGenerator.hasUrl(url);
+    }
+
+    getPermalinkByUrl(url, options) {
+        options = options || {};
+
+        const object = this.getResource(url, {returnEverything: true});
+
+        if (!object) {
+            return null;
+        }
+
+        return _.find(this.urlGenerators, {uid: object.generatorId}).router.getPermalinks()
+            .getValue(options);
     }
 
     reset() {
+        debug('reset');
         this.urlGenerators = [];
 
         this.urls.reset();
@@ -134,8 +204,24 @@ class UrlService {
 
         this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
         this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
-        this._onRoutingTypeListener && common.events.removeListener('routingType.created', this._onRoutingTypeListener);
-        this._resetListener && common.events.removeListener('server.stop', this._resetListener);
+        this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+    }
+
+    resetGenerators() {
+        debug('resetGenerators');
+        this.finished = false;
+        this.urlGenerators = [];
+        this.urls.reset();
+        this.queue.reset();
+        this.resources.softReset();
+    }
+
+    softReset() {
+        debug('softReset');
+        this.finished = false;
+        this.urls.softReset();
+        this.queue.softReset();
+        this.resources.softReset();
     }
 }
 

@@ -20,7 +20,7 @@ generateTags = function generateTags(data) {
 };
 
 generateItem = function generateItem(post, siteUrl, secure) {
-    var itemUrl = urlService.utils.urlFor('post', {post: post, secure: secure}, true),
+    var itemUrl = urlService.getUrlByResourceId(post.id, {secure: secure, absolute: true}),
         htmlContent = urlService.utils.makeAbsoluteUrls(post.html, siteUrl, itemUrl),
         item = {
             title: post.title,
@@ -65,7 +65,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
 /**
  * Generate Feed
  *
- * Data is an object which contains the res.locals + results from fetching a channel, but without related data.
+ * Data is an object which contains the res.locals + results from fetching a collection, but without related data.
  *
  * @param {string} baseUrl
  * @param {{title, description, safeVersion, secure, posts}} data
