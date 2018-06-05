@@ -1,27 +1,23 @@
-var _       = require('lodash'),
-    xml     = require('xml'),
-    moment  = require('moment'),
+const _ = require('lodash'),
+    xml = require('xml'),
+    moment = require('moment'),
     urlService = require('../../../services/url'),
-    localUtils   = require('./utils'),
-    RESOURCES,
-    XMLNS_DECLS;
+    localUtils = require('./utils');
 
-RESOURCES = ['pages', 'posts', 'authors', 'tags'];
-
-XMLNS_DECLS = {
+const XMLNS_DECLS = {
     _attr: {
         xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9'
     }
 };
 
-function SiteMapIndexGenerator(opts) {
-    // Grab the other site map generators from the options
-    _.extend(this, _.pick(opts, RESOURCES));
-}
+class SiteMapIndexGenerator {
+    constructor(options) {
+        options = options || {};
+        this.types = options.types;
+    }
 
-_.extend(SiteMapIndexGenerator.prototype, {
-    getIndexXml: function () {
-        var urlElements = this.generateSiteMapUrlElements(),
+    getXml() {
+        const urlElements = this.generateSiteMapUrlElements(),
             data = {
                 // Concat the elements to the _attr declaration
                 sitemapindex: [XMLNS_DECLS].concat(urlElements)
@@ -29,16 +25,12 @@ _.extend(SiteMapIndexGenerator.prototype, {
 
         // Return the xml
         return localUtils.getDeclarations() + xml(data);
-    },
+    }
 
-    generateSiteMapUrlElements: function () {
-        var self = this;
-
-        return _.map(RESOURCES, function (resourceType) {
-            var url = urlService.utils.urlFor({
-                    relativeUrl: '/sitemap-' + resourceType + '.xml'
-                }, true),
-                lastModified = self[resourceType].lastModified;
+    generateSiteMapUrlElements() {
+        return _.map(this.types, (resourceType) => {
+            var url = urlService.utils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true),
+                lastModified = resourceType.lastModified;
 
             return {
                 sitemap: [
@@ -48,6 +40,6 @@ _.extend(SiteMapIndexGenerator.prototype, {
             };
         });
     }
-});
+}
 
 module.exports = SiteMapIndexGenerator;

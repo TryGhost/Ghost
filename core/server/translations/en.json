@@ -172,6 +172,7 @@
         },
         "general": {
             "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
+            "maintenanceUrlService": "Ghost currently generates your blog urls. Please try again.",
             "requiredOnFuture": "This will be required in future. Please see {link}",
             "internalError": "Something went wrong.",
             "jsonParse": "Could not parse JSON: {context}."
@@ -472,7 +473,8 @@
             "settings": {
                 "yaml": {
                     "error": "Could not parse {file}: {context}.",
-                    "help": "Check your {file} file for typos and fix the named issues."
+                    "help": "Check your {file} file for typos and fix the named issues.",
+                    "validate": "The following definition \"{at}\" is invalid: {reason}"
                 },
                 "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
                 "ensureSettings": "Error trying to access settings files in {path}."

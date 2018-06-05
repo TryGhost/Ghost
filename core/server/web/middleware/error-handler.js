@@ -2,7 +2,7 @@ var _ = require('lodash'),
     hbs = require('express-hbs'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    templates = require('../../controllers/frontend/templates'),
+    helpers = require('../../services/routing/helpers'),
     escapeExpression = hbs.Utils.escapeExpression,
     _private = {},
     errorHandler = {};
@@ -98,7 +98,8 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     };
 
     // Template
-    templates.setTemplate(req, res);
+    // @TODO: very dirty !!!!!!
+    helpers.templates.setTemplate(req, res);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here

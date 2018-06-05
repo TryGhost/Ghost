@@ -1,24 +1,22 @@
-var should = require('should'),
+const should = require('should'),
     sinon = require('sinon'),
-    Promise = require('bluebird'),
-    validator = require('validator'),
+    ObjectId = require('bson-objectid'),
     _ = require('lodash'),
-
-    // Stuff we are testing
-    api = require('../../../../../server/api'),
+    testUtils = require('../../../../utils'),
     urlService = require('../../../../../server/services/url'),
-    BaseGenerator = require('../../../../../server/data/xml/sitemap/base-generator'),
+    IndexGenerator = require('../../../../../server/data/xml/sitemap/index-generator'),
     PostGenerator = require('../../../../../server/data/xml/sitemap/post-generator'),
     PageGenerator = require('../../../../../server/data/xml/sitemap/page-generator'),
     TagGenerator = require('../../../../../server/data/xml/sitemap/tag-generator'),
     UserGenerator = require('../../../../../server/data/xml/sitemap/user-generator'),
-
     sandbox = sinon.sandbox.create();
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
-    var urlNode = this.obj,
-        flatNode;
+    /*eslint no-invalid-this: "off"*/
+    let urlNode = this.obj;
+    let flatNode;
+
     urlNode.should.be.an.Object().with.key('url');
     urlNode.url.should.be.an.Array();
 
@@ -51,80 +49,33 @@ should.Assertion.add('ValidUrlNode', function (options) {
 });
 
 describe('Generators', function () {
-    var stubUrl = function (generator) {
-            sandbox.stub(generator, 'getUrlForDatum').callsFake(function (datum) {
-                return 'http://my-ghost-blog.com/url/' + datum.id;
-            });
-            sandbox.stub(generator, 'getUrlForImage').callsFake(function (image) {
-                return 'http://my-ghost-blog.com/images/' + image;
-            });
-
-            return generator;
-        },
-        makeFakeDatum = function (id) {
-            return {
-                id: id,
-                created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + id,
-                visibility: 'public'
-            };
-        },
-        generator;
+    let generator;
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    describe('BaseGenerator', function () {
+    describe('IndexGenerator', function () {
         beforeEach(function () {
-            generator = new BaseGenerator();
-        });
-
-        it('can initialize with empty siteMapContent', function (done) {
-            generator.init().then(function () {
-                should.exist(generator.siteMapContent);
-
-                validator.contains(generator.siteMapContent, '<loc>').should.equal(false);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can initialize with non-empty siteMapContent', function (done) {
-            stubUrl(generator);
-
-            sandbox.stub(generator, 'getData').callsFake(function () {
-                return Promise.resolve([
-                    makeFakeDatum(100),
-                    makeFakeDatum(200),
-                    makeFakeDatum(300)
-                ]);
+            generator = new IndexGenerator({
+                types: {
+                    posts: new PostGenerator(),
+                    pages: new PageGenerator(),
+                    tags: new TagGenerator(),
+                    authors: new UserGenerator()
+                }
             });
+        });
 
-            generator.init().then(function () {
-                var idxFirst,
-                    idxSecond,
-                    idxThird;
+        describe('fn: getXml', function () {
+            it('default', function () {
+                const xml = generator.getXml();
 
-                should.exist(generator.siteMapContent);
-
-                // TODO: We should validate the contents against the XSD:
-                // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/100</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/200</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/300</loc>');
-
-                // Validate order newest to oldest
-                idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
-                idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
-                idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
-
-                idxFirst.should.be.below(idxSecond);
-                idxSecond.should.be.below(idxThird);
-
-                done();
-            }).catch(done);
+                xml.should.match(/sitemap-tags.xml/);
+                xml.should.match(/sitemap-posts.xml/);
+                xml.should.match(/sitemap-pages.xml/);
+                xml.should.match(/sitemap-authors.xml/);
+            });
         });
     });
 
@@ -133,93 +84,119 @@ describe('Generators', function () {
             generator = new PostGenerator();
         });
 
-        it('uses 0.9 priority for featured posts', function () {
-            generator.getPriorityForDatum({
-                featured: true
-            }).should.equal(0.9);
-        });
-
-        it('uses 0.8 priority for all other (non-featured) posts', function () {
-            generator.getPriorityForDatum({
-                featured: false
-            }).should.equal(0.8);
-        });
-
-        it('does not create a node for a post with visibility that is not public', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                visibility: 'private',
-                page: false
-            }));
-
-            urlNode.should.be.false();
-        });
-
-        it('does not create a node for a page', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                page: true
-            }));
-
-            urlNode.should.be.false();
-        });
-
-        it('adds an image:image element if post has a cover image', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                feature_image: 'post-100.jpg',
-                page: false
-            }));
-
-            urlNode.should.be.a.ValidUrlNode({withImage: true});
-        });
-
-        it('can initialize with non-empty siteMapContent', function (done) {
-            stubUrl(generator);
-
-            sandbox.stub(generator, 'getData').callsFake(function () {
-                return Promise.resolve([
-                    _.extend(makeFakeDatum(100), {
-                        feature_image: 'post-100.jpg',
-                        page: false
-                    }),
-                    _.extend(makeFakeDatum(200), {
-                        page: false
-                    }),
-                    _.extend(makeFakeDatum(300), {
-                        feature_image: 'post-300.jpg',
-                        page: false
-                    })
-                ]);
+        describe('fn: getPriorityForDatum', function () {
+            it('uses 0.9 priority for featured posts', function () {
+                generator.getPriorityForDatum({
+                    featured: true
+                }).should.equal(0.9);
             });
 
-            generator.init().then(function () {
-                var idxFirst,
-                    idxSecond,
-                    idxThird;
+            it('uses 0.8 priority for all other (non-featured) posts', function () {
+                generator.getPriorityForDatum({
+                    featured: false
+                }).should.equal(0.8);
+            });
+        });
 
-                should.exist(generator.siteMapContent);
+        describe('fn: createNodeFromDatum', function () {
+            it('adds an image:image element if post has a cover image', function () {
+                const urlNode = generator.createUrlNodeFromDatum('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    feature_image: 'post-100.jpg',
+                    page: false,
+                    slug: 'test'
+                }));
 
-                // TODO: We should validate the contents against the XSD:
-                // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+                urlNode.should.be.a.ValidUrlNode({withImage: true});
+            });
+        });
 
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/100</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/200</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/url/300</loc>');
+        describe('fn: getXml', function () {
+            beforeEach(function () {
+                sandbox.stub(urlService.utils, 'urlFor');
+            });
 
-                generator.siteMapContent.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>');
+            it('get cached xml', function () {
+                sandbox.spy(generator, 'generateXmlFromNodes');
+                generator.siteMapContent = 'something';
+                generator.getXml().should.eql('something');
+                generator.siteMapContent = null;
+                generator.generateXmlFromNodes.called.should.eql(false);
+            });
+
+            it('compare content output', function () {
+                let idxFirst, idxSecond, idxThird;
+
+                urlService.utils.urlFor.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
+                urlService.utils.urlFor.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
+                urlService.utils.urlFor.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
+                urlService.utils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
+
+                generator.addUrl('http://my-ghost-blog.com/url/100/', testUtils.DataGenerator.forKnex.createPost({
+                    feature_image: 'post-100.jpg',
+                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 100,
+                    updated_at: null,
+                    published_at: null,
+                    slug: '100'
+                }));
+
+                generator.addUrl('http://my-ghost-blog.com/url/200/', testUtils.DataGenerator.forKnex.createPost({
+                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
+                    updated_at: null,
+                    published_at: null,
+                    slug: '200'
+                }));
+
+                generator.addUrl('http://my-ghost-blog.com/url/300/', testUtils.DataGenerator.forKnex.createPost({
+                    created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 300,
+                    feature_image: 'post-300.jpg',
+                    updated_at: null,
+                    published_at: null,
+                    slug: '300'
+                }));
+
+                const xml = generator.getXml();
+
+                xml.should.containEql('<loc>http://my-ghost-blog.com/url/100/</loc>');
+                xml.should.containEql('<loc>http://my-ghost-blog.com/url/200/</loc>');
+                xml.should.containEql('<loc>http://my-ghost-blog.com/url/300/</loc>');
+
+                xml.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-100.jpg</image:loc>');
                 // This should NOT be present
-                generator.siteMapContent.should.not.containEql('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>');
-                generator.siteMapContent.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>');
+                xml.should.not.containEql('<image:loc>http://my-ghost-blog.com/images/post-200.jpg</image:loc>');
+                xml.should.containEql('<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>');
 
                 // Validate order newest to oldest
-                idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
-                idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
-                idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
+                idxFirst = xml.indexOf('<loc>http://my-ghost-blog.com/url/300/</loc>');
+                idxSecond = xml.indexOf('<loc>http://my-ghost-blog.com/url/200/</loc>');
+                idxThird = xml.indexOf('<loc>http://my-ghost-blog.com/url/100/</loc>');
 
                 idxFirst.should.be.below(idxSecond);
                 idxSecond.should.be.below(idxThird);
+            });
+        });
 
-                done();
-            }).catch(done);
+        describe('fn: removeUrl', function () {
+            let post;
+
+            beforeEach(function () {
+                post = testUtils.DataGenerator.forKnex.createPost();
+                generator.nodeLookup[post.id] = 'node';
+            });
+
+            afterEach(function () {
+                generator.nodeLookup = {};
+                generator.nodeTimeLookup = {};
+            });
+
+            it('remove none existend url', function () {
+                generator.removeUrl('https://myblog.com/blog/podcast/featured/', testUtils.DataGenerator.forKnex.createPost());
+                Object.keys(generator.nodeLookup).length.should.eql(1);
+            });
+
+            it('remove existing url', function () {
+                generator.removeUrl('https://myblog.com/blog/test/', post);
+                Object.keys(generator.nodeLookup).length.should.eql(0);
+            });
         });
     });
 
@@ -228,77 +205,33 @@ describe('Generators', function () {
             generator = new PageGenerator();
         });
 
-        it('has a home item even if pages are empty', function (done) {
-            // Fake the api call to return no posts
-            sandbox.stub(api.posts, 'browse').callsFake(function () {
-                return Promise.resolve({posts: []});
-            });
+        describe('fn: getXml', function () {
+            it('add', function () {
+                generator.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+                generator.addUrl('http://my-ghost-blog.com/magic/', {id: 'identifier2', staticRoute: false});
+                generator.addUrl('http://my-ghost-blog.com/subscribe/', {id: ObjectId.generate(), page: 1});
 
-            generator.init().then(function () {
-                should.exist(generator.siteMapContent);
+                generator.getXml();
 
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('home', true) + '</loc>');
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
+                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
+
                 // <loc> should exist exactly one time
-                generator.siteMapContent.indexOf('<loc>').should.eql(generator.siteMapContent.lastIndexOf('<loc>'));
-
-                done();
-            }).catch(done);
+                generator.siteMapContent.match(/<loc>/g).length.should.eql(3);
+            });
         });
 
-        it('has a home item when pages are not empty', function (done) {
-            // Fake the api call to return no posts
-            sandbox.stub(api.posts, 'browse').callsFake(function () {
-                return Promise.resolve({
-                    posts: [_.extend(makeFakeDatum(100), {
-                        page: true,
-                        url: 'magic'
-                    })]
-                });
+        describe('fn: getPriorityForDatum', function () {
+            it('uses 1 priority for static routes', function () {
+                generator.getPriorityForDatum({
+                    staticRoute: true
+                }).should.equal(1);
             });
 
-            generator.init().then(function () {
-                should.exist(generator.siteMapContent);
-
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('home', true) + '</loc>');
-                generator.siteMapContent.should.containEql('<loc>' + urlService.utils.urlFor('page', {url: 'magic'}, true) + '</loc>');
-
-                done();
-            }).catch(done);
-        });
-
-        it('uses 1 priority for home page', function () {
-            generator.getPriorityForDatum({
-                name: 'home'
-            }).should.equal(1);
-        });
-        it('uses 0.8 priority for static pages', function () {
-            generator.getPriorityForDatum({}).should.equal(0.8);
-        });
-
-        it('does not create a node for a page with visibility that is not public', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                visibility: 'internal',
-                page: true
-            }));
-
-            urlNode.should.be.false();
-        });
-
-        it('does not create a node for a post', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                page: false
-            }));
-
-            urlNode.should.be.false();
-        });
-
-        it('adds an image:image element if page has an image', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                feature_image: 'page-100.jpg',
-                page: true
-            }));
-
-            urlNode.should.be.a.ValidUrlNode({withImage: true});
+            it('uses 0.8 priority for static pages or collection indexes', function () {
+                generator.getPriorityForDatum({}).should.equal(0.8);
+            });
         });
     });
 
@@ -307,24 +240,10 @@ describe('Generators', function () {
             generator = new TagGenerator();
         });
 
-        it('uses 0.6 priority for all tags', function () {
-            generator.getPriorityForDatum({}).should.equal(0.6);
-        });
-
-        it('does not create a node for a tag with visibility that is not public', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                visibility: 'internal'
-            }));
-
-            urlNode.should.be.false();
-        });
-
-        it('adds an image:image element if tag has an image', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                feature_image: 'tag-100.jpg'
-            }));
-
-            urlNode.should.be.a.ValidUrlNode({withImage: true});
+        describe('fn: getPriorityForDatum', function () {
+            it('uses 0.6 priority for all tags', function () {
+                generator.getPriorityForDatum({}).should.equal(0.6);
+            });
         });
     });
 
@@ -333,36 +252,28 @@ describe('Generators', function () {
             generator = new UserGenerator();
         });
 
-        it('uses 0.6 priority for author links', function () {
-            generator.getPriorityForDatum({}).should.equal(0.6);
+        describe('fn: getPriorityForDatum', function () {
+            it('uses 0.6 priority for author links', function () {
+                generator.getPriorityForDatum({}).should.equal(0.6);
+            });
         });
 
-        it('does not create a node for invited users', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                cover: 'user-100.jpg',
-                status: 'invited'
-            }));
+        describe('fn: validateImageUrl', function () {
+            it('image url is localhost', function () {
+                generator.validateImageUrl('http://localhost:2368/content/images/1.jpg').should.be.true();
+            });
 
-            urlNode.should.be.false();
-        });
+            it('image url is https', function () {
+                generator.validateImageUrl('https://myblog.com/content/images/1.png').should.be.true();
+            });
 
-        it('does not create a node for a user with visibility that is not public', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                cover_image: 'user-100.jpg',
-                status: 'active',
-                visibility: 'notpublic'
-            }));
+            it('image url is external', function () {
+                generator.validateImageUrl('https://myblog.com/1.jpg').should.be.true();
+            });
 
-            urlNode.should.be.false();
-        });
-
-        it('adds an image:image element if user has a cover image', function () {
-            var urlNode = generator.createUrlNodeFromDatum(_.extend(makeFakeDatum(100), {
-                cover_image: '/content/images/2016/01/user-100.jpg',
-                status: 'active'
-            }));
-
-            urlNode.should.be.a.ValidUrlNode({withImage: true});
+            it('no host', function () {
+                generator.validateImageUrl('/content/images/1.jpg').should.be.false();
+            });
         });
     });
 });

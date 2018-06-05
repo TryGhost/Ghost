@@ -68,8 +68,6 @@ function init() {
         debug('Permissions done');
         return Promise.join(
             themes.init(),
-            // Initialize apps
-            apps.init(),
             // Initialize xmrpc ping
             xmlrpc.listen(),
             // Initialize slack ping
@@ -89,6 +87,17 @@ function init() {
         }
 
         debug('Express Apps done');
+    }).then(function () {
+        /**
+         * @NOTE:
+         *
+         * Must happen after express app bootstrapping, because we need to ensure that all
+         * routers are created and are now ready to register additional routes. In this specific case, we
+         * are waiting that the AppRouter was instantiated. And then we can register e.g. amp if enabled.
+         *
+         * If you create a published post, the url is always stronger than any app url, which is equal.
+         */
+        return apps.init();
     }).then(function () {
         parentApp.use(auth.init());
         debug('Auth done');
