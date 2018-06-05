@@ -1,9 +1,8 @@
 routes:
 
-# '{globals.permalinks}' is the notation to access your configured permalink format from your blog's database.
 collections:
   /:
-    permalink: '{globals.permalinks}'
+    permalink: '{globals.permalinks}' # special 1.0 compatibility setting. See the docs for details.
     template:
       - home
       - index
