@@ -1,75 +1,73 @@
-var _       = require('lodash'),
-    Promise = require('bluebird'),
+const common = require('../../../lib/common'),
     IndexMapGenerator = require('./index-generator'),
     PagesMapGenerator = require('./page-generator'),
     PostsMapGenerator = require('./post-generator'),
     UsersMapGenerator = require('./user-generator'),
-    TagsMapGenerator  = require('./tag-generator'),
-    SiteMapManager;
+    TagsMapGenerator  = require('./tag-generator');
 
-SiteMapManager = function (opts) {
-    opts = opts || {};
+class SiteMapManager {
+    constructor(options) {
+        options = options || {};
 
-    this.initialized = false;
+        this.pages = options.pages || this.createPagesGenerator(options);
+        this.posts = options.posts || this.createPostsGenerator(options);
+        this.users = this.authors = options.authors || this.createUsersGenerator(options);
+        this.tags = options.tags || this.createTagsGenerator(options);
+        this.index = options.index || this.createIndexGenerator(options);
 
-    this.pages = opts.pages || this.createPagesGenerator(opts);
-    this.posts = opts.posts || this.createPostsGenerator(opts);
-    this.authors = opts.authors || this.createUsersGenerator(opts);
-    this.tags = opts.tags || this.createTagsGenerator(opts);
+        common.events.on('router.created', (router) => {
+            if (router.name === 'StaticRoutesRouter') {
+                this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: true});
+            }
 
-    this.index = opts.index || this.createIndexGenerator(opts);
-};
-
-_.extend(SiteMapManager.prototype, {
-    createIndexGenerator: function () {
-        return new IndexMapGenerator(_.pick(this, 'pages', 'posts', 'authors', 'tags'));
-    },
-
-    createPagesGenerator: function (opts) {
-        return new PagesMapGenerator(opts);
-    },
-
-    createPostsGenerator: function (opts) {
-        return new PostsMapGenerator(opts);
-    },
-
-    createUsersGenerator: function (opts) {
-        return new UsersMapGenerator(opts);
-    },
-
-    createTagsGenerator: function (opts) {
-        return new TagsMapGenerator(opts);
-    },
-
-    init: function () {
-        var self = this,
-            initOps = [
-                this.pages.init(),
-                this.posts.init(),
-                this.authors.init(),
-                this.tags.init()
-            ];
-
-        return Promise.all(initOps).then(function () {
-            self.initialized = true;
+            if (router.name === 'CollectionRouter') {
+                this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: false});
+            }
         });
-    },
 
-    getIndexXml: function () {
-        if (!this.initialized) {
-            return '';
-        }
+        common.events.on('url.added', (obj) => {
+            this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
+        });
 
-        return this.index.getIndexXml();
-    },
-
-    getSiteMapXml: function (type) {
-        if (!this.initialized || !this[type]) {
-            return null;
-        }
-
-        return this[type].siteMapContent;
+        common.events.on('url.removed', (obj) => {
+            this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
+        });
     }
-});
+
+    createIndexGenerator() {
+        return new IndexMapGenerator({
+            types: {
+                pages: this.pages,
+                posts: this.posts,
+                authors: this.authors,
+                tags: this.tags
+            }
+        });
+    }
+
+    createPagesGenerator(options) {
+        return new PagesMapGenerator(options);
+    }
+
+    createPostsGenerator(options) {
+        return new PostsMapGenerator(options);
+    }
+
+    createUsersGenerator(options) {
+        return new UsersMapGenerator(options);
+    }
+
+    createTagsGenerator(options) {
+        return new TagsMapGenerator(options);
+    }
+
+    getIndexXml() {
+        return this.index.getXml();
+    }
+
+    getSiteMapXml(type) {
+        return this[type].getXml();
+    }
+}
 
 module.exports = SiteMapManager;

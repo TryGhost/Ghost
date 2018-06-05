@@ -34,8 +34,20 @@ module.exports = function entryController(req, res, next) {
             return urlService.utils.redirectToAdmin(302, res, '/editor/' + post.id);
         }
 
-        // CASE: permalink is not valid anymore, we redirect him permanently to the correct one
-        if (post.url !== req.path) {
+        //
+        /**
+         * CASE: Permalink is not valid anymore, we redirect him permanently to the correct one
+         *       This usually only happens if you switch to date permalinks or if you have date permalinks
+         *       enabled and the published date changes.
+         *
+         * @NOTE
+         *
+         * The resource url (post.url) always contains the subdirectory. This was different before dynamic routing.
+         * Because with dynamic routing we have a service which knows where a resource lives - and this includes the
+         * subdirectory. Otherwise every time we use a resource url, we would need to take care of the subdirectory.
+         * That's why we have to use the original url, which contains the sub-directory.
+         */
+        if (post.url !== req.originalUrl) {
             return urlService.utils.redirect301(res, post.url);
         }
 

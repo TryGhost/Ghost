@@ -402,6 +402,9 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
+            name: 'tag',
+            slug: 'slug',
+            description: 'description',
             visibility: 'public',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
@@ -433,6 +436,7 @@ DataGenerator.forKnex = (function () {
             feature_image: null,
             featured: false,
             page: false,
+            slug: 'slug',
             author_id: DataGenerator.Content.users[0].id,
             updated_at: new Date(),
             updated_by: DataGenerator.Content.users[0].id,
@@ -468,14 +472,19 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             name: 'name',
+            email: 'test@ghost.org',
+            bio: 'bio',
+            website: null,
             slug: 'slug_' + Date.now(),
+            profile_image: null,
             status: 'active',
             password: 'Sl1m3rson99',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
             updated_by: DataGenerator.Content.users[0].id,
-            visibility: 'public'
+            visibility: 'public',
+            location: 'location'
         });
     }
 

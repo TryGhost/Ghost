@@ -94,7 +94,6 @@ describe('Slack', function () {
 
     describe('ping()', function () {
         var isPostStub,
-            urlForSpy,
             settingsCacheStub,
 
             slackReset,
@@ -103,7 +102,7 @@ describe('Slack', function () {
 
         beforeEach(function () {
             isPostStub = sandbox.stub(schema, 'isPost');
-            urlForSpy = sandbox.spy(urlService.utils, 'urlFor');
+            sandbox.stub(urlService, 'getUrlByResourceId');
 
             settingsCacheStub = sandbox.stub(settingsCache, 'get');
             sandbox.spy(common.logging, 'error');
@@ -122,23 +121,26 @@ describe('Slack', function () {
         it('makes a request for a post if url is provided', function () {
             var requestUrl, requestData;
 
+            const post = testUtils.DataGenerator.forKnex.createPost({slug: 'test'});
+            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
+
             isPostStub.returns(true);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
 
             // execute code
-            ping({});
+            ping(post);
 
             // assertions
             makeRequestStub.calledOnce.should.be.true();
             isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledTwice.should.be.true();
+            urlService.getUrlByResourceId.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
             requestUrl.should.equal(slackObjWithUrl[0].url);
-            requestData.text.should.eql('http://myblog.com/');
+            requestData.text.should.eql('http://myblog.com/test/');
             requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
@@ -158,7 +160,7 @@ describe('Slack', function () {
             // assertions
             makeRequestStub.calledOnce.should.be.true();
             isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledOnce.should.be.true();
+            urlService.getUrlByResourceId.called.should.be.false();
             settingsCacheStub.calledWith('slack').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
@@ -189,60 +191,46 @@ describe('Slack', function () {
         });
 
         it('does not make a request if post is a page', function () {
-            // set up
+            const post = testUtils.DataGenerator.forKnex.createPost({page: true});
             isPostStub.returns(true);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
 
             // execute code
-            ping({page: true});
+            ping(post);
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack').should.be.true();
-        });
-
-        it('does not make a request if no url is provided', function () {
-            // set up
-            isPostStub.returns(true);
-            settingsCacheStub.withArgs('slack').returns(slackObjNoUrl);
-
-            // execute code
-            ping({});
-            // assertions
-            makeRequestStub.calledOnce.should.be.false();
-            isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledOnce.should.be.true();
+            urlService.getUrlByResourceId.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
         });
 
         it('does not send webhook for \'welcome\' post', function () {
-            // set up
+            const post = testUtils.DataGenerator.forKnex.createPost({slug: 'welcome'});
             isPostStub.returns(true);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
 
             // execute code
-            ping({slug: 'welcome'});
+            ping(post);
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledOnce.should.be.true();
+            urlService.getUrlByResourceId.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
         });
 
         it('handles broken slack settings', function () {
-            // set up
+            const post = testUtils.DataGenerator.forKnex.createPost({slug: 'any'});
             settingsCacheStub.withArgs('slack').returns();
 
             // execute code
-            ping({});
+            ping(post);
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
-            urlForSpy.calledOnce.should.be.false();
+            urlService.getUrlByResourceId.called.should.be.false();
             settingsCacheStub.calledWith('slack').should.be.true();
         });
     });

@@ -32,18 +32,30 @@ module.exports = {
         };
 
         return new Promise(function (resolve) {
-            const onFinish = (() => {
+            res.end = function (body) {
                 resolve({
                     err: res.req.err,
+                    body: body,
                     statusCode: res.statusCode,
                     headers: res._headers,
                     template: res._template,
                     req: req,
                     res: res
                 });
-            });
+            };
 
-            res.once('finish', onFinish);
+            res.send = function (body) {
+                resolve({
+                    err: res.req.err,
+                    body: body,
+                    statusCode: res.statusCode,
+                    headers: res._headers,
+                    template: res._template,
+                    req: req,
+                    res: res
+                });
+            };
+
             app(req, res);
         });
     }

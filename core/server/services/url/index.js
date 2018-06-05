@@ -1,8 +1,5 @@
-const config = require('../../config'),
-    UrlService = require('./UrlService'),
-    urlService = new UrlService({
-        disableUrlPreload: config.get('disableUrlPreload')
-    });
+const UrlService = require('./UrlService'),
+    urlService = new UrlService();
 
 // Singleton
 module.exports = urlService;
