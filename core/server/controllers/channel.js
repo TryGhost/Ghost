@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    common = require('../lib/common'),
+const common = require('../lib/common'),
     security = require('../lib/security'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
@@ -12,7 +11,7 @@ var _ = require('lodash'),
 // There's both a top-level channelS router, and an individual channel one
 module.exports = function channelController(req, res, next) {
     // Parse the parameters we need from the URL
-    var pageParam = req.params.page !== undefined ? req.params.page : 1,
+    let pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug ? security.string.safe(req.params.slug) : undefined;
 
     // @TODO: fix this, we shouldn't change the channel object!
@@ -21,7 +20,7 @@ module.exports = function channelController(req, res, next) {
     res.locals.channel.slugParam = slugParam;
 
     // Call fetchData to get everything we need from the API
-    return fetchData(res.locals.channel).then(function handleResult(result) {
+    return fetchData(res.locals.channel).then((result) => {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > result.meta.pagination.pages) {
             return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
@@ -31,13 +30,16 @@ module.exports = function channelController(req, res, next) {
         // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
         // correctly for the various objects, but I believe it doesn't work and a different approach is needed.
         setRequestIsSecure(req, result.posts);
-        _.each(result.data, function (data) {
-            setRequestIsSecure(req, data);
-        });
+
+        if (result.data) {
+            Object.values(result.data).forEach((data) => {
+                return setRequestIsSecure(req, data);
+            });
+        }
 
         // @TODO: properly design these filters
         filters.doFilter('prePostsRender', result.posts, res.locals)
-            .then(function (posts) {
+            .then((posts) => {
                 result.posts = posts;
                 return result;
             })

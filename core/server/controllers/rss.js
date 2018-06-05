@@ -1,4 +1,4 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     url = require('url'),
     common = require('../lib/common'),
     security = require('../lib/security'),
@@ -8,18 +8,19 @@ var _ = require('lodash'),
     fetchData = require('./frontend/fetch-data'),
     handleError = require('./frontend/error'),
 
-    rssService = require('../services/rss'),
-    generate;
+    rssService = require('../services/rss');
+
+let generate = null;
 
 // @TODO: is this the right logic? Where should this live?!
 function getBaseUrlForRSSReq(originalUrl, pageParam) {
-    return url.parse(originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/');
+    return url.parse(originalUrl).pathname.replace(new RegExp(`/${pageParam}/$`), '/');
 }
 
 // @TODO: is this really correct? Should we be using meta data title?
 function getTitle(relatedData) {
     relatedData = relatedData || {};
-    var titleStart = _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
+    let titleStart = _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
 
     titleStart += titleStart ? ' - ' : '';
     return titleStart + settingsCache.get('title');
@@ -30,8 +31,9 @@ function getTitle(relatedData) {
 function getData(channelOpts) {
     channelOpts.data = channelOpts.data || {};
 
-    return fetchData(channelOpts).then(function formatResult(result) {
-        var response = _.pick(result, ['posts', 'meta']);
+    return fetchData(channelOpts).then((result) => {
+        let {posts, meta} = result,
+            response = {posts, meta};
 
         response.title = getTitle(result.data);
         response.description = settingsCache.get('description');
@@ -46,7 +48,7 @@ function getData(channelOpts) {
 // @TODO finish refactoring this - it's now a controller
 generate = function generate(req, res, next) {
     // Parse the parameters we need from the URL
-    var pageParam = req.params.page !== undefined ? req.params.page : 1,
+    let pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug ? security.string.safe(req.params.slug) : undefined,
         // Base URL needs to be the URL for the feed without pagination:
         baseUrl = getBaseUrlForRSSReq(req.originalUrl, pageParam);
@@ -56,7 +58,7 @@ generate = function generate(req, res, next) {
     res.locals.channel.postOptions.page = pageParam;
     res.locals.channel.slugParam = slugParam;
 
-    return getData(res.locals.channel).then(function handleResult(data) {
+    return getData(res.locals.channel).then((data) => {
         // If page is greater than number of pages we have, go straight to 404
         if (pageParam > data.meta.pagination.pages) {
             return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));

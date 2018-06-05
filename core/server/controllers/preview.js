@@ -1,4 +1,4 @@
-var api = require('../api'),
+const api = require('../api'),
     urlService = require('../services/url'),
     filters = require('../filters'),
     handleError = require('./frontend/error'),
@@ -8,7 +8,7 @@ var api = require('../api'),
 // This here is a controller.
 // The "route" is handled in site/routes.js
 module.exports = function previewController(req, res, next) {
-    var params = {
+    let params = {
         uuid: req.params.uuid,
         status: 'all',
         include: 'author,authors,tags'
@@ -20,9 +20,9 @@ module.exports = function previewController(req, res, next) {
         type: 'entry'
     };
 
-    api.posts.read(params).then(function then(result) {
+    api.posts.read(params).then((result) => {
         // Format data 1
-        var post = result.posts[0];
+        let post = result.posts[0];
 
         if (!post) {
             return next();
@@ -30,14 +30,14 @@ module.exports = function previewController(req, res, next) {
 
         if (req.params.options && req.params.options.toLowerCase() === 'edit') {
             // CASE: last param is of url is /edit, redirect to admin
-            return urlService.utils.redirectToAdmin(302, res, '/editor/' + post.id);
+            return urlService.utils.redirectToAdmin(302, res, `/editor/${post.id}`);
         } else if (req.params.options) {
             // CASE: unknown options param detected. Ignore and end in 404.
             return next();
         }
 
         if (post.status === 'published') {
-            return urlService.utils.redirect301(res, urlService.utils.urlFor('post', {post: post}));
+            return urlService.utils.redirect301(res, urlService.utils.urlFor('post', {post}));
         }
 
         setRequestIsSecure(req, post);
