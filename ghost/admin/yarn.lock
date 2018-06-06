@@ -4545,9 +4545,9 @@ eslint-plugin-ember@^5.0.3:
     require-folder-tree "^1.4.5"
     snake-case "^2.1.0"
 
-eslint-plugin-ghost@0.0.24:
-  version "0.0.24"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-0.0.24.tgz#4e6023d1427eb22905a7ee238e021e9bdc1cae68"
+eslint-plugin-ghost@0.0.25:
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-0.0.25.tgz#8dcb6424281663cbc2e043ad538d9ea57b5343a3"
   dependencies:
     eslint-plugin-ember "^5.0.3"
     eslint-plugin-sort-imports-es6-autofix "0.2.2"
