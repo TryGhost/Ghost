@@ -2128,6 +2128,23 @@ ghost-ignition@2.9.2:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
+ghost-ignition@2.9.3:
+  version "2.9.3"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.3.tgz#1f6e9c5abcee20f8101330ebebdbf1aaaa73d1d1"
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^2.6.9"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
 ghost-storage-base@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.3.tgz#854b23f67816c16827a6e25b7e51915e236f691d"
@@ -5327,9 +5344,9 @@ simple-get@^2.7.0:
     once "^1.3.1"
     simple-concat "^1.0.0"
 
-simple-html-tokenizer@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.1.tgz#125d486de28ffd5365624c11a71944a2cc2826dc"
+simple-html-tokenizer@0.5.3:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.3.tgz#c1c246a53ccf1cd65fb2fa970967145b47602ce4"
 
 "simplesmtp@~0.2 || ~0.3.30", simplesmtp@~0.3.30:
   version "0.3.35"
