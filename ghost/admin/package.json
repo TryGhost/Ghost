@@ -95,7 +95,7 @@
     "ember-wormhole": "0.5.4",
     "emberx-file-input": "1.2.1",
     "eslint": "4.19.1",
-    "eslint-plugin-ghost": "0.0.24",
+    "eslint-plugin-ghost": "0.0.25",
     "fs-extra": "4.0.3",
     "ghost-spirit": "0.0.20",
     "glob": "7.1.2",
