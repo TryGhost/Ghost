@@ -1024,6 +1024,11 @@ export default Component.extend({
         let windowRange = selection && selection.getRangeAt(0);
         let element = range.head && range.head.section && range.head.section.renderNode && range.head.section.renderNode.element;
 
+        // prevent scroll jumps when a card is selected
+        if (range && range.head.section && range.head.section.isCardSection) {
+            return;
+        }
+
         if (windowRange) {
             // cursorTop is relative to the window rather than document or scroll container
             let {top: cursorTop, height: cursorHeight} = windowRange.getBoundingClientRect();
