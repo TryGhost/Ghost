@@ -241,5 +241,36 @@ describe('Unit: services/url/Queue', function () {
                 timeoutInMS: 20
             });
         });
+
+        it('late subscribers', function (done) {
+            let notified = 0;
+            let called = 0;
+
+            queue.addListener('ended', function (event) {
+                event.should.eql('nachos');
+                notified.should.eql(1);
+                called.should.eql(1);
+                done();
+            });
+
+            setTimeout(function () {
+                queue.register({
+                    event: 'nachos',
+                    tolerance: 100,
+                    timeoutInMS: 20,
+                    requiredSubscriberCount: 1
+                }, function () {
+                    called = called + 1;
+                    notified = notified + 1;
+                });
+            }, 500);
+
+            queue.start({
+                event: 'nachos',
+                tolerance: 60,
+                timeoutInMS: 20,
+                requiredSubscriberCount: 1
+            });
+        });
     });
 });
