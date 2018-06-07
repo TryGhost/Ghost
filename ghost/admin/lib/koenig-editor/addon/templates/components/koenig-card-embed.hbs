@@ -1,0 +1,58 @@
+{{#koenig-card
+    class="flex flex-column"
+    isSelected=isSelected
+    isEditing=isEditing
+    selectCard=(action selectCard)
+    onSelect=(action "onSelect")
+    deselectCard=(action deselectCard)
+    onDeselect=(action "onDeselect")
+    editCard=(action editCard)
+    toolbar=toolbar
+    hasEditMode=false
+    showSelectedOutline=payload.html
+}}
+    {{#if payload.html}}
+        <div class="kg-card-hover">
+            <div class="koenig-embed-{{payload.type}} flex justify-center relative" data-kg-embed>
+                {{{payload.html}}}
+                <div class="koenig-card-click-overlay ba b--white" data-kg-overlay></div>
+            </div>
+
+            {{#if (or isSelected payload.caption)}}
+                <figcaption class="{{kg-style "figcaption"}} w-100">
+                    <input
+                        type="text"
+                        placeholder="Type caption for embed (optional)"
+                        class="miw-100 tc bn form-text bg-transparent"
+                        name="caption"
+                        value={{payload.caption}}
+                        oninput={{action "updateCaption" value="target.value"}}
+                    >
+                </figcaption>
+            {{/if}}
+        </div>
+    {{else}}
+        {{#if convertUrl.isRunning}}
+            <div class="miw-100 pa2 ba br2 b--lightgrey-d1 flex items-center justify-center bg-whitegrey-l2 f6 lh-title h10">
+                &nbsp;<div class="ghost-spinner spinner-blue"></div>&nbsp;
+            </div>
+        {{else if hasError}}
+            <div class="miw-100 flex flex-row pa2 pl3 ba br2 b--red-l3 red bg-error-red f7 fw4 lh-title h10 items-center">
+                <span class="mr3">There was an error when parsing the URL.</span>
+                <button type="button" class="red-d2 mr3 fw6 hover-red" {{action "retry"}}><span class="underline">Retry</span></button>
+                <button type="button" class="red-d2 mr-auto fw6 underline hover-red" {{action "insertAsLink"}}><span class="underline">Paste URL as link</span></button>
+                <button type="button" {{action deleteCard}} class="nudge-right--2">
+                    {{svg-jar "close" class="w3 stroke-red-l3"}}
+                </button>
+            </div>
+        {{else}}
+            <input
+                type="text"
+                value={{payload.url}}
+                placeholder="Paste URL to add embedded content..."
+                class="miw-100 pa2 ba br2 b--lightgrey-d2 f7 form-text lh-title tracked-2 h10"
+                oninput={{action "updateUrl"}}
+                onkeydown={{action "urlKeydown"}}>
+        {{/if}}
+    {{/if}}
+{{/koenig-card}}

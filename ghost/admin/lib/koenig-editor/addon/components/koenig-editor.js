@@ -56,7 +56,8 @@ export const CARD_COMPONENT_MAP = {
     markdown: 'koenig-card-markdown',
     'card-markdown': 'koenig-card-markdown', // backwards-compat with markdown editor
     html: 'koenig-card-html',
-    code: 'koenig-card-code'
+    code: 'koenig-card-code',
+    embed: 'koenig-card-embed'
 };
 
 export const CURSOR_BEFORE = -1;
@@ -463,13 +464,13 @@ export default Component.extend({
             this._performEdit(operation, postEditor);
         },
 
-        replaceWithCardSection(cardName, range) {
+        replaceWithCardSection(cardName, range, payload) {
             let editor = this.editor;
             let {head: {section}} = range;
 
             editor.run((postEditor) => {
                 let {builder} = postEditor;
-                let card = builder.createCardSection(cardName);
+                let card = builder.createCardSection(cardName, payload);
                 let nextSection = section.next;
                 let needsTrailingParagraph = !nextSection;
 
@@ -491,6 +492,7 @@ export default Component.extend({
             // is actually present
             run.schedule('afterRender', this, function () {
                 let card = this.componentCards.lastObject;
+
                 if (card.koenigOptions.hasEditMode) {
                     this.editCard(card);
                 } else if (card.koenigOptions.selectAfterInsert) {

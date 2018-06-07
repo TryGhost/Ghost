@@ -1,0 +1,11 @@
+{{#each itemSections as |section sectionIndex|}}
+    <div class="flex flex-column justify-center h5 {{unless (eq sectionIndex 0) "mt4"}} mb4 nl4 nr4 pl4 pr4 bg-whitegrey midlightgrey ttu f-supersmall fw4 tracked-3" style="min-width: calc(100% + 3.2rem);">
+        {{section.title}}
+    </div>
+    {{#each section.items as |item|}}
+        <div class="{{if item.selected "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}" {{action itemClicked item on="click"}} data-kg="cardmenu-card">
+            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar item.icon class="w8 h8 stroke-midgrey"}}</div>
+            <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+        </div>
+    {{/each}}
+{{/each}}

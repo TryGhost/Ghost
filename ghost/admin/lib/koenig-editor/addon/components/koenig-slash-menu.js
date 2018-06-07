@@ -1,50 +1,13 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-slash-menu';
-import {computed} from '@ember/object';
+import {CARD_MENU} from '../options/cards';
+import {computed, set} from '@ember/object';
 import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
+import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {set} from '@ember/object';
 
 const ROW_LENGTH = 3;
-
-const ITEM_MAP = [
-    {
-        label: 'Markdown',
-        icon: 'koenig/markdown',
-        matches: ['markdown', 'md'],
-        type: 'card',
-        replaceArg: 'markdown'
-    },
-    {
-        label: 'Image',
-        icon: 'koenig/image',
-        matches: ['image', 'img'],
-        type: 'card',
-        replaceArg: 'image'
-    },
-    {
-        label: 'HTML',
-        icon: 'koenig/html',
-        matches: ['embed', 'html'],
-        type: 'card',
-        replaceArg: 'html'
-    },
-    {
-        label: 'Code Block',
-        icon: 'koenig/code-block',
-        matches: ['embed', 'code'],
-        type: 'card',
-        replaceArg: 'code'
-    },
-    {
-        label: 'Divider',
-        icon: 'koenig/divider',
-        matches: ['divider', 'horizontal-rule', 'hr'],
-        type: 'card',
-        replaceArg: 'hr'
-    }
-];
 
 export default Component.extend({
     layout,
@@ -58,7 +21,7 @@ export default Component.extend({
     // public properties
     showMenu: false,
     top: 0,
-    icons: null,
+    itemSections: null,
 
     // private properties
     _openRange: null,
@@ -68,8 +31,31 @@ export default Component.extend({
     // closure actions
     replaceWithCardSection() {},
 
+    // computed properties
     style: computed('top', function () {
         return htmlSafe(`top: ${this.top}px`);
+    }),
+
+    // create a 2-dimensional array of items based on the ROW_LENGTH, eg
+    // [
+    //   [item1, item1, item3]
+    //   [item4, item5],
+    //   [item6, item7, item8]
+    //   [item9]
+    // ]
+    // - used for arrow key movement of selected item
+    itemMap: computed('itemSections', function () {
+        let map = [];
+
+        this.itemSections.forEach((section) => {
+            let iterations = Math.ceil(section.items.length / ROW_LENGTH);
+            for (let i = 0; i < iterations; i++) {
+                let startIndex = i * ROW_LENGTH;
+                map.push(section.items.slice(startIndex, startIndex + ROW_LENGTH));
+            }
+        });
+
+        return map;
     }),
 
     init() {
@@ -103,11 +89,20 @@ export default Component.extend({
     },
 
     actions: {
-        itemClicked(item) {
+        itemClicked(item, params) {
             let range = this._openRange.head.section.toRange();
+            let payload;
+
+            // params are order-dependent and listed in CARD_MENU for each card
+            if (item.params) {
+                payload = {};
+                item.params.forEach((param, i) => {
+                    payload[param] = params[i];
+                });
+            }
 
             if (item.type === 'card') {
-                this.replaceWithCardSection(item.replaceArg, range);
+                this.replaceWithCardSection(item.replaceArg, range, payload);
             }
 
             this._hideMenu();
@@ -139,26 +134,35 @@ export default Component.extend({
     },
 
     _updateQuery(query) {
-        let matchedItems = ITEM_MAP.filter((item) => {
+        this._query = query;
+
+        // match everything before a space to a card. Keeps the relevant
+        // card selected when providing attributes to a card, eg:
+        // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
+        let card = query.split(/\s/)[0];
+
+        let matchedItems = CARD_MENU.map((section) => {
             // show all items before anything is typed
-            if (!query) {
-                return true;
+            if (!card) {
+                return section;
             }
 
             // show icons where there's a match of the begining of one of the
             // "item.matches" strings
-            let matches = item.matches.filter(match => match.indexOf(query) === 0);
-            return matches.length > 0;
-        });
+            let matches = section.items.filter(item => item.matches.any(match => match.indexOf(card) === 0));
+            if (matches.length > 0) {
+                return {title: section.title, items: matches};
+            }
+        }).compact();
 
         // we need a copy to avoid modifying the object references
-        let items = copy(matchedItems, true);
+        let sections = copy(matchedItems, true);
 
-        if (items.length) {
-            set(items[0], 'selected', true);
+        if (sections.length) {
+            set(sections[0].items[0], 'selected', true);
         }
 
-        this.set('items', items);
+        this.set('itemSections', sections);
     },
 
     _showMenu() {
@@ -217,7 +221,7 @@ export default Component.extend({
 
         let {head: {section}} = range;
 
-        if (section) {
+        if (section && section.renderNode.element) {
             let containerRect = this.element.parentNode.getBoundingClientRect();
             let selectedElement = section.renderNode.element;
             let selectedElementRect = selectedElement.getBoundingClientRect();
@@ -271,57 +275,81 @@ export default Component.extend({
 
     _performAction() {
         let selectedItem = this._getSelectedItem();
+        let [, ...params] = this._query.split(/\s/);
 
         if (selectedItem) {
-            this.send('itemClicked', selectedItem);
+            this.send('itemClicked', selectedItem, params);
         }
     },
 
     _getSelectedItem() {
-        let items = this.items;
+        let sections = this.itemSections;
 
-        if (items.length <= 0) {
+        if (sections.length <= 0) {
             return;
         }
 
-        return items.find(item => item.selected);
+        for (let section of sections) {
+            let item = section.items.find(item => item.selected);
+            if (item) {
+                return item;
+            }
+        }
     },
 
     _moveSelection(direction) {
-        let items = this.items;
-        let selectedItem = this._getSelectedItem();
-        let selectedIndex = items.indexOf(selectedItem);
-        let lastIndex = items.length - 1;
+        let itemMap = this.itemMap;
 
-        if (lastIndex <= 0) {
+        if (isEmpty(itemMap)) {
             return;
         }
+
+        let selectedItem = this._getSelectedItem();
+        let selectedRow = itemMap.find(row => row.includes(selectedItem));
+        let selectedRowIndex = itemMap.indexOf(selectedRow);
+        let selectedItemIndex = selectedRow.indexOf(selectedItem);
+        let lastRowIndex = itemMap.length - 1;
+        let lastItemIndex = selectedRow.length - 1;
 
         set(selectedItem, 'selected', false);
 
         if (direction === 'right') {
-            selectedIndex += 1;
-            if (selectedIndex > lastIndex) {
-                selectedIndex = 0;
+            selectedItemIndex += 1;
+            if (selectedItemIndex > lastItemIndex) {
+                if (selectedRowIndex < lastRowIndex) {
+                    selectedRowIndex += 1;
+                } else {
+                    selectedRowIndex = 0;
+                }
+                selectedItemIndex = 0;
             }
         } else if (direction === 'left') {
-            selectedIndex -= 1;
-            if (selectedIndex < 0) {
-                selectedIndex = lastIndex;
+            selectedItemIndex -= 1;
+            if (selectedItemIndex < 0) {
+                if (selectedRowIndex > 0) {
+                    selectedRowIndex -= 1;
+                } else {
+                    selectedRowIndex = itemMap.length - 1;
+                }
+                selectedItemIndex = itemMap[selectedRowIndex].length - 1;
             }
         } else if (direction === 'up') {
-            selectedIndex -= ROW_LENGTH;
-            if (selectedIndex < 0) {
-                selectedIndex += ROW_LENGTH;
+            selectedRowIndex -= 1;
+            if (selectedRowIndex < 0) {
+                selectedRowIndex = lastRowIndex;
             }
         } else if (direction === 'down') {
-            selectedIndex += ROW_LENGTH;
-            if (selectedIndex > lastIndex) {
-                selectedIndex -= ROW_LENGTH;
+            selectedRowIndex += 1;
+            if (selectedRowIndex > lastRowIndex) {
+                selectedRowIndex = 0;
             }
         }
 
-        set(items[selectedIndex], 'selected', true);
+        if (selectedItemIndex > itemMap[selectedRowIndex].length - 1) {
+            selectedItemIndex = itemMap[selectedRowIndex].length - 1;
+        }
+
+        set(itemMap[selectedRowIndex][selectedItemIndex], 'selected', true);
     },
 
     _unregisterKeyboardNavHandlers() {

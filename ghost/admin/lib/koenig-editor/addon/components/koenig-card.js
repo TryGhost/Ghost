@@ -9,7 +9,7 @@ const TICK_HEIGHT = 8;
 export default Component.extend({
     layout,
     attributeBindings: ['style'],
-    classNameBindings: ['isSelected:kg-card-selected'],
+    classNameBindings: ['selectedClass'],
 
     // attrs
     icon: null,
@@ -19,6 +19,7 @@ export default Component.extend({
     isEditing: false,
     hasEditMode: true,
     headerOffset: 0,
+    showSelectedOutline: true,
 
     // properties
     showToolbar: false,
@@ -63,6 +64,12 @@ export default Component.extend({
 
     iconTop: computed('headerOffset', function () {
         return this.headerOffset + 24;
+    }),
+
+    selectedClass: computed('isSelected', 'showSelectedOutline', function () {
+        if (this.isSelected && this.showSelectedOutline) {
+            return 'kg-card-selected';
+        }
     }),
 
     didReceiveAttrs() {
