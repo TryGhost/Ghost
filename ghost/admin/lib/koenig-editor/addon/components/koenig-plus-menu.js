@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-plus-menu';
+import {CARD_MENU} from '../options/cards';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
@@ -14,6 +15,7 @@ export default Component.extend({
     editorRange: null,
 
     // internal properties
+    itemSections: null,
     showButton: false,
     showMenu: false,
     top: 0,
@@ -36,6 +38,8 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+
+        this.itemSections = CARD_MENU;
 
         this._onResizeHandler = run.bind(this, this._handleResize);
         window.addEventListener('resize', this._onResizeHandler);
@@ -82,10 +86,12 @@ export default Component.extend({
             this._hideMenu();
         },
 
-        replaceWithCardSection(cardName) {
+        itemClicked(item) {
             let range = this._editorRange;
 
-            this.replaceWithCardSection(cardName, range);
+            if (item.type === 'card') {
+                this.replaceWithCardSection(item.replaceArg, range);
+            }
 
             this._hideButton();
             this._hideMenu();

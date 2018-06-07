@@ -3,33 +3,12 @@
 {{/if}}
 
 {{#if showMenu}}
-    <div class="{{kg-style "cardmenu"}}">
+    {{!-- TODO: restructure HTML and update kg-style helper to avoid negative margins on divider/title elements --}}
+    <div class="{{kg-style "cardmenu"}} pa0">
         {{!-- <div class="koenig-cardmenu-search">
             {{svg-jar "koenig/search"}}
             <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
-        </div>
-        <div class="koenig-cardmenu-divider">
-            Primary
         </div> --}}
-        <div class="{{kg-style "cardmenu-card"}}" {{action "replaceWithCardSection" "markdown" on="click"}} data-kg="cardmenu-card">
-            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar "koenig/markdown" class="w8 h8 stroke-midgrey"}}</div>
-            <div class="{{kg-style "cardmenu-label"}}">Markdown</div>
-        </div>
-        <div class="{{kg-style "cardmenu-card"}}" {{action "replaceWithCardSection" "image" on="click"}} data-kg="cardmenu-card">
-            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar "koenig/image" class="w8 h8 stroke-midgrey"}}</div>
-            <div class="{{kg-style "cardmenu-label"}}">Image</div>
-        </div>
-        <div class="{{kg-style "cardmenu-card"}}" {{action "replaceWithCardSection" "html" on="click"}} data-kg="cardmenu-card">
-            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar "koenig/html" class="w8 h8 stroke-midgrey"}}</div>
-            <div class="{{kg-style "cardmenu-label"}}">HTML</div>
-        </div>
-        <div class="{{kg-style "cardmenu-card"}}" {{action "replaceWithCardSection" "code" on="click"}} data-kg="cardmenu-card">
-            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar "koenig/code-block" class="w8 h8 stroke-midgrey"}}</div>
-            <div class="{{kg-style "cardmenu-label"}}">Code Block</div>
-        </div>
-        <div class="{{kg-style "cardmenu-card"}}" {{action "replaceWithCardSection" "hr" on="click"}} data-kg="cardmenu-card">
-            <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar "koenig/divider" class="w8 h8 stroke-midgrey"}}</div>
-            <div class="{{kg-style "cardmenu-label"}}">Divider</div>
-        </div>
+        {{koenig-menu-content itemSections=itemSections itemClicked=(action "itemClicked")}}
     </div>
 {{/if}}
