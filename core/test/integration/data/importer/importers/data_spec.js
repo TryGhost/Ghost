@@ -1877,8 +1877,8 @@ describe('Import (new test structure)', function () {
             });
         });
 
-        describe('amp/comment', function () {
-            before(function doImport() {
+        describe('default', function () {
+            beforeEach(function doImport() {
                 // initialize the blog with some data
                 return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                     return testUtils.fixtures.loadExportFixture('export-basic-test');
@@ -1888,7 +1888,14 @@ describe('Import (new test structure)', function () {
                 });
             });
 
-            it('keeps the value of the amp field', function () {
+            it('does not import slack hook', function () {
+                return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal))
+                    .then(function (response) {
+                        response.attributes.value.should.eql('');
+                    });
+            });
+
+            it('keeps the value of the amp field / uses comment_id', function () {
                 return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
                     should.exist(response.posts);
 

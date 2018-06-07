@@ -1419,7 +1419,7 @@
                     {
                         "id": "59a952c2ebbf7206b369cdd6",
                         "key": "slack",
-                        "value": "[{\"url\":\"\"}]",
+                        "value": "[{\"url\":\"https://hook.slack.com\"}]",
                         "type": "blog",
                         "created_at": "2017-09-01T12:18:30.000Z",
                         "created_by": "1",
