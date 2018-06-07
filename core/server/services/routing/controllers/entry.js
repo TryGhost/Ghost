@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:entry'),
+    url = require('url'),
     urlService = require('../../url'),
     filters = require('../../../filters'),
     helpers = require('../helpers');
@@ -63,10 +64,18 @@ module.exports = function entryController(req, res, next) {
              *
              * The resource url always contains the subdirectory. This was different before dynamic routing.
              * That's why we have to use the original url, which contains the sub-directory.
+             *
+             * @NOTE
+             *
+             * post.url contains the subdirectory if configured.
              */
-            if (post.url !== req.originalUrl) {
+            if (post.url !== url.parse(req.originalUrl).pathname) {
                 debug('redirect');
-                return urlService.utils.redirect301(res, post.url);
+
+                return urlService.utils.redirect301(res, url.format({
+                    pathname: post.url,
+                    search: url.parse(req.originalUrl).search
+                }));
             }
 
             helpers.secure(req, post);
