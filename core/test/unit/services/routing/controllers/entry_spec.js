@@ -177,5 +177,33 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             controllers.entry(req, res);
         });
+
+        it('requested url !== resource url: with query params', function (done) {
+            post.url = '/2017/08/' + post.url;
+            req.path = '/2017/07/' + post.url;
+            req.originalUrl = req.path + '?query=true';
+
+            res.locals.routerOptions.type = 'posts';
+
+            urlService.getResource.withArgs(post.url).returns({
+                config: {
+                    type: 'posts'
+                }
+            });
+
+            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+                .resolves({
+                    post: post
+                });
+
+            urlService.utils.redirect301.callsFake(function (res, postUrl) {
+                postUrl.should.eql(post.url + '?query=true');
+                done();
+            });
+
+            controllers.entry(req, res, function (err) {
+                done(err);
+            });
+        });
     });
 });
