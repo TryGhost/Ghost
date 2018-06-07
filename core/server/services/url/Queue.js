@@ -82,6 +82,7 @@ class Queue extends EventEmitter {
         if (!this.queue.hasOwnProperty(options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance,
+                requiredSubscriberCount: options.requiredSubscriberCount || 0,
                 subscribers: []
             };
         }
@@ -136,7 +137,8 @@ class Queue extends EventEmitter {
                 delete this.toNotify[action];
                 debug('ended (1)', event, action);
                 this.emit('ended', event);
-            } else if (this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
+            } else if (this.queue[options.event].subscribers.length >= this.queue[options.event].requiredSubscriberCount &&
+                this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
                 delete this.toNotify[action];
                 debug('ended (2)', event, action);
                 this.emit('ended', event);
@@ -159,6 +161,7 @@ class Queue extends EventEmitter {
         if (!this.queue.hasOwnProperty(options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance || 0,
+                requiredSubscriberCount: options.requiredSubscriberCount || 0,
                 subscribers: []
             };
         }
