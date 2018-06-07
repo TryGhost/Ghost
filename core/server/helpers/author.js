@@ -18,7 +18,7 @@ const urlService = require('../services/url');
  * @deprecated: will be removed in Ghost 2.0
  */
 module.exports = function author(options) {
-    const {fn, hash: {autolink}} = options
+    const {fn, hash: {autolink}} = options;
     if (fn) {
         return handlebars.helpers.with.call(this, this.author, options);
     }
