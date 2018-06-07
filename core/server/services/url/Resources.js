@@ -126,7 +126,8 @@ class Resources {
                 // CASE: all resources are fetched, start the queue
                 this.queue.start({
                     event: 'init',
-                    tolerance: 100
+                    tolerance: 100,
+                    requiredSubscriberCount: 1
                 });
             });
     }
