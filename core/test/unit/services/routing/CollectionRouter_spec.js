@@ -108,6 +108,13 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
         });
+
+        it('with templates', function () {
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', template: ['home', 'index']});
+
+            // they are getting reversed because we unshift the templates in the helper
+            collectionRouter.templates.should.eql(['index', 'home']);
+        });
     });
 
     describe('permalink in database changes', function () {
