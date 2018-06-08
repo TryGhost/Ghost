@@ -90,7 +90,7 @@ class CollectionRouter extends ParentRouter {
             filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             type: this.getType(),
-            context: ['home'],
+            context: [],
             frontPageTemplate: 'home',
             templates: this.templates,
             identifier: this.identifier
