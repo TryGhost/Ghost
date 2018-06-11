@@ -52,8 +52,8 @@ _private.getCollectionTemplateHierarchy = function getCollectionTemplateHierarch
     if (routerOptions.name && routerOptions.name !== 'index') {
         templateList.unshift(routerOptions.name);
 
-        if (routerOptions.slugTemplate && routerOptions.slugParam) {
-            templateList.unshift(routerOptions.name + '-' + routerOptions.slugParam);
+        if (routerOptions.slugTemplate && requestOptions.slugParam) {
+            templateList.unshift(routerOptions.name + '-' + requestOptions.slugParam);
         }
     }
 
@@ -176,7 +176,8 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
         case 'collection':
             res._template = _private.getTemplateForCollection(res.locals.routerOptions, {
                 path: url.parse(req.url).pathname,
-                page: req.params.page
+                page: req.params.page,
+                slugParam: req.params.slug
             });
             break;
         case 'entry':
