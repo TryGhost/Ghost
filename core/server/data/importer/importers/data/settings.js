@@ -62,7 +62,7 @@ class SettingsImporter extends BaseImporter {
 
             // CASE: we do not import slack hooks, otherwise it can happen very fast that you are pinging someone's slack channel
             if (obj.key === 'slack') {
-                obj.value = '';
+                obj.value = JSON.stringify([{url: ''}]);
             }
         });
 

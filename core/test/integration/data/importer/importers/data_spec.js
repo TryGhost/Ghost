@@ -1891,7 +1891,7 @@ describe('Import (new test structure)', function () {
             it('does not import slack hook', function () {
                 return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal))
                     .then(function (response) {
-                        response.attributes.value.should.eql('');
+                        response.attributes.value.should.eql('[{"url":""}]');
                     });
             });
 
