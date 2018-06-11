@@ -7,6 +7,8 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('UNIT - services/routing/CollectionRouter', function () {
+    let req, res, next;
+
     describe('instantiate', function () {
         beforeEach(function () {
             sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
@@ -16,6 +18,12 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             sandbox.spy(CollectionRouter.prototype, 'mountRoute');
             sandbox.spy(CollectionRouter.prototype, 'mountRouter');
+
+            req = sandbox.stub();
+            res = sandbox.stub();
+            next = sandbox.stub();
+
+            res.locals = {};
         });
 
         afterEach(function () {
@@ -107,6 +115,32 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
 
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
+        });
+
+        it('with templates', function () {
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', template: ['home', 'index']});
+
+            // they are getting reversed because we unshift the templates in the helper
+            collectionRouter.templates.should.eql(['index', 'home']);
+        });
+    });
+
+    describe('fn: _prepareIndexContext', function () {
+        it('default', function () {
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', template: ['home', 'index']});
+
+            collectionRouter._prepareIndexContext(req, res, next);
+
+            next.calledOnce.should.be.true();
+            res.locals.routerOptions.should.eql({
+                filter: 'page:false',
+                permalinks: '/:slug/:options(edit)?/',
+                frontPageTemplate: 'home',
+                templates: ['index', 'home'],
+                identifier: collectionRouter.identifier,
+                context: [],
+                type: 'posts'
+            });
         });
     });
 

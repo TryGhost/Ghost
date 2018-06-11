@@ -22,7 +22,8 @@ class CollectionRouter extends ParentRouter {
             value: object.permalink
         };
 
-        this.templates = object.template || [];
+        // @NOTE: see helpers/templates - we use unshift to prepend the templates
+        this.templates = (object.template || []).reverse();
 
         this.filter = object.filter || 'page:false';
 
@@ -89,9 +90,9 @@ class CollectionRouter extends ParentRouter {
             filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             type: this.getType(),
-            context: ['home'],
+            context: [],
             frontPageTemplate: 'home',
-            templates: this.templates.reverse(),
+            templates: this.templates,
             identifier: this.identifier
         };
 
