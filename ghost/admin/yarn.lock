@@ -1835,6 +1835,17 @@ broccoli-templater@^1.0.0:
     broccoli-stew "^1.2.0"
     lodash.template "^3.3.2"
 
+broccoli-templater@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/broccoli-templater/-/broccoli-templater-2.0.1.tgz#2e001e45aeba7fa2eb9b19a54c9c61b741935799"
+  dependencies:
+    broccoli-persistent-filter "^1.4.3"
+    broccoli-plugin "^1.3.0"
+    fs-tree-diff "^0.5.7"
+    lodash.template "^4.4.0"
+    rimraf "^2.6.2"
+    walk-sync "^0.3.2"
+
 broccoli-uglify-sourcemap@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-2.2.0.tgz#2ff49389bdf342a550c3596750ba2dde95a8f7d4"
@@ -3968,15 +3979,15 @@ ember-factory-for-polyfill@^1.1.0, ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-4.0.2.tgz#865ca90d8aa63b9ebe5bce709aeaa44b35668b5a"
+ember-fetch@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-5.0.0.tgz#fc58980010d625e9d86d238cbaabe7803fdddcfa"
   dependencies:
     abortcontroller-polyfill "^1.1.9"
     broccoli-concat "^3.2.2"
     broccoli-merge-trees "^2.0.0"
     broccoli-stew "^1.4.2"
-    broccoli-templater "^1.0.0"
+    broccoli-templater "^2.0.1"
     ember-cli-babel "^6.8.2"
     node-fetch "^2.0.0-alpha.9"
     yetch "^0.0.1"
@@ -5229,7 +5240,7 @@ fs-tree-diff@^0.4.3:
     debug "^2.2.0"
     fast-ordered-set "^1.0.2"
 
-fs-tree-diff@^0.5.0, fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.4, fs-tree-diff@^0.5.6:
+fs-tree-diff@^0.5.0, fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.4, fs-tree-diff@^0.5.6, fs-tree-diff@^0.5.7:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/fs-tree-diff/-/fs-tree-diff-0.5.7.tgz#315e2b098d5fe7f622880ac965b1b051868ac871"
   dependencies:
@@ -5338,9 +5349,9 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.21:
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.21.tgz#19eca18d3d0be3fe1b20d8add16db23e4a3040ff"
+ghost-spirit@0.0.23:
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.23.tgz#cd7f4cd4b9f7336e8f7510a5f84878b05945ebdc"
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"
@@ -7071,7 +7082,7 @@ lodash.template@^3.3.2:
     lodash.restparam "^3.0.0"
     lodash.templatesettings "^3.0.0"
 
-lodash.template@^4.2.5:
+lodash.template@^4.2.5, lodash.template@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.template/-/lodash.template-4.4.0.tgz#e73a0385c8355591746e020b99679c690e68fba0"
   dependencies:
