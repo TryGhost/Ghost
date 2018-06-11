@@ -20,7 +20,7 @@
         onFailed=(action "resetSrcs")
         as |uploader|
     }}
-        <div class="relative">
+        <div class="relative bg-whitegrey-l2">
             {{#if (or previewSrc payload.src)}}
                 <img src={{or previewSrc payload.src}} class="{{kg-style kgImgStyle sidebar=ui.hasSideNav}}" alt={{payload.alt}}>
             {{/if}}
@@ -36,8 +36,9 @@
                     {{#if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else if (not previewSrc payload.src)}}
-                        <button class="db center btn-base ba b--whitegrey br3 sans-serif fw4 f7 middarkgrey" onclick={{action "triggerFileDialog"}}>
-                            <span>Click to select an image</span>
+                        <button class="flex flex-column items-center center btn-base sans-serif fw4 f7 middarkgrey" onclick={{action "triggerFileDialog"}}>
+                            {{svg-jar "summer" class="nudge-right--10"}}
+                            <span class="mt2 midgrey">Click to select an image</span>
                         </button>
                     {{/if}}
                 </div>
