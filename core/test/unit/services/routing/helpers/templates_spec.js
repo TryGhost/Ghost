@@ -23,7 +23,7 @@ describe('templates', function () {
         });
 
         it('should return just index if collection name is index even if slug is set', function () {
-            _private.getCollectionTemplateHierarchy({name: 'index', slugTemplate: true, slugParam: 'test'}).should.eql(['index']);
+            _private.getCollectionTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
         });
 
         it('should return collection, index if collection has name', function () {
@@ -33,18 +33,16 @@ describe('templates', function () {
         it('should return collection-slug, collection, index if collection has name & slug + slugTemplate set', function () {
             _private.getCollectionTemplateHierarchy({
                 name: 'tag',
-                slugTemplate: true,
-                slugParam: 'test'
-            }).should.eql(['tag-test', 'tag', 'index']);
+                slugTemplate: true
+            }, {slugParam: 'test'}).should.eql(['tag-test', 'tag', 'index']);
         });
 
         it('should return front, collection-slug, collection, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
             _private.getCollectionTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true,
-                slugParam: 'test',
                 frontPageTemplate: 'front-tag'
-            }, {page: 1, path: '/'}).should.eql(['front-tag', 'tag-test', 'tag', 'index']);
+            }, {page: 1, path: '/', slugParam: 'test'}).should.eql(['front-tag', 'tag-test', 'tag', 'index']);
         });
 
         it('should return home, index for index collection if front is set and pageParam = 1', function () {
@@ -260,7 +258,7 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('index');
             });
@@ -275,20 +273,20 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugParam: 'design', slugTemplate: true});
+                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugParam: 'development', slugTemplate: true});
+                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            var view = _private.getTemplateForCollection({name: 'tag', slugParam: 'development', slugTemplate: true});
+            var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
             should.exist(view);
             view.should.eql('index');
         });
