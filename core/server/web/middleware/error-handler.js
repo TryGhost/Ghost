@@ -134,6 +134,16 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  //
         errorDetails: err.errorDetails || []
     };
 
+    // e.g. if you serve the admin /ghost and Ghost returns a 503 because it generates the urls at the moment.
+    // This ensures that no matter what res.render will work here
+    // @TODO: put to prepare error function?
+    if (_.isEmpty(req.app.engines)) {
+        res._template = 'error';
+        req.app.engine('hbs', _private.createHbsEngine());
+        req.app.set('view engine', 'hbs');
+        req.app.set('views', config.get('paths').defaultViews);
+    }
+
     res.render('error', data, function renderResponse(err, html) {
         if (!err) {
             return res.send(html);
