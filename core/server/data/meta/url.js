@@ -13,7 +13,7 @@ function sanitizeAmpUrl(url) {
 
 function getUrl(data, absolute) {
     if (schema.isPost(data) || schema.isTag(data) || schema.isUser(data)) {
-        return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute});
+        return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
     }
 
     if (schema.isNav(data)) {
