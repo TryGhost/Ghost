@@ -6,7 +6,7 @@ var debug = require('ghost-ignition').debug('services:apps'),
     config = require('../../config'),
     settingsCache = require('../settings/cache'),
     loader = require('./loader'),
-    // Internal APps are in config
+    // Internal apps are in config
     internalApps = config.get('apps:internal'),
     // Holds the available apps
     availableApps = {};
