@@ -32,8 +32,9 @@ function ping(post) {
     } else {
         message = post.message;
     }
+
     // Quit here if slack integration is not activated
-    if (slackSettings.url && slackSettings.url !== '') {
+    if (slackSettings && slackSettings.url && slackSettings.url !== '') {
         // Only ping when not a page
         if (post.page) {
             return;
