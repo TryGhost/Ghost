@@ -16,17 +16,11 @@ describe('Unit: models/invite', function () {
         sandbox.restore();
     });
 
+    before(testUtils.teardown);
+
     describe('add', function () {
-        let knexMock;
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
+        beforeEach(testUtils.setup('roles'));
+        afterEach(testUtils.teardown);
 
         it('default', function () {
             return models.Invite.add({email: 'invited@test.org', role_id: testUtils.DataGenerator.forKnex.roles[1].id})

@@ -123,7 +123,6 @@
     "matchdep": "2.0.0",
     "minimist": "1.2.0",
     "mocha": "4.1.0",
-    "mock-knex": "0.4.0",
     "nock": "9.3.0",
     "rewire": "3.0.2",
     "should": "13.2.1",

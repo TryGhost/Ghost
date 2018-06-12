@@ -467,7 +467,14 @@ DataGenerator.forKnex = (function () {
     }
 
     function createUser(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        var newObj = _.cloneDeep(overrides || {});
+
+        if (!newObj.slug) {
+            newObj.slug = 'slug_' + Date.now();
+        }
+        if (!newObj.email) {
+            newObj.email = `test${newObj.slug}@ghost.org`;
+        }
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -475,7 +482,6 @@ DataGenerator.forKnex = (function () {
             email: 'test@ghost.org',
             bio: 'bio',
             website: null,
-            slug: 'slug_' + Date.now(),
             profile_image: null,
             status: 'active',
             password: 'Sl1m3rson99',
