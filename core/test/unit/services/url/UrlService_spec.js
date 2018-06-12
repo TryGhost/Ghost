@@ -1,740 +1,241 @@
-// jshint unused: false
 const _ = require('lodash');
 const Promise = require('bluebird');
+const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
-const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
-const UrlService = require('../../../../server/services/url/UrlService');
+const Queue = require('../../../../server/services/url/Queue');
+const Resources = require('../../../../server/services/url/Resources');
+const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
+const Urls = require('../../../../server/services/url/Urls');
+const UrlService = rewire('../../../../server/services/url/UrlService');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/UrlService', function () {
-    let knexMock, urlService;
-
-    before(function () {
-        models.init();
-
-        // @NOTE: we auto create a singleton - as soon as you require the file, it will listen on events
-        require('../../../../server/services/url').reset();
-    });
+    let QueueStub, ResourcesStub, UrlsStub, UrlGeneratorStub, urlService;
 
     beforeEach(function () {
-        knexMock = new testUtils.mocks.knex();
-        knexMock.mock();
+        QueueStub = sandbox.stub();
+        QueueStub.returns(sandbox.createStubInstance(Queue));
+
+        ResourcesStub = sandbox.stub();
+        ResourcesStub.returns(sandbox.createStubInstance(Resources));
+
+        UrlsStub = sandbox.stub();
+        UrlsStub.returns(sandbox.createStubInstance(Urls));
+
+        UrlGeneratorStub = sandbox.stub();
+        UrlGeneratorStub.returns(sandbox.createStubInstance(UrlGenerator));
+
+        UrlService.__set__('Queue', QueueStub);
+        UrlService.__set__('Resources', ResourcesStub);
+        UrlService.__set__('Urls', UrlsStub);
+        UrlService.__set__('UrlGenerator', UrlGeneratorStub);
+
+        sandbox.stub(common.events, 'on');
+
+        urlService = new UrlService();
     });
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    afterEach(function () {
-        knexMock.unmock();
+    it('instantiate', function () {
+        should.exist(urlService.utils);
+        should.exist(urlService.urls);
+        should.exist(urlService.resources);
+        should.exist(urlService.queue);
+
+        urlService.urlGenerators.should.eql([]);
+        urlService.hasFinished().should.be.false();
+
+        urlService.queue.addListener.calledTwice.should.be.true();
+        urlService.queue.addListener.args[0][0].should.eql('started');
+        urlService.queue.addListener.args[1][0].should.eql('ended');
+
+        common.events.on.calledOnce.should.be.true();
+        common.events.on.args[0][0].should.eql('router.created');
     });
 
-    after(function () {
-        sandbox.restore();
+    it('fn: _onQueueStarted', function () {
+        urlService._onQueueStarted('init');
+        urlService.hasFinished().should.be.false();
     });
 
-    describe('functional: default routing set', function () {
-        let routingType1, routingType2, routingType3, routingType4;
+    it('fn: _onQueueEnded', function () {
+        urlService._onQueueEnded('init');
+        urlService.hasFinished().should.be.true();
+    });
 
-        beforeEach(function (done) {
-            urlService = new UrlService();
+    it('fn: _onRouterAddedType', function () {
+        urlService._onRouterAddedType({getPermalinks: sandbox.stub().returns({})});
+        urlService.urlGenerators.length.should.eql(1);
+    });
 
-            routingType1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'post collection';
-                }
-            };
+    describe('fn: getResource', function () {
+        it('no resource for url found', function () {
+            urlService.finished = false;
+            urlService.urls.getByUrl.withArgs('/blog-post/').returns([]);
 
-            routingType2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'authors';
-                }
-            };
-
-            routingType3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'tags';
-                }
-            };
-
-            routingType4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'static pages';
-                }
-            };
-
-            routingType1.getFilter.returns('featured:false');
-            routingType1.getType.returns('posts');
-            routingType1.getPermalinks.returns({
-                getValue: function () {
-                    return '/:slug/';
-                }
-            });
-
-            routingType2.getFilter.returns(false);
-            routingType2.getType.returns('users');
-            routingType2.getPermalinks.returns({
-                getValue: function () {
-                    return '/author/:slug/';
-                }
-            });
-
-            routingType3.getFilter.returns(false);
-            routingType3.getType.returns('tags');
-            routingType3.getPermalinks.returns({
-                getValue: function () {
-                    return '/tag/:slug/';
-                }
-            });
-
-            routingType4.getFilter.returns(false);
-            routingType4.getType.returns('pages');
-            routingType4.getPermalinks.returns({
-                getValue: function () {
-                    return '/:slug/';
-                }
-            });
-
-            common.events.emit('routingType.created', routingType1);
-            common.events.emit('routingType.created', routingType2);
-            common.events.emit('routingType.created', routingType3);
-            common.events.emit('routingType.created', routingType4);
-
-            common.events.emit('db.ready');
-
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
-
-                if (urlService.hasFinished()) {
-                    return done();
-                }
-
-                setTimeout(retry, 50);
-            })();
+            try {
+                urlService.getResource('/blog-post/');
+                throw new Error('Expected error.');
+            } catch (err) {
+                (err instanceof common.errors.InternalServerError).should.be.true();
+            }
         });
 
-        afterEach(function () {
-            urlService.reset();
+        it('no resource for url found', function () {
+            urlService.finished = true;
+            urlService.urls.getByUrl.withArgs('/blog-post/').returns([]);
+            should.not.exist(urlService.getResource('/blog-post/'));
         });
 
-        it('check url generators', function () {
-            urlService.urlGenerators.length.should.eql(4);
-            urlService.urlGenerators[0].routingType.should.eql(routingType1);
-            urlService.urlGenerators[1].routingType.should.eql(routingType2);
-            urlService.urlGenerators[2].routingType.should.eql(routingType3);
-            urlService.urlGenerators[3].routingType.should.eql(routingType4);
+        it('one resource for url found', function () {
+            const resource = {x: 'y'};
+
+            urlService.finished = true;
+            urlService.urls.getByUrl.withArgs('/blog-post/').returns([{resource: resource}]);
+            urlService.getResource('/blog-post/').should.eql(resource);
         });
 
-        it('getUrl', function () {
-            urlService.urlGenerators.forEach(function (generator) {
-                if (generator.routingType.getType() === 'posts') {
-                    generator.getUrls().length.should.eql(2);
+        it('two resources for url found', function () {
+            const object1 = {generatorId: 1, resource: {a: 1}};
+            const object2 = {generatorId: 0, resource: {a: 2}};
+
+            urlService.urlGenerators = [
+                {
+                    uid: 0
+                },
+                {
+                    uid: 1
                 }
+            ];
 
-                if (generator.routingType.getType() === 'pages') {
-                    generator.getUrls().length.should.eql(1);
-                }
-
-                if (generator.routingType.getType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
-                }
-
-                if (generator.routingType.getType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
-                }
-            });
-
-            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/html-ipsum/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/ghostly-kitchen-sink/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            should.not.exist(url);
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/tag/kitchen-sink/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/tag/bacon/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/tag/chorizo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/tag/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/tag/injection/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/author/joe-bloggs/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/author/smith-wellingsworth/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/author/jimothy-bogendath/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/author/slimer-mcectoplasm/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/author/contributor/');
+            urlService.finished = true;
+            urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
+            urlService.getResource('/blog-post/').should.eql(object2.resource);
         });
 
-        it('getResource', function () {
-            let resource = urlService.getResource('/html-ipsum/');
-            resource.data.id.should.eql(testUtils.DataGenerator.forKnex.posts[0].id);
+        it('two resources for url found', function () {
+            const object1 = {generatorId: 0, resource: {a: 1}};
+            const object2 = {generatorId: 1, resource: {a: 2}};
 
-            resource = urlService.getResource('/does-not-exist/');
-            should.not.exist(resource);
-        });
+            urlService.urlGenerators = [
+                {
+                    uid: 0
+                },
+                {
+                    uid: 1
+                }
+            ];
 
-        describe('update resource', function () {
-            it('featured: false => featured:true', function () {
-                return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        should.not.exist(url);
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.routingType.getType() === 'posts') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.routingType.getType() === 'pages') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-                        });
-                    });
-            });
-
-            it('page: false => page:true', function () {
-                return models.Post.edit({page: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        let url = urlService.getUrlByResourceId(post.id);
-
-                        url.should.eql('/ghostly-kitchen-sink/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.routingType.getType() === 'posts') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.routingType.getType() === 'pages') {
-                                generator.getUrls().length.should.eql(2);
-                            }
-                        });
-                    });
-            });
-
-            it('page: true => page:false', function () {
-                return models.Post.edit({page: false}, {id: testUtils.DataGenerator.forKnex.posts[5].id})
-                    .then(function (post) {
-                        let url = urlService.getUrlByResourceId(post.id);
-
-                        url.should.eql('/static-page-test/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.routingType.getType() === 'posts') {
-                                generator.getUrls().length.should.eql(3);
-                            }
-
-                            if (generator.routingType.getType() === 'pages') {
-                                generator.getUrls().length.should.eql(0);
-                            }
-                        });
-                    });
-            });
-        });
-
-        describe('add new resource', function () {
-            it('already published', function () {
-                return models.Post.add({
-                    featured: false,
-                    page: false,
-                    status: 'published',
-                    title: 'Brand New Story!',
-                    author_id: testUtils.DataGenerator.forKnex.users[4].id
-                }).then(function (post) {
-                    let url = urlService.getUrlByResourceId(post.id);
-                    url.should.eql('/brand-new-story/');
-
-                    let resource = urlService.getResource(url);
-                    resource.data.primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[4].id);
-                });
-            });
-
-            it('draft', function () {
-                return models.Post.add({
-                    featured: false,
-                    page: false,
-                    status: 'draft',
-                    title: 'Brand New Story!',
-                    author_id: testUtils.DataGenerator.forKnex.users[4].id
-                }).then(function (post) {
-                    let url = urlService.getUrlByResourceId(post.id);
-                    should.not.exist(url);
-
-                    let resource = urlService.getResource(url);
-                    should.not.exist(resource);
-                });
-            });
+            urlService.finished = true;
+            urlService.urls.getByUrl.withArgs('/blog-post/').returns([object1, object2]);
+            urlService.getResource('/blog-post/').should.eql(object1.resource);
         });
     });
 
-    describe('functional: extended/modified routing set', function () {
-        let routingType1, routingType2, routingType3, routingType4, routingType5;
-
-        beforeEach(function (done) {
-            urlService = new UrlService();
-
-            routingType1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'post collection 1';
-                }
-            };
-
-            routingType2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'post collection 2';
-                }
-            };
-
-            routingType3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'authors';
-                }
-            };
-
-            routingType4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'tags';
-                }
-            };
-
-            routingType5 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'static pages';
-                }
-            };
-
-            routingType1.getFilter.returns('featured:false');
-            routingType1.getType.returns('posts');
-            routingType1.getPermalinks.returns({
-                getValue: function () {
-                    return '/collection/:year/:slug/';
-                }
+    describe('fn: getPermalinkByUrl', function () {
+        it('found', function () {
+            const permalinkStub1 = sandbox.stub().returns({
+                getValue: sandbox.stub().returns('/:slug/')
             });
 
-            routingType2.getFilter.returns('featured:true');
-            routingType2.getType.returns('posts');
-            routingType2.getPermalinks.returns({
-                getValue: function () {
-                    return '/podcast/:slug/';
-                }
+            const permalinkStub2 = sandbox.stub().returns({
+                getValue: sandbox.stub().returns('/:primary_tag/')
             });
 
-            routingType3.getFilter.returns(false);
-            routingType3.getType.returns('users');
-            routingType3.getPermalinks.returns({
-                getValue: function () {
-                    return '/persons/:slug/';
+            urlService.urlGenerators = [
+                {
+                    uid: 0,
+                    router: {
+                        getPermalinks: permalinkStub1
+                    }
+                },
+                {
+                    uid: 1,
+                    router: {
+                        getPermalinks: permalinkStub2
+                    }
                 }
-            });
+            ];
 
-            routingType4.getFilter.returns(false);
-            routingType4.getType.returns('tags');
-            routingType4.getPermalinks.returns({
-                getValue: function () {
-                    return '/category/:slug/';
-                }
-            });
+            sandbox.stub(urlService, 'getResource').withArgs('/blog-post/', {returnEverything: true})
+                .returns({generatorId: 1, resource: true});
 
-            routingType5.getFilter.returns(false);
-            routingType5.getType.returns('pages');
-            routingType5.getPermalinks.returns({
-                getValue: function () {
-                    return '/:slug/';
-                }
-            });
-
-            common.events.emit('routingType.created', routingType1);
-            common.events.emit('routingType.created', routingType2);
-            common.events.emit('routingType.created', routingType3);
-            common.events.emit('routingType.created', routingType4);
-            common.events.emit('routingType.created', routingType5);
-
-            common.events.emit('db.ready');
-
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
-
-                if (urlService.hasFinished()) {
-                    return done();
-                }
-
-                setTimeout(retry, 50);
-            })();
+            urlService.getPermalinkByUrl('/blog-post/').should.eql('/:primary_tag/');
         });
 
-        afterEach(function () {
-            urlService.reset();
-        });
-
-        it('check url generators', function () {
-            urlService.urlGenerators.length.should.eql(5);
-            urlService.urlGenerators[0].routingType.should.eql(routingType1);
-            urlService.urlGenerators[1].routingType.should.eql(routingType2);
-            urlService.urlGenerators[2].routingType.should.eql(routingType3);
-            urlService.urlGenerators[3].routingType.should.eql(routingType4);
-            urlService.urlGenerators[4].routingType.should.eql(routingType5);
-        });
-
-        it('getUrl', function () {
-            urlService.urlGenerators.forEach(function (generator) {
-                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:false') {
-                    generator.getUrls().length.should.eql(2);
-                }
-
-                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:true') {
-                    generator.getUrls().length.should.eql(2);
-                }
-
-                if (generator.routingType.getType() === 'pages') {
-                    generator.getUrls().length.should.eql(1);
-                }
-
-                if (generator.routingType.getType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
-                }
-
-                if (generator.routingType.getType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
-                }
+        it('found', function () {
+            const permalinkStub1 = sandbox.stub().returns({
+                getValue: sandbox.stub().returns('/:slug/')
             });
 
-            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/collection/2015/html-ipsum/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/collection/2015/ghostly-kitchen-sink/');
-
-            // featured
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/podcast/short-and-sweet/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/category/kitchen-sink/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/category/bacon/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/category/chorizo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/category/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/category/injection/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/persons/joe-bloggs/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/persons/smith-wellingsworth/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/persons/jimothy-bogendath/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/persons/slimer-mcectoplasm/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/persons/contributor/');
-        });
-
-        describe('update resource', function () {
-            it('featured: false => featured:true', function () {
-                return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        url.should.eql('/podcast/ghostly-kitchen-sink/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:false') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:true') {
-                                generator.getUrls().length.should.eql(3);
-                            }
-                        });
-                    });
+            const permalinkStub2 = sandbox.stub().returns({
+                getValue: sandbox.stub().returns('/:primary_tag/')
             });
 
-            it('featured: true => featured:false', function () {
-                return models.Post.edit({featured: false}, {id: testUtils.DataGenerator.forKnex.posts[2].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        url.should.eql('/collection/2015/short-and-sweet/');
+            urlService.urlGenerators = [
+                {
+                    uid: 0,
+                    router: {
+                        getPermalinks: permalinkStub1
+                    }
+                },
+                {
+                    uid: 1,
+                    router: {
+                        getPermalinks: permalinkStub2
+                    }
+                }
+            ];
 
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:false') {
-                                generator.getUrls().length.should.eql(3);
-                            }
+            sandbox.stub(urlService, 'getResource').withArgs('/blog-post/', {returnEverything: true})
+                .returns({generatorId: 0, resource: true});
 
-                            if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:true') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-                        });
-                    });
-            });
+            urlService.getPermalinkByUrl('/blog-post/').should.eql('/:slug/');
         });
     });
 
-    describe('functional: subdirectory', function () {
-        let routingType1, routingType2, routingType3, routingType4, routingType5;
-
-        beforeEach(function (done) {
-            configUtils.set('url', 'http://localhost:2388/blog');
-
-            urlService = new UrlService();
-
-            routingType1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'post collection 1';
-                }
-            };
-
-            routingType2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'post collection 2';
-                }
-            };
-
-            routingType3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'authors';
-                }
-            };
-
-            routingType4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'tags';
-                }
-            };
-
-            routingType5 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
-                toString: function () {
-                    return 'static pages';
-                }
-            };
-
-            routingType1.getFilter.returns('featured:false');
-            routingType1.getType.returns('posts');
-            routingType1.getPermalinks.returns({
-                getValue: function () {
-                    return '/collection/:year/:slug/';
-                }
-            });
-
-            routingType2.getFilter.returns('featured:true');
-            routingType2.getType.returns('posts');
-            routingType2.getPermalinks.returns({
-                getValue: function () {
-                    return '/podcast/:slug/';
-                }
-            });
-
-            routingType3.getFilter.returns(false);
-            routingType3.getType.returns('users');
-            routingType3.getPermalinks.returns({
-                getValue: function () {
-                    return '/persons/:slug/';
-                }
-            });
-
-            routingType4.getFilter.returns(false);
-            routingType4.getType.returns('tags');
-            routingType4.getPermalinks.returns({
-                getValue: function () {
-                    return '/category/:slug/';
-                }
-            });
-
-            routingType5.getFilter.returns(false);
-            routingType5.getType.returns('pages');
-            routingType5.getPermalinks.returns({
-                getValue: function () {
-                    return '/:slug/';
-                }
-            });
-
-            common.events.emit('routingType.created', routingType1);
-            common.events.emit('routingType.created', routingType2);
-            common.events.emit('routingType.created', routingType3);
-            common.events.emit('routingType.created', routingType4);
-            common.events.emit('routingType.created', routingType5);
-
-            common.events.emit('db.ready');
-
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
-
-                if (urlService.hasFinished()) {
-                    return done();
-                }
-
-                setTimeout(retry, 50);
-            })();
+    describe('fn: getUrlByResourceId', function () {
+        it('not found', function () {
+            urlService.urls.getByResourceId.withArgs(1).returns(null);
+            urlService.getUrlByResourceId(1).should.eql('/404/');
         });
 
-        afterEach(function () {
-            urlService.reset();
-            configUtils.restore();
+        it('not found: absolute', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns(null);
+            urlService.getUrlByResourceId(1, {absolute: true});
+
+            urlService.utils.createUrl.calledWith('/404/', true, undefined).should.be.true();
         });
 
-        it('check url generators', function () {
-            urlService.urlGenerators.length.should.eql(5);
-            urlService.urlGenerators[0].routingType.should.eql(routingType1);
-            urlService.urlGenerators[1].routingType.should.eql(routingType2);
-            urlService.urlGenerators[2].routingType.should.eql(routingType3);
-            urlService.urlGenerators[3].routingType.should.eql(routingType4);
-            urlService.urlGenerators[4].routingType.should.eql(routingType5);
+        it('found', function () {
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1).should.eql('/post/');
         });
 
-        it('getUrl', function () {
-            urlService.urlGenerators.forEach(function (generator) {
-                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:false') {
-                    generator.getUrls().length.should.eql(2);
-                }
+        it('found: absolute', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
 
-                if (generator.routingType.getType() === 'posts' && generator.routingType.getFilter() === 'featured:true') {
-                    generator.getUrls().length.should.eql(2);
-                }
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1, {absolute: true});
+            urlService.utils.createUrl.calledWith('/post/', true, undefined).should.be.true();
+        });
 
-                if (generator.routingType.getType() === 'pages') {
-                    generator.getUrls().length.should.eql(1);
-                }
+        it('found: absolute + secure', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
 
-                if (generator.routingType.getType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
-                }
-
-                if (generator.routingType.getType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
-                }
-            });
-
-            let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/blog/collection/2015/html-ipsum/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/blog/collection/2015/ghostly-kitchen-sink/');
-
-            // featured
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/blog/podcast/short-and-sweet/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/blog/category/kitchen-sink/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/blog/category/bacon/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/blog/category/chorizo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/blog/category/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/blog/category/injection/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/blog/persons/joe-bloggs/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/blog/persons/smith-wellingsworth/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/blog/persons/jimothy-bogendath/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/blog/persons/slimer-mcectoplasm/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/blog/persons/contributor/');
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1, {absolute: true, secure: true});
+            urlService.utils.createUrl.calledWith('/post/', true, true).should.be.true();
         });
     });
 });

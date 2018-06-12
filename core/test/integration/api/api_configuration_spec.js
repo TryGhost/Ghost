@@ -9,7 +9,7 @@ var should = require('should'),
 describe('Configuration API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
-    beforeEach(testUtils.setup('clients'));
+    beforeEach(testUtils.setup('clients', 'settings'));
     afterEach(function () {
         configUtils.restore();
         return testUtils.teardown();
@@ -29,7 +29,7 @@ describe('Configuration API', function () {
             props.blogUrl.should.eql('http://127.0.0.1:2369/');
 
             props.useGravatar.should.eql(false);
-            props.publicAPI.should.eql(false);
+            props.publicAPI.should.eql(true);
             props.clientId.should.eql('ghost-admin');
             props.clientSecret.should.eql('not_available');
 

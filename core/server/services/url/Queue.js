@@ -9,7 +9,7 @@ const debug = require('ghost-ignition').debug('services:url:queue'),
  * Ghost fetches as earliest as possible the resources from the database. The reason is simply: we
  * want to know all urls as soon as possible.
  *
- * Parallel to this, the routes/channels are read/prepared and registered in express.
+ * Parallel to this, the routes are read/prepared and registered in express.
  * So the challenge is to handle both resource availability and route registration.
  * If you start an event, all subscribers of it are executed in a sequence. The queue will wait
  * till the current subscriber has finished it's work.
@@ -21,9 +21,9 @@ const debug = require('ghost-ignition').debug('services:url:queue'),
  *
  * - you can re-run an event
  * - you can add more subscribers to an existing queue
- * - you can order subscribers (helpful if you want to order routes/channels)
+ * - you can order subscribers (helpful if you want to order routers)
  *
- * Each subscriber represents one instance of the url generator. One url generator represents one channel/route.
+ * Each subscriber represents one instance of the url generator. One url generator represents one router.
  *
  * ### Tolerance option
  *
@@ -82,6 +82,7 @@ class Queue extends EventEmitter {
         if (!this.queue.hasOwnProperty(options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance,
+                requiredSubscriberCount: options.requiredSubscriberCount || 0,
                 subscribers: []
             };
         }
@@ -136,7 +137,8 @@ class Queue extends EventEmitter {
                 delete this.toNotify[action];
                 debug('ended (1)', event, action);
                 this.emit('ended', event);
-            } else if (this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
+            } else if (this.queue[options.event].subscribers.length >= this.queue[options.event].requiredSubscriberCount &&
+                this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
                 delete this.toNotify[action];
                 debug('ended (2)', event, action);
                 this.emit('ended', event);
@@ -159,6 +161,7 @@ class Queue extends EventEmitter {
         if (!this.queue.hasOwnProperty(options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance || 0,
+                requiredSubscriberCount: options.requiredSubscriberCount || 0,
                 subscribers: []
             };
         }
@@ -195,6 +198,14 @@ class Queue extends EventEmitter {
     reset() {
         this.queue = {};
 
+        _.each(this.toNotify, (obj) => {
+            clearTimeout(obj.timeout);
+        });
+
+        this.toNotify = {};
+    }
+
+    softReset() {
         _.each(this.toNotify, (obj) => {
             clearTimeout(obj.timeout);
         });

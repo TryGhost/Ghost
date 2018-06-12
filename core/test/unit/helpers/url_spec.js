@@ -1,13 +1,12 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
+    testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
-
-// Stuff we are testing
     helpers = require('../../../server/helpers'),
+    urlService = require('../../../server/services/url'),
     api = require('../../../server/api'),
-
     sandbox = sinon.sandbox.create();
 
 describe('{{url}} helper', function () {
@@ -19,6 +18,9 @@ describe('{{url}} helper', function () {
 
     beforeEach(function () {
         rendered = null;
+
+        sandbox.stub(urlService, 'getUrlByResourceId');
+
         sandbox.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});
         });
@@ -33,7 +35,7 @@ describe('{{url}} helper', function () {
     });
 
     it('should return the slug with a prefix slash if the context is a post', function () {
-        rendered = helpers.url.call({
+        const post = testUtils.DataGenerator.forKnex.createPost({
             html: 'content',
             mobiledoc: markdownToMobiledoc('ff'),
             title: 'title',
@@ -42,60 +44,65 @@ describe('{{url}} helper', function () {
             url: '/slug/'
         });
 
+        urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, secure: undefined}).returns('/slug/');
+
+        rendered = helpers.url.call(post);
         should.exist(rendered);
         rendered.string.should.equal('/slug/');
     });
 
     it('should output an absolute URL if the option is present', function () {
-        rendered = helpers.url.call(
-            {html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug', url: '/slug/', created_at: new Date(0)},
-            {hash: {absolute: 'true'}}
-        );
+        const post = testUtils.DataGenerator.forKnex.createPost({
+            html: 'content',
+            mobiledoc: markdownToMobiledoc('ff'),
+            title: 'title',
+            slug: 'slug',
+            url: '/slug/',
+            created_at: new Date(0)
+        });
 
+        urlService.getUrlByResourceId.withArgs(post.id, {absolute: 'true', secure: undefined}).returns('http://localhost:82832/slug/');
+
+        rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
         should.exist(rendered);
         rendered.string.should.equal('http://localhost:82832/slug/');
     });
 
     it('should output an absolute URL with https if the option is present and secure', function () {
-        rendered = helpers.url.call(
-            {
-                html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug',
-                url: '/slug/', created_at: new Date(0), secure: true
-            },
-            {hash: {absolute: 'true'}}
-        );
+        const post = testUtils.DataGenerator.forKnex.createPost({
+            html: 'content',
+            mobiledoc: markdownToMobiledoc('ff'),
+            title: 'title',
+            slug: 'slug',
+            url: '/slug/',
+            created_at: new Date(0),
+            secure: true
+        });
 
-        should.exist(rendered);
-        rendered.string.should.equal('https://localhost:82832/slug/');
-    });
+        urlService.getUrlByResourceId.withArgs(post.id, {absolute: 'true', secure: true}).returns('https://localhost:82832/slug/');
 
-    it('should output an absolute URL with https if secure', function () {
-        rendered = helpers.url.call(
-            {
-                html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug',
-                url: '/slug/', created_at: new Date(0), secure: true
-            },
-            {hash: {absolute: 'true'}}
-        );
-
+        rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
         should.exist(rendered);
         rendered.string.should.equal('https://localhost:82832/slug/');
     });
 
     it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
-        rendered = helpers.url.call({
+        const tag = testUtils.DataGenerator.forKnex.createTag({
             name: 'the tag',
             slug: 'the-tag',
             description: null,
             parent: null
         });
 
+        urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, secure: undefined}).returns('/tag/the-tag/');
+
+        rendered = helpers.url.call(tag);
         should.exist(rendered);
         rendered.string.should.equal('/tag/the-tag/');
     });
 
     it('should return the slug with a prefixed /author/ if the context is author', function () {
-        rendered = helpers.url.call({
+        const user = testUtils.DataGenerator.forKnex.createUser({
             bio: null,
             website: null,
             profile_image: null,
@@ -103,24 +110,15 @@ describe('{{url}} helper', function () {
             slug: 'some-author'
         });
 
+        urlService.getUrlByResourceId.withArgs(user.id, {absolute: undefined, secure: undefined}).returns('/author/some-author/');
+
+        rendered = helpers.url.call(user);
         should.exist(rendered);
         rendered.string.should.equal('/author/some-author/');
     });
 
     it('should return / if not a post or tag', function () {
-        rendered = helpers.url.call({mobiledoc: markdownToMobiledoc('ff'), title: 'title', slug: 'slug'});
-        should.exist(rendered);
-        rendered.string.should.equal('/');
-
-        rendered = helpers.url.call({html: 'content', title: 'title', slug: 'slug'});
-        should.exist(rendered);
-        rendered.string.should.equal('/');
-
-        rendered = helpers.url.call({html: 'content', mobiledoc: markdownToMobiledoc('ff'), slug: 'slug'});
-        should.exist(rendered);
-        rendered.string.should.equal('/');
-
-        rendered = helpers.url.call({html: 'content', mobiledoc: markdownToMobiledoc('ff'), title: 'title'});
+        rendered = helpers.url.call({something: 'key'});
         should.exist(rendered);
         rendered.string.should.equal('/');
     });

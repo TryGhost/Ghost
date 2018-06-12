@@ -220,7 +220,11 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-001', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData, importOptions);
-            }).then(function () {
+            }).then(function (result) {
+                // NOTE: the user in the JSON is not imported (!) - duplicate email
+                result.problems[1].help.should.eql('User');
+                result.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
@@ -248,10 +252,9 @@ describe('Import', function () {
                     hashedPassword: users[0].password,
                     plainPassword: testUtils.DataGenerator.Content.users[0].password
                 }).then(function () {
-                    // but the name, slug, and bio should have been overridden
                     users[0].name.should.equal(exportData.data.users[0].name);
                     users[0].slug.should.equal(exportData.data.users[0].slug);
-                    should.not.exist(users[0].bio, 'bio is not imported');
+                    users[0].email.should.equal(exportData.data.users[0].email);
 
                     // import no longer requires all data to be dropped, and adds posts
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
@@ -323,7 +326,11 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-002', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData, importOptions);
-            }).then(function () {
+            }).then(function (result) {
+                // NOTE: the user in the JSON is not imported (!) - duplicate email
+                result.problems[1].help.should.eql('User');
+                result.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
@@ -351,10 +358,9 @@ describe('Import', function () {
                     hashedPassword: users[0].password,
                     plainPassword: testUtils.DataGenerator.Content.users[0].password
                 }).then(function () {
-                    // but the name, slug, and bio should have been overridden
                     users[0].name.should.equal(exportData.data.users[0].name);
                     users[0].slug.should.equal(exportData.data.users[0].slug);
-                    should.not.exist(users[0].bio, 'bio is not imported');
+                    users[0].email.should.equal(exportData.data.users[0].email);
 
                     // import no longer requires all data to be dropped, and adds posts
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
@@ -390,7 +396,11 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-003', {lts: true}).then(function (exported) {
                 exportData = exported;
                 return dataImporter.doImport(exportData, importOptions);
-            }).then(function () {
+            }).then(function (result) {
+                // NOTE: the user in the JSON is not imported (!) - duplicate email
+                result.problems[1].help.should.eql('User');
+                result.problems[1].message.should.eql('Entry was not imported and ignored. Detected duplicated entry.');
+
                 // Grab the data from tables
                 return Promise.all([
                     knex('users').select(),
@@ -413,10 +423,9 @@ describe('Import', function () {
                     hashedPassword: users[0].password,
                     plainPassword: testUtils.DataGenerator.Content.users[0].password
                 }).then(function () {
-                    // but the name, slug, and bio should have been overridden
                     users[0].name.should.equal(exportData.data.users[0].name);
                     users[0].slug.should.equal(exportData.data.users[0].slug);
-                    should.not.exist(users[0].bio, 'bio is not imported');
+                    users[0].email.should.equal(exportData.data.users[0].email);
 
                     // test posts
                     posts.length.should.equal(1, 'Wrong number of posts');
@@ -521,10 +530,8 @@ describe('Import', function () {
                     hashedPassword: users[0].password,
                     plainPassword: testUtils.DataGenerator.Content.users[0].password
                 }).then(function () {
-                    // but the name, slug, and bio should have been overridden
                     users[0].name.should.equal('Joe Bloggs');
                     users[0].slug.should.equal('joe-bloggs');
-                    should.not.exist(users[0].bio, 'bio is not imported');
 
                     // test posts
                     posts.length.should.equal(1, 'Wrong number of posts');
@@ -1849,8 +1856,29 @@ describe('Import (new test structure)', function () {
 
         afterEach(testUtils.teardown);
 
-        describe('amp/comment', function () {
+        describe('edge cases', function () {
             before(function doImport() {
+                return testUtils.initFixtures('roles', 'owner', 'settings');
+            });
+
+            it('uppercase tag slugs', function () {
+                return testUtils.fixtures.loadExportFixture('uppercase-tags')
+                    .then(function (exported) {
+                        exportData = exported.db[0];
+                        return dataImporter.doImport(exportData, importOptions);
+                    })
+                    .then(function (imported) {
+                        imported.problems.length.should.eql(0);
+                        return models.Post.findAll({withRelated: ['tags']});
+                    })
+                    .then(function (posts) {
+                        posts.toJSON()[0].tags.length.should.eql(1);
+                    });
+            });
+        });
+
+        describe('default', function () {
+            beforeEach(function doImport() {
                 // initialize the blog with some data
                 return testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                     return testUtils.fixtures.loadExportFixture('export-basic-test');
@@ -1860,7 +1888,14 @@ describe('Import (new test structure)', function () {
                 });
             });
 
-            it('keeps the value of the amp field', function () {
+            it('does not import slack hook', function () {
+                return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal))
+                    .then(function (response) {
+                        response.attributes.value.should.eql('[{"url":""}]');
+                    });
+            });
+
+            it('keeps the value of the amp field / uses comment_id', function () {
                 return models.Post.findPage(_.merge({formats: 'amp'}, testUtils.context.internal)).then(function (response) {
                     should.exist(response.posts);
 

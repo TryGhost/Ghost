@@ -2,7 +2,7 @@ var _ = require('lodash'),
     hbs = require('express-hbs'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    templates = require('../../controllers/frontend/templates'),
+    helpers = require('../../services/routing/helpers'),
     escapeExpression = hbs.Utils.escapeExpression,
     _private = {},
     errorHandler = {};
@@ -98,7 +98,8 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     };
 
     // Template
-    templates.setTemplate(req, res);
+    // @TODO: very dirty !!!!!!
+    helpers.templates.setTemplate(req, res);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
@@ -132,6 +133,16 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  //
         statusCode: err.statusCode,
         errorDetails: err.errorDetails || []
     };
+
+    // e.g. if you serve the admin /ghost and Ghost returns a 503 because it generates the urls at the moment.
+    // This ensures that no matter what res.render will work here
+    // @TODO: put to prepare error function?
+    if (_.isEmpty(req.app.engines)) {
+        res._template = 'error';
+        req.app.engine('hbs', _private.createHbsEngine());
+        req.app.set('view engine', 'hbs');
+        req.app.set('views', config.get('paths').defaultViews);
+    }
 
     res.render('error', data, function renderResponse(err, html) {
         if (!err) {

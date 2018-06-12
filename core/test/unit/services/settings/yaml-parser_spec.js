@@ -38,7 +38,7 @@ describe('UNIT > Settings Service:', function () {
             } catch (error) {
                 should.exist(error);
                 error.message.should.eql('Could not parse badroutes.yaml: bad indentation of a mapping entry.');
-                error.context.should.eql('bad indentation of a mapping entry at line 5, column 10:\n        route: \'{globals.permalinks}\'\n             ^');
+                error.context.should.containEql('bad indentation of a mapping entry at line 5, column 14');
                 error.help.should.eql('Check your badroutes.yaml file for typos and fix the named issues.');
                 yamlSpy.calledOnce.should.be.true();
             }

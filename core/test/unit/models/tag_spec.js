@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     models = require('../../../server/models'),
     testUtils = require('../../utils'),

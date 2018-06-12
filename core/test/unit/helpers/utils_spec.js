@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     helperUtils = require('../../../server/helpers/utils');
 
 describe('Helpers Utils', function () {

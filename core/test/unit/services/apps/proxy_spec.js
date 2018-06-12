@@ -1,11 +1,9 @@
-var should = require('should'),
+const should = require('should'),
     sinon = require('sinon'),
     helpers = require('../../../../server/helpers/register'),
     filters = require('../../../../server/filters'),
-
-    // Stuff we are testing
     AppProxy = require('../../../../server/services/apps/proxy'),
-
+    routing = require('../../../../server/services/routing'),
     sandbox = sinon.sandbox.create();
 
 describe('Apps', function () {
@@ -38,6 +36,10 @@ describe('Apps', function () {
                 add: sandbox.stub()
             }
         };
+
+        sandbox.stub(routing.registry, 'getRouter').withArgs('appRouter').returns({
+            mountRouter: sandbox.stub()
+        });
     });
 
     afterEach(function () {

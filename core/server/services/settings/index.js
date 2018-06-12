@@ -6,7 +6,7 @@ const _ = require('lodash'),
     SettingsModel = require('../../models/settings').Settings,
     SettingsCache = require('./cache'),
     SettingsLoader = require('./loader'),
-    // EnsureSettingsFiles = require('./ensure-settings'),
+    ensureSettingsFiles = require('./ensure-settings'),
     common = require('../../lib/common'),
     debug = require('ghost-ignition').debug('services:settings:index');
 
@@ -16,23 +16,18 @@ module.exports = {
 
         debug('init settings service for:', knownSettings);
 
-        // TODO: uncomment this section, once we want to
-        // copy the default routes.yaml file into the /content/settings
-        // folder
-
         // Make sure that supported settings files are available
         // inside of the `content/setting` directory
-        // return EnsureSettingsFiles(knownSettings)
-        //     .then(() => {
-
-        // Update the defaults
-        return SettingsModel.populateDefaults()
-            .then(function (settingsCollection) {
+        return ensureSettingsFiles(knownSettings)
+            .then(() => {
+                // Update the defaults
+                return SettingsModel.populateDefaults();
+            })
+            .then((settingsCollection) => {
                 // Initialise the cache with the result
                 // This will bind to events for further updates
                 SettingsCache.init(settingsCollection);
             });
-        // });
     },
 
     /**

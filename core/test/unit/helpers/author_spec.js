@@ -1,40 +1,52 @@
-var should = require('should'), // jshint ignore:line
-
-// Stuff we are testing
+const should = require('should'),
+    sinon = require('sinon'),
+    sandbox = sinon.sandbox.create(),
+    testUtils = require('../../utils'),
+    urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers');
 
 describe('{{author}} helper', function () {
-    it('Returns the link to the author from the context', function () {
-        var data = {author: {name: 'abc 123', slug: 'abc123', bio: '', website: '', status: '', location: ''}},
-            result = helpers.author.call(data, {hash: {}});
+    beforeEach(function () {
+        sandbox.stub(urlService, 'getUrlByResourceId');
+    });
 
-        String(result).should.equal('<a href="/author/abc123/">abc 123</a>');
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    it('Returns the link to the author from the context', function () {
+        const author = testUtils.DataGenerator.forKnex.createUser({slug: 'abc123', name: 'abc 123'});
+
+        urlService.getUrlByResourceId.withArgs(author.id).returns('author url');
+
+        const result = helpers.author.call({author: author}, {hash: {}});
+        String(result).should.equal('<a href="author url">abc 123</a>');
     });
 
     it('Returns the full name of the author from the context if no autolink', function () {
-        var data = {author: {name: 'abc 123', slug: 'abc123'}},
-            result = helpers.author.call(data, {hash: {autolink: 'false'}});
-
+        const author = testUtils.DataGenerator.forKnex.createUser({slug: 'abc123', name: 'abc 123'});
+        const result = helpers.author.call({author: author}, {hash: {autolink: 'false'}});
         String(result).should.equal('abc 123');
+        urlService.getUrlByResourceId.called.should.be.false();
     });
 
     it('Returns a blank string where author data is missing', function () {
-        var data = {author: null},
-            result = helpers.author.call(data, {hash: {}});
-
+        const result = helpers.author.call({author:null}, {hash: {}});
         String(result).should.equal('');
     });
 
     it('Functions as block helper if called with #', function () {
-        var data = {author: {name: 'abc 123', slug: 'abc123'}},
-            // including fn emulates the #
-            result = helpers.author.call(data, {
-                hash: {}, fn: function () {
-                    return 'FN';
-                }
-            });
+        const author = testUtils.DataGenerator.forKnex.createUser({slug: 'abc123', name: 'abc 123'});
+
+        // including fn emulates the #
+        const result = helpers.author.call({author: author}, {
+            hash: {}, fn: function () {
+                return 'FN';
+            }
+        });
 
         // It outputs the result of fn
         String(result).should.equal('FN');
+        urlService.getUrlByResourceId.called.should.be.false();
     });
 });

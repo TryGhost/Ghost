@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     getMetaDescription = require('../../../../server/data/meta/description');
 
 describe('getMetaDescription', function () {
