@@ -67,7 +67,7 @@ function handleSource(req, res, next) {
     delete req.body.location;
     delete req.body.referrer;
 
-    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url));
+    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url, {withoutSubdirectory: true}));
 
     if (resource) {
         req.body.post_id = resource.data.id;

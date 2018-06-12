@@ -37,7 +37,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         sandbox.stub(urlService.utils, 'redirectToAdmin');
         sandbox.stub(urlService.utils, 'redirect301');
-        sandbox.stub(urlService, 'getResource');
+        sandbox.stub(urlService, 'getResourceById');
 
         req = {
             path: '/',
@@ -78,7 +78,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         filters.doFilter.withArgs('prePostsRender', post, res.locals).resolves();
 
-        urlService.getResource.withArgs(post.url).returns({
+        urlService.getResourceById.withArgs(post.id).returns({
             config: {
                 type: 'posts'
             }
@@ -135,7 +135,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.path = post.url;
             res.locals.routerOptions.type = 'posts';
 
-            urlService.getResource.withArgs(post.url).returns({
+            urlService.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'pages'
                 }
@@ -153,13 +153,13 @@ describe('Unit - services/routing/controllers/entry', function () {
         });
 
         it('requested url !== resource url', function (done) {
-            post.url = '/2017/08/' + post.url;
-            req.path = '/2017/07/' + post.url;
+            post.url = '/2017/08' + post.url;
+            req.path = '/2017/07' + post.url;
             req.originalUrl = req.path;
 
             res.locals.routerOptions.type = 'posts';
 
-            urlService.getResource.withArgs(post.url).returns({
+            urlService.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'posts'
                 }
@@ -175,17 +175,20 @@ describe('Unit - services/routing/controllers/entry', function () {
                 done();
             });
 
-            controllers.entry(req, res);
+            controllers.entry(req, res, function (err) {
+                should.exist(err);
+                done(err);
+            });
         });
 
         it('requested url !== resource url: with query params', function (done) {
-            post.url = '/2017/08/' + post.url;
-            req.path = '/2017/07/' + post.url;
+            post.url = '/2017/08' + post.url;
+            req.path = '/2017/07' + post.url;
             req.originalUrl = req.path + '?query=true';
 
             res.locals.routerOptions.type = 'posts';
 
-            urlService.getResource.withArgs(post.url).returns({
+            urlService.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'posts'
                 }
