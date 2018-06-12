@@ -3526,7 +3526,7 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
-lodash@4.17.10, lodash@^4.13.1, lodash@^4.14.2, lodash@^4.16.4, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.10, lodash@~4.17.5:
+lodash@4.17.10, lodash@^4.13.1, lodash@^4.16.4, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.10, lodash@~4.17.5:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
@@ -3865,14 +3865,6 @@ mocha@^3.1.2:
     lodash.create "3.1.1"
     mkdirp "0.5.1"
     supports-color "3.1.2"
-
-mock-knex@0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.0.tgz#32c4ed97ff7cf9c86eca2400902f34e1f7f88de1"
-  dependencies:
-    bluebird "^3.4.1"
-    lodash "^4.14.2"
-    semver "^5.3.0"
 
 moment-timezone@0.5.17:
   version "0.5.17"

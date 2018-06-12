@@ -1031,6 +1031,7 @@ startGhost = function startGhost(options) {
 
 module.exports = {
     startGhost: startGhost,
+
     integrationTesting: {
         overrideGhostConfig: function overrideGhostConfig(configUtils) {
             configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));

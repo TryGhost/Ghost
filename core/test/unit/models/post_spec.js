@@ -5,26 +5,20 @@ const should = require('should'),
     _ = require('lodash'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
-    settingsCache = require('../../../server/services/settings/cache'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
-    utils = require('../../utils'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit: models/post', function () {
-    let knexMock;
-
     before(function () {
         models.init();
     });
 
-    before(function () {
-        knexMock = new testUtils.mocks.knex();
-        knexMock.mock();
-    });
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
 
     beforeEach(function () {
         sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
@@ -33,10 +27,6 @@ describe('Unit: models/post', function () {
 
     afterEach(function () {
         sandbox.restore();
-    });
-
-    after(function () {
-        knexMock.unmock();
     });
 
     after(function () {
@@ -286,7 +276,7 @@ describe('Unit: models/post', function () {
                     // post will be updated, tags relation not
                     return models.Post.edit({
                         title: 'change',
-                        tags: post.related('tags').toJSON()
+                        tags: post.related('tags').attributes
                     }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
                 })
                 .then((post) => {
@@ -820,9 +810,10 @@ describe('Unit: models/post', function () {
             });
 
             describe('edit', function () {
-                beforeEach(function () {
-                    knexMock.resetDb();
+                beforeEach(testUtils.teardown);
+                beforeEach(testUtils.setup('users:roles', 'posts'));
 
+                beforeEach(function () {
                     // posts[3] has the following author_id
                     testUtils.DataGenerator.forKnex.posts[3].author_id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
 

@@ -10,18 +10,11 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Integration - Web - Site', function () {
-    let app, knexMock;
+    let app;
+
+    before(testUtils.setup('users:roles', 'posts'));
 
     describe('default routes.yaml', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
         before(function () {
             sandbox.stub(themeConfig, 'create').returns({
                 posts_per_page: 2
@@ -433,15 +426,6 @@ describe('Integration - Web - Site', function () {
 
     describe('extended routes.yaml (1): 2 collections', function () {
         before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
-        before(function () {
             sandbox.stub(settingsService, 'get').returns({
                 routes: {
                     '/': 'home'
@@ -576,15 +560,6 @@ describe('Integration - Web - Site', function () {
 
     describe('extended routes.yaml (2): static permalink route', function () {
         before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
-        before(function () {
             sandbox.stub(settingsService, 'get').returns({
                 routes: {},
 
@@ -692,15 +667,6 @@ describe('Integration - Web - Site', function () {
     describe('extended routes.yaml (3): templates', function () {
         describe('(3) (1)', function () {
             before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
-            });
-
-            after(function () {
-                knexMock.unmock();
-            });
-
-            before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
 
@@ -771,15 +737,6 @@ describe('Integration - Web - Site', function () {
 
         describe('(3) (2)', function () {
             before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
-            });
-
-            after(function () {
-                knexMock.unmock();
-            });
-
-            before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
 
@@ -831,15 +788,6 @@ describe('Integration - Web - Site', function () {
         });
 
         describe('(3) (3)', function () {
-            before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
-            });
-
-            after(function () {
-                knexMock.unmock();
-            });
-
             before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
@@ -912,15 +860,6 @@ describe('Integration - Web - Site', function () {
     });
 
     describe('extended routes.yaml (4): primary author permalink', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
         before(function () {
             sandbox.stub(settingsService, 'get').returns({
                 routes: {},
@@ -1006,15 +945,6 @@ describe('Integration - Web - Site', function () {
     });
 
     describe('extended routes.yaml (4): primary tag permalink', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
         before(function () {
             sandbox.stub(settingsService, 'get').returns({
                 routes: {},
