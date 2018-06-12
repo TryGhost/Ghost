@@ -257,7 +257,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlUtils, 'replacePermalink').returns('/url');
+            sandbox.stub(urlUtils, 'replacePermalink').returns('/url/');
 
             urlGenerator._generateUrl(resource).should.eql('/url/');
             urlUtils.replacePermalink.calledWith('/:slug/', resource.data).should.be.true();

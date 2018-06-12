@@ -133,13 +133,11 @@ class UrlGenerator {
     }
 
     /**
-     * We currently generate relative urls.
+     * We currently generate relative urls without subdirectory.
      */
     _generateUrl(resource) {
         const permalink = this.router.getPermalinks().getValue();
-        const url = localUtils.replacePermalink(permalink, resource.data);
-
-        return localUtils.createUrl(url, false, false, true);
+        return localUtils.replacePermalink(permalink, resource.data);
     }
 
     /**

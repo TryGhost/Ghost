@@ -595,7 +595,7 @@ describe('Integration - Web - Site', function () {
                     },
 
                     '/': {
-                        permalink: '/:slug'
+                        permalink: '/:slug/'
                     }
                 },
 

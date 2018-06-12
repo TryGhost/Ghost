@@ -172,7 +172,7 @@
         },
         "general": {
             "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
-            "maintenanceUrlService": "Ghost currently generates your blog urls. Please try again.",
+            "maintenanceUrlService": "Ghost is starting up, please wait a moment then retry.",
             "requiredOnFuture": "This will be required in future. Please see {link}",
             "internalError": "Something went wrong.",
             "jsonParse": "Could not parse JSON: {context}."
@@ -424,6 +424,10 @@
             },
             "webhooks": {
                 "webhookAlreadyExists": "A webhook for requested event with supplied target_url already exists."
+            },
+            "oembed": {
+                "noUrlProvided": "No url provided.",
+                "unknownProvider": "No provider found for supplied URL."
             }
         },
         "data": {

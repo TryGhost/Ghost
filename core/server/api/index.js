@@ -29,6 +29,7 @@ var _ = require('lodash'),
     exporter = require('../data/export'),
     slack = require('./slack'),
     webhooks = require('./webhooks'),
+    oembed = require('./oembed'),
 
     http,
     addHeaders,
@@ -317,7 +318,8 @@ module.exports = {
     themes: themes,
     invites: invites,
     redirects: redirects,
-    webhooks: webhooks
+    webhooks: webhooks,
+    oembed: oembed
 };
 
 /**
