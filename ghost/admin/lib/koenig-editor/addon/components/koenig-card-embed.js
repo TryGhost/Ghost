@@ -26,10 +26,10 @@ export default Component.extend({
     deselectCard() {},
     editCard() {},
     saveCard() {},
-    deleteCard() { },
-    moveCursorToNextSection() { },
-    moveCursorToPrevSection() { },
-    addParagraphAfterCard() { },
+    deleteCard() {},
+    moveCursorToNextSection() {},
+    moveCursorToPrevSection() {},
+    addParagraphAfterCard() {},
 
     init() {
         this._super(...arguments);
@@ -43,19 +43,8 @@ export default Component.extend({
         this._loadPayloadScript();
     },
 
-    willDestroyElement() {
-        this._super(...arguments);
-        this._detachHandlers();
-    },
-
     actions: {
-        onSelect() {
-            this._attachHandlers();
-        },
-
         onDeselect() {
-            this._detachHandlers();
-
             if (this.payload.url && !this.payload.html && !this.hasError) {
                 this.convertUrl.perform(this.payload.url);
             } else {
@@ -98,74 +87,6 @@ export default Component.extend({
                 postEditor.replaceSection(cardSection, p);
                 postEditor.insertTextWithMarkup(p.toRange().head, this.payload.url, [link]);
             });
-        }
-    },
-
-    _attachHandlers() {
-        if (!this._keypressHandler) {
-            this._keypressHandler = run.bind(this, this._handleKeypress);
-            window.addEventListener('keypress', this._keypressHandler);
-        }
-
-        if (!this._keydownHandler) {
-            this._keydownHandler = run.bind(this, this._handleKeydown);
-            window.addEventListener('keydown', this._keydownHandler);
-        }
-    },
-
-    _detachHandlers() {
-        window.removeEventListener('keypress', this._keypressHandler);
-        window.removeEventListener('keydown', this._keydownHandler);
-        this._keypressHandler = null;
-        this._keydownHandler = null;
-    },
-
-    // only fires if the card is selected, moves focus to the caption input so
-    // that it's possible to start typing without explicitly focusing the input
-    _handleKeypress(event) {
-        let captionInput = this.element.querySelector('[name="caption"]');
-
-        if (captionInput && captionInput !== document.activeElement) {
-            captionInput.value = `${captionInput.value}${event.key}`;
-            captionInput.focus();
-        }
-    },
-
-    // this will be fired for keydown events when the caption input is focused,
-    // we look for cursor movements or the enter key to defocus and trigger the
-    // corresponding editor behaviour
-    _handleKeydown(event) {
-        let captionInput = this.element.querySelector('[name="caption"]');
-
-        if (event.target === captionInput) {
-            if (event.key === 'Escape') {
-                captionInput.blur();
-                return;
-            }
-
-            if (event.key === 'Enter') {
-                captionInput.blur();
-                this.addParagraphAfterCard();
-                event.preventDefault();
-                return;
-            }
-
-            let selectionStart = captionInput.selectionStart;
-            let length = captionInput.value.length;
-
-            if ((event.key === 'ArrowUp' || event.key === 'ArrowLeft') && selectionStart === 0) {
-                captionInput.blur();
-                this.moveCursorToPrevSection();
-                event.preventDefault();
-                return;
-            }
-
-            if ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && selectionStart === length) {
-                captionInput.blur();
-                this.moveCursorToNextSection();
-                event.preventDefault();
-                return;
-            }
         }
     },
 

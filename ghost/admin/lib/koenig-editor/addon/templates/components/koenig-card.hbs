@@ -4,7 +4,12 @@
     {{/sticky-element}}
 {{/if}}
 
-{{yield}}
+{{yield (hash captionInput=(component "koenig-caption-input"
+    captureInput=isSelected
+    addParagraphAfterCard=addParagraphAfterCard
+    moveCursorToPrevSection=moveCursorToPrevSection
+    moveCursorToNextSection=moveCursorToNextSection
+))}}
 
 {{#if toolbar}}
     <ul data-toolbar="true" class="kg-action-bar bg-darkgrey-d1 inline-flex pa0 ma0 pl1 pr1 nl1 list br3 shadow-2 items-center absolute white sans-serif f8 fw6 tracked-2 anim-fast-bezier z-999 {{if showToolbar "" "o-0 pop-down"}}" style={{toolbarStyle}}>

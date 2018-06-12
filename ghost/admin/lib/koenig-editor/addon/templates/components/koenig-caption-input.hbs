@@ -1,0 +1,10 @@
+<input
+    placeholder={{if isFocused "" placeholder}}
+    value={{caption}}
+    type="text"
+    class="miw-100 tc bn form-text bg-transparent"
+    name="caption"
+    oninput={{action update value="target.value"}}
+    onfocus={{action (mut isFocused) true}}
+    onblur={{action (mut isFocused) false}}
+>
