@@ -73,6 +73,22 @@ describe('Unit: services/url/UrlService', function () {
         urlService.urlGenerators.length.should.eql(1);
     });
 
+    it('fn: getResourceById', function (done) {
+        urlService.urls.getByResourceId.withArgs('id123').returns({resource: true});
+        urlService.getResourceById('id123').should.eql(true);
+
+        urlService.urls.getByResourceId.withArgs('id12345').returns(null);
+
+        try {
+            urlService.getResourceById('id12345').should.eql(true);
+            done(new Error('expected error'));
+        } catch (err) {
+            should.exist(err);
+            err.code.should.eql('URLSERVICE_RESOURCE_NOT_FOUND');
+            done();
+        }
+    });
+
     describe('fn: getResource', function () {
         it('no resource for url found', function () {
             urlService.finished = false;
@@ -235,6 +251,60 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {absolute: true, secure: true});
+            urlService.utils.createUrl.calledWith('/post/', true, true).should.be.true();
+        });
+
+        it('not found: withSubdirectory', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns(null);
+            urlService.getUrlByResourceId(1, {withSubdirectory: true});
+            urlService.utils.createUrl.calledWith('/404/', false, undefined).should.be.true();
+        });
+
+        it('not found: withSubdirectory + secure', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns(null);
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true});
+            urlService.utils.createUrl.calledWith('/404/', false, true).should.be.true();
+        });
+
+        it('not found: withSubdirectory + secure + absolute', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns(null);
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true, absolute: true});
+            urlService.utils.createUrl.calledWith('/404/', true, true).should.be.true();
+        });
+
+        it('found: withSubdirectory', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1, {withSubdirectory: true});
+            urlService.utils.createUrl.calledWith('/post/', false, undefined).should.be.true();
+        });
+
+        it('found: withSubdirectory + secure', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true});
+            urlService.utils.createUrl.calledWith('/post/', false, true).should.be.true();
+        });
+
+        it('found: withSubdirectory + secure + absolute', function () {
+            urlService.utils = sandbox.stub();
+            urlService.utils.createUrl = sandbox.stub();
+
+            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true, absolute: true});
             urlService.utils.createUrl.calledWith('/post/', true, true).should.be.true();
         });
     });

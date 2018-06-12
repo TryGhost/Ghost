@@ -50,7 +50,7 @@ module.exports = function entryController(req, res, next) {
              *
              * That's why we have to check against the router type.
              */
-            if (urlService.getResource(post.url).config.type !== res.locals.routerOptions.type) {
+            if (urlService.getResourceById(post.id).config.type !== res.locals.routerOptions.type) {
                 debug('not my resource type');
                 return next();
             }
@@ -60,20 +60,15 @@ module.exports = function entryController(req, res, next) {
              *       This should only happen if you have date permalinks enabled and you change
              *       your publish date.
              *
-             * @NOTE
+             * @NOTE:
              *
-             * The resource url always contains the subdirectory. This was different before dynamic routing.
-             * That's why we have to use the original url, which contains the sub-directory.
-             *
-             * @NOTE
-             *
-             * post.url contains the subdirectory if configured.
+             * Ensure we redirect to the correct post url including subdirectory.
              */
-            if (post.url !== url.parse(req.originalUrl).pathname) {
+            if (post.url !== req.path) {
                 debug('redirect');
 
                 return urlService.utils.redirect301(res, url.format({
-                    pathname: post.url,
+                    pathname: urlService.utils.createUrl(post.url, false, false, true),
                     search: url.parse(req.originalUrl).search
                 }));
             }

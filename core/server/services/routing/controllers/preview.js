@@ -30,7 +30,7 @@ module.exports = function previewController(req, res, next) {
             }
 
             if (post.status === 'published') {
-                return urlService.utils.redirect301(res, urlService.getUrlByResourceId(post.id));
+                return urlService.utils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
             helpers.secure(req, post);
