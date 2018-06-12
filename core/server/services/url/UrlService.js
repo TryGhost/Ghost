@@ -125,6 +125,19 @@ class UrlService {
         return objects[0].resource;
     }
 
+    getResourceById(resourceId) {
+        const object = this.urls.getByResourceId(resourceId);
+
+        if (!object) {
+            throw new common.errors.InternalServerError({
+                message: 'Resource not found.',
+                code: 'URLSERVICE_RESOURCE_NOT_FOUND'
+            });
+        }
+
+        return object.resource;
+    }
+
     hasFinished() {
         return this.finished;
     }
@@ -150,11 +163,19 @@ class UrlService {
                 return this.utils.createUrl(obj.url, options.absolute, options.secure);
             }
 
+            if (options.withSubdirectory) {
+                return this.utils.createUrl(obj.url, false, options.secure, true);
+            }
+
             return obj.url;
         }
 
         if (options.absolute) {
             return this.utils.createUrl('/404/', options.absolute, options.secure);
+        }
+
+        if (options.withSubdirectory) {
+            return this.utils.createUrl('/404/', false, options.secure);
         }
 
         return '/404/';

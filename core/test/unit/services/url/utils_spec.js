@@ -20,6 +20,30 @@ describe('Url', function () {
         sandbox.restore();
     });
 
+    describe('absoluteToRelative', function () {
+        it('default', function () {
+            urlService.utils.absoluteToRelative('http://myblog.com/test/').should.eql('/test/');
+        });
+
+        it('with subdir', function () {
+            urlService.utils.absoluteToRelative('http://myblog.com/blog/test/').should.eql('/blog/test/');
+        });
+
+        it('with subdir, but request without', function () {
+            configUtils.set('url', 'http://myblog.com/blog/');
+
+            urlService.utils.absoluteToRelative('http://myblog.com/blog/test/', {withoutSubdirectory: true})
+                .should.eql('/test/');
+        });
+
+        it('with subdir, but request without', function () {
+            configUtils.set('url', 'http://myblog.com/blog');
+
+            urlService.utils.absoluteToRelative('http://myblog.com/blog/test/', {withoutSubdirectory: true})
+                .should.eql('/test/');
+        });
+    });
+
     describe('getProtectedSlugs', function () {
         it('defaults', function () {
             urlService.utils.getProtectedSlugs().should.eql(['ghost', 'rss', 'amp']);

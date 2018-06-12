@@ -30,7 +30,7 @@ module.exports = function author(options) {
     if (this.author && this.author.name) {
         if (autolink) {
             output = templates.link({
-                url: urlService.getUrlByResourceId(this.author.id),
+                url: urlService.getUrlByResourceId(this.author.id, {withSubdirectory: true}),
                 text: _.escape(this.author.name)
             });
         } else {

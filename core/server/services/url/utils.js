@@ -408,9 +408,24 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl) {
     return htmlContent;
 }
 
-function absoluteToRelative(urlToModify) {
+function absoluteToRelative(urlToModify, options) {
+    options = options || {};
+
     const urlObj = url.parse(urlToModify);
-    return urlObj.pathname;
+    const relativePath = urlObj.pathname;
+
+    if (options.withoutSubdirectory) {
+        const subDir = getSubdir();
+
+        if (!subDir) {
+            return relativePath;
+        }
+
+        const subDirRegex = new RegExp('^' + subDir);
+        return relativePath.replace(subDirRegex, '');
+    }
+
+    return relativePath;
 }
 
 function deduplicateDoubleSlashes(url) {

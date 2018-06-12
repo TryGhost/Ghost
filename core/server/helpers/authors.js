@@ -31,7 +31,7 @@ module.exports = function authors(options) {
     function createAuthorsList(authors) {
         function processAuthor(author) {
             return autolink ? templates.link({
-                url: urlService.getUrlByResourceId(author.id),
+                url: urlService.getUrlByResourceId(author.id, {withSubdirectory: true}),
                 text: _.escape(author.name)
             }) : _.escape(author.name);
         }

@@ -35,7 +35,6 @@ function _renderer(req, res, next) {
 function getPostData(req, res, next) {
     req.body = req.body || {};
 
-    const urlWithSubdirectoryWithoutAmp = req.originalUrl.match(/(.*?\/)amp/)[1];
     const urlWithoutSubdirectoryWithoutAmp = res.locals.relativeUrl.match(/(.*?\/)amp/)[1];
 
     /**
@@ -58,7 +57,7 @@ function getPostData(req, res, next) {
      *
      * The challenge is to design different types of apps e.g. extensions of routers, standalone pages etc.
      */
-    const permalinks = urlService.getPermalinkByUrl(urlWithSubdirectoryWithoutAmp, {withUrlOptions: true});
+    const permalinks = urlService.getPermalinkByUrl(urlWithoutSubdirectoryWithoutAmp, {withUrlOptions: true});
 
     if (!permalinks) {
         return next(new common.errors.NotFoundError({

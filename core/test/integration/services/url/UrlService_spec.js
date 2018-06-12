@@ -542,7 +542,7 @@ describe('Unit: services/url/UrlService', function () {
         let router1, router2, router3, router4, router5;
 
         beforeEach(function (done) {
-            configUtils.set('url', 'http://localhost:2388/blog');
+            configUtils.set('url', 'http://localhost:2388/blog/');
 
             urlService = new UrlService();
 
@@ -694,44 +694,44 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             let url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[0].id);
-            url.should.eql('/blog/collection/2015/html-ipsum/');
+            url.should.eql('/collection/2015/html-ipsum/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[1].id);
-            url.should.eql('/blog/collection/2015/ghostly-kitchen-sink/');
+            url.should.eql('/collection/2015/ghostly-kitchen-sink/');
 
             // featured
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.posts[2].id);
-            url.should.eql('/blog/podcast/short-and-sweet/');
+            url.should.eql('/podcast/short-and-sweet/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[0].id);
-            url.should.eql('/blog/category/kitchen-sink/');
+            url.should.eql('/category/kitchen-sink/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[1].id);
-            url.should.eql('/blog/category/bacon/');
+            url.should.eql('/category/bacon/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[2].id);
-            url.should.eql('/blog/category/chorizo/');
+            url.should.eql('/category/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/blog/category/pollo/');
+            url.should.eql('/category/pollo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/blog/category/injection/');
+            url.should.eql('/category/injection/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
-            url.should.eql('/blog/persons/joe-bloggs/');
+            url.should.eql('/persons/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/blog/persons/smith-wellingsworth/');
+            url.should.eql('/persons/smith-wellingsworth/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/blog/persons/jimothy-bogendath/');
+            url.should.eql('/persons/jimothy-bogendath/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
-            url.should.eql('/blog/persons/slimer-mcectoplasm/');
+            url.should.eql('/persons/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/blog/persons/contributor/');
+            url.should.eql('/persons/contributor/');
         });
     });
 });

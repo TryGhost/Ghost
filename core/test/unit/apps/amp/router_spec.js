@@ -137,7 +137,7 @@ describe('Unit - apps/amp/lib/router', function () {
             req.originalUrl = '/blog/welcome/amp';
             res.locals.relativeUrl = '/welcome/amp';
 
-            urlService.getPermalinkByUrl.withArgs('/blog/welcome/').returns('/:slug/');
+            urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
             helpers.postLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).resolves({
                 post: post

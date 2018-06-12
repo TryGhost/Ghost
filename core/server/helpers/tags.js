@@ -30,7 +30,7 @@ module.exports = function tags(options) {
     function createTagList(tags) {
         function processTag(tag) {
             return autolink ? templates.link({
-                url: urlService.getUrlByResourceId(tag.id),
+                url: urlService.getUrlByResourceId(tag.id, {withSubdirectory: true}),
                 text: _.escape(tag.name)
             }) : _.escape(tag.name);
         }
