@@ -3,13 +3,16 @@
     isSelected=isSelected
     isEditing=isEditing
     selectCard=(action selectCard)
-    onSelect=(action "onSelect")
     deselectCard=(action deselectCard)
     onDeselect=(action "onDeselect")
     editCard=(action editCard)
     toolbar=toolbar
     hasEditMode=false
     showSelectedOutline=payload.html
+    addParagraphAfterCard=addParagraphAfterCard
+    moveCursorToPrevSection=moveCursorToPrevSection
+    moveCursorToNextSection=moveCursorToNextSection
+    as |card|
 }}
     {{#if payload.html}}
         <div class="kg-card-hover">
@@ -19,16 +22,11 @@
             </div>
 
             {{#if (or isSelected payload.caption)}}
-                <figcaption class="{{kg-style "figcaption"}} w-100">
-                    <input
-                        type="text"
-                        placeholder="Type caption for embed (optional)"
-                        class="miw-100 tc bn form-text bg-transparent"
-                        name="caption"
-                        value={{payload.caption}}
-                        oninput={{action "updateCaption" value="target.value"}}
-                    >
-                </figcaption>
+                {{card.captionInput
+                    caption=payload.caption
+                    update=(action "updateCaption")
+                    placeholder="Type caption for embed (optional)"
+                }}
             {{/if}}
         </div>
     {{else}}
