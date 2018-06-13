@@ -1,4 +1,4 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     Promise = require('bluebird'),
     SchedulingBase = require('./SchedulingBase'),
     common = require('../../lib/common'),
@@ -7,10 +7,8 @@ var _ = require('lodash'),
 exports.createAdapter = function (options) {
     options = options || {};
 
-    var adapter = null,
-        activeAdapter = options.active,
-        internalPath = options.internalPath,
-        contentPath = options.contentPath;
+    let adapter = null;
+    const {active: activeAdapter, internalPath, contentPath} = options;
 
     if (!activeAdapter) {
         return Promise.reject(new common.errors.IncorrectUsageError({
@@ -29,7 +27,7 @@ exports.createAdapter = function (options) {
         adapter = new (require(activeAdapter))(options);
     } catch (err) {
         if (err.code !== 'MODULE_NOT_FOUND') {
-            return Promise.reject(new common.errors.IncorrectUsageError({err: err}));
+            return Promise.reject(new common.errors.IncorrectUsageError({err}));
         }
     }
 
@@ -41,12 +39,12 @@ exports.createAdapter = function (options) {
     } catch (err) {
         // CASE: only throw error if module does exist
         if (err.code !== 'MODULE_NOT_FOUND') {
-            return Promise.reject(new common.errors.IncorrectUsageError({err: err}));
+            return Promise.reject(new common.errors.IncorrectUsageError({err}));
             // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
         } else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
             return Promise.reject(new common.errors.IncorrectUsageError({
-                err: err,
-                help: 'Please check the imports are valid in ' + contentPath + activeAdapter
+                err,
+                help: `Please check the imports are valid in ${contentPath}${activeAdapter}`
             }));
         }
     }
@@ -60,11 +58,11 @@ exports.createAdapter = function (options) {
         // CASE: only throw error if module does exist
         if (err.code === 'MODULE_NOT_FOUND') {
             return Promise.reject(new common.errors.IncorrectUsageError({
-                message: 'We cannot find your adapter in: ' + contentPath + ' or: ' + internalPath
+                message: `We cannot find your adapter in: ${contentPath} or: ${internalPath}`
             }));
         }
 
-        return Promise.reject(new common.errors.IncorrectUsageError({err: err}));
+        return Promise.reject(new common.errors.IncorrectUsageError({err}));
     }
 
     if (!(adapter instanceof SchedulingBase)) {
