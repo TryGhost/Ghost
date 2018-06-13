@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-card-embed';
+import noframe from 'noframe.js';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -40,8 +41,20 @@ export default Component.extend({
 
     didInsertElement() {
         this._super(...arguments);
-        this._loadPayloadScript();
+        this._populateIframe();
         this._focusInput();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+
+        run.cancel(this._resizeDebounce);
+
+        if (this._iframeMutationObserver) {
+            this._iframeMutationObserver.disconnect();
+        }
+
+        window.removeEventListener('resize', this._windowResizeHandler);
     },
 
     actions: {
@@ -113,7 +126,7 @@ export default Component.extend({
             set(this.payload, 'type', response.type);
             this.saveCard(this.payload, false);
 
-            run.schedule('afterRender', this, this._loadPayloadScript);
+            run.schedule('afterRender', this, this._populateIframe);
         } catch (err) {
             this.set('hasError', true);
         }
@@ -127,42 +140,116 @@ export default Component.extend({
         }
     },
 
-    // some oembeds will have a script tag but it won't automatically run
-    // due to the way Ember renders the card components. Grab the script
-    // element and push a new one to force the browser to download+run it
-    _loadPayloadScript() {
-        let oldScript = this.element.querySelector('script');
-        if (oldScript) {
-            let parent = oldScript.parentElement;
-            let newScript = document.createElement('script');
-            newScript.type = 'text/javascript';
+    _populateIframe() {
+        let iframe = this.element.querySelector('iframe');
+        if (iframe) {
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(this.payload.html);
+            iframe.contentWindow.document.close();
 
-            if (oldScript.src) {
-                // hide the original embed html to avoid ugly transitions as the
-                // script runs (at least on reasonably good network and cpu)
-                let embedElement = this.element.querySelector('[data-kg-embed]');
-                embedElement.style.display = 'none';
+            iframe.contentDocument.body.style.display = 'flex';
+            iframe.contentDocument.body.style.margin = '0';
+            iframe.contentDocument.body.style.justifyContent = 'center';
 
-                newScript.src = oldScript.src;
-
-                // once the script has loaded, wait a little while for it to do it's
-                // thing before making everything visible again
-                newScript.onload = run.bind(this, function () {
-                    run.later(this, function () {
-                        embedElement.style.display = null;
-                    }, 500);
-                });
-
-                newScript.onerror = run.bind(this, function () {
-                    embedElement.style.display = null;
-                });
-            } else {
-                newScript.innerHTML = oldScript.innerHTML;
+            let nestedIframe = iframe.contentDocument.body.firstChild;
+            if (nestedIframe.nodeName === 'IFRAME') {
+                noframe(nestedIframe, '[data-kg-embed]');
+                this._resizeIframe(iframe);
             }
 
-            oldScript.remove();
-            parent.appendChild(newScript);
+            this._iframeResizeHandler = run.bind(this, this._resizeIframe, iframe);
+            this._iframeMutationObserver = this._createMutationObserver(
+                iframe.contentWindow.document,
+                this._iframeResizeHandler
+            );
+
+            this._setupWindowResizeHandler(iframe);
         }
+    },
+
+    _createMutationObserver(target, callback) {
+        function addImageLoadListeners(mutation) {
+            function addImageLoadListener(element) {
+                if (element.complete === false) {
+                    element.addEventListener('load', imageEventTriggered, false);
+                    element.addEventListener('error', imageEventTriggered, false);
+                    imageElements.push(element);
+                }
+            }
+
+            if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                addImageLoadListener(mutation.target);
+            } else if (mutation.type === 'childList') {
+                Array.prototype.forEach.call(
+                    mutation.target.querySelectorAll('img'),
+                    addImageLoadListener
+                );
+            }
+        }
+
+        function removeFromElements(element) {
+            imageElements.splice(imageElements.indexOf(element), 1);
+        }
+
+        function removeImageLoadListener(element) {
+            element.removeEventListener('load', imageEventTriggered, false);
+            element.removeEventListener('error', imageEventTriggered, false);
+            removeFromElements(element);
+        }
+
+        function imageEventTriggered(event) {
+            removeImageLoadListener(event.target);
+            callback();
+        }
+
+        function mutationObserved(mutations) {
+            callback();
+
+            // deal with async image loads when tags are injected into the page
+            mutations.forEach(addImageLoadListeners);
+        }
+
+        function createMutationObserver(target) {
+            let config = {
+                attributes: true,
+                attributeOldValue: false,
+                characterData: true,
+                characterDataOldValue: false,
+                childList: true,
+                subtree: true
+            };
+
+            let observer = new MutationObserver(mutationObserved);
+            observer.observe(target, config); // eslint-disable-line ghost/ember/no-observers
+            return observer;
+        }
+
+        let imageElements = [];
+        let observer = createMutationObserver(target);
+
+        return {
+            disconnect() {
+                if ('disconnect' in observer) {
+                    observer.disconnect(); // eslint-disable-line ghost/ember/no-observers
+                    imageElements.forEach(removeImageLoadListener);
+                }
+            }
+        };
+    },
+
+    _resizeIframe(iframe) {
+        this._resizeDebounce = run.debounce(this, this.__debouncedResizeIframe, iframe, 66);
+    },
+
+    __debouncedResizeIframe(iframe) {
+        iframe.style.height = null;
+        let height = iframe.contentDocument.scrollingElement.scrollHeight;
+        iframe.style.height = `${height}px`;
+    },
+
+    _setupWindowResizeHandler(iframe) {
+        this._windowResizeHandler = run.bind(this, this._resizeIframe, iframe);
+        window.addEventListener('resize', this._windowResizeHandler, {passive: true});
     },
 
     _deleteIfEmpty() {

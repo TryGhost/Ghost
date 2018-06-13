@@ -138,6 +138,11 @@ module.exports = function (defaults) {
     app.import('node_modules/mobiledoc-kit/dist/amd/mobiledoc-kit.js');
     app.import('node_modules/mobiledoc-kit/dist/amd/mobiledoc-kit.map');
     app.import('node_modules/simplemde/debug/simplemde.js');
+    app.import('node_modules/reframe.js/dist/noframe.es.js', {
+        using: [
+            {transformation: 'es6', as: 'noframe.js'}
+        ]
+    });
 
     // pull things we rely on via lazy-loading into the test-support.js file so
     // that tests don't break when running via http://localhost:4200/tests
