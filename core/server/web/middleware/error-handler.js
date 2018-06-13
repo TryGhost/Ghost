@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     hbs = require('express-hbs'),
+    debug = require('ghost-ignition').debug('error-handler'),
     config = require('../../config'),
     common = require('../../lib/common'),
     helpers = require('../../services/routing/helpers'),
@@ -24,6 +25,8 @@ _private.createHbsEngine = function createHbsEngine() {
  * @TODO: support multiple errors within one single error, see https://github.com/TryGhost/Ghost/issues/7116#issuecomment-252231809
  */
 _private.prepareError = function prepareError(err, req, res, next) {
+    debug(err);
+
     if (_.isArray(err)) {
         err = err[0];
     }
