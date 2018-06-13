@@ -10,10 +10,29 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     EventEmitter = require('events').EventEmitter,
     express = require('express'),
     _ = require('lodash'),
+    setPrototypeOf = require('setprototypeof'),
     security = require('../../lib/security'),
     urlService = require('../url'),
     // This the route registry for the whole site
     registry = require('./registry');
+
+function GhostRouter(options) {
+    const router = express.Router(options);
+
+    function innerRouter(req, res, next) {
+        return innerRouter.handle(req, res, next);
+    }
+
+    setPrototypeOf(innerRouter, router);
+
+    Object.defineProperty(innerRouter, 'name', {
+        value: options.parent.name,
+        writable: false
+    });
+
+    innerRouter.parent = options.parent;
+    return innerRouter;
+}
 
 /**
  * We expose a very limited amount of express.Router via specialist methods
@@ -25,7 +44,7 @@ class ParentRouter extends EventEmitter {
         this.identifier = security.identifier.uid(10);
 
         this.name = name;
-        this._router = express.Router({mergeParams: true});
+        this._router = GhostRouter({mergeParams: true, parent: this});
     }
 
     mountRouter(path, router) {
@@ -61,8 +80,6 @@ class ParentRouter extends EventEmitter {
     }
 
     router() {
-        // @TODO: should this just be the handler that is returned?
-        // return this._router.handle.bind(this._router);
         return this._router;
     }
 
