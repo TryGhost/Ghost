@@ -9,13 +9,16 @@ const routingService = require('../../services/routing');
  * @TODO: We are currently investigating this.
  */
 function getRssUrl(data, absolute) {
-    return routingService
-        .registry
-        .getFirstCollectionRouter()
-        .getRssUrl({
-            secure: data.secure,
-            absolute: absolute
-        });
+    const firstCollection = routingService.registry.getFirstCollectionRouter();
+
+    if (!firstCollection) {
+        return null;
+    }
+
+    return firstCollection.getRssUrl({
+        secure: data.secure,
+        absolute: absolute
+    });
 }
 
 module.exports = getRssUrl;
