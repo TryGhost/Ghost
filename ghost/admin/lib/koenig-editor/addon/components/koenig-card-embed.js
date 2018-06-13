@@ -41,6 +41,7 @@ export default Component.extend({
     didInsertElement() {
         this._super(...arguments);
         this._loadPayloadScript();
+        this._focusInput();
     },
 
     actions: {
@@ -117,6 +118,14 @@ export default Component.extend({
             this.set('hasError', true);
         }
     }),
+
+    _focusInput() {
+        let urlInput = this.element.querySelector('[name="url"]');
+
+        if (urlInput) {
+            urlInput.focus();
+        }
+    },
 
     // some oembeds will have a script tag but it won't automatically run
     // due to the way Ember renders the card components. Grab the script
