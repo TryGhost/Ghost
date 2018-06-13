@@ -1,5 +1,5 @@
 {{#koenig-card
-    class="flex flex-column"
+    class="flex flex-column nl2 nr2"
     isSelected=isSelected
     isEditing=isEditing
     selectCard=(action selectCard)
@@ -17,7 +17,7 @@
     {{#if payload.html}}
         <div class="kg-card-hover">
             <div class="koenig-embed-{{payload.type}} flex justify-center relative" data-kg-embed>
-                {{{payload.html}}}
+                <iframe class="bn miw-100" scrolling="no"></iframe>
                 <div class="koenig-card-click-overlay ba b--white" data-kg-overlay></div>
             </div>
 

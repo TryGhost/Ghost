@@ -3369,6 +3369,12 @@ ember-cli-dependency-checker@2.1.1:
     resolve "^1.5.0"
     semver "^5.3.0"
 
+ember-cli-es6-transform@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/ember-cli-es6-transform/-/ember-cli-es6-transform-0.0.3.tgz#99238305c72f533cc1cd3c85b15c6d7a842b8fdf"
+  dependencies:
+    ember-cli-babel "^6.6.0"
+
 ember-cli-eslint@4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/ember-cli-eslint/-/ember-cli-eslint-4.2.3.tgz#2844d3f5e8184f19b2d7132ba99eb0b370b55598"
@@ -8631,6 +8637,10 @@ reduce-css-calc@^2.0.0:
   dependencies:
     css-unit-converter "^1.1.1"
     postcss-value-parser "^3.3.0"
+
+reframe.js@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-2.2.1.tgz#c4df52c815152b57458843d53d0246cb6b954d59"
 
 regenerate@^1.2.1:
   version "1.4.0"
