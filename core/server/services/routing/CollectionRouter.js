@@ -9,8 +9,12 @@ const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
 
 class CollectionRouter extends ParentRouter {
-    constructor(indexRoute, object) {
+    constructor(indexRoute, object, options) {
+        options = options || {};
+
         super('CollectionRouter');
+
+        this.firstCollection = options.firstCollection;
 
         // NOTE: index/parent route e.g. /, /podcast/, /magic/ ;)
         this.route = {
@@ -47,6 +51,13 @@ class CollectionRouter extends ParentRouter {
 
             return this.permalinks.value;
         };
+
+        // the main post listening collection get's the index context
+        if (this.firstCollection) {
+            this.context = ['index'];
+        } else {
+            this.context = [];
+        }
 
         debug(this.route, this.permalinks);
 
@@ -90,7 +101,7 @@ class CollectionRouter extends ParentRouter {
             filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             type: this.getType(),
-            context: [],
+            context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
             identifier: this.identifier
