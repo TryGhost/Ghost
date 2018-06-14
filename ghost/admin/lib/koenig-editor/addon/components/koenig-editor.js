@@ -5,7 +5,7 @@
 
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
-import EmberObject, {computed} from '@ember/object';
+import EmberObject, {computed, get} from '@ember/object';
 import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import defaultAtoms from '../options/atoms';
@@ -25,6 +25,7 @@ import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {getOwner} from '@ember/application';
 import {guidFor} from '@ember/object/internals';
+import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
@@ -376,7 +377,7 @@ export default Component.extend({
         }
 
         this.set('editor', editor);
-        this.didCreateEditor(editor);
+        this.didCreateEditor(this);
     },
 
     didInsertElement() {
@@ -573,6 +574,28 @@ export default Component.extend({
                 postEditor.setRange(newPara.tailPosition());
             });
         }
+    },
+
+    /* public interface ----------------------------------------------------- */
+    // TODO: find a better way to expose this?
+
+    cleanup() {
+        this.componentCards.forEach((card) => {
+            if (!card.koenigOptions.deleteIfEmpty) {
+                return;
+            }
+
+            let shouldDelete = card.koenigOptions.deleteIfEmpty;
+
+            if (typeof shouldDelete === 'string') {
+                let payloadKey = shouldDelete;
+                shouldDelete = card => isBlank(get(card, payloadKey));
+            }
+
+            if (shouldDelete(card)) {
+                this.deleteCard(card, NO_CURSOR_MOVEMENT);
+            }
+        });
     },
 
     /* mobiledoc event handlers --------------------------------------------- */

@@ -18,6 +18,7 @@ export default Component.extend({
     onTitleChange() {},
     onTitleBlur() {},
     onBodyChange() {},
+    onEditorCreated() {},
 
     actions: {
         focusTitle() {
@@ -98,8 +99,9 @@ export default Component.extend({
 
         /* body related actions --------------------------------------------- */
 
-        onEditorCreated(editor) {
-            this._setupEditor(editor);
+        onEditorCreated(koenig) {
+            this._setupEditor(koenig);
+            this.onEditorCreated(koenig);
         },
 
         onBodyChange(newMobiledoc) {
@@ -111,13 +113,14 @@ export default Component.extend({
 
     /* internal methods ----------------------------------------------------- */
 
-    _setupEditor(editor) {
+    _setupEditor(koenig) {
         let component = this;
 
-        this._editor = editor;
+        this._koenig = koenig;
+        this._editor = koenig.editor;
 
         // focus the title when pressing SHIFT+TAB
-        editor.registerKeyCommand({
+        this._editor.registerKeyCommand({
             str: 'SHIFT+TAB',
             run() {
                 component.send('focusTitle');
