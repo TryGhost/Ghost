@@ -6,6 +6,10 @@ module.exports = {
         // let version = opts.options.version;
         let dom = opts.env.dom;
 
+        if (!payload.src) {
+            return '';
+        }
+
         let figure = dom.createElement('figure');
         figure.setAttribute('class', 'kg-image-card');
 
