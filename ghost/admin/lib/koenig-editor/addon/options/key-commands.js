@@ -76,7 +76,8 @@ export const DEFAULT_KEY_COMMANDS = [{
 
         // if the cursor is at the beginning of the doc and on a blank paragraph,
         // then delete or re-create the paragraph to remove formatting
-        let isFirstSection = section === section.parent.sections.head;
+        let sections = section.isListItem ? section.parent.parent.sections : section.parent.sections;
+        let isFirstSection = section === sections.head;
         if (isFirstSection && isCollapsed && offset === 0 && (section.isBlank || section.text === '')) {
             editor.run((postEditor) => {
                 // remove the current section
