@@ -273,6 +273,18 @@ export default Controller.extend({
         // TODO: this should be part of the koenig component
         setWordcount(count) {
             this.set('wordcount', count);
+        },
+
+        setKoenigEditor(koenig) {
+            this._koenig = koenig;
+
+            // remove any empty cards when displaying a draft post
+            // - empty cards may be left in draft posts due to autosave occuring
+            //   whilst an empty card is present then the user closing the browser
+            //   or refreshing the page
+            if (this.post.isDraft) {
+                this._koenig.cleanup();
+            }
         }
     },
 
@@ -315,6 +327,14 @@ export default Controller.extend({
                 } else {
                     status = 'draft';
                 }
+            }
+        }
+
+        // ensure we remove any blank cards when performing a full save
+        if (!options.backgroundSave) {
+            if (this._koenig) {
+                this._koenig.cleanup();
+                this.set('hasDirtyAttributes', true);
             }
         }
 
@@ -571,6 +591,14 @@ export default Controller.extend({
         // has already been called as in the `leaveEditor` action
         if (!post) {
             return;
+        }
+
+        // clean up blank cards when leaving the editor if we have a draft post
+        // - blank cards could be left around due to autosave triggering whilst
+        //   a blank card is present then the user attempting to leave
+        // - will mark the post as dirty so it gets saved when transitioning
+        if (this._koenig && post.isDraft) {
+            this._koenig.cleanup();
         }
 
         let hasDirtyAttributes = this.get('hasDirtyAttributes');
