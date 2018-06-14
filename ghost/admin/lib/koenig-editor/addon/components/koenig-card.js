@@ -161,9 +161,13 @@ export default Component.extend({
         this._fireWhenRendered(this._showToolbar);
         this._showToolbar();
         this.onSelect();
+
+        this._onClickHandler = run.bind(this, this._handleClick);
+        window.addEventListener('click', this._onClickHandler);
     },
 
     _onDeselect() {
+        window.removeEventListener('click', this._onClickHandler);
         this._hideToolbar();
         this.onDeselect();
     },
@@ -171,14 +175,11 @@ export default Component.extend({
     _onEnterEdit() {
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
-        this._onClickHandler = run.bind(this, this._handleClick);
-        window.addEventListener('click', this._onClickHandler);
         this.onEnterEdit();
     },
 
     _onLeaveEdit() {
         window.removeEventListener('keydown', this._onKeydownHandler);
-        window.removeEventListener('click', this._onClickHandler);
         this.onLeaveEdit();
     },
 
@@ -222,10 +223,17 @@ export default Component.extend({
     // exit edit mode any time we have a click outside of the card unless it's
     // a click inside one of our modals or on the plus menu
     _handleClick({target, path}) {
+        // if the editor element is clicked then cursor placement will deselect
+        // or keep this card selected as necessary
+        if (target === this.editor.element) {
+            return;
+        }
+
         let searchPath = function (selector) {
             return element => element.closest && element.closest(selector);
         };
 
+        // check if the click was in the card, on the plus menu, or on a modal
         if (this.element.contains(target)
             || path.find(searchPath('[data-kg="plus-menu"]'))
             || path.find(searchPath('.liquid-destination'))) {
