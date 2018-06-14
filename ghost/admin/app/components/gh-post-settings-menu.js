@@ -40,15 +40,19 @@ export default Component.extend(SettingsMenuMixin, {
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     facebookImage: or('post.ogImage', 'post.featureImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
-    seoTitle: or('metaTitleScratch', 'post.titleScratch'),
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
+    seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
+        return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
+    }),
+
     seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.get('metaDescriptionScratch') || '';
         let mobiledoc = this.get('post.scratch');
-        let markdown = mobiledoc.cards && mobiledoc.cards[0][1].markdown;
+        let [markdownCard] = mobiledoc.cards;
+        let markdown = markdownCard && markdownCard[1] && markdownCard[1].markdown;
         let placeholder;
 
         if (metaDescription) {
