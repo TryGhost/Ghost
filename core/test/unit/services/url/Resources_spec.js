@@ -9,16 +9,16 @@ const Resources = require('../../../../server/services/url/Resources');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/Resources', function () {
-    let knexMock, onEvents, emitEvents, resources, queue;
+    let onEvents, emitEvents, resources, queue;
 
     before(function () {
         models.init();
     });
 
-    beforeEach(function () {
-        knexMock = new testUtils.mocks.knex();
-        knexMock.mock();
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
 
+    beforeEach(function () {
         onEvents = {};
         emitEvents = {};
 
@@ -38,7 +38,6 @@ describe('Unit: services/url/Resources', function () {
     afterEach(function () {
         sandbox.restore();
         resources.reset();
-        knexMock.unmock();
     });
 
     it('db.ready', function (done) {

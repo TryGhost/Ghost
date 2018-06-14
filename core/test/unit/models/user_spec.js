@@ -8,28 +8,20 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit: models/user', function () {
-    let knexMock;
-
     before(function () {
         models.init();
     });
+
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles'));
 
     afterEach(function () {
         sandbox.restore();
     });
 
     describe('validation', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         describe('password', function () {
@@ -96,17 +88,8 @@ describe('Unit: models/user', function () {
     });
 
     describe('fn: check', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('user status is warn', function () {
@@ -308,23 +291,12 @@ describe('Unit: models/user', function () {
     });
 
     describe('Fetch', function () {
-        let knexMock;
-
         before(function () {
             models.init();
         });
 
         after(function () {
             sandbox.restore();
-        });
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('ensure data type', function () {
@@ -339,23 +311,12 @@ describe('Unit: models/user', function () {
     });
 
     describe('Edit', function () {
-        let knexMock;
-
         before(function () {
             models.init();
         });
 
         after(function () {
             sandbox.restore();
-        });
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('resets given empty value to null', function () {

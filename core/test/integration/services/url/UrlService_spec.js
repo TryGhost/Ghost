@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -11,24 +10,15 @@ const UrlService = rewire('../../../../server/services/url/UrlService');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/UrlService', function () {
-    let knexMock, urlService;
+    let urlService;
 
     before(function () {
         models.init();
     });
 
-    beforeEach(function () {
-        knexMock = new testUtils.mocks.knex();
-        knexMock.mock();
-    });
-
-    afterEach(function () {
-        sandbox.restore();
-    });
-
-    afterEach(function () {
-        knexMock.unmock();
-    });
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
+    after(testUtils.teardown);
 
     after(function () {
         sandbox.restore();
@@ -37,7 +27,7 @@ describe('Unit: services/url/UrlService', function () {
     describe('functional: default routing set', function () {
         let router1, router2, router3, router4;
 
-        beforeEach(function (done) {
+        before(function (done) {
             urlService = new UrlService();
 
             router1 = {
@@ -131,7 +121,7 @@ describe('Unit: services/url/UrlService', function () {
             })();
         });
 
-        afterEach(function () {
+        after(function () {
             urlService.reset();
         });
 
@@ -211,6 +201,9 @@ describe('Unit: services/url/UrlService', function () {
         });
 
         describe('update resource', function () {
+            afterEach(testUtils.teardown);
+            afterEach(testUtils.setup('users:roles', 'posts'));
+
             it('featured: false => featured:true', function () {
                 return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
@@ -307,7 +300,14 @@ describe('Unit: services/url/UrlService', function () {
     describe('functional: extended/modified routing set', function () {
         let router1, router2, router3, router4, router5;
 
-        beforeEach(function (done) {
+        before(testUtils.teardown);
+        before(testUtils.setup('users:roles', 'posts'));
+
+        before(function () {
+            urlService.resetGenerators();
+        });
+
+        before(function (done) {
             urlService = new UrlService();
 
             router1 = {
@@ -420,7 +420,7 @@ describe('Unit: services/url/UrlService', function () {
             })();
         });
 
-        afterEach(function () {
+        after(function () {
             urlService.resetGenerators();
         });
 
@@ -498,6 +498,9 @@ describe('Unit: services/url/UrlService', function () {
         });
 
         describe('update resource', function () {
+            afterEach(testUtils.teardown);
+            afterEach(testUtils.setup('users:roles', 'posts'));
+
             it('featured: false => featured:true', function () {
                 return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
                     .then(function (post) {
@@ -526,11 +529,11 @@ describe('Unit: services/url/UrlService', function () {
 
                         urlService.urlGenerators.forEach(function (generator) {
                             if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:false') {
-                                generator.getUrls().length.should.eql(3);
+                                generator.getUrls().length.should.eql(2);
                             }
 
                             if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:true') {
-                                generator.getUrls().length.should.eql(1);
+                                generator.getUrls().length.should.eql(2);
                             }
                         });
                     });
