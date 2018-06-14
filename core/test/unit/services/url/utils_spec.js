@@ -83,6 +83,13 @@ describe('Url', function () {
         });
     });
 
+    describe('deduplicateSubDir', function () {
+        it('should not remove slug when subdir and slug are same', function () {
+            configUtils.set('url', 'http://myblog.com/blog');
+            urlService.utils.deduplicateSubDir('http://myblog.com/blog/blog').should.eql('http://myblog.com/blog/blog');
+        });
+    });
+
     describe('urlJoin', function () {
         it('should deduplicate slashes', function () {
             configUtils.set({url: 'http://my-ghost-blog.com/'});
