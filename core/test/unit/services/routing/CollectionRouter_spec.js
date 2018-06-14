@@ -64,6 +64,17 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.mountRouter.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
+        it('first collection option', function () {
+            const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'}, {firstCollection: true});
+            const collectionRouter2 = new CollectionRouter('/', {permalink: '/:slug/'}, {firstCollection: false});
+
+            collectionRouter1.firstCollection.should.be.true();
+            collectionRouter2.firstCollection.should.be.false();
+
+            collectionRouter1.context.should.eql(['index']);
+            collectionRouter2.context.should.eql([]);
+        });
+
         it('collection lives under /blog/', function () {
             const collectionRouter = new CollectionRouter('/blog/', {permalink: '/blog/:year/:slug/'});
 

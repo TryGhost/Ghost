@@ -21,7 +21,7 @@ module.exports = {
 
     getFirstCollectionRouter() {
         return _.find(routers, (router) => {
-            if (router.name === 'CollectionRouter') {
+            if (router.name === 'CollectionRouter' && router.firstCollection) {
                 return router;
             }
 
