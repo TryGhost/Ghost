@@ -4,7 +4,7 @@ const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 describe('Image card', function () {
-    it('generates an image', function () {
+    it('renders an image', function () {
         let opts = {
             env: {
                 dom: new SimpleDom.Document()
@@ -17,7 +17,7 @@ describe('Image card', function () {
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
     });
 
-    it('generates an image with caption', function () {
+    it('renders an image with caption', function () {
         let opts = {
             env: {
                 dom: new SimpleDom.Document()
@@ -29,6 +29,20 @@ describe('Image card', function () {
         };
 
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"><figcaption>Test caption</figcaption></figure>');
+    });
+
+    it('renders nothing with no src', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                src: '',
+                caption: 'Test caption'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.eql('');
     });
 
     describe('sizes', function () {
