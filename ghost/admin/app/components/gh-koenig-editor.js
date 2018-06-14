@@ -140,8 +140,9 @@ export default Component.extend({
             editor.run((postEditor) => {
                 let {builder} = postEditor;
                 let newPara = builder.createMarkupSection('p');
+                let sections = section.isListItem ? section.parent.parent.sections : section.parent.sections;
 
-                postEditor.insertSectionBefore(section.parent.sections, newPara, section);
+                postEditor.insertSectionBefore(sections, newPara, section);
             });
         }
     }
