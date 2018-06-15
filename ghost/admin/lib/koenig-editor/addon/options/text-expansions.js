@@ -1,11 +1,32 @@
-import {
-    replaceWithListSection
-} from 'mobiledoc-kit/editor/text-input-handlers';
 import {run} from '@ember/runloop';
 
 // Text expansions watch text entry events and will look for matches, replacing
 // the matches with additional markup, atoms, or cards
 // https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input
+
+export function replaceWithListSection(editor, matches, listTagName) {
+    let {range, range: {head, head: {section}}} = editor;
+    let text = section.textUntil(head);
+
+    if (section.isListItem) {
+        return;
+    }
+
+    // we don't want to convert to a heading if the user has not just
+    // finished typing the markdown (eg, they've made a previous
+    // heading expansion then Cmd-Z'ed it to get the text back then
+    // starts typing at the end of the heading)
+    if (text !== matches[0]) {
+        return;
+    }
+
+    editor.run((postEditor) => {
+        range = range.extend(-(matches[0].length));
+        let position = postEditor.deleteRange(range);
+        postEditor.setRange(position);
+        postEditor.toggleSection(listTagName);
+    });
+}
 
 export default function (editor, koenig) {
     /* block level markdown ------------------------------------------------- */
@@ -39,12 +60,21 @@ export default function (editor, koenig) {
         }
     });
 
-    // mobiledoc-kit has `* ` already built-in so we only need to add `- `
+    editor.unregisterTextInputHandler('ul');
     editor.onTextInput({
         name: 'md_ul',
-        match: /^- $/,
-        run(editor) {
-            replaceWithListSection(editor, 'ul');
+        match: /^\* |- /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ul');
+        }
+    });
+
+    editor.unregisterTextInputHandler('ol');
+    editor.onTextInput({
+        name: 'md_ol',
+        match: /^1\.? /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ol');
         }
     });
 
