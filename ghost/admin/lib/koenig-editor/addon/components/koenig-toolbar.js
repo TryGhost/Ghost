@@ -278,17 +278,22 @@ export default Component.extend({
         // style is by adding a style element to the head
         this._removeStyleElement(); // reset to base styles
         if (tickPosition !== 50) {
-            this._addStyleElement(`left: calc(${tickPosition}% - ${TICK_ADJUSTMENT}px)`);
+            this._addStyleElement(tickPosition);
         }
 
         // update the toolbar position
         this.setProperties(newPosition);
     },
 
-    _addStyleElement(styles) {
+    _addStyleElement(tickPosition) {
+        let beforeStyle = `left: calc(${tickPosition}% - ${TICK_ADJUSTMENT + 2}px);`;
+        let afterStyle = `left: calc(${tickPosition}% - ${TICK_ADJUSTMENT}px);`;
         let styleElement = document.createElement('style');
         styleElement.id = `${this.elementId}-style`;
-        styleElement.innerHTML = `#${this.elementId} > ul:after { ${styles} }`;
+        styleElement.innerHTML = `
+            #${this.elementId} > ul:before { ${beforeStyle} }
+            #${this.elementId} > ul:after { ${afterStyle} }
+        `;
         document.head.appendChild(styleElement);
     },
 
