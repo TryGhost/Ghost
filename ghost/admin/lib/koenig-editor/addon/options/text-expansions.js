@@ -88,7 +88,7 @@ export default function (editor, koenig) {
     editor.unregisterTextInputHandler('ul');
     editor.onTextInput({
         name: 'md_ul',
-        match: /^\* |- /,
+        match: /^\* |^- /,
         run(editor, matches) {
             replaceWithListSection(editor, matches, 'ul');
         }
