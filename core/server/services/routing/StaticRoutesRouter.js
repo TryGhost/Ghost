@@ -16,6 +16,7 @@ class StaticRoutesRouter extends ParentRouter {
         debug(this.route.value, this.templates);
 
         if (this.isChannel(object)) {
+            this.rss = object.rss !== false;
             this.filter = object.filter;
             this.limit = object.limit;
             this.order = object.order;
@@ -26,6 +27,7 @@ class StaticRoutesRouter extends ParentRouter {
             debug(this.route.value, this.templates, this.filter, this.data);
             this._registerChannelRoutes();
         } else {
+            this.contentType = object.content_type;
             debug(this.route.value, this.templates);
             this._registerStaticRoute();
         }
@@ -34,9 +36,11 @@ class StaticRoutesRouter extends ParentRouter {
     _registerChannelRoutes() {
         this.router().use(this._prepareChannelContext.bind(this));
 
-        // REGISTER: enable rss by default
-        this.rssRouter = new RSSRouter();
-        this.mountRouter(this.route.value, this.rssRouter.router());
+        // REGISTER: is rss enabled?
+        if (this.rss) {
+            this.rssRouter = new RSSRouter();
+            this.mountRouter(this.route.value, this.rssRouter.router());
+        }
 
         // REGISTER: channel route
         this.mountRoute(this.route.value, controllers[this.controller]);
@@ -76,7 +80,8 @@ class StaticRoutesRouter extends ParentRouter {
             templates: this.templates,
             defaultTemplate: 'default',
             data: this.data.query,
-            context: []
+            context: [],
+            contentType: this.contentType
         };
 
         next();

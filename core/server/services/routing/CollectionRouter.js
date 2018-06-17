@@ -19,6 +19,8 @@ class CollectionRouter extends ParentRouter {
             value: mainRoute
         };
 
+        this.rss = object.rss !== false;
+
         this.permalinks = {
             originalValue: object.permalink,
             value: object.permalink
@@ -72,10 +74,11 @@ class CollectionRouter extends ParentRouter {
         this.router().param('page', middlewares.pageParam);
         this.mountRoute(urlService.utils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
 
-        this.rssRouter =  new RSSRouter();
-
-        // REGISTER: enable rss by default
-        this.mountRouter(this.route.value, this.rssRouter.router());
+        // REGISTER: is rss enabled?
+        if (this.rss) {
+            this.rssRouter =  new RSSRouter();
+            this.mountRouter(this.route.value, this.rssRouter.router());
+        }
 
         // REGISTER: context middleware for entries
         this.router().use(this._prepareEntryContext.bind(this));
@@ -151,6 +154,10 @@ class CollectionRouter extends ParentRouter {
     }
 
     getRssUrl(options) {
+        if (!this.rss) {
+            return null;
+        }
+
         return urlService.utils.createUrl(urlService.utils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
     }
 
