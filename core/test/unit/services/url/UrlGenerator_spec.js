@@ -273,7 +273,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             resource.addListener.calledTwice.should.be.true();
         });
 
-        it('url has not changed', function () {
+        it('resource was updated', function () {
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_generateUrl').returns('/welcome/');
             sandbox.stub(urlGenerator, '_try').returns(true);
@@ -285,47 +285,10 @@ describe('Unit: services/url/UrlGenerator', function () {
             urlGenerator._resourceListeners(resource);
             resource.addListener.args[0][1](resource);
 
-            urlGenerator._try.called.should.be.true();
+            urlGenerator._try.called.should.be.false();
             urls.removeResourceId.called.should.be.true();
             resource.release.called.should.be.true();
-            queue.start.called.should.be.false();
-        });
-
-        it('url has changed, but is still mine', function () {
-            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
-            sandbox.stub(urlGenerator, '_try').returns(true);
-
-            resource.data = {
-                id: 'object-id'
-            };
-
-            urlGenerator._resourceListeners(resource);
-            resource.addListener.args[0][1](resource);
-
-            urlGenerator._try.calledOnce.should.be.true();
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
-            queue.start.called.should.be.false();
-        });
-
-        it('url has changed and is no longer mine (e.g. filter does not match anymore)', function () {
-            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
-            sandbox.stub(urlGenerator, '_try').returns(false);
-
-            urlGenerator._resourceListeners(resource);
-
-            resource.data = {
-                id: 'object-id'
-            };
-
-            resource.addListener.args[0][1](resource);
-
-            urlGenerator._try.calledOnce.should.be.true();
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
-            queue.start.calledOnce.should.be.true();
+            queue.start.called.should.be.true();
         });
 
         it('resource got removed', function () {

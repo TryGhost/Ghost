@@ -360,19 +360,19 @@ describe('Unit: services/url/UrlService', function () {
                 }
             };
 
-            router1.getFilter.returns('featured:false');
+            router1.getFilter.returns('featured:true');
             router1.getType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
-                    return '/collection/:year/:slug/';
+                    return '/podcast/:slug/';
                 }
             });
 
-            router2.getFilter.returns('featured:true');
+            router2.getFilter.returns('page:false');
             router2.getType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
-                    return '/podcast/:slug/';
+                    return '/collection/:year/:slug/';
                 }
             });
 
@@ -435,7 +435,7 @@ describe('Unit: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:false') {
+                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'page:false') {
                     generator.getUrls().length.should.eql(2);
                 }
 

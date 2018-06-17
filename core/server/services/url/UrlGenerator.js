@@ -143,6 +143,13 @@ class UrlGenerator {
     /**
      * I want to know if my resources changes.
      * Register events of resource.
+     *
+     * If the owned resource get's updated, we simply release/free the resource and push it back to the queue.
+     * This is the easiest, less error prone implementation.
+     *
+     * Imagine you have two collections: `featured:true` and `page:false`.
+     * If a published post status get's featured and you have not explicitly defined `featured:false`, we wouldn't
+     * be able to figure out if this resource still belongs to me, because the filter still matches.
      */
     _resourceListeners(resource) {
         const onUpdate = (updatedResource) => {
@@ -152,25 +159,17 @@ class UrlGenerator {
             // 2. free resource, the url <-> resource connection no longer exists
             updatedResource.release();
 
-            // 3. try to own the resource again
-            // Imagine you change `featured` to true and your filter excludes featured posts.
-            const isMine = this._try(updatedResource);
+            // 3. post has the change to get owned from a different collection again
+            debug('put back in queue', updatedResource.data.id);
 
-            // 4. if the resource is no longer mine, tell the others
-            // e.g. post -> page
-            // e.g. post is featured now
-            if (!isMine) {
-                debug('free, this is not mine anymore', updatedResource.data.id);
-
-                this.queue.start({
-                    event: 'added',
-                    action: 'added:' + resource.data.id,
-                    eventData: {
-                        id: resource.data.id,
-                        type: this.router.getType()
-                    }
-                });
-            }
+            this.queue.start({
+                event: 'added',
+                action: 'added:' + resource.data.id,
+                eventData: {
+                    id: resource.data.id,
+                    type: this.router.getType()
+                }
+            });
         };
 
         const onRemoved = (removedResource) => {
