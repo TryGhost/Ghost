@@ -78,6 +78,13 @@
   dependencies:
     samsam "1.3.0"
 
+"@tryghost/mobiledoc-kit@0.10.22-ghost.1":
+  version "0.10.22-ghost.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.10.22-ghost.1.tgz#42b37fa53228295f637455c7fbc5bdc87394ae8f"
+  dependencies:
+    mobiledoc-dom-renderer "0.6.5"
+    mobiledoc-text-renderer "0.3.2"
+
 "@types/acorn@^4.0.3":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@types/acorn/-/acorn-4.0.3.tgz#d1f3e738dde52536f9aad3d3380d14e448820afd"
@@ -7301,13 +7308,6 @@ mktemp@~0.4.0:
 mobiledoc-dom-renderer@0.6.5:
   version "0.6.5"
   resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.6.5.tgz#56c0302c4f9c30840ab5b9b20dfe905aed1e437b"
-
-mobiledoc-kit@0.10.21:
-  version "0.10.21"
-  resolved "https://registry.yarnpkg.com/mobiledoc-kit/-/mobiledoc-kit-0.10.21.tgz#71b165f7e61bcc242f99cb0e37209f853fcf86c2"
-  dependencies:
-    mobiledoc-dom-renderer "0.6.5"
-    mobiledoc-text-renderer "0.3.2"
 
 mobiledoc-text-renderer@0.3.2:
   version "0.3.2"

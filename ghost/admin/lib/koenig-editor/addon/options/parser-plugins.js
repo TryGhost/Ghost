@@ -21,21 +21,36 @@ export function removeLeadingNewline(node) {
     node.nodeValue = node.nodeValue.replace(/^\n/, '');
 }
 
+export function figureToImageCard(node, builder, {addSection, nodeFinished}) {
+    if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+        return;
+    }
+
+    let img = node.querySelector('img');
+    let figcaption = node.querySelector('figcaption');
+
+    if (!img) {
+        return;
+    }
+
+    let payload = {src: img.src};
+
+    if (figcaption) {
+        // TODO: Allow rich text in captions
+        payload.caption = figcaption.textContent;
+    }
+
+    let cardSection = builder.createCardSection('image', payload);
+    addSection(cardSection);
+    nodeFinished();
+}
+
 export function imgToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'IMG') {
         return;
     }
 
     let payload = {src: node.src};
-
-    // TODO: this is a workaround for grabbing a figure>img+figcaption until
-    // https://github.com/bustle/mobiledoc-kit/issues/494 is resolved
-    // NOTE: it will only work in a strict <figure><img><figcaption></figure> case
-    let nextSibling = node.nextSibling;
-    if (nextSibling && nextSibling.tagName === 'FIGCAPTION') {
-        payload.caption = nextSibling.textContent;
-        node.parentNode.removeChild(nextSibling);
-    }
 
     let cardSection = builder.createCardSection('image', payload);
     addSection(cardSection);
@@ -70,6 +85,7 @@ export function preCodeToCard(node, builder, {addSection, nodeFinished}) {
 export default [
     brToSoftBreakAtom,
     removeLeadingNewline,
+    figureToImageCard,
     imgToCard,
     hrToCard,
     preCodeToCard
