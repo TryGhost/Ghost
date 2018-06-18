@@ -800,14 +800,7 @@ export default Component.extend({
                             return text;
                         }
                         if (type === 'text/html') {
-                            // HACK: mobiledoc-kit won't parse top-level <img> or
-                            // other "unknown" elements so we wrap everything here
-                            // so that we don't get blank posts and elements are
-                            // passed through to our parser plugins correctly
-                            // TODO: fix parsing in mobiledoc, related issues:
-                            // https://github.com/bustle/mobiledoc-kit/issues/619
-                            // https://github.com/bustle/mobiledoc-kit/issues/494
-                            return `<div>${normalizedHtml}</div>`;
+                            return normalizedHtml;
                         }
                     }
                 }
