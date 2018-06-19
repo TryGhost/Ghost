@@ -24,6 +24,15 @@ export const DEFAULT_KEY_COMMANDS = [{
             return;
         }
 
+        // if cursor is on a blank list item mid-list then split the list
+        if (isCollapsed && section.isBlank && section.isListItem && section.next && section.next.isListItem) {
+            editor.run((postEditor) => {
+                postEditor.toggleSection('p', section.headPosition());
+            });
+            koenig._scrollCursorIntoView();
+            return;
+        }
+
         return false;
     }
 }, {
