@@ -113,20 +113,47 @@ function toggleSpecialFormatEditState(editor) {
 // used when pasting or dropping image files
 function insertImageCards(files, postEditor) {
     let {builder, editor} = postEditor;
+    let collection = editor.post.sections;
+    let section = editor.activeSection;
 
-    // remove the current section if it's blank - avoids unexpected blank line
-    // after the insert is complete
-    if (editor.activeSection && editor.activeSection.isBlank) {
-        postEditor.removeSection(editor.activeSection);
+    // place the card after the active section
+    if (!section.isBlank && !section.isListItem && section.next) {
+        section = section.next;
     }
 
+    // list items cannot contain card sections so insert a blank paragraph after
+    // the whole list ready to be replaced by the image cards
+    if (section.isListItem) {
+        let list = section.parent;
+        let blank = builder.createMarkupSection();
+        if (list.next) {
+            postEditor.insertSectionBefore(collection, blank, list.next);
+        } else {
+            postEditor.insertSectionAtEnd(blank);
+        }
+        postEditor.setRange(blank.toRange());
+        section = postEditor._range.head.section;
+    }
+
+    // insert an image card for each image, keep track of the last card to be
+    // inserted so that the cursor can be placed on it at the end
+    let lastImageSection;
     files.forEach((file) => {
         let payload = {
             files: [file]
         };
-        let imageCard = builder.createCardSection('image', payload);
-        postEditor.insertSection(imageCard);
+        lastImageSection = builder.createCardSection('image', payload);
+        postEditor.insertSectionBefore(collection, lastImageSection, section);
     });
+
+    // remove the current section if it's blank - avoids unexpected blank
+    // paragraph after the insert is complete
+    if (section.isBlank) {
+        postEditor.removeSection(section);
+    }
+
+    // place cursor on the last inserted image
+    postEditor.setRange(lastImageSection.tailPosition());
 }
 
 export default Component.extend({
