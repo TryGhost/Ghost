@@ -1,6 +1,7 @@
 ---
 name: "\U0001F4A1Anything else"
-about: "Need help, have questions or ideas? Please use https://forum.ghost.org \U0001F46B."
+about: "For help, support, questions & ideas - please use https://forum.ghost.org
+  \U0001F46B"
 
 ---
 
