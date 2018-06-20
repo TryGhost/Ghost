@@ -1,5 +1,9 @@
 {{!-- full height content pane --}}
-<div class="gh-koenig-editor-pane flex flex-column mih-100" onclick={{action "focusEditor"}}>
+<div
+    class="gh-koenig-editor-pane flex flex-column mih-100"
+    onmousedown={{action "trackMousedown"}}
+    onmouseup={{action "focusEditor"}}
+>
     {{gh-textarea
         class="gh-editor-title"
         placeholder=titlePlaceholder
