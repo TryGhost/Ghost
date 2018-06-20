@@ -26,6 +26,13 @@
         <div class="relative bg-whitegrey-l2">
             {{#if (or previewSrc payload.src)}}
                 <img src={{or previewSrc payload.src}} class="{{kg-style kgImgStyle sidebar=ui.hasSideNav}}" alt={{payload.alt}}>
+                {{#if isDraggedOver}}
+                    <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
+                        <span class="db center sans-serif fw7 f7 white">
+                            Drop to replace image
+                        </span>
+                    </div>
+                {{/if}}
             {{/if}}
 
             {{#if (or uploader.errors uploader.isUploading (not payload.src))}}
@@ -36,7 +43,11 @@
                         </span>
                     {{/if}}
 
-                    {{#if uploader.isUploading}}
+                    {{#if isDraggedOver}}
+                        <span class="db center sans-serif fw7 f7 middarkgrey">
+                            Drop it like it's hot 🔥
+                        </span>
+                    {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else if (not previewSrc payload.src)}}
                         <button class="flex flex-column items-center center btn-base sans-serif fw4 f7 middarkgrey" onclick={{action "triggerFileDialog"}}>

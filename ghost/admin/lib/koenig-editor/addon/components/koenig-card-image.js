@@ -23,6 +23,9 @@ export default Component.extend({
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
 
+    // properties
+    handlesDragDrop: true,
+
     // closure actions
     selectCard() {},
     deselectCard() {},
@@ -146,6 +149,38 @@ export default Component.extend({
         resetSrcs() {
             this.set('previewSrc', null);
             this._updatePayloadAttr('src', null);
+        }
+    },
+
+    dragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        if (navigator.userAgent.indexOf('Chrome') > -1) {
+            let eA = event.dataTransfer.effectAllowed;
+            event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.set('isDraggedOver', true);
+    },
+
+    dragLeave(event) {
+        event.preventDefault();
+        this.set('isDraggedOver', false);
+    },
+
+    drop(event) {
+        event.preventDefault();
+        this.set('isDraggedOver', false);
+
+        if (event.dataTransfer.files) {
+            this.set('files', [event.dataTransfer.files[0]]);
         }
     },
 
