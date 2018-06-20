@@ -65,6 +65,11 @@ export default Component.extend({
             run.next(this, this._positionMenu);
         }
 
+        // hide the menu if the editor range has changed
+        if (this.showMenu && editorRange && !editorRange.isBlank && !editorRange.isEqual(this._lastEditorRange)) {
+            this._hideMenu();
+        }
+
         this._lastEditorRange = editorRange;
     },
 
@@ -166,7 +171,7 @@ export default Component.extend({
         this._onWindowMousedownHandler = run.bind(this, this._handleWindowMousedown);
         window.addEventListener('mousedown', this._onWindowMousedownHandler);
 
-        // watch for keydown events so that we can close the mnu on Escape
+        // watch for keydown events so that we can close the menu on Escape
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
     },
@@ -251,6 +256,12 @@ export default Component.extend({
         if (event.code === 'Escape') {
             // reset the caret position so we have a caret after closing
             this._moveCaretToCachedEditorRange();
+            this._hideMenu();
+            return;
+        }
+
+        let arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+        if (arrowKeys.includes(event.code)) {
             this._hideMenu();
         }
     },
