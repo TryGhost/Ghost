@@ -232,7 +232,14 @@ export default Component.extend({
 
     // exit edit mode any time we have a click outside of the card unless it's
     // a click inside one of our modals or on the plus menu
-    _handleClick({target, path}) {
+    _handleClick(event) {
+        let {target, path} = event;
+
+        // Safari doesn't expose MouseEvent.path
+        if (!path) {
+            path = event.composedPath();
+        }
+
         let searchPath = function (selector) {
             return element => element.closest && element.closest(selector);
         };
