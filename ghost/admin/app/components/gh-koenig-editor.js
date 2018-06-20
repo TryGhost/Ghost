@@ -13,6 +13,7 @@ export default Component.extend({
     // internal properties
     _title: null,
     _editor: null,
+    _mousedownY: 0,
 
     // closure actions
     onTitleChange() {},
@@ -25,15 +26,21 @@ export default Component.extend({
             this._title.focus();
         },
 
-        // triggered when a click is registered on .gh-koenig-editor-pane
+        // triggered when a mousedown is registered on .gh-koenig-editor-pane
+        trackMousedown(event) {
+            this._mousedownY = event.clientY;
+        },
+
+        // triggered when a mouseup is registered on .gh-koenig-editor-pane
         focusEditor(event) {
             if (event.target.classList.contains('gh-koenig-editor-pane')) {
                 let editorCanvas = this._editor.element;
                 let {bottom} = editorCanvas.getBoundingClientRect();
 
-                // if a click occurs below the editor canvas, focus the editor and put
-                // the cursor at the end of the document
-                if (event.clientY > bottom) {
+                // if a mousedown and subsequent mouseup occurs below the editor
+                // canvas, focus the editor and put the cursor at the end of the
+                // document
+                if (this._mousedownY > bottom && event.clientY > bottom) {
                     let {post} = this._editor;
                     let range = post.toRange();
                     let {tailSection} = range;
