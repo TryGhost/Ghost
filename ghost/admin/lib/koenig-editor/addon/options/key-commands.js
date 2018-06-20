@@ -33,6 +33,12 @@ export const DEFAULT_KEY_COMMANDS = [{
             return;
         }
 
+        // if a card is selected, move the cursor to the end of the card so that
+        // Enter consistently adds a new paragraph after the card
+        if (isCollapsed && section.isCardSection) {
+            koenig.moveCaretToTailOfSection(section, true);
+        }
+
         return false;
     }
 }, {
