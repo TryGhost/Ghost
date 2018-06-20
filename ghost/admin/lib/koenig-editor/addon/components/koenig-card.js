@@ -233,12 +233,6 @@ export default Component.extend({
     // exit edit mode any time we have a click outside of the card unless it's
     // a click inside one of our modals or on the plus menu
     _handleClick({target, path}) {
-        // if the editor element is clicked then cursor placement will deselect
-        // or keep this card selected as necessary
-        if (target === this.editor.element) {
-            return;
-        }
-
         let searchPath = function (selector) {
             return element => element.closest && element.closest(selector);
         };
@@ -247,6 +241,12 @@ export default Component.extend({
         if (this.element.contains(target)
             || path.find(searchPath('[data-kg="plus-menu"]'))
             || path.find(searchPath('.liquid-destination'))) {
+            return;
+        }
+
+        // if an element in the editor is clicked then cursor placement will
+        // deselect or keep this card selected as necessary
+        if (this.editor.element.contains(target)) {
             return;
         }
 
