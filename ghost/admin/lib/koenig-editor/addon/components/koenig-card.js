@@ -122,9 +122,7 @@ export default Component.extend({
     },
 
     mouseDown(event) {
-        let isSelected = this.isSelected;
-        let isEditing = this.isEditing;
-        let hasEditMode = this.hasEditMode;
+        let {isSelected, isEditing} = this;
 
         // if we perform an action we want to prevent the mousedown from
         // triggering a cursor position change which can result in multiple
@@ -143,11 +141,23 @@ export default Component.extend({
             if (!allowedTagNames.includes(targetTagName)) {
                 event.preventDefault();
             }
-        } else if (hasEditMode && isSelected && !isEditing) {
+
+            // don't trigger edit mode immediately
+            this._skipMouseUp = true;
+        }
+    },
+
+    // lazy-click to enter edit mode
+    mouseUp(event) {
+        let {isSelected, isEditing, hasEditMode, _skipMouseUp} = this;
+
+        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing) {
             this.editCard();
             this.set('showToolbar', true);
             event.preventDefault();
         }
+
+        this._skipMouseUp = false;
     },
 
     doubleClick() {
