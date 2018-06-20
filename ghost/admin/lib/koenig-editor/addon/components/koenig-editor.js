@@ -851,7 +851,7 @@ export default Component.extend({
     },
 
     handleDragOver(event) {
-        if (!event.dataTransfer) {
+        if (!event.dataTransfer || event.target.closest('.__mobiledoc-card')) {
             return;
         }
 
@@ -878,7 +878,7 @@ export default Component.extend({
         if (cardElem) {
             let cardId = cardElem.firstChild.id;
             let card = this.componentCards.findBy('destinationElementId', cardId);
-            if (card.isEditing) {
+            if (card.isEditing || card.handlesDragDrop) {
                 return;
             }
         }
@@ -898,7 +898,6 @@ export default Component.extend({
     /* Ember event handlers ------------------------------------------------- */
 
     // disable dragging
-    // TODO: needs testing for how this interacts with cards that have drag behaviour
     dragStart(event) {
         event.preventDefault();
     },
