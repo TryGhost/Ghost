@@ -1065,7 +1065,11 @@ export default Component.extend({
 
         let {range} = this.editor;
         let selection = window.getSelection();
-        let windowRange = selection && selection.getRangeAt(0);
+        let windowRange;
+        // Safari can throw an IndexSizeError from selection.getRangeAt(0)
+        if (selection.type !== 'None') {
+            windowRange = selection && selection.getRangeAt(0);
+        }
         let element = range.head && range.head.section && range.head.section.renderNode && range.head.section.renderNode.element;
 
         // prevent scroll jumps when a card is selected

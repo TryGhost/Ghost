@@ -16,7 +16,9 @@ export default Component.extend({
     _keydownHandler: null,
 
     update() {},
-    onDidInsertElement() {},
+    addParagraphAfterCard() {},
+    moveCursorToNextSection() {},
+    moveCursorToPrevSection() {},
 
     figCaptionClass: computed(function () {
         return `${kgStyle(['figcaption'])} w-100`;
