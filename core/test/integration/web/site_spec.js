@@ -722,7 +722,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['default']
+                            templates: ['default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/'
@@ -792,7 +792,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });
@@ -844,11 +844,11 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });

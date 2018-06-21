@@ -129,7 +129,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         it('with templates', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', template: ['home', 'index']});
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
 
             // they are getting reversed because we unshift the templates in the helper
             collectionRouter.templates.should.eql(['index', 'home']);
@@ -138,7 +138,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
     describe('fn: _prepareIndexContext', function () {
         it('default', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', template: ['home', 'index']});
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
 
             collectionRouter._prepareIndexContext(req, res, next);
 

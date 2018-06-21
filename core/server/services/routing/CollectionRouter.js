@@ -27,7 +27,7 @@ class CollectionRouter extends ParentRouter {
         };
 
         // @NOTE: see helpers/templates - we use unshift to prepend the templates
-        this.templates = (object.template || []).reverse();
+        this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter || 'page:false';
 
