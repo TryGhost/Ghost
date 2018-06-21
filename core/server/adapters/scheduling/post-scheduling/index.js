@@ -12,7 +12,7 @@ _private.normalize = function normalize(options) {
 
     return {
         time: moment(object.get('published_at')).valueOf(),
-        url: urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', object.get('id')) + '?client_id=' + client.get('slug') + '&client_secret=' + client.get('secret'),
+        url: `${urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', object.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
         extra: {
             httpMethod: 'PUT',
             oldTime: object.updated('published_at') ? moment(object.updated('published_at')).valueOf() : null
