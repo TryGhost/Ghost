@@ -4,10 +4,10 @@ const helpers = require('./helpers');
 const ParentRouter = require('./ParentRouter');
 
 class StaticRoutesRouter extends ParentRouter {
-    constructor(key, object) {
+    constructor(mainRoute, object) {
         super('StaticRoutesRouter');
 
-        this.route = {value: key};
+        this.route = {value: mainRoute};
         this.templates = object.templates || [];
 
         debug(this.route.value, this.templates);

@@ -16,7 +16,7 @@ const should = require('should'),
  *        either move to integration tests or rewrite!!!
  */
 describe('{{ghost_head}} helper', function () {
-    let posts = [], tags = [], users = [], firstCollection;
+    let posts = [], tags = [], users = [];
 
     before(function () {
         testUtils.integrationTesting.defaultMocks(sandbox);
@@ -28,9 +28,7 @@ describe('{{ghost_head}} helper', function () {
     before(function () {
         models.init();
 
-        firstCollection = sandbox.stub();
-        firstCollection.getRssUrl = sandbox.stub().returns('http://localhost:65530/rss/');
-        sandbox.stub(routing.registry, 'getFirstCollectionRouter').returns(firstCollection);
+        sandbox.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
 
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('blog description');
@@ -1253,11 +1251,11 @@ describe('{{ghost_head}} helper', function () {
                     url: 'http://localhost:65530/blog/'
                 });
 
-                firstCollection.getRssUrl.returns('http://localhost:65530/blog/rss/');
+                routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
             });
 
             after(function () {
-                firstCollection.getRssUrl.returns('http://localhost:65530/rss/');
+                routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
             });
 
             it('returns correct rss url with subdirectory', function (done) {
