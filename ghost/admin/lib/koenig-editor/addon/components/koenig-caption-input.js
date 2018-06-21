@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import Key from 'mobiledoc-kit/utils/key';
 import layout from '../templates/components/koenig-caption-input';
 import {computed} from '@ember/object';
 import {kgStyle} from 'ember-cli-ghost-spirit/helpers/kg-style';
@@ -64,8 +65,9 @@ export default Component.extend({
     // that it's possible to start typing without explicitly focusing the input
     _handleKeypress(event) {
         let captionInput = this.element.querySelector('[name="caption"]');
+        let key = new Key(event);
 
-        if (captionInput && captionInput !== document.activeElement) {
+        if (captionInput && captionInput !== document.activeElement && key.isPrintableKey()) {
             captionInput.value = `${captionInput.value}${event.key}`;
             captionInput.focus();
             event.preventDefault();
