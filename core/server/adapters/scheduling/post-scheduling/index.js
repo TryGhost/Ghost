@@ -24,9 +24,9 @@ _private.loadClient = function loadClient() {
     return models.Client.findOne({slug: 'ghost-scheduler'}, {columns: ['slug', 'secret']});
 };
 
-_private.loadScheduledPosts = function () {
+_private.loadScheduledPosts = () => {
     return schedules.getScheduledPosts()
-        .then(function (result) {
+        .then((result) => {
             return result.posts || [];
         });
 };
@@ -46,48 +46,48 @@ exports.init = function init(options) {
     }
 
     return _private.loadClient()
-        .then(function (_client) {
+        .then((_client) => {
             client = _client;
             return localUtils.createAdapter(config);
         })
-        .then(function (_adapter) {
+        .then((_adapter) => {
             adapter = _adapter;
             if (!adapter.rescheduleOnBoot) {
                 return [];
             }
             return _private.loadScheduledPosts();
         })
-        .then(function (scheduledPosts) {
+        .then((scheduledPosts) => {
             if (!scheduledPosts.length) {
                 return;
             }
 
-            scheduledPosts.forEach(function (object) {
+            scheduledPosts.forEach((object) => {
                 adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
         })
-        .then(function () {
+        .then(() => {
             adapter.run();
         })
-        .then(function () {
+        .then(() => {
             common.events.onMany([
                 'post.scheduled',
                 'page.scheduled'
-            ], function (object) {
+            ], (object) => {
                 adapter.schedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
             common.events.onMany([
                 'post.rescheduled',
                 'page.rescheduled'
-            ], function (object) {
+            ], (object) => {
                 adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
 
             common.events.onMany([
                 'post.unscheduled',
                 'page.unscheduled'
-            ], function (object) {
+            ], (object) => {
                 adapter.unschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
             });
         });
