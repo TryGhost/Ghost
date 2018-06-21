@@ -9,27 +9,28 @@ const should = require('should'),
 describe('UNIT - services/routing/CollectionRouter', function () {
     let req, res, next;
 
+    beforeEach(function () {
+        sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
+
+        sandbox.stub(common.events, 'emit');
+        sandbox.stub(common.events, 'on');
+
+        sandbox.spy(CollectionRouter.prototype, 'mountRoute');
+        sandbox.spy(CollectionRouter.prototype, 'mountRouter');
+        sandbox.spy(CollectionRouter.prototype, 'unmountRoute');
+
+        req = sandbox.stub();
+        res = sandbox.stub();
+        next = sandbox.stub();
+
+        res.locals = {};
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     describe('instantiate', function () {
-        beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
-
-            sandbox.stub(common.events, 'emit');
-            sandbox.stub(common.events, 'on');
-
-            sandbox.spy(CollectionRouter.prototype, 'mountRoute');
-            sandbox.spy(CollectionRouter.prototype, 'mountRouter');
-
-            req = sandbox.stub();
-            res = sandbox.stub();
-            next = sandbox.stub();
-
-            res.locals = {};
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('default', function () {
             const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'});
 
@@ -64,15 +65,18 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.mountRouter.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
-        it('first collection option', function () {
-            const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'}, {firstCollection: true});
-            const collectionRouter2 = new CollectionRouter('/', {permalink: '/:slug/'}, {firstCollection: false});
+        it('router name', function () {
+            const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'});
+            const collectionRouter2 = new CollectionRouter('/podcast/', {permalink: '/:slug/'});
+            const collectionRouter3 = new CollectionRouter('/hello/world/', {permalink: '/:slug/'});
 
-            collectionRouter1.firstCollection.should.be.true();
-            collectionRouter2.firstCollection.should.be.false();
+            collectionRouter1.routerName.should.eql('index');
+            collectionRouter2.routerName.should.eql('podcast');
+            collectionRouter3.routerName.should.eql('helloworld');
 
             collectionRouter1.context.should.eql(['index']);
-            collectionRouter2.context.should.eql([]);
+            collectionRouter2.context.should.eql(['podcast']);
+            collectionRouter3.context.should.eql(['helloworld']);
         });
 
         it('collection lives under /blog/', function () {
@@ -136,11 +140,29 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
     });
 
-    describe('fn: _prepareIndexContext', function () {
-        it('default', function () {
+    describe('fn: _prepareEntriesContext', function () {
+        it('index collection', function () {
+            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'});
+
+            collectionRouter._prepareEntriesContext(req, res, next);
+
+            next.calledOnce.should.be.true();
+            res.locals.routerOptions.should.eql({
+                filter: 'page:false',
+                permalinks: '/:slug/:options(edit)?/',
+                frontPageTemplate: 'home',
+                templates: [],
+                identifier: collectionRouter.identifier,
+                context: ['index'],
+                name: 'index',
+                type: 'posts'
+            });
+        });
+
+        it('with templates, no index collection', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
 
-            collectionRouter._prepareIndexContext(req, res, next);
+            collectionRouter._prepareEntriesContext(req, res, next);
 
             next.calledOnce.should.be.true();
             res.locals.routerOptions.should.eql({
@@ -149,27 +171,14 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 frontPageTemplate: 'home',
                 templates: ['index', 'home'],
                 identifier: collectionRouter.identifier,
-                context: [],
+                context: ['magic'],
+                name: 'magic',
                 type: 'posts'
             });
         });
     });
 
     describe('permalink in database changes', function () {
-        beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
-
-            sandbox.stub(common.events, 'emit');
-            sandbox.stub(common.events, 'on');
-
-            sandbox.spy(CollectionRouter.prototype, 'mountRoute');
-            sandbox.spy(CollectionRouter.prototype, 'unmountRoute');
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('permalink placeholder: flat', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
 

@@ -48,7 +48,7 @@ _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCo
 _private.getCollectionTemplateHierarchy = function getCollectionTemplateHierarchy(routerOptions, requestOptions) {
     const templateList = ['index'];
 
-    // CASE: author, tag
+    // CASE: author, tag, custom collection name
     if (routerOptions.name && routerOptions.name !== 'index') {
         templateList.unshift(routerOptions.name);
 

@@ -5,15 +5,9 @@ const should = require('should'),
     getRssUrl = require('../../../../server/data/meta/rss_url');
 
 describe('getRssUrl', function () {
-    let firstCollection;
-
     beforeEach(function () {
         sandbox.restore();
-
-        firstCollection = sandbox.stub();
-        firstCollection.getRssUrl = sandbox.stub().returns('/rss/');
-
-        sandbox.stub(routing.registry, 'getFirstCollectionRouter').returns(firstCollection);
+        sandbox.stub(routing.registry, 'getRssUrl').returns('/rss/');
     });
 
     it('should return rss url', function () {
@@ -29,6 +23,6 @@ describe('getRssUrl', function () {
             secure: false
         }, true);
 
-        firstCollection.getRssUrl.calledWith({secure: false, absolute: true}).should.be.true();
+        routing.registry.getRssUrl.calledWith({secure: false, absolute: true}).should.be.true();
     });
 });
