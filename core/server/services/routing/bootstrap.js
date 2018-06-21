@@ -49,7 +49,6 @@ module.exports = function bootstrap() {
     _.each(dynamicRoutes.collections, (value, key) => {
         const collectionRouter = new CollectionRouter(key, value);
         siteRouter.mountRouter(collectionRouter.router());
-
         registry.setRouter(collectionRouter.identifier, collectionRouter);
     });
 

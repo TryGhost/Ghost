@@ -22,6 +22,18 @@ describe('templates', function () {
             _private.getCollectionTemplateHierarchy({name: 'index'}).should.eql(['index']);
         });
 
+        it('should return custom templates even if the collection is index', function () {
+            _private.getCollectionTemplateHierarchy({name: 'index', templates: ['something']}).should.eql(['something', 'index']);
+        });
+
+        it('should return collection name', function () {
+            _private.getCollectionTemplateHierarchy({name: 'podcast'}).should.eql(['podcast', 'index']);
+        });
+
+        it('should return custom templates', function () {
+            _private.getCollectionTemplateHierarchy({name: 'podcast', templates: ['mozart']}).should.eql(['mozart', 'podcast', 'index']);
+        });
+
         it('should return just index if collection name is index even if slug is set', function () {
             _private.getCollectionTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
         });
@@ -423,7 +435,7 @@ describe('templates', function () {
         it('calls pickTemplate for custom routes', function () {
             res._route = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 
@@ -445,7 +457,7 @@ describe('templates', function () {
         it('calls pickTemplate for custom routes', function () {
             res._route = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 

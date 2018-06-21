@@ -4,13 +4,13 @@ const helpers = require('./helpers');
 const ParentRouter = require('./ParentRouter');
 
 class StaticRoutesRouter extends ParentRouter {
-    constructor(key, template) {
+    constructor(mainRoute, object) {
         super('StaticRoutesRouter');
 
-        this.route = {value: key};
-        this.template = template;
+        this.route = {value: mainRoute};
+        this.templates = object.templates || [];
 
-        debug(this.route.value, this.template);
+        debug(this.route.value, this.templates);
 
         this._registerRoutes();
     }
@@ -24,9 +24,10 @@ class StaticRoutesRouter extends ParentRouter {
     }
 
     _prepareContext(req, res, next) {
+        // @TODO: index.hbs as fallback for static routes O_O
         res._route = {
             type: 'custom',
-            templateName: this.template,
+            templates: this.templates,
             defaultTemplate: 'index'
         };
 

@@ -48,7 +48,7 @@ _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCo
 _private.getCollectionTemplateHierarchy = function getCollectionTemplateHierarchy(routerOptions, requestOptions) {
     const templateList = ['index'];
 
-    // CASE: author, tag
+    // CASE: author, tag, custom collection name
     if (routerOptions.name && routerOptions.name !== 'index') {
         templateList.unshift(routerOptions.name);
 
@@ -171,7 +171,7 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
 
     switch (routeConfig.type) {
         case 'custom':
-            res._template = _private.pickTemplate(routeConfig.templateName, routeConfig.defaultTemplate);
+            res._template = _private.pickTemplate(routeConfig.templates, routeConfig.defaultTemplate);
             break;
         case 'collection':
             res._template = _private.getTemplateForCollection(res.locals.routerOptions, {

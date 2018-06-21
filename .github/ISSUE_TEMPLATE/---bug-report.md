@@ -1,10 +1,12 @@
 ---
 name: "\U0001F41B Bug report"
-about: Create a report to help us improve
+about: Report reproducible software issues so we can improve
 
 ---
 
 Welcome to Ghost's GitHub repo! 👋🎉
+
+For support, help, questions & ideas please use https://forum.ghost.org 👫.
 
 If your issue is with Ghost CLI, please report it on the CLI repo ➡️ https://github.com/TryGhost/Ghost-CLI/issues/new.
 

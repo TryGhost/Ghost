@@ -9,12 +9,14 @@ const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
 
 class CollectionRouter extends ParentRouter {
-    constructor(indexRoute, object) {
+    constructor(mainRoute, object) {
         super('CollectionRouter');
+
+        this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
 
         // NOTE: index/parent route e.g. /, /podcast/, /magic/ ;)
         this.route = {
-            value: indexRoute
+            value: mainRoute
         };
 
         this.permalinks = {
@@ -23,7 +25,7 @@ class CollectionRouter extends ParentRouter {
         };
 
         // @NOTE: see helpers/templates - we use unshift to prepend the templates
-        this.templates = (object.template || []).reverse();
+        this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter || 'page:false';
 
@@ -48,7 +50,9 @@ class CollectionRouter extends ParentRouter {
             return this.permalinks.value;
         };
 
-        debug(this.route, this.permalinks);
+        this.context = [this.routerName];
+
+        debug(this.name, this.route, this.permalinks);
 
         this._registerRoutes();
         this._listeners();
@@ -56,7 +60,7 @@ class CollectionRouter extends ParentRouter {
 
     _registerRoutes() {
         // REGISTER: context middleware for this collection
-        this.router().use(this._prepareIndexContext.bind(this));
+        this.router().use(this._prepareEntriesContext.bind(this));
 
         // REGISTER: collection route e.g. /, /podcast/
         this.mountRoute(this.route.value, controllers.collection);
@@ -85,15 +89,16 @@ class CollectionRouter extends ParentRouter {
      *
      * @TODO: Why do we need two context objects? O_O - refactor this out
      */
-    _prepareIndexContext(req, res, next) {
+    _prepareEntriesContext(req, res, next) {
         res.locals.routerOptions = {
             filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             type: this.getType(),
-            context: [],
+            context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
-            identifier: this.identifier
+            identifier: this.identifier,
+            name: this.routerName
         };
 
         res._route = {

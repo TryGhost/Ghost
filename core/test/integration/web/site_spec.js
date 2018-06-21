@@ -425,53 +425,53 @@ describe('Integration - Web - Site', function () {
     });
 
     describe('extended routes.yaml (1): 2 collections', function () {
-        before(function () {
-            sandbox.stub(settingsService, 'get').returns({
-                routes: {
-                    '/': 'home'
-                },
-
-                collections: {
-                    '/podcast/': {
-                        permalink: '/podcast/:slug/',
-                        filter: 'featured:true'
+        describe('behaviour: default cases', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {
+                        '/': 'home'
                     },
 
-                    '/something/': {
-                        permalink: '/something/:slug/'
-                    }
-                },
+                    collections: {
+                        '/podcast/': {
+                            permalink: '/podcast/:slug/',
+                            filter: 'featured:true'
+                        },
 
-                taxonomies: {
-                    tag: '/categories/:slug/',
-                    author: '/authors/:slug/'
-                }
+                        '/something/': {
+                            permalink: '/something/:slug/'
+                        }
+                    },
+
+                    taxonomies: {
+                        tag: '/categories/:slug/',
+                        author: '/authors/:slug/'
+                    }
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
             });
 
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sandbox);
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp();
+            afterEach(function () {
+                configUtils.restore();
+            });
 
-                    return testUtils.integrationTesting.urlService.waitTillFinished();
-                });
-        });
+            after(function () {
+                sandbox.restore();
+            });
 
-        beforeEach(function () {
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
-        });
-
-        afterEach(function () {
-            configUtils.restore();
-        });
-
-        after(function () {
-            sandbox.restore();
-        });
-
-        describe('behaviour: default cases', function () {
             it('serve home', function () {
                 const req = {
                     secure: true,
@@ -553,6 +553,55 @@ describe('Integration - Web - Site', function () {
                         response.template.should.eql('index');
 
                         $('.post-card').length.should.equal(2);
+                    });
+            });
+        });
+
+        describe('no collections', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {
+                        '/test/': 'test'
+                    },
+                    collections: {},
+                    taxonomies: {}
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
+
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            after(function () {
+                sandbox.restore();
+            });
+
+            it('serve route', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/test/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
                     });
             });
         });
@@ -673,7 +722,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['default']
+                            templates: ['default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/'
@@ -743,7 +792,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });
@@ -795,11 +844,11 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });
