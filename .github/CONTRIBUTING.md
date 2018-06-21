@@ -20,9 +20,9 @@ If you've **got some code** ✨ you want to [pull request](https://docs.ghost.or
 - [user documentation](https://help.ghost.org)
 - [themes documentation](https://themes.ghost.org)
 - [api documentation](https://api.ghost.org)
-- [self-hoster guide](http://docs.ghost.org/v1/)
+- [self-hoster guide](https://docs.ghost.org/v1/)
 - [community guidelines](https://ghost.org/conduct/)
-- [dev blog](http://dev.ghost.org)
+- [dev blog](https://blog.ghost.org)
 
 ---
 
