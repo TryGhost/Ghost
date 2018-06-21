@@ -1,4 +1,4 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     moment = require('moment'),
     localUtils = require('../utils'),
     common = require('../../../lib/common'),
@@ -8,9 +8,7 @@ var Promise = require('bluebird'),
     _private = {};
 
 _private.normalize = function normalize(options) {
-    var object = options.object,
-        apiUrl = options.apiUrl,
-        client = options.client;
+    const {object, apiUrl, client} = options;
 
     return {
         time: moment(object.get('published_at')).valueOf(),
@@ -34,9 +32,9 @@ _private.loadScheduledPosts = function () {
 };
 
 exports.init = function init(options) {
-    var config = options || {},
-        apiUrl = config.apiUrl,
-        adapter = null,
+    const config = options || {};
+    const {apiUrl} = config;
+    let adapter = null,
         client = null;
 
     if (!config) {
