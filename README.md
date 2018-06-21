@@ -10,7 +10,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Theme Docs](https://themes.ghost.org/)
 - [API Docs](https://api.ghost.org/)
 - [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Developer Blog](https://dev.ghost.org)
+- [Developer Blog](https://blog.ghost.org)
 - [Self-hoster Docs](https://docs.ghost.org/v1/)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [forum](https://forum.ghost.org/) rather than opening an issue.**
@@ -59,7 +59,7 @@ When a new version of Ghost comes out, you'll want to look over these [upgrade i
 
 You can talk to other Ghost users and developers in our [forum](https://forum.ghost.org/) (it's pretty awesome).
 
-New releases are announced on the [dev blog](https://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
+New releases are announced on the [dev blog](https://blog.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
 
