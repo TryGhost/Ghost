@@ -112,6 +112,11 @@ export default Component.extend({
     didInsertElement() {
         this._super(...arguments);
         this._setToolbarProperties();
+        this._createMutationObserver(
+            this.element,
+            run.bind(this, this._inputFocus),
+            run.bind(this, this._inputBlur)
+        );
     },
 
     willDestroyElement() {
@@ -119,6 +124,14 @@ export default Component.extend({
         window.removeEventListener('keydown', this._onKeydownHandler);
         window.removeEventListener('click', this._onClickHandler);
         this._removeMousemoveHandler();
+
+        if (this._mutationObserver) {
+            this._mutationObserver.disconnect();
+        }
+
+        if (this._hasDisabledContenteditable) {
+            this.editor.element.contentEditable = true;
+        }
     },
 
     mouseDown(event) {
@@ -280,5 +293,74 @@ export default Component.extend({
         } else {
             run.scheduleOnce('afterRender', this, method);
         }
+    },
+
+    // Firefox can't handle inputs inside of a contenteditable element so we
+    // need to watch for any inputs being added so that we can attach focus/blur
+    // event handlers that can disable contenteditable on the editor element
+    _createMutationObserver(target, focusCallback, blurCallback) {
+        function addInputFocusListeners(mutation) {
+            function addInputFocusListener(element) {
+                if (!inputElements.includes(element)) {
+                    inputElements.push(element);
+                    element.addEventListener('focus', focusCallback, false);
+                    element.addEventListener('blur', blurCallback, false);
+                }
+            }
+
+            if (mutation.type === 'childList') {
+                Array.prototype.forEach.call(
+                    mutation.target.querySelectorAll('input[type="text"]'),
+                    addInputFocusListener
+                );
+            }
+        }
+
+        function removeFromElements(element) {
+            inputElements.splice(inputElements.indexOf(element), 1);
+        }
+
+        function removeInputFocusListener(element) {
+            element.removeEventListener('focus', focusCallback, false);
+            element.removeEventListener('blur', blurCallback, false);
+            removeFromElements(element);
+        }
+
+        function mutationObserved(mutations) {
+            mutations.forEach(addInputFocusListeners);
+        }
+
+        function createMutationObserver(target) {
+            let config = {
+                childList: true,
+                subtree: true
+            };
+
+            let observer = new MutationObserver(mutationObserved);
+            observer.observe(target, config); // eslint-disable-line ghost/ember/no-observers
+            return observer;
+        }
+
+        let inputElements = [];
+        let observer = createMutationObserver(target);
+
+        return {
+            disconnect() {
+                if ('disconnect' in observer) {
+                    observer.disconnect(); // eslint-disable-line ghost/ember/no-observers
+                    inputElements.forEach(removeInputFocusListener);
+                }
+            }
+        };
+    },
+
+    _inputFocus() {
+        this._hasDisabledContenteditable = true;
+        this.editor.element.contentEditable = false;
+    },
+
+    _inputBlur() {
+        this._hasDisabledContenteditable = false;
+        this.editor.element.contentEditable = true;
     }
 });

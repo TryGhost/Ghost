@@ -78,6 +78,7 @@ export default Component.extend({
             }
 
             if (event.key === 'Escape') {
+                event.target.blur();
                 this.deleteCard();
             }
         },
