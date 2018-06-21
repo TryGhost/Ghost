@@ -423,7 +423,7 @@ describe('templates', function () {
         it('calls pickTemplate for custom routes', function () {
             res._route = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 
@@ -445,7 +445,7 @@ describe('templates', function () {
         it('calls pickTemplate for custom routes', function () {
             res._route = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 
