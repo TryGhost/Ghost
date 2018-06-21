@@ -205,7 +205,8 @@ describe('UNIT: services/settings/validate', function () {
             routes: {},
             collections: {
                 '/magic/': {
-                    permalink: '{globals.permalinks}'
+                    permalink: '{globals.permalinks}',
+                    templates: []
                 }
             }
         });
@@ -253,12 +254,86 @@ describe('UNIT: services/settings/validate', function () {
             },
             collections: {
                 '/magic/': {
-                    permalink: '/magic/:year/:slug/'
+                    permalink: '/magic/:year/:slug/',
+                    templates: []
                 },
                 '/': {
-                    permalink: '/:slug/'
+                    permalink: '/:slug/',
+                    templates: []
                 }
             }
+        });
+    });
+
+    describe('template definitions', function () {
+        it('single value', function () {
+            const object = validate({
+                routes: {
+                    '/about/': 'about',
+                    '/me/': {
+                        template: 'me'
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: 'test'
+                    }
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/about/': {
+                        templates: ['about']
+                    },
+                    '/me/': {
+                        templates: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/:slug/',
+                        templates: ['test']
+                    }
+                }
+            });
+        });
+
+        it('array', function () {
+            const object = validate({
+                routes: {
+                    '/about/': 'about',
+                    '/me/': {
+                        template: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: ['test']
+                    }
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/about/': {
+                        templates: ['about']
+                    },
+                    '/me/': {
+                        templates: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/:slug/',
+                        templates: ['test']
+                    }
+                }
+            });
         });
     });
 });

@@ -2,6 +2,29 @@ const _ = require('lodash');
 const common = require('../../lib/common');
 const _private = {};
 
+_private.validateTemplate = function validateTemplate(object) {
+    // CASE: /about/: about
+    if (typeof object === 'string') {
+        return {
+            templates: [object]
+        };
+    }
+
+    if (!object.hasOwnProperty('template')) {
+        object.templates = [];
+        return object;
+    }
+
+    if (_.isArray(object.template)) {
+        object.templates = object.template;
+    } else {
+        object.templates = [object.template];
+    }
+
+    delete object.template;
+    return object;
+};
+
 _private.validateRoutes = function validateRoutes(routes) {
     _.each(routes, (routingTypeObject, routingTypeObjectKey) => {
         // CASE: we hard-require trailing slashes for the index route
@@ -34,6 +57,8 @@ _private.validateRoutes = function validateRoutes(routes) {
                 help: 'e.g. permalink: /{slug}/'
             });
         }
+
+        routes[routingTypeObjectKey] = _private.validateTemplate(routingTypeObject);
     });
 
     return routes;
@@ -72,53 +97,54 @@ _private.validateCollections = function validateCollections(collections) {
         }
 
         // CASE: validate permalink key
-        if (routingTypeObject.hasOwnProperty('permalink')) {
-            if (!routingTypeObject.permalink) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.services.settings.yaml.validate', {
-                        at: routingTypeObjectKey,
-                        reason: 'Please define a permalink route.'
-                    }),
-                    help: 'e.g. permalink: /{slug}/'
-                });
-            }
 
-            // CASE: we hard-require trailing slashes for the value/permalink route
-            if (!routingTypeObject.permalink.match(/\/$/) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.services.settings.yaml.validate', {
-                        at: routingTypeObject.permalink,
-                        reason: 'A trailing slash is required.'
-                    })
-                });
-            }
-
-            // CASE: we hard-require leading slashes for the value/permalink route
-            if (!routingTypeObject.permalink.match(/^\//) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.services.settings.yaml.validate', {
-                        at: routingTypeObject.permalink,
-                        reason: 'A leading slash is required.'
-                    })
-                });
-            }
-
-            // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
-            if (routingTypeObject.permalink && routingTypeObject.permalink.match(/\/\:\w+/)) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.services.settings.yaml.validate', {
-                        at: routingTypeObject.permalink,
-                        reason: 'Please use the following notation e.g. /{slug}/.'
-                    })
-                });
-            }
-
-            // CASE: transform {.*} into :\w+ notation. This notation is our internal notation e.g. see permalink
-            //       replacement in our UrlService utility.
-            if (routingTypeObject.permalink.match(/{.*}/)) {
-                routingTypeObject.permalink = routingTypeObject.permalink.replace(/{(\w+)}/g, ':$1');
-            }
+        if (!routingTypeObject.permalink) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: routingTypeObjectKey,
+                    reason: 'Please define a permalink route.'
+                }),
+                help: 'e.g. permalink: /{slug}/'
+            });
         }
+
+        // CASE: we hard-require trailing slashes for the value/permalink route
+        if (!routingTypeObject.permalink.match(/\/$/) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: routingTypeObject.permalink,
+                    reason: 'A trailing slash is required.'
+                })
+            });
+        }
+
+        // CASE: we hard-require leading slashes for the value/permalink route
+        if (!routingTypeObject.permalink.match(/^\//) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: routingTypeObject.permalink,
+                    reason: 'A leading slash is required.'
+                })
+            });
+        }
+
+        // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
+        if (routingTypeObject.permalink && routingTypeObject.permalink.match(/\/\:\w+/)) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: routingTypeObject.permalink,
+                    reason: 'Please use the following notation e.g. /{slug}/.'
+                })
+            });
+        }
+
+        // CASE: transform {.*} into :\w+ notation. This notation is our internal notation e.g. see permalink
+        //       replacement in our UrlService utility.
+        if (routingTypeObject.permalink.match(/{.*}/)) {
+            routingTypeObject.permalink = routingTypeObject.permalink.replace(/{(\w+)}/g, ':$1');
+        }
+
+        collections[routingTypeObjectKey] = _private.validateTemplate(routingTypeObject);
     });
 
     return collections;

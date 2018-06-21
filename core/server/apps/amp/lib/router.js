@@ -13,7 +13,7 @@ function _renderer(req, res, next) {
     // @TODO refactor into to something explicit & DRY this up
     res._route = {
         type: 'custom',
-        templateName: templateName,
+        templates: templateName,
         defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
     };
 

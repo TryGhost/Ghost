@@ -171,7 +171,7 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
 
     switch (routeConfig.type) {
         case 'custom':
-            res._template = _private.pickTemplate(routeConfig.templateName, routeConfig.defaultTemplate);
+            res._template = _private.pickTemplate(routeConfig.templates, routeConfig.defaultTemplate);
             break;
         case 'collection':
             res._template = _private.getTemplateForCollection(res.locals.routerOptions, {
