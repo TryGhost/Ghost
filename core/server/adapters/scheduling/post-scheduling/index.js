@@ -63,7 +63,7 @@ exports.init = function init(options) {
             }
 
             scheduledPosts.forEach((object) => {
-                adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
+                adapter.reschedule(_private.normalize({object, apiUrl, client}));
             });
         })
         .then(() => {
@@ -74,21 +74,21 @@ exports.init = function init(options) {
                 'post.scheduled',
                 'page.scheduled'
             ], (object) => {
-                adapter.schedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
+                adapter.schedule(_private.normalize({object, apiUrl, client}));
             });
 
             common.events.onMany([
                 'post.rescheduled',
                 'page.rescheduled'
             ], (object) => {
-                adapter.reschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
+                adapter.reschedule(_private.normalize({object, apiUrl, client}));
             });
 
             common.events.onMany([
                 'post.unscheduled',
                 'page.unscheduled'
             ], (object) => {
-                adapter.unschedule(_private.normalize({object: object, apiUrl: apiUrl, client: client}));
+                adapter.unschedule(_private.normalize({object, apiUrl, client}));
             });
         });
 };
