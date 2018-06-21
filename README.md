@@ -6,12 +6,12 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Ghost.org](https://ghost.org)
 - [Supported Node Versions](https://docs.ghost.org/v1/docs/supported-node-versions)
 - [Latest Release](https://ghost.org/developers/)
-- [Help & Support](http://help.ghost.org/)
-- [Theme Docs](http://themes.ghost.org/v1/)
+- [Help & Support](https://help.ghost.org/)
+- [Theme Docs](https://themes.ghost.org/)
 - [API Docs](https://api.ghost.org/)
 - [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Developer Blog](http://dev.ghost.org)
-- [Self-hoster Docs](http://docs.ghost.org/v1/)
+- [Developer Blog](https://dev.ghost.org)
+- [Self-hoster Docs](https://docs.ghost.org/v1/)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [forum](https://forum.ghost.org/) rather than opening an issue.**
 
@@ -41,7 +41,7 @@ Other options are also available if you prefer playing around with servers by yo
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
 
 - [Installing Ghost via the CLI](https://docs.ghost.org/v1/docs/install-local)
-- [Theme Developer Docs](http://themes.ghost.org)
+- [Theme Developer Docs](https://themes.ghost.org)
 
 
 # Contributors & Advanced Developers
@@ -59,7 +59,7 @@ When a new version of Ghost comes out, you'll want to look over these [upgrade i
 
 You can talk to other Ghost users and developers in our [forum](https://forum.ghost.org/) (it's pretty awesome).
 
-New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
+New releases are announced on the [dev blog](https://dev.ghost.org/tag/releases/). You can subscribe by email or follow [@TryGhost_Dev](https://twitter.com/tryghost_dev) on Twitter, if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
 
