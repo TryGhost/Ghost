@@ -35,12 +35,12 @@ class LocalFileStore extends StorageBase {
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
 
-        return this.getUniqueFileName(image, targetDir).then(function (filename) {
+        return this.getUniqueFileName(image, targetDir).then((filename) => {
             targetFilename = filename;
             return fs.mkdirs(targetDir);
-        }).then(function () {
+        }).then(() => {
             return fs.copy(image.path, targetFilename);
-        }).then(function () {
+        }).then(() => {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
             const fullUrl = (
@@ -50,7 +50,7 @@ class LocalFileStore extends StorageBase {
             ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
             return fullUrl;
-        }).catch(function (e) {
+        }).catch((e) => {
             return Promise.reject(e);
         });
     }
@@ -59,10 +59,10 @@ class LocalFileStore extends StorageBase {
         const filePath = path.join(targetDir || this.storagePath, fileName);
 
         return fs.stat(filePath)
-            .then(function () {
+            .then(() => {
                 return true;
             })
-            .catch(function () {
+            .catch(() => {
                 return false;
             });
     }
@@ -89,7 +89,7 @@ class LocalFileStore extends StorageBase {
                         common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
-            )(req, res, function (err) {
+            )(req, res, (err) => {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new common.errors.NotFoundError({
@@ -129,8 +129,8 @@ class LocalFileStore extends StorageBase {
 
         const targetPath = path.join(this.storagePath, options.path);
 
-        return new Promise(function (resolve, reject) {
-            fs.readFile(targetPath, function (err, bytes) {
+        return new Promise((resolve, reject) => {
+            fs.readFile(targetPath, (err, bytes) => {
                 if (err) {
                     if (err.code === 'ENOENT') {
                         return reject(new common.errors.NotFoundError({
