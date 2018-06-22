@@ -41,13 +41,13 @@ function getStorage() {
         } else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(`${config.getContentPath('storage')}${storageChoice}`) === -1) {
             throw new common.errors.IncorrectUsageError({
                 message: 'We have detected an error in your custom storage adapter.',
-                err: err
+                err
             });
             // CASE: only throw error if module does exist
         } else if (err.code !== 'MODULE_NOT_FOUND') {
             throw new common.errors.IncorrectUsageError({
                 message: 'We have detected an unknown error in your custom storage adapter.',
-                err: err
+                err
             });
         }
     }
@@ -58,13 +58,13 @@ function getStorage() {
     } catch (err) {
         if (err.code === 'MODULE_NOT_FOUND') {
             throw new common.errors.IncorrectUsageError({
-                err: err,
+                err,
                 context: `We cannot find your adapter in: ${config.getContentPath('storage')} or: ${config.get('paths').internalStoragePath}`
             });
         } else {
             throw new common.errors.IncorrectUsageError({
                 message: 'We have detected an error in your custom storage adapter.',
-                err: err
+                err
             });
         }
     }
