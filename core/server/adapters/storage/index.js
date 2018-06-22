@@ -1,4 +1,4 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     StorageBase = require('ghost-storage-base'),
     config = require('../../config'),
     common = require('../../lib/common'),
@@ -8,8 +8,8 @@ var _ = require('lodash'),
  * type: images
  */
 function getStorage() {
-    var storageChoice = config.get('storage:active'),
-        storageConfig,
+    const storageChoice = config.get('storage:active');
+    let storageConfig,
         CustomStorage,
         customStorage;
 
