@@ -1,7 +1,7 @@
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
 
-var serveStatic = require('express').static,
+const serveStatic = require('express').static,
     fs = require('fs-extra'),
     path = require('path'),
     Promise = require('bluebird'),
@@ -29,8 +29,8 @@ class LocalFileStore extends StorageBase {
      * @returns {*}
      */
     save(image, targetDir) {
-        var targetFilename,
-            self = this;
+        let targetFilename;
+        const self = this;
 
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
@@ -43,7 +43,7 @@ class LocalFileStore extends StorageBase {
         }).then(function () {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
-            var fullUrl = (
+            const fullUrl = (
                 urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
                     urlService.utils.STATIC_IMAGE_URL_PREFIX,
                     path.relative(self.storagePath, targetFilename))
@@ -56,7 +56,7 @@ class LocalFileStore extends StorageBase {
     }
 
     exists(fileName, targetDir) {
-        var filePath = path.join(targetDir || this.storagePath, fileName);
+        const filePath = path.join(targetDir || this.storagePath, fileName);
 
         return fs.stat(filePath)
             .then(function () {
@@ -75,10 +75,10 @@ class LocalFileStore extends StorageBase {
      * @returns {serveStaticContent}
      */
     serve() {
-        var self = this;
+        const self = this;
 
         return function serveStaticContent(req, res, next) {
-            var startedAtMoment = moment();
+            const startedAtMoment = moment();
 
             return serveStatic(
                 self.storagePath,
@@ -127,7 +127,7 @@ class LocalFileStore extends StorageBase {
         // remove trailing slashes
         options.path = (options.path || '').replace(/\/$|\\$/, '');
 
-        var targetPath = path.join(this.storagePath, options.path);
+        const targetPath = path.join(this.storagePath, options.path);
 
         return new Promise(function (resolve, reject) {
             fs.readFile(targetPath, function (err, bytes) {
