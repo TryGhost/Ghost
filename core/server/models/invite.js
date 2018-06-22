@@ -34,7 +34,7 @@ Invite = ghostBookshelf.Model.extend({
         }
 
         data.expires = Date.now() + constants.ONE_WEEK_MS;
-        data.token = security.tokens.generateHash({
+        data.token = security.tokens.generateFromEmail({
             email: data.email,
             expires: data.expires,
             secret: settingsCache.get('db_hash')

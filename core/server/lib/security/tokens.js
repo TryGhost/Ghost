@@ -1,6 +1,20 @@
 const crypto = require('crypto');
 
-module.exports.generateHash = function generateHash(options) {
+module.exports.generateFromContent = function generateFromContent(options) {
+    options = options || {};
+
+    const hash = crypto.createHash('sha256'),
+        content = options.content;
+
+    let text = '';
+
+    hash.update(content);
+
+    text += [content, hash.digest('base64')].join('|');
+    return new Buffer(text).toString('base64');
+};
+
+module.exports.generateFromEmail = function generateFromEmail(options) {
     options = options || {};
 
     const hash = crypto.createHash('sha256'),

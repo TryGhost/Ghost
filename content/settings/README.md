@@ -13,7 +13,6 @@ collections:
   /:
     permalink: '{globals.permalinks}'
     template:
-      - home
       - index
 
 taxonomies:
