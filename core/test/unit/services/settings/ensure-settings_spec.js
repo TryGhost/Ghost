@@ -13,6 +13,8 @@ const sinon = require('sinon'),
 describe('UNIT > Settings Service:', function () {
     beforeEach(function () {
         configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/'));
+        sandbox.stub(fs, 'readFile');
+        sandbox.stub(fs, 'copy');
     });
 
     afterEach(function () {
@@ -22,10 +24,12 @@ describe('UNIT > Settings Service:', function () {
 
     describe('Ensure settings files', function () {
         it('returns yaml file from settings folder if it exists', function () {
-            const fsAccessSpy = sandbox.spy(fs, 'access');
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/badroutes.yaml'), 'utf8').resolves('content');
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml'), 'utf8').resolves('content');
 
             return ensureSettings(['goodroutes', 'badroutes']).then(() => {
-                fsAccessSpy.callCount.should.be.eql(2);
+                fs.readFile.callCount.should.be.eql(2);
+                fs.copy.called.should.be.false();
             });
         });
 
@@ -34,20 +38,16 @@ describe('UNIT > Settings Service:', function () {
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';
-            const fsAccessStub = sandbox.stub(fs, 'access');
-            const fsCopyStub = sandbox.stub(fs, 'copy').resolves();
 
-            fsAccessStub.onFirstCall().resolves();
-            // route file in settings directotry is not found
-            fsAccessStub.onSecondCall().rejects(fsError);
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('content');
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml'), 'utf8').rejects(fsError);
+            fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
 
             return ensureSettings(['routes', 'globals'])
-            .then(() => {
-                fsAccessStub.calledTwice.should.be.true();
-            }).then(() => {
-                fsCopyStub.calledWith(expectedDefaultSettingsPath, expectedContentPath).should.be.true();
-                fsCopyStub.calledOnce.should.be.true();
-            });
+                .then(() => {
+                    fs.readFile.calledTwice.should.be.true();
+                    fs.copy.calledOnce.should.be.true();
+                });
         });
 
         it('copies default settings file if no file found', function () {
@@ -55,13 +55,13 @@ describe('UNIT > Settings Service:', function () {
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';
-            const fsAccessStub = sandbox.stub(fs, 'access').rejects(fsError);
-            const fsCopyStub = sandbox.stub(fs, 'copy').resolves();
+
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
+            fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
 
             return ensureSettings(['routes']).then(() => {
-                fsAccessStub.calledOnce.should.be.true();
-                fsCopyStub.calledWith(expectedDefaultSettingsPath, expectedContentPath).should.be.true();
-                fsCopyStub.calledOnce.should.be.true();
+                fs.readFile.calledOnce.should.be.true();
+                fs.copy.calledOnce.should.be.true();
             });
         });
 
@@ -69,12 +69,120 @@ describe('UNIT > Settings Service:', function () {
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/');
             const fsError = new Error('no permission');
             fsError.code = 'EPERM';
-            const fsAccessStub = sandbox.stub(fs, 'access').rejects(new Error('Oopsi!'));
 
-            return ensureSettings(['routes']).catch((error) => {
-                should.exist(error);
-                error.message.should.be.eql(`Error trying to access settings files in ${expectedContentPath}.`);
-                fsAccessStub.calledOnce.should.be.true();
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
+
+            return ensureSettings(['routes'])
+                .then(()=> {
+                    throw new Error('Expected test to fail');
+                })
+                .catch((error) => {
+                    should.exist(error);
+                    error.message.should.be.eql(`Error trying to access settings files in ${expectedContentPath}.`);
+                    fs.readFile.calledOnce.should.be.true();
+                    fs.copy.called.should.be.false();
+                });
+        });
+    });
+
+    describe('Migrations: home.hbs', function () {
+        it('routes.yaml has modifications', function () {
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('' +
+            'routes:\n' +
+                '\n' +
+                'collections:\n' +
+                '  /:\n' +
+                '    permalink: \'{globals.permalinks}\' # special 1.0 compatibility setting. See the docs for details.\n' +
+                '    template:\n' +
+                '      - index\n' +
+                '\n' +
+                'taxonomies:\n' +
+                '  tag: /tag/{slug}/\n' +
+                '  author: /author/{slug}/' + '' +
+                '\n'
+            );
+
+            return ensureSettings(['routes']).then(() => {
+                fs.readFile.callCount.should.be.eql(1);
+                fs.copy.called.should.be.false();
+            });
+        });
+
+        it('routes.yaml is old routes.yaml', function () {
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../server/services/settings/default-routes.yaml');
+            const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
+
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('' +
+                'routes:\n' +
+                '\n' +
+                'collections:\n' +
+                '  /:\n' +
+                '    permalink: \'{globals.permalinks}\' # special 1.0 compatibility setting. See the docs for details.\n' +
+                '    template:\n' +
+                '      - home\n' +
+                '      - index\n' +
+                '\n' +
+                'taxonomies:\n' +
+                '  tag: /tag/{slug}/\n' +
+                '  author: /author/{slug}/' +
+                '\n'
+            );
+
+            fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
+
+            return ensureSettings(['routes']).then(() => {
+                fs.readFile.callCount.should.be.eql(1);
+                fs.copy.called.should.be.true();
+            });
+        });
+
+        it('routes.yaml is old routes.yaml', function () {
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../server/services/settings/default-routes.yaml');
+            const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
+
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('' +
+                'routes:\n' +
+                '\n\n' +
+                'collections:\n' +
+                '  /:\n' +
+                '    permalink: \'{globals.permalinks}\' # special 1.0 compatibility setting. See the docs for details.\n' +
+                '    template:\n' +
+                '      - home\n' +
+                '      - index\n' +
+                '\n\r' +
+                'taxonomies:      \n' +
+                '  tag: /tag/{slug}/\n' +
+                '  author: /author/{slug}/' +
+                '\t' +
+                '\n'
+            );
+
+            fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
+
+            return ensureSettings(['routes']).then(() => {
+                fs.readFile.callCount.should.be.eql(1);
+                fs.copy.called.should.be.true();
+            });
+        });
+
+        it('routes.yaml has modifications, do not replace', function () {
+            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('' +
+                'routes:\n' +
+                '  /about/: about' +
+                '\n' +
+                'collections:\n' +
+                '  /:\n' +
+                '    permalink: \'{globals.permalinks}\' # special 1.0 compatibility setting. See the docs for details.\n' +
+                '\n' +
+                'taxonomies:\n' +
+                '  tag: /categories/{slug}/\n' +
+                '  author: /author/{slug}/' + '' +
+                '\n'
+            );
+
+            return ensureSettings(['routes']).then(() => {
+                fs.readFile.callCount.should.be.eql(1);
+                fs.copy.called.should.be.false();
             });
         });
     });
