@@ -47,7 +47,7 @@ class LocalFileStore extends StorageBase {
                 urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
                     urlService.utils.STATIC_IMAGE_URL_PREFIX,
                     path.relative(storagePath, targetFilename))
-            ).replace(new RegExp('\\' + path.sep, 'g'), '/');
+            ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
             return fullUrl;
         }).catch((e) => {
