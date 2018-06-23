@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const common = require('../../lib/common');
+const RESOURCE_CONFIG = require('../../services/routing/assets/resource-config');
 const _private = {};
 
 _private.validateTemplate = function validateTemplate(object) {
@@ -22,6 +23,138 @@ _private.validateTemplate = function validateTemplate(object) {
     }
 
     delete object.template;
+    return object;
+};
+
+_private.validateData = function validateData(object) {
+    if (!object.hasOwnProperty('data')) {
+        return object;
+    }
+
+    const shortToLongForm = (shortForm, options = {}) => {
+        let longForm = {
+            query: {},
+            router: {}
+        };
+
+        if (!shortForm.match(/.*\..*/)) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: shortForm,
+                    reason: 'Incorrect Format. Please use e.g. tag.recipes'
+                })
+            });
+        }
+
+        let redirect = false;
+
+        // CASE: user wants to redirect traffic from resource to route
+        // @TODO: enable redirect feature if confirmed
+        if (false && shortForm.match(/^->/)) { // eslint-disable-line no-constant-condition
+            shortForm = shortForm.replace(/^->/, '');
+            redirect = true;
+        }
+
+        let [resourceKey, slug] = shortForm.split('.');
+
+        longForm.query[options.resourceKey || resourceKey] = {};
+        longForm.query[options.resourceKey || resourceKey] = _.omit(_.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]), 'alias');
+
+        longForm.router = {
+            [RESOURCE_CONFIG.QUERY[resourceKey].alias]: [{slug: slug, redirect: redirect}]
+        };
+
+        longForm.query[options.resourceKey || resourceKey].options.slug = slug;
+        return longForm;
+    };
+
+    // CASE: short form e.g. data: tag.recipes (expand to long form)
+    if (typeof object.data === 'string') {
+        object.data = shortToLongForm(object.data);
+    } else {
+        const requiredQueryFields = ['type', 'resource'];
+        const allowedQueryValues = {
+            type: ['read', 'browse'],
+            resource: _.map(RESOURCE_CONFIG.QUERY, 'resource')
+        };
+        const allowedQueryOptions = ['limit', 'filter', 'include', 'slug', 'visibility', 'status'];
+        const allowedRouterOptions = ['redirect', 'slug'];
+        const defaultRouterOptions = {
+            redirect: false
+        };
+
+        let data = {
+            query: {},
+            router: {}
+        };
+
+        _.each(object.data, (value, key) => {
+            // CASE: short form e.g. data: tag.recipes
+            if (typeof object.data[key] === 'string') {
+                const longForm = shortToLongForm(object.data[key], {resourceKey: key});
+                data.query = _.merge(data.query, longForm.query);
+
+                _.each(Object.keys(longForm.router), (key) => {
+                    if (data.router[key]) {
+                        data.router[key] = data.router[key].concat(longForm.router[key]);
+                    } else {
+                        data.router[key] = longForm.router[key];
+                    }
+                });
+
+                return;
+            }
+
+            data.query[key] = {
+                options: {}
+            };
+
+            _.each(requiredQueryFields, (option) => {
+                if (!object.data[key].hasOwnProperty(option)) {
+                    throw new common.errors.ValidationError({
+                        message: common.i18n.t('errors.services.settings.yaml.validate', {
+                            at: object.data[key],
+                            reason: `${option} is required.`
+                        })
+                    });
+                }
+
+                if (allowedQueryValues[option] && allowedQueryValues[option].indexOf(object.data[key][option]) === -1) {
+                    throw new common.errors.ValidationError({
+                        message: common.i18n.t('errors.services.settings.yaml.validate', {
+                            at: object.data[key][option],
+                            reason: `${object.data[key][option]} not supported.`
+                        })
+                    });
+                }
+
+                data.query[key][option] = object.data[key][option];
+            });
+
+            const DEFAULT_RESOURCE =  _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+
+            data.query[key].options = _.pick(object.data[key], allowedQueryOptions);
+            if (data.query[key].type === 'read') {
+                data.query[key].options = _.defaults(data.query[key].options, DEFAULT_RESOURCE.options);
+            }
+
+            if (!data.router.hasOwnProperty(DEFAULT_RESOURCE.alias)) {
+                data.router[DEFAULT_RESOURCE.alias] = [];
+            }
+
+            // CASE: we do not allowed redirects for type browse
+            if (data.query[key].type === 'read') {
+                let entry = _.pick(object.data[key], allowedRouterOptions);
+                entry = _.defaults(entry, defaultRouterOptions);
+                data.router[DEFAULT_RESOURCE.alias].push(entry);
+            } else {
+                data.router[DEFAULT_RESOURCE.alias].push(defaultRouterOptions);
+            }
+        });
+
+        object.data = data;
+    }
+
     return object;
 };
 
@@ -59,6 +192,7 @@ _private.validateRoutes = function validateRoutes(routes) {
         }
 
         routes[routingTypeObjectKey] = _private.validateTemplate(routingTypeObject);
+        routes[routingTypeObjectKey] = _private.validateData(routes[routingTypeObjectKey]);
     });
 
     return routes;
@@ -145,6 +279,7 @@ _private.validateCollections = function validateCollections(collections) {
         }
 
         collections[routingTypeObjectKey] = _private.validateTemplate(routingTypeObject);
+        collections[routingTypeObjectKey] = _private.validateData(collections[routingTypeObjectKey]);
     });
 
     return collections;
