@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:taxonomy-router');
+const _ = require('lodash');
 const common = require('../../lib/common');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
@@ -30,15 +31,18 @@ class TaxonomyRouter extends ParentRouter {
         // REGISTER: context middleware
         this.router().use(this._prepareContext.bind(this));
 
+        this.router().param('slug', this._respectDominantRouter.bind(this));
+
         // REGISTER: enable rss by default
-        this.mountRouter(this.permalinks.getValue(), new RSSRouter().router());
+        this.rssRouter = new RSSRouter();
+        this.mountRouter(this.permalinks.getValue(), this.rssRouter.router());
 
         // REGISTER: e.g. /tag/:slug/
-        this.mountRoute(this.permalinks.getValue(), controllers.collection);
+        this.mountRoute(this.permalinks.getValue(), controllers.channel);
 
         // REGISTER: enable pagination for each taxonomy by default
         this.router().param('page', middlewares.pageParam);
-        this.mountRoute(urlService.utils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.collection);
+        this.mountRoute(urlService.utils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.channel);
 
         this.mountRoute(urlService.utils.urlJoin(this.permalinks.value, 'edit'), this._redirectEditOption.bind(this));
 
@@ -58,7 +62,7 @@ class TaxonomyRouter extends ParentRouter {
         };
 
         res._route = {
-            type: 'collection'
+            type: 'channel'
         };
 
         next();

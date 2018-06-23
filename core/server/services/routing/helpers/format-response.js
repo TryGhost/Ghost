@@ -6,10 +6,15 @@ const _ = require('lodash');
  * @return {Object} containing page variables
  */
 function formatPageResponse(result) {
-    var response = {
-        posts: result.posts,
-        pagination: result.meta.pagination
-    };
+    var response = {};
+
+    if (result.posts) {
+        response.posts = result.posts;
+    }
+
+    if (result.meta && result.meta.pagination) {
+        response.pagination = result.meta.pagination;
+    }
 
     _.each(result.data, function (data, name) {
         if (data.meta) {
@@ -37,6 +42,6 @@ function formatResponse(post) {
 }
 
 module.exports = {
-    collection: formatPageResponse,
+    entries: formatPageResponse,
     entry: formatResponse
 };
