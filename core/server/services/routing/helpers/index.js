@@ -7,8 +7,8 @@ module.exports = {
         return require('./fetch-data');
     },
 
-    get renderCollection() {
-        return require('./render-collection');
+    get renderEntries() {
+        return require('./render-entries');
     },
 
     get formatResponse() {

@@ -1,14 +1,14 @@
 const _ = require('lodash'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:collection'),
+    debug = require('ghost-ignition').debug('services:routing:controllers:channel'),
     common = require('../../../lib/common'),
     security = require('../../../lib/security'),
-    urlService = require('../../../services/url'),
     themes = require('../../themes'),
     filters = require('../../../filters'),
     helpers = require('../helpers');
 
-module.exports = function collectionController(req, res, next) {
-    debug('collectionController', req.params, res.locals.routerOptions);
+// @TODO: the collection+rss controller does almost the same
+module.exports = function channelController(req, res, next) {
+    debug('channelController', req.params, res.locals.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -45,13 +45,6 @@ module.exports = function collectionController(req, res, next) {
                     message: common.i18n.t('errors.errors.pageNotFound')
                 }));
             }
-
-            // CASE: does this post belong to this collection?
-            result.posts = _.filter(result.posts, (post) => {
-                if (urlService.owns(res.locals.routerOptions.identifier, post.url)) {
-                    return post;
-                }
-            });
 
             // Format data 1
             // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
