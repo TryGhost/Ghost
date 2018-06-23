@@ -83,7 +83,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             next.called.should.be.true();
             res._route.should.eql({
                 type: 'custom',
-                templates: []
+                templates: [],
+                defaultTemplate: 'default'
             });
 
             res.locals.routerOptions.should.eql({context: [], data: {}});

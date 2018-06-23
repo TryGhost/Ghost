@@ -475,7 +475,7 @@ describe('Integration - Web - Site', function () {
                 sandbox.restore();
             });
 
-            it('serve home', function () {
+            it('serve static route', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
@@ -486,9 +486,7 @@ describe('Integration - Web - Site', function () {
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-
-                        // falls back to index, because Casper has no home.hbs
-                        response.template.should.eql('index');
+                        response.template.should.eql('default');
                     });
             });
 
@@ -604,7 +602,7 @@ describe('Integration - Web - Site', function () {
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
+                        response.template.should.eql('default');
                     });
             });
         });
