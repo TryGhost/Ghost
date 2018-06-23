@@ -155,12 +155,15 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 identifier: collectionRouter.identifier,
                 context: ['index'],
                 name: 'index',
-                type: 'posts'
+                type: 'posts',
+                data: {},
+                order: undefined,
+                limit: undefined
             });
         });
 
-        it('with templates, no index collection', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
+        it('with templates, with order + limit, no index collection', function () {
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', order: 'published asc', limit: 19, templates: ['home', 'index']});
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
@@ -173,7 +176,10 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 identifier: collectionRouter.identifier,
                 context: ['magic'],
                 name: 'magic',
-                type: 'posts'
+                type: 'posts',
+                data: {},
+                order: 'published asc',
+                limit: 19
             });
         });
     });

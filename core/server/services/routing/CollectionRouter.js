@@ -28,6 +28,9 @@ class CollectionRouter extends ParentRouter {
         this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter || 'page:false';
+        this.data = object.data || {query: {}, router: {}};
+        this.order = object.order;
+        this.limit = object.limit;
 
         /**
          * @deprecated Remove in Ghost 2.0
@@ -92,13 +95,16 @@ class CollectionRouter extends ParentRouter {
     _prepareEntriesContext(req, res, next) {
         res.locals.routerOptions = {
             filter: this.filter,
+            limit: this.limit,
+            order: this.order,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             type: this.getType(),
             context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
             identifier: this.identifier,
-            name: this.routerName
+            name: this.routerName,
+            data: this.data.query
         };
 
         res._route = {
