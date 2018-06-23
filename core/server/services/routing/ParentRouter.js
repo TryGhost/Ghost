@@ -101,6 +101,18 @@ class ParentRouter extends EventEmitter {
         return urlService.utils.createUrl(this.route.value, options.absolute, options.secure);
     }
 
+    isRedirectEnabled(routerType, slug) {
+        if (!this.data || !Object.keys(this.data.router)) {
+            return false;
+        }
+
+        return _.find(this.data.router, function (entries, type) {
+            if (routerType === type) {
+                return _.find(entries, {redirect: true, slug: slug});
+            }
+        });
+    }
+
     reset() {}
 }
 
