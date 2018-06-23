@@ -25,6 +25,8 @@ class StaticPagesRouter extends ParentRouter {
     _registerRoutes() {
         this.router().use(this._prepareContext.bind(this));
 
+        this.router().param('slug', this._respectDominantRouter.bind(this));
+
         // REGISTER: permalink for static pages
         this.mountRoute(this.permalinks.getValue(), controllers.entry);
 
