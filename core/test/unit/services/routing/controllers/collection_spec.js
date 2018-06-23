@@ -42,6 +42,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         });
 
         sandbox.stub(themeService, 'getActive').returns({
+            updateTemplateOptions: sandbox.stub(),
             config: function (key) {
                key.should.eql('posts_per_page');
                return postsPerPage;
@@ -119,6 +120,36 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
+            done();
+        });
+
+        controllers.collection(req, res, failTest(done));
+    });
+
+    it('update hbs engine: router defines limit', function (done) {
+        res.locals.routerOptions.limit = 3;
+        req.params.page = 2;
+
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.locals.routerOptions)
+            .resolves({
+                posts: posts,
+                meta: {
+                    pagination: {
+                        pages: 3
+                    }
+                }
+            });
+
+        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
+
+        renderStub.callsFake(function () {
+            themeService.getActive.calledOnce.should.be.true();
+            themeService.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
+            security.string.safe.calledOnce.should.be.false();
+            fetchDataStub.calledOnce.should.be.true();
+            filters.doFilter.calledOnce.should.be.true();
+            secureStub.calledOnce.should.be.true();
+            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
