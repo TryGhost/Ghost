@@ -32,18 +32,18 @@ module.exports = function bootstrap() {
 
     const dynamicRoutes = settingsService.get('routes');
 
-    _.each(dynamicRoutes.taxonomies, (value, key) => {
-        const taxonomyRouter = new TaxonomyRouter(key, value);
-        siteRouter.mountRouter(taxonomyRouter.router());
-
-        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-    });
-
     _.each(dynamicRoutes.routes, (value, key) => {
         const staticRoutesRouter = new StaticRoutesRouter(key, value);
         siteRouter.mountRouter(staticRoutesRouter.router());
 
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
+    });
+
+    _.each(dynamicRoutes.taxonomies, (value, key) => {
+        const taxonomyRouter = new TaxonomyRouter(key, value);
+        siteRouter.mountRouter(taxonomyRouter.router());
+
+        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
     });
 
     _.each(dynamicRoutes.collections, (value, key) => {
