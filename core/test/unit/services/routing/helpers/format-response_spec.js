@@ -27,7 +27,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
         });
     });
 
-    describe('collection', function () {
+    describe('entries', function () {
         it('should return posts and posts pagination as top level keys', function () {
             let formatted,
                 data = {
@@ -35,7 +35,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
                     meta: {pagination: {}}
                 };
 
-            formatted = helpers.formatResponse.collection(data);
+            formatted = helpers.formatResponse.entries(data);
 
             formatted.should.be.an.Object().with.properties('posts', 'pagination');
             formatted.posts.should.eql(data.posts);
@@ -50,7 +50,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
                     data: {tag: tags}
                 };
 
-            formatted = helpers.formatResponse.collection(data);
+            formatted = helpers.formatResponse.entries(data);
 
             formatted.should.be.an.Object().with.properties('posts', 'pagination', 'tag');
             formatted.tag.should.eql(data.data.tag[0]);
@@ -69,7 +69,7 @@ describe('Unit - services/routing/helpers/format-response', function () {
                     }
                 };
 
-            formatted = helpers.formatResponse.collection(data);
+            formatted = helpers.formatResponse.entries(data);
 
             formatted.should.be.an.Object().with.properties('posts', 'pagination', 'featured');
             formatted.featured.should.be.an.Object().with.properties('posts', 'pagination');

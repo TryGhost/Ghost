@@ -5,7 +5,6 @@ const should = require('should'),
     security = require('../../../../../server/lib/security'),
     filters = require('../../../../../server/filters'),
     themeService = require('../../../../../server/services/themes'),
-    urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
     sandbox = sinon.sandbox.create();
@@ -17,7 +16,7 @@ function failTest(done) {
     };
 }
 
-describe('Unit - services/routing/controllers/collection', function () {
+describe('Unit - services/routing/controllers/channel', function () {
     let req, res, fetchDataStub, secureStub, renderStub, posts, postsPerPage;
 
     beforeEach(function () {
@@ -55,9 +54,6 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         sandbox.stub(filters, 'doFilter');
 
-        sandbox.stub(urlService, 'owns');
-        urlService.owns.withArgs('identifier', posts[0].url).returns(true);
-
         req = {
             path: '/',
             params: {},
@@ -66,9 +62,7 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         res = {
             locals: {
-                routerOptions: {
-                    identifier: 'identifier'
-                }
+                routerOptions: {}
             },
             render: sinon.spy(),
             redirect: sinon.spy()
@@ -98,11 +92,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 
     it('pass page param', function (done) {
@@ -126,11 +119,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 
     it('update hbs engine: router defines limit', function (done) {
@@ -156,11 +148,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 
     it('page param too big', function (done) {
@@ -176,7 +167,7 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        controllers.collection(req, res, function (err) {
+        controllers.channel(req, res, function (err) {
             (err instanceof common.errors.NotFoundError).should.be.true();
 
             themeService.getActive.calledOnce.should.be.true();
@@ -185,7 +176,6 @@ describe('Unit - services/routing/controllers/collection', function () {
             filters.doFilter.calledOnce.should.be.false();
             renderStub.calledOnce.should.be.false();
             secureStub.calledOnce.should.be.false();
-            urlService.owns.calledOnce.should.be.false();
             done();
         });
     });
@@ -211,11 +201,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 
     it('invalid posts per page', function (done) {
@@ -239,11 +228,10 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 
     it('ensure secure helper get\'s called for data object', function (done) {
@@ -268,54 +256,9 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             filters.doFilter.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
             done();
         });
 
-        controllers.collection(req, res, failTest(done));
-    });
-
-    it('should verify if post belongs to collection', function (done) {
-        posts = [
-            testUtils.DataGenerator.forKnex.createPost({url: '/a/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/b/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/c/'}),
-            testUtils.DataGenerator.forKnex.createPost({url: '/d/'})
-        ];
-
-        res.locals.routerOptions.filter = 'featured:true';
-
-        urlService.owns.reset();
-        urlService.owns.withArgs('identifier', posts[0].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[1].url).returns(true);
-        urlService.owns.withArgs('identifier', posts[2].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[3].url).returns(false);
-
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
-            .resolves({
-                posts: posts,
-                data: {
-                    tag: [testUtils.DataGenerator.forKnex.createTag()]
-                },
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        filters.doFilter.withArgs('prePostsRender', [posts[1]], res.locals).resolves();
-
-        renderStub.callsFake(function () {
-            themeService.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
-            secureStub.calledTwice.should.be.true();
-            urlService.owns.callCount.should.eql(4);
-            done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        controllers.channel(req, res, failTest(done));
     });
 });
