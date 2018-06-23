@@ -81,7 +81,8 @@ class StaticRoutesRouter extends ParentRouter {
 
         res._route = {
             type: 'custom',
-            templates: this.templates
+            templates: this.templates,
+            defaultTemplate: 'default'
         };
 
         next();
