@@ -5,35 +5,7 @@ const RSSRouter = require('./RSSRouter');
 const urlService = require('../url');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
-
-/* eslint-disable */
-const knownTaxonomies = {
-    tag: {
-        filter: "tags:'%s'+tags.visibility:public",
-        data: {
-            type: 'read',
-            resource: 'tags',
-            options: {
-                slug: '%s',
-                visibility: 'public'
-            }
-        },
-        editRedirect: '#/settings/tags/:slug/'
-    },
-    author: {
-        filter: "authors:'%s'",
-        data: {
-            type: 'read',
-            resource: 'users',
-            options: {
-                slug: '%s',
-                visibility: 'public'
-            }
-        },
-        editRedirect: '#/team/:slug/'
-    }
-};
-/* eslint-enable */
+const RESOURCE_CONFIG = require('./assets/resource-config');
 
 class TaxonomyRouter extends ParentRouter {
     constructor(key, permalinks) {
@@ -77,8 +49,8 @@ class TaxonomyRouter extends ParentRouter {
         res.locals.routerOptions = {
             name: this.taxonomyKey,
             permalinks: this.permalinks.getValue(),
-            data: {[this.taxonomyKey]: knownTaxonomies[this.taxonomyKey].data},
-            filter: knownTaxonomies[this.taxonomyKey].filter,
+            data: {[this.taxonomyKey]: _.omit(RESOURCE_CONFIG.QUERY[this.taxonomyKey], 'alias')},
+            filter: RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
             type: this.getType(),
             context: [this.taxonomyKey],
             slugTemplate: true,
@@ -93,11 +65,11 @@ class TaxonomyRouter extends ParentRouter {
     }
 
     _redirectEditOption(req, res) {
-        urlService.utils.redirectToAdmin(302, res, knownTaxonomies[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
+        urlService.utils.redirectToAdmin(302, res, RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
     }
 
     getType() {
-        return knownTaxonomies[this.taxonomyKey].data.resource;
+        return RESOURCE_CONFIG.QUERY[this.taxonomyKey].resource;
     }
 
     getRoute() {
