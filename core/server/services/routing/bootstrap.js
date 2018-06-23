@@ -22,7 +22,7 @@ module.exports = function bootstrap() {
     registry.resetAllRouters();
     registry.resetAllRoutes();
 
-    const siteRouter = new ParentRouter('site');
+    const siteRouter = new ParentRouter('SiteRouter');
     const previewRouter = new PreviewRouter();
 
     siteRouter.mountRouter(previewRouter.router());
@@ -57,7 +57,7 @@ module.exports = function bootstrap() {
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);
 
-    const appRouter = new ParentRouter('apps');
+    const appRouter = new ParentRouter('AppsRouter');
     siteRouter.mountRouter(appRouter.router());
 
     registry.setRouter('appRouter', appRouter);
