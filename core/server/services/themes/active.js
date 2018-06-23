@@ -12,6 +12,7 @@
  *
  */
 var join = require('path').join,
+    _ = require('lodash'),
     themeConfig = require('./config'),
     config = require('../../config'),
     engine = require('./engine'),
@@ -72,6 +73,10 @@ class ActiveTheme {
 
     hasTemplate(templateName) {
         return this._templates.indexOf(templateName) > -1;
+    }
+
+    updateTemplateOptions(options) {
+        engine._options.templateOptions = _.merge(engine._options.templateOptions, options);
     }
 
     config(key) {

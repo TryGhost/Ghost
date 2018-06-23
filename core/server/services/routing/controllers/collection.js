@@ -15,11 +15,24 @@ module.exports = function collectionController(req, res, next) {
     };
 
     if (pathOptions.page) {
-        const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
+        // CASE 1: routes.yaml `limit` is stronger than theme definition
+        // CASE 2: use `posts_per_page` config from theme as `limit` value
+        if (res.locals.routerOptions.limit) {
+            themes.getActive().updateTemplateOptions({
+                data: {
+                    config: {
+                        posts_per_page: res.locals.routerOptions.limit
+                    }
+                }
+            });
 
-        // CASE: no negative posts per page
-        if (!isNaN(postsPerPage) && postsPerPage > 0) {
-            pathOptions.limit = postsPerPage;
+            pathOptions.limit = res.locals.routerOptions.limit;
+        } else {
+            const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
+
+            if (!isNaN(postsPerPage) && postsPerPage > 0) {
+                pathOptions.limit = postsPerPage;
+            }
         }
     }
 

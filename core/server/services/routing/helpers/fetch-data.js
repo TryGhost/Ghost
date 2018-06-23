@@ -68,6 +68,10 @@ function fetchData(pathOptions, routerOptions) {
         postQuery.options.filter = routerOptions.filter;
     }
 
+    if (routerOptions.order) {
+        postQuery.options.order = routerOptions.order;
+    }
+
     if (pathOptions.hasOwnProperty('page')) {
         postQuery.options.page = pathOptions.page;
     }
