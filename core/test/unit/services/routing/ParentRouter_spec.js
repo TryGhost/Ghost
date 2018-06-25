@@ -55,7 +55,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
     describe('fn: _respectDominantRouter', function () {
         it('redirect', function () {
             const parentRouter = new ParentRouter();
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -85,7 +85,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect with query params', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -115,7 +115,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect rss', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -145,7 +145,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect pagination', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -177,7 +177,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             configUtils.set('url', 'http://localhost:7777/blog/');
 
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -207,7 +207,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('no redirect: different data key', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };
@@ -234,7 +234,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('no redirect: no channel defined', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sandbox.stub().returns('tags');
             parentRouter.permalinks = {
                 getValue: sandbox.stub().returns('/tag/:slug/')
             };

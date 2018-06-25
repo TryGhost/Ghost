@@ -9,7 +9,7 @@ const common = require('../../../../server/lib/common');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 const sandbox = sinon.sandbox.create();
 
-describe('Unit: services/url/UrlService', function () {
+describe('Integration: services/url/UrlService', function () {
     let urlService;
 
     before(function () {
@@ -33,7 +33,7 @@ describe('Unit: services/url/UrlService', function () {
             router1 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'post collection';
@@ -43,7 +43,7 @@ describe('Unit: services/url/UrlService', function () {
             router2 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'authors';
@@ -53,7 +53,7 @@ describe('Unit: services/url/UrlService', function () {
             router3 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'tags';
@@ -63,7 +63,7 @@ describe('Unit: services/url/UrlService', function () {
             router4 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'static pages';
@@ -71,7 +71,7 @@ describe('Unit: services/url/UrlService', function () {
             };
 
             router1.getFilter.returns('featured:false');
-            router1.getType.returns('posts');
+            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
@@ -79,7 +79,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router2.getFilter.returns(false);
-            router2.getType.returns('users');
+            router2.getResourceType.returns('users');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/author/:slug/';
@@ -87,7 +87,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router3.getFilter.returns(false);
-            router3.getType.returns('tags');
+            router3.getResourceType.returns('tags');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/tag/:slug/';
@@ -95,7 +95,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router4.getFilter.returns(false);
-            router4.getType.returns('pages');
+            router4.getResourceType.returns('pages');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
@@ -135,19 +135,19 @@ describe('Unit: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getType() === 'posts') {
+                if (generator.router.getResourceType() === 'posts') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getType() === 'pages') {
+                if (generator.router.getResourceType() === 'pages') {
                     generator.getUrls().length.should.eql(1);
                 }
 
-                if (generator.router.getType() === 'tags') {
+                if (generator.router.getResourceType() === 'tags') {
                     generator.getUrls().length.should.eql(5);
                 }
 
-                if (generator.router.getType() === 'users') {
+                if (generator.router.getResourceType() === 'users') {
                     generator.getUrls().length.should.eql(5);
                 }
             });
@@ -212,11 +212,11 @@ describe('Unit: services/url/UrlService', function () {
                         url.should.eql('/404/');
 
                         urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getType() === 'posts') {
+                            if (generator.router.getResourceType() === 'posts') {
                                 generator.getUrls().length.should.eql(1);
                             }
 
-                            if (generator.router.getType() === 'pages') {
+                            if (generator.router.getResourceType() === 'pages') {
                                 generator.getUrls().length.should.eql(1);
                             }
                         });
@@ -231,11 +231,11 @@ describe('Unit: services/url/UrlService', function () {
                         url.should.eql('/ghostly-kitchen-sink/');
 
                         urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getType() === 'posts') {
+                            if (generator.router.getResourceType() === 'posts') {
                                 generator.getUrls().length.should.eql(1);
                             }
 
-                            if (generator.router.getType() === 'pages') {
+                            if (generator.router.getResourceType() === 'pages') {
                                 generator.getUrls().length.should.eql(2);
                             }
                         });
@@ -250,11 +250,11 @@ describe('Unit: services/url/UrlService', function () {
                         url.should.eql('/static-page-test/');
 
                         urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getType() === 'posts') {
+                            if (generator.router.getResourceType() === 'posts') {
                                 generator.getUrls().length.should.eql(3);
                             }
 
-                            if (generator.router.getType() === 'pages') {
+                            if (generator.router.getResourceType() === 'pages') {
                                 generator.getUrls().length.should.eql(0);
                             }
                         });
@@ -313,7 +313,7 @@ describe('Unit: services/url/UrlService', function () {
             router1 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'post collection 1';
@@ -323,7 +323,7 @@ describe('Unit: services/url/UrlService', function () {
             router2 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'post collection 2';
@@ -333,7 +333,7 @@ describe('Unit: services/url/UrlService', function () {
             router3 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'authors';
@@ -343,7 +343,7 @@ describe('Unit: services/url/UrlService', function () {
             router4 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'tags';
@@ -353,7 +353,7 @@ describe('Unit: services/url/UrlService', function () {
             router5 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'static pages';
@@ -361,7 +361,7 @@ describe('Unit: services/url/UrlService', function () {
             };
 
             router1.getFilter.returns('featured:true');
-            router1.getType.returns('posts');
+            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/podcast/:slug/';
@@ -369,7 +369,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router2.getFilter.returns('page:false');
-            router2.getType.returns('posts');
+            router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/collection/:year/:slug/';
@@ -377,7 +377,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router3.getFilter.returns(false);
-            router3.getType.returns('users');
+            router3.getResourceType.returns('users');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';
@@ -385,7 +385,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router4.getFilter.returns(false);
-            router4.getType.returns('tags');
+            router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/category/:slug/';
@@ -393,7 +393,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router5.getFilter.returns(false);
-            router5.getType.returns('pages');
+            router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
@@ -435,23 +435,23 @@ describe('Unit: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'page:false') {
+                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'page:false') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getType() === 'pages') {
+                if (generator.router.getResourceType() === 'pages') {
                     generator.getUrls().length.should.eql(1);
                 }
 
-                if (generator.router.getType() === 'tags') {
+                if (generator.router.getResourceType() === 'tags') {
                     generator.getUrls().length.should.eql(5);
                 }
 
-                if (generator.router.getType() === 'users') {
+                if (generator.router.getResourceType() === 'users') {
                     generator.getUrls().length.should.eql(5);
                 }
             });
@@ -509,11 +509,11 @@ describe('Unit: services/url/UrlService', function () {
                         url.should.eql('/podcast/ghostly-kitchen-sink/');
 
                         urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:false') {
+                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
                                 generator.getUrls().length.should.eql(1);
                             }
 
-                            if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
                                 generator.getUrls().length.should.eql(3);
                             }
                         });
@@ -528,11 +528,11 @@ describe('Unit: services/url/UrlService', function () {
                         url.should.eql('/collection/2015/short-and-sweet/');
 
                         urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:false') {
+                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
                                 generator.getUrls().length.should.eql(2);
                             }
 
-                            if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
                                 generator.getUrls().length.should.eql(2);
                             }
                         });
@@ -552,7 +552,7 @@ describe('Unit: services/url/UrlService', function () {
             router1 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'post collection 1';
@@ -562,7 +562,7 @@ describe('Unit: services/url/UrlService', function () {
             router2 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'post collection 2';
@@ -572,7 +572,7 @@ describe('Unit: services/url/UrlService', function () {
             router3 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'authors';
@@ -582,7 +582,7 @@ describe('Unit: services/url/UrlService', function () {
             router4 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'tags';
@@ -592,7 +592,7 @@ describe('Unit: services/url/UrlService', function () {
             router5 = {
                 getFilter: sandbox.stub(),
                 addListener: sandbox.stub(),
-                getType: sandbox.stub(),
+                getResourceType: sandbox.stub(),
                 getPermalinks: sandbox.stub(),
                 toString: function () {
                     return 'static pages';
@@ -600,7 +600,7 @@ describe('Unit: services/url/UrlService', function () {
             };
 
             router1.getFilter.returns('featured:false');
-            router1.getType.returns('posts');
+            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/collection/:year/:slug/';
@@ -608,7 +608,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router2.getFilter.returns('featured:true');
-            router2.getType.returns('posts');
+            router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/podcast/:slug/';
@@ -616,7 +616,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router3.getFilter.returns(false);
-            router3.getType.returns('users');
+            router3.getResourceType.returns('users');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';
@@ -624,7 +624,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router4.getFilter.returns(false);
-            router4.getType.returns('tags');
+            router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/category/:slug/';
@@ -632,7 +632,7 @@ describe('Unit: services/url/UrlService', function () {
             });
 
             router5.getFilter.returns(false);
-            router5.getType.returns('pages');
+            router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
@@ -675,23 +675,23 @@ describe('Unit: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:false') {
+                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getType() === 'pages') {
+                if (generator.router.getResourceType() === 'pages') {
                     generator.getUrls().length.should.eql(1);
                 }
 
-                if (generator.router.getType() === 'tags') {
+                if (generator.router.getResourceType() === 'tags') {
                     generator.getUrls().length.should.eql(5);
                 }
 
-                if (generator.router.getType() === 'users') {
+                if (generator.router.getResourceType() === 'users') {
                     generator.getUrls().length.should.eql(5);
                 }
             });
