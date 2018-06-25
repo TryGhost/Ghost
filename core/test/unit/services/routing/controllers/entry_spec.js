@@ -46,9 +46,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         };
 
         res = {
-            locals: {
-                routerOptions: {}
-            },
+            routerOptions: {},
             render: sinon.spy(),
             redirect: sinon.spy()
         };
@@ -61,7 +59,7 @@ describe('Unit - services/routing/controllers/entry', function () {
     it('resource not found', function (done) {
         req.path = '/does-not-exist/';
 
-        postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+        postLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves(null);
 
         controllers.entry(req, res, function (err) {
@@ -74,7 +72,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         req.path = post.url;
         req.originalUrl = req.path;
 
-        res.locals.routerOptions.type = 'posts';
+        res.routerOptions.resourceType = 'posts';
 
         filters.doFilter.withArgs('prePostsRender', post, res.locals).resolves();
 
@@ -84,7 +82,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             }
         });
 
-        postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+        postLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves({
                 post: post
             });
@@ -101,7 +99,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         it('isUnknownOption: true', function (done) {
             req.path = post.url;
 
-            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+            postLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isUnknownOption: true,
                     post: post
@@ -116,7 +114,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         it('isEditURL: true', function (done) {
             req.path = post.url;
 
-            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+            postLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isEditURL: true,
                     post: post
@@ -133,7 +131,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         it('type of router !== type of resource', function (done) {
             req.path = post.url;
-            res.locals.routerOptions.type = 'posts';
+            res.routerOptions.resourceType = 'posts';
 
             urlService.getResourceById.withArgs(post.id).returns({
                 config: {
@@ -141,7 +139,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+            postLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });
@@ -157,7 +155,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.path = '/2017/07' + post.url;
             req.originalUrl = req.path;
 
-            res.locals.routerOptions.type = 'posts';
+            res.routerOptions.resourceType = 'posts';
 
             urlService.getResourceById.withArgs(post.id).returns({
                 config: {
@@ -165,7 +163,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+            postLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });
@@ -186,7 +184,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.path = '/2017/07' + post.url;
             req.originalUrl = req.path + '?query=true';
 
-            res.locals.routerOptions.type = 'posts';
+            res.routerOptions.resourceType = 'posts';
 
             urlService.getResourceById.withArgs(post.id).returns({
                 config: {
@@ -194,7 +192,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.locals.routerOptions)
+            postLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });

@@ -81,13 +81,13 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             next.called.should.be.true();
-            res._route.should.eql({
+            res.routerOptions.should.eql({
                 type: 'custom',
                 templates: [],
-                defaultTemplate: 'default'
+                defaultTemplate: 'default',
+                context: [],
+                data: {}
             });
-
-            res.locals.routerOptions.should.eql({context: [], data: {}});
             should.not.exist(res.locals.slug);
         });
     });
@@ -189,7 +189,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
-                res.locals.routerOptions.should.eql({
+                res.routerOptions.should.eql({
+                    type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
                     name: 'channel',
@@ -198,8 +199,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     order: undefined,
                     templates: []
                 });
-
-                res._route.type.should.eql('channel');
             });
 
             it('with data', function () {
@@ -210,7 +209,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
-                res.locals.routerOptions.should.eql({
+                res.routerOptions.should.eql({
+                    type: 'channel',
                     context: ['nothingcomparestoyou'],
                     name: 'nothingcomparestoyou',
                     filter: undefined,
@@ -219,8 +219,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     order: undefined,
                     templates: []
                 });
-
-                res._route.type.should.eql('channel');
             });
 
             it('with filter', function () {
@@ -231,7 +229,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
-                res.locals.routerOptions.should.eql({
+                res.routerOptions.should.eql({
+                    type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
                     name: 'channel',
@@ -240,8 +239,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     data: {},
                     templates: []
                 });
-
-                res._route.type.should.eql('channel');
             });
 
             it('with order+limit', function () {
@@ -254,7 +251,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
-                res.locals.routerOptions.should.eql({
+                res.routerOptions.should.eql({
+                    type: 'channel',
                     context: ['channel'],
                     filter: 'tag:test',
                     name: 'channel',
@@ -263,8 +261,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     data: {},
                     templates: []
                 });
-
-                res._route.type.should.eql('channel');
             });
         });
     });

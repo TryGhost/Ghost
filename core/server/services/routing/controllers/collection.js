@@ -8,7 +8,7 @@ const _ = require('lodash'),
     helpers = require('../helpers');
 
 module.exports = function collectionController(req, res, next) {
-    debug('collectionController', req.params, res.locals.routerOptions);
+    debug('collectionController', req.params, res.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -18,16 +18,16 @@ module.exports = function collectionController(req, res, next) {
     if (pathOptions.page) {
         // CASE 1: routes.yaml `limit` is stronger than theme definition
         // CASE 2: use `posts_per_page` config from theme as `limit` value
-        if (res.locals.routerOptions.limit) {
+        if (res.routerOptions.limit) {
             themes.getActive().updateTemplateOptions({
                 data: {
                     config: {
-                        posts_per_page: res.locals.routerOptions.limit
+                        posts_per_page: res.routerOptions.limit
                     }
                 }
             });
 
-            pathOptions.limit = res.locals.routerOptions.limit;
+            pathOptions.limit = res.routerOptions.limit;
         } else {
             const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
 
@@ -37,7 +37,7 @@ module.exports = function collectionController(req, res, next) {
         }
     }
 
-    return helpers.fetchData(pathOptions, res.locals.routerOptions)
+    return helpers.fetchData(pathOptions, res.routerOptions)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {
@@ -48,7 +48,7 @@ module.exports = function collectionController(req, res, next) {
 
             // CASE: does this post belong to this collection?
             result.posts = _.filter(result.posts, (post) => {
-                if (urlService.owns(res.locals.routerOptions.identifier, post.url)) {
+                if (urlService.owns(res.routerOptions.identifier, post.url)) {
                     return post;
                 }
             });

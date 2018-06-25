@@ -50,19 +50,16 @@ class TaxonomyRouter extends ParentRouter {
     }
 
     _prepareContext(req, res, next) {
-        res.locals.routerOptions = {
+        res.routerOptions = {
+            type: 'channel',
             name: this.taxonomyKey,
             permalinks: this.permalinks.getValue(),
             data: {[this.taxonomyKey]: _.omit(RESOURCE_CONFIG.QUERY[this.taxonomyKey], 'alias')},
             filter: RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
-            type: this.getType(),
+            resourceType: this.getResourceType(),
             context: [this.taxonomyKey],
             slugTemplate: true,
             identifier: this.identifier
-        };
-
-        res._route = {
-            type: 'channel'
         };
 
         next();
@@ -72,7 +69,7 @@ class TaxonomyRouter extends ParentRouter {
         urlService.utils.redirectToAdmin(302, res, RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
     }
 
-    getType() {
+    getResourceType() {
         return RESOURCE_CONFIG.QUERY[this.taxonomyKey].resource;
     }
 

@@ -67,17 +67,16 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
-        res.locals.routerOptions.should.eql({
+        res.routerOptions.should.eql({
+            type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',
-            type: RESOURCE_CONFIG.QUERY.tag.resource,
+            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
             data: {tag: _.omit(RESOURCE_CONFIG.QUERY.tag, 'alias')},
             filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,
             identifier: taxonomyRouter.identifier
         });
-
-        res._route.type.should.eql('channel');
     });
 });

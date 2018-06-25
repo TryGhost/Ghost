@@ -19,7 +19,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         router = {
             getFilter: sandbox.stub(),
             addListener: sandbox.stub(),
-            getType: sandbox.stub(),
+            getResourceType: sandbox.stub(),
             getPermalinks: sandbox.stub()
         };
 
@@ -102,7 +102,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onInit', function () {
         it('1 resource', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([resource]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -113,7 +113,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('no resource', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -126,7 +126,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onAdded', function () {
         it('type is equal', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getByIdAndType.withArgs('posts', 1).returns(resource);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -137,7 +137,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('type is not equal', function () {
-            router.getType.returns('pages');
+            router.getResourceType.returns('pages');
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
@@ -151,7 +151,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         describe('no filter', function () {
             it('resource is not taken', function () {
                 router.getFilter.returns(false);
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query');
 
@@ -170,7 +170,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
             it('resource is taken', function () {
                 router.getFilter.returns(false);
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
                 sandbox.stub(jsonpath, 'query');
 
@@ -191,7 +191,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         describe('custom filter', function () {
             it('matches', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query').returns([true]);
 
@@ -210,7 +210,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
             it('no match', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
                 sandbox.stub(jsonpath, 'query').returns([]);
 
@@ -229,7 +229,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
             it('resource is taken', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
                 sandbox.stub(jsonpath, 'query').returns([]);
 

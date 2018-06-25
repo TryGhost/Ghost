@@ -34,9 +34,9 @@ describe('Unit - services/routing/controllers/rss', function () {
         };
 
         res = {
+            routerOptions: {},
             locals: {
-                safeVersion: '0.6',
-                routerOptions: {}
+                safeVersion: '0.6'
             }
         };
 

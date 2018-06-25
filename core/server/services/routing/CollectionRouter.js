@@ -93,12 +93,13 @@ class CollectionRouter extends ParentRouter {
      * @TODO: Why do we need two context objects? O_O - refactor this out
      */
     _prepareEntriesContext(req, res, next) {
-        res.locals.routerOptions = {
+        res.routerOptions = {
+            type: 'collection',
             filter: this.filter,
             limit: this.limit,
             order: this.order,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
-            type: this.getType(),
+            resourceType: this.getResourceType(),
             context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
@@ -107,16 +108,12 @@ class CollectionRouter extends ParentRouter {
             data: this.data.query
         };
 
-        res._route = {
-            type: 'collection'
-        };
-
         next();
     }
 
     _prepareEntryContext(req, res, next) {
-        res.locals.routerOptions.context = ['post'];
-        res._route.type = 'entry';
+        res.routerOptions.context = ['post'];
+        res.routerOptions.type = 'entry';
         next();
     }
 
@@ -143,7 +140,7 @@ class CollectionRouter extends ParentRouter {
         this.emit('updated');
     }
 
-    getType() {
+    getResourceType() {
         return 'posts';
     }
 

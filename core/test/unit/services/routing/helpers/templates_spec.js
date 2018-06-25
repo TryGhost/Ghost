@@ -389,7 +389,7 @@ describe('templates', function () {
         beforeEach(function () {
             req = {};
             res = {
-                locals: {}
+                routerOptions: {}
             };
             data = {};
 
@@ -433,7 +433,7 @@ describe('templates', function () {
         });
 
         it('calls pickTemplate for custom routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
                 templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
@@ -455,7 +455,7 @@ describe('templates', function () {
         });
 
         it('calls pickTemplate for custom routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
                 templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
@@ -477,7 +477,7 @@ describe('templates', function () {
         });
 
         it('calls getTemplateForEntry for entry routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'entry'
             };
 
@@ -503,11 +503,10 @@ describe('templates', function () {
             req.url = '/';
             req.params = {};
 
-            res._route = {
-                type: 'collection'
+            res.routerOptions = {
+                type: 'collection',
+                testCollection: 'test'
             };
-
-            res.locals.routerOptions = {testCollection: 'test'};
 
             // Call setTemplate
             templates.setTemplate(req, res, data);
@@ -520,18 +519,17 @@ describe('templates', function () {
             stubs.getTemplateForEntries.called.should.be.true();
             stubs.getTemplateForError.called.should.be.false();
 
-            stubs.getTemplateForEntries.calledWith({testCollection: 'test'}).should.be.true();
+            stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}).should.be.true();
         });
 
         it('calls getTemplateForEntries for type channel', function () {
             req.url = '/';
             req.params = {};
 
-            res._route = {
-                type: 'channel'
+            res.routerOptions = {
+                type: 'channel',
+                testChannel: 'test'
             };
-
-            res.locals.routerOptions = {testChannel: 'test'};
 
             // Call setTemplate
             templates.setTemplate(req, res, data);
@@ -544,12 +542,12 @@ describe('templates', function () {
             stubs.getTemplateForEntries.called.should.be.true();
             stubs.getTemplateForError.called.should.be.false();
 
-            stubs.getTemplateForEntries.calledWith({testChannel: 'test'}).should.be.true();
+            stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}).should.be.true();
         });
 
         it('calls getTemplateForError if there is an error', function () {
             // Make the config look like a custom route
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
                 templateName: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'

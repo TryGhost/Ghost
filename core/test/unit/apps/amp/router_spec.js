@@ -60,7 +60,7 @@ describe('Unit - apps/amp/lib/router', function () {
     describe('fn: renderer', function () {
         it('should render default amp page when theme has no amp template', function (done) {
             helpers.renderer.callsFake(function (req, res, data) {
-                res._route.defaultTemplate.should.eql(defaultPath);
+                res.routerOptions.defaultTemplate.should.eql(defaultPath);
                 data.should.eql({post: {title: 'test'}});
                 done();
             });

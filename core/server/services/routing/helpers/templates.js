@@ -158,8 +158,6 @@ _private.getTemplateForError = function getTemplateForError(statusCode) {
 };
 
 module.exports.setTemplate = function setTemplate(req, res, data) {
-    const routeConfig = res._route || {};
-
     if (res._template && !req.err) {
         return;
     }
@@ -169,15 +167,15 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
         return;
     }
 
-    if (['channel', 'collection'].indexOf(routeConfig.type) !== -1) {
-        res._template = _private.getTemplateForEntries(res.locals.routerOptions, {
+    if (['channel', 'collection'].indexOf(res.routerOptions.type) !== -1) {
+        res._template = _private.getTemplateForEntries(res.routerOptions, {
             path: url.parse(req.url).pathname,
             page: req.params.page,
             slugParam: req.params.slug
         });
-    } else if (routeConfig.type === 'custom') {
-        res._template = _private.pickTemplate(routeConfig.templates, routeConfig.defaultTemplate);
-    } else if (routeConfig.type === 'entry') {
+    } else if (res.routerOptions.type === 'custom') {
+        res._template = _private.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
+    } else if (res.routerOptions.type === 'entry') {
         res._template = _private.getTemplateForEntry(data.post);
     } else {
         res._template = 'index';

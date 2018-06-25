@@ -68,7 +68,7 @@ class ParentRouter extends EventEmitter {
         let targetRoute = null;
 
         siteRouter.handle.stack.every((router) => {
-            if (router.handle.parent && router.handle.parent.isRedirectEnabled && router.handle.parent.isRedirectEnabled(this.getType(), slug)) {
+            if (router.handle.parent && router.handle.parent.isRedirectEnabled && router.handle.parent.isRedirectEnabled(this.getResourceType(), slug)) {
                 targetRoute = router.handle.parent.getRoute();
                 return false;
             }
