@@ -24,7 +24,7 @@ _private.loadClient = function loadClient() {
     return models.Client.findOne({slug: 'ghost-scheduler'}, {columns: ['slug', 'secret']});
 };
 
-_private.loadScheduledPosts = () => {
+_private.loadScheduledPosts = function () {
     return schedules.getScheduledPosts()
         .then((result) => {
             return result.posts || [];
