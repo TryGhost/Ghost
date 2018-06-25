@@ -1,5 +1,6 @@
 const _ = require('lodash'),
     jsonpath = require('jsonpath'),
+    mingo = require('mingo'),
     debug = require('ghost-ignition').debug('services:url:generator'),
     localUtils = require('./utils'),
     /**
@@ -7,14 +8,31 @@ const _ = require('lodash'),
      * GQL will offer a tool to match a JSON against a filter.
      */
     transformFilter = (filter) => {
-        filter = '$[?(' + filter + ')]';
-        filter = filter.replace(/(\w+):(\w+)/g, '@.$1 == "$2"');
-        filter = filter.replace(/"true"/g, 'true');
-        filter = filter.replace(/"false"/g, 'false');
-        filter = filter.replace(/"0"/g, '0');
-        filter = filter.replace(/"1"/g, '1');
-        filter = filter.replace(/\+/g, ' && ');
-        return filter;
+        debug('filter before', filter);
+        filter = filter.split(':');
+        let key = filter[0];
+        let value = filter[1];
+
+        value = value === 'true' ? true : value;
+        value = value === 'false' ? false : value;
+        value = value === '0' ? 0 : value;
+        value = value === '2' ? 1 : value;
+
+        if (key === 'tags') {
+            key = 'tags.slug';
+            value = {$in: value.replace(/\[|\]/g, '').split(',')};
+        }
+
+        return {[key]: value};
+    },
+
+    doFilter = (filter, resource) => {
+        // old version using jsonpath
+        // jsonpath.query(resource, filter).length
+
+        // new version using mingo
+        let query = new mingo.Query(filter);
+        return query.test(resource.data);
     };
 
 class UrlGenerator {
@@ -117,7 +135,7 @@ class UrlGenerator {
             resource.reserve();
             this._resourceListeners(resource);
             return true;
-        } else if (jsonpath.query(resource, this.filter).length) {
+        } else if (doFilter(this.filter, resource)) {
             this.urls.add({
                 url: url,
                 generatorId: this.uid,
