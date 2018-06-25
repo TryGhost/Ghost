@@ -86,7 +86,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 templates: [],
                 defaultTemplate: 'default',
                 context: [],
-                data: {}
+                data: {},
+                contentType: undefined
             });
             should.not.exist(res.locals.slug);
         });

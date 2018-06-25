@@ -13,5 +13,11 @@ module.exports = function renderer(req, res, data) {
     debug('Rendering template: ' + res._template + ' for: ' + req.originalUrl);
     debug('res.locals', res.locals);
 
+    if (res.routerOptions && res.routerOptions.contentType) {
+        if (res.routerOptions.templates.indexOf(res._template) !== -1) {
+            res.type(res.routerOptions.contentType);
+        }
+    }
+
     res.render(res._template, data);
 };

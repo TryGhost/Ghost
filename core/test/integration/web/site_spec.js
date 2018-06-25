@@ -1496,4 +1496,154 @@ describe('Integration - Web - Site', function () {
             });
         });
     });
+
+    describe('extended routes.yaml (5): rss override', function () {
+        before(function () {
+            sandbox.stub(settingsService, 'get').returns({
+                routes: {
+                    '/about/': 'about',
+                    '/podcast/rss/': {
+                        templates: ['podcast/rss'],
+                        content_type: 'xml'
+                    },
+                    '/cooking/': {
+                        controller: 'channel',
+                        rss: false
+                    },
+                    '/flat/': {
+                        controller: 'channel'
+                    }
+                },
+
+                collections: {
+                    '/podcast/': {
+                        permalink: '/:slug/',
+                        filter: 'featured:true',
+                        templates: ['home'],
+                        rss: false
+                    },
+                    '/music/': {
+                        permalink: '/:slug/',
+                        rss: false
+                    },
+                    '/': {
+                        permalink: '/:slug/'
+                    }
+                },
+
+                taxonomies: {}
+            });
+
+            testUtils.integrationTesting.urlService.resetGenerators();
+            testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
+
+            return testUtils.integrationTesting.initGhost()
+                .then(function () {
+                    app = siteApp();
+
+                    return testUtils.integrationTesting.urlService.waitTillFinished();
+                });
+        });
+
+        beforeEach(function () {
+            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        after(function () {
+            sandbox.restore();
+        });
+
+        it('serve /rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                });
+        });
+
+        it('serve /music/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/music/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
+
+        it('serve /cooking/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/cooking/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
+
+        it('serve /flat/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/flat/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                });
+        });
+
+        it('serve /podcast/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/podcast/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                    response.template.should.eql('podcast/rss');
+                    response.headers['content-type'].should.eql('text/xml; charset=utf-8');
+                    response.body.match(/<link>/g).length.should.eql(2);
+                });
+        });
+
+        it('serve /podcast/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/podcast/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    const $ = cheerio.load(response.body);
+                    response.statusCode.should.eql(200);
+                    $('head link')[2].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                });
+        });
+    });
 });
