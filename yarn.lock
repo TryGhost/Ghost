@@ -2,6 +2,24 @@
 # yarn lockfile v1
 
 
+"@nexes/mongo-knex@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.0.tgz#7a44a7263d8830c8416b90ba3c963c2c722e7b72"
+  dependencies:
+    lodash "^4.17.10"
+
+"@nexes/nql-lang@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.0.tgz#eb0fb807aea8aa64d3d0b454f3d1167af394f39a"
+
+"@nexes/nql@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.0.1.tgz#e8f5e5352badeffd67e371f22bccd41fa0c20c24"
+  dependencies:
+    "@nexes/mongo-knex" "0.0.0"
+    "@nexes/nql-lang" "0.0.0"
+    mingo "2.2.2"
+
 "@segment/loosely-validate-event@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@segment/loosely-validate-event/-/loosely-validate-event-1.1.2.tgz#d77840999e3f7e43e74b3b0d43391c1526f793b8"
@@ -3761,6 +3779,10 @@ mimic-fn@^1.0.0:
 mimic-response@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-1.0.0.tgz#df3d3652a73fded6b9b0b24146e6fd052353458e"
+
+mingo@2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.2.2.tgz#be69d486ae6e0ac54b979dc5f4412db21851f693"
 
 minimatch@0.3:
   version "0.3.0"
