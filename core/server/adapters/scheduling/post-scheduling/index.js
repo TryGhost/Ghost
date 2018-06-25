@@ -36,7 +36,7 @@ exports.init = function init(options = {}) {
     let adapter = null,
         client = null;
 
-    if (!options) {
+    if (!Object.keys(options).length) {
         return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
     }
 
