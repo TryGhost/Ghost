@@ -59,7 +59,7 @@
     "got": "7.1.0",
     "gscan": "1.4.3",
     "html-to-text": "3.3.0",
-    "image-size": "0.6.2",
+    "image-size": "0.6.3",
     "intl": "1.2.5",
     "intl-messageformat": "1.3.0",
     "js-yaml": "3.12.0",
@@ -73,14 +73,14 @@
     "markdown-it-mark": "2.0.0",
     "mobiledoc-dom-renderer": "0.6.5",
     "moment": "2.22.2",
-    "moment-timezone": "0.5.17",
+    "moment-timezone": "0.5.21",
     "multer": "1.3.0",
     "mysql": "2.15.0",
     "nconf": "0.10.0",
     "netjet": "1.3.0",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.11.0",
-    "oembed-parser": "1.1.0",
+    "oembed-parser": "1.1.1",
     "passport": "0.4.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
@@ -89,7 +89,7 @@
     "sanitize-html": "1.18.2",
     "semver": "5.5.0",
     "simple-dom": "0.3.2",
-    "simple-html-tokenizer": "0.5.3",
+    "simple-html-tokenizer": "0.5.5",
     "superagent": "3.8.3",
     "unidecode": "0.1.8",
     "uuid": "3.2.1",
@@ -97,7 +97,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "sqlite3": "4.0.0"
+    "sqlite3": "4.0.1"
   },
   "devDependencies": {
     "eslint": "4.19.1",
@@ -123,7 +123,7 @@
     "matchdep": "2.0.0",
     "minimist": "1.2.0",
     "mocha": "4.1.0",
-    "nock": "9.3.0",
+    "nock": "9.3.3",
     "rewire": "3.0.2",
     "should": "13.2.1",
     "should-http": "0.1.1",
