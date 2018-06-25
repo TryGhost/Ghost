@@ -15,9 +15,8 @@ describe('Contexts', function () {
             body: {}
         };
         res = {
-            locals: {
-                routerOptions: {}
-            }
+            locals: {},
+            routerOptions: {}
         };
         data = {};
     });
@@ -50,7 +49,7 @@ describe('Contexts', function () {
     describe('index context', function () {
         it('should correctly identify index channel', function () {
             res.locals.relativeUrl = '/does/not/matter/';
-            res.locals.routerOptions.context = ['index'];
+            res.routerOptions.context = ['index'];
 
             helpers.context(req, res, data);
 
@@ -61,7 +60,7 @@ describe('Contexts', function () {
 
         it('should correctly identify / as home', function () {
             res.locals.relativeUrl = '/';
-            res.locals.routerOptions.context = ['index'];
+            res.routerOptions.context = ['index'];
 
             // Execute test
             helpers.context(req, res, data);
@@ -75,7 +74,7 @@ describe('Contexts', function () {
 
         it('will not identify / as index without config', function () {
             res.locals.relativeUrl = '/';
-            res.locals.routerOptions.context = [];
+            res.routerOptions.context = [];
 
             // Execute test
             helpers.context(req, res, data);
@@ -88,7 +87,7 @@ describe('Contexts', function () {
 
         it('will not identify /page/2/ as index & paged without page param', function () {
             res.locals.relativeUrl = '/page/2/';
-            res.locals.routerOptions.context = ['index'];
+            res.routerOptions.context = ['index'];
 
             helpers.context(req, res, data);
 
@@ -100,7 +99,7 @@ describe('Contexts', function () {
         it('should identify /page/2/ as index & paged with page param', function () {
             res.locals.relativeUrl = '/page/2/';
             req.params.page = 2;
-            res.locals.routerOptions.context = ['index'];
+            res.routerOptions.context = ['index'];
 
             helpers.context(req, res, data);
 
@@ -114,7 +113,7 @@ describe('Contexts', function () {
     describe('Tag', function () {
         it('should correctly identify tag channel', function () {
             res.locals.relativeUrl = '/tag/getting-started/';
-            res.locals.routerOptions.context = ['tag'];
+            res.routerOptions.context = ['tag'];
 
             helpers.context(req, res, data);
 
@@ -125,7 +124,7 @@ describe('Contexts', function () {
 
         it('will not identify tag channel url without config', function () {
             res.locals.relativeUrl = '/tag/getting-started/';
-            res.locals.routerOptions.context = [];
+            res.routerOptions.context = [];
 
             helpers.context(req, res, data);
 
@@ -135,7 +134,7 @@ describe('Contexts', function () {
 
         it('will not identify /page/2/ as paged without page param', function () {
             res.locals.relativeUrl = '/tag/getting-started/page/2/';
-            res.locals.routerOptions.context = ['tag'];
+            res.routerOptions.context = ['tag'];
 
             helpers.context(req, res, data);
 
@@ -147,7 +146,7 @@ describe('Contexts', function () {
         it('should correctly identify /page/2/ as paged with page param', function () {
             res.locals.relativeUrl = '/tag/getting-started/page/2/';
             req.params.page = 2;
-            res.locals.routerOptions.context = ['tag'];
+            res.routerOptions.context = ['tag'];
 
             helpers.context(req, res, data);
 
@@ -161,7 +160,7 @@ describe('Contexts', function () {
     describe('Author', function () {
         it('should correctly identify author channel', function () {
             res.locals.relativeUrl = '/author/pat/';
-            res.locals.routerOptions.context = ['author'];
+            res.routerOptions.context = ['author'];
 
             helpers.context(req, res, data);
 
@@ -172,7 +171,7 @@ describe('Contexts', function () {
 
         it('will not identify author channel url without config', function () {
             res.locals.relativeUrl = '/author/pat/';
-            res.locals.routerOptions.context = [];
+            res.routerOptions.context = [];
 
             helpers.context(req, res, data);
 
@@ -182,7 +181,7 @@ describe('Contexts', function () {
 
         it('will not identify /page/2/ as paged without page param', function () {
             res.locals.relativeUrl = '/author/pat/page/2/';
-            res.locals.routerOptions.context = ['author'];
+            res.routerOptions.context = ['author'];
 
             helpers.context(req, res, data);
 
@@ -194,7 +193,7 @@ describe('Contexts', function () {
         it('should correctly identify /page/2/ as paged with page param', function () {
             res.locals.relativeUrl = '/author/pat/page/2/';
             req.params.page = 2;
-            res.locals.routerOptions.context = ['author'];
+            res.routerOptions.context = ['author'];
 
             helpers.context(req, res, data);
 
@@ -208,7 +207,7 @@ describe('Contexts', function () {
     describe('Custom', function () {
         it('will use a custom context', function () {
             res.locals.relativeUrl = 'anything';
-            res.locals.routerOptions.context = ['custom-context', 'test'];
+            res.routerOptions.context = ['custom-context', 'test'];
 
             helpers.context(req, res, data);
 
@@ -222,7 +221,7 @@ describe('Contexts', function () {
     describe('Posts & Pages', function () {
         it('ensure correct context', function () {
             res.locals.relativeUrl = '/welcome-to-ghost/';
-            res.locals.routerOptions.context = ['post'];
+            res.routerOptions.context = ['post'];
 
             helpers.context(req, res, data);
 
@@ -235,7 +234,7 @@ describe('Contexts', function () {
     describe('Private', function () {
         it('should correctly identify /private/ as the private route', function () {
             res.locals.relativeUrl = '/private/?r=';
-            delete res.locals.routerOptions;
+            delete res.routerOptions;
 
             helpers.context(req, res, data);
 
@@ -250,7 +249,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/subscribe/';
             sandbox.stub(labs, 'isSet').withArgs('subscribers').returns(true);
 
-            delete res.locals.routerOptions;
+            delete res.routerOptions;
             helpers.context(req, res, data);
 
             should.exist(res.locals.context);
@@ -263,7 +262,7 @@ describe('Contexts', function () {
             sandbox.stub(labs, 'isSet').withArgs('subscribers').returns(false);
             data.post = testUtils.DataGenerator.forKnex.createPost();
 
-            delete res.locals.routerOptions;
+            delete res.routerOptions;
             helpers.context(req, res, data);
 
             should.exist(res.locals.context);
@@ -277,7 +276,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/welcome-to-ghost/amp/';
             data.post = testUtils.DataGenerator.forKnex.createPost();
 
-            delete res.locals.routerOptions;
+            delete res.routerOptions;
             helpers.context(req, res, data);
 
             should.exist(res.locals.context);
@@ -290,7 +289,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/welcome-to-ghost/amp/';
             data.post = testUtils.DataGenerator.forKnex.createPost({page: true});
 
-            delete res.locals.routerOptions;
+            delete res.routerOptions;
             helpers.context(req, res, data);
 
             should.exist(res.locals.context);

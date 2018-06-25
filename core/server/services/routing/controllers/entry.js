@@ -10,9 +10,9 @@ const debug = require('ghost-ignition').debug('services:routing:controllers:entr
  *   - always execute `next` until no router want's to serve and 404's
  */
 module.exports = function entryController(req, res, next) {
-    debug('entryController', res.locals.routerOptions);
+    debug('entryController', res.routerOptions);
 
-    return helpers.postLookup(req.path, res.locals.routerOptions)
+    return helpers.postLookup(req.path, res.routerOptions)
         .then(function then(lookup) {
             // Format data 1
             const post = lookup ? lookup.post : false;
@@ -50,7 +50,7 @@ module.exports = function entryController(req, res, next) {
              *
              * That's why we have to check against the router type.
              */
-            if (urlService.getResourceById(post.id).config.type !== res.locals.routerOptions.type) {
+            if (urlService.getResourceById(post.id).config.type !== res.routerOptions.resourceType) {
                 debug('not my resource type');
                 return next();
             }

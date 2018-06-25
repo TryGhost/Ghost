@@ -62,9 +62,7 @@ describe('Unit - services/routing/controllers/static', function () {
         };
 
         res = {
-            locals: {
-                routerOptions: {}
-            },
+            routerOptions: {},
             render: sinon.spy(),
             redirect: sinon.spy()
         };
@@ -86,7 +84,7 @@ describe('Unit - services/routing/controllers/static', function () {
     });
 
     it('extra data to fetch', function (done) {
-        res.locals.routerOptions.data = {
+        res.routerOptions.data = {
             tag: {
                 resource: 'tags',
                 type: 'read',

@@ -171,7 +171,7 @@ describe('Integration - Web - Site', function () {
                         should.exist(response.res.locals.safeVersion);
                         should.exist(response.res.locals.relativeUrl);
                         should.exist(response.res.locals.secure);
-                        should.exist(response.res.locals.routerOptions);
+                        should.exist(response.res.routerOptions);
                     });
             });
 

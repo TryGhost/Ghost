@@ -72,7 +72,7 @@ class UrlGenerator {
         debug('_onInit', this.toString());
 
         // @NOTE: get the resources of my type e.g. posts.
-        const resources = this.resources.getAllByType(this.router.getType());
+        const resources = this.resources.getAllByType(this.router.getResourceType());
 
         _.each(resources, (resource) => {
             this._try(resource);
@@ -83,7 +83,7 @@ class UrlGenerator {
         debug('onAdded', this.toString());
 
         // CASE: you are type "pages", but the incoming type is "users"
-        if (event.type !== this.router.getType()) {
+        if (event.type !== this.router.getResourceType()) {
             return;
         }
 
@@ -167,7 +167,7 @@ class UrlGenerator {
                 action: 'added:' + resource.data.id,
                 eventData: {
                     id: resource.data.id,
-                    type: this.router.getType()
+                    type: this.router.getResourceType()
                 }
             });
         };

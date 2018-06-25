@@ -47,8 +47,8 @@ function setResponseContext(req, res, data) {
     }
 
     // Each page can only have at most one of these
-    if (res.locals.routerOptions) {
-        res.locals.context = res.locals.context.concat(res.locals.routerOptions.context);
+    if (res.routerOptions && res.routerOptions.context) {
+        res.locals.context = res.locals.context.concat(res.routerOptions.context);
     } else if (privatePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('private');
     } else if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {

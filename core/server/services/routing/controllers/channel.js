@@ -8,7 +8,7 @@ const _ = require('lodash'),
 
 // @TODO: the collection+rss controller does almost the same
 module.exports = function channelController(req, res, next) {
-    debug('channelController', req.params, res.locals.routerOptions);
+    debug('channelController', req.params, res.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -18,16 +18,16 @@ module.exports = function channelController(req, res, next) {
     if (pathOptions.page) {
         // CASE 1: routes.yaml `limit` is stronger than theme definition
         // CASE 2: use `posts_per_page` config from theme as `limit` value
-        if (res.locals.routerOptions.limit) {
+        if (res.routerOptions.limit) {
             themes.getActive().updateTemplateOptions({
                 data: {
                     config: {
-                        posts_per_page: res.locals.routerOptions.limit
+                        posts_per_page: res.routerOptions.limit
                     }
                 }
             });
 
-            pathOptions.limit = res.locals.routerOptions.limit;
+            pathOptions.limit = res.routerOptions.limit;
         } else {
             const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
 
@@ -37,7 +37,7 @@ module.exports = function channelController(req, res, next) {
         }
     }
 
-    return helpers.fetchData(pathOptions, res.locals.routerOptions)
+    return helpers.fetchData(pathOptions, res.routerOptions)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {

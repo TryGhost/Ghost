@@ -12,11 +12,11 @@ function processQuery(query) {
 }
 
 module.exports = function staticController(req, res, next) {
-    debug('staticController', res.locals.routerOptions);
+    debug('staticController', res.routerOptions);
 
     let props = {};
 
-    _.each(res.locals.routerOptions.data, function (query, name) {
+    _.each(res.routerOptions.data, function (query, name) {
         props[name] = processQuery(query);
     });
 
@@ -24,10 +24,10 @@ module.exports = function staticController(req, res, next) {
         .then(function handleResult(result) {
             let response = {};
 
-            if (res.locals.routerOptions.data) {
+            if (res.routerOptions.data) {
                 response.data = {};
 
-                _.each(res.locals.routerOptions.data, function (config, name) {
+                _.each(res.routerOptions.data, function (config, name) {
                     if (config.type === 'browse') {
                         response.data[name] = result[name];
                     } else {
