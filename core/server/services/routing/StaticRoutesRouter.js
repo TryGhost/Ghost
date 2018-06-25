@@ -49,7 +49,8 @@ class StaticRoutesRouter extends ParentRouter {
     }
 
     _prepareChannelContext(req, res, next) {
-        res.locals.routerOptions = {
+        res.routerOptions = {
+            type: this.controller,
             name: this.routerName,
             context: [this.routerName],
             filter: this.filter,
@@ -57,10 +58,6 @@ class StaticRoutesRouter extends ParentRouter {
             order: this.order,
             data: this.data.query,
             templates: this.templates
-        };
-
-        res._route = {
-            type: this.controller
         };
 
         next();
@@ -74,15 +71,12 @@ class StaticRoutesRouter extends ParentRouter {
     }
 
     _prepareStaticRouteContext(req, res, next) {
-        res.locals.routerOptions = {
-            data: this.data.query,
-            context: []
-        };
-
-        res._route = {
+        res.routerOptions = {
             type: 'custom',
             templates: this.templates,
-            defaultTemplate: 'default'
+            defaultTemplate: 'default',
+            data: this.data.query,
+            context: []
         };
 
         next();

@@ -65,10 +65,8 @@ describe('Unit - services/routing/controllers/collection', function () {
         };
 
         res = {
-            locals: {
-                routerOptions: {
-                    identifier: 'identifier'
-                }
+            routerOptions: {
+                identifier: 'identifier'
             },
             render: sinon.spy(),
             redirect: sinon.spy()
@@ -80,7 +78,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     });
 
     it('no params', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -108,7 +106,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     it('pass page param', function (done) {
         req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -134,10 +132,10 @@ describe('Unit - services/routing/controllers/collection', function () {
     });
 
     it('update hbs engine: router defines limit', function (done) {
-        res.locals.routerOptions.limit = 3;
+        res.routerOptions.limit = 3;
         req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -166,7 +164,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     it('page param too big', function (done) {
         req.params.page = 6;
 
-        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -193,7 +191,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     it('slug param', function (done) {
         req.params.slug = 'unsafe';
 
-        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -221,7 +219,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     it('invalid posts per page', function (done) {
         postsPerPage = -1;
 
-        fetchDataStub.withArgs({page: 1, slug: undefined}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -247,7 +245,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     });
 
     it('ensure secure helper get\'s called for data object', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 data: {
@@ -283,7 +281,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             testUtils.DataGenerator.forKnex.createPost({url: '/d/'})
         ];
 
-        res.locals.routerOptions.filter = 'featured:true';
+        res.routerOptions.filter = 'featured:true';
 
         urlService.owns.reset();
         urlService.owns.withArgs('identifier', posts[0].url).returns(false);
@@ -291,7 +289,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         urlService.owns.withArgs('identifier', posts[2].url).returns(false);
         urlService.owns.withArgs('identifier', posts[3].url).returns(false);
 
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 data: {

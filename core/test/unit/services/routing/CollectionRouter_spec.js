@@ -37,7 +37,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             should.exist(collectionRouter.router);
 
             collectionRouter.getFilter().should.eql('page:false');
-            collectionRouter.getType().should.eql('posts');
+            collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
 
@@ -85,7 +85,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             should.exist(collectionRouter.router);
 
             collectionRouter.getFilter().should.eql('page:false');
-            collectionRouter.getType().should.eql('posts');
+            collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');
 
@@ -147,7 +147,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter._prepareEntriesContext(req, res, next);
 
             next.calledOnce.should.be.true();
-            res.locals.routerOptions.should.eql({
+            res.routerOptions.should.eql({
+                type: 'collection',
                 filter: 'page:false',
                 permalinks: '/:slug/:options(edit)?/',
                 frontPageTemplate: 'home',
@@ -155,7 +156,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 identifier: collectionRouter.identifier,
                 context: ['index'],
                 name: 'index',
-                type: 'posts',
+                resourceType: 'posts',
                 data: {},
                 order: undefined,
                 limit: undefined
@@ -168,7 +169,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter._prepareEntriesContext(req, res, next);
 
             next.calledOnce.should.be.true();
-            res.locals.routerOptions.should.eql({
+            res.routerOptions.should.eql({
+                type: 'collection',
                 filter: 'page:false',
                 permalinks: '/:slug/:options(edit)?/',
                 frontPageTemplate: 'home',
@@ -176,7 +178,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 identifier: collectionRouter.identifier,
                 context: ['magic'],
                 name: 'magic',
-                type: 'posts',
+                resourceType: 'posts',
                 data: {},
                 order: 'published asc',
                 limit: 19

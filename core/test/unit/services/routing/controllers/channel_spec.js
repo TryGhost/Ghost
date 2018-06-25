@@ -61,9 +61,7 @@ describe('Unit - services/routing/controllers/channel', function () {
         };
 
         res = {
-            locals: {
-                routerOptions: {}
-            },
+            routerOptions: {},
             render: sinon.spy(),
             redirect: sinon.spy()
         };
@@ -74,7 +72,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     });
 
     it('no params', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -101,7 +99,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     it('pass page param', function (done) {
         req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -126,10 +124,10 @@ describe('Unit - services/routing/controllers/channel', function () {
     });
 
     it('update hbs engine: router defines limit', function (done) {
-        res.locals.routerOptions.limit = 3;
+        res.routerOptions.limit = 3;
         req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -157,7 +155,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     it('page param too big', function (done) {
         req.params.page = 6;
 
-        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -183,7 +181,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     it('slug param', function (done) {
         req.params.slug = 'unsafe';
 
-        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -210,7 +208,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     it('invalid posts per page', function (done) {
         postsPerPage = -1;
 
-        fetchDataStub.withArgs({page: 1, slug: undefined}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
             .resolves({
                 posts: posts,
                 meta: {
@@ -235,7 +233,7 @@ describe('Unit - services/routing/controllers/channel', function () {
     });
 
     it('ensure secure helper get\'s called for data object', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.locals.routerOptions)
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
                 data: {
