@@ -2533,9 +2533,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.4.3.tgz#ebea3c78106f4d8562225d46754d0a41c3e0a348"
+gscan@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.5.0.tgz#b94446ab1ebc058c36e26f086ab0c0b97634832f"
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
