@@ -1,21 +1,7 @@
 const _ = require('lodash'),
-    jsonpath = require('jsonpath'),
+    nql = require('@nexes/nql'),
     debug = require('ghost-ignition').debug('services:url:generator'),
-    localUtils = require('./utils'),
-    /**
-     * @TODO: This is a fake version of the upcoming GQL tool.
-     * GQL will offer a tool to match a JSON against a filter.
-     */
-    transformFilter = (filter) => {
-        filter = '$[?(' + filter + ')]';
-        filter = filter.replace(/(\w+):(\w+)/g, '@.$1 == "$2"');
-        filter = filter.replace(/"true"/g, 'true');
-        filter = filter.replace(/"false"/g, 'false');
-        filter = filter.replace(/"0"/g, '0');
-        filter = filter.replace(/"1"/g, '1');
-        filter = filter.replace(/\+/g, ' && ');
-        return filter;
-    };
+    localUtils = require('./utils');
 
 class UrlGenerator {
     constructor(router, queue, resources, urls, position) {
@@ -29,7 +15,8 @@ class UrlGenerator {
 
         // CASE: routers can define custom filters, but not required.
         if (this.router.getFilter()) {
-            this.filter = transformFilter(this.router.getFilter());
+            this.filter = this.router.getFilter();
+            this.nql = nql(this.filter);
             debug('filter', this.filter);
         }
 
@@ -117,7 +104,7 @@ class UrlGenerator {
             resource.reserve();
             this._resourceListeners(resource);
             return true;
-        } else if (jsonpath.query(resource, this.filter).length) {
+        } else if (this.nql.queryJSON(resource.data)) {
             this.urls.add({
                 url: url,
                 generatorId: this.uid,

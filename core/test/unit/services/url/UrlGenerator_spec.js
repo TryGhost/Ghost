@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
-const jsonpath = require('jsonpath');
+const nql = require('@nexes/nql');
 const sinon = require('sinon');
 const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
@@ -67,7 +67,7 @@ describe('Unit: services/url/UrlGenerator', function () {
     it('routing type has filter', function () {
         router.getFilter.returns('featured:true');
         const urlGenerator = new UrlGenerator(router, queue);
-        urlGenerator.filter.should.eql('$[?(@.featured == true)]');
+        urlGenerator.filter.should.eql('featured:true');
     });
 
     it('routing type has changed', function () {
@@ -153,9 +153,10 @@ describe('Unit: services/url/UrlGenerator', function () {
                 router.getFilter.returns(false);
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query');
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                should.not.exist(urlGenerator.nql);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -165,16 +166,16 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.calledOnce.should.be.true();
                 urls.add.calledOnce.should.be.true();
                 resource.reserve.calledOnce.should.be.true();
-                jsonpath.query.called.should.be.false();
             });
 
             it('resource is taken', function () {
                 router.getFilter.returns(false);
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
-                sandbox.stub(jsonpath, 'query');
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                should.not.exist(urlGenerator.nql);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -184,7 +185,6 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.called.should.be.false();
             });
         });
 
@@ -193,9 +193,10 @@ describe('Unit: services/url/UrlGenerator', function () {
                 router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query').returns([true]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -205,16 +206,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.calledOnce.should.be.true();
                 urls.add.calledOnce.should.be.true();
                 resource.reserve.calledOnce.should.be.true();
-                jsonpath.query.calledOnce.should.be.true();
+                urlGenerator.nql.queryJSON.called.should.be.true();
             });
 
             it('no match', function () {
                 router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query').returns([]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(false);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -224,16 +226,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.calledOnce.should.be.true();
+                urlGenerator.nql.queryJSON.called.should.be.true();
             });
 
             it('resource is taken', function () {
                 router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
-                sandbox.stub(jsonpath, 'query').returns([]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -243,7 +246,7 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.called.should.be.false();
+                urlGenerator.nql.queryJSON.called.should.be.false();
             });
         });
     });
