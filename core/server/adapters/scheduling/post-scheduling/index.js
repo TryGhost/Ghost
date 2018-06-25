@@ -31,13 +31,12 @@ _private.loadScheduledPosts = () => {
         });
 };
 
-exports.init = function init(options) {
-    const config = options || {};
-    const {apiUrl} = config;
+exports.init = function init(options = {}) {
+    const {apiUrl} = options;
     let adapter = null,
         client = null;
 
-    if (!config) {
+    if (!options) {
         return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
     }
 
@@ -48,7 +47,7 @@ exports.init = function init(options) {
     return _private.loadClient()
         .then((_client) => {
             client = _client;
-            return localUtils.createAdapter(config);
+            return localUtils.createAdapter(options);
         })
         .then((_adapter) => {
             adapter = _adapter;
