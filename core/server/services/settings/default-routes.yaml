@@ -4,7 +4,6 @@ collections:
   /:
     permalink: '{globals.permalinks}' # special 1.0 compatibility setting. See the docs for details.
     template:
-      - home
       - index
 
 taxonomies:

@@ -2,6 +2,24 @@
 # yarn lockfile v1
 
 
+"@nexes/mongo-knex@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.0.tgz#7a44a7263d8830c8416b90ba3c963c2c722e7b72"
+  dependencies:
+    lodash "^4.17.10"
+
+"@nexes/nql-lang@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.0.tgz#eb0fb807aea8aa64d3d0b454f3d1167af394f39a"
+
+"@nexes/nql@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.0.1.tgz#e8f5e5352badeffd67e371f22bccd41fa0c20c24"
+  dependencies:
+    "@nexes/mongo-knex" "0.0.0"
+    "@nexes/nql-lang" "0.0.0"
+    mingo "2.2.2"
+
 "@segment/loosely-validate-event@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@segment/loosely-validate-event/-/loosely-validate-event-1.1.2.tgz#d77840999e3f7e43e74b3b0d43391c1526f793b8"
@@ -2533,9 +2551,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.4.3.tgz#ebea3c78106f4d8562225d46754d0a41c3e0a348"
+gscan@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.5.0.tgz#b94446ab1ebc058c36e26f086ab0c0b97634832f"
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
@@ -2788,9 +2806,9 @@ image-size@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.6.1.tgz#98122a562d59dcc097ef1b2c8191866eb8f5d663"
 
-image-size@0.6.2:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.6.2.tgz#8ee316d4298b028b965091b673d5f1537adee5b4"
+image-size@0.6.3:
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/image-size/-/image-size-0.6.3.tgz#e7e5c65bb534bd7cdcedd6cb5166272a85f75fb2"
 
 imurmurhash@^0.1.4:
   version "0.1.4"
@@ -3762,6 +3780,10 @@ mimic-response@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-1.0.0.tgz#df3d3652a73fded6b9b0b24146e6fd052353458e"
 
+mingo@2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.2.2.tgz#be69d486ae6e0ac54b979dc5f4412db21851f693"
+
 minimatch@0.3:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-0.3.0.tgz#275d8edaac4f1bb3326472089e7949c8394699dd"
@@ -3870,9 +3892,9 @@ mocha@^3.1.2:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment-timezone@0.5.17:
-  version "0.5.17"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.17.tgz#3c8fef32051d84c3af174d91dc52977dcb0ad7e5"
+moment-timezone@0.5.21:
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.21.tgz#3cba247d84492174dbf71de2a9848fa13207b845"
   dependencies:
     moment ">= 2.9.0"
 
@@ -3918,7 +3940,7 @@ mysql@2.15.0, mysql@^2.11.1:
     safe-buffer "5.1.1"
     sqlstring "2.3.0"
 
-nan@^2.10.0, nan@^2.6.2:
+nan@^2.10.0, nan@^2.6.2, nan@~2.10.0:
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
@@ -4002,9 +4024,9 @@ nise@^1.2.0:
     path-to-regexp "^1.7.0"
     text-encoding "^0.6.4"
 
-nock@9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-9.3.0.tgz#4dcfdd37bd249836754d05bbac5a1f05e12e0f16"
+nock@9.3.3:
+  version "9.3.3"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-9.3.3.tgz#d9f4cd3c011afeadaf5ccf1b243f6e353781cda0"
   dependencies:
     chai "^4.1.2"
     debug "^3.1.0"
@@ -4051,6 +4073,21 @@ node-loggly-bulk@^2.2.2:
     json-stringify-safe "5.0.x"
     moment "^2.18.1"
     request ">=2.76.0 <3.0.0"
+
+node-pre-gyp@~0.10.1:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.10.2.tgz#e8945c20ef6795a20aac2b44f036eb13cf5146e3"
+  dependencies:
+    detect-libc "^1.0.2"
+    mkdirp "^0.5.1"
+    needle "^2.2.0"
+    nopt "^4.0.1"
+    npm-packlist "^1.1.6"
+    npmlog "^4.0.2"
+    rc "^1.2.7"
+    rimraf "^2.6.1"
+    semver "^5.3.0"
+    tar "^4"
 
 node-pre-gyp@~0.9.0:
   version "0.9.1"
@@ -4238,9 +4275,9 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-oembed-parser@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.1.0.tgz#1e61c2e89c200d9bbc46fceee1b44698b5011450"
+oembed-parser@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.1.1.tgz#6c7e8fb87faefbf99a9408f87325151e274aa80a"
   dependencies:
     bellajs "^7.2.2"
     node-fetch "^2.1.2"
@@ -4881,7 +4918,7 @@ raw-body@~1.1.0:
     bytes "1"
     string_decoder "0.10"
 
-rc@^1.1.6, rc@^1.1.7:
+rc@^1.1.6, rc@^1.1.7, rc@^1.2.7:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
   dependencies:
@@ -5356,9 +5393,9 @@ simple-get@^2.7.0:
     once "^1.3.1"
     simple-concat "^1.0.0"
 
-simple-html-tokenizer@0.5.3:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.3.tgz#c1c246a53ccf1cd65fb2fa970967145b47602ce4"
+simple-html-tokenizer@0.5.5:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.5.tgz#110e63f2fe095e1f21f2f07e8c259a5ab6d6bebb"
 
 "simplesmtp@~0.2 || ~0.3.30", simplesmtp@~0.3.30:
   version "0.3.35"
@@ -5508,7 +5545,14 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
 
-sqlite3@4.0.0, sqlite3@^4.0.0:
+sqlite3@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-4.0.1.tgz#78e815bb50d7320fd90f03f1d7c3a920010d7ce3"
+  dependencies:
+    nan "~2.10.0"
+    node-pre-gyp "~0.10.1"
+
+sqlite3@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-4.0.0.tgz#cc0e093ab51873f50d9dfc4126fcbef15d486570"
   dependencies:

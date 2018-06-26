@@ -9,11 +9,9 @@ var path = require('path'),
     templateName = 'amp';
 
 function _renderer(req, res, next) {
-    // Note: this is super similar to the config middleware used in channels
-    // @TODO refactor into to something explicit & DRY this up
-    res._route = {
+    res.routerOptions = {
         type: 'custom',
-        templateName: templateName,
+        templates: templateName,
         defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
     };
 

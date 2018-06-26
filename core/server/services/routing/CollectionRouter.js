@@ -9,17 +9,17 @@ const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
 
 class CollectionRouter extends ParentRouter {
-    constructor(indexRoute, object, options) {
-        options = options || {};
-
+    constructor(mainRoute, object) {
         super('CollectionRouter');
 
-        this.firstCollection = options.firstCollection;
+        this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
 
         // NOTE: index/parent route e.g. /, /podcast/, /magic/ ;)
         this.route = {
-            value: indexRoute
+            value: mainRoute
         };
+
+        this.rss = object.rss !== false;
 
         this.permalinks = {
             originalValue: object.permalink,
@@ -27,9 +27,12 @@ class CollectionRouter extends ParentRouter {
         };
 
         // @NOTE: see helpers/templates - we use unshift to prepend the templates
-        this.templates = (object.template || []).reverse();
+        this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter || 'page:false';
+        this.data = object.data || {query: {}, router: {}};
+        this.order = object.order;
+        this.limit = object.limit;
 
         /**
          * @deprecated Remove in Ghost 2.0
@@ -52,14 +55,9 @@ class CollectionRouter extends ParentRouter {
             return this.permalinks.value;
         };
 
-        // the main post listening collection get's the index context
-        if (this.firstCollection) {
-            this.context = ['index'];
-        } else {
-            this.context = [];
-        }
+        this.context = [this.routerName];
 
-        debug(this.route, this.permalinks);
+        debug(this.name, this.route, this.permalinks);
 
         this._registerRoutes();
         this._listeners();
@@ -67,7 +65,7 @@ class CollectionRouter extends ParentRouter {
 
     _registerRoutes() {
         // REGISTER: context middleware for this collection
-        this.router().use(this._prepareIndexContext.bind(this));
+        this.router().use(this._prepareEntriesContext.bind(this));
 
         // REGISTER: collection route e.g. /, /podcast/
         this.mountRoute(this.route.value, controllers.collection);
@@ -76,10 +74,11 @@ class CollectionRouter extends ParentRouter {
         this.router().param('page', middlewares.pageParam);
         this.mountRoute(urlService.utils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
 
-        this.rssRouter =  new RSSRouter();
-
-        // REGISTER: enable rss by default
-        this.mountRouter(this.route.value, this.rssRouter.router());
+        // REGISTER: is rss enabled?
+        if (this.rss) {
+            this.rssRouter =  new RSSRouter();
+            this.mountRouter(this.route.value, this.rssRouter.router());
+        }
 
         // REGISTER: context middleware for entries
         this.router().use(this._prepareEntryContext.bind(this));
@@ -96,27 +95,28 @@ class CollectionRouter extends ParentRouter {
      *
      * @TODO: Why do we need two context objects? O_O - refactor this out
      */
-    _prepareIndexContext(req, res, next) {
-        res.locals.routerOptions = {
+    _prepareEntriesContext(req, res, next) {
+        res.routerOptions = {
+            type: 'collection',
             filter: this.filter,
+            limit: this.limit,
+            order: this.order,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
-            type: this.getType(),
+            resourceType: this.getResourceType(),
             context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
-            identifier: this.identifier
-        };
-
-        res._route = {
-            type: 'collection'
+            identifier: this.identifier,
+            name: this.routerName,
+            data: this.data.query
         };
 
         next();
     }
 
     _prepareEntryContext(req, res, next) {
-        res.locals.routerOptions.context = ['post'];
-        res._route.type = 'entry';
+        res.routerOptions.context = ['post'];
+        res.routerOptions.type = 'entry';
         next();
     }
 
@@ -128,6 +128,16 @@ class CollectionRouter extends ParentRouter {
             this._onPermalinksEditedListener = this._onPermalinksEdited.bind(this);
             common.events.on('settings.permalinks.edited', this._onPermalinksEditedListener);
         }
+
+        /**
+         * CASE: timezone changes
+         *
+         * If your permalink contains a date reference, we have to regenerate the urls.
+         *
+         * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
+         */
+        this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
+        common.events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
     }
 
     /**
@@ -143,7 +153,21 @@ class CollectionRouter extends ParentRouter {
         this.emit('updated');
     }
 
-    getType() {
+    _onTimezoneEdited(settingModel) {
+        const newTimezone = settingModel.attributes.value,
+            previousTimezone = settingModel._updatedAttributes.value;
+
+        if (newTimezone === previousTimezone) {
+            return;
+        }
+
+        if (this.getPermalinks().getValue().match(/:year|:month|:day/)) {
+            debug('_onTimezoneEdited: trigger regeneration');
+            this.emit('updated');
+        }
+    }
+
+    getResourceType() {
         return 'posts';
     }
 
@@ -154,15 +178,21 @@ class CollectionRouter extends ParentRouter {
     }
 
     getRssUrl(options) {
+        if (!this.rss) {
+            return null;
+        }
+
         return urlService.utils.createUrl(urlService.utils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
     }
 
     reset() {
-        if (!this._onPermalinksEditedListener) {
-            return;
+        if (this._onPermalinksEditedListener) {
+            common.events.removeListener('settings.permalinks.edited', this._onPermalinksEditedListener);
         }
 
-        common.events.removeListener('settings.permalinks.edited', this._onPermalinksEditedListener);
+        if (this._onTimezoneEditedListener) {
+            common.events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
+        }
     }
 }
 

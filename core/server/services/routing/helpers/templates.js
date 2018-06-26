@@ -34,7 +34,7 @@ _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCo
 };
 
 /**
- * ## Get Collection Template Hierarchy
+ * ## Get Template Hierarchy
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'index' is the default / fallback
@@ -45,10 +45,10 @@ _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCo
  * @param {Object} routerOptions
  * @returns {String[]}
  */
-_private.getCollectionTemplateHierarchy = function getCollectionTemplateHierarchy(routerOptions, requestOptions) {
+_private.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(routerOptions, requestOptions) {
     const templateList = ['index'];
 
-    // CASE: author, tag
+    // CASE: author, tag, custom collection name
     if (routerOptions.name && routerOptions.name !== 'index') {
         templateList.unshift(routerOptions.name);
 
@@ -57,7 +57,7 @@ _private.getCollectionTemplateHierarchy = function getCollectionTemplateHierarch
         }
     }
 
-    // CASE: collections can define a template list
+    // CASE: collections/channels can define a template list
     if (routerOptions.templates && routerOptions.templates.length) {
         routerOptions.templates.forEach((template) => {
             templateList.unshift(template);
@@ -145,8 +145,8 @@ _private.getTemplateForEntry = function getTemplateForEntry(postObject) {
     return _private.pickTemplate(templateList, fallback);
 };
 
-_private.getTemplateForCollection = function getTemplateForCollection(routerOptions, requestOptions) {
-    const templateList = _private.getCollectionTemplateHierarchy(routerOptions, requestOptions),
+_private.getTemplateForEntries = function getTemplateForEntries(routerOptions, requestOptions) {
+    const templateList = _private.getEntriesTemplateHierarchy(routerOptions, requestOptions),
         fallback = templateList[templateList.length - 1];
     return _private.pickTemplate(templateList, fallback);
 };
@@ -158,8 +158,6 @@ _private.getTemplateForError = function getTemplateForError(statusCode) {
 };
 
 module.exports.setTemplate = function setTemplate(req, res, data) {
-    const routeConfig = res._route || {};
-
     if (res._template && !req.err) {
         return;
     }
@@ -169,21 +167,17 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
         return;
     }
 
-    switch (routeConfig.type) {
-        case 'custom':
-            res._template = _private.pickTemplate(routeConfig.templateName, routeConfig.defaultTemplate);
-            break;
-        case 'collection':
-            res._template = _private.getTemplateForCollection(res.locals.routerOptions, {
-                path: url.parse(req.url).pathname,
-                page: req.params.page,
-                slugParam: req.params.slug
-            });
-            break;
-        case 'entry':
-            res._template = _private.getTemplateForEntry(data.post);
-            break;
-        default:
-            res._template = 'index';
+    if (['channel', 'collection'].indexOf(res.routerOptions.type) !== -1) {
+        res._template = _private.getTemplateForEntries(res.routerOptions, {
+            path: url.parse(req.url).pathname,
+            page: req.params.page,
+            slugParam: req.params.slug
+        });
+    } else if (res.routerOptions.type === 'custom') {
+        res._template = _private.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
+    } else if (res.routerOptions.type === 'entry') {
+        res._template = _private.getTemplateForEntry(data.post);
+    } else {
+        res._template = 'index';
     }
 };

@@ -4,7 +4,6 @@
  */
 const _ = require('lodash'),
     Promise = require('bluebird'),
-    urlService = require('../../url'),
     api = require('../../../api'),
     defaultPostQuery = {};
 
@@ -68,6 +67,10 @@ function fetchData(pathOptions, routerOptions) {
         postQuery.options.filter = routerOptions.filter;
     }
 
+    if (routerOptions.order) {
+        postQuery.options.order = routerOptions.order;
+    }
+
     if (pathOptions.hasOwnProperty('page')) {
         postQuery.options.page = pathOptions.page;
     }
@@ -76,7 +79,7 @@ function fetchData(pathOptions, routerOptions) {
         postQuery.options.limit = pathOptions.limit;
     }
 
-    // CASE: always fetch post collection
+    // CASE: always fetch post entries
     // The filter can in theory contain a "%s" e.g. filter="primary_tag:%s"
     props.posts = processQuery(postQuery, pathOptions.slug);
 
@@ -88,27 +91,15 @@ function fetchData(pathOptions, routerOptions) {
     return Promise.props(props)
         .then(function formatResponse(results) {
             const response = _.cloneDeep(results.posts);
-            delete results.posts;
 
-            // CASE: does this post belong to this collection?
-            // EXCEPTION: Taxonomies always list the posts which belong to a tag/author.
-            if (!routerOptions.data && routerOptions.identifier) {
-                response.posts = _.filter(response.posts, (post) => {
-                    if (urlService.owns(routerOptions.identifier, post.url)) {
-                        return post;
-                    }
-                });
-            }
-
-            // process any remaining data
-            if (!_.isEmpty(results)) {
+            if (routerOptions.data) {
                 response.data = {};
 
-                _.each(results, function (result, name) {
-                    if (routerOptions.data[name].type === 'browse') {
-                        response.data[name] = result;
+                _.each(routerOptions.data, function (config, name) {
+                    if (config.type === 'browse') {
+                        response.data[name] = results[name];
                     } else {
-                        response.data[name] = result[routerOptions.data[name].resource];
+                        response.data[name] = results[name][config.resource];
                     }
                 });
             }

@@ -205,7 +205,8 @@ describe('UNIT: services/settings/validate', function () {
             routes: {},
             collections: {
                 '/magic/': {
-                    permalink: '{globals.permalinks}'
+                    permalink: '{globals.permalinks}',
+                    templates: []
                 }
             }
         });
@@ -253,12 +254,421 @@ describe('UNIT: services/settings/validate', function () {
             },
             collections: {
                 '/magic/': {
-                    permalink: '/magic/:year/:slug/'
+                    permalink: '/magic/:year/:slug/',
+                    templates: []
                 },
                 '/': {
-                    permalink: '/:slug/'
+                    permalink: '/:slug/',
+                    templates: []
                 }
             }
+        });
+    });
+
+    describe('template definitions', function () {
+        it('single value', function () {
+            const object = validate({
+                routes: {
+                    '/about/': 'about',
+                    '/me/': {
+                        template: 'me'
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: 'test'
+                    }
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/about/': {
+                        templates: ['about']
+                    },
+                    '/me/': {
+                        templates: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/:slug/',
+                        templates: ['test']
+                    }
+                }
+            });
+        });
+
+        it('array', function () {
+            const object = validate({
+                routes: {
+                    '/about/': 'about',
+                    '/me/': {
+                        template: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: ['test']
+                    }
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/about/': {
+                        templates: ['about']
+                    },
+                    '/me/': {
+                        templates: ['me']
+                    }
+                },
+                collections: {
+                    '/': {
+                        permalink: '/:slug/',
+                        templates: ['test']
+                    }
+                }
+            });
+        });
+    });
+
+    describe('data definitions', function () {
+        it('shortform', function () {
+            const object = validate({
+                routes: {
+                    '/food/': {
+                        data: 'tag.food'
+                    },
+                    // @TODO: enable redirect
+                    '/music/': {
+                        data: 'tag.music'
+                    },
+                    '/sleep/': {
+                        data: {
+                            bed: 'tag.bed',
+                            dream: 'tag.dream'
+                        }
+                    }
+                },
+                collections: {
+                    '/more/': {
+                        permalink: '/{slug}/',
+                        data: {
+                            home: 'page.home'
+                        }
+                    },
+                    '/podcast/': {
+                        permalink: '/podcast/{slug}/',
+                        data: {
+                            something: 'tag.something'
+                        }
+                    },
+                    '/': {
+                        permalink: '/{slug}/',
+                        data: 'tag.sport'
+                    }
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/food/': {
+                        data: {
+                            query: {
+                                tag: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'food',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                tags: [{redirect: false, slug: 'food'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/music/': {
+                        data: {
+                            query: {
+                                tag: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'music',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                tags: [{redirect: false, slug: 'music'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/sleep/': {
+                        data: {
+                            query: {
+                                bed: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'bed',
+                                        visibility: 'public'
+                                    }
+                                },
+                                dream: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'dream',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                tags: [{redirect: false, slug: 'bed'}, {redirect: false, slug: 'dream'}]
+                            }
+                        },
+                        templates: []
+                    }
+                },
+                collections: {
+                    '/more/': {
+                        permalink: '/:slug/',
+                        data: {
+                            query: {
+                                home: {
+                                    resource: 'posts',
+                                    type: 'read',
+                                    options: {
+                                        page: 1,
+                                        slug: 'home',
+                                        status: 'published'
+                                    }
+                                }
+                            },
+                            router: {
+                                pages: [{redirect: false, slug: 'home'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/podcast/': {
+                        permalink: '/podcast/:slug/',
+                        data: {
+                            query: {
+                                something: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'something',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                tags: [{redirect: false, slug: 'something'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/': {
+                        permalink: '/:slug/',
+                        data: {
+                            query: {
+                                tag: {
+                                    resource: 'tags',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'sport',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                tags: [{redirect: false, slug: 'sport'}]
+                            }
+                        },
+                        templates: []
+                    }
+                }
+            });
+        });
+
+        it('longform', function () {
+            const object = validate({
+                routes: {
+                    '/food/': {
+                        data: {
+                            food: {
+                                resource: 'posts',
+                                type: 'browse'
+                            }
+                        }
+                    },
+                    '/wellness/': {
+                        data: {
+                            posts: {
+                                resource: 'posts',
+                                type: 'read',
+                                redirect: true
+                            }
+                        }
+                    },
+                    '/partyparty/': {
+                        data: {
+                            posts: {
+                                resource: 'users',
+                                type: 'read',
+                                slug: 'djgutelaune',
+                                redirect: true
+                            }
+                        }
+                    }
+                },
+                collections: {
+                    '/yoga/': {
+                        permalink: '/{slug}/',
+                        data: {
+                            gym: {
+                                resource: 'posts',
+                                type: 'read',
+                                slug: 'ups',
+                                status: 'draft'
+                            }
+                        }
+                    },
+                }
+            });
+
+            object.should.eql({
+                taxonomies: {},
+                routes: {
+                    '/food/': {
+                        data: {
+                            query: {
+                                food: {
+                                    resource: 'posts',
+                                    type: 'browse',
+                                    options: {}
+                                }
+                            },
+                            router: {
+                                posts: [{redirect: false}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/wellness/': {
+                        data: {
+                            query: {
+                                posts: {
+                                    resource: 'posts',
+                                    type: 'read',
+                                    options: {
+                                        status: 'published',
+                                        slug: '%s',
+                                        page: 0
+                                    }
+                                }
+                            },
+                            router: {
+                                posts: [{redirect: true}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/partyparty/': {
+                        data: {
+                            query: {
+                                posts: {
+                                    resource: 'users',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'djgutelaune',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                users: [{redirect: true, slug: 'djgutelaune'}]
+                            }
+                        },
+                        templates: []
+                    }
+                },
+                collections: {
+                    '/yoga/': {
+                        permalink: '/:slug/',
+                        data: {
+                            query: {
+                                gym: {
+                                    resource: 'posts',
+                                    type: 'read',
+                                    options: {
+                                        page: 0,
+                                        slug: 'ups',
+                                        status: 'draft'
+                                    }
+                                }
+                            },
+                            router: {
+                                posts: [{redirect: false, slug: 'ups'}]
+                            }
+                        },
+                        templates: []
+                    }
+                }
+            });
+        });
+
+        it('errors', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: 'tag:test'
+                        }
+                    }
+                });
+
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                type: 'edit'
+                            }
+                        }
+                    }
+                });
+
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                resource: 'subscribers'
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
         });
     });
 });
