@@ -220,6 +220,11 @@ validateSchema = function validateSchema(tableName, model, options) {
                     context: tableName + '.' + columnKey
                 }));
             }
+
+            // CASE: ensure we transform 0|1 to false|true
+            if (!validator.empty(strVal)) {
+                model.set(columnKey, !!model.get(columnKey));
+            }
         }
 
         // TODO: check if mandatory values should be enforced

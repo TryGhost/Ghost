@@ -21,18 +21,31 @@ Post = ghostBookshelf.Model.extend({
     tableName: 'posts',
 
     /**
-     * ## NOTE:
-     * We define the defaults on the schema (db) and model level.
-     * When inserting resources, the defaults are available **after** calling `.save`.
-     * But they are available when the model hooks are triggered (e.g. onSaving).
-     * It might be useful to keep them in the model layer for any connected logic.
+     * @NOTE
      *
-     * e.g. if `model.get('status') === draft; do something;
+     * We define the defaults on the schema (db) and model level.
+     *
+     * Why?
+     *   - when you insert a resource, Knex does only return the id of the created resource
+     *     - see https://knexjs.org/#Builder-insert
+     *   - that means `defaultTo` is a pure database configuration (!)
+     *   - Bookshelf just returns the model values which you have asked Bookshelf to insert
+     *      - it can't return the `defaultTo` value from the schema/db level
+     *      - but the db defaults defined in the schema are saved in the database correctly
+     *   - `models.Post.add` always does to operations:
+     *      1. add
+     *      2. fetch (this ensures we fetch the whole resource from the database)
+     *   - that means we have to apply the defaults on the model layer to ensure a complete field set
+     *      1. any connected logic in our model hooks e.g. beforeSave
+     *      2. model events e.g. "post.published" are using the inserted resource, not the fetched resource
      */
     defaults: function defaults() {
         return {
             uuid: uuid.v4(),
-            status: 'draft'
+            status: 'draft',
+            featured: false,
+            page: false,
+            visibility: 'public'
         };
     },
 

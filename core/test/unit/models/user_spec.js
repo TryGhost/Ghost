@@ -1,5 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
+    _ = require('lodash'),
+    schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     validation = require('../../../server/data/validation'),
     common = require('../../../server/lib/common'),
@@ -331,6 +333,43 @@ describe('Unit: models/user', function () {
                 .then(function (user) {
                     should(user.get('profile_image')).be.null();
                     user.get('bio').should.eql('');
+                });
+        });
+    });
+
+    describe('Add', function () {
+        const events = {
+            user: []
+        };
+
+        before(function () {
+            models.init();
+
+            sandbox.stub(models.User.prototype, 'emitChange').callsFake(function (event) {
+                events.user.push({event: event, data: this.toJSON()});
+            });
+        });
+
+        after(function () {
+            sandbox.restore();
+        });
+
+        it('defaults', function () {
+            return models.User.add({slug: 'joe', name: 'Joe', email: 'joe@test.com'})
+                .then(function (user) {
+                    user.get('name').should.eql('Joe');
+                    user.get('email').should.eql('joe@test.com');
+                    user.get('slug').should.eql('joe');
+                    user.get('visibility').should.eql('public');
+                    user.get('status').should.eql('active');
+
+                    _.each(_.keys(schema.tables.users), (key) => {
+                        should.exist(events.user[0].data.hasOwnProperty(key));
+
+                        if (['status', 'visibility'].indexOf(key) !== -1) {
+                            events.user[0].data[key].should.eql(schema.tables.users[key].defaultTo);
+                        }
+                    });
                 });
         });
     });
