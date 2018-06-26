@@ -44,7 +44,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             common.events.emit.calledOnce.should.be.true();
             common.events.emit.calledWith('router.created', collectionRouter).should.be.true();
 
-            common.events.on.called.should.be.false();
+            common.events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
 
@@ -92,7 +92,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             common.events.emit.calledOnce.should.be.true();
             common.events.emit.calledWith('router.created', collectionRouter).should.be.true();
 
-            common.events.on.called.should.be.false();
+            common.events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
 
@@ -123,7 +123,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '/magic/{globals.permalinks}/'});
 
             collectionRouter.getPermalinks().getValue().should.eql('/magic/:slug/');
-            common.events.on.calledOnce.should.be.true();
+            common.events.on.calledTwice.should.be.true();
         });
 
         it('permalink placeholder', function () {
@@ -182,6 +182,68 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 data: {},
                 order: 'published asc',
                 limit: 19
+            });
+        });
+    });
+
+    describe('timezone changes', function () {
+        describe('no dated permalink', function () {
+            it('default', function () {
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+
+                sandbox.stub(collectionRouter, 'emit');
+
+                common.events.on.args[1][1]({
+                    attributes: {value: 'America/Los_Angeles'},
+                    _updatedAttributes: {value: 'Europe/London'}
+                });
+
+                collectionRouter.emit.called.should.be.false();
+            });
+
+            it('tz has not changed', function () {
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+
+                sandbox.stub(collectionRouter, 'emit');
+
+                common.events.on.args[1][1]({
+                    attributes: {value: 'America/Los_Angeles'},
+                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                });
+
+                collectionRouter.emit.called.should.be.false();
+            });
+        });
+
+        describe('with dated permalink', function () {
+            beforeEach(function () {
+                settingsCache.get.withArgs('permalinks').returns('/:year/:slug/');
+            });
+
+            it('default', function () {
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+
+                sandbox.stub(collectionRouter, 'emit');
+
+                common.events.on.args[1][1]({
+                    attributes: {value: 'America/Los_Angeles'},
+                    _updatedAttributes: {value: 'Europe/London'}
+                });
+
+                collectionRouter.emit.calledOnce.should.be.true();
+            });
+
+            it('tz has not changed', function () {
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+
+                sandbox.stub(collectionRouter, 'emit');
+
+                common.events.on.args[1][1]({
+                    attributes: {value: 'America/Los_Angeles'},
+                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                });
+
+                collectionRouter.emit.called.should.be.false();
             });
         });
     });

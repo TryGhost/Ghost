@@ -128,6 +128,16 @@ class CollectionRouter extends ParentRouter {
             this._onPermalinksEditedListener = this._onPermalinksEdited.bind(this);
             common.events.on('settings.permalinks.edited', this._onPermalinksEditedListener);
         }
+
+        /**
+         * CASE: timezone changes
+         *
+         * If your permalink contains a date reference, we have to regenerate the urls.
+         *
+         * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
+         */
+        this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
+        common.events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
     }
 
     /**
@@ -141,6 +151,20 @@ class CollectionRouter extends ParentRouter {
 
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
         this.emit('updated');
+    }
+
+    _onTimezoneEdited(settingModel) {
+        const newTimezone = settingModel.attributes.value,
+            previousTimezone = settingModel._updatedAttributes.value;
+
+        if (newTimezone === previousTimezone) {
+            return;
+        }
+
+        if (this.getPermalinks().getValue().match(/:year|:month|:day/)) {
+            debug('_onTimezoneEdited: trigger regeneration');
+            this.emit('updated');
+        }
     }
 
     getResourceType() {
@@ -162,11 +186,13 @@ class CollectionRouter extends ParentRouter {
     }
 
     reset() {
-        if (!this._onPermalinksEditedListener) {
-            return;
+        if (this._onPermalinksEditedListener) {
+            common.events.removeListener('settings.permalinks.edited', this._onPermalinksEditedListener);
         }
 
-        common.events.removeListener('settings.permalinks.edited', this._onPermalinksEditedListener);
+        if (this._onTimezoneEditedListener) {
+            common.events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
+        }
     }
 }
 
