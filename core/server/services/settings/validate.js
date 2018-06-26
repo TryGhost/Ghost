@@ -113,7 +113,7 @@ _private.validateData = function validateData(object) {
                 if (!object.data[key].hasOwnProperty(option)) {
                     throw new common.errors.ValidationError({
                         message: common.i18n.t('errors.services.settings.yaml.validate', {
-                            at: object.data[key],
+                            at: JSON.stringify(object.data[key]),
                             reason: `${option} is required.`
                         })
                     });
@@ -122,8 +122,8 @@ _private.validateData = function validateData(object) {
                 if (allowedQueryValues[option] && allowedQueryValues[option].indexOf(object.data[key][option]) === -1) {
                     throw new common.errors.ValidationError({
                         message: common.i18n.t('errors.services.settings.yaml.validate', {
-                            at: object.data[key][option],
-                            reason: `${object.data[key][option]} not supported.`
+                            at: JSON.stringify(object.data[key]),
+                            reason: `${object.data[key][option]} not supported. Please use ${_.uniq(allowedQueryValues[option])}.`
                         })
                     });
                 }
@@ -185,9 +185,9 @@ _private.validateRoutes = function validateRoutes(routes) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObjectKey,
-                    reason: 'Please define a permalink route.'
+                    reason: 'Please define a template.'
                 }),
-                help: 'e.g. permalink: /{slug}/'
+                help: 'e.g. /about/: about'
             });
         }
 
