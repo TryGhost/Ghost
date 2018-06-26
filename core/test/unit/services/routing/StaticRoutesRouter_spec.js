@@ -85,7 +85,23 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 type: 'custom',
                 templates: [],
                 defaultTemplate: 'default',
-                context: [],
+                context: ['about'],
+                data: {},
+                contentType: undefined
+            });
+            should.not.exist(res.locals.slug);
+        });
+
+        it('fn: _prepareStaticRouteContext', function () {
+            const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []});
+
+            staticRoutesRouter._prepareStaticRouteContext(req, res, next);
+            next.called.should.be.true();
+            res.routerOptions.should.eql({
+                type: 'custom',
+                templates: [],
+                defaultTemplate: 'default',
+                context: ['index'],
                 data: {},
                 contentType: undefined
             });
