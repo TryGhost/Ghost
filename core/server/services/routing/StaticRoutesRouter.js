@@ -13,6 +13,8 @@ class StaticRoutesRouter extends ParentRouter {
         this.route = {value: mainRoute};
         this.templates = (object.templates || []).reverse();
         this.data = object.data || {query: {}, router: {}};
+        this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
+
         debug(this.route.value, this.templates);
 
         if (this.isChannel(object)) {
@@ -21,7 +23,6 @@ class StaticRoutesRouter extends ParentRouter {
             this.limit = object.limit;
             this.order = object.order;
 
-            this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
             this.controller = object.controller;
 
             debug(this.route.value, this.templates, this.filter, this.data);
@@ -80,7 +81,7 @@ class StaticRoutesRouter extends ParentRouter {
             templates: this.templates,
             defaultTemplate: 'default',
             data: this.data.query,
-            context: [],
+            context: [this.routerName],
             contentType: this.contentType
         };
 
