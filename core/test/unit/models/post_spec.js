@@ -56,6 +56,10 @@ describe('Unit: models/post', function () {
 
                         _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
                             should.exist(post.hasOwnProperty(key));
+
+                            if (['page', 'status', 'visibility', 'featured'].indexOf(key) !== -1) {
+                                events.post[0].data[key].should.eql(schema.tables.posts[key].defaultTo);
+                            }
                         });
 
                         should.not.exist(post.authors);
@@ -67,12 +71,39 @@ describe('Unit: models/post', function () {
 
                         _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
                             should.exist(events.post[0].data.hasOwnProperty(key));
+
+                            if (['page', 'status', 'visibility', 'featured'].indexOf(key) !== -1) {
+                                events.post[0].data[key].should.eql(schema.tables.posts[key].defaultTo);
+                            }
                         });
 
                         should.exist(events.post[0].data.authors);
                         should.exist(events.post[0].data.primary_author);
                         should.exist(events.post[0].data.tags);
                         should.exist(events.post[0].data.primary_tag);
+                    });
+            });
+
+            it('with page:1', function () {
+                const events = {
+                    post: []
+                };
+
+                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                    events.post.push({event: event, data: this.toJSON()});
+                });
+
+                return models.Post.add({
+                    title: 'My beautiful title.',
+                    page: 1
+                }, testUtils.context.editor)
+                    .then((post) => {
+                        post.get('title').should.eql('My beautiful title.');
+                        post = post.toJSON();
+
+                        // transformed 1 to true
+                        post.page.should.eql(true);
+                        events.post[0].data.page.should.eql(true);
                     });
             });
 
@@ -97,21 +128,12 @@ describe('Unit: models/post', function () {
                         post.get('title').should.eql('My beautiful title.');
                         post = post.toJSON();
 
-                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
-                            should.exist(post.hasOwnProperty(key));
-                        });
-
                         should.not.exist(post.authors);
                         should.not.exist(post.primary_author);
                         should.exist(post.tags);
                         should.exist(post.primary_tag);
 
                         events.post[0].event.should.eql('added');
-
-                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
-                            should.exist(events.post[0].data.hasOwnProperty(key));
-                        });
-
                         should.exist(events.post[0].data.authors);
                         should.exist(events.post[0].data.primary_author);
                         should.exist(events.post[0].data.tags);
@@ -140,20 +162,12 @@ describe('Unit: models/post', function () {
                         post.get('title').should.eql('My beautiful title.');
                         post = post.toJSON();
 
-                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
-                            should.exist(post.hasOwnProperty(key));
-                        });
-
                         should.exist(post.authors);
                         should.exist(post.primary_author);
                         should.exist(post.tags);
                         should.exist(post.primary_tag);
 
                         events.post[0].event.should.eql('added');
-
-                        _.each(_.keys(_.omit(schema.tables.posts, ['mobiledoc', 'amp', 'plaintext'])), (key) => {
-                            should.exist(events.post[0].data.hasOwnProperty(key));
-                        });
 
                         should.exist(events.post[0].data.authors);
                         should.exist(events.post[0].data.primary_author);
