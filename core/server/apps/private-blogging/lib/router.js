@@ -11,12 +11,12 @@ function _renderer(req, res) {
     res.routerOptions = {
         type: 'custom',
         templates: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
+        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
     };
 
     // Renderer begin
     // Format data
-    var data = {};
+    let data = {};
 
     if (res.error) {
         data.error = res.error;
