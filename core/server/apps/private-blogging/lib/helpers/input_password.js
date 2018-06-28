@@ -4,7 +4,7 @@
 // Password input used on private.hbs for password-protected blogs
 
 // (less) dirty requires
-var proxy = require('../../../../helpers/proxy'),
+const proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
     templates = proxy.templates;
 
@@ -13,19 +13,19 @@ module.exports = function input_password(options) { // eslint-disable-line camel
     options = options || {};
     options.hash = options.hash || {};
 
-    var className = (options.hash.class) ? options.hash.class : 'private-login-password',
+    let className = (options.hash.class) ? options.hash.class : 'private-login-password',
         extras = 'autofocus="autofocus"',
         output;
 
     if (options.hash.placeholder) {
-        extras += ' placeholder="' + options.hash.placeholder + '"';
+        extras += ` placeholder="${options.hash.placeholder}"`;
     }
 
     output = templates.input({
         type: 'password',
         name: 'password',
-        className: className,
-        extras: extras
+        className,
+        extras
     });
 
     return new SafeString(output);

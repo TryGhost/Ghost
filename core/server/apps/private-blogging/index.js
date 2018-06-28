@@ -1,14 +1,13 @@
-var urlService = require('../../services/url'),
+const urlService = require('../../services/url'),
     common = require('../../lib/common'),
     middleware = require('./lib/middleware'),
     router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
     // routeKeywords.private: 'private'
-    PRIVATE_KEYWORD = 'private',
-    checkSubdir;
+    PRIVATE_KEYWORD = 'private';
 
-checkSubdir = function checkSubdir() {
-    var paths;
+let checkSubdir = function checkSubdir() {
+    let paths = '';
 
     if (urlService.utils.getSubdir()) {
         paths = urlService.utils.getSubdir().split('/');
@@ -28,7 +27,7 @@ checkSubdir = function checkSubdir() {
 
 module.exports = {
     activate: function activate(ghost) {
-        var privateRoute = '/' + PRIVATE_KEYWORD + '/';
+        let privateRoute = `/${PRIVATE_KEYWORD}/`;
 
         checkSubdir();
 
