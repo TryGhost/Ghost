@@ -28,7 +28,6 @@
   "devDependencies": {
     "@ember/optional-features": "0.6.1",
     "@html-next/vertical-collection": "1.0.0-beta.8",
-    "@tryghost/mobiledoc-kit": "0.10.22-ghost.1",
     "blueimp-md5": "2.10.0",
     "broccoli-asset-rev": "2.7.0",
     "broccoli-clean-css": "^2.0.1",
@@ -114,6 +113,7 @@
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "2.0.0",
     "matchdep": "2.0.0",
+    "mobiledoc-kit": "0.11.1",
     "normalize.css": "3.0.3",
     "password-generator": "2.2.0",
     "reframe.js": "2.2.1",
