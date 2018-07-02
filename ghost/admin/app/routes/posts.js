@@ -1,10 +1,11 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import InfinityRoute from 'ember-infinity/mixins/route';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(InfinityRoute, {
+export default AuthenticatedRoute.extend({
+    infinity: service(),
 
     queryParams: {
         type: {
@@ -69,7 +70,7 @@ export default AuthenticatedRoute.extend(InfinityRoute, {
             let perPage = this.get('perPage');
             let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
-            return this.infinityModel('post', paginationSettings);
+            return this.infinity.model('post', paginationSettings);
         });
     },
 

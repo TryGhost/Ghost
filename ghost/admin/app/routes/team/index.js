@@ -1,12 +1,13 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
-import InfinityRoute from 'ember-infinity/mixins/route';
 import RSVP from 'rsvp';
 import styleBody from 'ghost-admin/mixins/style-body';
+import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, InfinityRoute, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    infinity: service(),
+
     titleToken: 'Team',
-
     classNames: ['view-team'],
 
     modelPath: 'controller.activeUsers',
@@ -18,7 +19,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Infinit
             let perPage = this.get('perPage');
 
             let modelPromises = {
-                activeUsers: this.infinityModel('user', {
+                activeUsers: this.infinity.model('user', {
                     modelPath,
                     perPage,
                     filter: 'status:-inactive',
