@@ -550,9 +550,9 @@ codemirror-spell-checker@*:
   dependencies:
     typo-js "*"
 
-codemirror@5.38.0:
-  version "5.38.0"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.38.0.tgz#26a9551446e51dbdde36aabe60f72469724fd332"
+codemirror@5.39.0:
+  version "5.39.0"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.39.0.tgz#4654f7d2f7e525e04a62e72d9482348ccb37dce5"
 
 collection-visit@^1.0.0:
   version "1.0.0"
