@@ -76,7 +76,7 @@
     "ember-fetch": "5.0.0",
     "ember-in-viewport": "3.0.3",
     "ember-infinity": "1.0.1",
-    "ember-light-table": "1.12.2",
+    "ember-light-table": "1.13.1",
     "ember-load": "0.0.12",
     "ember-load-initializers": "1.1.0",
     "ember-native-dom-helpers": "0.6.2",
