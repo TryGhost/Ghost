@@ -1,4 +1,4 @@
-var fs = require('fs-extra'),
+const fs = require('fs-extra'),
     session = require('cookie-session'),
     crypto = require('crypto'),
     path = require('path'),
@@ -8,22 +8,23 @@ var fs = require('fs-extra'),
     common = require('../../../lib/common'),
     settingsCache = require('../../../services/settings/cache'),
     // routeKeywords.private: 'private'
-    privateRoute = '/private/',
-    privateBlogging;
+    privateRoute = '/private/';
+
+let privateBlogging = null;
 
 function verifySessionHash(salt, hash) {
     if (!salt || !hash) {
         return false;
     }
 
-    var hasher = crypto.createHash('sha256');
+    let hasher = crypto.createHash('sha256');
     hasher.update(settingsCache.get('password') + salt, 'utf8');
     return hasher.digest('hex') === hash;
 }
 
 privateBlogging = {
     checkIsPrivate: function checkIsPrivate(req, res, next) {
-        var isPrivateBlog = settingsCache.get('is_private');
+        let isPrivateBlog = settingsCache.get('is_private');
 
         if (!isPrivateBlog) {
             res.isPrivateBlog = false;
@@ -81,7 +82,7 @@ privateBlogging = {
     },
 
     authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
-        var hash = req.session.token || '',
+        let hash = req.session.token || '',
             salt = req.session.salt || '',
             isVerified = verifySessionHash(salt, hash),
             url;
@@ -101,7 +102,7 @@ privateBlogging = {
             return res.redirect(urlService.utils.urlFor('home', true));
         }
 
-        var hash = req.session.token || '',
+        let hash = req.session.token || '',
             salt = req.session.salt || '',
             isVerified = verifySessionHash(salt, hash);
 
@@ -119,7 +120,7 @@ privateBlogging = {
             return next();
         }
 
-        var bodyPass = req.body.password,
+        let bodyPass = req.body.password,
             pass = settingsCache.get('password'),
             hasher = crypto.createHash('sha256'),
             salt = Date.now().toString(),

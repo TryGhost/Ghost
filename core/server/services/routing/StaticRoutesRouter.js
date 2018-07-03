@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
+const debug = require('ghost-ignition').debug('services:routing:static-routes-router');
 const common = require('../../lib/common');
 const urlService = require('../../services/url');
 const RSSRouter = require('./RSSRouter');
