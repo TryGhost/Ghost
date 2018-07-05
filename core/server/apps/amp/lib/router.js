@@ -33,7 +33,7 @@ function _renderer(req, res, next) {
 function getPostData(req, res, next) {
     req.body = req.body || {};
 
-    const urlWithoutSubdirectoryWithoutAmp = res.locals.relativeUrl.match(/(.*?\/)amp/)[1];
+    const urlWithoutSubdirectoryWithoutAmp = res.locals.relativeUrl.match(/(.*?\/)amp\/?$/)[1];
 
     /**
      * @NOTE
