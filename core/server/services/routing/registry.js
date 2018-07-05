@@ -19,14 +19,40 @@ module.exports = {
         return routers[name];
     },
 
-    getFirstCollectionRouter() {
-        return _.find(routers, (router) => {
-            if (router.name === 'CollectionRouter') {
-                return router;
-            }
+    /**
+     * https://github.com/TryGhost/Team/issues/65#issuecomment-393622816
+     *
+     * Hierarchy for primary rss url:
+     *
+     * - index collection (/)
+     * - if you only have one collection, we take this rss url
+     */
+    getRssUrl(options) {
+        let rssUrl = null;
 
-            return false;
-        });
+        const collectionIndexRouter = _.find(routers, {name: 'CollectionRouter', routerName: 'index'});
+
+        if (collectionIndexRouter) {
+            rssUrl = collectionIndexRouter.getRssUrl(options);
+
+            // CASE: is rss enabled?
+            if (rssUrl) {
+                return rssUrl;
+            }
+        }
+
+        const collectionRouters = _.filter(routers, {name: 'CollectionRouter'});
+
+        if (collectionRouters && collectionRouters.length === 1) {
+            rssUrl = collectionRouters[0].getRssUrl(options);
+
+            // CASE: is rss enabled?
+            if (rssUrl) {
+                return rssUrl;
+            }
+        }
+
+        return rssUrl;
     },
 
     resetAllRoutes() {

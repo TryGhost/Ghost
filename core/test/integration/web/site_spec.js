@@ -1,27 +1,23 @@
 const should = require('should'),
     sinon = require('sinon'),
+    _ = require('lodash'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     api = require('../../../server/api'),
     settingsService = require('../../../server/services/settings'),
+    RESOURCE_CONFIG = require('../../../server/services/routing/assets/resource-config'),
     themeConfig = require('../../../server/services/themes/config'),
     siteApp = require('../../../server/web/parent-app'),
     sandbox = sinon.sandbox.create();
 
 describe('Integration - Web - Site', function () {
-    let app, knexMock;
+    let app;
+
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
 
     describe('default routes.yaml', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
         before(function () {
             sandbox.stub(themeConfig, 'create').returns({
                 posts_per_page: 2
@@ -175,7 +171,7 @@ describe('Integration - Web - Site', function () {
                         should.exist(response.res.locals.safeVersion);
                         should.exist(response.res.locals.relativeUrl);
                         should.exist(response.res.locals.secure);
-                        should.exist(response.res.locals.routerOptions);
+                        should.exist(response.res.routerOptions);
                     });
             });
 
@@ -431,64 +427,55 @@ describe('Integration - Web - Site', function () {
         });
     });
 
-    describe('extended routes.yaml (1): 2 collections', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
-        before(function () {
-            sandbox.stub(settingsService, 'get').returns({
-                routes: {
-                    '/': 'home'
-                },
-
-                collections: {
-                    '/podcast/': {
-                        permalink: '/podcast/:slug/',
-                        filter: 'featured:true'
+    describe('extended routes.yaml: collections', function () {
+        describe('2 collections', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {
+                        '/': 'home'
                     },
 
-                    '/something/': {
-                        permalink: '/something/:slug/'
-                    }
-                },
+                    collections: {
+                        '/podcast/': {
+                            permalink: '/podcast/:slug/',
+                            filter: 'featured:true'
+                        },
 
-                taxonomies: {
-                    tag: '/categories/:slug/',
-                    author: '/authors/:slug/'
-                }
+                        '/something/': {
+                            permalink: '/something/:slug/'
+                        }
+                    },
+
+                    taxonomies: {
+                        tag: '/categories/:slug/',
+                        author: '/authors/:slug/'
+                    }
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
             });
 
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sandbox);
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp();
+            afterEach(function () {
+                configUtils.restore();
+            });
 
-                    return testUtils.integrationTesting.urlService.waitTillFinished();
-                });
-        });
+            after(function () {
+                sandbox.restore();
+            });
 
-        beforeEach(function () {
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
-        });
-
-        afterEach(function () {
-            configUtils.restore();
-        });
-
-        after(function () {
-            sandbox.restore();
-        });
-
-        describe('behaviour: default cases', function () {
-            it('serve home', function () {
+            it('serve static route', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
@@ -499,9 +486,7 @@ describe('Integration - Web - Site', function () {
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-
-                        // falls back to index, because Casper has no home.hbs
-                        response.template.should.eql('index');
+                        response.template.should.eql('default');
                     });
             });
 
@@ -572,60 +557,98 @@ describe('Integration - Web - Site', function () {
                     });
             });
         });
-    });
 
-    describe('extended routes.yaml (2): static permalink route', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
-        before(function () {
-            sandbox.stub(settingsService, 'get').returns({
-                routes: {},
-
-                collections: {
-                    '/podcast/': {
-                        permalink: '/featured/',
-                        filter: 'featured:true'
+        describe('no collections', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {
+                        '/test/': 'test'
                     },
+                    collections: {},
+                    taxonomies: {}
+                });
 
-                    '/': {
-                        permalink: '/:slug'
-                    }
-                },
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
 
-                taxonomies: {}
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
             });
 
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sandbox);
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp();
+            afterEach(function () {
+                configUtils.restore();
+            });
 
-                    return testUtils.integrationTesting.urlService.waitTillFinished();
+            after(function () {
+                sandbox.restore();
+            });
+
+            it('serve route', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/test/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('default');
+                    });
+            });
+        });
+
+        describe('static permalink route', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {},
+
+                    collections: {
+                        '/podcast/': {
+                            permalink: '/featured/',
+                            filter: 'featured:true'
+                        },
+
+                        '/': {
+                            permalink: '/:slug/'
+                        }
+                    },
+
+                    taxonomies: {}
                 });
-        });
 
-        beforeEach(function () {
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
-        });
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
 
-        afterEach(function () {
-            configUtils.restore();
-        });
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
 
-        after(function () {
-            sandbox.restore();
-        });
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
 
-        describe('behaviour: default cases', function () {
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            after(function () {
+                sandbox.restore();
+            });
+
             it('serve post', function () {
                 const req = {
                     secure: true,
@@ -687,19 +710,323 @@ describe('Integration - Web - Site', function () {
                     });
             });
         });
-    });
 
-    describe('extended routes.yaml (3): templates', function () {
-        describe('(3) (1)', function () {
+        describe('primary author permalink', function () {
             before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {},
+
+                    collections: {
+                        '/something/': {
+                            permalink: '/:primary_author/:slug/'
+                        }
+                    },
+
+                    taxonomies: {}
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
+
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
             });
 
             after(function () {
-                knexMock.unmock();
+                sandbox.restore();
             });
 
+            it('serve post', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/joe-bloggs/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('post');
+                    });
+            });
+
+            it('post without author', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(404);
+                        response.template.should.eql('error-404');
+                    });
+            });
+
+            it('page', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/static-page-test/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('page');
+                    });
+            });
+        });
+
+        describe('primary tag permalink', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {},
+
+                    collections: {
+                        '/something/': {
+                            permalink: '/something/:primary_tag/:slug/'
+                        }
+                    },
+
+                    taxonomies: {}
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
+
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            after(function () {
+                sandbox.restore();
+            });
+
+            it('serve post', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/something/kitchen-sink/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('post');
+                    });
+            });
+
+            it('post without tag', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/something/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(404);
+                        response.template.should.eql('error-404');
+                    });
+            });
+
+            it('post without tag', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(404);
+                        response.template.should.eql('error-404');
+                    });
+            });
+
+            it('page', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/static-page-test/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('page');
+                    });
+            });
+        });
+
+        describe('collection with data key', function () {
+            before(function () {
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {},
+
+                    collections: {
+                        '/food/': {
+                            permalink: '/food/:slug/',
+                            filter: 'tag:bacon',
+                            data: {
+                                query: {
+                                    tag: {
+                                        resource: 'tags',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'bacon'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    tags: [{redirect: true, slug: 'bacon'}]
+                                }
+                            }
+                        },
+                        '/sport/': {
+                            permalink: '/sport/:slug/',
+                            filter: 'tag:pollo',
+                            data: {
+                                query: {
+                                    apollo: {
+                                        resource: 'tags',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'pollo'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    tags: [{redirect: false, slug: 'bacon'}]
+                                }
+                            }
+                        }
+                    },
+
+                    taxonomies: {
+                        tag: '/categories/:slug/',
+                        author: '/authors/:slug/'
+                    }
+                });
+
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sandbox);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
+
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
+
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            after(function () {
+                sandbox.restore();
+            });
+
+            it('serve /food/', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/food/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+                    });
+            });
+
+            it('serve bacon tag', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/categories/bacon/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                    });
+            });
+
+            it('serve /sport/', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/sport/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+                    });
+            });
+
+            it('serve pollo tag', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/categories/pollo/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(200);
+                    });
+            });
+        });
+    });
+
+    describe('extended routes.yaml: templates', function () {
+        describe('default template, no template', function () {
             before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
@@ -707,7 +1034,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['default']
+                            templates: ['default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/'
@@ -769,16 +1096,7 @@ describe('Integration - Web - Site', function () {
             });
         });
 
-        describe('(3) (2)', function () {
-            before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
-            });
-
-            after(function () {
-                knexMock.unmock();
-            });
-
+        describe('two templates', function () {
             before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
@@ -786,7 +1104,7 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });
@@ -830,16 +1148,7 @@ describe('Integration - Web - Site', function () {
             });
         });
 
-        describe('(3) (3)', function () {
-            before(function () {
-                knexMock = new testUtils.mocks.knex();
-                knexMock.mock();
-            });
-
-            after(function () {
-                knexMock.unmock();
-            });
-
+        describe('home.hbs priority', function () {
             before(function () {
                 sandbox.stub(settingsService, 'get').returns({
                     routes: {},
@@ -847,11 +1156,11 @@ describe('Integration - Web - Site', function () {
                     collections: {
                         '/': {
                             permalink: '/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         },
                         '/magic/': {
                             permalink: '/magic/:slug/',
-                            template: ['something', 'default']
+                            templates: ['something', 'default']
                         }
                     }
                 });
@@ -911,117 +1220,314 @@ describe('Integration - Web - Site', function () {
         });
     });
 
-    describe('extended routes.yaml (4): primary author permalink', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
+    describe('extended routes.yaml: routes', function () {
+        describe('channels', function () {
+            before(testUtils.teardown);
+            before(testUtils.setup('users:roles', 'posts'));
 
-        after(function () {
-            knexMock.unmock();
-        });
+            before(function () {
+                testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme-channels'});
 
-        before(function () {
-            sandbox.stub(settingsService, 'get').returns({
-                routes: {},
+                sandbox.stub(settingsService, 'get').returns({
+                    routes: {
+                        '/channel1/': {
+                            controller: 'channel',
+                            filter: 'tag:kitchen-sink',
+                            data: {
+                                query: {
+                                    tag: {
+                                        resource: 'tags',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'kitchen-sink'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    tags: [{redirect: true, slug: 'kitchen-sink'}]
+                                }
+                            }
+                        },
 
-                collections: {
-                    '/something/': {
-                        permalink: '/:primary_author/:slug/'
+                        '/channel2/': {
+                            controller: 'channel',
+                            filter: 'tag:bacon',
+                            data: {
+                                query: {
+                                    tag: {
+                                        resource: 'tags',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'bacon'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    tags: [{redirect: true, slug: 'bacon'}]
+                                }
+                            },
+                            templates: ['default']
+                        },
+
+                        '/channel3/': {
+                            controller: 'channel',
+                            filter: 'author:joe-bloggs',
+                            data: {
+                                query: {
+                                    tag: {
+                                        resource: 'users',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'joe-bloggs'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                }
+                            }
+                        },
+
+                        '/channel4/': {
+                            controller: 'channel',
+                            filter: 'author:joe-bloggs'
+                        },
+
+                        '/channel5/': {
+                            controller: 'channel',
+                            data: {
+                                query: {
+                                    tag: {
+                                        resource: 'users',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'joe-bloggs'
+                                        }
+                                    }
+                                },
+                                router: {
+                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                }
+                            }
+                        }
+                    },
+
+                    collections: {},
+
+                    taxonomies: {
+                        tag: '/tag/:slug/',
+                        author: '/author/:slug/'
                     }
-                },
-
-                taxonomies: {}
-            });
-
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sandbox);
-
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp();
-
-                    return testUtils.integrationTesting.urlService.waitTillFinished();
                 });
-        });
 
-        beforeEach(function () {
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
-        });
+                testUtils.integrationTesting.urlService.resetGenerators();
 
-        afterEach(function () {
-            configUtils.restore();
-        });
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        app = siteApp();
 
-        after(function () {
-            sandbox.restore();
-        });
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    });
+            });
 
-        describe('behaviour: default cases', function () {
-            it('serve post', function () {
+            beforeEach(function () {
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            after(function () {
+                sandbox.restore();
+            });
+
+            it('serve channel 1', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
-                    url: '/joe-bloggs/html-ipsum/',
+                    url: '/channel1/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+
+                        $('.post-card').length.should.equal(2);
+                    });
+            });
+
+            it('serve channel 1: rss', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/channel1/rss/',
                     host: 'example.com'
                 };
 
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
+                        response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
                     });
             });
 
-            it('post without author', function () {
+            it('serve channel 2', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
-                    url: '/html-ipsum/',
+                    url: '/channel2/',
                     host: 'example.com'
                 };
 
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('default');
+
+                        // default tempalte does not list posts
+                        $('.post-card').length.should.equal(0);
                     });
             });
 
-            it('page', function () {
+            it('serve channel 3', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
-                    url: '/static-page-test/',
+                    url: '/channel3/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('channel3');
+                    });
+            });
+
+            it('serve channel 4', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/channel4/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+
+                        $('.post-card').length.should.equal(4);
+                    });
+            });
+
+            it('serve channel 5', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/channel5/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+
+                        $('.post-card').length.should.equal(4);
+                    });
+            });
+
+            it('serve kitching-sink', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/tag/kitchen-sink/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                        response.headers.location.should.eql('/channel1/');
+                    });
+            });
+
+            it('serve chorizo: no redirect', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/tag/chorizo/',
                     host: 'example.com'
                 };
 
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
+                    });
+            });
+
+            it('serve joe-bloggs', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/author/joe-bloggs/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                        response.headers.location.should.eql('/channel3/');
                     });
             });
         });
     });
 
-    describe('extended routes.yaml (4): primary tag permalink', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
+    describe('extended routes.yaml (5): rss override', function () {
         before(function () {
             sandbox.stub(settingsService, 'get').returns({
-                routes: {},
+                routes: {
+                    '/about/': 'about',
+                    '/podcast/rss/': {
+                        templates: ['podcast/rss'],
+                        content_type: 'xml'
+                    },
+                    '/cooking/': {
+                        controller: 'channel',
+                        rss: false
+                    },
+                    '/flat/': {
+                        controller: 'channel'
+                    }
+                },
 
                 collections: {
-                    '/something/': {
-                        permalink: '/something/:primary_tag/:slug/'
+                    '/podcast/': {
+                        permalink: '/:slug/',
+                        filter: 'featured:true',
+                        templates: ['home'],
+                        rss: false
+                    },
+                    '/music/': {
+                        permalink: '/:slug/',
+                        rss: false
+                    },
+                    '/': {
+                        permalink: '/:slug/'
                     }
                 },
 
@@ -1029,7 +1535,7 @@ describe('Integration - Web - Site', function () {
             });
 
             testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sandbox);
+            testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
@@ -1051,66 +1557,93 @@ describe('Integration - Web - Site', function () {
             sandbox.restore();
         });
 
-        describe('behaviour: default cases', function () {
-            it('serve post', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/something/kitchen-sink/html-ipsum/',
-                    host: 'example.com'
-                };
+        it('serve /rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/rss/',
+                host: 'example.com'
+            };
 
-                return testUtils.mocks.express.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
-                    });
-            });
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                });
+        });
 
-            it('post without tag', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/something/html-ipsum/',
-                    host: 'example.com'
-                };
+        it('serve /music/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/music/rss/',
+                host: 'example.com'
+            };
 
-                return testUtils.mocks.express.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
-                    });
-            });
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
 
-            it('post without tag', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/html-ipsum/',
-                    host: 'example.com'
-                };
+        it('serve /cooking/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/cooking/rss/',
+                host: 'example.com'
+            };
 
-                return testUtils.mocks.express.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
-                    });
-            });
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
 
-            it('page', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/static-page-test/',
-                    host: 'example.com'
-                };
+        it('serve /flat/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/flat/rss/',
+                host: 'example.com'
+            };
 
-                return testUtils.mocks.express.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
-                    });
-            });
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                });
+        });
+
+        it('serve /podcast/rss/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/podcast/rss/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(200);
+                    response.template.should.eql('podcast/rss');
+                    response.headers['content-type'].should.eql('text/xml; charset=utf-8');
+                    response.body.match(/<link>/g).length.should.eql(2);
+                });
+        });
+
+        it('serve /podcast/', function () {
+            const req = {
+                secure: true,
+                method: 'GET',
+                url: '/podcast/',
+                host: 'example.com'
+            };
+
+            return testUtils.mocks.express.invoke(app, req)
+                .then(function (response) {
+                    const $ = cheerio.load(response.body);
+                    response.statusCode.should.eql(200);
+                    $('head link')[2].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                });
         });
     });
 });

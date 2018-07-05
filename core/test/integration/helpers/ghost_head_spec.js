@@ -16,24 +16,24 @@ const should = require('should'),
  *        either move to integration tests or rewrite!!!
  */
 describe('{{ghost_head}} helper', function () {
-    let posts = [], tags = [], users = [], knexMock, firstCollection;
+    let posts = [], tags = [], users = [];
+
+    before(function () {
+        testUtils.integrationTesting.defaultMocks(sandbox);
+    });
+
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
 
     before(function () {
         models.init();
 
-        firstCollection = sandbox.stub();
-        firstCollection.getRssUrl = sandbox.stub().returns('http://localhost:65530/rss/');
-        sandbox.stub(routing.registry, 'getFirstCollectionRouter').returns(firstCollection);
-
-        testUtils.integrationTesting.defaultMocks(sandbox);
+        sandbox.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
 
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('blog description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/blog-cover.png');
         settingsCache.get.withArgs('amp').returns(true);
-
-        knexMock = new testUtils.mocks.knex();
-        knexMock.mock();
 
         return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
             meta_description: 'all about our blog',
@@ -324,7 +324,6 @@ describe('{{ghost_head}} helper', function () {
     });
 
     after(function () {
-        knexMock.unmock();
         testUtils.integrationTesting.urlService.resetGenerators();
         sandbox.restore();
         configUtils.restore();
@@ -1252,11 +1251,11 @@ describe('{{ghost_head}} helper', function () {
                     url: 'http://localhost:65530/blog/'
                 });
 
-                firstCollection.getRssUrl.returns('http://localhost:65530/blog/rss/');
+                routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
             });
 
             after(function () {
-                firstCollection.getRssUrl.returns('http://localhost:65530/rss/');
+                routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
             });
 
             it('returns correct rss url with subdirectory', function (done) {

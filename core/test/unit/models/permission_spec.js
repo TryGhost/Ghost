@@ -2,6 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     models = require('../../../server/models'),
     testUtils = require('../../utils'),
+    configUtils = require('../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit: models/permission', function () {
@@ -11,19 +12,14 @@ describe('Unit: models/permission', function () {
 
     after(function () {
         sandbox.restore();
+        configUtils.restore();
     });
 
+    before(testUtils.teardown);
+
     describe('add', function () {
-        let knexMock;
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
+        beforeEach(testUtils.setup('roles'));
+        afterEach(testUtils.teardown);
 
         it('without roles', function () {
             return models.Permission.add({name: 'test', object_type: 'something', action_type: 'read something'})

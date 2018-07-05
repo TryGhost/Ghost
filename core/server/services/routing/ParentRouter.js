@@ -10,10 +10,30 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     EventEmitter = require('events').EventEmitter,
     express = require('express'),
     _ = require('lodash'),
+    url = require('url'),
+    setPrototypeOf = require('setprototypeof'),
     security = require('../../lib/security'),
     urlService = require('../url'),
     // This the route registry for the whole site
     registry = require('./registry');
+
+function GhostRouter(options) {
+    const router = express.Router(options);
+
+    function innerRouter(req, res, next) {
+        return innerRouter.handle(req, res, next);
+    }
+
+    setPrototypeOf(innerRouter, router);
+
+    Object.defineProperty(innerRouter, 'name', {
+        value: options.parent.name,
+        writable: false
+    });
+
+    innerRouter.parent = options.parent;
+    return innerRouter;
+}
 
 /**
  * We expose a very limited amount of express.Router via specialist methods
@@ -25,7 +45,50 @@ class ParentRouter extends EventEmitter {
         this.identifier = security.identifier.uid(10);
 
         this.name = name;
-        this._router = express.Router({mergeParams: true});
+        this._router = GhostRouter({mergeParams: true, parent: this});
+    }
+
+    _getSiteRouter(req) {
+        let siteRouter = null;
+
+        req.app._router.stack.every((router) => {
+            if (router.name === 'SiteRouter') {
+                siteRouter = router;
+                return false;
+            }
+
+            return true;
+        });
+
+        return siteRouter;
+    }
+
+    _respectDominantRouter(req, res, next, slug) {
+        let siteRouter = this._getSiteRouter(req);
+        let targetRoute = null;
+
+        siteRouter.handle.stack.every((router) => {
+            if (router.handle.parent && router.handle.parent.isRedirectEnabled && router.handle.parent.isRedirectEnabled(this.getResourceType(), slug)) {
+                targetRoute = router.handle.parent.getRoute();
+                return false;
+            }
+
+            return true;
+        });
+
+        if (targetRoute) {
+            debug('_respectDominantRouter');
+
+            const matchPath = this.permalinks.getValue().replace(':slug', '[a-zA-Z0-9-_]+');
+            const toAppend = req.url.replace(new RegExp(matchPath), '');
+
+            return urlService.utils.redirect301(res, url.format({
+                pathname: urlService.utils.createUrl(urlService.utils.urlJoin(targetRoute, toAppend), false, false, true),
+                search: url.parse(req.originalUrl).search
+            }));
+        }
+
+        next();
     }
 
     mountRouter(path, router) {
@@ -61,8 +124,6 @@ class ParentRouter extends EventEmitter {
     }
 
     router() {
-        // @TODO: should this just be the handler that is returned?
-        // return this._router.handle.bind(this._router);
         return this._router;
     }
 
@@ -82,6 +143,18 @@ class ParentRouter extends EventEmitter {
         options = options || {};
 
         return urlService.utils.createUrl(this.route.value, options.absolute, options.secure);
+    }
+
+    isRedirectEnabled(routerType, slug) {
+        if (!this.data || !Object.keys(this.data.router)) {
+            return false;
+        }
+
+        return _.find(this.data.router, function (entries, type) {
+            if (routerType === type) {
+                return _.find(entries, {redirect: true, slug: slug});
+            }
+        });
     }
 
     reset() {}

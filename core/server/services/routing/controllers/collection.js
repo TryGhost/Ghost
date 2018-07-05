@@ -2,12 +2,13 @@ const _ = require('lodash'),
     debug = require('ghost-ignition').debug('services:routing:controllers:collection'),
     common = require('../../../lib/common'),
     security = require('../../../lib/security'),
+    urlService = require('../../../services/url'),
     themes = require('../../themes'),
     filters = require('../../../filters'),
     helpers = require('../helpers');
 
 module.exports = function collectionController(req, res, next) {
-    debug('collectionController', req.params, res.locals.routerOptions);
+    debug('collectionController', req.params, res.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -15,15 +16,28 @@ module.exports = function collectionController(req, res, next) {
     };
 
     if (pathOptions.page) {
-        const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
+        // CASE 1: routes.yaml `limit` is stronger than theme definition
+        // CASE 2: use `posts_per_page` config from theme as `limit` value
+        if (res.routerOptions.limit) {
+            themes.getActive().updateTemplateOptions({
+                data: {
+                    config: {
+                        posts_per_page: res.routerOptions.limit
+                    }
+                }
+            });
 
-        // CASE: no negative posts per page
-        if (!isNaN(postsPerPage) && postsPerPage > 0) {
-            pathOptions.limit = postsPerPage;
+            pathOptions.limit = res.routerOptions.limit;
+        } else {
+            const postsPerPage = parseInt(themes.getActive().config('posts_per_page'));
+
+            if (!isNaN(postsPerPage) && postsPerPage > 0) {
+                pathOptions.limit = postsPerPage;
+            }
         }
     }
 
-    return helpers.fetchData(pathOptions, res.locals.routerOptions)
+    return helpers.fetchData(pathOptions, res.routerOptions)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {
@@ -31,6 +45,13 @@ module.exports = function collectionController(req, res, next) {
                     message: common.i18n.t('errors.errors.pageNotFound')
                 }));
             }
+
+            // CASE: does this post belong to this collection?
+            result.posts = _.filter(result.posts, (post) => {
+                if (urlService.owns(res.routerOptions.identifier, post.url)) {
+                    return post;
+                }
+            });
 
             // Format data 1
             // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
@@ -48,7 +69,7 @@ module.exports = function collectionController(req, res, next) {
                     result.posts = posts;
                     return result;
                 })
-                .then(helpers.renderCollection(req, res));
+                .then(helpers.renderEntries(req, res));
         })
         .catch(helpers.handleError(next));
 };

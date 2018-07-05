@@ -14,11 +14,9 @@ var path = require('path'),
     templateName = 'subscribe';
 
 function _renderer(req, res) {
-    // Note: this is super similar to the config middleware used in channels
-    // @TODO refactor into to something explicit & DRY this up
-    res._route = {
+    res.routerOptions = {
         type: 'custom',
-        templateName: templateName,
+        templates: templateName,
         defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
     };
 
@@ -67,7 +65,7 @@ function handleSource(req, res, next) {
     delete req.body.location;
     delete req.body.referrer;
 
-    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url));
+    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url, {withoutSubdirectory: true}));
 
     if (resource) {
         req.body.post_id = resource.data.id;

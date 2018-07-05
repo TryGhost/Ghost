@@ -13,5 +13,13 @@ module.exports = {
 
     get preview() {
         return require('./preview');
+    },
+
+    get channel() {
+        return require('./channel');
+    },
+
+    get static() {
+        return require('./static');
     }
 };

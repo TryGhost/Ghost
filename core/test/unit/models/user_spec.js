@@ -1,5 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
+    _ = require('lodash'),
+    schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     validation = require('../../../server/data/validation'),
     common = require('../../../server/lib/common'),
@@ -8,28 +10,20 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit: models/user', function () {
-    let knexMock;
-
     before(function () {
         models.init();
     });
+
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles'));
 
     afterEach(function () {
         sandbox.restore();
     });
 
     describe('validation', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         describe('password', function () {
@@ -96,17 +90,8 @@ describe('Unit: models/user', function () {
     });
 
     describe('fn: check', function () {
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('user status is warn', function () {
@@ -308,23 +293,12 @@ describe('Unit: models/user', function () {
     });
 
     describe('Fetch', function () {
-        let knexMock;
-
         before(function () {
             models.init();
         });
 
         after(function () {
             sandbox.restore();
-        });
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('ensure data type', function () {
@@ -339,23 +313,12 @@ describe('Unit: models/user', function () {
     });
 
     describe('Edit', function () {
-        let knexMock;
-
         before(function () {
             models.init();
         });
 
         after(function () {
             sandbox.restore();
-        });
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
         });
 
         it('resets given empty value to null', function () {
@@ -370,6 +333,43 @@ describe('Unit: models/user', function () {
                 .then(function (user) {
                     should(user.get('profile_image')).be.null();
                     user.get('bio').should.eql('');
+                });
+        });
+    });
+
+    describe('Add', function () {
+        const events = {
+            user: []
+        };
+
+        before(function () {
+            models.init();
+
+            sandbox.stub(models.User.prototype, 'emitChange').callsFake(function (event) {
+                events.user.push({event: event, data: this.toJSON()});
+            });
+        });
+
+        after(function () {
+            sandbox.restore();
+        });
+
+        it('defaults', function () {
+            return models.User.add({slug: 'joe', name: 'Joe', email: 'joe@test.com'})
+                .then(function (user) {
+                    user.get('name').should.eql('Joe');
+                    user.get('email').should.eql('joe@test.com');
+                    user.get('slug').should.eql('joe');
+                    user.get('visibility').should.eql('public');
+                    user.get('status').should.eql('active');
+
+                    _.each(_.keys(schema.tables.users), (key) => {
+                        should.exist(events.user[0].data.hasOwnProperty(key));
+
+                        if (['status', 'visibility'].indexOf(key) !== -1) {
+                            events.user[0].data[key].should.eql(schema.tables.users[key].defaultTo);
+                        }
+                    });
                 });
         });
     });

@@ -13,32 +13,44 @@ describe('templates', function () {
         sandbox.restore();
     });
 
-    describe('[private fn] getCollectionTemplateHierarchy', function () {
+    describe('[private fn] getEntriesTemplateHierarchy', function () {
         it('should return just index for empty options', function () {
-            _private.getCollectionTemplateHierarchy({}).should.eql(['index']);
+            _private.getEntriesTemplateHierarchy({}).should.eql(['index']);
         });
 
         it('should return just index if collection name is index', function () {
-            _private.getCollectionTemplateHierarchy({name: 'index'}).should.eql(['index']);
+            _private.getEntriesTemplateHierarchy({name: 'index'}).should.eql(['index']);
+        });
+
+        it('should return custom templates even if the collection is index', function () {
+            _private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}).should.eql(['something', 'index']);
+        });
+
+        it('should return collection name', function () {
+            _private.getEntriesTemplateHierarchy({name: 'podcast'}).should.eql(['podcast', 'index']);
+        });
+
+        it('should return custom templates', function () {
+            _private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}).should.eql(['mozart', 'podcast', 'index']);
         });
 
         it('should return just index if collection name is index even if slug is set', function () {
-            _private.getCollectionTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
+            _private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}).should.eql(['index']);
         });
 
         it('should return collection, index if collection has name', function () {
-            _private.getCollectionTemplateHierarchy({name: 'tag'}).should.eql(['tag', 'index']);
+            _private.getEntriesTemplateHierarchy({name: 'tag'}).should.eql(['tag', 'index']);
         });
 
         it('should return collection-slug, collection, index if collection has name & slug + slugTemplate set', function () {
-            _private.getCollectionTemplateHierarchy({
+            _private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true
             }, {slugParam: 'test'}).should.eql(['tag-test', 'tag', 'index']);
         });
 
         it('should return front, collection-slug, collection, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
-            _private.getCollectionTemplateHierarchy({
+            _private.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true,
                 frontPageTemplate: 'front-tag'
@@ -46,14 +58,14 @@ describe('templates', function () {
         });
 
         it('should return home, index for index collection if front is set and pageParam = 1', function () {
-            _private.getCollectionTemplateHierarchy({
+            _private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
             }, {path: '/'}).should.eql(['home', 'index']);
         });
 
         it('should not use frontPageTemplate if not / collection', function () {
-            _private.getCollectionTemplateHierarchy({
+            _private.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
             }, {path: '/magic/'}).should.eql(['index']);
@@ -242,7 +254,7 @@ describe('templates', function () {
         });
     });
 
-    describe('[private fn] getTemplateForCollection', function () {
+    describe('[private fn] getTemplateForEntries', function () {
         beforeEach(function () {
             hasTemplateStub = sandbox.stub().returns(false);
 
@@ -258,7 +270,7 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('index');
             });
@@ -273,20 +285,20 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
+                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            var view = _private.getTemplateForCollection({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+            var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
             should.exist(view);
             view.should.eql('index');
         });
@@ -377,13 +389,13 @@ describe('templates', function () {
         beforeEach(function () {
             req = {};
             res = {
-                locals: {}
+                routerOptions: {}
             };
             data = {};
 
             stubs.pickTemplate = sandbox.stub(_private, 'pickTemplate').returns('testFromPickTemplate');
             stubs.getTemplateForEntry = sandbox.stub(_private, 'getTemplateForEntry').returns('testFromEntry');
-            stubs.getTemplateForCollection = sandbox.stub(_private, 'getTemplateForCollection').returns('testFromCollection');
+            stubs.getTemplateForEntries = sandbox.stub(_private, 'getTemplateForEntries').returns('testFromEntries');
             stubs.getTemplateForError = sandbox.stub(_private, 'getTemplateForError').returns('testFromError');
         });
 
@@ -400,7 +412,7 @@ describe('templates', function () {
             // And nothing got called
             stubs.pickTemplate.called.should.be.false();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
         });
 
@@ -416,14 +428,14 @@ describe('templates', function () {
             // And nothing got called
             stubs.pickTemplate.called.should.be.false();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
         });
 
         it('calls pickTemplate for custom routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 
@@ -436,16 +448,16 @@ describe('templates', function () {
             // Only pickTemplate got called
             stubs.pickTemplate.called.should.be.true();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
 
             stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
         });
 
         it('calls pickTemplate for custom routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
-                templateName: 'test',
+                templates: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
             };
 
@@ -458,14 +470,14 @@ describe('templates', function () {
             // Only pickTemplate got called
             stubs.pickTemplate.called.should.be.true();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
 
             stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
         });
 
         it('calls getTemplateForEntry for entry routes', function () {
-            res._route = {
+            res.routerOptions = {
                 type: 'entry'
             };
 
@@ -481,39 +493,61 @@ describe('templates', function () {
             // Only pickTemplate got called
             stubs.pickTemplate.called.should.be.false();
             stubs.getTemplateForEntry.called.should.be.true();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
 
             stubs.getTemplateForEntry.calledWith({slug: 'test'}).should.be.true();
         });
 
-        it('calls getTemplateForCollection for type collection', function () {
+        it('calls getTemplateForEntries for type collection', function () {
             req.url = '/';
             req.params = {};
 
-            res._route = {
-                type: 'collection'
+            res.routerOptions = {
+                type: 'collection',
+                testCollection: 'test'
             };
-
-            res.locals.routerOptions = {testCollection: 'test'};
 
             // Call setTemplate
             templates.setTemplate(req, res, data);
 
-            res._template.should.eql('testFromCollection');
+            res._template.should.eql('testFromEntries');
 
             // Only pickTemplate got called
             stubs.pickTemplate.called.should.be.false();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.true();
+            stubs.getTemplateForEntries.called.should.be.true();
             stubs.getTemplateForError.called.should.be.false();
 
-            stubs.getTemplateForCollection.calledWith({testCollection: 'test'}).should.be.true();
+            stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}).should.be.true();
+        });
+
+        it('calls getTemplateForEntries for type channel', function () {
+            req.url = '/';
+            req.params = {};
+
+            res.routerOptions = {
+                type: 'channel',
+                testChannel: 'test'
+            };
+
+            // Call setTemplate
+            templates.setTemplate(req, res, data);
+
+            res._template.should.eql('testFromEntries');
+
+            // Only pickTemplate got called
+            stubs.pickTemplate.called.should.be.false();
+            stubs.getTemplateForEntry.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.true();
+            stubs.getTemplateForError.called.should.be.false();
+
+            stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}).should.be.true();
         });
 
         it('calls getTemplateForError if there is an error', function () {
             // Make the config look like a custom route
-            res._route = {
+            res.routerOptions = {
                 type: 'custom',
                 templateName: 'test',
                 defaultTemplate: 'path/to/local/test.hbs'
@@ -532,7 +566,7 @@ describe('templates', function () {
             // Only pickTemplate got called
             stubs.pickTemplate.called.should.be.false();
             stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForCollection.called.should.be.false();
+            stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.true();
 
             stubs.getTemplateForError.calledWith(404).should.be.true();

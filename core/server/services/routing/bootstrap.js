@@ -22,7 +22,7 @@ module.exports = function bootstrap() {
     registry.resetAllRouters();
     registry.resetAllRoutes();
 
-    const siteRouter = new ParentRouter('site');
+    const siteRouter = new ParentRouter('SiteRouter');
     const previewRouter = new PreviewRouter();
 
     siteRouter.mountRouter(previewRouter.router());
@@ -32,13 +32,6 @@ module.exports = function bootstrap() {
 
     const dynamicRoutes = settingsService.get('routes');
 
-    _.each(dynamicRoutes.taxonomies, (value, key) => {
-        const taxonomyRouter = new TaxonomyRouter(key, value);
-        siteRouter.mountRouter(taxonomyRouter.router());
-
-        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-    });
-
     _.each(dynamicRoutes.routes, (value, key) => {
         const staticRoutesRouter = new StaticRoutesRouter(key, value);
         siteRouter.mountRouter(staticRoutesRouter.router());
@@ -46,10 +39,16 @@ module.exports = function bootstrap() {
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
     });
 
+    _.each(dynamicRoutes.taxonomies, (value, key) => {
+        const taxonomyRouter = new TaxonomyRouter(key, value);
+        siteRouter.mountRouter(taxonomyRouter.router());
+
+        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
+    });
+
     _.each(dynamicRoutes.collections, (value, key) => {
         const collectionRouter = new CollectionRouter(key, value);
         siteRouter.mountRouter(collectionRouter.router());
-
         registry.setRouter(collectionRouter.identifier, collectionRouter);
     });
 
@@ -58,7 +57,7 @@ module.exports = function bootstrap() {
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);
 
-    const appRouter = new ParentRouter('apps');
+    const appRouter = new ParentRouter('AppsRouter');
     siteRouter.mountRouter(appRouter.router());
 
     registry.setRouter('appRouter', appRouter);

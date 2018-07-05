@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
-const jsonpath = require('jsonpath');
+const nql = require('@nexes/nql');
 const sinon = require('sinon');
 const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
@@ -19,7 +19,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         router = {
             getFilter: sandbox.stub(),
             addListener: sandbox.stub(),
-            getType: sandbox.stub(),
+            getResourceType: sandbox.stub(),
             getPermalinks: sandbox.stub()
         };
 
@@ -67,7 +67,7 @@ describe('Unit: services/url/UrlGenerator', function () {
     it('routing type has filter', function () {
         router.getFilter.returns('featured:true');
         const urlGenerator = new UrlGenerator(router, queue);
-        urlGenerator.filter.should.eql('$[?(@.featured == true)]');
+        urlGenerator.filter.should.eql('featured:true');
     });
 
     it('routing type has changed', function () {
@@ -102,7 +102,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onInit', function () {
         it('1 resource', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([resource]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -113,7 +113,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('no resource', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -126,7 +126,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onAdded', function () {
         it('type is equal', function () {
-            router.getType.returns('posts');
+            router.getResourceType.returns('posts');
             resources.getByIdAndType.withArgs('posts', 1).returns(resource);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
@@ -137,7 +137,7 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('type is not equal', function () {
-            router.getType.returns('pages');
+            router.getResourceType.returns('pages');
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_try');
@@ -151,11 +151,12 @@ describe('Unit: services/url/UrlGenerator', function () {
         describe('no filter', function () {
             it('resource is not taken', function () {
                 router.getFilter.returns(false);
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query');
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                should.not.exist(urlGenerator.nql);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -165,16 +166,16 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.calledOnce.should.be.true();
                 urls.add.calledOnce.should.be.true();
                 resource.reserve.calledOnce.should.be.true();
-                jsonpath.query.called.should.be.false();
             });
 
             it('resource is taken', function () {
                 router.getFilter.returns(false);
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
-                sandbox.stub(jsonpath, 'query');
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                should.not.exist(urlGenerator.nql);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -184,18 +185,18 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.called.should.be.false();
             });
         });
 
         describe('custom filter', function () {
             it('matches', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query').returns([true]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -205,16 +206,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.calledOnce.should.be.true();
                 urls.add.calledOnce.should.be.true();
                 resource.reserve.calledOnce.should.be.true();
-                jsonpath.query.calledOnce.should.be.true();
+                urlGenerator.nql.queryJSON.called.should.be.true();
             });
 
             it('no match', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
-                sandbox.stub(jsonpath, 'query').returns([]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(false);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -224,16 +226,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.calledOnce.should.be.true();
+                urlGenerator.nql.queryJSON.called.should.be.true();
             });
 
             it('resource is taken', function () {
                 router.getFilter.returns('featured:true');
-                router.getType.returns('posts');
+                router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
-                sandbox.stub(jsonpath, 'query').returns([]);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
+                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+
                 sandbox.stub(urlGenerator, '_generateUrl').returns('something');
                 sandbox.stub(urlGenerator, '_resourceListeners');
 
@@ -243,7 +246,7 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
-                jsonpath.query.called.should.be.false();
+                urlGenerator.nql.queryJSON.called.should.be.false();
             });
         });
     });
@@ -257,7 +260,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlUtils, 'replacePermalink').returns('/url');
+            sandbox.stub(urlUtils, 'replacePermalink').returns('/url/');
 
             urlGenerator._generateUrl(resource).should.eql('/url/');
             urlUtils.replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
@@ -273,7 +276,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             resource.addListener.calledTwice.should.be.true();
         });
 
-        it('url has not changed', function () {
+        it('resource was updated', function () {
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
             sandbox.stub(urlGenerator, '_generateUrl').returns('/welcome/');
             sandbox.stub(urlGenerator, '_try').returns(true);
@@ -285,47 +288,10 @@ describe('Unit: services/url/UrlGenerator', function () {
             urlGenerator._resourceListeners(resource);
             resource.addListener.args[0][1](resource);
 
-            urlGenerator._try.called.should.be.true();
+            urlGenerator._try.called.should.be.false();
             urls.removeResourceId.called.should.be.true();
             resource.release.called.should.be.true();
-            queue.start.called.should.be.false();
-        });
-
-        it('url has changed, but is still mine', function () {
-            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
-            sandbox.stub(urlGenerator, '_try').returns(true);
-
-            resource.data = {
-                id: 'object-id'
-            };
-
-            urlGenerator._resourceListeners(resource);
-            resource.addListener.args[0][1](resource);
-
-            urlGenerator._try.calledOnce.should.be.true();
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
-            queue.start.called.should.be.false();
-        });
-
-        it('url has changed and is no longer mine (e.g. filter does not match anymore)', function () {
-            const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_generateUrl').returns('/salute/');
-            sandbox.stub(urlGenerator, '_try').returns(false);
-
-            urlGenerator._resourceListeners(resource);
-
-            resource.data = {
-                id: 'object-id'
-            };
-
-            resource.addListener.args[0][1](resource);
-
-            urlGenerator._try.calledOnce.should.be.true();
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
-            queue.start.calledOnce.should.be.true();
+            queue.start.called.should.be.true();
         });
 
         it('resource got removed', function () {

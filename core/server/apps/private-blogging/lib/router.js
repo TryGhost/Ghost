@@ -8,17 +8,15 @@ const path = require('path'),
     privateRouter = express.Router();
 
 function _renderer(req, res) {
-    // Note: this is super similar to the config middleware used in channels
-    // @TODO refactor into to something explicit & DRY this up
-    res._route = {
+    res.routerOptions = {
         type: 'custom',
-        templateName: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
+        templates: templateName,
+        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
     };
 
     // Renderer begin
     // Format data
-    var data = {};
+    let data = {};
 
     if (res.error) {
         data.error = res.error;

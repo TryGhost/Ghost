@@ -1,7 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
     api = require('../../../../../server/api'),
-    urlService = require('../../../../../server/services/url'),
     helpers = require('../../../../../server/services/routing/helpers'),
     testUtils = require('../../../../utils'),
     sandbox = sinon.sandbox.create();
@@ -35,8 +34,6 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             });
 
         sandbox.stub(api.tags, 'read').resolves({tags: tags});
-
-        sandbox.stub(urlService, 'owns');
     });
 
     afterEach(function () {
@@ -65,7 +62,6 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.should.not.have.property('data');
 
             result.posts.length.should.eql(posts.length);
-            urlService.owns.called.should.be.false();
 
             api.posts.browse.calledOnce.should.be.true();
             api.posts.browse.firstCall.args[0].should.be.an.Object();
@@ -102,7 +98,6 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
 
             result.posts.length.should.eql(posts.length);
             result.data.featured.posts.length.should.eql(posts.length);
-            urlService.owns.called.should.be.false();
 
             api.posts.browse.calledTwice.should.be.true();
             api.posts.browse.firstCall.args[0].should.have.property('include', 'author,authors,tags');
@@ -138,7 +133,6 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
 
             result.posts.length.should.eql(posts.length);
             result.data.featured.posts.length.should.eql(posts.length);
-            urlService.owns.called.should.be.false();
 
             api.posts.browse.calledTwice.should.be.true();
             api.posts.browse.firstCall.args[0].should.have.property('include', 'author,authors,tags');
@@ -172,40 +166,12 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
 
             result.posts.length.should.eql(posts.length);
             result.data.tag.length.should.eql(tags.length);
-            urlService.owns.called.should.be.false();
 
             api.posts.browse.calledOnce.should.be.true();
             api.posts.browse.firstCall.args[0].should.have.property('include');
             api.posts.browse.firstCall.args[0].should.have.property('filter', 'tags:testing');
             api.posts.browse.firstCall.args[0].should.not.have.property('slug');
             api.tags.read.firstCall.args[0].should.have.property('slug', 'testing');
-            done();
-        }).catch(done);
-    });
-
-    it('should verify if post belongs to collection', function (done) {
-        const pathOptions = {};
-
-        const routerOptions = {
-            identifier: 'identifier',
-            filter: 'featured:true'
-        };
-
-        urlService.owns.withArgs('identifier', posts[0].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[1].url).returns(true);
-        urlService.owns.withArgs('identifier', posts[2].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[3].url).returns(false);
-
-        helpers.fetchData(pathOptions, routerOptions).then(function (result) {
-            should.exist(result);
-            result.should.be.an.Object().with.properties('posts', 'meta');
-
-            result.posts.length.should.eql(1);
-            urlService.owns.callCount.should.eql(4);
-
-            api.posts.browse.calledOnce.should.be.true();
-            api.posts.browse.firstCall.args[0].should.have.property('include');
-            api.posts.browse.firstCall.args[0].should.have.property('filter', 'featured:true');
             done();
         }).catch(done);
     });
