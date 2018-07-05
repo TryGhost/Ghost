@@ -26,6 +26,15 @@ Ghost uses a number of third party services for specific functionality within Gh
 
 To automatically populate your profile picture, Ghost pings [Gravatar](http://gravatar.com) to see if your email address is associated with a profile there. If it is, we pull in your profile picture. If not: nothing happens.
 
+### RPC Pings
+
+When you publish a new post, Ghost sends out an RPC ping to let third party services know that new content is available on your blog. This enables search engines and other services to discover and index content on your blog more quickly. At present Ghost sends an RPC ping to the following services when you publish a new post:
+
+- http://blogsearch.google.com
+- http://rpc.pingomatic.com
+
+RPC pings only happen when Ghost is running in the `production` environment.
+
 ### Structured Data
 
 Ghost outputs basic meta tags to allow rich snippets of your content to be recognised by popular social networks. Currently there are 3 supported rich data protocols which are output in `{{ghost_head}}`:
