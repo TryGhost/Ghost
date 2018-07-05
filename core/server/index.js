@@ -68,8 +68,6 @@ function init() {
         debug('Permissions done');
         return Promise.join(
             themes.init(),
-            // Initialize apps
-            apps.init(),
             // Initialize xmrpc ping
             xmlrpc.listen(),
             // Initialize slack ping

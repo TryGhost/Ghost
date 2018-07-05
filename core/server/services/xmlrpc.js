@@ -28,7 +28,7 @@ var _ = require('lodash'),
 function ping(post) {
     var pingXML,
         title = post.title,
-        url = urlService.utils.urlFor('post', {post: post}, true);
+        url = urlService.getUrlByResourceId(post.id, {absolute: true});
 
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
