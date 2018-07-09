@@ -65,7 +65,7 @@ var config = require('./core/server/config'),
             // ### grunt-contrib-watch
             // Watch files and livereload in the browser during development.
             // See the [grunt dev](#live%20reload) task for how this is used.
-            watch: {
+            watch: grunt.option('no-server-watch') ? {files: []} : {
                 livereload: {
                     files: [
                         'content/themes/casper/assets/css/*.css',
@@ -79,7 +79,7 @@ var config = require('./core/server/config'),
                     files: ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json', '!config.testing.json'],
                     tasks: ['express:dev'],
                     options: {
-                        nospawn: true,
+                        spawn: false,
                         livereload: true
                     }
                 }
