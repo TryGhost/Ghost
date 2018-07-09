@@ -87,16 +87,17 @@ generateFeed = function generateFeed(baseUrl, data) {
             }
         });
 
-    data.posts.forEach(function forEach(post) {
-        var item = generateItem(post, siteUrl, data.secure);
-
-        filters.doFilter('rss.item', item, post).then(function then(item) {
-            feed.item(item);
+    return Promise.all(
+        data.posts.map(function map(post) {
+            var item = generateItem(post, siteUrl, data.secure);
+            return filters.doFilter('rss.item', item, post).then(function then(item) {
+                feed.item(item);
+            });
+        })
+    ).then(function then() {
+        return filters.doFilter('rss.feed', feed).then(function then(feed) {
+            return feed.xml();
         });
-    });
-
-    return filters.doFilter('rss.feed', feed).then(function then(feed) {
-        return feed.xml();
     });
 };
 
