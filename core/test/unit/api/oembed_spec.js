@@ -22,6 +22,23 @@ describe('API: oembed', function () {
                 }).catch(done);
         });
 
+        it('finds match for schema-less urls', function (done) {
+            let requestMock = nock('https://www.reddit.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    html: 'test'
+                });
+
+            OembedAPI.read({url: '//www.reddit.com/r/pics/comments/8qi5oq/breathtaking_picture_of_jupiter_with_its_moon_io/'})
+                .then((results) => {
+                    requestMock.isDone().should.be.true;
+                    should.exist(results);
+                    should.exist(results.html);
+                    done();
+                }).catch(done);
+        });
+
         it('returns error for missing url', function (done) {
             OembedAPI.read({url: ''})
                 .then(() => {

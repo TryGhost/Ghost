@@ -14,7 +14,7 @@ let oembed = {
 
         // build up a list of URL variations to test against because the oembed
         // providers list is not always up to date with scheme or www vs non-www
-        let base = url.replace(/https?:\/\/(?:www\.)?/, '');
+        let base = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
         let testUrls = [
             `http://${base}`,
             `https://${base}`,
