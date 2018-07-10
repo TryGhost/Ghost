@@ -1,4 +1,4 @@
-var debug = require('ghost-ignition').debug('admin'),
+const debug = require('ghost-ignition').debug('admin'),
     express = require('express'),
 
     // App requires
@@ -20,8 +20,7 @@ var debug = require('ghost-ignition').debug('admin'),
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
-    var adminApp = express(),
-        configMaxAge;
+    const adminApp = express();
 
     // First determine whether we're serving admin or theme content
     // @TODO finish refactoring this away.
@@ -32,7 +31,7 @@ module.exports = function setupAdminApp() {
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
-    configMaxAge = config.get('caching:admin:maxAge');
+    const configMaxAge = config.get('caching:admin:maxAge');
     adminApp.use('/assets', serveStatic(
         config.get('paths').clientAssets,
         {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS, fallthrough: false}
