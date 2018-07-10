@@ -193,7 +193,7 @@ utils = {
      * ## Handle Permissions
      * @param {String} docName
      * @param {String} method (browse || read || edit || add || destroy)
-     * * @param {Array} unsafeAttrNames - attribute names (e.g. post.status) that could change the outcome
+     * @param {Array} unsafeAttrNames - attribute names (e.g. post.status) that could change the outcome
      * @returns {Function}
      */
     handlePermissions: function handlePermissions(docName, method, unsafeAttrNames) {
