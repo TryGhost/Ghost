@@ -44,7 +44,7 @@ module.exports = function setupAdminApp() {
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
         adminApp.get('/ember-cli-live-reload.js', function (req, res) {
-            res.redirect('http://localhost:4200' + urlService.utils.getSubdir() + '/ghost/ember-cli-live-reload.js');
+            res.redirect(`http://localhost:4200${urlService.utils.getSubdir()}/ghost/ember-cli-live-reload.js`);
         });
     }
 
