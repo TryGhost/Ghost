@@ -210,6 +210,16 @@ describe('Url', function () {
             configUtils.set({url: 'http://my-ghost-blog.com/blog'});
             urlService.utils.urlFor(testContext).should.equal('/blog/about/');
             urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+
+            testContext.secure = true;
+            urlService.utils.urlFor(testContext, true).should.equal('https://my-ghost-blog.com/blog/about/');
+
+            testContext.secure = false;
+            urlService.utils.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+
+            testContext.secure = false;
+            configUtils.set({url: 'https://my-ghost-blog.com'});
+            urlService.utils.urlFor(testContext, true).should.equal('https://my-ghost-blog.com/about/');
         });
 
         it('should deduplicate subdirectories in paths', function () {
