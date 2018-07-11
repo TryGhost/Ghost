@@ -58,28 +58,27 @@ export default Component.extend({
         return map;
     }),
 
-    init() {
-        this._super(...arguments);
-        let editor = this.editor;
-
-        // register `/` text input for positioning & showing the menu
-        editor.onTextInput({
-            name: 'slash_menu',
-            text: '/',
-            run: run.bind(this, this._showMenu)
-        });
-    },
-
     didReceiveAttrs() {
         this._super(...arguments);
-        let editorRange = this.editorRange;
+
+        // re-register the / text input handler if the editor changes such as
+        // when a "New story" is clicked from the sidebar or a different post
+        // is loaded via search
+        if (this.editor !== this._lastEditor) {
+            this.editor.onTextInput({
+                name: 'slash_menu',
+                text: '/',
+                run: run.bind(this, this._showMenu)
+            });
+        }
+        this._lastEditor = this.editor;
 
         // re-position the menu and update the query if necessary when the
         // cursor position changes
+        let editorRange = this.editorRange;
         if (editorRange !== this._lastEditorRange) {
             this._handleCursorChange(editorRange);
         }
-
         this._lastEditorRange = editorRange;
     },
 
