@@ -1,4 +1,4 @@
-var config = require('../../config'),
+const config = require('../../config'),
     common = require('../../lib/common'),
     urlService = require('../../services/url');
 
