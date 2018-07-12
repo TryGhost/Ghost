@@ -228,13 +228,18 @@ class UrlService {
         this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
     }
 
-    resetGenerators() {
+    resetGenerators(options = {}) {
         debug('resetGenerators');
         this.finished = false;
         this.urlGenerators = [];
         this.urls.reset();
         this.queue.reset();
-        this.resources.softReset();
+
+        if (options.releaseResourcesOnly) {
+            this.resources.releaseAll();
+        } else {
+            this.resources.softReset();
+        }
     }
 
     softReset() {
