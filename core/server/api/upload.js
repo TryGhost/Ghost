@@ -1,7 +1,8 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     fs = require('fs-extra'),
-    storage = require('../adapters/storage'),
-    upload;
+    storage = require('../adapters/storage');
+
+let upload;
 
 /**
  * ## Upload API Methods

@@ -9,6 +9,7 @@ const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
 
 const registry = require('./registry');
+let siteRouter;
 
 /**
  * Create a set of default and dynamic routers defined in the routing yaml.
@@ -22,7 +23,7 @@ module.exports = function bootstrap() {
     registry.resetAllRouters();
     registry.resetAllRoutes();
 
-    const siteRouter = new ParentRouter('SiteRouter');
+    siteRouter = new ParentRouter('SiteRouter');
     const previewRouter = new PreviewRouter();
 
     siteRouter.mountRouter(previewRouter.router());
