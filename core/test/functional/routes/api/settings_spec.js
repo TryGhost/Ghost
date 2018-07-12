@@ -1,6 +1,8 @@
 var should = require('should'),
     _ = require('lodash'),
     supertest = require('supertest'),
+    os = require('os'),
+    fs = require('fs-extra'),
     testUtils = require('../../../utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -199,6 +201,39 @@ describe('Settings API', function () {
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                         done();
                     });
+            });
+    });
+
+    it('can download routes.yaml', ()=> {
+        return request.get(testUtils.API.getApiQuery('settings/routes/yaml/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .set('Accept', 'application/yaml')
+            .expect(200)
+            .then((res)=> {
+                res.headers['content-disposition'].should.eql('Attachment; filename="routes.yaml"');
+                res.headers['content-type'].should.eql('application/yaml; charset=utf-8');
+                res.headers['content-length'].should.eql('152');
+            });
+    });
+
+    it('can upload routes.yaml', ()=> {
+        const newRoutesYamlPath = `${os.tmpdir()}routes.yaml`;
+
+        return fs.writeFile(newRoutesYamlPath, 'routes:\ncollections:\ntaxonomies:\n')
+            .then(()=> {
+                return request
+                    .post(testUtils.API.getApiQuery('settings/routes/yaml/'))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .set('Origin', testUtils.API.getURL())
+                    .attach('routes', newRoutesYamlPath)
+                    .expect('Content-Type', /application\/json/)
+                    .expect(200);
+            })
+            .then((res)=> {
+                res.headers['x-cache-invalidate'].should.eql('/*');
+            })
+            .finally(()=> {
+                return ghostServer.stop();
             });
     });
 });
