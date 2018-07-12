@@ -51,6 +51,10 @@
         "redirects": {
             "extensions": [".json"],
             "contentTypes": ["text/plain", "application/octet-stream", "application/json"]
+        },
+        "routes": {
+            "extensions": [".yaml"],
+            "contentTypes": ["text/plain", "text/yaml", "application/octet-stream", "application/yaml"]
         }
     },
     "times": {

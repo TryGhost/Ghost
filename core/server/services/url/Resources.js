@@ -270,6 +270,14 @@ class Resources {
             this.data[resourceConfig.type] = [];
         });
     }
+
+    releaseAll() {
+        _.each(this.data, (resources, type) => {
+            _.each(this.data[type], (resource) => {
+                resource.release();
+            });
+        });
+    }
 }
 
 module.exports = Resources;
