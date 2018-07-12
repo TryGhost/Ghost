@@ -344,6 +344,10 @@
                 "missingFile": "Please select a JSON file.",
                 "invalidFile": "Please select a valid JSON file to import."
             },
+            "routes": {
+                "missingFile": "Please select a YAML file.",
+                "invalidFile": "Please select a valid YAML file to import."
+            },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
                 "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",

@@ -37,7 +37,8 @@ var _ = require('lodash'),
     locationHeader,
     contentDispositionHeaderExport,
     contentDispositionHeaderSubscribers,
-    contentDispositionHeaderRedirects;
+    contentDispositionHeaderRedirects,
+    contentDispositionHeaderRoutes;
 
 function isActiveThemeUpdate(method, endpoint, result) {
     if (endpoint === 'themes') {
@@ -180,6 +181,10 @@ contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects()
     return Promise.resolve('Attachment; filename="redirects.json"');
 };
 
+contentDispositionHeaderRoutes = () => {
+    return Promise.resolve('Attachment; filename="routes.yaml"');
+};
+
 addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
@@ -233,6 +238,18 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
             });
     }
 
+    // Add Routes Content-Disposition Header
+    if (apiMethod === settings.download) {
+        contentDisposition = contentDispositionHeaderRoutes()
+            .then((header) => {
+                res.set({
+                    'Content-Disposition': header,
+                    'Content-Type': 'application/yaml',
+                    'Content-Length': JSON.stringify(result).length
+                });
+            });
+    }
+
     return contentDisposition;
 };
 
@@ -273,8 +290,10 @@ http = function http(apiMethod) {
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
-            // Keep CSV header and formatting
-            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
+
+            // Keep CSV, yaml formatting
+            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0 ||
+                res.get('Content-Type') && res.get('Content-Type').indexOf('application/yaml') === 0) {
                 return res.status(200).send(response);
             }
 
