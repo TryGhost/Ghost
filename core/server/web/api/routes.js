@@ -1,4 +1,4 @@
-var express = require('express'),
+const express = require('express'),
     // This essentially provides the controllers for the routes
     api = require('../../api'),
 
@@ -21,7 +21,7 @@ var express = require('express'),
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
 module.exports = function apiRoutes() {
-    var apiRouter = express.Router();
+    const apiRouter = express.Router();
 
     // alias delete with del
     apiRouter.del = apiRouter.delete;

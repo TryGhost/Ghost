@@ -1,5 +1,5 @@
 // # API routes
-var debug = require('ghost-ignition').debug('api'),
+const debug = require('ghost-ignition').debug('api'),
     express = require('express'),
 
     // routes
@@ -18,7 +18,7 @@ var debug = require('ghost-ignition').debug('api'),
 
 module.exports = function setupApiApp() {
     debug('API setup start');
-    var apiApp = express();
+    const apiApp = express();
 
     // @TODO finish refactoring this away.
     apiApp.use(function setIsAdmin(req, res, next) {
