@@ -72,7 +72,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
  * @param {{title, description, safeVersion, secure, posts}} data
  */
 generateFeed = function generateFeed(baseUrl, data) {
-    const { urlFor } = urlService.utils;
+    const {urlFor} = urlService.utils;
     const siteUrl = urlFor('home', {secure: data.secure}, true);
     const feed = new RSS({
         title: data.title,
