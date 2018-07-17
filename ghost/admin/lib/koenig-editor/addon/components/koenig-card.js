@@ -259,6 +259,7 @@ export default Component.extend({
 
         // check if the click was in the card, on the plus menu, or on a modal
         if (this.element.contains(target)
+            || path.find(searchPath(`#${this.element.id}`))
             || path.find(searchPath('[data-kg="plus-menu"]'))
             || path.find(searchPath('.liquid-destination'))) {
             return;
