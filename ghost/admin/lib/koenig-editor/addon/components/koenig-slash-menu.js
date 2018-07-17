@@ -88,12 +88,13 @@ export default Component.extend({
     },
 
     actions: {
-        itemClicked(item, params) {
+        itemClicked(item) {
             let range = this._openRange.head.section.toRange();
+            let [, ...params] = this._query.split(/\s/);
             let payload;
 
             // params are order-dependent and listed in CARD_MENU for each card
-            if (item.params) {
+            if (!isEmpty(item.params) && !isEmpty(params)) {
                 payload = {};
                 item.params.forEach((param, i) => {
                     payload[param] = params[i];
@@ -274,10 +275,9 @@ export default Component.extend({
 
     _performAction() {
         let selectedItem = this._getSelectedItem();
-        let [, ...params] = this._query.split(/\s/);
 
         if (selectedItem) {
-            this.send('itemClicked', selectedItem, params);
+            this.send('itemClicked', selectedItem);
         }
     },
 
