@@ -94,7 +94,13 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             debug('...Started');
-            common.events.emit('server.start');
+
+            // CASE: there are components which listen on this event to initialise after the server has started (in background)
+            //       we want to avoid that they bootstrap during maintenance
+            if (config.get('maintenance:enabled') === false) {
+                common.events.emit('server.start');
+            }
+
             self.logStartMessages();
             resolve(self);
         });
@@ -156,6 +162,8 @@ GhostServer.prototype.hammertime = function () {
 GhostServer.prototype.connection = function (socket) {
     var self = this;
 
+    this.socket = socket;
+
     self.connectionId += 1;
     socket._ghostId = self.connectionId;
 
@@ -164,6 +172,10 @@ GhostServer.prototype.connection = function (socket) {
     });
 
     self.connections[socket._ghostId] = socket;
+};
+
+GhostServer.prototype.getSocket = function getSocket() {
+    return this.socket;
 };
 
 /**
