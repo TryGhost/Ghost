@@ -1,18 +1,11 @@
-var config = require('../../../../config'),
-    database = require('../../../db');
+const database = require('../../../db');
 
-module.exports = function after() {
-    // do not close database connection in test mode, because all tests are executed one after another
-    // this check is not nice, but there is only one other solution i can think of:
-    // forward a custom object to knex-migrator, which get's forwarded to the hooks
-    if (config.get('env').match(/testing/g)) {
-        return;
+module.exports = function shutdown(options = {}) {
+    /**
+     * We have to close Ghost's db connection if knex-migrator was used in the shell.
+     * Otherwise the process doesn't exit.
+     */
+    if (options.executedFromShell === true) {
+        return database.knex.destroy();
     }
-
-    // we need to close the database connection
-    // the after hook signals the last step of a knex-migrator command
-    // Example:
-    // Ghost-CLI calls knexMigrator.init and afterwards it starts Ghost, but Ghost-CLI can't shutdown
-    // if Ghost keeps a connection alive
-    return database.knex.destroy();
 };

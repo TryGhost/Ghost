@@ -234,6 +234,14 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                     object.tries = tries + 1;
                     self._pingUrl(object);
                 }, self.retryTimeoutInMs);
+
+                common.logging.error(new common.errors.GhostError({
+                    err: err,
+                    context: 'Retrying...',
+                    level: 'normal'
+                }));
+
+                return;
             }
 
             common.logging.error(new common.errors.GhostError({
