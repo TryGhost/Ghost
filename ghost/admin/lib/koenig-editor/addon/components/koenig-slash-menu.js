@@ -88,10 +88,16 @@ export default Component.extend({
     },
 
     actions: {
-        itemClicked(item) {
+        itemClicked(item, event) {
             let range = this._openRange.head.section.toRange();
             let [, ...params] = this._query.split(/\s/);
             let payload;
+
+            // make sure the click doesn't propagate and get picked up by the
+            // newly inserted card which can then remove itself because it
+            // looks like a click outside of an empty card
+            event.preventDefault();
+            event.stopImmediatePropagation();
 
             // params are order-dependent and listed in CARD_MENU for each card
             if (!isEmpty(item.params) && !isEmpty(params)) {
