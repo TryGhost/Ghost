@@ -96,8 +96,10 @@ export default Component.extend({
             // make sure the click doesn't propagate and get picked up by the
             // newly inserted card which can then remove itself because it
             // looks like a click outside of an empty card
-            event.preventDefault();
-            event.stopImmediatePropagation();
+            if (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
 
             // params are order-dependent and listed in CARD_MENU for each card
             if (!isEmpty(item.params) && !isEmpty(params)) {
