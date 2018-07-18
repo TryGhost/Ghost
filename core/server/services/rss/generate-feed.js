@@ -72,15 +72,14 @@ generateItem = function generateItem(post, siteUrl, secure) {
  * @param {{title, description, safeVersion, secure, posts}} data
  */
 generateFeed = function generateFeed(baseUrl, data) {
-    const {urlFor} = urlService.utils;
-    const siteUrl = urlFor('home', {secure: data.secure}, true);
+    const siteUrl = urlService.utils.urlFor('home', {secure: data.secure}, true);
     const feed = new RSS({
         title: data.title,
         description: data.description,
         generator: 'Ghost ' + data.safeVersion,
-        feed_url: urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
+        feed_url: urlService.utils.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
         site_url: siteUrl,
-        image_url: urlFor({relativeUrl: 'favicon.png'}, true),
+        image_url: urlService.utils.urlFor({relativeUrl: 'favicon.png'}, true),
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',
