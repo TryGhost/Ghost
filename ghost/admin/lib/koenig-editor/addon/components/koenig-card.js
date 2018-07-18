@@ -1,3 +1,4 @@
+import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-card';
 import {computed} from '@ember/object';
@@ -236,7 +237,12 @@ export default Component.extend({
     },
 
     _handleKeydown(event) {
-        if (event.code === 'Escape' && this.isEditing) {
+        if (
+            this.isEditing
+            && event.code === 'Escape'
+            || (Browser.isMac() && event.code === 'Enter' && event.metaKey)
+            || (!Browser.isMac() && event.code === 'Enter' && event.ctrlKey)
+        ) {
             // run the select card routine with isEditing=false to exit edit mode
             this.selectCard(false);
             event.preventDefault();
