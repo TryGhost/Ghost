@@ -84,6 +84,10 @@
                 {{/gh-uploader}}
             {{/if}}
         {{/gh-editor}}
+
+        {{#if preventClick}}
+            <div class="absolute absolute--fill z-max"></div>
+        {{/if}}
     {{else}}
         {{renderedMarkdown}}
         <div class="absolute absolute--fill z-999"></div>

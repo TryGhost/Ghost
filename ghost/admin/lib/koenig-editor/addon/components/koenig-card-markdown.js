@@ -6,6 +6,7 @@ import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
+import {task, timeout} from 'ember-concurrency';
 
 const MIN_HEIGHT = 130;
 
@@ -20,6 +21,7 @@ export default Component.extend({
 
     // internal attrs
     bottomOffset: 0,
+    preventClick: false,
 
     // closure actions
     editCard() {},
@@ -66,7 +68,7 @@ export default Component.extend({
 
     actions: {
         enterEditMode() {
-
+            this._preventAccidentalClick.perform();
         },
 
         leaveEditMode() {
@@ -196,6 +198,15 @@ export default Component.extend({
     _teardownResizeHandler() {
         window.removeEventListener('resize', this._resizeHandler);
         this._resizeHandler = null;
-    }
+    },
+
+    // when entering edit mode it can be easy to accidentally click where the
+    // toolbar is inserted. Setting `preventClick` to true adds an overlay, so
+    // we set that for half a second to stop double-clicks hitting the toolbar
+    _preventAccidentalClick: task(function* () {
+        this.set('preventClick', true);
+        yield timeout(500);
+        this.set('preventClick', false);
+    })
 
 });
