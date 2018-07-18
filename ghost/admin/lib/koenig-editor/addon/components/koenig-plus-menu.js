@@ -66,11 +66,12 @@ export default Component.extend({
         }
 
         // hide the menu if the editor range has changed
-        if (this.showMenu && editorRange && !editorRange.isBlank && !editorRange.isEqual(this._lastEditorRange)) {
+        if (!this._ignoreRangeChange && this.showMenu && editorRange && !editorRange.isBlank && !editorRange.isEqual(this._lastEditorRange)) {
             this._hideMenu();
         }
 
         this._lastEditorRange = editorRange;
+        this._ignoreRangeChange = false;
     },
 
     willDestroyElement() {
@@ -273,6 +274,7 @@ export default Component.extend({
     },
 
     _moveCaretToCachedEditorRange() {
+        this._ignoreRangeChange = true;
         this.set('editorRange', this._editorRange);
         this.editor.selectRange(this._editorRange);
     }
