@@ -74,7 +74,7 @@ describe('Mobiledoc converter', function () {
                 ]
             };
 
-            converter.render(mobiledoc, 2).should.eql('<p>One<br>Two</p><h1 id="markdowncard">Markdown card</h1>\n<p>Some markdown</p>\n<p>Three</p><hr><figure class="kg-image-card"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image kg-image-wide"><figcaption>Birdies</figcaption></figure><p>Four</p><h2>HTML card</h2>\n<div><p>Some HTML</p></div><figure class="kg-embed-card"><h2>Embed card</h2></figure>');
+            converter.render(mobiledoc, 2).should.eql('<p>One<br>Two</p><h1 id="markdowncard">Markdown card</h1>\n<p>Some markdown</p>\n<p>Three</p><hr><figure class="kg-image-card kg-width-wide"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image"><figcaption>Birdies</figcaption></figure><p>Four</p><h2>HTML card</h2>\n<div><p>Some HTML</p></div><figure class="kg-embed-card"><h2>Embed card</h2></figure>');
         });
 
         it('removes final blank paragraph', function () {
