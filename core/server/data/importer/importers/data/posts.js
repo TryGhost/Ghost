@@ -13,10 +13,6 @@ class PostsImporter extends BaseImporter {
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
-
-        this.legacyKeys = {
-            image: 'feature_image'
-        };
     }
 
     sanitizeAttributes() {
@@ -146,44 +142,12 @@ class PostsImporter extends BaseImporter {
 
     beforeImport() {
         debug('beforeImport');
-        let mobileDocContent;
 
         this.sanitizeAttributes();
         this.addNestedRelations();
 
-        // Remove legacy field language
-        this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return _.omit(data, 'language');
-        });
-
-        this.dataToImport = this.dataToImport.map(this.legacyMapper);
-
-        // For legacy imports/custom imports with only html we can parse the markdown or html into a mobile doc card
-        // For now we can hardcode the version
         _.each(this.dataToImport, (model) => {
-            if (!model.mobiledoc) {
-                if (model.markdown && model.markdown.length > 0) {
-                    mobileDocContent = model.markdown;
-                } else if (model.html && model.html.length > 0) {
-                    mobileDocContent = model.html;
-                } else {
-                    // Set mobileDocContent to null else it will affect empty posts
-                    mobileDocContent = null;
-                }
-                if (mobileDocContent) {
-                    model.mobiledoc = JSON.stringify({
-                        version: '0.3.1',
-                        markups: [],
-                        atoms: [],
-                        cards: [['card-markdown', {cardName: 'card-markdown', markdown: mobileDocContent}]],
-                        sections: [[10, 0]]
-                    });
-                }
-            }
-
-            // NOTE: we remember the old post id for disqus
-            // We also check if amp already exists to prevent
-            // overwriting any comment ids from a 1.0 export
+            // NOTE: we remember the original post id for disqus
             // (see https://github.com/TryGhost/Ghost/issues/8963)
 
             // CASE 1: you import a 1.0 export (amp field contains the correct disqus id)

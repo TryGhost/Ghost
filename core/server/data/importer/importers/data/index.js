@@ -1,5 +1,7 @@
 var _ = require('lodash'),
     Promise = require('bluebird'),
+    semver = require('semver'),
+    common = require('../../../../lib/common'),
     sequence = require('../../../../lib/promise/sequence'),
     models = require('../../../../models'),
     SubscribersImporter = require('./subscribers'),
@@ -51,6 +53,28 @@ DataImporter = {
 
         if (importOptions.importPersistUser) {
             modelOptions.importPersistUser = importOptions.importPersistUser;
+        }
+
+        if (!importData.meta) {
+            throw new common.errors.IncorrectUsageError({
+                message: 'Wrong importer structure. `meta` is missing.',
+                help: 'https://docs.ghost.org/docs/the-importer'
+            });
+        }
+
+        if (!importData.meta.version) {
+            throw new common.errors.IncorrectUsageError({
+                message: 'Wrong importer structure. `meta.version` is missing.',
+                help: 'https://docs.ghost.org/docs/the-importer'
+            });
+        }
+
+        // CASE: We deny LTS imports (from 1.0 we use the Ghost version you are on)
+        // @TODO: add migration guide link
+        if (!semver.valid(importData.meta.version)) {
+            return Promise.reject(new common.errors.InternalServerError({
+                message: 'Importing a LTS export into Ghost 2.0 is not allowed.'
+            }));
         }
 
         this.init(importData);
