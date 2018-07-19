@@ -2,6 +2,7 @@ var _ = require('lodash'),
     Promise = require('bluebird'),
     semver = require('semver'),
     common = require('../../../../lib/common'),
+    debug = require('ghost-ignition').debug('importer:data'),
     sequence = require('../../../../lib/promise/sequence'),
     models = require('../../../../models'),
     SubscribersImporter = require('./subscribers'),
@@ -148,6 +149,7 @@ DataImporter = {
 
             return toReturn;
         }).catch(function (errors) {
+            debug(errors);
             return Promise.reject(errors);
         }).finally(() => {
             // release memory
