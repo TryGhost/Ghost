@@ -19,13 +19,6 @@ class Base {
             showNotFoundWarning: true
         };
 
-        this.legacyKeys = {};
-        this.legacyMapper = (item) => {
-            return _.mapKeys(item, (value, key) => {
-                return this.legacyKeys[key] || key;
-            });
-        };
-
         this.dataKeyToImport = options.dataKeyToImport;
         this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
 

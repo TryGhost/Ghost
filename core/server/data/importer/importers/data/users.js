@@ -10,13 +10,6 @@ class UsersImporter extends BaseImporter {
             dataKeyToImport: 'users',
             requiredFromFile: ['roles', 'roles_users']
         });
-
-        // Map legacy keys
-        this.legacyKeys = {
-            image: 'profile_image',
-            cover: 'cover_image',
-            last_login: 'last_seen'
-        };
     }
 
     fetchExisting(modelOptions) {
@@ -38,13 +31,6 @@ class UsersImporter extends BaseImporter {
         debug('beforeImport');
 
         let role, lookup = {};
-
-        // Remove legacy field language
-        this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return _.omit(data, 'language');
-        });
-
-        this.dataToImport = this.dataToImport.map(this.legacyMapper);
 
         // NOTE: sort out duplicated roles based on incremental id
         _.each(this.requiredFromFile.roles_users, (attachedRole) => {
