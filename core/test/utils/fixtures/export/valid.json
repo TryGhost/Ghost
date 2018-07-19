@@ -3,7 +3,7 @@
         {
             "meta": {
                 "exported_on": 1504269105806,
-                "version": "1.8.1"
+                "version": "1.20.0"
             },
             "data": {
                 "app_fields": [],
@@ -11,6 +11,7 @@
                 "apps": [],
                 "brute": [],
                 "invites": [],
+                "posts_authors": [],
                 "migrations": [
                     {
                         "id": 1,

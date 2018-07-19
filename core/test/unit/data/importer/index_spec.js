@@ -313,8 +313,8 @@ describe('Importer', function () {
 
         it('correctly handles a valid db api wrapper', function (done) {
             var file = [{
-                path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper', {lts: true}),
-                name: 'export-003-api-wrapper.json'
+                path: testUtils.fixtures.getExportFixturePath('valid'),
+                name: 'valid.json'
             }];
             JSONHandler.loadFile(file).then(function (result) {
                 _.keys(result).should.containEql('meta');
@@ -325,8 +325,8 @@ describe('Importer', function () {
 
         it('correctly errors when given a bad db api wrapper', function (done) {
             var file = [{
-                path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper-bad', {lts: true}),
-                name: 'export-003-api-wrapper-bad.json'
+                path: testUtils.fixtures.getExportFixturePath('broken'),
+                name: 'broken.json'
             }];
 
             JSONHandler.loadFile(file).then(function () {

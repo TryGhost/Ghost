@@ -369,15 +369,13 @@ fixtures = {
         return path.resolve(__dirname + '/fixtures/import/' + filename);
     },
 
-    getExportFixturePath: function (filename, options) {
-        options = options || {lts: false};
-        var relativePath = options.lts ? '/fixtures/export/lts/' : '/fixtures/export/';
+    getExportFixturePath: function (filename) {
+        var relativePath = '/fixtures/export/';
         return path.resolve(__dirname + relativePath + filename + '.json');
     },
 
-    loadExportFixture: function loadExportFixture(filename, options) {
-        options = options || {lts: false};
-        var filePath = this.getExportFixturePath(filename, options);
+    loadExportFixture: function loadExportFixture(filename) {
+        var filePath = this.getExportFixturePath(filename);
 
         return fs.readFile(filePath).then(function (fileContents) {
             var data;

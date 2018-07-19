@@ -68,6 +68,14 @@ class ClientsImporter extends BaseImporter {
                             });
                     }
 
+                    // @NOTE: name is also unique
+                    return models[this.modelName].findOne({name: obj.name}, options);
+                })
+                .then((client) => {
+                    if (client) {
+                        obj.name = `${obj.name}-1`;
+                    }
+
                     return models[this.modelName].add(obj, options)
                         .then((importedModel) => {
                             obj.model = {
