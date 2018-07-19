@@ -18,31 +18,23 @@ class SettingsImporter extends BaseImporter {
             returnDuplicates: true,
             showNotFoundWarning: false
         };
-
-        // Map legacy keys
-        this.legacySettingsKeyValues = {
-            isPrivate: 'is_private',
-            activeTimezone: 'active_timezone',
-            cover: 'cover_image'
-        };
     }
 
     /**
      * - 'core' and 'theme' are blacklisted
-     * - clean up legacy plugin setting references
      * - handle labs setting
      */
     beforeImport() {
         debug('beforeImport');
 
-        let ltsActiveTheme = _.find(this.dataToImport, {key: 'activeTheme'});
+        let activeTheme = _.find(this.dataToImport, {key: 'active_theme'});
 
-        // If there is an lts we want to warn user that theme is not imported
-        if (ltsActiveTheme) {
+        // We don't import themes. You have to upload the theme first.
+        if (activeTheme) {
             this.problems.push({
                 message: 'Theme not imported, please upload in Settings - Design',
                 help: this.modelName,
-                context: JSON.stringify(ltsActiveTheme)
+                context: JSON.stringify(activeTheme)
             });
         }
 
@@ -52,8 +44,6 @@ class SettingsImporter extends BaseImporter {
         });
 
         _.each(this.dataToImport, (obj) => {
-            obj.key = this.legacySettingsKeyValues[obj.key] || obj.key;
-
             if (obj.key === 'labs' && obj.value) {
                 // Overwrite the labs setting with our current defaults
                 // Ensures things that are enabled in new versions, are turned on
