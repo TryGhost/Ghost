@@ -83,6 +83,35 @@ const exportedPreviousBody = () => {
     });
 };
 
+const exportedLegacyBody = () => {
+    return _.clone({
+        db: [{
+            meta: {
+                exported_on: 1504269105806,
+                version: "300"
+            },
+            data: {
+                app_fields: [],
+                app_settings: [],
+                apps: [],
+                brute: [],
+                invites: [],
+                permissions: [],
+                permissions_roles: [],
+                permissions_users: [],
+                posts: [],
+                posts_tags: [],
+                roles: [],
+                roles_users: [],
+                settings: [],
+                subscribers: [],
+                tags: [],
+                users: []
+            }
+        }]
+    });
+};
+
 // Tests in here do an import for each test
 describe('Integration: Importer', function () {
     before(testUtils.teardown);
@@ -1074,4 +1103,21 @@ describe('1.0', function () {
     });
 
     it.skip('ensure we migrate the 1.0 html of a post');
+});
+
+describe('LTS', function () {
+    beforeEach(testUtils.teardown);
+    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+
+    it('disallows importing LTS imports', function () {
+        const exportData = exportedLegacyBody().db[0];
+
+        return dataImporter.doImport(exportData, importOptions)
+            .then(function () {
+                "0".should.eql(1, 'LTS import should fail');
+            })
+            .catch(function (err) {
+                err.message.should.eql('Importing a LTS export into Ghost 2.0 is not allowed.');
+            });
+    });
 });
