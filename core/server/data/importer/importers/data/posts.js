@@ -185,8 +185,16 @@ class PostsImporter extends BaseImporter {
             // We also check if amp already exists to prevent
             // overwriting any comment ids from a 1.0 export
             // (see https://github.com/TryGhost/Ghost/issues/8963)
-            if (model.id && !model.amp) {
-                model.amp = model.id.toString();
+
+            // CASE 1: you import a 1.0 export (amp field contains the correct disqus id)
+            // CASE 2: you import a 2.0 export (we have to ensure we use the original post id as disqus id)
+            if (model.id && model.amp) {
+                model.comment_id = model.amp;
+                delete model.amp;
+            } else {
+                if (!model.comment_id) {
+                    model.comment_id = model.id;
+                }
             }
         });
 
