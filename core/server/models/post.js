@@ -3,7 +3,6 @@ var _ = require('lodash'),
     uuid = require('uuid'),
     moment = require('moment'),
     Promise = require('bluebird'),
-    ObjectId = require('bson-objectid'),
     sequence = require('../lib/promise/sequence'),
     common = require('../lib/common'),
     htmlToText = require('html-to-text'),
@@ -210,6 +209,12 @@ Post = ghostBookshelf.Model.extend({
             return Promise.reject(new common.errors.ValidationError({
                 message: common.i18n.t('errors.models.post.isAlreadyPublished', {key: 'status'})
             }));
+        }
+
+        if (options.method === 'insert') {
+            if (!this.get('comment_id')) {
+                this.set('comment_id', this.id);
+            }
         }
 
         // CASE: both page and post can get scheduled
@@ -455,9 +460,7 @@ Post = ghostBookshelf.Model.extend({
 
     toJSON: function toJSON(unfilteredOptions) {
         var options = Post.filterOptions(unfilteredOptions, 'toJSON'),
-            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options),
-            oldPostId = attrs.amp,
-            commentId;
+            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
 
@@ -475,28 +478,6 @@ Post = ghostBookshelf.Model.extend({
             attrs.url = urlService.getUrlByResourceId(attrs.id);
         }
 
-        if (oldPostId) {
-            // CASE: You create a new post on 1.X, you enable disqus. You export your content, you import your content on a different instance.
-            // This time, the importer remembers your old post id in the amp field as ObjectId.
-            if (ObjectId.isValid(oldPostId)) {
-                commentId = oldPostId;
-            } else {
-                oldPostId = Number(oldPostId);
-
-                // CASE: You import an old post id from your LTS blog. Stored in the amp field.
-                if (!isNaN(oldPostId)) {
-                    commentId = oldPostId.toString();
-                } else {
-                    commentId = attrs.id;
-                }
-            }
-        } else {
-            commentId = attrs.id;
-        }
-
-        // NOTE: we remember the old post id because of disqus
-        attrs.comment_id = commentId;
-
         return attrs;
     },
     enforcedFilters: function enforcedFilters(options) {
@@ -510,7 +491,7 @@ Post = ghostBookshelf.Model.extend({
         return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
     }
 }, {
-    allowedFormats: ['mobiledoc', 'html', 'plaintext', 'amp'],
+    allowedFormats: ['mobiledoc', 'html', 'plaintext'],
 
     orderDefaultOptions: function orderDefaultOptions() {
         return {
