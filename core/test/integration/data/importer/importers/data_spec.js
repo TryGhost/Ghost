@@ -1402,3 +1402,20 @@ describe('LTS', function () {
             });
     });
 });
+
+describe('LTS', function () {
+    beforeEach(testUtils.teardown);
+    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+
+    it('disallows importing LTS imports', function () {
+        const exportData = exportedLegacyBody().db[0];
+
+        return dataImporter.doImport(exportData, importOptions)
+            .then(function () {
+                "0".should.eql(1, 'LTS import should fail');
+            })
+            .catch(function (err) {
+                err.message.should.eql('Importing a LTS export into Ghost 2.0 is not allowed.');
+            });
+    });
+});
