@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import countWords, {countImages, stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-html';
 import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
@@ -20,6 +21,14 @@ export default Component.extend({
     editCard() {},
     saveCard() {},
     deleteCard() {},
+    registerComponent() {},
+
+    counts: computed('payload.html', function () {
+        return {
+            wordCount: countWords(stripTags(this.payload.html)),
+            imageCount: countImages(this.payload.html)
+        };
+    }),
 
     toolbar: computed('isEditing', function () {
         if (!this.isEditing) {
@@ -46,6 +55,8 @@ export default Component.extend({
         }
 
         this.set('payload', payload);
+
+        this.registerComponent(this);
     },
 
     actions: {

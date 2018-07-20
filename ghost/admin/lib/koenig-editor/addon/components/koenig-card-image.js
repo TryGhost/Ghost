@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import countWords from '../utils/count-words';
 import layout from '../templates/components/koenig-card-image';
 import {
     IMAGE_EXTENSIONS,
@@ -34,6 +35,22 @@ export default Component.extend({
     moveCursorToNextSection() {},
     moveCursorToPrevSection() {},
     addParagraphAfterCard() {},
+    registerComponent() {},
+
+    counts: computed('payload.{src,caption}', function () {
+        let wordCount = 0;
+        let imageCount = 0;
+
+        if (this.payload.src) {
+            imageCount += 1;
+        }
+
+        if (this.payload.caption) {
+            wordCount += countWords(this.payload.caption);
+        }
+
+        return {wordCount, imageCount};
+    }),
 
     kgImgStyle: computed('payload.imageStyle', function () {
         let imageStyle = this.payload.imageStyle;
@@ -96,6 +113,8 @@ export default Component.extend({
         if (!this.payload) {
             this.set('payload', {});
         }
+
+        this.registerComponent(this);
     },
 
     didReceiveAttrs() {

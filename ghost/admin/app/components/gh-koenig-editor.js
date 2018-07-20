@@ -20,6 +20,7 @@ export default Component.extend({
     onTitleBlur() {},
     onBodyChange() {},
     onEditorCreated() {},
+    onWordCountChange() {},
 
     actions: {
         focusTitle() {
