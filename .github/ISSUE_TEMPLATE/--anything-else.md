@@ -18,4 +18,4 @@ Alternatively, check out these resources below. Thanks! 😁.
 - [API Docs](https://api.ghost.org/)
 - [Ideas](https://forum.ghost.org/c/Ideas)
 - [Contributing Guide](https://docs.ghost.org/docs/contributing)
-- [Self-hoster Docs](http://docs.ghost.org/)
+- [Self-hoster Docs](https://docs.ghost.org/)
