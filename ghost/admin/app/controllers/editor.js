@@ -103,7 +103,7 @@ export default Controller.extend({
     useKoenig: false,
 
     // koenig related properties
-    wordcount: 0,
+    wordcount: null,
 
     /* private properties ----------------------------------------------------*/
 
@@ -270,11 +270,6 @@ export default Controller.extend({
             this.toggleProperty('showReAuthenticateModal');
         },
 
-        // TODO: this should be part of the koenig component
-        setWordcount(count) {
-            this.set('wordcount', count);
-        },
-
         setKoenigEditor(koenig) {
             this._koenig = koenig;
 
@@ -285,6 +280,10 @@ export default Controller.extend({
             if (this.post.isDraft) {
                 this._koenig.cleanup();
             }
+        },
+
+        updateWordCount(counts) {
+            this.set('wordCount', counts);
         }
     },
 
@@ -659,6 +658,7 @@ export default Controller.extend({
         this.set('shouldFocusEditor', false);
         this.set('leaveEditorTransition', null);
         this.set('infoMessage', null);
+        this.set('wordCount', null);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route

@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import countWords, {countImages, stripTags} from '../utils/count-words';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-card-markdown';
 import {computed} from '@ember/object';
@@ -29,6 +30,14 @@ export default Component.extend({
     selectCard() {},
     deselectCard() {},
     deleteCard() {},
+    registerComponent() {},
+
+    counts: computed('renderedMarkdown', function () {
+        return {
+            wordCount: countWords(stripTags(this.renderedMarkdown)),
+            imageCount: countImages(this.renderedMarkdown)
+        };
+    }),
 
     renderedMarkdown: computed('payload.markdown', function () {
         return htmlSafe(formatMarkdown(this.payload.markdown));
@@ -59,6 +68,8 @@ export default Component.extend({
         // subtract toolbar height from MIN_HEIGHT so the trigger happens at
         // the expected position without forcing the min height to be too small
         this.set('bottomOffset', -MIN_HEIGHT - 49);
+
+        this.registerComponent(this);
     },
 
     willDestroyElement() {

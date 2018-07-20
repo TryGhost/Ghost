@@ -7,5 +7,11 @@ export default Component.extend({
 
     // closure actions
     selectCard() {},
-    deselectCard() {}
+    deselectCard() {},
+    registerComponent() {},
+
+    init() {
+        this._super(...arguments);
+        this.registerComponent(this);
+    }
 });

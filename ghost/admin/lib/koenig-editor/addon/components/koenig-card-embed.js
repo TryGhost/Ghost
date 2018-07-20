@@ -1,7 +1,9 @@
 import Component from '@ember/component';
+import countWords from '../utils/count-words';
 import layout from '../templates/components/koenig-card-embed';
 import noframe from 'noframe.js';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
+import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -31,12 +33,22 @@ export default Component.extend({
     moveCursorToNextSection() {},
     moveCursorToPrevSection() {},
     addParagraphAfterCard() {},
+    registerComponent() {},
+
+    counts: computed('payload.{html,caption}', function () {
+        return {
+            imageCount: this.payload.html ? 1 : 0,
+            wordCount: countWords(this.payload.caption)
+        };
+    }),
 
     init() {
         this._super(...arguments);
         if (this.payload.url && !this.payload.html) {
             this.convertUrl.perform(this.payload.url);
         }
+
+        this.registerComponent(this);
     },
 
     didInsertElement() {

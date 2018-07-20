@@ -8,6 +8,8 @@ import Editor from 'mobiledoc-kit/editor/editor';
 import EmberObject, {computed, get} from '@ember/object';
 import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
+import calculateReadingTime from '../utils/reading-time';
+import countWords from '../utils/count-words';
 import defaultAtoms from '../options/atoms';
 import defaultCards from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
@@ -197,6 +199,7 @@ export default Component.extend({
     didCreateEditor() {},
     onChange() {},
     cursorDidExitAtTop() {},
+    wordCountDidChange() {},
 
     /* computed properties -------------------------------------------------- */
 
@@ -405,6 +408,8 @@ export default Component.extend({
 
         this.set('editor', editor);
         this.didCreateEditor(this);
+
+        run.schedule('afterRender', this, this._calculateWordCount);
     },
 
     didInsertElement() {
@@ -634,6 +639,9 @@ export default Component.extend({
 
         // trigger closure action
         this.onChange(updatedMobiledoc);
+
+        // re-calculate word count
+        this._calculateWordCount();
     },
 
     cursorDidChange(editor) {
@@ -1130,6 +1138,39 @@ export default Component.extend({
                     this._scrollContainer.scrollTop = scrollTop + offsetBottom + distanceFromViewportBottom + 20;
                 }
             }
+        }
+    },
+
+    // calculate the number of words in rich-text sections and query cards for
+    // their own word and image counts. Image counts are used for reading-time
+    _calculateWordCount() {
+        run.throttle(this, this._throttledWordCount, 100, false);
+    },
+
+    _throttledWordCount() {
+        let wordCount = 0;
+        let imageCount = 0;
+
+        this.editor.post.walkAllLeafSections((section) => {
+            if (section.isCardSection) {
+                // get counts from card components
+                let card = this.getCardFromSection(section);
+                let cardCounts = get(card, 'component.counts') || {};
+                wordCount += cardCounts.wordCount || 0;
+                imageCount += cardCounts.imageCount || 0;
+            } else {
+                wordCount += countWords(section.text);
+            }
+        });
+
+        if (wordCount !== this.wordCount || imageCount !== this.imageCount) {
+            let readingTime = calculateReadingTime({wordCount, imageCount});
+
+            this.wordCount = wordCount;
+            this.imageCount = imageCount;
+            this.readingTime = readingTime;
+
+            this.wordCountDidChange({wordCount, imageCount, readingTime});
         }
     },
 

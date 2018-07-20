@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Ember from 'ember';
+import countWords from '../utils/count-words';
 import layout from '../templates/components/koenig-card-code';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
@@ -24,6 +25,11 @@ export default Component.extend({
     selectCard() {},
     deselectCard() {},
     deleteCard() {},
+    registerComponent() {},
+
+    counts: computed('payload.code', function () {
+        return {wordCount: countWords(this.payload.code)};
+    }),
 
     toolbar: computed('isEditing', function () {
         if (!this.isEditing) {
@@ -55,6 +61,8 @@ export default Component.extend({
         }
 
         this.set('payload', payload);
+
+        this.registerComponent(this);
     },
 
     actions: {

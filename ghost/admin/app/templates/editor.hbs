@@ -7,11 +7,18 @@
     }}
         <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
             <div class="flex items-center br2 h9 pa2 pl4 pr4 pe-auto {{unless infoMessage "bg-white-90"}}">
-                <div class="gh-editor-status">
-                    {{gh-editor-post-status
-                        post=post
-                        isSaving=(or autosave.isRunning saveTasks.isRunning)
-                    }}
+                <div class="flex items-baseline">
+                    <span class="fw4 darkgrey-l2 pl4">
+                        {{gh-editor-post-status
+                            post=post
+                            isSaving=(or autosave.isRunning saveTasks.isRunning)
+                        }}
+                    </span>
+                    {{#if wordCount}}
+                        <span class="pl3 f-small midgrey">
+                            {{wordCount.readingTime}} ({{pluralize wordCount.wordCount "word"}})
+                        </span>
+                    {{/if}}
                 </div>
                 {{#gh-scheduled-post-countdown post=post as |post countdown|}}
                     <time datetime="{{post.publishedAtUTC}}" class="green f8 nudge-bottom--1 ml3" data-test-schedule-countdown>
@@ -75,6 +82,7 @@
                 scrollOffsetTopSelector=".gh-editor-header-small"
                 scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 onEditorCreated=(action "setKoenigEditor")
+                onWordCountChange=(action "updateWordCount")
             }}
 
         {{else}}
