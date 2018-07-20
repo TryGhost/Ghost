@@ -25,7 +25,7 @@ module.exports.check = function healthCheck() {
                     throw new common.errors.DatabaseVersionError({
                         message: 'Your database version is not compatible with Ghost 1.0.0 (master branch)',
                         context: 'Want to keep your DB? Use Ghost < 1.0.0 or the "stable" branch. Otherwise please delete your DB and restart Ghost.',
-                        help: 'More information on the Ghost 1.0.0 at https://docs.ghost.org/docs/introduction'
+                        help: 'More information on the Ghost 1.0.0 at https://docs.ghost.org/v1/docs/introduction'
                     });
                 })
                 .catch(function (err) {

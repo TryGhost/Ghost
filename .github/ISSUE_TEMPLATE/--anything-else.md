@@ -14,8 +14,8 @@ For usage and support questions, or ideas & feature requests please check out [o
 Alternatively, check out these resources below. Thanks! 😁.
 
 - [Forum Support](https://forum.ghost.org/c/help)
-- [Theme Docs](http://themes.ghost.org/v1/)
-- [API Docs](https://api.ghost.org/)
+- [Theme Docs](http://themes.ghost.org/v1.23.0/)
+- [API Docs](https://api.ghost.org/v1.22.0/)
 - [Ideas](https://forum.ghost.org/c/Ideas)
 - [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Self-hoster Docs](http://docs.ghost.org/v1/)
+- [Self-hoster Docs](https://docs.ghost.org/v1/)

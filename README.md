@@ -7,8 +7,8 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Supported Node Versions](https://docs.ghost.org/v1/docs/supported-node-versions)
 - [Latest Release](https://ghost.org/developers/)
 - [Help & Support](https://help.ghost.org/)
-- [Theme Docs](https://themes.ghost.org/)
-- [API Docs](https://api.ghost.org/)
+- [Theme Docs](https://themes.ghost.org/v1.23.0/)
+- [API Docs](https://api.ghost.org/v1.22.0/)
 - [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
 - [Developer Blog](https://blog.ghost.org)
 - [Self-hoster Docs](https://docs.ghost.org/v1/)
@@ -41,7 +41,7 @@ Other options are also available if you prefer playing around with servers by yo
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
 
 - [Installing Ghost via the CLI](https://docs.ghost.org/v1/docs/install-local)
-- [Theme Developer Docs](https://themes.ghost.org)
+- [Theme Developer Docs](https://themes.ghost.org/v1.23.0/)
 
 
 # Contributors & Advanced Developers
