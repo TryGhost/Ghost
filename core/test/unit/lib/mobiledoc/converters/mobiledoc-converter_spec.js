@@ -41,7 +41,7 @@ describe('Mobiledoc converter', function () {
                     }],
                     ['hr', {}],
                     ['image', {
-                        imageStyle: 'wide',
+                        cardWidth: 'wide',
                         src: '/content/images/2018/04/NatGeo06.jpg',
                         caption: 'Birdies'
                     }],

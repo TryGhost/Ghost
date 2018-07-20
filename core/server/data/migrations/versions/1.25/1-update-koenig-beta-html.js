@@ -26,7 +26,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
         context: {internal: true}
     }, options);
 
-    common.logging.info('Migrating Koenig beta post\'s HTML to 2.0 format');
+    common.logging.info('Migrating Koenig beta post\'s mobiledoc/HTML to 2.0 format');
 
     return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
         .then(function (posts) {
@@ -37,11 +37,21 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
                     post.get('html').match(/^<div class="kg-post">/)
                     || !mobiledocIsCompatibleWithV1(mobiledoc)
                 ) {
+                    // change imagecard.payload.imageStyle to imagecard.payload.cardWidth
+                    mobiledoc.cards.forEach((card) => {
+                        if (card[0] === 'image') {
+                            card[1].cardWidth = card[1].imageStyle;
+                            delete card[1].imageStyle;
+                        }
+                    });
+
+                    // re-render the html to remove .kg-post wrapper and adjust image classes
                     let version = 2;
                     let html = converters.mobiledocConverter.render(mobiledoc, version);
 
                     return models.Post.edit({
-                        html
+                        html,
+                        mobiledoc: JSON.stringify(mobiledoc)
                     }, _.merge({id: post.id}, localOptions));
                 }
             }, {concurrency: 100});

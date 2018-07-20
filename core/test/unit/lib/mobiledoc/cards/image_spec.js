@@ -53,7 +53,7 @@ describe('Image card', function () {
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
-                    imageStyle: ''
+                    cardWidth: ''
                 }
             };
 
@@ -67,7 +67,7 @@ describe('Image card', function () {
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
-                    imageStyle: 'wide'
+                    cardWidth: 'wide'
                 }
             };
 
@@ -81,7 +81,7 @@ describe('Image card', function () {
                 },
                 payload: {
                     src: 'https://www.ghost.org/image.png',
-                    imageStyle: 'full'
+                    cardWidth: 'full'
                 }
             };
 
