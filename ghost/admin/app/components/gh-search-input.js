@@ -128,7 +128,7 @@ export default Component.extend({
     _loadPosts() {
         let store = this.get('store');
         let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
-        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', staticPages: 'all'};
+        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', filter: 'page:[true,false]'};
         let content = this.get('content');
 
         return this.get('ajax').request(postsUrl, {data: postsQuery}).then((posts) => {
