@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     models = require('../../../../server/models'),
-    exporter = require('../../../../server/data/export'),
+    exporter = require('../../../../server/data/exporter'),
     backupDatabase = rewire('../../../../server/data/db/backup'),
     sandbox = sinon.sandbox.create();
 
