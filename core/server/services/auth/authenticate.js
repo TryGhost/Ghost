@@ -40,7 +40,7 @@ authenticate = {
             return next(new common.errors.UnauthorizedError({
                 message: common.i18n.t('errors.middleware.auth.accessDenied'),
                 context: common.i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
-                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://api.ghost.org/v1.22.0/docs/client-authentication'})
             }));
         }
 
@@ -58,7 +58,7 @@ authenticate = {
                     return next(new common.errors.UnauthorizedError({
                         message: common.i18n.t('errors.middleware.auth.accessDenied'),
                         context: common.i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
-                        help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
+                        help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://api.ghost.org/v1.22.0/docs/client-authentication'})
                     }));
                 }
 
