@@ -3,7 +3,7 @@
 const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    exporter = require('../data/export'),
+    exporter = require('../data/exporter'),
     importer = require('../data/importer'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),

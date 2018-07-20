@@ -11,7 +11,6 @@ var should = require('should'),
     // Stuff we are testing
     db = require('../../../../../server/data/db'),
     models = require('../../../../../server/models'),
-    exporter = require('../../../../../server/data/export'),
     importer = require('../../../../../server/data/importer'),
     dataImporter = importer.importers[1],
     importOptions = {
@@ -125,7 +124,6 @@ describe('Integration: Importer', function () {
         sandbox.restore();
     });
 
-    should.exist(exporter);
     should.exist(importer);
 
     describe('Empty database (except of owner user), general tests', function () {
