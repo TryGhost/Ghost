@@ -8,6 +8,46 @@ import {
 // Key commands will run any time a particular key or key combination is pressed
 // https://github.com/bustlelabs/mobiledoc-kit#configuring-hot-keys
 
+const setHeader = function setHeader(headerTag, editor, koenig) {
+    if (!editor.activeSection.isMarkerable) {
+        return;
+    }
+
+    let range = editor.range;
+    let canKeepRange = !editor.activeSection.isListItem;
+
+    editor.run((postEditor) => {
+        koenig.send('toggleHeaderSection', headerTag, postEditor, {force: true});
+        if (canKeepRange) {
+            postEditor.setRange(range);
+        }
+    });
+};
+
+// cycle through H2-H6. Starts with H2 so that heirarchy with the story title is
+// kept. H1 should be explicitly selected with CTRL+ALT+1 or using `#` text expansion
+const cycleHeaderLevel = function cycleHeaderLevel(editor, koenig) {
+    if (!editor.activeSection.isMarkerable) {
+        return;
+    }
+
+    let headerMatch = editor.activeSection.tagName.match(/^h(\d)$/i);
+    let headerTag = 'h2';
+
+    if (headerMatch) {
+        let newLevel = parseInt(headerMatch[1]) + 1;
+
+        if (newLevel > 6) {
+            // remove header tag before starting the cycle again
+            headerTag = headerMatch[0];
+        } else {
+            headerTag = `h${newLevel}`;
+        }
+    }
+
+    setHeader(headerTag, editor, koenig);
+};
+
 export const DEFAULT_KEY_COMMANDS = [{
     str: 'ENTER',
     run(editor, koenig) {
@@ -243,6 +283,80 @@ export const DEFAULT_KEY_COMMANDS = [{
         return false;
     }
 }, {
+    str: 'CTRL+ALT+1',
+    run(editor, koenig) {
+        return setHeader('h1', editor, koenig);
+    }
+}, {
+    str: 'CTRL+ALT+2',
+    run(editor, koenig) {
+        return setHeader('h2', editor, koenig);
+    }
+}, {
+    str: 'CTRL+ALT+3',
+    run(editor, koenig) {
+        return setHeader('h3', editor, koenig);
+    }
+}, {
+    str: 'CTRL+ALT+4',
+    run(editor, koenig) {
+        return setHeader('h4', editor, koenig);
+    }
+}, {
+    str: 'CTRL+ALT+5',
+    run(editor, koenig) {
+        return setHeader('h5', editor, koenig);
+    }
+}, {
+    str: 'CTRL+ALT+6',
+    run(editor, koenig) {
+        return setHeader('h6', editor, koenig);
+    }
+}, {
+    str: 'CTRL+H',
+    run(editor, koenig) {
+        if (!Browser.isMac()) {
+            return cycleHeaderLevel(editor, koenig);
+        }
+
+        return false;
+    }
+}, {
+    str: 'META+H',
+    run(editor, koenig) {
+        if (Browser.isMac()) {
+            return cycleHeaderLevel(editor, koenig);
+        }
+
+        return false;
+    }
+}, {
+    str: 'CTRL+Q',
+    run(editor, koenig) {
+        if (!editor.activeSection.isMarkerable) {
+            return;
+        }
+
+        let range = editor.range;
+        let canKeepRange = !editor.activeSection.isListItem;
+
+        editor.run((postEditor) => {
+            koenig.send('toggleSection', 'blockquote', postEditor);
+            if (canKeepRange) {
+                postEditor.setRange(range);
+            }
+        });
+    }
+}, {
+    str: 'CTRL+L',
+    run(editor, koenig) {
+        if (!editor.activeSection.isMarkerable) {
+            return;
+        }
+
+        koenig.send('toggleSection', 'ul');
+    }
+}, {
     str: 'CTRL+K',
     run(editor, koenig) {
         if (Browser.isWin()) {
@@ -256,6 +370,29 @@ export const DEFAULT_KEY_COMMANDS = [{
     str: 'META+K',
     run(editor, koenig) {
         return koenig.send('editLink', editor.range);
+    }
+}, {
+    str: 'CTRL+ALT+U',
+    run(editor, koenig) {
+        return koenig.send('toggleMarkup', 's');
+    }
+}, {
+    str: 'CTRL+SHIFT+K',
+    run(editor, koenig) {
+        if (!Browser.isMac()) {
+            return koenig.send('toggleMarkup', 'code');
+        }
+
+        return false;
+    }
+}, {
+    str: 'META+SHIFT+K',
+    run(editor, koenig) {
+        if (Browser.isMac()) {
+            return koenig.send('toggleMarkup', 'code');
+        }
+
+        return false;
     }
 }];
 
