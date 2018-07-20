@@ -46,7 +46,6 @@ describe('Acceptance: Content', function () {
 
         it('displays and filters posts', async function () {
             await visit('/');
-
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
             expect(find('[data-test-post-id]').length, 'all posts count').to.equal(5);
@@ -56,8 +55,8 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"drafts" request status param').to.equal('draft');
-            expect(lastRequest.queryParams.staticPages, '"drafts" request staticPages param').to.equal('false');
+            expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+            expect(lastRequest.queryParams.filter, '"drafts" request page filter').to.have.string('page:false');
             // Displays draft post
             expect(find('[data-test-post-id]').length, 'drafts count').to.equal(1);
             expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
@@ -67,8 +66,8 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"published" request status param').to.equal('published');
-            expect(lastRequest.queryParams.staticPages, '"published" request staticPages param').to.equal('false');
+            expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+            expect(lastRequest.queryParams.filter, '"published" request page filter').to.have.string('page:false');
             // Displays three published posts + pages
             expect(find('[data-test-post-id]').length, 'published count').to.equal(2);
             expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
@@ -79,8 +78,8 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"scheduled" request status param').to.equal('scheduled');
-            expect(lastRequest.queryParams.staticPages, '"scheduled" request staticPages param').to.equal('false');
+            expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+            expect(lastRequest.queryParams.filter, '"scheduled" request page filter').to.have.string('page:false');
             // Displays scheduled post
             expect(find('[data-test-post-id]').length, 'scheduled count').to.equal(1);
             expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
@@ -90,8 +89,8 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"pages" request status param').to.equal('all');
-            expect(lastRequest.queryParams.staticPages, '"pages" request staticPages param').to.equal('true');
+            expect(lastRequest.queryParams.filter, '"pages" request status filter').to.have.string('status:[draft,scheduled,published]');
+            expect(lastRequest.queryParams.filter, '"pages" request page filter').to.have.string('page:true');
             // Displays page
             expect(find('[data-test-post-id]').length, 'pages count').to.equal(1);
             expect(find(`[data-test-post-id="${publishedPage.id}"]`), 'page post').to.exist;
@@ -101,18 +100,17 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
-            expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
+            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published]');
+            expect(lastRequest.queryParams.filter, '"all" request page filter').to.have.string('page:[true,false]');
 
             // show all posts by editor
             await selectChoose('[data-test-author-select]', editor.name);
 
             // API request is correct
             [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.status, '"all" request status param').to.equal('all');
-            expect(lastRequest.queryParams.staticPages, '"all" request staticPages param').to.equal('all');
-            expect(lastRequest.queryParams.filter, '"editor" request filter param')
-                .to.equal(`authors:${editor.slug}`);
+            expect(lastRequest.queryParams.filter, '"editor" request status filter').to.have.string('status:[draft,scheduled,published]');
+            expect(lastRequest.queryParams.filter, '"editor" request page filter').to.have.string('page:[true,false]');
+            expect(lastRequest.queryParams.filter, '"editor" request filter param').to.have.string(`authors:${editor.slug}`);
 
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association
@@ -151,7 +149,7 @@ describe('Acceptance: Content', function () {
 
             // API request includes author filter
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.equal(`authors:${author.slug}`);
+            expect(lastRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
 
             // only author's post is shown
             expect(find('[data-test-post-id]').length, 'post count').to.equal(1);
@@ -189,7 +187,7 @@ describe('Acceptance: Content', function () {
 
             // API request includes author filter
             let [lastRequest] = server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.equal(`authors:${contributor.slug}`);
+            expect(lastRequest.queryParams.filter).to.have.string(`authors:${contributor.slug}`);
 
             // only contributor's post is shown
             expect(find('[data-test-post-id]').length, 'post count').to.equal(1);

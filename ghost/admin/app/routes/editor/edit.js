@@ -17,7 +17,7 @@ export default AuthenticatedRoute.extend({
         let query = {
             id: params.post_id,
             status: 'all',
-            staticPages: 'all',
+            filter: 'page:[true,false]',
             formats: 'mobiledoc,plaintext'
         };
 

@@ -1,8 +1,40 @@
 import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
 import {dasherize} from '@ember/string';
-import {isBlank} from '@ember/utils';
+import {isArray} from '@ember/array';
+import {isBlank, isEmpty} from '@ember/utils';
 import {paginateModelCollection} from '../utils';
+
+function normalizeBooleanParams(arr) {
+    if (!isArray(arr)) {
+        return arr;
+    }
+
+    return arr.map((i) => {
+        if (i === 'true') {
+            return true;
+        } else if (i === 'false') {
+            return false;
+        } else {
+            return i;
+        }
+    });
+}
+
+// TODO: use GQL to parse filter string?
+function extractFilterParam(param, filter) {
+    let filterRegex = new RegExp(`${param}:(.*?)(?:\\+|$)`);
+    let match;
+
+    let [, result] = filter.match(filterRegex) || [];
+    if (result.startsWith('[')) {
+        match = result.replace(/^\[|\]$/g, '').split(',');
+    } else if (result) {
+        match = [result];
+    }
+
+    return normalizeBooleanParams(match);
+}
 
 export default function mockPosts(server) {
     server.post('/posts', function ({posts, users}) {
@@ -25,26 +57,30 @@ export default function mockPosts(server) {
         return posts.create(attrs);
     });
 
-    // TODO: handle author filter
+    // TODO: handle authors filter
     server.get('/posts/', function ({posts}, {queryParams}) {
-        let page = +queryParams.page || 1;
-        let limit = +queryParams.limit || 15;
-        let {status, staticPages} = queryParams;
-        let query = {};
+        let {filter, page, limit} = queryParams;
 
-        if (status && status !== 'all') {
-            query.status = status;
-        }
+        page = +page || 1;
+        limit = +limit || 15;
 
-        if (staticPages === 'false') {
-            query.page = false;
-        }
+        let statusFilter = extractFilterParam('status', filter);
+        let pageFilter = extractFilterParam('page', filter);
 
-        if (staticPages === 'true') {
-            query.page = true;
-        }
+        let collection = posts.all().filter((post) => {
+            let matchesStatus = true;
+            let matchesPage = true;
 
-        let collection = posts.where(query);
+            if (!isEmpty(statusFilter)) {
+                matchesStatus = statusFilter.includes(post.status);
+            }
+
+            if (!isEmpty(pageFilter)) {
+                matchesPage = pageFilter.includes(post.page);
+            }
+
+            return matchesStatus && matchesPage;
+        });
 
         return paginateModelCollection('posts', collection, page, limit);
     });
