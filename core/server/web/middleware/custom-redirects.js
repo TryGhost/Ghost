@@ -67,7 +67,7 @@ _private.registerRoutes = function registerRoutes() {
 
 /**
  * - you can extend Ghost with a custom redirects file
- * - see https://github.com/TryGhost/Ghost/issues/7707 and https://docs.ghost.org/v1/docs/redirects
+ * - see https://github.com/TryGhost/Ghost/issues/7707 and https://docs.ghost.org/docs/redirects
  * - file loads synchronously, because we need to register the routes before anything else
  */
 exports.use = function use(siteApp) {
