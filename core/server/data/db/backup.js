@@ -6,7 +6,7 @@ var fs = require('fs-extra'),
     config = require('../../config'),
     common = require('../../lib/common'),
     urlService = require('../../services/url'),
-    exporter = require('../export'),
+    exporter = require('../exporter'),
 
     writeExportFile,
     backup;
