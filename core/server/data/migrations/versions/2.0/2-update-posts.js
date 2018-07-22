@@ -4,7 +4,7 @@ const _ = require('lodash'),
     models = require('../../../../models'),
     message1 = 'Updating post data (comment_id)',
     message2 = 'Updated post data (comment_id)',
-    message3 = 'Nothing todo. Keep correct comment_id values in amp column.';
+    message3 = 'Rollback: Keep correct comment_id values in amp column.';
 
 module.exports.config = {
     transaction: true
@@ -37,6 +37,6 @@ module.exports.up = (options) => {
 };
 
 module.exports.down = () => {
-    common.logging.info(message3);
+    common.logging.warn(message3);
     return Promise.resolve();
 };
