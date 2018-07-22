@@ -2,7 +2,8 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     common = require('../../../../lib/common'),
     models = require('../../../../models'),
-    message1 = 'Updating post data (comment_id)';
+    message1 = 'Updating post data (comment_id)',
+    message2 = 'Updated post data (comment_id)';
 
 module.exports.config = {
     transaction: true
@@ -28,5 +29,8 @@ module.exports.up = function updatePosts(options) {
                     comment_id: post.id
                 }, _.merge({id: post.id}, localOptions));
             }, {concurrency: 100});
+        })
+        .then(() => {
+            common.logging.info(message2);
         });
 };
