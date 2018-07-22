@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('importer:posts'),
     _ = require('lodash'),
     uuid = require('uuid'),
     BaseImporter = require('./base'),
+    converters = require('../../../../lib/mobiledoc/converters'),
     validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
@@ -159,6 +160,11 @@ class PostsImporter extends BaseImporter {
                 if (!model.comment_id) {
                     model.comment_id = model.id;
                 }
+            }
+
+            // @TODO: test if html field is missing, test if mobiledoc field is missing (throw error?)
+            if (model.html && model.html.match(/^<div class="kg-card-markdown">/)) {
+                model.html = converters.mobiledocConverter.render(model.mobiledoc);
             }
         });
 

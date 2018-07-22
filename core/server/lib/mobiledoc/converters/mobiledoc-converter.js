@@ -88,16 +88,12 @@ class DomModifier {
 }
 
 module.exports = {
-    // version 1 === Ghost 1.0 markdown-only mobiledoc
-    // version 2 === Ghost 2.0 full mobiledoc
-    render(mobiledoc, version) {
-        version = version || 1;
-
+    render(mobiledoc) {
         // pass the version through to the card renderers.
         // create a new object here to avoid modifying the default options
         // object because the version can change per-render until 2.0 is released
         let versionedOptions = Object.assign({}, options, {
-            cardOptions: {version}
+            cardOptions: {}
         });
 
         let renderer = new Renderer(versionedOptions);
@@ -116,8 +112,6 @@ module.exports = {
         let modifier = new DomModifier();
         modifier.modifyChildren(rendered.result);
 
-        let html = serializer.serializeChildren(rendered.result);
-
-        return html;
+        return serializer.serializeChildren(rendered.result);
     }
 };
