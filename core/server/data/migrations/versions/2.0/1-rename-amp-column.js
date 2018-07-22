@@ -7,7 +7,7 @@ const common = require('../../../../lib/common'),
     message3 = `Renamed column ${columnNameOld} to ${columnNameNew}`,
     message4 = `Renamed column ${columnNameNew} to ${columnNameOld}`;
 
-module.exports.up = function renameAmpColumn(options) {
+module.exports.up = (options) => {
     const connection = options.connection;
 
     common.logging.info(message1);
@@ -25,7 +25,7 @@ module.exports.up = function renameAmpColumn(options) {
         });
 };
 
-module.exports.down = function renameCommentIdColumn(options) {
+module.exports.down = (options) => {
     let connection = options.connection;
 
     common.logging.info(message2);
