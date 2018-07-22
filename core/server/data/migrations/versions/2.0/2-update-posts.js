@@ -3,13 +3,14 @@ const _ = require('lodash'),
     common = require('../../../../lib/common'),
     models = require('../../../../models'),
     message1 = 'Updating post data (comment_id)',
-    message2 = 'Updated post data (comment_id)';
+    message2 = 'Updated post data (comment_id)',
+    message3 = 'Nothing todo. Keep correct comment_id values in amp column.';
 
 module.exports.config = {
     transaction: true
 };
 
-module.exports.up = function updatePosts(options) {
+module.exports.up = (options) => {
     const postAllColumns = ['id', 'comment_id'];
 
     let localOptions = _.merge({
@@ -33,4 +34,9 @@ module.exports.up = function updatePosts(options) {
         .then(() => {
             common.logging.info(message2);
         });
+};
+
+module.exports.down = () => {
+    common.logging.info(message3);
+    return Promise.resolve();
 };
