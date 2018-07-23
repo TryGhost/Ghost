@@ -11,15 +11,15 @@ module.exports = {
         }
 
         let figure = dom.createElement('figure');
-        figure.setAttribute('class', 'kg-image-card');
+        let figureClass = 'kg-image-card';
+        if (payload.cardWidth) {
+            figureClass = `${figureClass} kg-width-${payload.cardWidth}`;
+        }
+        figure.setAttribute('class', figureClass);
 
         let img = dom.createElement('img');
-        let imgClass = 'kg-image';
-        if (payload.imageStyle) {
-            imgClass = `${imgClass} kg-image-${payload.imageStyle}`;
-        }
         img.setAttribute('src', payload.src);
-        img.setAttribute('class', imgClass);
+        img.setAttribute('class', 'kg-image');
 
         figure.appendChild(img);
 
