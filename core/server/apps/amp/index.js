@@ -1,4 +1,4 @@
-var router           = require('./lib/router'),
+const router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
     urlService = require('../../services/url'),
 
@@ -10,7 +10,7 @@ function ampRouter(req, res) {
         return router.apply(this, arguments);
     } else {
         // routeKeywords.amp: 'amp'
-        var redirectUrl = req.originalUrl.replace(/amp\/$/, '');
+        let redirectUrl = req.originalUrl.replace(/amp\/$/, '');
         urlService.utils.redirect301(res, redirectUrl);
     }
 }
@@ -18,7 +18,7 @@ function ampRouter(req, res) {
 module.exports = {
     activate: function activate(ghost) {
         // routeKeywords.amp: 'amp'
-        var ampRoute = '*/amp/';
+        let ampRoute = '*/amp/';
 
         ghost.routeService.registerRouter(ampRoute, ampRouter);
 

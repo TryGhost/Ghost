@@ -1,4 +1,4 @@
-var path = require('path'),
+const path = require('path'),
     express = require('express'),
     ampRouter = express.Router(),
 
@@ -12,12 +12,12 @@ function _renderer(req, res, next) {
     res.routerOptions = {
         type: 'custom',
         templates: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', templateName + '.hbs')
+        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
     };
 
     // Renderer begin
     // Format data
-    var data = req.body || {};
+    let data = req.body || {};
 
     // CASE: we only support amp pages for posts that are not static pages
     if (!data.post || data.post.page) {
@@ -63,8 +63,8 @@ function getPostData(req, res, next) {
         }));
     }
 
-    helpers.postLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks: permalinks})
-        .then(function handleResult(result) {
+    helpers.postLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks})
+        .then((result) => {
             if (result && result.post) {
                 req.body.post = result.post;
             }
