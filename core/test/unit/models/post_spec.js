@@ -1912,7 +1912,7 @@ describe('Unit: models/post', function () {
             ).then((post) => {
                 should.exist(post);
                 post.has('html').should.equal(true);
-                post.get('html').should.equal('<div class="kg-post">\n<h2 id="testing">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n\n</div>');
+                post.get('html').should.equal('<h2 id="testing">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n');
             });
         });
 
@@ -1937,7 +1937,7 @@ describe('Unit: models/post', function () {
             ).then((post) => {
                 should.exist(post);
                 post.has('html').should.equal(true);
-                post.get('html').should.equal('<div class="kg-post">\n<p>Test</p>\n</div>');
+                post.get('html').should.equal('<p>Test</p>');
             });
         });
     });

@@ -118,13 +118,6 @@ module.exports = {
 
         let html = serializer.serializeChildren(rendered.result);
 
-        // full version of Koenig wraps the content with a specific class to
-        // be targetted with our default stylesheet for vertical rhythm and
-        // card-specific styles
-        if (version === 2) {
-            html = `<div class="kg-post">\n${html}\n</div>`;
-        }
-
         return html;
     }
 };
