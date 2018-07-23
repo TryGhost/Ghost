@@ -52,44 +52,44 @@ export default Component.extend({
         return {wordCount, imageCount};
     }),
 
-    kgImgStyle: computed('payload.imageStyle', function () {
-        let imageStyle = this.payload.imageStyle;
+    kgImgStyle: computed('payload.cardWidth', function () {
+        let cardWidth = this.payload.cardWidth;
 
-        if (imageStyle === 'wide') {
+        if (cardWidth === 'wide') {
             return 'image-wide';
         }
 
-        if (imageStyle === 'full') {
+        if (cardWidth === 'full') {
             return 'image-full';
         }
 
         return 'image-normal';
     }),
 
-    toolbar: computed('payload.{imageStyle,src}', function () {
-        let imageStyle = this.payload.imageStyle;
+    toolbar: computed('payload.{cardWidth,src}', function () {
+        let cardWidth = this.payload.cardWidth;
         let items = [];
 
         if (this.payload.src) {
             items.push({
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
-                iconClass: `${!imageStyle ? 'stroke-blue-l2' : 'stroke-white'}`,
-                action: run.bind(this, this._changeImageStyle, '')
+                iconClass: `${!cardWidth ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeCardWidth, '')
             });
 
             items.push({
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
-                iconClass: `${imageStyle === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
-                action: run.bind(this, this._changeImageStyle, 'wide')
+                iconClass: `${cardWidth === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeCardWidth, 'wide')
             });
 
             items.push({
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
-                iconClass: `${imageStyle === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
-                action: run.bind(this, this._changeImageStyle, 'full')
+                iconClass: `${cardWidth === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                action: run.bind(this, this._changeCardWidth, 'full')
             });
 
             items.push({divider: true});
@@ -203,8 +203,8 @@ export default Component.extend({
         }
     },
 
-    _changeImageStyle(imageStyle) {
-        this._updatePayloadAttr('imageStyle', imageStyle);
+    _changeCardWidth(cardWidth) {
+        this._updatePayloadAttr('cardWidth', cardWidth);
     },
 
     _updatePayloadAttr(attr, value) {
