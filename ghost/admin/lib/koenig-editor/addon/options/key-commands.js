@@ -254,6 +254,16 @@ export const DEFAULT_KEY_COMMANDS = [{
 
         if (isCollapsed && (offset === 0 || section.isCardSection) && !prevSection) {
             koenig.send('exitCursorAtTop');
+            return false;
+        }
+
+        // Firefox has a bug with cursor movement where it will stop the cursor
+        // from moving upwards when a card is selected. Default behaviour in
+        // all other browsers is to place the cursor at the end of the previous
+        // section so we replicate that here
+        if (section.isCardSection && prevSection) {
+            koenig.moveCaretToTailOfSection(prevSection, false);
+            return;
         }
 
         return false;
