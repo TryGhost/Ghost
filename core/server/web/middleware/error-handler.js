@@ -106,7 +106,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
     // @TODO: split the error handler for assets, admin & theme to refactor this away
-    if (req.app.engines.length === 0) {
+    if (Object.keys(req.app.engines).length === 0) {
         res._template = 'error';
         req.app.engine('hbs', _private.createHbsEngine());
         req.app.set('view engine', 'hbs');
