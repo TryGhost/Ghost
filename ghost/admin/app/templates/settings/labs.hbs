@@ -163,7 +163,51 @@
             </div>
             {{/gh-uploader}}
         </div>
+        <div class="gh-setting">
+            {{#gh-uploader
+                extensions=yamlExtension
+                uploadUrl="/settings/routes/yaml/"
+                paramName="routes"
+                onUploadSuccess=(perform routesUploadResult true)
+                onUploadFailure=(perform routesUploadResult false)
+                as |uploader|
+            }}
+            <div class="gh-setting-content">
+                <div class="gh-setting-title">Routes</div>
+                <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="routes">{{error.message}}</div>
+                {{/each}}
+            </div>
+            <div class="gh-setting-action" style="display: flex; flex-direction: column">
+                {{#if uploader.isUploading}}
+                    {{uploader.progressBar}}
+                {{else}}
+                    <button
+                        type="button"
+                        class="gh-btn gh-btn-icon {{if routesSuccess "gh-btn-green"}} {{if routesFailure "gh-btn-red"}}"
+                        onclick={{action "triggerFileDialog"}}
+                        data-test-button="upload-routes"
+                    >
+                        <span>
+                            {{#if routesSuccess}}
+                                {{svg-jar "check-circle"}} Uploaded
+                            {{else if routesFailure}}
+                                {{svg-jar "retry"}} Upload Failed
+                            {{else}}
+                                Upload routes YAML
+                            {{/if}}
+                        </span>
+                    </button>
+                    <span><a href="#" {{action "downloadFile" "settings/routes/yaml"}} data-test-link="download-routes">Download current routes.yml</a></span>
+                {{/if}}
 
+                <div style="display:none">
+                    {{gh-file-input multiple=false action=uploader.setFiles accept=yamlMimeType data-test-file-input="routes"}}
+                </div>
+            </div>
+            {{/gh-uploader}}
+        </div>
     </section>
 </section>
 

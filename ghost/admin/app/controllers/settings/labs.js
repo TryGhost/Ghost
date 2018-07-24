@@ -25,6 +25,14 @@ const IMPORT_MIME_TYPES = [
 const JSON_EXTENSION = ['json'];
 const JSON_MIME_TYPE = ['application/json'];
 
+const YAML_EXTENSION = ['yml', 'yaml'];
+const YAML_MIME_TYPE = [
+    'text/vnd.yaml',
+    'application/vnd.yaml',
+    'text/x-yaml',
+    'application/x-yaml'
+];
+
 export default Controller.extend({
     ajax: service(),
     config: service(),
@@ -43,12 +51,16 @@ export default Controller.extend({
     importMimeType: null,
     jsonExtension: null,
     jsonMimeType: null,
+    yamlExtension: null,
+    yamlMimeType: null,
 
     init() {
         this._super(...arguments);
         this.importMimeType = IMPORT_MIME_TYPES;
         this.jsonExtension = JSON_EXTENSION;
         this.jsonMimeType = JSON_MIME_TYPE;
+        this.yamlExtension = YAML_EXTENSION;
+        this.yamlMimeType = YAML_MIME_TYPE;
     },
 
     actions: {
@@ -211,6 +223,17 @@ export default Controller.extend({
 
         this.set('redirectSuccess', null);
         this.set('redirectFailure', null);
+        return true;
+    }).drop(),
+
+    routesUploadResult: task(function* (success) {
+        this.set('routesSuccess', success);
+        this.set('routesFailure', !success);
+
+        yield timeout(config.environment === 'test' ? 100 : 5000);
+
+        this.set('routesSuccess', null);
+        this.set('routesFailure', null);
         return true;
     }).drop(),
 
