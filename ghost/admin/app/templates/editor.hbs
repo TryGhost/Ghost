@@ -17,7 +17,7 @@
                     {{!-- editor.headerClass is only set on small screens with opaque tpo bar --}}
                     {{#if (and editor.headerClass wordCount)}}
                         <span class="pl3 f-small midgrey">
-                            {{wordCount.readingTime}} ({{pluralize wordCount.wordCount "word"}})
+                            {{pluralize wordCount.wordCount "word"}}
                         </span>
                     {{/if}}
                 </div>
@@ -188,9 +188,9 @@
 
         {{#unless editor.headerClass}}
             {{#if wordCount}}
-                <div class="absolute right-8 bottom-6">
-                    <span class="pl3 f-small midgrey">
-                        {{wordCount.readingTime}} ({{pluralize wordCount.wordCount "word"}})
+                <div class="absolute right-6 bottom-4 pa1 pl4 pr4 br3 bg-white-90">
+                    <span class="f-small midgrey">
+                        {{pluralize wordCount.wordCount "word"}}
                     </span>
                 </div>
             {{/if}}
