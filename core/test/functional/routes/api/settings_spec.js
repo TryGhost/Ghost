@@ -217,7 +217,7 @@ describe('Settings API', function () {
     });
 
     it('can upload routes.yaml', ()=> {
-        const newRoutesYamlPath = `${os.tmpdir()}routes.yaml`;
+        const newRoutesYamlPath = `${os.tmpdir()}/routes.yaml`;
 
         return fs.writeFile(newRoutesYamlPath, 'routes:\ncollections:\ntaxonomies:\n')
             .then(()=> {
