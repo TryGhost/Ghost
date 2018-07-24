@@ -28,7 +28,7 @@ filterUtils = {
                 err: err,
                 property: 'filter',
                 context: common.i18n.t('errors.models.plugins.filter.errorParsing'),
-                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'https://api.ghost.org/v1.22.0/docs/filter'})
+                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'https://api.ghost.org/docs/filter'})
             });
         }
 
