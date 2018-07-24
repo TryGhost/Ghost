@@ -195,5 +195,118 @@ describe('Acceptance: Settings - Labs', function () {
             let iframe = $('#iframeDownload');
             expect(iframe.attr('src')).to.have.string('/redirects/json/');
         });
+
+        it('can upload/download routes.yaml', async function () {
+            await visit('/settings/labs');
+
+            // successful upload
+            server.post('/settings/routes/yaml/', {}, 200);
+
+            await fileUpload(
+                '[data-test-file-input="routes"]',
+                ['test'],
+                {name: 'routes.yaml', type: 'application/x-yaml'}
+            );
+
+            // TODO: tests for the temporary success/failure state have been
+            // disabled because they were randomly failing
+
+            // this should be half-way through button reset timeout
+            // await timeout(50);
+            //
+            // // shows success button
+            // let button = find('[data-test-button="upload-routes"]');
+            // expect(button.length, 'no of success buttons').to.equal(1);
+            // expect(
+            //     button.hasClass('gh-btn-green'),
+            //     'success button is green'
+            // ).to.be.true;
+            // expect(
+            //     button.text().trim(),
+            //     'success button text'
+            // ).to.have.string('Uploaded');
+            //
+            // await wait();
+
+            // returned to normal button
+            let button = find('[data-test-button="upload-routes"]');
+            expect(button.length, 'no of post-success buttons').to.equal(1);
+            expect(
+                button.hasClass('gh-btn-green'),
+                'routes post-success button doesn\'t have success class'
+            ).to.be.false;
+            expect(
+                button.text().trim(),
+                'routes post-success button text'
+            ).to.have.string('Upload routes YAML');
+
+            // failed upload
+            server.post('/settings/routes/yaml/', {
+                errors: [{
+                    errorType: 'BadRequestError',
+                    message: 'Test failure message'
+                }]
+            }, 400);
+
+            await fileUpload(
+                '[data-test-file-input="routes"]',
+                ['test'],
+                {name: 'routes-bad.yaml', type: 'application/x-yaml'}
+            );
+
+            // TODO: tests for the temporary success/failure state have been
+            // disabled because they were randomly failing
+
+            // this should be half-way through button reset timeout
+            // await timeout(50);
+            //
+            // shows failure button
+            // button = find('[data-test-button="upload-routes"]');
+            // expect(button.length, 'no of failure buttons').to.equal(1);
+            // expect(
+            //     button.hasClass('gh-btn-red'),
+            //     'failure button is red'
+            // ).to.be.true;
+            // expect(
+            //     button.text().trim(),
+            //     'failure button text'
+            // ).to.have.string('Upload Failed');
+            //
+            // await wait();
+
+            // shows error message
+            expect(
+                find('[data-test-error="routes"]').text().trim(),
+                'routes upload error text'
+            ).to.have.string('Test failure message');
+
+            // returned to normal button
+            button = find('[data-test-button="upload-routes"]');
+            expect(button.length, 'no of post-failure buttons').to.equal(1);
+            expect(
+                button.hasClass('gh-btn-red'),
+                'routes post-failure button doesn\'t have failure class'
+            ).to.be.false;
+            expect(
+                button.text().trim(),
+                'routes post-failure button text'
+            ).to.have.string('Upload routes YAML');
+
+            // successful upload clears error
+            server.post('/settings/routes/yaml/', {}, 200);
+            await fileUpload(
+                '[data-test-file-input="routes"]',
+                ['test'],
+                {name: 'routes-good.yaml', type: 'application/x-yaml'}
+            );
+
+            expect(find('[data-test-error="routes"]')).to.not.exist;
+
+            // can download redirects.json
+            await click('[data-test-link="download-routes"]');
+
+            let iframe = $('#iframeDownload');
+            expect(iframe.attr('src')).to.have.string('/settings/routes/yaml/');
+        });
     });
 });
