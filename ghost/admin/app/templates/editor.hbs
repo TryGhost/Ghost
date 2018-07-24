@@ -8,18 +8,12 @@
         <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
             <div class="flex items-center br2 h9 pa2 pl4 pr4 pe-auto {{unless infoMessage "bg-white-90"}}">
                 <div class="flex items-baseline">
-                    <span class="fw4 darkgrey-l2 pl4">
+                    <span class="fw4 darkgrey-l2">
                         {{gh-editor-post-status
                             post=post
                             isSaving=(or autosave.isRunning saveTasks.isRunning)
                         }}
                     </span>
-                    {{!-- editor.headerClass is only set on small screens with opaque tpo bar --}}
-                    {{#if (and editor.headerClass wordCount)}}
-                        <span class="pl3 f-small midgrey">
-                            {{pluralize wordCount.wordCount "word"}}
-                        </span>
-                    {{/if}}
                 </div>
                 {{#gh-scheduled-post-countdown post=post as |post countdown|}}
                     <time datetime="{{post.publishedAtUTC}}" class="green f8 nudge-bottom--1 ml3" data-test-schedule-countdown>
@@ -186,15 +180,13 @@
 
         {{/if}} {{!-- end Koenig conditional --}}
 
-        {{#unless editor.headerClass}}
-            {{#if wordCount}}
-                <div class="absolute right-6 bottom-4 pa1 pl4 pr4 br3 bg-white-90">
-                    <span class="f-small midgrey">
-                        {{pluralize wordCount.wordCount "word"}}
-                    </span>
-                </div>
-            {{/if}}
-        {{/unless}}
+        {{#if wordCount}}
+            <div class="absolute flex items-center br3 bg-white-90 {{if editor.headerClass "right-4 bottom-2 h7 pa1 pl2 pr2" "right-6 bottom-6 h9 pa1 pl4 pr4"}}">
+                <span class="midgrey {{if editor.headerClass "f-supersmall" "f8"}}">
+                    {{pluralize wordCount.wordCount "word"}}
+                </span>
+            </div>
+        {{/if}}
     {{/gh-editor}}
 
     {{#if showDeletePostModal}}
