@@ -49,7 +49,7 @@ ghostBookshelf.plugin(plugins.collision);
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
-    allowedOptions: ['context', 'importing'],
+    allowedOptions: ['context', 'importing', 'migrating'],
     unsetRelations: true,
     hooks: {
         belongsToMany: {
@@ -124,10 +124,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (!model.ghostEvents) {
             model.ghostEvents = [];
 
-            // CASE: when importing or deleting content, lot's of model queries are happening in one transaction
+            // CASE: when importing, deleting or migrating content, lot's of model queries are happening in one transaction
             //       lot's of model events will be triggered. we ensure we set the max listeners to infinity.
             //       we are using `once` - we auto remove the listener afterwards
-            if (options.importing || options.destroyAll) {
+            if (options.importing || options.destroyAll || options.migrating) {
                 options.transacting.setMaxListeners(0);
             }
 
@@ -501,7 +501,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // terms to whitelist for all methods.
-        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate'];
+        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate', 'migrating'];
     },
 
     /**
