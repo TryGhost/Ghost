@@ -4,7 +4,7 @@ const models = require('../../../../models');
 const fixtures = require('../../../../data/schema/fixtures');
 const message1 = 'Adding demo post.';
 const message2 = 'Added demo post.';
-const message3 = 'Skip: Adding demo post.';
+const message3 = 'Skipped: Adding demo post. Slug already in use.';
 
 module.exports.config = {
     transaction: true
