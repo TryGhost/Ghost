@@ -327,7 +327,7 @@ Post = ghostBookshelf.Model.extend({
         } else {
             // In any other case (except import), `published_by` should not be changed
             if (this.hasChanged('published_by') && !options.importing) {
-                this.set('published_by', this.previous('published_by'));
+                this.set('published_by', this.previous('published_by') || null);
             }
         }
 

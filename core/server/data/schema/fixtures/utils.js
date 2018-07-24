@@ -98,7 +98,7 @@ fetchRelationData = function fetchRelationData(relation, options) {
  * @param {{name, entries}} modelFixture
  * @returns {Promise.<*>}
  */
-addFixturesForModel = function addFixturesForModel(modelFixture, options) {
+addFixturesForModel = function addFixturesForModel(modelFixture, options = {}) {
     // Clone the fixtures as they get changed in this function.
     // The initial blog posts will be added a `published_at` property, which
     // would change the fixturesHash.
@@ -115,8 +115,22 @@ addFixturesForModel = function addFixturesForModel(modelFixture, options) {
     }
 
     return Promise.mapSeries(modelFixture.entries, function (entry) {
+        let data = {};
+
         // CASE: if id is specified, only query by id
-        return models[modelFixture.name].findOne(entry.id ? {id: entry.id} : entry, options).then(function (found) {
+        if (entry.id) {
+            data.id = entry.id;
+        } else if (entry.slug) {
+            data.slug = entry.slug;
+        } else {
+            data = _.cloneDeep(entry);
+        }
+
+        if (modelFixture.name === 'Post') {
+            data.status = 'all';
+        }
+
+        return models[modelFixture.name].findOne(data, options).then(function (found) {
             if (!found) {
                 return models[modelFixture.name].add(entry, options);
             }
