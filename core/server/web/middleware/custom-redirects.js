@@ -57,7 +57,7 @@ _private.registerRoutes = function registerRoutes() {
             common.logging.error(new common.errors.IncorrectUsageError({
                 message: common.i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
-                help: 'https://docs.ghost.org/docs/redirects'
+                help: 'https://docs.ghost.org/v1/docs/redirects'
             }));
         }
     }

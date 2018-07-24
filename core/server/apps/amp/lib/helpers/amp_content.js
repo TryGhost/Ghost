@@ -6,22 +6,21 @@
 //
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     moment = require('moment'),
-
-    // (less) dirty requires
     proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
     logging = proxy.logging,
     i18n = proxy.i18n,
     errors = proxy.errors,
     urlService = require('../../../../services/url'),
-    amperizeCache = {},
-    allowedAMPTags = [],
+    amperizeCache = {};
+
+let allowedAMPTags = [],
     allowedAMPAttributes = {},
-    amperize,
-    cleanHTML,
-    ampHTML;
+    amperize = null,
+    ampHTML = '',
+    cleanHTML = '';
 
 allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h2',
     'h3', 'h4', 'h5', 'h6', 'header', 'footer', 'address', 'p', 'hr',
@@ -119,7 +118,7 @@ function getAmperizeHTML(html, post) {
         return;
     }
 
-    var Amperize = require('amperize'),
+    let Amperize = require('amperize'),
         startedAtMoment = moment();
 
     amperize = amperize || new Amperize();
@@ -128,20 +127,20 @@ function getAmperizeHTML(html, post) {
     html = urlService.utils.makeAbsoluteUrls(html, urlService.utils.urlFor('home', true), post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
-        return new Promise(function (resolve) {
-            amperize.parse(html, function (err, res) {
+        return new Promise((resolve) => {
+            amperize.parse(html, (err, res) => {
                 logging.info('amp.parse', post.url, moment().diff(startedAtMoment, 'ms') + 'ms');
 
                 if (err) {
                     if (err.src) {
                         logging.error(new errors.GhostError({
-                            message: 'AMP HTML couldn\'t get parsed: ' + err.src,
+                            message: `AMP HTML couldn\'t get parsed: ${err.src}`,
                             err: err,
                             context: post.url,
                             help: i18n.t('errors.apps.appWillNotBeLoaded.help')
                         }));
                     } else {
-                        logging.error(new errors.GhostError({err: err}));
+                        logging.error(new errors.GhostError({err}));
                     }
 
                     // save it in cache to prevent multiple calls to Amperize until
@@ -161,14 +160,14 @@ function getAmperizeHTML(html, post) {
 }
 
 function ampContent() {
-    var sanitizeHtml = require('sanitize-html'),
+    let sanitizeHtml = require('sanitize-html'),
         cheerio = require('cheerio'),
         amperizeHTML = {
             amperize: getAmperizeHTML(this.html, this)
         };
 
-    return Promise.props(amperizeHTML).then(function (result) {
-        var $;
+    return Promise.props(amperizeHTML).then((result) => {
+        let $ = null;
 
         // our Amperized HTML
         ampHTML = result.amperize || '';
