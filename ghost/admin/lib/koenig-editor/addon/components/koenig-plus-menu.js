@@ -213,7 +213,7 @@ export default Component.extend({
 
     // show the (+) button when the mouse is over a blank P tag
     _handleMousemove(event) {
-        if (!this.showMenu) {
+        if (!this.showMenu && this.element) {
             let {pageX, pageY} = event;
             let editor = this.editor;
 
