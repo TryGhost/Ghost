@@ -42,7 +42,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
 
                 if (
                     post.get('html').match(/^<div class="kg-post">/)
-                    || !mobiledocIsCompatibleWithV1(mobiledoc)
+                    || (mobiledoc && !mobiledocIsCompatibleWithV1(mobiledoc))
                 ) {
                     // change imagecard.payload.imageStyle to imagecard.payload.cardWidth
                     mobiledoc.cards.forEach((card) => {
