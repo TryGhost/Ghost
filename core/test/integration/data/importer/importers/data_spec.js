@@ -1231,15 +1231,16 @@ describe('1.0', function () {
                     markups: [],
                     atoms: [],
                     cards: [
+                        ['image', {
+                            imageStyle: 'wide',
+                            src: 'source'
+                        }],
                         ['markdown', {
                             cardName: 'markdown',
-                            markdown: '## Post Content'
-                        }],
-                        ['image', {
-                            imageStyle: 'wide'
+                            markdown: '# Post Content'
                         }]
                     ],
-                    sections: [[10, 0]]
+                    sections: [[10,0],[10,1]]
                 })
             });
 
@@ -1257,10 +1258,11 @@ describe('1.0', function () {
                             markdown: '## Post Content'
                         }],
                         ['image', {
-                            imageStyle: 'wide'
+                            imageStyle: 'not-wide',
+                            src: 'source2'
                         }]
                     ],
-                    sections: [[10, 0]]
+                    sections: [[10,0],[10,1]]
                 }),
                 html: '<div class="kg-post"><h2 id="postcontent">Post Content</h2></div>\n'
             });
@@ -1274,11 +1276,12 @@ describe('1.0', function () {
                     const posts = result[0].posts;
 
                     posts.length.should.eql(2);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"cardWidth":"wide"}]],"sections":[[10,0]]}');
-                    posts[0].html.should.eql('<h2 id="postcontent">Post Content</h2>\n');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"cardWidth":"wide"}]],"sections":[[10,0]]}');
-                    posts[1].html.should.eql('<h2 id="postcontent">Post Content</h2>\n');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
+                    posts[0].html.should.eql('<h2 id="postcontent">Post Content</h2>\n<figure class="kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure>');
+
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
+                    posts[1].html.should.eql('<figure class="kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><h1 id="postcontent">Post Content</h1>\n');
                 });
         });
     });
