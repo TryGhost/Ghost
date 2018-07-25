@@ -41,7 +41,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
                 let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
 
                 if (
-                    post.get('html').match(/^<div class="kg-post">/)
+                    post.get('html') && post.get('html').match(/^<div class="kg-post">/)
                     || (mobiledoc && !mobiledocIsCompatibleWithV1(mobiledoc))
                 ) {
                     // change imagecard.payload.imageStyle to imagecard.payload.cardWidth
