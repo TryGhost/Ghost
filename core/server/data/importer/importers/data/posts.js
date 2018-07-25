@@ -162,9 +162,20 @@ class PostsImporter extends BaseImporter {
                 }
             }
 
-            // @TODO: test if html field is missing, test if mobiledoc field is missing (throw error?)
-            if (model.html && model.html.match(/^<div class="kg-card-markdown">/)) {
-                model.html = converters.mobiledocConverter.render(model.mobiledoc);
+            // CASE 1: you are importing old editor posts
+            // CASE 2: you are importing Koenig Beta posts
+            if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
+                const mobiledoc = JSON.parse(model.mobiledoc);
+
+                mobiledoc.cards.forEach((card) => {
+                    if (card[0] === 'image') {
+                        card[1].cardWidth = card[1].imageStyle;
+                        delete card[1].imageStyle;
+                    }
+                });
+
+                model.mobiledoc = JSON.stringify(mobiledoc);
+                model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
             }
         });
 

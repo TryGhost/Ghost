@@ -269,8 +269,7 @@ Post = ghostBookshelf.Model.extend({
 
         // render mobiledoc to HTML
         if (this.hasChanged('mobiledoc')) {
-            let html = converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc')));
-            this.set('html', html);
+            this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {

@@ -1193,7 +1193,95 @@ describe('1.0', function () {
             });
     });
 
-    it.skip('ensure we migrate the 1.0 html of a post');
+    describe('migrate mobiledoc/html', ()=> {
+        it.skip('mobiledoc is null');
+        it.skip('mobiledoc is null, but html is set');
+        it.skip('mobiledoc and html is null');
+
+        it('post has "kg-card-markdown" class', ()=> {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                html: '<div class="kg-card-markdown"><h1>This is my post content.</h1></div>',
+                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('# This is my post content')
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(1);
+                    posts[0].html.should.eql('<h1 id="thisismypostcontent">This is my post content</h1>\n');
+                    posts[0].mobiledoc.should.eql(exportData.data.posts[0].mobiledoc);
+                });
+        });
+
+        it('import old Koenig Beta post format', ()=> {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                mobiledoc: JSON.stringify({
+                    version: '0.3.1',
+                    markups: [],
+                    atoms: [],
+                    cards: [
+                        ['markdown', {
+                            cardName: 'markdown',
+                            markdown: '## Post Content'
+                        }],
+                        ['image', {
+                            imageStyle: 'wide'
+                        }]
+                    ],
+                    sections: [[10, 0]]
+                })
+            });
+
+            delete exportData.data.posts[0].html;
+
+            exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post2',
+                mobiledoc: JSON.stringify({
+                    version: '0.3.1',
+                    markups: [],
+                    atoms: [],
+                    cards: [
+                        ['markdown', {
+                            cardName: 'markdown',
+                            markdown: '## Post Content'
+                        }],
+                        ['image', {
+                            imageStyle: 'wide'
+                        }]
+                    ],
+                    sections: [[10, 0]]
+                }),
+                html: '<div class="kg-post"><h2 id="postcontent">Post Content</h2></div>\n'
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(2);
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"cardWidth":"wide"}]],"sections":[[10,0]]}');
+                    posts[0].html.should.eql('<h2 id="postcontent">Post Content</h2>\n');
+
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"cardWidth":"wide"}]],"sections":[[10,0]]}');
+                    posts[1].html.should.eql('<h2 id="postcontent">Post Content</h2>\n');
+                });
+        });
+    });
 });
 
 describe('LTS', function () {

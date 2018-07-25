@@ -89,9 +89,7 @@ class DomModifier {
 
 module.exports = {
     render(mobiledoc) {
-        // pass the version through to the card renderers.
-        // create a new object here to avoid modifying the default options
-        // object because the version can change per-render until 2.0 is released
+        // @NOTE: if no version is passed, it falls back to `mobiledoc.version`.
         let versionedOptions = Object.assign({}, options, {
             cardOptions: {}
         });
