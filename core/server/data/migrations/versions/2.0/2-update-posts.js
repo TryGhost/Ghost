@@ -26,8 +26,8 @@ module.exports.up = (options) => {
                 let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
                 let html;
 
-                // @TODO: throw error if mobiledoc is incompatible? what if mobiledoc is null and html is empty? what if mobiledoc is null, but html is set?
-                if (post.get('html').match(/^<div class="kg-card-markdown">/)) {
+                // @TODO: can it happen that mobiledoc field is null, but html is set?
+                if (post.get('html') && post.get('html').match(/^<div class="kg-card-markdown">/)) {
                     html = converters.mobiledocConverter.render(mobiledoc);
                 }
 
