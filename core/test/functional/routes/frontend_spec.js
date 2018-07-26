@@ -756,8 +756,6 @@ describe('Frontend Routing', function () {
 
             it('should not redirect with case sensitive', function (done) {
                 request.get('/casE-sensitivE')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
                     .end(function (err, res) {
                         res.headers.location.should.not.eql('/redirected-sensitive');
                         res.statusCode.should.not.eql(302);
@@ -767,8 +765,6 @@ describe('Frontend Routing', function () {
 
             it('should not redirect with default case sensitive', function (done) {
                 request.get('/defaulT-sensitivE')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
                     .end(function (err, res) {
                         res.headers.location.should.not.eql('/redirected-default');
                         res.statusCode.should.not.eql(302);
