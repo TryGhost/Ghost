@@ -9,7 +9,12 @@ export default Controller.extend({
     settings: service(),
     ui: service(),
 
-    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', function () {
+    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullscreen', function () {
+        // if we're in fullscreen mode don't show the nav menu
+        if (this.ui.isFullscreen) {
+            return false;
+        }
+
         // we need to defer showing the navigation menu until the session.user
         // promise has fulfilled so that gh-user-can-admin has the correct data
         if (!this.get('session.isAuthenticated') || !this.get('session.user.isFulfilled')) {
