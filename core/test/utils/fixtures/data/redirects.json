@@ -31,5 +31,18 @@
     {
         "from": "^/prefix/([a-z0-9\\-]+)?",
         "to": "/blog/$1"
+    },
+    {
+        "from": "^\\/case-insensitive",
+        "caseInsensitive": true,
+        "to": "/redirected-insensitive"
+    },{
+        "from": "^\\/Case-Sensitive",
+        "caseInsensitive": false,
+        "to": "/redirected-sensitive"
+    },
+    {
+        "from": "^\\/Default-Sensitive",
+        "to": "/redirected-default"
     }
 ]

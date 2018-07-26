@@ -73,7 +73,7 @@ describe('Redirects API', function () {
 
                     res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
                     res.headers['content-type'].should.eql('application/json; charset=utf-8');
-                    res.headers['content-length'].should.eql('463');
+                    res.headers['content-length'].should.eql('692');
 
                     done();
                 });

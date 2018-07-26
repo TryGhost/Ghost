@@ -715,11 +715,63 @@ describe('Frontend Routing', function () {
                     });
             });
 
+            it('with case insensitive', function (done) {
+                request.get('/CaSe-InSeNsItIvE')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('/redirected-insensitive');
+                        doEnd(done)(err, res);
+                    });
+            });
+
+            it('with case sensitive', function (done) {
+                request.get('/Case-Sensitive')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('/redirected-sensitive');
+                        doEnd(done)(err, res);
+                    });
+            });
+
+            it('defaults to case sensitive', function (done) {
+                request.get('/Default-Sensitive')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('/redirected-default');
+                        doEnd(done)(err, res);
+                    });
+            });
+
             it('should not redirect', function (done) {
                 request.get('/post/a-nice-blog-post/')
                     .end(function (err, res) {
                         res.statusCode.should.not.eql(302);
                         res.statusCode.should.not.eql(301);
+                        doEnd(done)(err, res);
+                    });
+            });
+
+            it('should not redirect with case sensitive', function (done) {
+                request.get('/casE-sensitivE')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.not.eql('/redirected-sensitive');
+                        res.statusCode.should.not.eql(302);
+                        doEnd(done)(err, res);
+                    });
+            });
+
+            it('should not redirect with default case sensitive', function (done) {
+                request.get('/defaulT-sensitivE')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.not.eql('/redirected-default');
+                        res.statusCode.should.not.eql(302);
                         doEnd(done)(err, res);
                     });
             });
