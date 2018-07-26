@@ -36,6 +36,8 @@ _private.registerRoutes = () => {
                 redirect.from += '/?$';
             }
 
+            const options = redirect.caseInsensitive ? 'i' : '';
+
             debug('register', redirect.from);
             customRedirectsRouter.get(new RegExp(redirect.from), function customRedirect(req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
@@ -46,7 +48,7 @@ _private.registerRoutes = () => {
                 });
 
                 res.redirect(redirect.permanent ? 301 : 302, url.format({
-                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from), redirect.to),
+                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from, options), redirect.to),
                     search: parsedUrl.search
                 }));
             });
