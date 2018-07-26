@@ -9,9 +9,9 @@ export default Controller.extend({
     settings: service(),
     ui: service(),
 
-    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullscreen', function () {
+    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
         // if we're in fullscreen mode don't show the nav menu
-        if (this.ui.isFullscreen) {
+        if (this.ui.isFullScreen) {
             return false;
         }
 

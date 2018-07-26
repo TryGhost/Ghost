@@ -22,7 +22,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
     activate() {
         this._super(...arguments);
         if (this.feature.koenigEditor) {
-            this.ui.set('isFullscreen', true);
+            this.ui.set('isFullScreen', true);
         }
     },
 
@@ -59,7 +59,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
 
     deactivate() {
         this._super(...arguments);
-        this.ui.set('isFullscreen', false);
+        this.ui.set('isFullScreen', false);
     },
 
     actions: {
