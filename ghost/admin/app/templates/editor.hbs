@@ -6,20 +6,28 @@
         as |editor|
     }}
         <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
-            <div class="flex items-center br2 h9 pa2 pl4 pr4 pe-auto {{unless infoMessage "bg-white-90"}}">
-                <div class="flex items-baseline">
-                    <span class="fw4 darkgrey-l2">
+            <div class="flex items-center pe-auto">
+                {{#if ui.isFullscreen}}
+                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white-90"}}">
+                        {{#link-to "posts" classNames="blue link fw4 flex items-center"}}
+                            {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
+                            Stories
+                        {{/link-to}}
+                    </div>
+                {{/if}}
+                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless infoMessage "bg-white-90"}}">
+                    <span class="fw4 midgrey-l2">
                         {{gh-editor-post-status
                             post=post
                             isSaving=(or autosave.isRunning saveTasks.isRunning)
                         }}
                     </span>
-                </div>
                 {{#gh-scheduled-post-countdown post=post as |post countdown|}}
-                    <time datetime="{{post.publishedAtUTC}}" class="green f8 nudge-bottom--1 ml3" data-test-schedule-countdown>
+                    <time datetime="{{post.publishedAtUTC}}" class="green f8 ml5" data-test-schedule-countdown>
                         Post will go live {{countdown}}.
                     </time>
                 {{/gh-scheduled-post-countdown}}
+                </div>
             </div>
 
             {{#if infoMessage}}
@@ -182,7 +190,7 @@
 
         {{#if wordCount}}
             <div class="absolute flex items-center br3 bg-white-90 {{if editor.headerClass "right-4 bottom-2 h7 pa1 pl2 pr2" "right-6 bottom-6 h9 pa1 pl4 pr4"}}">
-                <span class="midgrey {{if editor.headerClass "f-supersmall" "f8"}}">
+                <span class="midgrey-l2 {{if editor.headerClass "f-supersmall" "f8"}}">
                     {{pluralize wordCount.wordCount "word"}}
                 </span>
             </div>

@@ -13,10 +13,18 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
     feature: service(),
     notifications: service(),
     userAgent: service(),
+    ui: service(),
 
     classNames: ['editor'],
     shortcuts: generalShortcuts,
     titleToken: 'Editor',
+
+    activate() {
+        this._super(...arguments);
+        if (this.feature.koenigEditor) {
+            this.ui.set('isFullscreen', true);
+        }
+    },
 
     setupController() {
         this._super(...arguments);
@@ -47,6 +55,11 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
                 );
             }
         }
+    },
+
+    deactivate() {
+        this._super(...arguments);
+        this.ui.set('isFullscreen', false);
     },
 
     actions: {
