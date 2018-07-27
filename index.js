@@ -3,7 +3,7 @@
 
 var startTime = Date.now(),
     debug = require('ghost-ignition').debug('boot:index'),
-    ghost, express, common, urlService, parentApp;
+    ghost, express, common, urlService, parentApp, config, GhostServer;
 
 debug('First requires...');
 
@@ -12,7 +12,8 @@ ghost = require('./core');
 debug('Required ghost');
 
 express = require('express');
-common = require('./core/server/lib/common');
+GhostServer = require('./core/server/ghost-server');
+config = require('./core/server/config');
 urlService = require('./core/server/services/url');
 parentApp = express();
 
@@ -23,25 +24,22 @@ ghost().then(function (ghostServer) {
 
     debug('Starting Ghost');
     // Let Ghost handle starting our server instance.
-    return ghostServer.start(parentApp).then(function afterStart() {
-        common.logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
+    return ghostServer.start(parentApp)
+        .then(function afterStart() {
+            common.logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
 
-        // if IPC messaging is enabled, ensure ghost sends message to parent
-        // process on successful start
-        if (process.send) {
-            process.send({started: true});
-        }
-    });
+            if (!config.get('maintenance:enabled')) {
+                return GhostServer.announceServerStart();
+            }
+        });
 }).catch(function (err) {
     if (!common.errors.utils.isIgnitionError(err)) {
         err = new common.errors.GhostError({message: err.message, err: err});
     }
 
-    common.logging.error(err);
-
-    if (process.send) {
-        process.send({started: false, error: err.message});
-    }
-
-    process.exit(-1);
+    return GhostServer.announceServerStopped(err)
+        .finally(() => {
+            common.logging.error(err);
+            process.exit(-1);
+        });
 });
