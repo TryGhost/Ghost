@@ -29,7 +29,7 @@
     "cli": "^1.7.0"
   },
   "dependencies": {
-    "@nexes/nql": "0.0.1",
+    "@nexes/nql": "0.1.0",
     "amperize": "0.3.7",
     "analytics-node": "2.4.1",
     "archiver": "1.3.0",
