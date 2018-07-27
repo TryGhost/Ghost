@@ -88,10 +88,17 @@ class DomModifier {
 }
 
 module.exports = {
-    render(mobiledoc) {
-        // @NOTE: if no version is passed, it falls back to `mobiledoc.version`.
+    render(mobiledoc, version) {
+        /**
+         * @deprecated: version 1 === Ghost 1.0 markdown-only mobiledoc
+         *              We keep the version 1 logic till Ghost 3.0 to be able to rollback posts.
+         *
+         * version 2 (latest) === Ghost 2.0 full mobiledoc
+         */
+        version = version || 2;
+
         let versionedOptions = Object.assign({}, options, {
-            cardOptions: {}
+            cardOptions: {version}
         });
 
         let renderer = new Renderer(versionedOptions);
