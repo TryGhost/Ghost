@@ -14,6 +14,7 @@ debug('Required ghost');
 express = require('express');
 GhostServer = require('./core/server/ghost-server');
 config = require('./core/server/config');
+common = require('./core/server/lib/common');
 urlService = require('./core/server/services/url');
 parentApp = express();
 
