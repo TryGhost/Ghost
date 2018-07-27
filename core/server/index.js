@@ -103,20 +103,6 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
 
                 return initialiseServices()
                     .then(() => {
-                        // CASE: IPC communication to the CLI via child process.
-                        if (process.send) {
-                            process.send({
-                                started: true
-                            });
-                        }
-
-                        // CASE: Socket communication to the CLI. CLI started Ghost via systemd.
-                        if (ghostServer.getSocket()) {
-                            ghostServer.getSocket().write(JSON.stringify({
-                                started: true
-                            }));
-                        }
-
                         return ghostServer;
                     });
             }
@@ -126,47 +112,23 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
                 common.logging.info('Blog is in maintenance mode.');
 
                 config.set('maintenance:enabled', true);
+
                 migrator.migrate()
                     .then(() => {
                         common.events.emit('db.ready');
                         return initialiseServices();
                     })
                     .then(() => {
-                        common.events.emit('server.start');
                         config.set('maintenance:enabled', false);
                         common.logging.info('Blog is out of maintenance mode.');
-
-                        if (process.send) {
-                            process.send({
-                                started: true
-                            });
-                        }
-
-                        // CASE: Socket communication to the CLI. CLI started Ghost via systemd.
-                        if (ghostServer.getSocket()) {
-                            ghostServer.getSocket().write(JSON.stringify({
-                                started: true
-                            }));
-                        }
+                        return GhostServer.announceServerStart();
                     })
                     .catch((err) => {
-                        if (process.send) {
-                            process.send({
-                                started: false,
-                                error: err.message
+                        return GhostServer.announceServerStopped(err)
+                            .finally(() => {
+                                common.logging.error(err);
+                                process.exit(-1);
                             });
-                        }
-
-                        // CASE: Socket communication to the CLI. CLI started Ghost via systemd.
-                        if (ghostServer.getSocket()) {
-                            ghostServer.getSocket().write(JSON.stringify({
-                                started: false,
-                                error: err.message
-                            }));
-                        }
-
-                        common.logging.error(err);
-                        process.exit(-1);
                     });
 
                 return ghostServer;
