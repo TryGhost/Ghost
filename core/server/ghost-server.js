@@ -95,12 +95,6 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('listening', function () {
             debug('...Started');
 
-            // CASE: there are components which listen on this event to initialise after the server has started (in background)
-            //       we want to avoid that they bootstrap during maintenance
-            if (config.get('maintenance:enabled') === false) {
-                common.events.emit('server.start');
-            }
-
             self.logStartMessages();
             resolve(self);
         });
@@ -162,8 +156,6 @@ GhostServer.prototype.hammertime = function () {
 GhostServer.prototype.connection = function (socket) {
     var self = this;
 
-    this.socket = socket;
-
     self.connectionId += 1;
     socket._ghostId = self.connectionId;
 
@@ -172,10 +164,6 @@ GhostServer.prototype.connection = function (socket) {
     });
 
     self.connections[socket._ghostId] = socket;
-};
-
-GhostServer.prototype.getSocket = function getSocket() {
-    return this.socket;
 };
 
 /**
@@ -241,3 +229,86 @@ GhostServer.prototype.logShutdownMessages = function () {
 };
 
 module.exports = GhostServer;
+
+module.exports.announceServerStart = function announceServerStart() {
+    common.events.emit('server.start');
+
+    // CASE: IPC communication to the CLI via child process.
+    if (process.send) {
+        process.send({
+            started: true
+        });
+    }
+
+    // CASE: Ghost extension - bootstrap sockets
+    if (config.get('bootstrap-socket')) {
+        const socketAddress = config.get('bootstrap-socket');
+        const net = require('net');
+        const client = new net.Socket();
+
+        return new Promise((resolve) => {
+            const waitTimeout = setTimeout(() => {
+                client.destroy();
+                resolve();
+            }, 1000 * 5);
+
+            client.connect(socketAddress.port, socketAddress.host, () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                client.write(JSON.stringify({started: true}));
+                resolve();
+            });
+
+            client.on('close', () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+            });
+        });
+    }
+
+    return Promise.resolve();
+};
+
+module.exports.announceServerStopped = function announceServerStopped(error) {
+    // CASE: IPC communication to the CLI via child process.
+    if (process.send) {
+        process.send({
+            started: false,
+            error: error
+        });
+    }
+
+    // CASE: Ghost extension - bootstrap sockets
+    if (config.get('bootstrap-socket')) {
+        const socketAddress = config.get('bootstrap-socket');
+        const net = require('net');
+        const client = new net.Socket();
+
+        return new Promise((resolve) => {
+            const waitTimeout = setTimeout(() => {
+                client.destroy();
+                resolve();
+            }, 1000 * 5);
+
+            client.connect(socketAddress.port, socketAddress.host, () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                client.write(JSON.stringify({started: false, error: error}));
+                resolve();
+            });
+
+            client.on('close', () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+            });
+        });
+    }
+
+    return Promise.resolve();
+};
