@@ -1,3 +1,36 @@
+
+Skip to content
+
+    Pull requests
+    Issues
+    Marketplace
+    Explore
+
+    @freezboltz
+
+1,136
+26,351
+
+    5,808
+
+TryGhost/Ghost
+Code
+Issues 116
+Pull requests 20
+Projects 0
+Wiki
+Insights
+Ghost/core/server/filters.js
+f83cbf6 on Dec 14, 2017
+@kirrg001 kirrg001 Moved pipeline/sequence to lib/promise
+@hswolff
+@halfdan
+@ErisDS
+@sebgie
+@kirrg001
+@jdalton
+@jaswilli
+96 lines (79 sloc) 2.92 KB
 // # Filters
 // Filters are not yet properly used, this system is intended to allow Apps to extend Ghost in various ways.
 var Promise       = require('bluebird'),
@@ -15,13 +48,13 @@ defaults = {
     maxPriority: 9
 };
 
-const Filters = () => {
+function Filters() {
     // Holds the filters
     this.filterCallbacks = [];
 
     // Holds the filter hooks (that are built in to Ghost Core)
     this.filters = [];
-};
+}
 
 // Register a new filter callback function
 Filters.prototype.registerFilter = function (name, priority, fn) {
@@ -93,3 +126,19 @@ Filters.prototype.doFilter = function (name, args, context) {
 
 module.exports = new Filters();
 module.exports.Filters = Filters;
+
+    © 2018 GitHub, Inc.
+    Terms
+    Privacy
+    Security
+    Status
+    Help
+
+    Contact GitHub
+    API
+    Training
+    Shop
+    Blog
+    About
+
+Press h to open a hovercard with more details.
