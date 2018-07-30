@@ -239,9 +239,9 @@ export default Component.extend({
     _handleKeydown(event) {
         if (
             this.isEditing
-            && event.code === 'Escape'
-            || (Browser.isMac() && event.code === 'Enter' && event.metaKey)
-            || (!Browser.isMac() && event.code === 'Enter' && event.ctrlKey)
+            && event.key === 'Escape'
+            || (Browser.isMac() && event.key === 'Enter' && event.metaKey)
+            || (!Browser.isMac() && event.key === 'Enter' && event.ctrlKey)
         ) {
             // run the select card routine with isEditing=false to exit edit mode
             this.selectCard(false);

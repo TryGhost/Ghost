@@ -116,7 +116,7 @@ export default Component.extend({
 
     actions: {
         inputKeydown(event) {
-            if (event.code === 'Enter') {
+            if (event.key === 'Enter') {
                 // prevent Enter from triggering in the editor and removing text
                 event.preventDefault();
 
@@ -264,7 +264,7 @@ export default Component.extend({
     },
 
     _handleKeydown(event) {
-        if (event.code === 'Escape') {
+        if (event.key === 'Escape') {
             this._cancelAndReselect();
         }
     }
