@@ -254,7 +254,7 @@ export default Component.extend({
     },
 
     _handleKeydown(event) {
-        if (event.code === 'Escape') {
+        if (event.key === 'Escape') {
             // reset the caret position so we have a caret after closing
             this._moveCaretToCachedEditorRange();
             this._hideMenu();
@@ -262,7 +262,7 @@ export default Component.extend({
         }
 
         let arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-        if (arrowKeys.includes(event.code)) {
+        if (arrowKeys.includes(event.key)) {
             this._hideMenu();
         }
     },
