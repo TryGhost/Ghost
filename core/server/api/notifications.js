@@ -2,7 +2,7 @@
 // RESTful API for creating notifications
 
 const Promise = require('bluebird'),
-    _ = require('lodash'),
+    {merge, orderBy, remove} = require('lodash'),
     semver = require('semver'),
     moment = require('moment'),
     ObjectId = require('bson-objectid'),
@@ -21,11 +21,11 @@ let notifications,
 _private.fetchAllNotifications = function fetchAllNotifications() {
     let allNotifications;
 
-    return SettingsAPI.read(_.merge({key: 'notifications'}, internalContext))
-        .then(function (response) {
+    return SettingsAPI.read(merge({key: 'notifications'}, internalContext))
+        .then((response) => {
             allNotifications = JSON.parse(response.settings[0].value || []);
 
-            _.each(allNotifications, function (notification) {
+            allNotifications.forEach((notification) => {
                 notification.addedAt = moment(notification.addedAt).toDate();
             });
 
@@ -34,7 +34,7 @@ _private.fetchAllNotifications = function fetchAllNotifications() {
 };
 
 _private.publicResponse = function publicResponse(notificationsToReturn) {
-    _.each(notificationsToReturn, function (notification) {
+    notificationsToReturn.forEach((notification) => {
         delete notification.seen;
         delete notification.addedAt;
     });
@@ -57,16 +57,16 @@ notifications = {
      * @returns {Promise(Notifications)}
      */
     browse: function browse(options) {
-        return canThis(options.context).browse.notification().then(function () {
+        return canThis(options.context).browse.notification().then(() => {
             return _private.fetchAllNotifications()
-                .then(function (allNotifications) {
-                    allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
+                .then((allNotifications) => {
+                    allNotifications = orderBy(allNotifications, 'addedAt', 'desc');
 
-                    allNotifications = allNotifications.filter(function (notification) {
+                    allNotifications = allNotifications.filter((notification) => {
                         // CASE: do not return old release notification
                         if (!notification.custom && notification.message) {
-                            let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
-                            let blogVersion = ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
+                            const notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/),
+                                blogVersion = ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
 
                             if (notificationVersion && blogVersion && semver.gt(notificationVersion[0], blogVersion[0])) {
                                 return true;
@@ -80,13 +80,12 @@ notifications = {
 
                     return _private.publicResponse(allNotifications);
                 });
-        }, function () {
+        }, () => {
             return Promise.reject(new common.errors.NoPermissionError({
                 message: common.i18n.t('errors.api.notifications.noPermissionToBrowseNotif')
             }));
         });
     },
-
     /**
      * ### Add
      *
@@ -107,7 +106,7 @@ notifications = {
      * ```
      */
     add: function add(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Handle Permissions
@@ -120,9 +119,9 @@ notifications = {
                 return Promise.resolve(options);
             }
 
-            return canThis(options.context).add.notification().then(function () {
+            return canThis(options.context).add.notification().then(() => {
                 return options;
-            }, function () {
+            }, () => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     message: common.i18n.t('errors.api.notifications.noPermissionToAddNotif')
                 }));
@@ -136,7 +135,7 @@ notifications = {
          * @returns {Object} options
          */
         function saveNotifications(options) {
-            let defaults = {
+            const defaults = {
                     dismissible: true,
                     location: 'bottom',
                     status: 'alert',
@@ -146,26 +145,28 @@ notifications = {
                     seen: false,
                     addedAt: moment().toDate()
                 },
-                notificationsToCheck = options.data.notifications,
-                addedNotifications = [];
+                notificationsToCheck = options.data.notifications;
+            let addedNotifications = [];
 
             return _private.fetchAllNotifications()
-                .then(function (allNotifications) {
-                    _.each(notificationsToCheck, function (notification) {
-                        let isDuplicate = _.find(allNotifications, {id: notification.id});
+                .then((allNotifications) => {
+                    notificationsToCheck.forEach((notification) => {
+                        const isDuplicate = allNotifications.find((n) => {
+                            return n.id === notification.id;
+                        });
 
                         if (!isDuplicate) {
-                            addedNotifications.push(_.merge({}, defaults, notification, overrides));
+                            addedNotifications.push(merge({}, defaults, notification, overrides));
                         }
                     });
 
-                    let hasReleaseNotification = _.find(notificationsToCheck, {custom: false});
+                    const hasReleaseNotification = notificationsToCheck.find((notification) => {
+                        return !notification.custom;
+                    });
 
                     // CASE: remove any existing release notifications if a new release notification comes in
                     if (hasReleaseNotification) {
-                        _.remove(allNotifications, function (el) {
-                            return !el.custom;
-                        });
+                        remove(allNotifications, (el) => { return !el.custom; });
                     }
 
                     // CASE: nothing to add, skip
@@ -173,12 +174,16 @@ notifications = {
                         return Promise.resolve();
                     }
 
-                    let addedReleaseNotifications = _.filter(addedNotifications, {custom: false});
+                    const addedReleaseNotifications = addedNotifications.filter((notification) => {
+                        return !notification.custom;
+                    });
 
                     // CASE: only latest release notification
                     if (addedReleaseNotifications.length > 1) {
-                        addedNotifications = _.filter(addedNotifications, {custom: true});
-                        addedNotifications.push(_.orderBy(addedReleaseNotifications, 'created_at', 'desc')[0]);
+                        addedNotifications = addedNotifications.filter((notification) => {
+                            return notification.custom;
+                        });
+                        addedNotifications.push(orderBy(addedReleaseNotifications, 'created_at', 'desc')[0]);
                     }
 
                     return SettingsAPI.edit({
@@ -188,9 +193,7 @@ notifications = {
                         }]
                     }, internalContext);
                 })
-                .then(function () {
-                    return _private.publicResponse(addedNotifications);
-                });
+                .then(() => { return _private.publicResponse(addedNotifications); });
         }
 
         tasks = [
@@ -219,9 +222,9 @@ notifications = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return canThis(options.context).destroy.notification().then(function () {
+            return canThis(options.context).destroy.notification().then(() => {
                 return options;
-            }, function () {
+            }, () => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     message: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
                 }));
@@ -230,9 +233,13 @@ notifications = {
 
         function destroyNotification(options) {
             return _private.fetchAllNotifications()
-                .then(function (allNotifications) {
-                    let notificationToMarkAsSeen = _.find(allNotifications, {id: options.id}),
-                        notificationToMarkAsSeenIndex = _.findIndex(allNotifications, {id: options.id});
+                .then((allNotifications) => {
+                    const notificationToMarkAsSeen = allNotifications.find((notification) => {
+                            return notification.id === options.id;
+                        }),
+                        notificationToMarkAsSeenIndex = allNotifications.findIndex((notification) => {
+                            return notification.id === options.id;
+                        });
 
                     if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
                         return Promise.reject(new common.errors.NoPermissionError({
@@ -279,10 +286,10 @@ notifications = {
      */
     destroyAll: function destroyAll(options) {
         return canThis(options.context).destroy.notification()
-            .then(function () {
+            .then(() => {
                 return _private.fetchAllNotifications()
-                    .then(function (allNotifications) {
-                        _.each(allNotifications, function (notification) {
+                    .then((allNotifications) => {
+                        allNotifications.forEach((notification) => {
                             notification.seen = true;
                         });
 
@@ -294,7 +301,7 @@ notifications = {
                         }, internalContext);
                     })
                     .return();
-            }, function (err) {
+            }, (err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
                     context: common.i18n.t('errors.api.notifications.noPermissionToDestroyNotif')
