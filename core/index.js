@@ -9,6 +9,6 @@ const makeGhost = (options) => {
     options = options || {};
 
     return server(options);
-}
+};
 
 module.exports = makeGhost;

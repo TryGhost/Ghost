@@ -121,6 +121,6 @@ const init = () => {
         debug('...Init End');
         return ghostServer;
     });
-}
+};
 
 module.exports = init;
