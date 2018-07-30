@@ -1,17 +1,18 @@
 // # Configuration API
 // RESTful API for browsing the configuration
-var Promise = require('bluebird'),
-    _ = require('lodash'),
+const Promise = require('bluebird'),
+    {isPlainObject} = require('lodash'),
     urlService = require('../services/url'),
     models = require('../models'),
     config = require('../config'),
     labs = require('../services/labs'),
     settingsCache = require('../services/settings/cache'),
-    ghostVersion = require('../lib/ghost-version'),
-    configuration;
+    ghostVersion = require('../lib/ghost-version');
+
+let configuration;
 
 function fetchAvailableTimezones() {
-    var timezones = require('../data/timezones.json');
+    const timezones = require('../data/timezones.json');
     return timezones;
 }
 
@@ -20,7 +21,7 @@ function getAboutConfig() {
         version: ghostVersion.full,
         environment: config.get('env'),
         database: config.get('database').client,
-        mail: _.isObject(config.get('mail')) ? config.get('mail').transport : ''
+        mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : ''
     };
 }
 
@@ -55,8 +56,8 @@ configuration = {
 
         if (!options.key) {
             return models.Client.findOne({slug: 'ghost-admin'})
-                .then(function (ghostAdmin) {
-                    var configuration = getBaseConfig();
+                .then((ghostAdmin) => {
+                    const configuration = getBaseConfig();
 
                     configuration.clientId = ghostAdmin.get('slug');
                     configuration.clientSecret = ghostAdmin.get('secret');
