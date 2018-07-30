@@ -20,6 +20,9 @@ module.exports = {
         let img = dom.createElement('img');
         img.setAttribute('src', payload.src);
         img.setAttribute('class', 'kg-image');
+        if (payload.alt) {
+            img.setAttribute('alt', payload.alt);
+        }
 
         figure.appendChild(img);
 
