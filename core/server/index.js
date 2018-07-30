@@ -34,7 +34,7 @@ var debug = require('ghost-ignition').debug('boot:init'),
     webhooks = require('./services/webhooks');
 
 // ## Initialise Ghost
-function init() {
+const init = () => {
     debug('Init Start...');
 
     var ghostServer, parentApp;
@@ -46,12 +46,12 @@ function init() {
     models.init();
     debug('models done');
 
-    return dbHealth.check().then(function () {
+    return dbHealth.check().then(() => {
         debug('DB health check done');
         // Populate any missing default settings
         // Refresh the API settings cache
         return settings.init();
-    }).then(function () {
+    }).then(() => {
         debug('Update settings cache done');
 
         common.events.emit('db.ready');
@@ -64,7 +64,7 @@ function init() {
         //
         // Initialize the permissions actions and objects
         return permissions.init();
-    }).then(function () {
+    }).then(() => {
         debug('Permissions done');
         return Promise.join(
             themes.init(),
@@ -75,7 +75,7 @@ function init() {
             // Initialize webhook pings
             webhooks.listen()
         );
-    }).then(function () {
+    }).then(() => {
         debug('Apps, XMLRPC, Slack done');
 
         // Setup our collection of express apps
@@ -87,7 +87,7 @@ function init() {
         }
 
         debug('Express Apps done');
-    }).then(function () {
+    }).then(() => {
         /**
          * @NOTE:
          *
@@ -98,12 +98,12 @@ function init() {
          * If you create a published post, the url is always stronger than any app url, which is equal.
          */
         return apps.init();
-    }).then(function () {
+    }).then(() => {
         parentApp.use(auth.init());
         debug('Auth done');
 
         return new GhostServer(parentApp);
-    }).then(function (_ghostServer) {
+    }).then((_ghostServer) => {
         ghostServer = _ghostServer;
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
@@ -116,7 +116,7 @@ function init() {
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         });
-    }).then(function () {
+    }).then(() => {
         debug('Scheduling done');
         debug('...Init End');
         return ghostServer;
