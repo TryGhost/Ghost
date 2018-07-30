@@ -21,7 +21,7 @@ const Filters = () => {
 
     // Holds the filter hooks (that are built in to Ghost Core)
     this.filters = [];
-}
+};
 
 // Register a new filter callback function
 Filters.prototype.registerFilter = function (name, priority, fn) {
