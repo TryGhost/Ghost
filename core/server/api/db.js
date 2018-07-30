@@ -1,7 +1,6 @@
 // # DB API
 // API for DB operations
-var Promise = require('bluebird'),
-    _ = require('lodash'),
+const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     exporter = require('../data/export'),
@@ -9,8 +8,9 @@ var Promise = require('bluebird'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
     common = require('../lib/common'),
-    docName = 'db',
-    db;
+    docName = 'db';
+
+let db;
 
 /**
  * ## DB API Methods
@@ -26,7 +26,7 @@ db = {
      * @returns {Promise} Ghost Export JSON format
      */
     backupContent: function (options) {
-        var tasks;
+        let tasks;
 
         options = options || {};
 
@@ -50,15 +50,17 @@ db = {
      * @returns {Promise} Ghost Export JSON format
      */
     exportContent: function exportContent(options) {
-        var tasks;
+        let tasks;
 
         options = options || {};
 
         // Export data, otherwise send error 500
         function exportContent() {
-            return exporter.doExport().then(function (exportedData) {
-                return {db: [exportedData]};
-            }).catch(function (err) {
+            return exporter.doExport().then((exportedData) => {
+                return {
+                    db: [exportedData]
+                };
+            }).catch((err) => {
                 return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
@@ -79,14 +81,17 @@ db = {
      * @returns {Promise} Success
      */
     importContent: function importContent(options) {
-        var tasks;
+        let tasks;
         options = options || {};
 
         function importContent(options) {
             return importer.importFromFile(options)
-                .then(function (response) {
-                    // NOTE: response can contain 2 objects if images are imported
-                    return {db: [], problems: response.length === 2 ? response[1].problems : response[0].problems};
+                // NOTE: response can contain 2 objects if images are imported
+                .then((response) => {
+                    return {
+                        db: [],
+                        problems: response.length === 2 ? response[1].problems : response[0].problems
+                    };
                 });
         }
 
@@ -106,8 +111,8 @@ db = {
      * @returns {Promise} Success
      */
     deleteAllContent: function deleteAllContent(options) {
-        var tasks,
-            queryOpts = {columns: 'id', context: {internal: true}, destroyAll: true};
+        let tasks;
+        const queryOpts = {columns: 'id', context: {internal: true}, destroyAll: true};
 
         options = options || {};
 
@@ -120,13 +125,13 @@ db = {
          *   - `onDestroyed` or `onDestroying` can contain custom logic
          */
         function deleteContent() {
-            return models.Base.transaction(function (transacting) {
+            return models.Base.transaction((transacting) => {
                 queryOpts.transacting = transacting;
 
                 return models.Post.findAll(queryOpts)
                     .then((response) => {
                         return Promise.map(response.models, (post) => {
-                            return models.Post.destroy(_.merge({id: post.id}, queryOpts));
+                            return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
                         }, {concurrency: 100});
                     })
                     .then(() => {
@@ -134,7 +139,7 @@ db = {
                     })
                     .then((response) => {
                         return Promise.map(response.models, (tag) => {
-                            return models.Tag.destroy(_.merge({id: tag.id}, queryOpts));
+                            return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
                         }, {concurrency: 100});
                     })
                     .return({db: []})
