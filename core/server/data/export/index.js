@@ -6,7 +6,7 @@ var _ = require('lodash'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
     models = require('../../models'),
-    excludedTables = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
+    EXCLUDED_TABLES = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
     modelOptions = {context: {internal: true}},
 
     // private
@@ -50,13 +50,14 @@ getVersionAndTables = function getVersionAndTables(options) {
 };
 
 exportTable = function exportTable(tableName, options) {
-    if (excludedTables.indexOf(tableName) < 0) {
+    if (EXCLUDED_TABLES.indexOf(tableName) < 0 ||
+        (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)) {
         return (options.transacting || db.knex)(tableName).select();
     }
 };
 
 doExport = function doExport(options) {
-    options = options || {};
+    options = options || {include: []};
 
     var tables, version;
 
@@ -93,5 +94,6 @@ doExport = function doExport(options) {
 
 module.exports = {
     doExport: doExport,
-    fileName: exportFileName
+    fileName: exportFileName,
+    EXCLUDED_TABLES: EXCLUDED_TABLES
 };

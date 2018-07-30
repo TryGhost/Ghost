@@ -41,7 +41,7 @@ describe('Exporter', function () {
             });
         });
 
-        it('should try to export all the correct tables', function (done) {
+        it('should try to export all the correct tables (without excluded)', function (done) {
             // Setup for success
             queryMock.select.returns(new Promise.resolve({}));
 
@@ -79,6 +79,51 @@ describe('Exporter', function () {
 
                 knexMock.calledWith('clients').should.be.false();
                 knexMock.calledWith('client_trusted_domains').should.be.false();
+                knexMock.calledWith('refreshtokens').should.be.false();
+                knexMock.calledWith('accesstokens').should.be.false();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should try to export all the correct tables with extra tables', function (done) {
+            // Setup for success
+            queryMock.select.returns(new Promise.resolve({}));
+
+            // Execute
+            exporter.doExport({include: ['clients', 'client_trusted_domains']}).then(function (exportData) {
+                // all tables, except of the tokens
+                const expectedCallCount = schemaTables.length - 2;
+
+                should.exist(exportData);
+
+                exportData.meta.version.should.eql('1.0.0');
+
+                tablesStub.calledOnce.should.be.true();
+                db.knex.called.should.be.true();
+                queryMock.select.called.should.be.true();
+
+                knexMock.callCount.should.eql(expectedCallCount);
+                queryMock.select.callCount.should.have.eql(expectedCallCount);
+
+                knexMock.getCall(0).args[0].should.eql('posts');
+                knexMock.getCall(1).args[0].should.eql('users');
+                knexMock.getCall(2).args[0].should.eql('posts_authors');
+                knexMock.getCall(3).args[0].should.eql('roles');
+                knexMock.getCall(4).args[0].should.eql('roles_users');
+                knexMock.getCall(5).args[0].should.eql('permissions');
+                knexMock.getCall(6).args[0].should.eql('permissions_users');
+                knexMock.getCall(7).args[0].should.eql('permissions_roles');
+                knexMock.getCall(8).args[0].should.eql('permissions_apps');
+                knexMock.getCall(9).args[0].should.eql('settings');
+                knexMock.getCall(10).args[0].should.eql('tags');
+                knexMock.getCall(11).args[0].should.eql('posts_tags');
+                knexMock.getCall(12).args[0].should.eql('apps');
+                knexMock.getCall(13).args[0].should.eql('app_settings');
+                knexMock.getCall(14).args[0].should.eql('app_fields');
+                knexMock.getCall(15).args[0].should.eql('clients');
+                knexMock.getCall(16).args[0].should.eql('client_trusted_domains');
+
                 knexMock.calledWith('refreshtokens').should.be.false();
                 knexMock.calledWith('accesstokens').should.be.false();
 
