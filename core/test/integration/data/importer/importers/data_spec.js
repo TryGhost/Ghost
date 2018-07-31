@@ -1909,6 +1909,65 @@ describe('Import (new test structure)', function () {
             });
         });
 
+        describe('import clients/trusted_domains', function () {
+            beforeEach(function doImport() {
+                return testUtils.initFixtures('roles', 'owner', 'settings', 'clients');
+            });
+
+            it('skips importing clients, trusted domains by default', function () {
+                return testUtils.fixtures.loadExportFixture('export-clients-domains')
+                    .then((exported) => {
+                        exportData = exported.db[0];
+                        return dataImporter.doImport(exportData, importOptions);
+                    })
+                    .then(() => {
+                        return models.Client.findOne({slug: 'ghost-something'}, testUtils.context.internal);
+                    })
+                    .then((model)=> {
+                        should.not.exist(model);
+
+                        return models.ClientTrustedDomain.findOne({trusted_domain: 'https://test.com'}, testUtils.context.internal);
+                    })
+                    .then(function (model) {
+                        should.not.exist(model);
+                    });
+            });
+
+            it('forward option to import clients, trusted domains', function () {
+                let somethingClient;
+
+                return testUtils.fixtures.loadExportFixture('export-clients-domains')
+                    .then((exported) => {
+                        exportData = exported.db[0];
+                        return dataImporter.doImport(exportData, Object.assign({include: ['clients', 'client_trusted_domains']}, importOptions));
+                    })
+                    .then(() => {
+                        return models.Client.findOne({slug: 'ghost-something'}, testUtils.context.internal);
+                    })
+                    .then((model)=> {
+                        should.exist(model);
+                        somethingClient = model;
+                        return models.Client.findOne({slug: 'ghost-frontend'}, testUtils.context.internal);
+                    })
+                    .then((model) => {
+                        should.exist(model);
+                        model.get('secret').should.eql('11111');
+
+                        return models.ClientTrustedDomain.findOne({trusted_domain: 'https://test.com'}, testUtils.context.internal);
+                    })
+                    .then(function (model) {
+                        should.exist(model);
+                        model.get('client_id').should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
+
+                        return models.ClientTrustedDomain.findOne({trusted_domain: 'https://example.com'}, testUtils.context.internal);
+                    })
+                    .then((model) => {
+                        should.exist(model);
+                        model.get('client_id').should.eql(somethingClient.id);
+                    });
+            });
+        });
+
         describe('authors', function () {
             before(function doImport() {
                 // initialize the blog with some data
