@@ -23,7 +23,7 @@
         onFailed=(action "resetSrcs")
         as |uploader|
     }}
-        <div class="relative bg-whitegrey-l2">
+        <div class="relative{{unless (or previewSrc payload.src) " bg-whitegrey-l2"}}">
             {{#if (or previewSrc payload.src)}}
                 <img src={{or previewSrc payload.src}} class="{{kg-style kgImgStyle sidebar=ui.hasSideNav}}" alt={{payload.alt}}>
                 {{#if isDraggedOver}}
