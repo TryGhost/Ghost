@@ -354,8 +354,7 @@ _.extend(ImportManager.prototype, {
      * @param {importOptions} importOptions to allow override of certain import features such as locking a user
      * @returns {Promise}
      */
-    importFromFile: function (file, importOptions) {
-        importOptions = importOptions || {};
+    importFromFile: function (file, importOptions = {}) {
         var self = this;
 
         // Step 1: Handle converting the file to usable data

@@ -80,14 +80,6 @@ class SettingsImporter extends BaseImporter {
 
         return Promise.all(ops);
     }
-
-    /**
-     * We only update existing settings models.
-     * Nothing todo here.
-     */
-    afterImport() {
-        return Promise.resolve();
-    }
 }
 
 module.exports = SettingsImporter;

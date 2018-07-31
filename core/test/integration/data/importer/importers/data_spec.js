@@ -881,6 +881,34 @@ describe('Integration: Importer', function () {
                 });
         });
 
+        it('skips importing clients, trusted domains by default', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.clients = [];
+            exportData.data.clients[0] = testUtils.DataGenerator.forKnex.createClient({
+                slug: 'ghost-something',
+                secret: '678910'
+            });
+
+            exportData.data.client_trusted_domains = [];
+            exportData.data.client_trusted_domains[0] = testUtils.DataGenerator.forKnex.createTrustedDomain({
+                trusted_domain: 'https://test.com'
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return models.Client.findOne({slug: 'ghost-something'}, testUtils.context.internal);
+                })
+                .then(function (model) {
+                    should.not.exist(model);
+
+                    return models.ClientTrustedDomain.findOne({trusted_domain: 'https://test.com'}, testUtils.context.internal);
+                })
+                .then(function (model) {
+                    should.not.exist(model);
+                });
+        });
+
         it('ensure authors are imported correctly', function () {
             const exportData = exportedLatestBody().db[0];
 
@@ -969,9 +997,9 @@ describe('Integration: Importer', function () {
 
     describe('Existing database', function () {
         beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('users:roles', 'posts', 'settings'));
+        beforeEach(testUtils.setup('users:roles', 'posts', 'settings', 'clients'));
 
-        it('import multiple users, tags, posts', function () {
+        it('import multiple users, tags, posts, clients', function () {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
@@ -1048,22 +1076,87 @@ describe('Integration: Importer', function () {
                 updated_by: exportData.data.users[2].id
             });
 
-            return dataImporter.doImport(exportData, importOptions)
+            exportData.data.clients = [];
+
+            // override ghost-frontend
+            exportData.data.clients[0] = testUtils.DataGenerator.forKnex.createClient({
+                slug: 'ghost-frontend',
+                secret: '678910'
+            });
+
+            // add new client
+            exportData.data.clients[1] = testUtils.DataGenerator.forKnex.createClient({
+                slug: 'ghost-new',
+                secret: '88888',
+                name: 'Ghost New'
+            });
+
+            exportData.data.client_trusted_domains = [];
+            exportData.data.client_trusted_domains[0] = testUtils.DataGenerator.forKnex.createTrustedDomain({
+                trusted_domain: 'https://test.com'
+            });
+
+            exportData.data.client_trusted_domains[1] = testUtils.DataGenerator.forKnex.createTrustedDomain({
+                client_id: ObjectId.generate(),
+                trusted_domain: 'https://example.com'
+            });
+
+            exportData.data.client_trusted_domains[2] = testUtils.DataGenerator.forKnex.createTrustedDomain({
+                client_id: exportData.data.clients[1].id,
+                trusted_domain: 'https://world.com'
+            });
+
+            const clonedImportOptions = _.cloneDeep(importOptions);
+            clonedImportOptions.include = ['clients', 'client_trusted_domains'];
+
+            return dataImporter.doImport(exportData, clonedImportOptions)
                 .then(function () {
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal)),
                         models.Tag.findPage(testUtils.context.internal),
-                        models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal))
+                        models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal)),
+                        models.Client.findAll(testUtils.context.internal),
+                        models.ClientTrustedDomain.findAll(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
                     const posts = result[0].posts,
                         tags = result[1].tags,
                         users = result[2].users;
 
+                    let clients = result[3];
+                    let trustedDomains = result[4];
+
                     posts.length.should.equal(exportData.data.posts.length + testUtils.DataGenerator.Content.posts.length, 'Wrong number of posts');
                     tags.length.should.equal(exportData.data.tags.length + testUtils.DataGenerator.Content.tags.length, 'Wrong number of tags');
                     // the test env only inserts the user defined in the `forKnex` array
                     users.length.should.equal(exportData.data.users.length + testUtils.DataGenerator.forKnex.users.length, 'Wrong number of users');
+
+                    clients.models.length.should.eql(6);
+                    clients = clients.toJSON();
+                    const clientSlugs = _.map(clients, 'slug');
+
+                    clientSlugs.should.containEql('ghost-scheduler');
+                    clientSlugs.should.containEql('ghost-admin');
+                    clientSlugs.should.containEql('ghost-backup');
+                    clientSlugs.should.containEql('ghost-auth');
+                    clientSlugs.should.containEql('ghost-frontend');
+                    clientSlugs.should.containEql('ghost-new');
+
+                    _.find(clients, {slug: 'ghost-frontend'}).secret.should.eql('678910');
+                    _.find(clients, {slug: 'ghost-new'}).secret.should.eql('88888');
+
+                    trustedDomains.models.length.should.eql(3);
+                    trustedDomains = trustedDomains.toJSON();
+
+                    _.map(trustedDomains, 'trusted_domain').should.eql([
+                        'https://test.com',
+                        'https://example.com',
+                        'https://world.com'
+                    ]);
+
+                    _.find(trustedDomains, {trusted_domain: 'https://test.com'}).client_id.should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
+                    _.find(trustedDomains, {trusted_domain: 'https://example.com'}).client_id.should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
+                    _.find(trustedDomains, {trusted_domain: 'https://world.com'}).client_id.should.eql(_.find(clients, {slug: 'ghost-new'}).id);
                 });
         });
     });
