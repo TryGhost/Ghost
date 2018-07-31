@@ -33,12 +33,10 @@
         "to": "/blog/$1"
     },
     {
-        "from": "^\\/case-insensitive",
-        "caseInsensitive": true,
+        "from": "/^\\/case-insensitive/i",
         "to": "/redirected-insensitive"
     },{
         "from": "^\\/Case-Sensitive",
-        "caseInsensitive": false,
         "to": "/redirected-sensitive"
     },
     {

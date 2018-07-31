@@ -28,6 +28,13 @@ _private.registerRoutes = () => {
              *   - you define /my-blog-post-1/ as from property
              *   - /my-blog-post-1 or /my-blog-post-1/ should work
              */
+
+            let options = '';
+            if (redirect.from.match(/\/.*\/i/)) {
+                redirect.from = redirect.from.slice(1, -2);
+                options = 'i';
+            }
+
             if (redirect.from.match(/\/$/)) {
                 redirect.from = redirect.from.slice(0, -1);
             }
@@ -36,10 +43,8 @@ _private.registerRoutes = () => {
                 redirect.from += '/?$';
             }
 
-            const options = redirect.caseInsensitive ? 'i' : '';
-
             debug('register', redirect.from);
-            customRedirectsRouter.get(new RegExp(redirect.from), function customRedirect(req, res) {
+            customRedirectsRouter.get(new RegExp(redirect.from, options), function (req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
                     parsedUrl = url.parse(req.originalUrl);
 
