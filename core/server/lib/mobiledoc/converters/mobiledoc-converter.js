@@ -118,5 +118,15 @@ module.exports = {
         modifier.modifyChildren(rendered.result);
 
         return serializer.serializeChildren(rendered.result);
+    },
+
+    blankStructure() {
+        return {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [],
+            sections: []
+        };
     }
 };

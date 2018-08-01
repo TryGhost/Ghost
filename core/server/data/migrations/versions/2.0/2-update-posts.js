@@ -28,6 +28,8 @@ module.exports.up = (options) => {
                 let html;
 
                 // CASE: convert all old editor posts to the new editor format
+                // CASE: if mobiledoc field is null, we auto set a blank structure in the model layer
+                // CASE: if html field is null, we auto generate the html in the model layer
                 if (mobiledoc && post.get('html') && post.get('html').match(/^<div class="kg-card-markdown">/)) {
                     html = converters.mobiledocConverter.render(mobiledoc);
                 }

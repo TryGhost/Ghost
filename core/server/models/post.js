@@ -266,6 +266,10 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
+        if (this.get('mobiledoc') === null) {
+            this.set('mobiledoc', JSON.stringify(converters.mobiledocConverter.blankStructure()));
+        }
+
         // render mobiledoc to HTML
         if (this.hasChanged('mobiledoc')) {
             this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));

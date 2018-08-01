@@ -189,7 +189,6 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it.skip('import invalid mobiledoc format');
         it('warning that theme was not imported', function () {
             let exportData = exportedLatestBody().db[0];
 
@@ -1194,9 +1193,76 @@ describe('1.0', function () {
     });
 
     describe('migrate mobiledoc/html', ()=> {
-        it.skip('mobiledoc is null');
-        it.skip('mobiledoc is null, but html is set');
-        it.skip('mobiledoc and html is null');
+        it('mobiledoc is null, html field is set', ()=> {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                html: '<div><h1>This is my post content.</h1></div>'
+            });
+
+            exportData.data.posts[0].mobiledoc = null;
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(1);
+                    posts[0].html.should.eql('');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[]}');
+                });
+        });
+
+        it('mobiledoc and html is null', function () {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1'
+            });
+
+            exportData.data.posts[0].mobiledoc = null;
+            exportData.data.posts[0].html = null;
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(1);
+                    posts[0].html.should.eql('');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[]}');
+                });
+        });
+
+        it('mobiledoc is set and html is null', function () {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1'
+            });
+
+            exportData.data.posts[0].html = null;
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(1);
+                    posts[0].html.should.eql('<h2 id="markdown">markdown</h2>\n');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## markdown"}]],"sections":[[10,0]]}');
+                });
+        });
 
         it('post has "kg-card-markdown" class', ()=> {
             const exportData = exportedPreviousBody().db[0];
