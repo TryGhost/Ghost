@@ -41,8 +41,15 @@ module.exports.up = (options) => {
     return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
         .then(function (posts) {
             return Promise.map(posts.models, function (post) {
-                let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+                let mobiledoc;
                 let html;
+
+                try {
+                    mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+                } catch (err) {
+                    common.logging.warning(`Invalid mobiledoc structure for ${post.id}. Fallback to blank structure.`);
+                    mobiledoc = converters.mobiledocConverter.blankStructure();
+                }
 
                 // CASE: convert all old editor posts to the new editor format
                 // CASE: if mobiledoc field is null, we auto set a blank structure in the model layer
@@ -76,8 +83,8 @@ module.exports.down = (options) => {
         .then(function (posts) {
             return Promise.map(posts.models, function (post) {
                 let version = 1;
-                let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
                 let html;
+                let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
 
                 if (!mobiledocIsCompatibleWithV1(mobiledoc)) {
                     version = 2;

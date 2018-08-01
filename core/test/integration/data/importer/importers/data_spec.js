@@ -1192,7 +1192,39 @@ describe('1.0', function () {
             });
     });
 
-    describe('migrate mobiledoc/html', ()=> {
+    describe('migrate mobiledoc/html', () => {
+        it('invalid mobiledoc structure', ()=> {
+            const exportData = exportedPreviousBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                html: 'test',
+                mobiledoc: '{}'
+            });
+
+            exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post2'
+            });
+
+            exportData.data.posts[1].mobiledoc = '{';
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (result) {
+                    return Promise.all([
+                        models.Post.findPage(Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].posts;
+
+                    posts.length.should.eql(2);
+                    posts[0].html.should.eql('<p></p>');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+
+                    posts[1].html.should.eql('<p></p>');
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                });
+        });
+
         it('mobiledoc is null, html field is set', ()=> {
             const exportData = exportedPreviousBody().db[0];
 

@@ -165,7 +165,18 @@ class PostsImporter extends BaseImporter {
             // CASE 1: you are importing old editor posts
             // CASE 2: you are importing Koenig Beta posts
             if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
-                const mobiledoc = JSON.parse(model.mobiledoc);
+                let mobiledoc;
+
+                try {
+                    mobiledoc = JSON.parse(model.mobiledoc);
+
+                    if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
+                        model.mobiledoc = converters.mobiledocConverter.blankStructure();
+                        mobiledoc = model.mobiledoc;
+                    }
+                } catch (err) {
+                    mobiledoc = converters.mobiledocConverter.blankStructure();
+                }
 
                 mobiledoc.cards.forEach((card) => {
                     if (card[0] === 'image') {
