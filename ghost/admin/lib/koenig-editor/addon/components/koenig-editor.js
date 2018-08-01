@@ -118,6 +118,22 @@ function insertImageCards(files, postEditor) {
     let collection = editor.post.sections;
     let section = editor.activeSection;
 
+    // when dropping an image on the editor before it's had focus there will be
+    // no active section so we insert the image at the end of the document
+    if (!section) {
+        section = editor.post.sections.tail;
+
+        // create a blank paragraph at the end of the document if needed because
+        // we use `insertSectionBefore` and don't want the image to be added
+        // before the last card
+        if (!section.isMarkerable) {
+            let blank = builder.createMarkupSection();
+            postEditor.insertSectionAtEnd(blank);
+            postEditor.setRange(blank.toRange());
+            section = postEditor._range.head.section;
+        }
+    }
+
     // place the card after the active section
     if (!section.isBlank && !section.isListItem && section.next) {
         section = section.next;
@@ -899,6 +915,7 @@ export default Component.extend({
                 this.editor.run((postEditor) => {
                     insertImageCards(images, postEditor);
                 });
+                this._scrollCursorIntoView({jumpToCard: true});
             }
         }
     },
@@ -1064,7 +1081,7 @@ export default Component.extend({
         }
     },
 
-    _scrollCursorIntoView() {
+    _scrollCursorIntoView(options = {jumpToCard: false}) {
         // disable auto-scroll if the mouse or shift key is being used to create
         // a selection - the browser handles scrolling well in this case
         if (!this._scrollContainer || this._isMouseDown || this._modifierKeys.shift) {
@@ -1081,7 +1098,7 @@ export default Component.extend({
         let element = range.head && range.head.section && range.head.section.renderNode && range.head.section.renderNode.element;
 
         // prevent scroll jumps when a card is selected
-        if (range && range.head.section && range.head.section.isCardSection) {
+        if (!options.jumpToCard && range && range.head.section && range.head.section.isCardSection) {
             return;
         }
 
