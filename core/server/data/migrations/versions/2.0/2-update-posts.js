@@ -47,7 +47,7 @@ module.exports.up = (options) => {
                 try {
                     mobiledoc = JSON.parse(post.get('mobiledoc') || null);
                 } catch (err) {
-                    common.logging.warning(`Invalid mobiledoc structure for ${post.id}. Fallback to blank structure.`);
+                    common.logging.warn(`Invalid mobiledoc structure for ${post.id}. Falling back to blank structure.`);
                     mobiledoc = converters.mobiledocConverter.blankStructure();
                 }
 
@@ -60,7 +60,8 @@ module.exports.up = (options) => {
 
                 return models.Post.edit({
                     comment_id: post.get('comment_id') || post.id,
-                    html: html || post.get('html')
+                    html: html || post.get('html'),
+                    mobiledoc: JSON.stringify(mobiledoc)
                 }, _.merge({id: post.id}, localOptions));
             }, {concurrency: 100});
         })
