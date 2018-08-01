@@ -260,11 +260,13 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         // do not allow generated fields to be overridden via the API
-        generatedFields.forEach((field) => {
-            if (this.hasChanged(field)) {
-                this.set(field, this.previous(field));
-            }
-        });
+        if (!options.migrating) {
+            generatedFields.forEach((field) => {
+                if (this.hasChanged(field)) {
+                    this.set(field, this.previous(field));
+                }
+            });
+        }
 
         if (this.get('mobiledoc') === null) {
             this.set('mobiledoc', JSON.stringify(converters.mobiledocConverter.blankStructure()));

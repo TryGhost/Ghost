@@ -66,7 +66,8 @@ module.exports.down = (options) => {
     const postAllColumns = ['id', 'html', 'mobiledoc'];
 
     let localOptions = _.merge({
-        context: {internal: true}
+        context: {internal: true},
+        migrating: true
     }, options);
 
     common.logging.info(message3);
