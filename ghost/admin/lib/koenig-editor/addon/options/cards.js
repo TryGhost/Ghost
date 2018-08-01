@@ -1,5 +1,7 @@
 import createComponentCard from '../utils/create-component-card';
 
+// TODO: move koenigOptions directly into cards now that card components register
+// themselves so that they are available on card.component
 export default [
     createComponentCard('card-markdown'), // backwards-compat with markdown editor
     createComponentCard('code', {deleteIfEmpty: 'payload.code'}),
