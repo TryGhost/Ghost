@@ -1212,8 +1212,8 @@ describe('1.0', function () {
                     const posts = result[0].posts;
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[]}');
+                    posts[0].html.should.eql('<p></p>');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 
@@ -1236,8 +1236,8 @@ describe('1.0', function () {
                     const posts = result[0].posts;
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[]}');
+                    posts[0].html.should.eql('<p></p>');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 

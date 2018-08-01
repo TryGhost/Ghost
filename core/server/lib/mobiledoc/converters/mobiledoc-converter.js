@@ -126,7 +126,11 @@ module.exports = {
             markups: [],
             atoms: [],
             cards: [],
-            sections: []
+            sections: [
+                [1, 'p', [
+                    [0, [], 0, '']
+                ]]
+            ]
         };
     }
 };
