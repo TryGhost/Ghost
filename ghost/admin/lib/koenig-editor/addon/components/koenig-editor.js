@@ -902,7 +902,7 @@ export default Component.extend({
         if (cardElem) {
             let cardId = cardElem.firstChild.id;
             let card = this.componentCards.findBy('destinationElementId', cardId);
-            if (card.isEditing || card.handlesDragDrop) {
+            if (card.isEditing || card.component.handlesDragDrop) {
                 return;
             }
         }
