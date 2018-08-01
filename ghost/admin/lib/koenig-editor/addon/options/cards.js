@@ -20,7 +20,8 @@ export const CARD_MENU = [
             icon: 'koenig/image',
             matches: ['image', 'img'],
             type: 'card',
-            replaceArg: 'image'
+            replaceArg: 'image',
+            params: ['src']
         },
         {
             label: 'Markdown',
