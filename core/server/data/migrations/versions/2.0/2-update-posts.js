@@ -91,7 +91,7 @@ module.exports.down = (options) => {
                     version = 2;
                 }
 
-                // CASE: convert all old editor posts to the new editor format
+                // CASE: revert: all new editor posts to the old editor format
                 if (mobiledoc && post.get('html')) {
                     html = converters.mobiledocConverter.render(mobiledoc, version);
                 }
