@@ -151,7 +151,7 @@ export default Component.extend({
                 throw 'No HTML returned';
             }
 
-            set(this.payload.linkOnError, undefined);
+            set(this.payload, 'linkOnError', undefined);
             set(this.payload, 'html', response.html);
             set(this.payload, 'type', response.type);
             this.saveCard(this.payload, false);
