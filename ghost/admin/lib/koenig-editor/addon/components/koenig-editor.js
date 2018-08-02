@@ -807,7 +807,19 @@ export default Component.extend({
                     editor.run((postEditor) => {
                         let payload = {url: text, linkOnError: true};
                         let card = postEditor.builder.createCardSection('embed', payload);
+                        let nextSection = range.headSection.next;
+
                         postEditor.replaceSection(range.headSection, card);
+
+                        // move caret to the next section, creating a blank one
+                        // if none exists
+                        if (nextSection) {
+                            postEditor.setRange(nextSection.headPosition());
+                        } else {
+                            let newSection = postEditor.builder.createMarkupSection('p');
+                            postEditor.insertSectionAtEnd(newSection);
+                            postEditor.setRange(newSection.headPosition());
+                        }
                     });
                 } else {
                     // ensure the pasted URL is still auto-linked when Shift is pressed
