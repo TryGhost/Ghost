@@ -176,7 +176,6 @@ function insertImageCards(files, postEditor) {
 
 export default Component.extend({
     layout,
-
     tagName: 'article',
     classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
 
@@ -784,14 +783,40 @@ export default Component.extend({
         let range = editor.range;
         let {html, text} = getContentFromPasteEvent(event);
 
-        // if a URL is pasted and we have a selection, make that selection a link
-        if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
-            if (text && validator.isURL(text)) {
+        if (text && validator.isURL(text)) {
+            // if we have a text selection, make that selection a link
+            if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
                 let linkMarkup = editor.builder.createMarkup('a', {href: text});
                 editor.run((postEditor) => {
                     postEditor.addMarkupToRange(range, linkMarkup);
                 });
                 editor.selectRange(range.tail);
+
+                // prevent mobiledoc's default paste event handler firing
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return;
+            }
+
+            // if there's no selection and cursor is on an empty paragraph,
+            // insert the url as an embed card, unless SHIFT is pressed. Setting
+            // the `linkOnError` option results in an immediate switch to a
+            // plain link if the embed fails for any reason (eg, unknown provider)
+            if (range && range.isCollapsed && range.headSection.isBlank && !range.headSection.isListItem) {
+                if (!this._modifierKeys.shift) {
+                    editor.run((postEditor) => {
+                        let payload = {url: text, linkOnError: true};
+                        let card = postEditor.builder.createCardSection('embed', payload);
+                        postEditor.replaceSection(range.headSection, card);
+                    });
+                } else {
+                    // ensure the pasted URL is still auto-linked when Shift is pressed
+                    editor.run((postEditor) => {
+                        let linkMarkup = editor.builder.createMarkup('a', {href: text});
+                        postEditor.insertTextWithMarkup(range.head, text, [linkMarkup]);
+                    });
+                }
+
                 // prevent mobiledoc's default paste event handler firing
                 event.preventDefault();
                 event.stopImmediatePropagation();
@@ -802,7 +827,7 @@ export default Component.extend({
         // if plain text is pasted we run it through our markdown parser so that
         // we get better output than mobiledoc's default text parsing and we can
         // provide an easier MD->Mobiledoc conversion route
-        // NOTE: will not work in IE/Edge which only ever expose `html`
+        // NOTE: will not work in Edge which only ever exposes `html`
         if (text && !html && !this._modifierKeys.shift) {
             // prevent mobiledoc's default paste event handler firing
             event.preventDefault();
