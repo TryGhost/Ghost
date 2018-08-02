@@ -104,7 +104,9 @@ export default Component.extend({
             this.set('hasError', false);
         },
 
-        insertAsLink() {
+        insertAsLink(options = {linkOnError: false}) {
+            let {range} = this.editor;
+
             this.editor.run((postEditor) => {
                 let {builder} = postEditor;
                 let cardSection = this.env.postModel;
@@ -113,6 +115,20 @@ export default Component.extend({
 
                 postEditor.replaceSection(cardSection, p);
                 postEditor.insertTextWithMarkup(p.toRange().head, this.payload.url, [link]);
+
+                // if a user is typing further on in the doc (possible if embed
+                // was created automatically via paste of URL) then return the
+                // cursor so the card->link change doesn't cause a cursor jump
+                if (range.headSection !== cardSection) {
+                    postEditor.setRange(range);
+                }
+
+                // avoid adding an extra undo step when automatically creating
+                // link after an error so that an Undo after pasting a URL
+                // doesn't get stuck in a loop going through link->embed->link
+                if (options.linkOnError) {
+                    postEditor.cancelSnapshot();
+                }
             });
         }
     },
@@ -135,12 +151,17 @@ export default Component.extend({
                 throw 'No HTML returned';
             }
 
+            set(this.payload.linkOnError, undefined);
             set(this.payload, 'html', response.html);
             set(this.payload, 'type', response.type);
             this.saveCard(this.payload, false);
 
             run.schedule('afterRender', this, this._populateIframe);
         } catch (err) {
+            if (this.payload.linkOnError) {
+                this.send('insertAsLink', {linkOnError: true});
+                return;
+            }
             this.set('hasError', true);
         }
     }),
