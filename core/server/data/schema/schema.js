@@ -23,7 +23,7 @@ module.exports = {
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         /**
-         * @deprecated: `author_id`, will be (maybe) removed in Ghost 2.0
+         * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
          */
         author_id: {type: 'string', maxlength: 24, nullable: false},
