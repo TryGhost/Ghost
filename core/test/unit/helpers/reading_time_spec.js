@@ -4,7 +4,7 @@ var should = require('should'),
     helpers = require('../../../server/helpers');
 
 var almostOneMinute =
-    '<div class="kg-card-markdown"><p>Ghost has a number of different user roles for your team</p>' +
+    '<p>Ghost has a number of different user roles for your team</p>' +
     '<h3 id="authors">Authors</h3><p>The base user level in Ghost is an author. Authors can write posts,' +
     ' edit their own posts, and publish their own posts. Authors are <strong>trusted</strong> users. If you ' +
     'don\'t trust users to be allowed to publish their own posts, you shouldn\'t invite them to Ghost admin.</p>' +
@@ -18,7 +18,7 @@ var almostOneMinute =
     'The Owner can never be deleted. And in some circumstances the owner will have access to additional special settings ' +
     'if applicable — for example, billing details, if using Ghost(Pro).</p><hr><p>It\'s a good idea to ask all of your' +
     ' users to fill out their user profiles, including bio and social links. These will populate rich structured data ' +
-    'for posts and generally create more opportunities for themes to fully populate their design.</p></div>';
+    'for posts and generally create more opportunities for themes to fully populate their design.</p>';
 
 var almostOneAndAHalfMinute = almostOneMinute +
     '<div>' +

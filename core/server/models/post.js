@@ -8,7 +8,6 @@ var _ = require('lodash'),
     htmlToText = require('html-to-text'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
-    labs = require('../services/labs'),
     converters = require('../lib/mobiledoc/converters'),
     urlService = require('../services/url'),
     relations = require('./relations'),
@@ -198,7 +197,6 @@ Post = ghostBookshelf.Model.extend({
             prevSlug = this.previous('slug'),
             publishedAt = this.get('published_at'),
             publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
-            mobiledoc = JSON.parse(this.get('mobiledoc') || null),
             generatedFields = ['html', 'plaintext'],
             tagsToSave,
             ops = [];
@@ -262,42 +260,21 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         // do not allow generated fields to be overridden via the API
-        generatedFields.forEach((field) => {
-            if (this.hasChanged(field)) {
-                this.set(field, this.previous(field));
-            }
-        });
-
-        // render mobiledoc to HTML. Switch render version if Koenig is enabled
-        // or has been edited with Koenig and is no longer compatible with the
-        // Ghost 1.0 markdown-only renderer
-        // TODO: re-render all content and remove the version toggle for Ghost 2.0
-        if (mobiledoc) {
-            let version = 1;
-            let koenigEnabled = labs.isSet('koenigEditor') === true;
-
-            let mobiledocIsCompatibleWithV1 = function mobiledocIsCompatibleWithV1(doc) {
-                if (doc
-                    && doc.markups.length === 0
-                    && doc.cards.length === 1
-                    && doc.cards[0][0].match(/(?:card-)?markdown/)
-                    && doc.sections.length === 1
-                    && doc.sections[0].length === 2
-                    && doc.sections[0][0] === 10
-                    && doc.sections[0][1] === 0
-                ) {
-                    return true;
+        if (!options.migrating) {
+            generatedFields.forEach((field) => {
+                if (this.hasChanged(field)) {
+                    this.set(field, this.previous(field));
                 }
+            });
+        }
 
-                return false;
-            };
+        if (!this.get('mobiledoc')) {
+            this.set('mobiledoc', JSON.stringify(converters.mobiledocConverter.blankStructure()));
+        }
 
-            if (koenigEnabled || !mobiledocIsCompatibleWithV1(mobiledoc)) {
-                version = 2;
-            }
-
-            let html = converters.mobiledocConverter.render(mobiledoc, version);
-            this.set('html', html);
+        // render mobiledoc to HTML
+        if (this.hasChanged('mobiledoc') || !this.get('html')) {
+            this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
