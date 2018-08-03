@@ -86,7 +86,7 @@
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
         },
         "slack": {
-            "defaultValue": "[{\"url\":\"\"}]"
+            "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\"}]"
         },
         "unsplash": {
             "defaultValue": "{\"isActive\": true}"
