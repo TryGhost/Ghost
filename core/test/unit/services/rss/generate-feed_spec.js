@@ -124,7 +124,7 @@ describe('RSS: Generate Feed', function () {
             // item tags
             xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
             xmlData.should.match(/<description><!\[CDATA\[test stuff/);
-            xmlData.should.match(/<content:encoded><!\[CDATA\[<div class="kg-card-markdown"><h2 id="testing">testing<\/h2>\n/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<h2 id="testing">testing<\/h2>\n/);
             xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
             xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
             xmlData.should.match(/<category><!\[CDATA\[public\]\]/);
@@ -143,7 +143,7 @@ describe('RSS: Generate Feed', function () {
             // special/optional tags
             xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
             xmlData.should.match(/<description><!\[CDATA\[test stuff/);
-            xmlData.should.match(/<content:encoded><!\[CDATA\[<div class="kg-card-markdown"><h2 id="testing">testing<\/h2>\n/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<h2 id="testing">testing<\/h2>\n/);
             xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
             xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
             xmlData.should.not.match(/<dc:creator>/);
@@ -161,7 +161,7 @@ describe('RSS: Generate Feed', function () {
             // special/optional tags
             xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
             xmlData.should.match(/<description><!\[CDATA\[test stuff/);
-            xmlData.should.match(/<content:encoded><!\[CDATA\[<div class="kg-card-markdown"><h2 id="testing">testing<\/h2>\n/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<h2 id="testing">testing<\/h2>\n/);
             xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
             xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
 

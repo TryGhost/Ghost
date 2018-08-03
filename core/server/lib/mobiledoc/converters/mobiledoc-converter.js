@@ -88,14 +88,15 @@ class DomModifier {
 }
 
 module.exports = {
-    // version 1 === Ghost 1.0 markdown-only mobiledoc
-    // version 2 === Ghost 2.0 full mobiledoc
     render(mobiledoc, version) {
-        version = version || 1;
+        /**
+         * @deprecated: version 1 === Ghost 1.0 markdown-only mobiledoc
+         *              We keep the version 1 logic till Ghost 3.0 to be able to rollback posts.
+         *
+         * version 2 (latest) === Ghost 2.0 full mobiledoc
+         */
+        version = version || 2;
 
-        // pass the version through to the card renderers.
-        // create a new object here to avoid modifying the default options
-        // object because the version can change per-render until 2.0 is released
         let versionedOptions = Object.assign({}, options, {
             cardOptions: {version}
         });
@@ -116,8 +117,20 @@ module.exports = {
         let modifier = new DomModifier();
         modifier.modifyChildren(rendered.result);
 
-        let html = serializer.serializeChildren(rendered.result);
+        return serializer.serializeChildren(rendered.result);
+    },
 
-        return html;
+    blankStructure() {
+        return {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [],
+            sections: [
+                [1, 'p', [
+                    [0, [], 0, '']
+                ]]
+            ]
+        };
     }
 };

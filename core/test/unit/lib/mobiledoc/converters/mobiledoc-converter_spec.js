@@ -2,33 +2,7 @@ const should = require('should');
 const converter = require('../../../../../server/lib/mobiledoc/converters/mobiledoc-converter');
 
 describe('Mobiledoc converter', function () {
-    // version 1 === Ghost 1.0 markdown-only renderer
-    describe('version 1', function () {
-        it('renders correctly', function () {
-            let mobiledoc = {
-                version: '0.3.1',
-                atoms: [],
-                cards: [
-                    ['markdown',
-                        {
-                            pos: 'top',
-                            card_name: 'markdown',
-                            markdown: '#heading\n\n- list one\n- list two\n- list three'
-                        }
-                    ]
-                ],
-                markups: [],
-                sections: [
-                    [10, 0]
-                ]
-            };
-
-            converter.render(mobiledoc).should.eql('<div class="kg-card-markdown"><h1 id="heading">heading</h1>\n<ul>\n<li>list one</li>\n<li>list two</li>\n<li>list three</li>\n</ul>\n</div>');
-        });
-    });
-
-    // version 2 === Ghost 2.0 full Koenig renderer
-    describe('version 2', function () {
+    describe('default', function () {
         it('renders all default cards and atoms', function () {
             let mobiledoc = {
                 version: '0.3.1',
