@@ -9,7 +9,7 @@ module.exports = {
         let html = converters.markdownConverter.render(payload.markdown || '');
 
         /**
-         * @deprecated Ghost 1.0's markdown-only renderer wrapped cards
+         * @deprecated Ghost 1.0's markdown-only renderer wrapped cards. Remove in Ghost 3.0
          */
         if (version === 1) {
             html = `<div class="kg-card-markdown">${html}</div>`;

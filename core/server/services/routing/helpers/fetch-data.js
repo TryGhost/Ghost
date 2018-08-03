@@ -17,7 +17,7 @@ const queryDefaults = {
 /**
  * Default post query needs to always include author, authors & tags
  *
- * @deprecated: `author`, will be removed in Ghost 2.0
+ * @deprecated: `author`, will be removed in Ghost 3.0
  */
 _.extend(defaultPostQuery, queryDefaults, {
     options: {
