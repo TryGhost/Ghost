@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('importer:posts'),
     _ = require('lodash'),
     uuid = require('uuid'),
     BaseImporter = require('./base'),
+    converters = require('../../../../lib/mobiledoc/converters'),
     validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
@@ -159,6 +160,33 @@ class PostsImporter extends BaseImporter {
                 if (!model.comment_id) {
                     model.comment_id = model.id;
                 }
+            }
+
+            // CASE 1: you are importing old editor posts
+            // CASE 2: you are importing Koenig Beta posts
+            if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
+                let mobiledoc;
+
+                try {
+                    mobiledoc = JSON.parse(model.mobiledoc);
+
+                    if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
+                        model.mobiledoc = converters.mobiledocConverter.blankStructure();
+                        mobiledoc = model.mobiledoc;
+                    }
+                } catch (err) {
+                    mobiledoc = converters.mobiledocConverter.blankStructure();
+                }
+
+                mobiledoc.cards.forEach((card) => {
+                    if (card[0] === 'image') {
+                        card[1].cardWidth = card[1].imageStyle;
+                        delete card[1].imageStyle;
+                    }
+                });
+
+                model.mobiledoc = JSON.stringify(mobiledoc);
+                model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
             }
         });
 
