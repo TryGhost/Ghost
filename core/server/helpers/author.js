@@ -17,7 +17,7 @@ const proxy = require('./proxy'),
     templates = proxy.templates;
 
 /**
- * @deprecated: will be removed in Ghost 2.0
+ * @deprecated: will be removed in Ghost 3.0
  */
 module.exports = function author(options) {
     if (options.fn) {
