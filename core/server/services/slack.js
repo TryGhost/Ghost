@@ -52,7 +52,7 @@ function ping(post) {
             text: message,
             unfurl_links: true,
             icon_url: imageLib.blogIcon.getIconUrl(true),
-            username: 'Ghost'
+            username: slackSettings.username || 'Ghost'
         };
 
         return request(slackSettings.url, {
