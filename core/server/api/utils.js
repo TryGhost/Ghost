@@ -334,7 +334,7 @@ utils = {
             /**
              * Convert author property to author_id to match the name in the database.
              *
-             * @deprecated: `author`, will be removed in Ghost 2.0
+             * @deprecated: `author`, will be removed in Ghost 3.0
              */
             if (object.posts[0].hasOwnProperty('author')) {
                 object.posts[0].author_id = object.posts[0].author;
@@ -345,7 +345,7 @@ utils = {
              * Ensure correct incoming `post.authors` structure.
              *
              * NOTE:
-             * The `post.authors[*].id` attribute is required till we release Ghost 2.0.
+             * The `post.authors[*].id` attribute is required till we release Ghost 3.0.
              * Ghost 1.x keeps the deprecated support for `post.author_id`, which is the primary author id and needs to be
              * updated if the order of the `post.authors` array changes.
              * If we allow adding authors via the post endpoint e.g. `authors=[{name: 'newuser']` (no id property), it's hard
@@ -357,7 +357,7 @@ utils = {
              *
              * TLDR; You can only attach existing authors to a post.
              *
-             * @TODO: remove `id` restriction in Ghost 2.0
+             * @TODO: remove `id` restriction in Ghost 3.0
              */
             if (object.posts[0].hasOwnProperty('authors')) {
                 if (!_.isArray(object.posts[0].authors) ||

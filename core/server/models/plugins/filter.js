@@ -162,7 +162,7 @@ filter = function filter(Bookshelf) {
             }
 
             /**
-             * @deprecated: `author`, will be removed in Ghost 2.0
+             * @deprecated: `author`, will be removed in Ghost 3.0
              */
             if (joinTables && joinTables.indexOf('author') > -1) {
                 this

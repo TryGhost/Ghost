@@ -94,7 +94,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     // Format Data
     var data = {
         message: err.message,
-        // @deprecated
+        // @deprecated Remove in Ghost 3.0
         code: err.statusCode,
         statusCode: err.statusCode,
         errorDetails: err.errorDetails || []

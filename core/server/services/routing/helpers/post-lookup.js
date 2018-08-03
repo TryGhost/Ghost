@@ -33,7 +33,7 @@ function postLookup(postUrl, routerOptions) {
     /**
      * Query database to find post.
      *
-     * @deprecated: `author`, will be removed in Ghost 2.0
+     * @deprecated: `author`, will be removed in Ghost 3.0
      */
     return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
         .then(function then(result) {

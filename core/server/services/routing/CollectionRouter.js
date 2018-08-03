@@ -35,7 +35,7 @@ class CollectionRouter extends ParentRouter {
         this.limit = object.limit;
 
         /**
-         * @deprecated Remove in Ghost 2.0
+         * @deprecated Remove in Ghost 3.0 (in discussion)
          */
         if (this.permalinks.originalValue.match(/globals\.permalinks/)) {
             this.permalinks.originalValue = this.permalinks.originalValue.replace('{globals.permalinks}', '{settings.permalinks}');
@@ -122,7 +122,7 @@ class CollectionRouter extends ParentRouter {
 
     _listeners() {
         /**
-         * @deprecated Remove in Ghost 2.0
+         * @deprecated Remove in Ghost 3.0
          */
         if (this.getPermalinks() && this.getPermalinks().originalValue.match(/settings\.permalinks/)) {
             this._onPermalinksEditedListener = this._onPermalinksEdited.bind(this);

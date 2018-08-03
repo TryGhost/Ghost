@@ -70,7 +70,7 @@ DataImporter = {
             });
         }
 
-        // CASE: We deny LTS imports (from 1.0 we use the Ghost version you are on)
+        // CASE: We deny LTS imports. We can determine that because since Ghost 1.0 we export the Ghost version your blog is on.
         // @TODO: add migration guide link
         if (!semver.valid(importData.meta.version)) {
             return Promise.reject(new common.errors.InternalServerError({
