@@ -52,7 +52,6 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
             twitter: settingsCache.get('twitter'),
             timezone: settingsCache.get('active_timezone'),
             navigation: settingsCache.get('navigation'),
-            permalinks: settingsCache.get('permalinks'),
             icon: settingsCache.get('icon'),
             cover_image: settingsCache.get('cover_image'),
             logo: settingsCache.get('logo'),

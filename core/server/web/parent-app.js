@@ -12,7 +12,7 @@ var debug = require('ghost-ignition').debug('app'),
     ghostLocals = require('./middleware/ghost-locals'),
     logRequest = require('./middleware/log-request');
 
-module.exports = function setupParentApp() {
+module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
     var parentApp = express();
 
@@ -51,7 +51,7 @@ module.exports = function setupParentApp() {
     parentApp.use('/ghost', require('./admin')());
 
     // BLOG
-    parentApp.use(require('./site')());
+    parentApp.use(require('./site')(options));
 
     debug('ParentApp setup end');
 

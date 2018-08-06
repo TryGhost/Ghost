@@ -45,6 +45,7 @@ describe('Settings API', function () {
 
                 JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
                 JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
+                should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
 
                 done();
             });
@@ -70,6 +71,21 @@ describe('Settings API', function () {
                 testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'updated_by']);
                 jsonResponse.settings[0].key.should.eql('title');
                 testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
+                done();
+            });
+    });
+
+    it('can\'t retrieve permalinks', function (done) {
+        request.get(testUtils.API.getApiQuery('settings/permalinks/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
                 done();
             });
     });
@@ -134,6 +150,26 @@ describe('Settings API', function () {
                         testUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
+            });
+    });
+
+    it('can\'t edit permalinks', function (done) {
+        const settingToChange = {
+            settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
+        };
+
+        request.put(testUtils.API.getApiQuery('settings/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .send(settingToChange)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                done();
             });
     });
 
@@ -212,7 +248,7 @@ describe('Settings API', function () {
             .then((res)=> {
                 res.headers['content-disposition'].should.eql('Attachment; filename="routes.yaml"');
                 res.headers['content-type'].should.eql('application/yaml; charset=utf-8');
-                res.headers['content-length'].should.eql('152');
+                res.headers['content-length'].should.eql('138');
             });
     });
 
