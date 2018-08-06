@@ -5,7 +5,6 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     sequence = require('../../../server/lib/promise/sequence'),
-    settingsCache = require('../../../server/services/settings/cache'),
     urlService = require('../../../server/services/url'),
     ghostBookshelf = require('../../../server/models/base'),
     models = require('../../../server/models'),
@@ -102,14 +101,6 @@ describe('Post Model', function () {
             });
 
             describe('findAll', function () {
-                beforeEach(function () {
-                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                        return {
-                            permalinks: '/:slug/'
-                        }[key];
-                    });
-                });
-
                 it('can findAll', function (done) {
                     models.Post.findAll().then(function (results) {
                         should.exist(results);
@@ -159,14 +150,6 @@ describe('Post Model', function () {
             });
 
             describe('findPage', function () {
-                beforeEach(function () {
-                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                        return {
-                            permalinks: '/:slug/'
-                        }[key];
-                    });
-                });
-
                 it('can findPage (default)', function (done) {
                     models.Post.findPage().then(function (results) {
                         should.exist(results);
@@ -364,14 +347,6 @@ describe('Post Model', function () {
             });
 
             describe('findOne', function () {
-                beforeEach(function () {
-                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                        return {
-                            permalinks: '/:slug/'
-                        }[key];
-                    });
-                });
-
                 it('can findOne', function (done) {
                     var firstPost;
 
@@ -416,14 +391,6 @@ describe('Post Model', function () {
                 });
 
                 it('can findOne, returning a dated permalink', function (done) {
-                    settingsCache.get.restore();
-
-                    sandbox.stub(settingsCache, 'get').callsFake(function (key) {
-                        return {
-                            permalinks: '/:year/:month/:day/:slug/'
-                        }[key];
-                    });
-
                     urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
 
                     models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})

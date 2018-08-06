@@ -27,7 +27,7 @@ class SettingsImporter extends BaseImporter {
     beforeImport() {
         debug('beforeImport');
 
-        let activeTheme = _.find(this.dataToImport, {key: 'active_theme'});
+        const activeTheme = _.find(this.dataToImport, {key: 'active_theme'});
 
         // We don't import themes. You have to upload the theme first.
         if (activeTheme) {
@@ -35,6 +35,20 @@ class SettingsImporter extends BaseImporter {
                 message: 'Theme not imported, please upload in Settings - Design',
                 help: this.modelName,
                 context: JSON.stringify(activeTheme)
+            });
+        }
+
+        const permalinks = _.find(this.dataToImport, {key: 'permalinks'});
+
+        if (permalinks) {
+            this.problems.push({
+                message: 'Permalink Setting was removed. Please configure permalinks in your routes.yaml.',
+                help: this.modelName,
+                context: JSON.stringify(permalinks)
+            });
+
+            this.dataToImport = _.filter(this.dataToImport, (data) => {
+                return data.key !== 'permalinks';
             });
         }
 

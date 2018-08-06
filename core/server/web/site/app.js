@@ -36,7 +36,7 @@ var debug = require('ghost-ignition').debug('blog'),
 
 let router;
 
-module.exports = function setupSiteApp() {
+module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
     var siteApp = express();
@@ -127,7 +127,7 @@ module.exports = function setupSiteApp() {
 
     debug('General middleware done');
 
-    router = siteRoutes();
+    router = siteRoutes(options);
 
     function SiteRouter(req, res, next) {
         router(req, res, next);
@@ -149,7 +149,7 @@ module.exports = function setupSiteApp() {
 
 module.exports.reload = () => {
     // https://github.com/expressjs/express/issues/2596
-    router = siteRoutes();
+    router = siteRoutes({start: true});
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)
     apps.init();

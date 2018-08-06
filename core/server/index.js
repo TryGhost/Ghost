@@ -18,6 +18,12 @@ const urlService = require('./services/url');
 let parentApp;
 
 function initialiseServices() {
+    // CASE: When Ghost is ready with bootstrapping (db migrations etc.), we can trigger the router creation.
+    //       Reason is that the routers access the routes.yaml, which shouldn't and doesn't have to be validated to
+    //       start Ghost in maintenance mode.
+    const routing = require('./services/routing');
+    routing.bootstrap.start();
+
     const permissions = require('./services/permissions'),
         auth = require('./services/auth'),
         apps = require('./services/apps'),

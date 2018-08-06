@@ -1,7 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
-    settingsCache = require('../../../../server/services/settings/cache'),
     common = require('../../../../server/lib/common'),
     urlService = require('../../../../server/services/url'),
     ParentRouter = require('../../../../server/services/routing/ParentRouter'),
@@ -11,8 +10,6 @@ describe('UNIT - services/routing/ParentRouter', function () {
     let req, res, next;
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
-
         sandbox.stub(common.events, 'emit');
         sandbox.stub(common.events, 'on');
 

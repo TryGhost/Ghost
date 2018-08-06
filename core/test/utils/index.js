@@ -48,7 +48,6 @@ var Promise = require('bluebird'),
     createUser,
     createPost,
     login,
-    togglePermalinks,
     startGhost,
     configureGhost,
 
@@ -792,42 +791,6 @@ login = function login(request) {
     });
 };
 
-togglePermalinks = function togglePermalinks(request, toggle) {
-    var permalinkString = toggle === 'date' ? '/:year/:month/:day/:slug/' : '/:slug/';
-
-    return new Promise(function (resolve, reject) {
-        doAuth(request).then(function (token) {
-            request.put('/ghost/api/v0.1/settings/')
-                .set('Authorization', 'Bearer ' + token)
-                .send({
-                    settings: [
-                        {
-                            uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
-                            key: 'permalinks',
-                            value: permalinkString,
-                            type: 'blog',
-                            created_at: '2014-10-16T17:39:16.005Z',
-                            created_by: 1,
-                            updated_at: '2014-10-20T19:44:18.077Z',
-                            updated_by: 1
-                        }
-                    ]
-                })
-                .end(function (err, res) {
-                    if (err) {
-                        return reject(err);
-                    }
-
-                    if (res.statusCode !== 200) {
-                        return reject(res.body);
-                    }
-
-                    resolve(res.body);
-                });
-        });
-    });
-};
-
 /**
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
@@ -1115,7 +1078,6 @@ module.exports = {
     createUser: createUser,
     createPost: createPost,
     login: login,
-    togglePermalinks: togglePermalinks,
 
     mockNotExistingModule: mockNotExistingModule,
     unmockNotExistingModule: unmockNotExistingModule,

@@ -35,6 +35,8 @@ describe('Exporter', function () {
                 should.exist(exportData.data[name]);
             });
 
+            should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
+
             // should not export sqlite data
             should.not.exist(exportData.data.sqlite_sequence);
             done();
