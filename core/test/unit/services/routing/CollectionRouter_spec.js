@@ -10,8 +10,6 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     let req, res, next;
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
-
         sandbox.stub(common.events, 'emit');
         sandbox.stub(common.events, 'on');
 
@@ -119,19 +117,6 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.getFilter().should.eql('featured:true');
         });
 
-        it('permalink placeholder', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/magic/{globals.permalinks}/'});
-
-            collectionRouter.getPermalinks().getValue().should.eql('/magic/:slug/');
-            common.events.on.calledTwice.should.be.true();
-        });
-
-        it('permalink placeholder', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
-
-            collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
-        });
-
         it('with templates', function () {
             const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
 
@@ -189,11 +174,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     describe('timezone changes', function () {
         describe('no dated permalink', function () {
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'});
 
                 sandbox.stub(collectionRouter, 'emit');
 
-                common.events.on.args[1][1]({
+                common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _updatedAttributes: {value: 'Europe/London'}
                 });
@@ -202,11 +187,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'});
 
                 sandbox.stub(collectionRouter, 'emit');
 
-                common.events.on.args[1][1]({
+                common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _updatedAttributes: {value: 'America/Los_Angeles'}
                 });
@@ -216,16 +201,12 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         describe('with dated permalink', function () {
-            beforeEach(function () {
-                settingsCache.get.withArgs('permalinks').returns('/:year/:slug/');
-            });
-
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'});
 
                 sandbox.stub(collectionRouter, 'emit');
 
-                common.events.on.args[1][1]({
+                common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _updatedAttributes: {value: 'Europe/London'}
                 });
@@ -234,48 +215,17 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'});
 
                 sandbox.stub(collectionRouter, 'emit');
 
-                common.events.on.args[1][1]({
+                common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _updatedAttributes: {value: 'America/Los_Angeles'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
             });
-        });
-    });
-
-    describe('permalink in database changes', function () {
-        it('permalink placeholder: flat', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '{globals.permalinks}'});
-
-            collectionRouter.mountRoute.callCount.should.eql(3);
-            collectionRouter.unmountRoute.callCount.should.eql(0);
-
-            collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
-
-            settingsCache.get.withArgs('permalinks').returns('/:primary_author/:slug/');
-
-            common.events.on.args[0][1]();
-
-            collectionRouter.mountRoute.callCount.should.eql(4);
-            collectionRouter.unmountRoute.callCount.should.eql(1);
-
-            collectionRouter.getPermalinks().getValue().should.eql('/:primary_author/:slug/');
-        });
-
-        it('permalink placeholder: complex', function () {
-            const collectionRouter = new CollectionRouter('/animals/', {permalink: '/animals/{globals.permalinks}/'});
-
-            collectionRouter.getPermalinks().getValue().should.eql('/animals/:slug/');
-            settingsCache.get.withArgs('permalinks').returns('/:primary_author/:slug/');
-
-            common.events.on.args[0][1]();
-
-            collectionRouter.getPermalinks().getValue().should.eql('/animals/:primary_author/:slug/');
         });
     });
 });

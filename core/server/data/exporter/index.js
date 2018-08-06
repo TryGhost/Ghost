@@ -7,6 +7,13 @@ var _ = require('lodash'),
     security = require('../../lib/security'),
     models = require('../../models'),
     EXCLUDED_TABLES = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
+    EXCLUDED_FIELDS_CONDITIONS = {
+        settings: [{
+            operator: 'whereNot',
+            key: 'key',
+            value: 'permalinks'
+        }]
+    },
     modelOptions = {context: {internal: true}},
 
     // private
@@ -52,7 +59,15 @@ getVersionAndTables = function getVersionAndTables(options) {
 exportTable = function exportTable(tableName, options) {
     if (EXCLUDED_TABLES.indexOf(tableName) < 0 ||
         (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)) {
-        return (options.transacting || db.knex)(tableName).select();
+        const query = (options.transacting || db.knex)(tableName);
+
+        if (EXCLUDED_FIELDS_CONDITIONS[tableName]) {
+            EXCLUDED_FIELDS_CONDITIONS[tableName].forEach((condition) => {
+                query[condition.operator](condition.key, condition.value);
+            });
+        }
+
+        return query.select();
     }
 };
 

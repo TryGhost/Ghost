@@ -3,11 +3,7 @@ const fs = require('fs-extra'),
     path = require('path'),
     debug = require('ghost-ignition').debug('services:settings:ensure-settings'),
     common = require('../../lib/common'),
-    security = require('../../lib/security'),
-    config = require('../../config'),
-    yamlMigrations = {
-        homeTemplate: 'cm91dGVzOmNvbGxlY3Rpb25zOi86cGVybWFsaW5rOid7Z2xvYmFscy5wZXJtYWxpbmtzfScjc3BlY2lhbDEuMGNvbXBhdGliaWxpdHlzZXR0aW5nLlNlZXRoZWRvY3Nmb3JkZXRhaWxzLnRlbXBsYXRlOi1ob21lLWluZGV4dGF4b25vbWllczp0YWc6L3RhZy97c2x1Z30vYXV0aG9yOi9hdXRob3Ive3NsdWd9L3wwUUg4SHRFQWZvbHBBSmVTYWkyOEwwSGFNMGFIOU5SczhZWGhMcExmZ2c0PQ=='
-    };
+    config = require('../../config');
 
 /**
  * Makes sure that all supported settings files are in the
@@ -29,21 +25,6 @@ module.exports = function ensureSettingsFiles(knownSettings) {
             filePath = path.join(contentPath, fileName);
 
         return fs.readFile(filePath, 'utf8')
-            .then((content) => {
-                content = content.replace(/\s/g, '');
-
-                /**
-                 * routes.yaml migrations:
-                 *
-                 * 1. We have removed the "home.hbs" template from the default collection, because
-                 * this is a hardcoded behaviour in Ghost. If we don't remove the home.hbs every page of the
-                 * index collection get's rendered with the home template, but this is not the correct behaviour
-                 * < 1.24. The index collection is `/`.
-                 */
-                if (security.tokens.generateFromContent({content: content}) === yamlMigrations.homeTemplate) {
-                    throw new common.errors.ValidationError({code: 'ENOENT'});
-                }
-            })
             .catch({code: 'ENOENT'}, () => {
                 // CASE: file doesn't exist, copy it from our defaults
                 return fs.copy(
