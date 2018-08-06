@@ -2,9 +2,14 @@
 // RESTful API for the Setting resource
 var Promise = require('bluebird'),
     _ = require('lodash'),
+    moment = require('moment-timezone'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    config = require('../config'),
     models = require('../models'),
     canThis = require('../services/permissions').canThis,
     localUtils = require('./utils'),
+    urlService = require('../services/url'),
     common = require('../lib/common'),
     settingsCache = require('../services/settings/cache'),
     docName = 'settings',
@@ -236,6 +241,70 @@ settings = {
                 return settingsResult(settingsKeyedJSON, type);
             });
         });
+    },
+
+    /**
+     * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature
+     * we have added. That's why the `routes.yaml` file is treated as a "setting" right now.
+     * If we want to add single permissions for this file (e.g. upload/download routes.yaml), we can add later.
+     *
+     * How does it work?
+     *
+     * - we first reset all url generators (each url generator belongs to one express router)
+     *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
+     * - then we reload the whole site app, which will reset all routers and re-create the url generators
+     */
+    upload: (options) => {
+        const backupRoutesPath = path.join(config.getContentPath('settings'), `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
+
+        return localUtils.handlePermissions('settings', 'edit')(options)
+            .then(() => {
+                return fs.copy(config.getContentPath('settings') + '/routes.yaml', backupRoutesPath);
+            })
+            .then(() => {
+                return fs.copy(options.path, config.getContentPath('settings') + '/routes.yaml');
+            })
+            .then(() => {
+                urlService.resetGenerators({releaseResourcesOnly: true});
+            })
+            .then(() => {
+                const siteApp = require('../web/site/app');
+
+                try {
+                    return siteApp.reload();
+                } catch (err) {
+                    // bring back backup, otherwise your Ghost blog is broken
+                    return fs.copy(backupRoutesPath, config.getContentPath('settings') + '/routes.yaml')
+                        .then(() => {
+                            return siteApp.reload();
+                        })
+                        .then(() => {
+                            throw err;
+                        });
+                }
+            });
+    },
+
+    download: (options) => {
+        const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
+
+        return localUtils.handlePermissions('settings', 'browse')(options)
+            .then(() => {
+                return fs.readFile(routesPath, 'utf-8');
+            })
+            .catch(function handleError(err) {
+                if (err.code === 'ENOENT') {
+                    return Promise.resolve([]);
+                }
+
+                if (common.errors.utils.isIgnitionError(err)) {
+                    throw err;
+                }
+
+                throw new common.errors.NotFoundError({
+                    err: err
+                });
+            });
     }
 };
 

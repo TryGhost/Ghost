@@ -2,22 +2,22 @@
 # yarn lockfile v1
 
 
-"@nexes/mongo-knex@0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.0.tgz#7a44a7263d8830c8416b90ba3c963c2c722e7b72"
+"@nexes/mongo-knex@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.1.tgz#141c8ca380e95c1460fe2abcd777d7fd2bb14e8f"
   dependencies:
     lodash "^4.17.10"
 
-"@nexes/nql-lang@0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.0.tgz#eb0fb807aea8aa64d3d0b454f3d1167af394f39a"
-
-"@nexes/nql@0.0.1":
+"@nexes/nql-lang@0.0.1":
   version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.0.1.tgz#e8f5e5352badeffd67e371f22bccd41fa0c20c24"
+  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
+
+"@nexes/nql@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.1.0.tgz#b63614d5874bebb387b58d3f1b9fb9602115cf62"
   dependencies:
-    "@nexes/mongo-knex" "0.0.0"
-    "@nexes/nql-lang" "0.0.0"
+    "@nexes/mongo-knex" "0.0.1"
+    "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
 "@segment/loosely-validate-event@^1.1.2":
@@ -3316,9 +3316,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@3.1.6:
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.1.6.tgz#480928a060595045acd06253e245920a7bc9544b"
+knex-migrator@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.0.tgz#8d8775f4d04156b27878b3d17e81b143f9752982"
   dependencies:
     bluebird "^3.4.6"
     commander "2.15.1"

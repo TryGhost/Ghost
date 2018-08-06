@@ -4,7 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     db = require('../../../../server/data/db'),
     common = require('../../../../server/lib/common'),
-    exporter = rewire('../../../../server/data/export'),
+    exporter = rewire('../../../../server/data/exporter'),
     schema = require('../../../../server/data/schema'),
     models = require('../../../../server/models'),
     schemaTables = Object.keys(schema.tables),
@@ -25,7 +25,7 @@ describe('Exporter', function () {
     describe('doExport', function () {
         beforeEach(function () {
             exporter.__set__('ghostVersion', {
-                full: '1.0.0'
+                full: '2.0.0'
             });
 
             tablesStub = sandbox.stub(schema.commands, 'getTables').returns(schemaTables);
@@ -52,7 +52,7 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                exportData.meta.version.should.eql('1.0.0');
+                exportData.meta.version.should.eql('2.0.0');
 
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();
@@ -97,7 +97,7 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                exportData.meta.version.should.eql('1.0.0');
+                exportData.meta.version.should.eql('2.0.0');
 
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();

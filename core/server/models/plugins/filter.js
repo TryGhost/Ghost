@@ -28,7 +28,7 @@ filterUtils = {
                 err: err,
                 property: 'filter',
                 context: common.i18n.t('errors.models.plugins.filter.errorParsing'),
-                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'https://api.ghost.org/v1.22.0/docs/filter'})
+                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'https://api.ghost.org/docs/filter'})
             });
         }
 
@@ -162,7 +162,7 @@ filter = function filter(Bookshelf) {
             }
 
             /**
-             * @deprecated: `author`, will be removed in Ghost 2.0
+             * @deprecated: `author`, will be removed in Ghost 3.0
              */
             if (joinTables && joinTables.indexOf('author') > -1) {
                 this

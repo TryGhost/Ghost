@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('importer:posts'),
     _ = require('lodash'),
     uuid = require('uuid'),
     BaseImporter = require('./base'),
+    converters = require('../../../../lib/mobiledoc/converters'),
     validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
@@ -13,10 +14,6 @@ class PostsImporter extends BaseImporter {
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
-
-        this.legacyKeys = {
-            image: 'feature_image'
-        };
     }
 
     sanitizeAttributes() {
@@ -146,47 +143,50 @@ class PostsImporter extends BaseImporter {
 
     beforeImport() {
         debug('beforeImport');
-        let mobileDocContent;
 
         this.sanitizeAttributes();
         this.addNestedRelations();
 
-        // Remove legacy field language
-        this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return _.omit(data, 'language');
-        });
-
-        this.dataToImport = this.dataToImport.map(this.legacyMapper);
-
-        // For legacy imports/custom imports with only html we can parse the markdown or html into a mobile doc card
-        // For now we can hardcode the version
         _.each(this.dataToImport, (model) => {
-            if (!model.mobiledoc) {
-                if (model.markdown && model.markdown.length > 0) {
-                    mobileDocContent = model.markdown;
-                } else if (model.html && model.html.length > 0) {
-                    mobileDocContent = model.html;
-                } else {
-                    // Set mobileDocContent to null else it will affect empty posts
-                    mobileDocContent = null;
-                }
-                if (mobileDocContent) {
-                    model.mobiledoc = JSON.stringify({
-                        version: '0.3.1',
-                        markups: [],
-                        atoms: [],
-                        cards: [['card-markdown', {cardName: 'card-markdown', markdown: mobileDocContent}]],
-                        sections: [[10, 0]]
-                    });
+            // NOTE: we remember the original post id for disqus
+            // (see https://github.com/TryGhost/Ghost/issues/8963)
+
+            // CASE 1: you import a 1.0 export (amp field contains the correct disqus id)
+            // CASE 2: you import a 2.0 export (we have to ensure we use the original post id as disqus id)
+            if (model.id && model.amp) {
+                model.comment_id = model.amp;
+                delete model.amp;
+            } else {
+                if (!model.comment_id) {
+                    model.comment_id = model.id;
                 }
             }
 
-            // NOTE: we remember the old post id for disqus
-            // We also check if amp already exists to prevent
-            // overwriting any comment ids from a 1.0 export
-            // (see https://github.com/TryGhost/Ghost/issues/8963)
-            if (model.id && !model.amp) {
-                model.amp = model.id.toString();
+            // CASE 1: you are importing old editor posts
+            // CASE 2: you are importing Koenig Beta posts
+            if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
+                let mobiledoc;
+
+                try {
+                    mobiledoc = JSON.parse(model.mobiledoc);
+
+                    if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
+                        model.mobiledoc = converters.mobiledocConverter.blankStructure();
+                        mobiledoc = model.mobiledoc;
+                    }
+                } catch (err) {
+                    mobiledoc = converters.mobiledocConverter.blankStructure();
+                }
+
+                mobiledoc.cards.forEach((card) => {
+                    if (card[0] === 'image') {
+                        card[1].cardWidth = card[1].imageStyle;
+                        delete card[1].imageStyle;
+                    }
+                });
+
+                model.mobiledoc = JSON.stringify(mobiledoc);
+                model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
             }
         });
 

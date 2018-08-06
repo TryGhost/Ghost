@@ -4,14 +4,14 @@
 The project is maintained by a non-profit organisation called the **Ghost Foundation**, along with an amazing group of independent [contributors](https://github.com/TryGhost/Ghost/contributors). We're trying to make publishing software that changes the shape of online journalism.
 
 - [Ghost.org](https://ghost.org)
-- [Supported Node Versions](https://docs.ghost.org/v1/docs/supported-node-versions)
+- [Supported Node Versions](https://docs.ghost.org/docs/supported-node-versions)
 - [Latest Release](https://ghost.org/developers/)
 - [Help & Support](https://help.ghost.org/)
-- [Theme Docs](https://themes.ghost.org/v1.23.0/)
-- [API Docs](https://api.ghost.org/v1.22.0/)
-- [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
+- [Theme Docs](https://themes.ghost.org/)
+- [API Docs](https://api.ghost.org/)
+- [Contributing Guide](https://docs.ghost.org/docs/contributing)
 - [Developer Blog](https://blog.ghost.org)
-- [Self-hoster Docs](https://docs.ghost.org/v1/)
+- [Self-hoster Docs](https://docs.ghost.org/)
 
 **NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [forum](https://forum.ghost.org/) rather than opening an issue.**
 
@@ -33,29 +33,29 @@ Not only will it save you hours of maintenance per month, but all revenue goes t
 
 Other options are also available if you prefer playing around with servers by yourself, of course. The freedom of choice is in your hands.
 
-- [Self-hosting Guide](https://docs.ghost.org/v1/docs/getting-started-guide)
+- [Self-hosting Guide](https://docs.ghost.org/docs/getting-started-guide)
 
 
 # Theme Developers
 
 If you are developing a Ghost theme for your own site or creating themes for others to use we recommend installing Ghost on your own local machine. Luckily we have a brand new Ghost CLI to make this really easy 😄
 
-- [Installing Ghost via the CLI](https://docs.ghost.org/v1/docs/install-local)
-- [Theme Developer Docs](https://themes.ghost.org/v1.23.0/)
+- [Installing Ghost via the CLI](https://docs.ghost.org/docs/install-local)
+- [Theme Developer Docs](https://themes.ghost.org)
 
 
 # Contributors & Advanced Developers
 
 For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our development setup guides:
 
-- [General Contributor Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Developer Setup Instructions](https://docs.ghost.org/v1/docs/working-with-ghost)
-- [Admin Client development guide](https://docs.ghost.org/v1/docs/working-with-the-admin-client)
+- [General Contributor Guide](https://docs.ghost.org/docs/contributing)
+- [Developer Setup Instructions](https://docs.ghost.org/docs/working-with-ghost)
+- [Admin Client development guide](https://docs.ghost.org/docs/working-with-the-admin-client)
 
 
 # Staying Up to Date
 
-When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/v1/docs/upgrade) for what to do next.
+When a new version of Ghost comes out, you'll want to look over these [upgrade instructions](https://docs.ghost.org/docs/upgrade) for what to do next.
 
 You can talk to other Ghost users and developers in our [forum](https://forum.ghost.org/) (it's pretty awesome).
 

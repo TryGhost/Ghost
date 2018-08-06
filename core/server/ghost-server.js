@@ -94,7 +94,7 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             debug('...Started');
-            common.events.emit('server.start');
+
             self.logStartMessages();
             resolve(self);
         });
@@ -229,3 +229,86 @@ GhostServer.prototype.logShutdownMessages = function () {
 };
 
 module.exports = GhostServer;
+
+module.exports.announceServerStart = function announceServerStart() {
+    common.events.emit('server.start');
+
+    // CASE: IPC communication to the CLI via child process.
+    if (process.send) {
+        process.send({
+            started: true
+        });
+    }
+
+    // CASE: Ghost extension - bootstrap sockets
+    if (config.get('bootstrap-socket')) {
+        const socketAddress = config.get('bootstrap-socket');
+        const net = require('net');
+        const client = new net.Socket();
+
+        return new Promise((resolve) => {
+            const waitTimeout = setTimeout(() => {
+                client.destroy();
+                resolve();
+            }, 1000 * 5);
+
+            client.connect(socketAddress.port, socketAddress.host, () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                client.write(JSON.stringify({started: true}));
+                resolve();
+            });
+
+            client.on('close', () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+            });
+        });
+    }
+
+    return Promise.resolve();
+};
+
+module.exports.announceServerStopped = function announceServerStopped(error) {
+    // CASE: IPC communication to the CLI via child process.
+    if (process.send) {
+        process.send({
+            started: false,
+            error: error
+        });
+    }
+
+    // CASE: Ghost extension - bootstrap sockets
+    if (config.get('bootstrap-socket')) {
+        const socketAddress = config.get('bootstrap-socket');
+        const net = require('net');
+        const client = new net.Socket();
+
+        return new Promise((resolve) => {
+            const waitTimeout = setTimeout(() => {
+                client.destroy();
+                resolve();
+            }, 1000 * 5);
+
+            client.connect(socketAddress.port, socketAddress.host, () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                client.write(JSON.stringify({started: false, error: error}));
+                resolve();
+            });
+
+            client.on('close', () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+            });
+        });
+    }
+
+    return Promise.resolve();
+};
