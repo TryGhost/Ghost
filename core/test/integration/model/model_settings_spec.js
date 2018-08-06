@@ -1,4 +1,5 @@
 var should = require('should'),
+    _ = require('lodash'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
 
@@ -35,6 +36,7 @@ describe('Settings Model', function () {
                 should.exist(results);
 
                 results.length.should.be.above(0);
+                should.exist(_.find(results.models, {attributes: {key : 'permalinks'}}));
 
                 done();
             }).catch(done);

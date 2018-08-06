@@ -98,7 +98,7 @@ describe('Themes', function () {
                 themeDataExpectedProps = ['posts_per_page'],
                 blogDataExpectedProps = [
                     'url', 'title', 'description', 'logo', 'cover_image', 'icon', 'twitter', 'facebook', 'navigation',
-                    'permalinks', 'timezone', 'amp'
+                    'timezone', 'amp'
                 ],
                 updateOptionsStub;
 

@@ -148,7 +148,7 @@ settings = {
             // Omit core settings unless internal request
             if (!options.context.internal) {
                 result.settings = _.filter(result.settings, function (setting) {
-                    return setting.type !== 'core';
+                    return setting.type !== 'core' && setting.key !== 'permalinks';
                 });
             }
 
@@ -181,6 +181,12 @@ settings = {
             return Promise.reject(
                 new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
             );
+        }
+
+        if (setting.key === 'permalinks') {
+            return Promise.reject(new common.errors.NotFoundError({
+                message: common.i18n.t('errors.errors.resourceNotFound')
+            }));
         }
 
         if (setting.type === 'blog') {
@@ -221,6 +227,7 @@ settings = {
         type = _.find(object.settings, function (setting) {
             return setting.key === 'type';
         });
+
         if (_.isObject(type)) {
             type = type.value;
         }
@@ -228,6 +235,12 @@ settings = {
         object.settings = _.reject(object.settings, function (setting) {
             return setting.key === 'type';
         });
+
+        if (object.settings[0].key === 'permalinks') {
+            return Promise.reject(new common.errors.NotFoundError({
+                message: common.i18n.t('errors.errors.resourceNotFound')
+            }));
+        }
 
         return canEditAllSettings(object.settings, options).then(function () {
             return localUtils.checkObject(object, docName).then(function (checkedData) {
