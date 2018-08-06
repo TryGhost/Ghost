@@ -243,7 +243,7 @@ _private.validateCollections = function validateCollections(collections) {
         }
 
         // CASE: we hard-require trailing slashes for the value/permalink route
-        if (!routingTypeObject.permalink.match(/\/$/) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
+        if (!routingTypeObject.permalink.match(/\/$/)) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObject.permalink,
@@ -253,7 +253,7 @@ _private.validateCollections = function validateCollections(collections) {
         }
 
         // CASE: we hard-require leading slashes for the value/permalink route
-        if (!routingTypeObject.permalink.match(/^\//) && !routingTypeObject.permalink.match(/globals\.permalinks/)) {
+        if (!routingTypeObject.permalink.match(/^\//)) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObject.permalink,

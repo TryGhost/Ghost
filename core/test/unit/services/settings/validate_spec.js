@@ -191,27 +191,6 @@ describe('UNIT: services/settings/validate', function () {
         throw new Error('should fail');
     });
 
-    it('no validation error for {globals.permalinks}', function () {
-        const object = validate({
-            collections: {
-                '/magic/': {
-                    permalink: '{globals.permalinks}'
-                }
-            }
-        });
-
-        object.should.eql({
-            taxonomies: {},
-            routes: {},
-            collections: {
-                '/magic/': {
-                    permalink: '{globals.permalinks}',
-                    templates: []
-                }
-            }
-        });
-    });
-
     it('no validation error for routes', function () {
         validate({
             routes: {

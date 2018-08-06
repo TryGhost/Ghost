@@ -1,6 +1,5 @@
 const should = require('should'),
     sinon = require('sinon'),
-    settingsCache = require('../../../../server/services/settings/cache'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     StaticRoutesRouter = require('../../../../server/services/routing/StaticRoutesRouter'),
@@ -15,8 +14,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
-
         sandbox.stub(common.events, 'emit');
         sandbox.stub(common.events, 'on');
 
