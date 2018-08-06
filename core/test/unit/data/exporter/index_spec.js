@@ -31,6 +31,7 @@ describe('Exporter', function () {
             tablesStub = sandbox.stub(schema.commands, 'getTables').returns(schemaTables);
 
             queryMock = {
+                whereNot: sandbox.stub(),
                 select: sandbox.stub()
             };
 
@@ -57,6 +58,7 @@ describe('Exporter', function () {
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();
                 queryMock.select.called.should.be.true();
+                queryMock.whereNot.calledOnce.should.be.true();
 
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);

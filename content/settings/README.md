@@ -11,7 +11,7 @@ routes:
 
 collections:
   /:
-    permalink: '{globals.permalinks}'
+    permalink: '/{slug}/'
     template:
       - index
 
