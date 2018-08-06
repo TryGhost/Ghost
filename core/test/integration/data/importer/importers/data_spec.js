@@ -839,7 +839,7 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('does not import slack hook', function () {
+        it('does not import settings: slack hook, permalinks', function () {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
@@ -847,12 +847,22 @@ describe('Integration: Importer', function () {
                 value: '[{\\"url\\":\\"https://hook.slack.com\\"}]'
             });
 
+            exportData.data.settings[1] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'permalinks',
+                value: '/:primary_author/:slug/'
+            });
+
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(0);
+                    imported.problems.length.should.eql(1);
                     return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal));
-                }).then(function (result) {
+                })
+                .then(function (result) {
                     result.attributes.value.should.eql('[{"url":""}]');
+                    return models.Settings.findOne(_.merge({key: 'permalinks'}, testUtils.context.internal));
+                })
+                .then((result) => {
+                    result.attributes.value.should.eql('/:slug/');
                 });
         });
 
