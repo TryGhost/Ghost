@@ -14,10 +14,11 @@ export default [
 
 export const CARD_MENU = [
     {
-        title: 'Basic',
+        title: 'Primary',
         items: [{
             label: 'Image',
-            icon: 'koenig/image',
+            icon: 'koenig/kg-card-type-image',
+            iconClass: 'kg-card-type-native',
             matches: ['image', 'img'],
             type: 'card',
             replaceArg: 'image',
@@ -25,21 +26,24 @@ export const CARD_MENU = [
         },
         {
             label: 'Markdown',
-            icon: 'koenig/markdown',
+            icon: 'koenig/kg-card-type-markdown',
+            iconClass: 'kg-card-type-native',
             matches: ['markdown', 'md'],
             type: 'card',
             replaceArg: 'markdown'
         },
         {
             label: 'HTML',
-            icon: 'koenig/html',
+            icon: 'koenig/kg-card-type-html',
+            iconClass: 'kg-card-type-native',
             matches: ['html'],
             type: 'card',
             replaceArg: 'html'
         },
         {
             label: 'Divider',
-            icon: 'koenig/divider',
+            icon: 'koenig/kg-card-type-divider',
+            iconClass: 'kg-card-type-native',
             matches: ['divider', 'horizontal-rule', 'hr'],
             type: 'card',
             replaceArg: 'hr'
@@ -49,7 +53,7 @@ export const CARD_MENU = [
         title: 'Embed',
         items: [{
             label: 'YouTube',
-            icon: 'koenig/youtube',
+            icon: 'koenig/kg-card-type-youtube',
             matches: ['youtube'],
             type: 'card',
             replaceArg: 'embed',
@@ -57,7 +61,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Twitter',
-            icon: 'koenig/twitter',
+            icon: 'koenig/kg-card-type-twitter',
             matches: ['twitter'],
             type: 'card',
             replaceArg: 'embed',
@@ -65,31 +69,58 @@ export const CARD_MENU = [
         },
         {
             label: 'Facebook',
-            icon: 'koenig/facebook',
+            icon: 'koenig/kg-card-type-facebook',
             matches: ['facebook'],
             type: 'card',
             replaceArg: 'embed',
             params: ['url']
         },
         {
-            label: 'SoundCloud',
-            icon: 'koenig/soundcloud',
-            matches: ['soundcloud'],
+            label: 'Instagram',
+            icon: 'koenig/kg-card-type-instagram',
+            matches: ['instagram'],
+            type: 'card',
+            replaceArg: 'embed',
+            params: ['url']
+        },
+        {
+            label: 'Unsplash',
+            icon: 'koenig/kg-card-type-unsplash',
+            iconClass: 'kg-card-type-unsplash',
+            matches: ['unsplash'],
+            type: 'card',
+            replaceArg: 'embed',
+            params: ['url']
+        },
+        {
+            label: 'Vimeo',
+            icon: 'koenig/kg-card-type-vimeo',
+            matches: ['vimeo'],
             type: 'card',
             replaceArg: 'embed',
             params: ['url']
         },
         {
             label: 'CodePen',
-            icon: 'koenig/codepen',
+            icon: 'koenig/kg-card-type-codepen',
+            iconClass: 'kg-card-type-codepen',
             matches: ['codepen'],
             type: 'card',
             replaceArg: 'embed',
             params: ['url']
         },
         {
+            label: 'SoundCloud',
+            icon: 'koenig/kg-card-type-soundcloud',
+            matches: ['soundcloud'],
+            type: 'card',
+            replaceArg: 'embed',
+            params: ['url']
+        },
+        {
             label: 'Other...',
-            icon: 'koenig/code-block',
+            icon: 'koenig/kg-card-type-other',
+            iconClass: 'kg-card-type-native',
             matches: ['embed'],
             type: 'card',
             replaceArg: 'embed',
