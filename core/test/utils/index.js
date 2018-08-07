@@ -1032,10 +1032,12 @@ module.exports = {
         },
 
         urlService: {
-            waitTillFinished: function () {
+            waitTillFinished: function (options = {dbIsReady: false}) {
                 let timeout;
 
-                common.events.emit('db.ready');
+                if (!options.dbIsReady) {
+                    common.events.emit('db.ready');
+                }
 
                 return new Promise(function (resolve) {
                     (function retry() {
