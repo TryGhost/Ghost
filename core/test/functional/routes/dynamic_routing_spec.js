@@ -6,10 +6,11 @@ const should = require('should'),
     supertest = require('supertest'),
     sinon = require('sinon'),
     moment = require('moment'),
+    path = require('path'),
     testUtils = require('../../utils'),
     cheerio = require('cheerio'),
     config = require('../../../../core/server/config'),
-    urlService = require('../../../../core/server/services/url'),
+    api = require('../../../../core/server/api'),
     settingsCache = require('../../../server/services/settings/cache'),
     ghost = testUtils.startGhost,
     sandbox = sinon.sandbox.create();
@@ -17,7 +18,7 @@ const should = require('should'),
 let request;
 
 describe('Dynamic Routing', function () {
-    var ghostServer;
+    let ghostServer;
 
     function doEnd(done) {
         return function (err, res) {
@@ -690,6 +691,125 @@ describe('Dynamic Routing', function () {
                         .end(doEnd(done));
                 });
             });
+        });
+    });
+
+    describe('Reload routes.yaml', function () {
+        before(function (done) {
+            testUtils.clearData().then(function () {
+                // we initialise data, but not a user. No user should be required for navigating the frontend
+                return testUtils.initData();
+            }).then(function () {
+                return testUtils.fixtures.overrideOwnerUser('ghost-owner');
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        after(testUtils.teardown);
+        after(function () {
+            return ghostServer.stop();
+        });
+
+        it('confirm current routing pattern', function (done) {
+            request.get('/welcome/')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('simulate upload of routes.yaml', function () {
+            return api.settings.upload({
+                context: testUtils.context.internal.context,
+                path: path.join(config.get('paths:appRoot'), 'core', 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
+            }).then(() => {
+                return testUtils.integrationTesting.urlService.waitTillFinished({dbIsReady: true});
+            });
+        });
+
+        it('serve welcome post with old permalink structure', function (done) {
+            request.get('/welcome/')
+                .expect(404)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('serve welcome post with new permalink structure', function (done) {
+            const year = moment().year();
+            request.get(`/blog/${year}/welcome/`)
+                .expect(200)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('serve welcome post with new permalink structure and old date', function (done) {
+            request.get('/blog/2016/welcome/')
+                .expect(301)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('serve serve rss', function (done) {
+            request.get('/blog/rss/')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const content = res.text;
+                    const todayMoment = moment();
+                    const year = todayMoment.format('YYYY');
+                    const postLink = `/blog/${year}/welcome/`;
+
+                    content.indexOf(postLink).should.be.above(0);
+
+                    done();
+                });
+        });
+
+        it('serve collection index', function (done) {
+            request.get('/blog/')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('serve tag', function (done) {
+            request.get('/category/getting-started/')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
         });
     });
 });
