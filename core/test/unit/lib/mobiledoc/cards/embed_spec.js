@@ -63,10 +63,10 @@ describe('Embed card', function () {
             },
             payload: {
                 html: 'Testing',
-                caption: 'Caption'
+                caption: '<strong>Caption</strong>'
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card">Testing<figcaption>Caption</figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
     });
 });
