@@ -3,7 +3,7 @@ import {isArray} from '@ember/array';
 
 export function cleanBasicHtml(html = '') {
     if (isArray(html)) {
-        html = html[0];
+        html = html[0] || '';
     }
 
     let cleanHtml = html
