@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import countWords from '../utils/count-words';
+import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-embed';
 import noframe from 'noframe.js';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
@@ -38,7 +38,7 @@ export default Component.extend({
     counts: computed('payload.{html,caption}', function () {
         return {
             imageCount: this.payload.html ? 1 : 0,
-            wordCount: countWords(this.payload.caption)
+            wordCount: countWords(stripTags(this.payload.caption))
         };
     }),
 

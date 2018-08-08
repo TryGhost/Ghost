@@ -19,39 +19,43 @@
             {{svg-jar "koenig/kg-italic" class=(concat (if (or activeMarkupTagNames.isEm activeMarkupTagNames.isI) "fill-blue-l2" "fill-white") " w4 h4")}}
         </button>
     </li>
-    <li class="ma0 lh-solid">
-        <button
-            type="button"
-            title="Heading One"
-            class="dib dim-lite link h10 w9 nudge-top--1"
-            {{action "toggleHeaderSection" "h1"}}
-        >
-            {{svg-jar "koenig/kg-heading-1" class=(concat (if activeSectionTagNames.isH1 "fill-blue-l2" "fill-white") " w4 h4")}}
-        </button>
-    </li>
-    <li class="ma0 lh-solid">
-        <button
-            type="button"
-            title="Heading Two"
-            class="dib dim-lite link h10 w9 nudge-top--1"
-            {{action "toggleHeaderSection" "h2"}}
-        >
-            {{svg-jar "koenig/kg-heading-2" class=(concat (if activeSectionTagNames.isH2 "fill-blue-l2" "fill-white") " w4 h4")}}
-        </button>
-    </li>
+    {{#unless basicOnly}}
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Heading One"
+                class="dib dim-lite link h10 w9 nudge-top--1"
+                {{action "toggleHeaderSection" "h1"}}
+            >
+                {{svg-jar "koenig/kg-heading-1" class=(concat (if activeSectionTagNames.isH1 "fill-blue-l2" "stroke-white") " w4 h4")}}
+            </button>
+        </li>
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Heading Two"
+                class="dib dim-lite link h10 w9 nudge-top--1"
+                {{action "toggleHeaderSection" "h2"}}
+            >
+                {{svg-jar "koenig/kg-heading-2" class=(concat (if activeSectionTagNames.isH2 "fill-blue-l2" "stroke-white") " w4 h4")}}
+            </button>
+        </li>
+    {{/unless}}
 
     <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5"></li>
 
-    <li class="ma0 lh-solid">
-        <button
-            type="button"
-            title="Quote"
-            class="dib dim-lite link h10 w9 nudge-top--1"
-            {{action "toggleSection" "blockquote"}}
-        >
-            {{svg-jar "koenig/kg-quote" class=(concat (if activeSectionTagNames.isBlockquote "fill-blue-l2" "fill-white") " w4 h4")}}
-        </button>
-    </li>
+    {{#unless basicOnly}}
+        <li class="ma0 lh-solid">
+            <button
+                type="button"
+                title="Quote"
+                class="dib dim-lite link h10 w9 nudge-top--1"
+                {{action "toggleSection" "blockquote"}}
+            >
+                {{svg-jar "koenig/kg-quote" class=(concat (if activeSectionTagNames.isBlockquote "fill-blue-l2" "stroke-white") " w4 h4")}}
+            </button>
+        </li>
+    {{/unless}}
     <li class="ma0 lh-solid">
         <button
             type="button"

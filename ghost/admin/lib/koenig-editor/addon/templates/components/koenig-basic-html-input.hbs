@@ -1,0 +1,36 @@
+<div class="koenig-basic-html-input__editor-wrappper">
+    <div
+        class="koenig-basic-html-input__editor"
+        data-gramm="false"
+        data-kg="editor"
+        data-placeholder={{placeholder}}
+    ></div>
+</div>
+
+{{koenig-toolbar
+    basicOnly=true
+    editor=editor
+    editorRange=selectedRange
+    activeMarkupTagNames=activeMarkupTagNames
+    toggleMarkup=(action "toggleMarkup")
+    editLink=(action "editLink")
+}}
+
+{{!-- pop-up link hover toolbar --}}
+{{koenig-link-toolbar
+    editor=editor
+    container=element
+    linkRange=linkRange
+    selectedRange=selectedRange
+    editLink=(action "editLink")
+}}
+
+{{!-- pop-up link editing toolbar --}}
+{{#if linkRange}}
+    {{koenig-link-input
+        editor=editor
+        linkRange=linkRange
+        selectedRange=selectedRange
+        cancel=(action "cancelEditLink")
+    }}
+{{/if}}

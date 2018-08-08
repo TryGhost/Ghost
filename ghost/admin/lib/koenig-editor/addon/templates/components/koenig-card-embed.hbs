@@ -22,7 +22,7 @@
                 <div class="koenig-card-click-overlay ba b--white" data-kg-overlay></div>
             </div>
 
-            {{#if (or isSelected payload.caption)}}
+            {{#if (or isSelected (clean-basic-html payload.caption))}}
                 {{card.captionInput
                     caption=payload.caption
                     update=(action "updateCaption")

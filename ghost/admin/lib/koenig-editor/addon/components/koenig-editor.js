@@ -76,7 +76,7 @@ export const SPECIAL_MARKUPS = {
     SUB: '~'
 };
 
-function arrayToMap(array) {
+export function arrayToMap(array) {
     let map = Object.create(null);
     array.forEach((key) => {
         if (key) { // skip undefined/falsy key values
@@ -91,7 +91,7 @@ function arrayToMap(array) {
 // toggled via markdown expansions then we want to ensure that the markup is
 // removed from the edit state so that you can type without being stuck with
 // the special formatting
-function toggleSpecialFormatEditState(editor) {
+export function toggleSpecialFormatEditState(editor) {
     let {head, isCollapsed} = editor.range;
     if (isCollapsed) {
         Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {

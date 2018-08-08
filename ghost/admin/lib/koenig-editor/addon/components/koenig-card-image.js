@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import countWords from '../utils/count-words';
+import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-image';
 import {
     IMAGE_EXTENSIONS,
@@ -46,7 +46,7 @@ export default Component.extend({
         }
 
         if (this.payload.caption) {
-            wordCount += countWords(this.payload.caption);
+            wordCount += countWords(stripTags(this.payload.caption));
         }
 
         return {wordCount, imageCount};
