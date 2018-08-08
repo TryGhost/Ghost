@@ -3,7 +3,6 @@ import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import {BLANK_MARKDOWN} from 'ghost-admin/models/post';
 import {alias, mapBy, reads} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
@@ -100,7 +99,6 @@ export default Controller.extend({
     showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
-    useKoenig: false,
 
     // koenig related properties
     wordcount: null,
@@ -130,14 +128,6 @@ export default Controller.extend({
     saveTasks: taskGroup().enqueue(),
 
     _tagNames: mapBy('post.tags', 'name'),
-
-    markdown: computed('post.mobiledoc', function () {
-        if (this.get('post').isCompatibleWithMarkdownEditor()) {
-            let mobiledoc = this.get('post.mobiledoc');
-            let markdown = mobiledoc.cards[0][1].markdown;
-            return markdown;
-        }
-    }),
 
     hasDirtyAttributes: computed(...watchedProps, {
         get() {
@@ -170,15 +160,6 @@ export default Controller.extend({
             // force save at 60 seconds
             this.get('_timedSave').perform();
         },
-
-        // TODO: Only used by the markdown editor, ensure it's removed when
-        // we switch to Koenig
-        updateMarkdown(markdown) {
-            let mobiledoc = copy(BLANK_MARKDOWN, true);
-            mobiledoc.cards[0][1].markdown = markdown;
-            this.send('updateScratch', mobiledoc);
-        },
-
         updateTitleScratch(title) {
             this.set('post.titleScratch', title);
         },
@@ -526,16 +507,6 @@ export default Controller.extend({
 
     // called by the new/edit routes to change the post model
     setPost(post) {
-        // switch between markdown/koenig depending on feature flag and post
-        // compatibility
-        let koenigEnabled = this.get('feature.koenigEditor');
-        let postIsMarkdownCompatible = post.isCompatibleWithMarkdownEditor();
-        if (koenigEnabled || !postIsMarkdownCompatible) {
-            this.set('useKoenig', true);
-        } else {
-            this.set('useKoenig', false);
-        }
-
         // don't do anything else if we're setting the same post
         if (post === this.get('post')) {
             // set autofocus as change signal to the persistent editor on new->edit
@@ -547,12 +518,6 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
-
-        // display an info message if Koenig is disabled by we had to use it
-        // for post compatibility
-        if (!koenigEnabled && this.useKoenig) {
-            // this.set('infoMessage', 'This post can only be edited with the Koenig editor.');
-        }
 
         // autofocus the editor if we have a new post
         this.set('shouldFocusEditor', post.get('isNew'));

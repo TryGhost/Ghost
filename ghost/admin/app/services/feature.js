@@ -50,7 +50,6 @@ export default Service.extend({
     notifications: service(),
     lazyLoader: service(),
 
-    koenigEditor: feature('koenigEditor'),
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
