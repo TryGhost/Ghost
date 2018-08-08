@@ -1,7 +1,8 @@
 const debug = require('ghost-ignition').debug('importer:clients'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    BaseImporter = require('./base');
+    BaseImporter = require('./base'),
+    models = require('../../../../models');
 
 class TrustedDomainsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -20,8 +21,24 @@ class TrustedDomainsImporter extends BaseImporter {
         };
     }
 
+    fetchExisting(modelOptions) {
+        return models.ClientTrustedDomain.findAll(_.merge({columns: ['id', 'trusted_domain']}, modelOptions))
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
+    }
+
     beforeImport() {
         debug('beforeImport');
+
+        // CASE: compare with existing trusted domains
+        this.dataToImport = _.filter(this.dataToImport, (domainToImport) => {
+            if (_.find(this.existingData, {trusted_domain: domainToImport.trusted_domain})) {
+                return false;
+            }
+
+            return true;
+        });
 
         return super.beforeImport();
     }
