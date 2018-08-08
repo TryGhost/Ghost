@@ -37,7 +37,7 @@ const crypto = require('crypto'),
     allowedCheckEnvironments = ['development', 'production'];
 
 function nextCheckTimestamp() {
-    var now = Math.round(new Date().getTime() / 1000);
+    let now = Math.round(new Date().getTime() / 1000);
     return now + (24 * 3600);
 }
 
