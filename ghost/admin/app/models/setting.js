@@ -13,7 +13,6 @@ export default Model.extend(ValidationEngine, {
     icon: attr('string'),
     defaultLocale: attr('string'),
     forceI18n: attr('boolean'),
-    permalinks: attr('string'),
     activeTimezone: attr('string', {defaultValue: 'Etc/UTC'}),
     ghostHead: attr('string'),
     ghostFoot: attr('string'),

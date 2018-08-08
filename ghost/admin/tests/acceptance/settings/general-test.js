@@ -83,11 +83,6 @@ describe('Acceptance: Settings - General', function () {
                 'save button text'
             ).to.equal('Save settings');
 
-            expect(
-                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
-                'date permalinks checkbox'
-            ).to.be.false;
-
             await click('[data-test-toggle-pub-info]');
             await fillIn('[data-test-title-input]', 'New Blog Title');
             await click('[data-test-save-button]');
@@ -474,18 +469,18 @@ describe('Acceptance: Settings - General', function () {
             await visit('/settings/general');
 
             expect(
-                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
-                'date permalinks checkbox'
+                find('[data-test-private-checkbox]').prop('checked'),
+                'private blog checkbox'
             ).to.be.false;
 
             await click('[data-test-toggle-pub-info]');
             await fillIn('[data-test-title-input]', 'New Blog Title');
 
-            await click('[data-test-dated-permalinks-checkbox]');
+            await click('[data-test-private-checkbox]');
 
             expect(
-                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
-                'dated permalink checkbox'
+                find('[data-test-private-checkbox]').prop('checked'),
+                'private blog checkbox'
             ).to.be.true;
 
             await visit('/settings/team');
@@ -503,8 +498,8 @@ describe('Acceptance: Settings - General', function () {
 
             // settings were not saved
             expect(
-                find('[data-test-dated-permalinks-checkbox]').prop('checked'),
-                'date permalinks checkbox'
+                find('[data-test-private-checkbox]').prop('checked'),
+                'private blog checkbox'
             ).to.be.false;
 
             expect(
