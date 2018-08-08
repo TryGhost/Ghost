@@ -377,9 +377,6 @@ function registerInlineMarkdownTextExpansions(editor) {
 }
 
 export default function (editor, koenig) {
-    /* inline markdown -------------------------------------------------------*/
-    registerInlineMarkdownTextExpansions(editor);
-
     /* block level markdown ------------------------------------------------- */
 
     editor.unregisterTextInputHandler('heading');
@@ -491,6 +488,12 @@ export default function (editor, koenig) {
             koenig.send('replaceWithCardSection', 'code', section.toRange());
         }
     });
+
+    /* inline markdown -------------------------------------------------------*/
+
+    // must come after block expansions so that the smart hyphens expansion
+    // doesn't break the divider card expansion
+    registerInlineMarkdownTextExpansions(editor);
 }
 
 // TODO: reduce duplication
