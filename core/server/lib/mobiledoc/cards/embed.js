@@ -16,7 +16,7 @@ module.exports = {
 
         if (payload.caption) {
             let figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createTextNode(payload.caption));
+            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
         }
 
