@@ -21,39 +21,26 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
 
     activate() {
         this._super(...arguments);
-        if (this.feature.koenigEditor) {
-            this.ui.set('isFullScreen', true);
-        }
+        this.ui.set('isFullScreen', true);
     },
 
     setupController() {
         this._super(...arguments);
 
-        // display a warning if we detect an unsupported browser
-        if (this.feature.koenigEditor) {
-            // IE is definitely not supported and will not work at all in Ghost 2.0
-            if (this.userAgent.browser.isIE) {
-                this.notifications.showAlert(
-                    htmlSafe('Internet Explorer is not supported in Koenig and will no longer work in Ghost 2.0. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
-                    {type: 'info', key: 'koenig.browserSupport'}
-                );
-            }
+        // edge has known issues
+        if (this.userAgent.browser.isEdge) {
+            this.notifications.showAlert(
+                htmlSafe('Microsoft Edge is not currently supported in Koenig. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
+                {type: 'info', key: 'koenig.browserSupport'}
+            );
+        }
 
-            // edge has known issues
-            if (this.userAgent.browser.isEdge) {
-                this.notifications.showAlert(
-                    htmlSafe('Microsoft Edge is not currently supported in Koenig. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
-                    {type: 'info', key: 'koenig.browserSupport'}
-                );
-            }
-
-            // mobile browsers are not currently supported
-            if (this.userAgent.device.isMobile || this.userAgent.device.isTablet) {
-                this.notifications.showAlert(
-                    htmlSafe('Mobile editing is not currently supported in Koenig. Please use a desktop browser or <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a>.'),
-                    {type: 'info', key: 'koenig.browserSupport'}
-                );
-            }
+        // mobile browsers are not currently supported
+        if (this.userAgent.device.isMobile || this.userAgent.device.isTablet) {
+            this.notifications.showAlert(
+                htmlSafe('Mobile editing is not currently supported in Koenig. Please use a desktop browser or <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a>.'),
+                {type: 'info', key: 'koenig.browserSupport'}
+            );
         }
     },
 

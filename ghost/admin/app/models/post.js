@@ -4,32 +4,15 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
-import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {belongsTo, hasMany} from 'ember-data/relationships';
 import {compare} from '@ember/utils';
 import {computed, observer} from '@ember/object';
-import {copy} from '@ember/object/internals';
 import {equal, filterBy} from '@ember/object/computed';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
-
-// for our markdown-only editor we need to build a blank mobiledoc
-const MOBILEDOC_VERSION = '0.3.1';
-export const BLANK_MARKDOWN = {
-    version: MOBILEDOC_VERSION,
-    markups: [],
-    atoms: [],
-    cards: [
-        ['card-markdown', {
-            cardName: 'card-markdown',
-            markdown: ''
-        }]
-    ],
-    sections: [[10, 0]]
-};
 
 function statusCompare(postA, postB) {
     let status1 = postA.get('status');
@@ -134,30 +117,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     primaryAuthor: computed('authors.[]', function () {
         return this.get('authors.firstObject');
     }),
-
-    init() {
-        // HACK: we can't use the defaultValue property on the mobiledoc attr
-        // because it won't have access to `this` for the feature check so we do
-        // it manually here instead
-        if (!this.get('mobiledoc')) {
-            let defaultValue;
-
-            if (this.get('feature.koenigEditor')) {
-                defaultValue = copy(BLANK_MOBILEDOC, true);
-            } else {
-                defaultValue = copy(BLANK_MARKDOWN, true);
-            }
-
-            // using this.set() adds the property to the changedAttributes list
-            // which means the editor always sees new posts as dirty. By setting
-            // the internal model data property first it's not seen as having
-            // changed so the changedAttributes key is removed
-            this._internalModel._data.mobiledoc = defaultValue;
-            this.set('mobiledoc', defaultValue);
-        }
-
-        this._super(...arguments);
-    },
 
     scratch: null,
     titleScratch: null,
@@ -360,25 +319,5 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtBlogTZ = this.get('publishedAtBlogTZ');
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
-    },
-
-    // the markdown editor expects a very specific mobiledoc format, if it
-    // doesn't match then we'll need to handle it by forcing Koenig
-    isCompatibleWithMarkdownEditor() {
-        let mobiledoc = this.get('mobiledoc');
-
-        if (mobiledoc
-            && mobiledoc.markups.length === 0
-            && mobiledoc.cards.length === 1
-            && mobiledoc.cards[0][0] === 'card-markdown'
-            && mobiledoc.sections.length === 1
-            && mobiledoc.sections[0].length === 2
-            && mobiledoc.sections[0][0] === 10
-            && mobiledoc.sections[0][1] === 0
-        ) {
-            return true;
-        }
-
-        return false;
     }
 });

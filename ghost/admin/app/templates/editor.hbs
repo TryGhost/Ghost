@@ -66,134 +66,33 @@
             </section>
         </header>
 
-        {{#if useKoenig}}
-            {{!--
-                gh-koenig-editor acts as a wrapper around the title input and
-                koenig editor canvas to support Ghost-specific editor behaviour
-            --}}
-            {{gh-koenig-editor
-                title=(readonly post.titleScratch)
-                titlePlaceholder="Story Title"
-                onTitleChange=(action "updateTitleScratch")
-                onTitleBlur=(action (perform saveTitle))
-                body=(readonly post.scratch)
-                bodyPlaceholder="Begin writing your story..."
-                bodyAutofocus=shouldFocusEditor
-                onBodyChange=(action "updateScratch")
-                headerOffset=editor.headerHeight
-                scrollContainerSelector=".gh-koenig-editor"
-                scrollOffsetTopSelector=".gh-editor-header-small"
-                scrollOffsetBottomSelector=".gh-mobile-nav-bar"
-                onEditorCreated=(action "setKoenigEditor")
-                onWordCountChange=(action "updateWordCount")
-            }}
+        {{!--
+            gh-koenig-editor acts as a wrapper around the title input and
+            koenig editor canvas to support Ghost-specific editor behaviour
+        --}}
+        {{gh-koenig-editor
+            title=(readonly post.titleScratch)
+            titlePlaceholder="Story Title"
+            onTitleChange=(action "updateTitleScratch")
+            onTitleBlur=(action (perform saveTitle))
+            body=(readonly post.scratch)
+            bodyPlaceholder="Begin writing your story..."
+            bodyAutofocus=shouldFocusEditor
+            onBodyChange=(action "updateScratch")
+            headerOffset=editor.headerHeight
+            scrollContainerSelector=".gh-koenig-editor"
+            scrollOffsetTopSelector=".gh-editor-header-small"
+            scrollOffsetBottomSelector=".gh-mobile-nav-bar"
+            onEditorCreated=(action "setKoenigEditor")
+            onWordCountChange=(action "updateWordCount")
+        }}
 
-            <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
-                <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw3">
-                    {{pluralize wordCount.wordCount "word"}}
-                </div>
-                <a href="https://help.ghost.org/article/29-ghost-editor-overview" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
+        <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
+            <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw3">
+                {{pluralize wordCount.wordCount "word"}}
             </div>
-
-        {{else}}
-
-            {{!--
-                NOTE: title is part of the markdown editor container so that it has
-                access to the markdown editor's "focus" action
-            --}}
-            {{#gh-markdown-editor
-                tabindex="2"
-                placeholder="Begin writing your story..."
-                autofocus=shouldFocusEditor
-                uploadedImageUrls=editor.uploadedImageUrls
-                markdown=(readonly markdown)
-                isFullScreen=editor.isFullScreen
-                onChange=(action "updateMarkdown")
-                onFullScreenToggle=(action editor.toggleFullScreen)
-                onPreviewToggle=(action editor.togglePreview)
-                onSplitScreenToggle=(action editor.toggleSplitScreen)
-                onImageFilesSelected=(action editor.uploadImages)
-                imageMimeTypes=editor.imageMimeTypes
-                as |markdown|
-            }}
-                <div class="gh-markdown-editor-pane">
-                    {{gh-textarea
-                        class="gh-editor-title"
-                        placeholder="Post Title"
-                        tabindex="1"
-                        autoExpand=".gh-markdown-editor-pane"
-                        value=(readonly post.titleScratch)
-                        input=(action "updateTitleScratch" value="target.value")
-                        focus-out=(action (perform saveTitle))
-                        keyEvents=(hash
-                            Tab=(action markdown.focus 'bottom')
-                            Enter=(action markdown.focus 'top')
-                        )
-                        data-test-editor-title-input=true
-                    }}
-                    {{markdown.editor}}
-                </div>
-
-                {{#if markdown.isSplitScreen}}
-                    <div class="gh-markdown-editor-preview">
-                        <h1 class="gh-markdown-editor-preview-title">{{post.titleScratch}}</h1>
-                        <div class="gh-markdown-editor-preview-content"></div>
-                    </div>
-                {{/if}}
-
-                {{gh-tour-item "using-the-editor"
-                    target=".gh-editor-footer"
-                    throbberAttachment="top left"
-                    throbberOffset="0 20%"
-                    popoverTriangleClass="bottom"
-                }}
-            {{/gh-markdown-editor}}
-
-            {{!-- TODO: put tool/status bar in here so that scroll area can be fixed --}}
-            <footer class="gh-editor-footer"></footer>
-
-            {{!-- files are dragged over editor pane --}}
-            {{#if editor.isDraggedOver}}
-                <div class="drop-target gh-editor-drop-target">
-                    <div class="drop-target-message">
-                        <h3>Drop image(s) here to upload</h3>
-                    </div>
-                </div>
-            {{/if}}
-
-            {{!-- files have been dropped ready to be uploaded --}}
-            {{#if editor.droppedFiles}}
-                {{#gh-uploader
-                    files=editor.droppedFiles
-                    accept=editor.imageMimeTypes
-                    extensions=editor.imageExtensions
-                    onComplete=(action editor.uploadComplete)
-                    onCancel=(action editor.uploadCancelled)
-                    as |upload|
-                }}
-                    <div class="gh-editor-image-upload {{if upload.errors "-error"}}">
-                        <div class="gh-editor-image-upload-content">
-                            {{#if upload.errors}}
-                                <h3>Upload failed</h3>
-
-                                {{#each upload.errors as |error|}}
-                                    <div class="failed">{{error.fileName}} - {{error.message}}</div>
-                                {{/each}}
-
-                                <button class="gh-btn gh-btn-grey gh-btn-icon" {{action upload.cancel}}>
-                                    <span>{{svg-jar "close"}} Close</span>
-                                </button>
-                            {{else}}
-
-                                <h3>Uploading {{pluralize upload.files.length "image"}}...</h3>
-                                {{upload.progressBar}}
-                            {{/if}}
-                        </div>
-                    </div>
-                {{/gh-uploader}}
-            {{/if}}
-
-        {{/if}} {{!-- end Koenig conditional --}}
+            <a href="https://help.ghost.org/article/29-ghost-editor-overview" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
+        </div>
 
     {{/gh-editor}}
 
