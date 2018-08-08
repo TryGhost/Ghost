@@ -74,21 +74,21 @@ export default Component.extend({
             items.push({
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
-                iconClass: `${!cardWidth ? 'stroke-blue-l2' : 'stroke-white'}`,
+                iconClass: `${!cardWidth ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, '')
             });
 
             items.push({
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
-                iconClass: `${cardWidth === 'wide' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                iconClass: `${cardWidth === 'wide' ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, 'wide')
             });
 
             items.push({
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
-                iconClass: `${cardWidth === 'full' ? 'stroke-blue-l2' : 'stroke-white'}`,
+                iconClass: `${cardWidth === 'full' ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, 'full')
             });
 
@@ -97,7 +97,7 @@ export default Component.extend({
             items.push({
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
-                iconClass: '',
+                iconClass: 'fill-white',
                 action: run.bind(this, this._triggerFileDialog)
             });
         }

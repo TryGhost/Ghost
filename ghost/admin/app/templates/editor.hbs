@@ -5,17 +5,17 @@
         navIsClosed=navIsClosed
         as |editor|
     }}
-        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white-90"}}">
+        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white"}}">
             <div class="flex items-center pe-auto">
                 {{#if ui.isFullScreen}}
-                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white-90"}}">
+                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white"}}">
                         {{#link-to "posts" classNames="blue link fw4 flex items-center"}}
                             {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
                             Stories
                         {{/link-to}}
                     </div>
                 {{/if}}
-                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless infoMessage "bg-white-90"}}">
+                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless infoMessage "bg-white"}}">
                     <span class="fw4 midgrey-l2">
                         {{gh-editor-post-status
                             post=post
@@ -32,7 +32,7 @@
 
             {{#if infoMessage}}
             <div class="gh-koenig-info miw88 flex flex-auto justify-center" style="pointer-events: auto">
-                <div class="midgrey inline-flex tracked-1 center pa1 pl4 pr4 br3 justify-center items-start {{if (eq editor.headerClass "gh-editor-header-small") "bg-white-90"}}">
+                <div class="midgrey inline-flex tracked-1 center pa1 pl4 pr4 br3 justify-center items-start {{if (eq editor.headerClass "gh-editor-header-small") "bg-white"}}">
                     {{svg-jar "idea" class="w7 h7 fill-blue"}}
                     <p class="ma0 pa0 ml1 nudge-top--2">
                         {{infoMessage}}
@@ -42,7 +42,7 @@
             </div>
             {{/if}}
 
-            <section class="view-actions br2 {{unless infoMessage "bg-white-90"}}" style="pointer-events: auto">
+            <section class="view-actions br2 {{unless infoMessage "bg-white"}}" style="pointer-events: auto">
                 {{#unless post.isNew}}
                     {{#if session.user.isContributor}}
                         {{gh-task-button "Save"
@@ -189,7 +189,7 @@
         {{/if}} {{!-- end Koenig conditional --}}
 
         {{#if wordCount}}
-            <div class="absolute flex items-center br3 bg-white-90 {{if editor.headerClass "right-4 bottom-2 h7 pa1 pl2 pr2" "right-6 bottom-6 h9 pa1 pl4 pr4"}}">
+            <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-2 h7 pa1 pl2 pr2" "right-6 bottom-6 h9 pa1 pl4 pr4"}}">
                 <span class="midgrey-l2 {{if editor.headerClass "f-supersmall" "f8"}}">
                     {{pluralize wordCount.wordCount "word"}}
                 </span>
