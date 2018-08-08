@@ -90,6 +90,7 @@ export default Component.extend({
         this._super(...arguments);
 
         let container = this.container;
+        container.dataset.kgHasLinkToolbar = true;
         this._addEventListener(container, 'mouseover', this._handleMouseover);
         this._addEventListener(container, 'mouseout', this._handleMouseout);
     },
@@ -142,7 +143,7 @@ export default Component.extend({
     _handleMouseover(event) {
         if (this._canShowToolbar) {
             let target = getEventTargetMatchingTag('a', event.target, this.container);
-            if (target && target.isContentEditable) {
+            if (target && target.isContentEditable && target.closest('[data-kg-has-link-toolbar=true]') === this.container) {
                 this._timeout = run.later(this, function () {
                     this._showToolbar(target);
                 }, DELAY);
@@ -178,7 +179,7 @@ export default Component.extend({
     },
 
     _positionToolbar(target) {
-        let containerRect = this.element.parentNode.getBoundingClientRect();
+        let containerRect = this.element.offsetParent.getBoundingClientRect();
         let targetRect = target.getBoundingClientRect();
         let {width, height} = this.element.getBoundingClientRect();
         let newPosition = {};

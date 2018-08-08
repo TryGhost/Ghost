@@ -53,119 +53,7 @@ export function replaceWithListSection(editor, matches, listTagName) {
     });
 }
 
-export default function (editor, koenig) {
-    /* block level markdown ------------------------------------------------- */
-
-    editor.unregisterTextInputHandler('heading');
-    editor.onTextInput({
-        name: 'md_heading',
-        match: /^(#{1,6}) /,
-        run(editor, matches) {
-            let hashes = matches[1];
-            let headingTag = `h${hashes.length}`;
-            let {range} = editor;
-            let text = range.head.section.textUntil(range.head);
-
-            // we don't want to convert to a heading if the user has not just
-            // finished typing the markdown (eg, they've made a previous
-            // heading expansion then Cmd-Z'ed it to get the text back then
-            // starts typing at the end of the heading)
-            if (text !== matches[0]) {
-                return;
-            }
-
-            editor.run((postEditor) => {
-                range = range.extend(-(matches[0].length));
-                let position = postEditor.deleteRange(range);
-                postEditor.setRange(position);
-
-                // toggleHeaderSection will remove all formatting except links
-                koenig.send('toggleHeaderSection', headingTag, postEditor);
-            });
-        }
-    });
-
-    editor.unregisterTextInputHandler('ul');
-    editor.onTextInput({
-        name: 'md_ul',
-        match: /^\* |^- /,
-        run(editor, matches) {
-            replaceWithListSection(editor, matches, 'ul');
-        }
-    });
-
-    editor.unregisterTextInputHandler('ol');
-    editor.onTextInput({
-        name: 'md_ol',
-        match: /^1\.? /,
-        run(editor, matches) {
-            replaceWithListSection(editor, matches, 'ol');
-        }
-    });
-
-    editor.onTextInput({
-        name: 'md_blockquote',
-        match: /^> /,
-        run(editor, matches) {
-            let {range} = editor;
-            let {head, head: {section}} = range;
-            let text = section.textUntil(head);
-
-            // ensure cursor is at the end of the matched text so we don't
-            // convert text the users wants to start with `> ` and that we're
-            // not already on a blockquote section
-            if (text === matches[0] && section.tagName !== 'blockquote') {
-                editor.run((postEditor) => {
-                    range = range.extend(-(matches[0].length));
-                    let position = postEditor.deleteRange(range);
-                    postEditor.setRange(position);
-
-                    koenig.send('toggleSection', 'blockquote', postEditor);
-                });
-            }
-        }
-    });
-
-    editor.onTextInput({
-        name: 'md_hr',
-        match: /^---$/,
-        run(editor) {
-            let {range: {head, head: {section}}} = editor;
-
-            // Skip if cursor is not at end of section
-            if (!head.isTail()) {
-                return;
-            }
-
-            // Skip if section is a list item
-            if (section.isListItem) {
-                return;
-            }
-
-            koenig.send('replaceWithCardSection', 'hr', section.toRange());
-        }
-    });
-
-    editor.onTextInput({
-        name: 'md_code',
-        match: /^```$/,
-        run(editor) {
-            let {range: {head, head: {section}}} = editor;
-
-            // Skip if cursor is not at end of section
-            if (!head.isTail()) {
-                return;
-            }
-
-            // Skip if section is a list item
-            if (section.isListItem) {
-                return;
-            }
-
-            koenig.send('replaceWithCardSection', 'code', section.toRange());
-        }
-    }),
-
+function registerInlineMarkdownTextExpansions(editor) {
     /* inline markdown ------------------------------------------------------ */
 
     // --\s = en dash –
@@ -486,4 +374,131 @@ export default function (editor, koenig) {
             });
         }
     }
+}
+
+export default function (editor, koenig) {
+    /* inline markdown -------------------------------------------------------*/
+    registerInlineMarkdownTextExpansions(editor);
+
+    /* block level markdown ------------------------------------------------- */
+
+    editor.unregisterTextInputHandler('heading');
+    editor.onTextInput({
+        name: 'md_heading',
+        match: /^(#{1,6}) /,
+        run(editor, matches) {
+            let hashes = matches[1];
+            let headingTag = `h${hashes.length}`;
+            let {range} = editor;
+            let text = range.head.section.textUntil(range.head);
+
+            // we don't want to convert to a heading if the user has not just
+            // finished typing the markdown (eg, they've made a previous
+            // heading expansion then Cmd-Z'ed it to get the text back then
+            // starts typing at the end of the heading)
+            if (text !== matches[0]) {
+                return;
+            }
+
+            editor.run((postEditor) => {
+                range = range.extend(-(matches[0].length));
+                let position = postEditor.deleteRange(range);
+                postEditor.setRange(position);
+
+                // toggleHeaderSection will remove all formatting except links
+                koenig.send('toggleHeaderSection', headingTag, postEditor);
+            });
+        }
+    });
+
+    editor.unregisterTextInputHandler('ul');
+    editor.onTextInput({
+        name: 'md_ul',
+        match: /^\* |^- /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ul');
+        }
+    });
+
+    editor.unregisterTextInputHandler('ol');
+    editor.onTextInput({
+        name: 'md_ol',
+        match: /^1\.? /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ol');
+        }
+    });
+
+    editor.onTextInput({
+        name: 'md_blockquote',
+        match: /^> /,
+        run(editor, matches) {
+            let {range} = editor;
+            let {head, head: {section}} = range;
+            let text = section.textUntil(head);
+
+            // ensure cursor is at the end of the matched text so we don't
+            // convert text the users wants to start with `> ` and that we're
+            // not already on a blockquote section
+            if (text === matches[0] && section.tagName !== 'blockquote') {
+                editor.run((postEditor) => {
+                    range = range.extend(-(matches[0].length));
+                    let position = postEditor.deleteRange(range);
+                    postEditor.setRange(position);
+
+                    koenig.send('toggleSection', 'blockquote', postEditor);
+                });
+            }
+        }
+    });
+
+    editor.onTextInput({
+        name: 'md_hr',
+        match: /^---$/,
+        run(editor) {
+            let {range: {head, head: {section}}} = editor;
+
+            // Skip if cursor is not at end of section
+            if (!head.isTail()) {
+                return;
+            }
+
+            // Skip if section is a list item
+            if (section.isListItem) {
+                return;
+            }
+
+            koenig.send('replaceWithCardSection', 'hr', section.toRange());
+        }
+    });
+
+    editor.onTextInput({
+        name: 'md_code',
+        match: /^```$/,
+        run(editor) {
+            let {range: {head, head: {section}}} = editor;
+
+            // Skip if cursor is not at end of section
+            if (!head.isTail()) {
+                return;
+            }
+
+            // Skip if section is a list item
+            if (section.isListItem) {
+                return;
+            }
+
+            koenig.send('replaceWithCardSection', 'code', section.toRange());
+        }
+    });
+}
+
+// TODO: reduce duplication
+export function registerBasicTextExpansions(editor) {
+    // unregister mobiledoc-kit's block-level text handlers
+    editor.unregisterTextInputHandler('heading');
+    editor.unregisterTextInputHandler('ul');
+    editor.unregisterTextInputHandler('ol');
+
+    registerInlineMarkdownTextExpansions(editor);
 }

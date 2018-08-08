@@ -64,7 +64,7 @@
         </div>
     {{/gh-uploader}}
 
-    {{#if (or isSelected payload.caption)}}
+    {{#if (or isSelected (clean-basic-html payload.caption))}}
         {{card.captionInput
             caption=payload.caption
             update=(action "updateCaption")

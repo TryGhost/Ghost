@@ -1,10 +1,11 @@
-<input
-    placeholder={{if isFocused "" placeholder}}
-    value={{caption}}
-    type="text"
+{{koenig-basic-html-input
+    html=caption
+    placeholder=(if isFocused "" placeholder)
     class="miw-100 tc bn form-text bg-transparent"
     name="caption"
-    oninput={{action update value="target.value"}}
-    onfocus={{action (mut isFocused) true}}
-    onblur={{action (mut isFocused) false}}
->
+    onChange=(action update)
+    onFocus=(action (mut isFocused) true)
+    onBlur=(action (mut isFocused) false)
+    onNewline=(action "handleEnter")
+    didCreateEditor=(action "registerEditor")
+}}

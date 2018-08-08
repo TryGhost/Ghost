@@ -406,8 +406,21 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
 }];
 
-export default function registerKeyCommands(editor, koenig) {
-    DEFAULT_KEY_COMMANDS.forEach((keyCommand) => {
+// key commands that are used in koenig-basic-html-input
+export const BASIC_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
+    let basicCommands = [
+        'BACKSPACE',
+        'CTRL+K',
+        'META+K',
+        'CTRL+ALT+U',
+        'CTRL+SHIFT+K',
+        'META+SHIFT+K'
+    ];
+    return basicCommands.includes(command.str);
+});
+
+export default function registerKeyCommands(editor, koenig, commands = DEFAULT_KEY_COMMANDS) {
+    commands.forEach((keyCommand) => {
         editor.registerKeyCommand({
             str: keyCommand.str,
             run() {

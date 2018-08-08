@@ -22,7 +22,7 @@ export default Component.extend({
     moveCursorToPrevSection() {},
 
     figCaptionClass: computed(function () {
-        return `${kgStyle(['figcaption'])} w-100`;
+        return `${kgStyle(['figcaption'])} w-100 relative`;
     }),
 
     didReceiveAttrs() {
@@ -42,21 +42,43 @@ export default Component.extend({
         this._detachHandlers();
     },
 
+    actions: {
+        registerEditor(editor) {
+            let commands = {
+                ENTER: run.bind(this, this._enter),
+                ESC: run.bind(this, this._escape),
+                UP: run.bind(this, this._upOrLeft),
+                LEFT: run.bind(this, this._upOrLeft),
+                DOWN: run.bind(this, this._rightOrDown),
+                RIGHT: run.bind(this, this._rightOrDown)
+            };
+
+            Object.keys(commands).forEach((str) => {
+                editor.registerKeyCommand({
+                    str,
+                    run() {
+                        return commands[str](editor, str);
+                    }
+                });
+            });
+
+            this.editor = editor;
+        },
+
+        handleEnter() {
+            this.addParagraphAfterCard();
+        }
+    },
+
     _attachHandlers() {
         if (!this._keypressHandler) {
             this._keypressHandler = run.bind(this, this._handleKeypress);
             window.addEventListener('keypress', this._keypressHandler);
         }
-
-        if (!this._keydownHandler) {
-            this._keydownHandler = run.bind(this, this._handleKeydown);
-            window.addEventListener('keydown', this._keydownHandler);
-        }
     },
 
     _detachHandlers() {
         window.removeEventListener('keypress', this._keypressHandler);
-        window.removeEventListener('keydown', this._keydownHandler);
         this._keypressHandler = null;
         this._keydownHandler = null;
     },
@@ -64,51 +86,58 @@ export default Component.extend({
     // only fires if the card is selected, moves focus to the caption input so
     // that it's possible to start typing without explicitly focusing the input
     _handleKeypress(event) {
-        let captionInput = this.element.querySelector('[name="caption"]');
         let key = new Key(event);
+        let {editor} = this;
 
-        if (captionInput && captionInput !== document.activeElement && key.isPrintableKey()) {
-            captionInput.value = `${captionInput.value}${event.key}`;
-            captionInput.focus();
+        if (event.target.matches('[data-kg="editor"]') && editor && !editor._hasFocus() && key.isPrintableKey()) {
+            editor.focus();
+            editor.run((postEditor) => {
+                postEditor.insertText(editor.post.tailPosition(), event.key);
+            });
+
             event.preventDefault();
         }
     },
 
-    // this will be fired for keydown events when the caption input is focused,
-    // we look for cursor movements or the enter key to defocus and trigger the
-    // corresponding editor behaviour
-    _handleKeydown(event) {
-        let captionInput = this.element.querySelector('[name="caption"]');
+    /* key commands ----------------------------------------------------------*/
 
-        if (event.target === captionInput) {
-            if (event.key === 'Escape') {
-                captionInput.blur();
-                return;
-            }
+    _enter() {
+        this.send('handleEnter');
+    },
 
-            if (event.key === 'Enter') {
-                captionInput.blur();
-                this.addParagraphAfterCard();
-                event.preventDefault();
-                return;
-            }
+    _escape(editor) {
+        editor.blur();
+    },
 
-            let selectionStart = captionInput.selectionStart;
-            let length = captionInput.value.length;
+    _upOrLeft(editor, key) {
+        let {isCollapsed, head} = editor.range;
 
-            if ((event.key === 'ArrowUp' || event.key === 'ArrowLeft') && selectionStart === 0) {
-                captionInput.blur();
-                this.moveCursorToPrevSection();
-                event.preventDefault();
-                return;
-            }
-
-            if ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && selectionStart === length) {
-                captionInput.blur();
-                this.moveCursorToNextSection();
-                event.preventDefault();
-                return;
-            }
+        if (isCollapsed && head.isEqual(head.section.headPosition())) {
+            return this.moveCursorToPrevSection();
         }
+
+        // we're simulating a text input so up/down move the cursor to the
+        // beginning/end of the input
+        if (isCollapsed && key === 'UP') {
+            return editor.selectRange(head.section.headPosition().toRange());
+        }
+
+        return false;
+    },
+
+    _rightOrDown(editor, key) {
+        let {isCollapsed, tail} = editor.range;
+
+        if (isCollapsed && tail.isEqual(tail.section.tailPosition())) {
+            return this.moveCursorToNextSection();
+        }
+
+        // we're simulating a text input so up/down move the cursor to the
+        // beginning/end of the input
+        if (isCollapsed && key === 'DOWN') {
+            return editor.selectRange(tail.section.tailPosition().toRange());
+        }
+
+        return false;
     }
 });

@@ -26,6 +26,7 @@ export default Component.extend({
     classNames: ['absolute', 'z-999'],
 
     // public attrs
+    basicOnly: false,
     editor: null,
     editorRange: null,
     activeMarkupTagNames: null,
@@ -235,7 +236,7 @@ export default Component.extend({
     },
 
     _positionToolbar() {
-        let containerRect = this.element.parentNode.getBoundingClientRect();
+        let containerRect = this.element.offsetParent.getBoundingClientRect();
         let range = window.getSelection().getRangeAt(0);
         let rangeRect = range.getBoundingClientRect();
         let {width, height} = this.element.getBoundingClientRect();

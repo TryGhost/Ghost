@@ -193,7 +193,7 @@ export default Component.extend({
 
     // TODO: largely shared with {{koenig-toolbar}} code - extract to a shared util?
     _positionToolbar() {
-        let containerRect = this.element.parentNode.getBoundingClientRect();
+        let containerRect = this.element.offsetParent.getBoundingClientRect();
         let rangeRect = this._windowRange.getBoundingClientRect();
         let {width, height} = this.element.getBoundingClientRect();
         let newPosition = {};
