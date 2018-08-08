@@ -24,11 +24,11 @@ describe('Image card', function () {
             },
             payload: {
                 src: 'https://www.ghost.org/image.png',
-                caption: 'Test caption'
+                caption: '<b>Test caption</b>'
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"><figcaption>Test caption</figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"><figcaption><b>Test caption</b></figcaption></figure>');
     });
 
     it('renders an image with alt text', function () {
