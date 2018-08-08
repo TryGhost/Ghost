@@ -15,22 +15,22 @@ require('./overrides');
 // Module dependencies
 const debug = require('ghost-ignition').debug('boot:init');
 
-import config from './config';
+import config from 'config';
 import Promise from 'bluebird';
-import common from './lib/common';
-import models from './models';
-import permissions from './services/permissions';
-import auth from './services/auth';
-import dbHealth from './data/db/health';
-import GhostServer from './ghost-server';
-import scheduling from './adapters/scheduling';
-import settings from './services/settings';
-import themes from './services/themes';
-import urlService from './services/url';
-import apps from './services/apps';
-import xmlrpc from './services/xmlrpc';
-import slack from './services/slack';
-import webhooks from './services/webhooks';
+import common from 'lib/common';
+import models from 'models';
+import permissions from 'services/permissions';
+import auth from 'services/auth';
+import dbHealth from 'data/db/health';
+import GhostServer from 'ghost-server';
+import scheduling from 'adapters/scheduling';
+import settings from 'services/settings';
+import themes from 'services/themes';
+import urlService from 'services/url';
+import apps from 'services/apps';
+import xmlrpc from 'services/xmlrpc';
+import slack from 'services/slack';
+import webhooks from 'services/webhooks';
 
 // ## Initialise Ghost
 const init = () => {
