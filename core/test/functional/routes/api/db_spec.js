@@ -72,6 +72,25 @@ describe('DB API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
+                Object.keys(jsonResponse.db[0].data).length.should.eql(21);
+                done();
+            });
+    });
+
+    it('include more tables', function (done) {
+        request.get(testUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.db);
+                jsonResponse.db.should.have.length(1);
+                Object.keys(jsonResponse.db[0].data).length.should.eql(23);
                 done();
             });
     });

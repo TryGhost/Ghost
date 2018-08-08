@@ -1,6 +1,7 @@
 // # DB API
 // API for DB operations
 const Promise = require('bluebird'),
+    _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     exporter = require('../data/export'),
@@ -55,8 +56,8 @@ db = {
         options = options || {};
 
         // Export data, otherwise send error 500
-        function exportContent() {
-            return exporter.doExport().then((exportedData) => {
+        function exportContent(options) {
+            return exporter.doExport({include: options.include}).then((exportedData) => {
                 return {
                     db: [exportedData]
                 };
@@ -67,6 +68,7 @@ db = {
 
         tasks = [
             localUtils.handlePermissions(docName, 'exportContent'),
+            localUtils.convertOptions(exporter.EXCLUDED_TABLES, null, {forModel: false}),
             exportContent
         ];
 
@@ -85,7 +87,7 @@ db = {
         options = options || {};
 
         function importContent(options) {
-            return importer.importFromFile(options)
+            return importer.importFromFile(_.omit(options, 'include'), {include: options.include})
                 // NOTE: response can contain 2 objects if images are imported
                 .then((response) => {
                     return {
@@ -97,6 +99,7 @@ db = {
 
         tasks = [
             localUtils.handlePermissions(docName, 'importContent'),
+            localUtils.convertOptions(exporter.EXCLUDED_TABLES, null, {forModel: false}),
             importContent
         ];
 
