@@ -152,7 +152,9 @@ export default Component.extend({
             // immediately when clicked
             let targetTagName = event.target.tagName;
             let allowedTagNames = ['INPUT', 'TEXTAREA'];
-            if (!allowedTagNames.includes(targetTagName)) {
+            let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+            console.log('allowClickthrough', allowClickthrough);
+            if (!allowedTagNames.includes(targetTagName) && !allowClickthrough) {
                 event.preventDefault();
             }
 
