@@ -9,4 +9,4 @@ function makeGhost(options={}) {
     return server(options);
 }
 
-export default makeGhost;
+module.exports = makeGhost;
