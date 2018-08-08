@@ -1071,6 +1071,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             let query = ghostBookshelf.knex(tableNames[modelName]);
 
+            if (options.offset) {
+                query.offset(options.offset);
+            }
+
+            if (options.limit) {
+                query.limit(options.limit);
+            }
+
             // exclude fields if enabled
             if (reducedFields) {
                 const toSelect = _.keys(schema.tables[tableNames[modelName]]);
@@ -1089,6 +1097,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             return query.then((objects) => {
                 debug('fetched', modelName, filter);
+
+                if (!objects.length) {
+                    debug('No more entries found');
+                    return Promise.resolve([]);
+                }
 
                 let props = {};
 
