@@ -20,21 +20,22 @@
 // - theme - name of the currently active theme
 // - apps - names of any active apps
 
-const crypto = require('crypto'),
-    exec = require('child_process').exec,
-    moment = require('moment'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    url = require('url'),
-    debug = require('ghost-ignition').debug('update-check'),
-    api = require('./api'),
-    config = require('./config'),
-    urlService = require('./services/url'),
-    common = require('./lib/common'),
-    request = require('./lib/request'),
-    ghostVersion = require('./lib/ghost-version'),
-    internal = {context: {internal: true}},
-    allowedCheckEnvironments = ['development', 'production'];
+import crypto from 'crypto';
+
+import { exec } from 'child_process';
+import moment from 'moment';
+import Promise from 'bluebird';
+import _ from 'lodash';
+import url from 'url';
+const debug = require('ghost-ignition').debug('update-check');
+import api from './api';
+import config from './config';
+import urlService from './services/url';
+import common from './lib/common';
+import request from './lib/request';
+import ghostVersion from './lib/ghost-version';
+const internal = { context: { internal: true } };
+const allowedCheckEnvironments = ['development', 'production'];
 
 function nextCheckTimestamp() {
     let now = Math.round(new Date().getTime() / 1000);
@@ -50,7 +51,7 @@ function updateCheckError(err) {
     }, internal);
 
     err.context = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
-    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org/v1'});
+    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', { url: 'https://docs.ghost.org/v1' });
     common.logging.error(err);
 }
 
@@ -64,7 +65,7 @@ function createCustomNotification(notification) {
         return Promise.resolve();
     }
 
-    return Promise.each(notification.messages, function (message) {
+    return Promise.each(notification.messages, message => {
         let toAdd = {
             custom: !!notification.custom,
             createdAt: moment(notification.created_at).toDate(),
@@ -77,13 +78,13 @@ function createCustomNotification(notification) {
         };
 
         debug('Add Custom Notification', toAdd);
-        return api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
+        return api.notifications.add({ notifications: [toAdd] }, { context: { internal: true } });
     });
 }
 
 function updateCheckData() {
-    let data = {},
-        mailConfig = config.get('mail');
+    let data = {};
+    let mailConfig = config.get('mail');
 
     data.ghost_version = ghostVersion.original;
     data.node_version = process.versions.node;
@@ -95,30 +96,28 @@ function updateCheckData() {
             mailConfig.transport);
 
     return Promise.props({
-        hash: api.settings.read(_.extend({key: 'db_hash'}, internal)).reflect(),
-        theme: api.settings.read(_.extend({key: 'active_theme'}, internal)).reflect(),
-        apps: api.settings.read(_.extend({key: 'active_apps'}, internal))
-            .then(function (response) {
-                var apps = response.settings[0];
+        hash: api.settings.read(_.extend({ key: 'db_hash' }, internal)).reflect(),
+        theme: api.settings.read(_.extend({ key: 'active_theme' }, internal)).reflect(),
+        apps: api.settings.read(_.extend({ key: 'active_apps' }, internal))
+            .then(response => {
+                let apps = response.settings[0];
 
                 apps = JSON.parse(apps.value);
 
-                return _.reduce(apps, function (memo, item) {
-                    return memo === '' ? memo + item : memo + ', ' + item;
-                }, '');
+                return _.reduce(apps, (memo, item) => memo === '' ? memo + item : `${memo}, ${item}`, '');
             }).reflect(),
         posts: api.posts.browse().reflect(),
         users: api.users.browse(internal).reflect(),
         npm: Promise.promisify(exec)('npm -v').reflect()
-    }).then(function (descriptors) {
-        var hash = descriptors.hash.value().settings[0],
-            theme = descriptors.theme.value().settings[0],
-            apps = descriptors.apps.value(),
-            posts = descriptors.posts.value(),
-            users = descriptors.users.value(),
-            npm = descriptors.npm.value(),
-            blogUrl = url.parse(urlService.utils.urlFor('home', true)),
-            blogId = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
+    }).then(descriptors => {
+        const hash = descriptors.hash.value().settings[0];
+        const theme = descriptors.theme.value().settings[0];
+        const apps = descriptors.apps.value();
+        const posts = descriptors.posts.value();
+        const users = descriptors.users.value();
+        const npm = descriptors.npm.value();
+        const blogUrl = url.parse(urlService.utils.urlFor('home', true));
+        const blogId = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');
         data.theme = theme ? theme.value : '';
@@ -141,11 +140,12 @@ function updateCheckRequest() {
     return updateCheckData()
         .then(function then(reqData) {
             let reqObj = {
-                    timeout: 1000,
-                    headers: {}
-                },
-                checkEndpoint = config.get('updateCheck:url'),
-                checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
+                timeout: 1000,
+                headers: {}
+            };
+
+            let checkEndpoint = config.get('updateCheck:url');
+            let checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
 
             if (checkMethod === 'POST') {
                 reqObj.json = true;
@@ -162,10 +162,8 @@ function updateCheckRequest() {
             debug('Request Update Check Service', checkEndpoint);
 
             return request(checkEndpoint, reqObj)
-                .then(function (response) {
-                    return response.body;
-                })
-                .catch(function (err) {
+                .then(response => response.body)
+                .catch(err => {
                     // CASE: no notifications available, ignore
                     if (err.statusCode === 404) {
                         return {
@@ -207,14 +205,14 @@ function updateCheckRequest() {
  * @return {Promise}
  */
 function updateCheckResponse(response) {
-    let notifications = [],
-        notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
+    let notifications = [];
+    let notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
 
     debug('Notification Groups', notificationGroups);
     debug('Response Update Check Service', response);
 
-    return api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal)
-        .then(function () {
+    return api.settings.edit({ settings: [{ key: 'next_update_check', value: response.next_check }] }, internal)
+        .then(() => {
             // CASE: Update Check Service returns multiple notifications.
             if (_.isArray(response)) {
                 notifications = response;
@@ -226,12 +224,12 @@ function updateCheckResponse(response) {
 
             // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
             if (notificationGroups.length) {
-                notifications = notifications.filter(function (notification) {
+                notifications = notifications.filter(notification => {
                     if (!notification.custom) {
                         return true;
                     }
 
-                    return _.includes(notificationGroups.map(function (groupIdentifier) {
+                    return _.includes(notificationGroups.map(groupIdentifier => {
                         if (notification.version.match(new RegExp(groupIdentifier))) {
                             return true;
                         }
@@ -251,9 +249,9 @@ function updateCheck() {
         return Promise.resolve();
     }
 
-    return api.settings.read(_.extend({key: 'next_update_check'}, internal))
+    return api.settings.read(_.extend({ key: 'next_update_check' }, internal))
         .then(function then(result) {
-            var nextUpdateCheck = result.settings[0];
+            const nextUpdateCheck = result.settings[0];
 
             // CASE: Next update check should happen now?
             if (!config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
@@ -267,4 +265,4 @@ function updateCheck() {
         .catch(updateCheckError);
 }
 
-module.exports = updateCheck;
+export default updateCheck;

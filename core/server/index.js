@@ -13,31 +13,31 @@
 require('./overrides');
 
 // Module dependencies
-var debug = require('ghost-ignition').debug('boot:init'),
-    config = require('./config'),
-    Promise = require('bluebird'),
-    common = require('./lib/common'),
-    models = require('./models'),
-    permissions = require('./services/permissions'),
-    auth = require('./services/auth'),
-    dbHealth = require('./data/db/health'),
-    GhostServer = require('./ghost-server'),
-    scheduling = require('./adapters/scheduling'),
-    settings = require('./services/settings'),
-    themes = require('./services/themes'),
-    urlService = require('./services/url'),
+const debug = require('ghost-ignition').debug('boot:init');
 
-    // Services that need initialisation
-    apps = require('./services/apps'),
-    xmlrpc = require('./services/xmlrpc'),
-    slack = require('./services/slack'),
-    webhooks = require('./services/webhooks');
+import config from './config';
+import Promise from 'bluebird';
+import common from './lib/common';
+import models from './models';
+import permissions from './services/permissions';
+import auth from './services/auth';
+import dbHealth from './data/db/health';
+import GhostServer from './ghost-server';
+import scheduling from './adapters/scheduling';
+import settings from './services/settings';
+import themes from './services/themes';
+import urlService from './services/url';
+import apps from './services/apps';
+import xmlrpc from './services/xmlrpc';
+import slack from './services/slack';
+import webhooks from './services/webhooks';
 
 // ## Initialise Ghost
 const init = () => {
     debug('Init Start...');
 
-    var ghostServer, parentApp;
+    let ghostServer;
+    let parentApp;
 
     // Initialize default internationalization, just for core now
     // (settings for language and theme not yet available here)
@@ -123,4 +123,4 @@ const init = () => {
     });
 };
 
-module.exports = init;
+export default init;
