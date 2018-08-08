@@ -1911,7 +1911,7 @@ describe('Import (new test structure)', function () {
 
         describe('import clients/trusted_domains', function () {
             beforeEach(function doImport() {
-                return testUtils.initFixtures('roles', 'owner', 'settings', 'clients');
+                return testUtils.initFixtures('roles', 'owner', 'settings', 'clients', 'client:trusted-domain');
             });
 
             it('skips importing clients, trusted domains by default', function () {
@@ -1953,17 +1953,15 @@ describe('Import (new test structure)', function () {
                         should.exist(model);
                         model.get('secret').should.eql('11111');
 
-                        return models.ClientTrustedDomain.findOne({trusted_domain: 'https://test.com'}, testUtils.context.internal);
+                        return models.ClientTrustedDomain.findAll(testUtils.context.internal);
                     })
-                    .then(function (model) {
-                        should.exist(model);
-                        model.get('client_id').should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
+                    .then((models) => {
+                        models.length.should.eql(3);
+                        models = models.toJSON();
 
-                        return models.ClientTrustedDomain.findOne({trusted_domain: 'https://example.com'}, testUtils.context.internal);
-                    })
-                    .then((model) => {
-                        should.exist(model);
-                        model.get('client_id').should.eql(somethingClient.id);
+                        _.find(models, {trusted_domain: 'https://test.com'}).client_id.should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
+                        should.exist(_.find(models, {trusted_domain: 'https://example.com'}));
+                        _.find(models, {trusted_domain: 'https://lol.com'}).client_id.should.eql(somethingClient.id);
                     });
             });
         });
