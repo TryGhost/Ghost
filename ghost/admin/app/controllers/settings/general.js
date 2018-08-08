@@ -35,21 +35,6 @@ export default Controller.extend({
         this.iconExtensions = ICON_EXTENSIONS;
     },
 
-    isDatedPermalinks: computed('settings.permalinks', {
-        set(key, value) {
-            this.set('settings.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
-
-            let slugForm = this.get('settings.permalinks');
-            return slugForm !== '/:slug/';
-        },
-
-        get() {
-            let slugForm = this.get('settings.permalinks');
-
-            return slugForm !== '/:slug/';
-        }
-    }),
-
     privateRSSUrl: computed('config.blogUrl', 'settings.publicHash', function () {
         let blogUrl = this.get('config.blogUrl');
         let publicHash = this.get('settings.publicHash');

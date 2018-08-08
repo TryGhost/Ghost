@@ -61,16 +61,6 @@ export default [
         updated_by: 1
     },
     {
-        id: 9,
-        key: 'permalinks',
-        value: '/:slug/',
-        type: 'blog',
-        created_at: '2014-01-14T12:01:51.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.282Z',
-        updated_by: 1
-    },
-    {
         id: 10,
         created_at: '2015-09-11T09:44:30.809Z',
         created_by: 1,

@@ -234,26 +234,6 @@
         <div class="gh-setting-header">Advanced settings</div>
         <div class="gh-setting">
             <div class="gh-setting-content">
-                <div class="gh-setting-title">Use dated permalinks</div>
-                <div class="gh-setting-desc">Include the date in your post URLs, e.g. <strong>blogurl.com/2017/01/01/post-title/</strong></div>
-            </div>
-            <div class="gh-setting-action">
-                <div class="for-checkbox">
-                    <label class="checkbox" for="settings-dated-permalinks">
-                        <input
-                            type="checkbox"
-                            checked={{isDatedPermalinks}}
-                            id="settings-dated-permalinks"
-                            onclick={{action (mut isDatedPermalinks) value="target.checked"}}
-                            data-test-dated-permalinks-checkbox
-                        >
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
                 <div class="gh-setting-title">Make this site private</div>
                 <div class="gh-setting-desc">
                     Enable protection with simple shared password. All search engine optimization and social features will be disabled.
