@@ -13,31 +13,31 @@
 require('./overrides');
 
 // Module dependencies
-const debug = require('ghost-ignition').debug('boot:init');
+var debug = require('ghost-ignition').debug('boot:init'),
+    config = require('./config'),
+    Promise = require('bluebird'),
+    common = require('./lib/common'),
+    models = require('./models'),
+    permissions = require('./services/permissions'),
+    auth = require('./services/auth'),
+    dbHealth = require('./data/db/health'),
+    GhostServer = require('./ghost-server'),
+    scheduling = require('./adapters/scheduling'),
+    settings = require('./services/settings'),
+    themes = require('./services/themes'),
+    urlService = require('./services/url'),
 
-import config from 'config';
-import Promise from 'bluebird';
-import common from 'lib/common';
-import models from 'models';
-import permissions from 'services/permissions';
-import auth from 'services/auth';
-import dbHealth from 'data/db/health';
-import GhostServer from 'ghost-server';
-import scheduling from 'adapters/scheduling';
-import settings from 'services/settings';
-import themes from 'services/themes';
-import urlService from 'services/url';
-import apps from 'services/apps';
-import xmlrpc from 'services/xmlrpc';
-import slack from 'services/slack';
-import webhooks from 'services/webhooks';
+    // Services that need initialisation
+    apps = require('./services/apps'),
+    xmlrpc = require('./services/xmlrpc'),
+    slack = require('./services/slack'),
+    webhooks = require('./services/webhooks');
 
 // ## Initialise Ghost
-const init = () => {
+function init() {
     debug('Init Start...');
 
-    let ghostServer;
-    let parentApp;
+    var ghostServer, parentApp;
 
     // Initialize default internationalization, just for core now
     // (settings for language and theme not yet available here)
@@ -46,12 +46,12 @@ const init = () => {
     models.init();
     debug('models done');
 
-    return dbHealth.check().then(() => {
+    return dbHealth.check().then(function () {
         debug('DB health check done');
         // Populate any missing default settings
         // Refresh the API settings cache
         return settings.init();
-    }).then(() => {
+    }).then(function () {
         debug('Update settings cache done');
 
         common.events.emit('db.ready');
@@ -64,7 +64,7 @@ const init = () => {
         //
         // Initialize the permissions actions and objects
         return permissions.init();
-    }).then(() => {
+    }).then(function () {
         debug('Permissions done');
         return Promise.join(
             themes.init(),
@@ -75,7 +75,7 @@ const init = () => {
             // Initialize webhook pings
             webhooks.listen()
         );
-    }).then(() => {
+    }).then(function () {
         debug('Apps, XMLRPC, Slack done');
 
         // Setup our collection of express apps
@@ -87,7 +87,7 @@ const init = () => {
         }
 
         debug('Express Apps done');
-    }).then(() => {
+    }).then(function () {
         /**
          * @NOTE:
          *
@@ -98,12 +98,12 @@ const init = () => {
          * If you create a published post, the url is always stronger than any app url, which is equal.
          */
         return apps.init();
-    }).then(() => {
+    }).then(function () {
         parentApp.use(auth.init());
         debug('Auth done');
 
         return new GhostServer(parentApp);
-    }).then((_ghostServer) => {
+    }).then(function (_ghostServer) {
         ghostServer = _ghostServer;
 
         // scheduling can trigger api requests, that's why we initialize the module after the ghost server creation
@@ -116,11 +116,11 @@ const init = () => {
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         });
-    }).then(() => {
+    }).then(function () {
         debug('Scheduling done');
         debug('...Init End');
         return ghostServer;
     });
-};
+}
 
-export default init;
+module.exports = init;
