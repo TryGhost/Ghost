@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('services:url:resources'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     Resource = require('./Resource'),
+    config = require('../../config'),
     models = require('../../models'),
     common = require('../../lib/common');
 
@@ -132,16 +133,30 @@ class Resources {
             });
     }
 
-    _fetch(resourceConfig) {
+    _fetch(resourceConfig, options = {offset: 0, limit: 999}) {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
-        return models.Base.Model.raw_knex.fetchAll(resourceConfig.modelOptions)
+        let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
+        const isSQLite = config.get('database:client') === 'sqlite3';
+
+        // CASE: prevent "too many SQL variables" error on SQLite3
+        if (isSQLite) {
+            modelOptions.offset = options.offset;
+            modelOptions.limit = options.limit;
+        }
+
+        return models.Base.Model.raw_knex.fetchAll(modelOptions)
             .then((objects) => {
                 debug('fetched', resourceConfig.type, objects.length);
 
                 _.each(objects, (object) => {
                     this.data[resourceConfig.type].push(new Resource(resourceConfig.type, object));
                 });
+
+                if (objects.length && isSQLite) {
+                    options.offset = (options.offset + 1) * options.limit;
+                    return this._fetch(resourceConfig, {offset: options.offset, limit: options.limit});
+                }
             });
     }
 
