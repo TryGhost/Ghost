@@ -33,6 +33,10 @@
                     {
                         "client_id": "59a952be7d79ed06b0d21127",
                         "trusted_domain": "https://example.com"
+                    },
+                    {
+                        "client_id": "59a952be7d79ed06b0d21127",
+                        "trusted_domain": "https://lol.com"
                     }
                 ]
             }
