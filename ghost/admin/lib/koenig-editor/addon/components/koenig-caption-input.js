@@ -11,6 +11,7 @@ export default Component.extend({
     layout,
 
     caption: '',
+    captureInput: false,
     placeholder: '',
 
     _keypressHandler: null,
