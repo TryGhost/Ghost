@@ -36,8 +36,8 @@ export default Component.extend({
             return {
                 items: [{
                     buttonClass: 'fw4 flex items-center white',
-                    icon: 'koenig/kg-edit-v2',
-                    iconClass: 'stroke-white',
+                    icon: 'koenig/kg-edit',
+                    iconClass: 'fill-white',
                     title: 'Edit',
                     text: '',
                     action: run.bind(this, this.editCard)
