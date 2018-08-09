@@ -1,5 +1,5 @@
-<a class="gh-unsplash-photo" href="#" onclick={{action "zoom"}} data-test-unsplash-photo={{photo.id}}>
-    <div class="gh-unsplash-photo-container" style={{style}} data-test-unsplash-photo-container>
+<a class="gh-unsplash-photo" href="#" onclick={{action "zoom"}} data-unsplash-zoomed-photo={{if zoomed photo.id}} data-test-unsplash-photo={{photo.id}} style={{style}}>
+    <div class="gh-unsplash-photo-container" style={{containerStyle}} data-test-unsplash-photo-container>
         <img src={{imageUrl}} alt={{photo.description}} width={{width}} height={{height}} data-test-unsplash-photo-image />
         <div class="gh-unsplash-photo-overlay">
             <div class="gh-unsplash-photo-header">

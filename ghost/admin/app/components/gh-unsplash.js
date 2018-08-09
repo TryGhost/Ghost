@@ -34,12 +34,12 @@ export default Component.extend(ShortcutsMixin, {
     didInsertElement() {
         this._super(...arguments);
         this._resizeCallback = bind(this, this._handleResize);
-        this.get('resizeDetector').setup('.gh-unsplash', this._resizeCallback);
+        this.get('resizeDetector').setup('[data-unsplash]', this._resizeCallback);
         this.registerShortcuts();
     },
 
     willDestroyElement() {
-        this.get('resizeDetector').teardown('.gh-unsplash', this._resizeCallback);
+        this.get('resizeDetector').teardown('[data-unsplash]', this._resizeCallback);
         this.removeShortcuts();
         this.send('resetKeyScope');
         this._super(...arguments);
@@ -48,6 +48,11 @@ export default Component.extend(ShortcutsMixin, {
     actions: {
         loadNextPage() {
             this.get('unsplash').loadNextPage();
+        },
+
+        search(term) {
+            this.unsplash.updateSearch(term);
+            this.send('closeZoom');
         },
 
         zoomPhoto(photo) {
@@ -81,9 +86,11 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         handleEscape() {
-            if (!this.get('zoomedPhoto')) {
-                this.close();
+            if (this.get('zoomedPhoto')) {
+                return this.send('closeZoom');
             }
+
+            this.close();
         }
     },
 

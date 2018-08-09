@@ -5,20 +5,6 @@
 /* The parent container + layout
 /* ---------------------------------------------------------- */
 
-.gh-unsplash {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 9000;
-    overflow: auto;
-}
-
-.gh-unsplash--with-sidenav {
-    margin-left: 280px;
-}
-
 .gh-unsplash-window {
     padding: 25px;
     background: #fff;
@@ -44,29 +30,8 @@
     width: 32px;
 }
 
-.gh-unsplash-close {
-    position: absolute;
-    top: 25px;
-    right: 25px;
-    width: 25px;
-    height: 25px;
-}
-
-.gh-unsplash-close:hover {
-    cursor: pointer;
-}
-
-.gh-unsplash-close svg {
-    fill: color-mod(var(--midgrey) l(+15%));
-}
-
 .gh-unsplash-header {
     text-align: center;
-}
-
-.gh-unsplash-header-desc {
-    font-size: 1.6rem;
-    line-height: 1.6em;
 }
 
 .gh-unsplash-header .gh-input-icon svg {
@@ -86,23 +51,16 @@
     margin: 0;
     padding: 0 30px 1px 50px;
     outline: none;
-    border: 1px solid transparent;
-    color: #111;
+    border: 1px solid color-mod(var(--lightgrey) l(-2%));
+    color: var(--darkgrey);
     font-size: 14px;
-    background-color: #f1f1f1;
+    background-color: #fff;
     border-radius: 20px;
-    transition: all 0.2s ease-in-out;
-
     appearance: none;
 }
 
-.gh-unsplash-search:hover {
-    border-color: #d1d1d1;
-}
-
 .gh-unsplash-search:focus {
-    border-color: #d1d1d1;
-    background: #fff;
+    border-color: color-mod(var(--lightgrey) l(-10%) s(+6%));
 }
 
 
@@ -114,6 +72,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    padding-top: 12px;
 }
 
 
@@ -121,7 +80,6 @@
 /* ---------------------------------------------------------- */
 
 .gh-unsplash-error {
-    max-width: 1200px;
     text-align: center;
 }
 
@@ -288,7 +246,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 9500;
+    z-index: 10000;
     display: flex;
     justify-content: center;
     align-items: center;
