@@ -19,7 +19,7 @@
             update=(action "updateHtml")
         }}
     {{else}}
-        <div class="koenig-card-html-rendered">{{{payload.html}}}</div>
+        <div class="koenig-card-html-rendered">{{sanitize-html payload.html}}</div>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 {{/koenig-card}}
