@@ -71,4 +71,11 @@
             placeholder="Type caption for image (optional)"
         }}
     {{/if}}
+
+    {{#if imageSelector}}
+        {{component imageSelector
+            searchTerm=payload.searchTerm
+            select=(action "selectFromImageSelector")
+            close=(action "closeImageSelector")}}
+    {{/if}}
 {{/koenig-card}}

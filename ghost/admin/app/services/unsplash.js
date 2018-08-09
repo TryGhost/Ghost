@@ -54,6 +54,21 @@ export default Service.extend({
         return reject();
     },
 
+    updateSearch(term) {
+        if (term === this.get('searchTerm')) {
+            return;
+        }
+
+        this.set('searchTerm', term);
+        this._reset();
+
+        if (term) {
+            return this.get('_search').perform(term);
+        } else {
+            return this.get('_loadNew').perform();
+        }
+    },
+
     retryLastRequest() {
         return this.get('_retryLastRequest').perform();
     },
@@ -75,18 +90,7 @@ export default Service.extend({
 
     actions: {
         updateSearch(term) {
-            if (term === this.get('searchTerm')) {
-                return;
-            }
-
-            this.set('searchTerm', term);
-            this._reset();
-
-            if (term) {
-                return this.get('_search').perform(term);
-            } else {
-                return this.get('_loadNew').perform();
-            }
+            return this.updateSearch(term);
         }
     },
 

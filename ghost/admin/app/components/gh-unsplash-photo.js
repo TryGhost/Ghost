@@ -13,7 +13,7 @@ export default Component.extend({
     zoomed: false,
 
     // closure actions
-    insert() {},
+    select() {},
     zoom() {},
 
     style: computed('zoomed', function () {
@@ -78,10 +78,10 @@ export default Component.extend({
     },
 
     actions: {
-        insert(event) {
+        select(event) {
             event.preventDefault();
             event.stopPropagation();
-            this.insert(this.get('photo'));
+            this.select(this.get('photo'));
         },
 
         zoom(event) {

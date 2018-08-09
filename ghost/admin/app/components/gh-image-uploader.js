@@ -128,8 +128,8 @@ export default Component.extend({
             }
         },
 
-        addUnsplashPhoto(photo) {
-            this.set('url', photo.urls.regular);
+        addUnsplashPhoto({src}) {
+            this.set('url', src);
             this.send('saveUrl');
         },
 

@@ -6,7 +6,7 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {computed, set} from '@ember/object';
+import {computed, set, setProperties} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -32,10 +32,20 @@ export default Component.extend({
     deselectCard() {},
     editCard() {},
     saveCard() {},
+    deleteCard() {},
     moveCursorToNextSection() {},
     moveCursorToPrevSection() {},
     addParagraphAfterCard() {},
     registerComponent() {},
+
+    imageSelector: computed('payload.imageSelector', function () {
+        let selector = this.payload.imageSelector;
+        let imageSelectors = {
+            unsplash: 'gh-unsplash'
+        };
+
+        return imageSelectors[selector];
+    }),
 
     counts: computed('payload.{src,caption}', function () {
         let wordCount = 0;
@@ -168,6 +178,23 @@ export default Component.extend({
         resetSrcs() {
             this.set('previewSrc', null);
             this._updatePayloadAttr('src', null);
+        },
+
+        selectFromImageSelector({src, caption, alt}) {
+            let {payload, saveCard} = this;
+            let imageSelector, searchTerm;
+
+            setProperties(payload, {src, caption, alt, imageSelector, searchTerm});
+
+            saveCard(payload, false);
+        },
+
+        closeImageSelector() {
+            if (!this.payload.src) {
+                return this.deleteCard();
+            }
+
+            set(this.payload, 'imageSelector', undefined);
         }
     },
 

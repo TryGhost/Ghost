@@ -363,11 +363,11 @@ export default Component.extend(ShortcutsMixin, {
             this.toggleProperty('_showUnsplash');
         },
 
-        insertUnsplashPhoto(photo) {
+        insertUnsplashPhoto({src, alt, caption}) {
             let image = {
-                alt: photo.description || '',
-                url: photo.urls.regular,
-                credit: `<small>Photo by [${photo.user.name}](${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit) / [Unsplash](https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)</small>`
+                alt,
+                url: src,
+                credit: `<small>${caption}</small>`
             };
 
             this._insertImages([image]);

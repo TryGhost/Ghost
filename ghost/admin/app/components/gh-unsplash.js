@@ -16,10 +16,11 @@ export default Component.extend(ShortcutsMixin, {
     shortcuts: null,
     tagName: '',
     zoomedPhoto: null,
+    searchTerm: null,
 
     // closure actions
     close() {},
-    insert() {},
+    select() {},
 
     sideNavHidden: or('ui.{autoNav,isFullScreen,showMobileMenu}'),
 
@@ -29,6 +30,16 @@ export default Component.extend(ShortcutsMixin, {
         this.shortcuts = {
             escape: {action: 'handleEscape', scope: 'all'}
         };
+    },
+
+    didReceiveAttrs() {
+        this._super(...arguments);
+
+        if (this.searchTerm !== this._searchTerm) {
+            this.unsplash.updateSearch(this.searchTerm);
+        }
+
+        this._searchTerm = this.searchTerm;
     },
 
     didInsertElement() {
@@ -63,9 +74,16 @@ export default Component.extend(ShortcutsMixin, {
             this.set('zoomedPhoto', null);
         },
 
-        insert(photo) {
+        select(photo) {
             this.get('unsplash').triggerDownload(photo);
-            this.insert(photo);
+
+            let selectParams = {
+                src: photo.urls.regular,
+                alt: photo.description || '',
+                caption: `Photo by <a href="${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">${photo.user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a>`
+            };
+            this.select(selectParams);
+
             this.close();
         },
 

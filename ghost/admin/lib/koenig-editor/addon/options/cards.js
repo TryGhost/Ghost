@@ -8,7 +8,9 @@ export default [
     createComponentCard('embed', {hasEditMode: false, deleteIfEmpty: 'payload.html'}),
     createComponentCard('hr', {hasEditMode: false, selectAfterInsert: false}),
     createComponentCard('html', {deleteIfEmpty: 'payload.html'}),
-    createComponentCard('image', {hasEditMode: false}),
+    createComponentCard('image', {hasEditMode: false, deleteIfEmpty(card) {
+        return card.payload.imageSelector && !card.payload.src;
+    }}),
     createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'})
 ];
 
@@ -89,8 +91,11 @@ export const CARD_MENU = [
             iconClass: 'kg-card-type-unsplash',
             matches: ['unsplash'],
             type: 'card',
-            replaceArg: 'embed',
-            params: ['url']
+            replaceArg: 'image',
+            params: ['searchTerm'],
+            payload: {
+                imageSelector: 'unsplash'
+            }
         },
         {
             label: 'Vimeo',
