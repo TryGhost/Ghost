@@ -58,7 +58,7 @@
     "ghost-storage-base": "0.0.3",
     "glob": "5.0.15",
     "got": "7.1.0",
-    "gscan": "1.5.0",
+    "gscan": "https://github.com/TryGhost/gscan/tarball/437c99f72cd6c350ffe1388f2a95a405637592cf",
     "html-to-text": "3.3.0",
     "image-size": "0.6.3",
     "intl": "1.2.5",
