@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-slash-menu';
 import {CARD_MENU} from '../options/cards';
+import {assign} from '@ember/polyfills';
 import {computed, set} from '@ember/object';
 import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
@@ -91,7 +92,7 @@ export default Component.extend({
         itemClicked(item, event) {
             let range = this._openRange.head.section.toRange();
             let [, ...params] = this._query.split(/\s/);
-            let payload;
+            let payload = assign({}, item.payload);
 
             // make sure the click doesn't propagate and get picked up by the
             // newly inserted card which can then remove itself because it
@@ -103,7 +104,6 @@ export default Component.extend({
 
             // params are order-dependent and listed in CARD_MENU for each card
             if (!isEmpty(item.params) && !isEmpty(params)) {
-                payload = {};
                 item.params.forEach((param, i) => {
                     payload[param] = params[i];
                 });

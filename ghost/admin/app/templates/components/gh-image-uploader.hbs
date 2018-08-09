@@ -28,7 +28,7 @@
 
 {{#if _showUnsplash}}
     {{gh-unsplash
-        insert=(action "addUnsplashPhoto")
+        select=(action "addUnsplashPhoto")
         close=(action (toggle "_showUnsplash" this))
     }}
 {{/if}}

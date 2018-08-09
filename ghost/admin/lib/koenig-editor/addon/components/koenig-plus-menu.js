@@ -96,7 +96,7 @@ export default Component.extend({
             let range = this._editorRange;
 
             if (item.type === 'card') {
-                this.replaceWithCardSection(item.replaceArg, range);
+                this.replaceWithCardSection(item.replaceArg, range, item.payload);
             }
 
             this._hideButton();

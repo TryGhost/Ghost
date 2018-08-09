@@ -40,7 +40,7 @@
                             {{#each unsplash.columns as |photos|}}
                                 <div class="gh-unsplash-grid-column">
                                     {{#each photos as |photo|}}
-                                        {{gh-unsplash-photo photo=photo zoom=(action "zoomPhoto") insert=(action "insert")}}
+                                        {{gh-unsplash-photo photo=photo zoom=(action "zoomPhoto") select=(action "select")}}
                                     {{/each}}
                                 </div>
                             {{/each}}
@@ -73,17 +73,12 @@
 
                 {{!-- zoomed image overlay --}}
                 {{#if zoomedPhoto}}
-<<<<<<< HEAD
-                    <div class="absolute top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white" {{action "closeZoom"}}>
-                        {{gh-unsplash-photo photo=zoomedPhoto zoomed=true zoom=(action "closeZoom") insert=(action "insert")}}
-=======
                     <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{action "closeZoom"}}>
                         {{gh-unsplash-photo
                             photo=zoomedPhoto
                             zoomed=true
                             zoom=(action "closeZoom")
                             select=(action "select")}}
->>>>>>> 419884354... fixed zoom layout
                     </div>
                 {{/if}}
             </div>
