@@ -46,22 +46,14 @@ _private.validateData = function validateData(object) {
             });
         }
 
-        let redirect = false;
-
-        // CASE: user wants to redirect traffic from resource to route
-        // @TODO: enable redirect feature if confirmed
-        if (false && shortForm.match(/^->/)) { // eslint-disable-line no-constant-condition
-            shortForm = shortForm.replace(/^->/, '');
-            redirect = true;
-        }
-
         let [resourceKey, slug] = shortForm.split('.');
 
         longForm.query[options.resourceKey || resourceKey] = {};
         longForm.query[options.resourceKey || resourceKey] = _.omit(_.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]), 'alias');
 
+        // redirect is enabled by default when using the short form
         longForm.router = {
-            [RESOURCE_CONFIG.QUERY[resourceKey].alias]: [{slug: slug, redirect: redirect}]
+            [RESOURCE_CONFIG.QUERY[resourceKey].alias]: [{slug: slug, redirect: true}]
         };
 
         longForm.query[options.resourceKey || resourceKey].options.slug = slug;
@@ -80,7 +72,7 @@ _private.validateData = function validateData(object) {
         const allowedQueryOptions = ['limit', 'filter', 'include', 'slug', 'visibility', 'status'];
         const allowedRouterOptions = ['redirect', 'slug'];
         const defaultRouterOptions = {
-            redirect: false
+            redirect: true
         };
 
         let data = {
