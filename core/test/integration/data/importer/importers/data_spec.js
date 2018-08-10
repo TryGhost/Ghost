@@ -584,7 +584,7 @@ describe('Integration: Importer', function () {
                 .then(function () {
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal)),
-                        models.Tag.findPage(testUtils.context.internal)
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
                     ]);
                 }).then(function (result) {
                     const posts = result[0].posts,
@@ -682,7 +682,7 @@ describe('Integration: Importer', function () {
                 .then(function () {
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal)),
-                        models.Tag.findPage(testUtils.context.internal),
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
                         models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
@@ -824,7 +824,7 @@ describe('Integration: Importer', function () {
                     imported.problems.length.should.eql(0);
 
                     return Promise.all([
-                        models.Tag.findPage(testUtils.context.internal),
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
@@ -1122,7 +1122,7 @@ describe('Integration: Importer', function () {
                 .then(function () {
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal)),
-                        models.Tag.findPage(testUtils.context.internal),
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
                         models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal)),
                         models.Client.findAll(testUtils.context.internal),
                         models.ClientTrustedDomain.findAll(testUtils.context.internal)
