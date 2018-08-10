@@ -146,6 +146,8 @@ class ParentRouter extends EventEmitter {
     }
 
     isRedirectEnabled(routerType, slug) {
+        debug('isRedirectEnabled', this.name, this.route && this.route.value, routerType, slug);
+
         if (!this.data || !Object.keys(this.data.router)) {
             return false;
         }
