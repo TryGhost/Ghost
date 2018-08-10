@@ -26,6 +26,15 @@ module.exports.up = () => {
             if (content.match(/globals\.permalinks/)) {
                 return models.Settings.findOne({key: 'permalinks'}, localOptions)
                     .then((model) => {
+                        // CASE: the permalinks setting get's inserted when you first start Ghost
+                        if (!model) {
+                            model = {
+                                get: () => {
+                                    return '/:slug/';
+                                }
+                            };
+                        }
+
                         settingsModel = model;
 
                         // CASE: create a backup

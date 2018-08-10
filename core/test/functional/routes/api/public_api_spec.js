@@ -534,7 +534,7 @@ describe('Public API', function () {
                 var post = res.body.posts[0],
                     publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-                post.title.should.eql('Using the Ghost editor');
+                post.title.should.eql('Writing posts with Ghost ✍️');
 
                 return request
                     .get(testUtils.API.getApiQuery(
