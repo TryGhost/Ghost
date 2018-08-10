@@ -1,5 +1,5 @@
 const config = require('../../config'),
-    { logging } = require('ghost-ignition');
+    {logging} = require('ghost-ignition');
 
 module.exports = logging({
     env: config.get('env'),
