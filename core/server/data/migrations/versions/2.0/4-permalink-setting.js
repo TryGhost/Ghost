@@ -36,7 +36,11 @@ module.exports.up = () => {
                     })
                     .then(() => {
                         const permalinkValue = settingsModel.get('value');
-                        const modifiedContent = content.replace(/\/?'?{globals.permalinks}'?\/?/g, permalinkValue.replace(/:(\w+)/g, '{$1}'));
+                        let modifiedContent = content.replace(/\/?'?{globals.permalinks}'?\/?/g, permalinkValue.replace(/:(\w+)/g, '{$1}'));
+
+                        if (modifiedContent.indexOf('# special 1.0 compatibility setting. See the docs for details.') !== -1) {
+                            modifiedContent = modifiedContent.replace('# special 1.0 compatibility setting. See the docs for details.', '');
+                        }
 
                         return fs.writeFile(filePath, modifiedContent, 'utf8');
                     })
