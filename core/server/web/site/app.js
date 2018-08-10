@@ -36,6 +36,10 @@ var debug = require('ghost-ignition').debug('blog'),
 
 let router;
 
+function SiteRouter(req, res, next) {
+    router(req, res, next);
+}
+
 module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
@@ -128,11 +132,6 @@ module.exports = function setupSiteApp(options = {}) {
     debug('General middleware done');
 
     router = siteRoutes(options);
-
-    function SiteRouter(req, res, next) {
-        router(req, res, next);
-    }
-
     setPrototypeOf(SiteRouter, router);
 
     // Set up Frontend routes (including private blogging routes)
@@ -150,6 +149,7 @@ module.exports = function setupSiteApp(options = {}) {
 module.exports.reload = () => {
     // https://github.com/expressjs/express/issues/2596
     router = siteRoutes({start: true});
+    setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)
     apps.init();
