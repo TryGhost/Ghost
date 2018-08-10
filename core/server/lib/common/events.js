@@ -9,9 +9,9 @@ EventRegistry = function () {
 
 util.inherits(EventRegistry, events.EventEmitter);
 
-EventRegistry.prototype.onMany = (arr, onEvent) => {
+EventRegistry.prototype.onMany = function(arr, onEvent) {
 
-    arr.forEach(function (eventName) {
+    arr.forEach((eventName) => {
         this.on(eventName, onEvent);
     });
 };
