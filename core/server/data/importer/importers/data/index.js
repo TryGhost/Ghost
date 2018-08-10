@@ -70,11 +70,13 @@ DataImporter = {
             });
         }
 
-        // CASE: We deny LTS imports. We can determine that because since Ghost 1.0 we export the Ghost version your blog is on.
-        // @TODO: add migration guide link
+        // CASE: We deny LTS imports, because these are two major version jumps. We only support previous (v1) and latest (v2).
+        //       We can detect a wrong structure by checking the meta version field. Ghost v0 doesn't use semver compliant versions.
+        //       Same applies to WP exports. It currently uses the same meta version notation (000) - https://github.com/TryGhost/wp-ghost-exporter/issues/12
         if (!semver.valid(importData.meta.version)) {
             return Promise.reject(new common.errors.InternalServerError({
-                message: 'Importing a LTS export into Ghost 2.0 is not allowed.'
+                message: 'Detected unsupported file structure.',
+                context: 'Please install Ghost 1.0, import the file and then update your blog to Ghost 2.0.\nVisit https://docs.ghost.org/v1/docs/install or ask for help in our https://forum.ghost.org.'
             }));
         }
 
