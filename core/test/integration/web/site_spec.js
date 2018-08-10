@@ -1267,12 +1267,13 @@ describe('Integration - Web - Site', function () {
                                         resource: 'users',
                                         type: 'read',
                                         options: {
-                                            slug: 'joe-bloggs'
+                                            slug: 'joe-bloggs',
+                                            redirect: false
                                         }
                                     }
                                 },
                                 router: {
-                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                    users: [{redirect: false, slug: 'joe-bloggs'}]
                                 }
                             }
                         },
@@ -1290,12 +1291,13 @@ describe('Integration - Web - Site', function () {
                                         resource: 'users',
                                         type: 'read',
                                         options: {
-                                            slug: 'joe-bloggs'
+                                            slug: 'joe-bloggs',
+                                            redirect: false
                                         }
                                     }
                                 },
                                 router: {
-                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                    users: [{redirect: false, slug: 'joe-bloggs'}]
                                 }
                             }
                         }
@@ -1478,8 +1480,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('/channel3/');
+                        response.statusCode.should.eql(200);
                     });
             });
         });

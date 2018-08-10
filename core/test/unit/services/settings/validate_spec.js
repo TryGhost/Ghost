@@ -323,7 +323,6 @@ describe('UNIT: services/settings/validate', function () {
                     '/food/': {
                         data: 'tag.food'
                     },
-                    // @TODO: enable redirect
                     '/music/': {
                         data: 'tag.music'
                     },
@@ -370,7 +369,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'food'}]
+                                tags: [{redirect: true, slug: 'food'}]
                             }
                         },
                         templates: []
@@ -388,7 +387,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'music'}]
+                                tags: [{redirect: true, slug: 'music'}]
                             }
                         },
                         templates: []
@@ -414,7 +413,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'bed'}, {redirect: false, slug: 'dream'}]
+                                tags: [{redirect: true, slug: 'bed'}, {redirect: true, slug: 'dream'}]
                             }
                         },
                         templates: []
@@ -436,7 +435,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                pages: [{redirect: false, slug: 'home'}]
+                                pages: [{redirect: true, slug: 'home'}]
                             }
                         },
                         templates: []
@@ -455,7 +454,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'something'}]
+                                tags: [{redirect: true, slug: 'something'}]
                             }
                         },
                         templates: []
@@ -474,7 +473,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'sport'}]
+                                tags: [{redirect: true, slug: 'sport'}]
                             }
                         },
                         templates: []
@@ -499,7 +498,7 @@ describe('UNIT: services/settings/validate', function () {
                             posts: {
                                 resource: 'posts',
                                 type: 'read',
-                                redirect: true
+                                redirect: false
                             }
                         }
                     },
@@ -542,7 +541,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: false}]
+                                posts: [{redirect: true}]
                             }
                         },
                         templates: []
@@ -561,7 +560,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: true}]
+                                posts: [{redirect: false}]
                             }
                         },
                         templates: []
@@ -601,7 +600,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: false, slug: 'ups'}]
+                                posts: [{redirect: true, slug: 'ups'}]
                             }
                         },
                         templates: []
