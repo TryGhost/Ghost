@@ -1408,7 +1408,7 @@ describe('LTS', function () {
                 "0".should.eql(1, 'LTS import should fail');
             })
             .catch(function (err) {
-                err.message.should.eql('Importing a LTS export into Ghost 2.0 is not allowed.');
+                err.message.should.eql('Detected unsupported file structure.');
             });
     });
 });
