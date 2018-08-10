@@ -36,6 +36,7 @@ db = {
         }
 
         tasks = [
+            localUtils.convertOptions(exporter.EXCLUDED_TABLES, null, {forModel: false}),
             backupDatabase,
             jsonResponse
         ];

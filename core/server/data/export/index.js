@@ -28,7 +28,7 @@ exportFileName = function exportFileName(options) {
         return Promise.resolve(options.filename + '.json');
     }
 
-    return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, options)).then(function (result) {
+    return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, _.pick(options, 'transacting'))).then(function (result) {
         if (result) {
             title = security.string.safe(result.get('value')) + '.';
         }
