@@ -394,6 +394,10 @@ export default Component.extend({
                 this._startedRunLoop = false;
                 run.end();
             }
+
+            if (this._cleanupScheduled) {
+                run.schedule('afterRender', this, this._cleanup);
+            }
         });
 
         editor.postDidChange(() => {
@@ -624,15 +628,27 @@ export default Component.extend({
     },
 
     /* public interface ----------------------------------------------------- */
-    // TODO: find a better way to expose this?
+    // TODO: find a better way to expose the public interface?
 
+    // HACK: this scheduled cleanup is a bit hacky. We call .cleanup when
+    // initializing Koenig in our editor controller but we have to wait for
+    // rendering to finish so that componentCards is populated, even then
+    // it's unlikely the card.component registration has finished.
+    //
+    // TODO: see if there's a way we can perform cleanup directly on the
+    // mobiledoc, maybe with a "cleanupOnInit" option so that we modify the
+    // mobiledoc before we start rendering
     cleanup() {
+        this._cleanupScheduled = true;
+    },
+
+    _cleanup() {
         this.componentCards.forEach((card) => {
-            if (!card.koenigOptions.deleteIfEmpty) {
+            let shouldDelete = card.koenigOptions.deleteIfEmpty;
+
+            if (!shouldDelete) {
                 return;
             }
-
-            let shouldDelete = card.koenigOptions.deleteIfEmpty;
 
             if (typeof shouldDelete === 'string') {
                 let payloadKey = shouldDelete;
@@ -643,6 +659,7 @@ export default Component.extend({
                 this.deleteCard(card, NO_CURSOR_MOVEMENT);
             }
         });
+        this._cleanupScheduled = false;
     },
 
     /* mobiledoc event handlers --------------------------------------------- */
