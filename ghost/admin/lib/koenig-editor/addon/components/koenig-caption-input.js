@@ -90,10 +90,10 @@ export default Component.extend({
         let key = new Key(event);
         let {editor} = this;
 
-        if (event.target.matches('[data-kg="editor"]') && editor && !editor._hasFocus() && key.isPrintableKey()) {
+        if (event.target.matches('[data-kg="editor"]') && editor && !editor._hasFocus() && key.isPrintableKey() && !key.isEnter()) {
             editor.focus();
             editor.run((postEditor) => {
-                postEditor.insertText(editor.post.tailPosition(), event.key);
+                postEditor.insertText(editor.post.tailPosition(), key.toString());
             });
 
             event.preventDefault();
