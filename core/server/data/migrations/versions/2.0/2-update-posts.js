@@ -46,6 +46,10 @@ module.exports.up = (options) => {
 
                 try {
                     mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+
+                    if (!mobiledoc) {
+                        mobiledoc = converters.mobiledocConverter.blankStructure();
+                    }
                 } catch (err) {
                     common.logging.warn(`Invalid mobiledoc structure for ${post.id}. Falling back to blank structure.`);
                     mobiledoc = converters.mobiledocConverter.blankStructure();
