@@ -154,7 +154,7 @@ class Resources {
                 });
 
                 if (objects.length && isSQLite) {
-                    options.offset = (options.offset + 1) * options.limit;
+                    options.offset = options.offset + options.limit;
                     return this._fetch(resourceConfig, {offset: options.offset, limit: options.limit});
                 }
             });
