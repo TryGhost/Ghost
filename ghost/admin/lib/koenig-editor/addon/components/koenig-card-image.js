@@ -182,9 +182,11 @@ export default Component.extend({
 
         selectFromImageSelector({src, caption, alt}) {
             let {payload, saveCard} = this;
-            let imageSelector, searchTerm;
+            let searchTerm;
 
-            setProperties(payload, {src, caption, alt, imageSelector, searchTerm});
+            setProperties(payload, {src, caption, alt, searchTerm});
+
+            this.send('closeImageSelector');
 
             saveCard(payload, false);
         },
@@ -195,6 +197,10 @@ export default Component.extend({
             }
 
             set(this.payload, 'imageSelector', undefined);
+
+            // ensure focus is returned to the editor so that the card which
+            // appears selected behaves as if it's selected
+            this.editor.focus();
         }
     },
 
