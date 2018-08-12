@@ -1,6 +1,31 @@
 const common = require('../lib/common');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
+const request = require('../lib/request');
+
+const findUrlWithProvider = function findUrlWithProvider(url) {
+    let provider;
+
+    // build up a list of URL variations to test against because the oembed
+    // providers list is not always up to date with scheme or www vs non-www
+    let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
+    let testUrls = [
+        `http://${baseUrl}`,
+        `https://${baseUrl}`,
+        `http://www.${baseUrl}`,
+        `https://www.${baseUrl}`
+    ];
+
+    for (let testUrl of testUrls) {
+        provider = hasProvider(testUrl);
+        if (provider) {
+            url = testUrl;
+            break;
+        }
+    }
+
+    return {url, provider};
+};
 
 let oembed = {
     read(options) {
@@ -12,34 +37,41 @@ let oembed = {
             }));
         }
 
-        // build up a list of URL variations to test against because the oembed
-        // providers list is not always up to date with scheme or www vs non-www
-        let base = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
-        let testUrls = [
-            `http://${base}`,
-            `https://${base}`,
-            `http://www.${base}`,
-            `https://www.${base}`
-        ];
-        let provider;
-        for (let testUrl of testUrls) {
-            provider = hasProvider(testUrl);
-            if (provider) {
-                url = testUrl;
-                break;
-            }
-        }
-
-        if (!provider) {
+        function unknownProvider() {
             return Promise.reject(new common.errors.ValidationError({
                 message: common.i18n.t('errors.api.oembed.unknownProvider')
             }));
         }
 
-        return extract(url).catch((err) => {
-            return Promise.reject(new common.errors.InternalServerError({
-                message: err.message
-            }));
+        function knownProvider(url) {
+            return extract(url).catch((err) => {
+                return Promise.reject(new common.errors.InternalServerError({
+                    message: err.message
+                }));
+            });
+        }
+
+        let provider;
+        ({url, provider} = findUrlWithProvider(url));
+
+        if (provider) {
+            return knownProvider(url);
+        }
+
+        // see if the URL is a redirect to cater for shortened urls
+        return request(url, {
+            method: 'HEAD',
+            timeout: 2 * 1000,
+            followRedirect: true
+        }).then((response) => {
+            if (response.url !== url) {
+                ({url, provider} = findUrlWithProvider(response.url));
+                return provider ? knownProvider(url) : unknownProvider();
+            }
+
+            return unknownProvider();
+        }).catch(() => {
+            return unknownProvider();
         });
     }
 };
