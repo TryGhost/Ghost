@@ -1001,44 +1001,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 User: 'users',
                 Tag: 'tags'
             };
-            const reducedFields = options.reducedFields;
-            const exclude = {
-                Post: [
-                    'title',
-                    'mobiledoc',
-                    'html',
-                    'plaintext',
-                    'amp',
-                    'codeinjection_head',
-                    'codeinjection_foot',
-                    'meta_title',
-                    'meta_description',
-                    'custom_excerpt',
-                    'og_image',
-                    'og_title',
-                    'og_description',
-                    'twitter_image',
-                    'twitter_title',
-                    'twitter_description',
-                    'custom_template'
-                ],
-                User: [
-                    'bio',
-                    'website',
-                    'location',
-                    'facebook',
-                    'twitter',
-                    'accessibility',
-                    'meta_title',
-                    'meta_description',
-                    'tour'
-                ],
-                Tag: [
-                    'description',
-                    'meta_title',
-                    'meta_description'
-                ]
-            };
+            const exclude = options.exclude;
             const filter = options.filter;
             const withRelated = options.withRelated;
             const withRelatedFields = options.withRelatedFields;
@@ -1080,10 +1043,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
 
             // exclude fields if enabled
-            if (reducedFields) {
+            if (exclude) {
                 const toSelect = _.keys(schema.tables[tableNames[modelName]]);
 
-                _.each(exclude[modelName], (key) => {
+                _.each(exclude, (key) => {
                     if (toSelect.indexOf(key) !== -1) {
                         toSelect.splice(toSelect.indexOf(key), 1);
                     }
