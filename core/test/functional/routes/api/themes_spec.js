@@ -26,42 +26,8 @@ describe('Themes API', function () {
         editor: null
     }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
 
-    /**
-     * Create a temporary folder that contains:
-     * - 1 valid theme that has warnings: test-theme
-     * - 1 invalid theme: broken-theme
-     */
-    function setupThemesFolder(tmpContentPath) {
-        fs.ensureDirSync(tmpContentPath);
-
-        fs.mkdirSync(path.join(tmpContentPath, 'casper'));
-        fs.writeFileSync(
-            path.join(tmpContentPath, 'casper', 'package.json'),
-            JSON.stringify({name: 'casper', version: '0.1.2'})
-        );
-        fs.writeFileSync(path.join(tmpContentPath, 'casper', 'index.hbs'));
-        fs.writeFileSync(path.join(tmpContentPath, 'casper', 'post.hbs'));
-
-        fs.mkdirSync(path.join(tmpContentPath, 'test-theme'));
-        fs.writeFileSync(
-            path.join(tmpContentPath, 'test-theme', 'package.json'),
-            JSON.stringify({name: 'test-theme', version: '0.5.9', author: {email: 'test@example.org'}})
-        );
-        fs.writeFileSync(path.join(tmpContentPath, 'test-theme', 'index.hbs'));
-        fs.writeFileSync(path.join(tmpContentPath, 'test-theme', 'post.hbs'));
-
-        fs.mkdirSync(path.join(tmpContentPath, 'broken-theme'));
-        fs.writeFileSync(
-            path.join(tmpContentPath, 'broken-theme', 'package.json'),
-            JSON.stringify({name: 'broken-theme', version: '1.1.2'})
-        );
-    }
-
     before(function () {
-        // extend content theme folder
-        setupThemesFolder(path.join(contentFolder, 'themes'));
-
-        return ghost({contentFolder: contentFolder, copyThemes: false})
+        return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
@@ -114,7 +80,7 @@ describe('Themes API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse.themes);
                     testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.eql(3);
+                    jsonResponse.themes.length.should.eql(5);
 
                     testUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
                     jsonResponse.themes[0].name.should.eql('broken-theme');
@@ -125,12 +91,21 @@ describe('Themes API', function () {
                     jsonResponse.themes[1].name.should.eql('casper');
                     jsonResponse.themes[1].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[1].active.should.be.true();
-                    jsonResponse.themes[1].templates.should.eql([]);
 
                     testUtils.API.checkResponse(jsonResponse.themes[2], 'theme');
-                    jsonResponse.themes[2].name.should.eql('test-theme');
+                    jsonResponse.themes[2].name.should.eql('casper-1.4');
                     jsonResponse.themes[2].package.should.be.an.Object().with.properties('name', 'version');
                     jsonResponse.themes[2].active.should.be.false();
+
+                    testUtils.API.checkResponse(jsonResponse.themes[3], 'theme');
+                    jsonResponse.themes[3].name.should.eql('test-theme');
+                    jsonResponse.themes[3].package.should.be.false;
+                    jsonResponse.themes[3].active.should.be.false();
+
+                    testUtils.API.checkResponse(jsonResponse.themes[4], 'theme');
+                    jsonResponse.themes[4].name.should.eql('test-theme-channels');
+                    jsonResponse.themes[4].package.should.be.false;
+                    jsonResponse.themes[4].active.should.be.false();
 
                     done();
                 });
@@ -186,12 +161,26 @@ describe('Themes API', function () {
                             jsonResponse.themes[0].active.should.be.false();
 
                             // ensure tmp theme folder contains two themes now
-                            var tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
-                            tmpFolderContents.should.be.an.Array().with.lengthOf(4);
-                            tmpFolderContents[0].should.eql('broken-theme');
-                            tmpFolderContents[1].should.eql('casper');
-                            tmpFolderContents[2].should.eql('test-theme');
-                            tmpFolderContents[3].should.eql('valid');
+                            const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
+                            tmpFolderContents.forEach((theme, index) => {
+                                if (theme.match(/^\./)) {
+                                    tmpFolderContents.splice(index, 1);
+                                }
+                            });
+                            tmpFolderContents.should.be.an.Array().with.lengthOf(10);
+
+                            tmpFolderContents.should.eql([
+                                'broken-theme',
+                                'casper',
+                                'casper-1.4',
+                                'casper.zip',
+                                'invalid.zip',
+                                'test-theme',
+                                'test-theme-channels',
+                                'valid',
+                                'valid.zip',
+                                'warnings.zip'
+                            ]);
 
                             // Check the Themes API returns the correct result
                             request.get(testUtils.API.getApiQuery('themes/'))
@@ -207,7 +196,7 @@ describe('Themes API', function () {
 
                                     should.exist(jsonResponse.themes);
                                     testUtils.API.checkResponse(jsonResponse, 'themes');
-                                    jsonResponse.themes.length.should.eql(4);
+                                    jsonResponse.themes.length.should.eql(6);
 
                                     // Casper should be present and still active
                                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
@@ -245,11 +234,25 @@ describe('Themes API', function () {
                     jsonResponse.should.eql({});
 
                     // ensure tmp theme folder contains one theme again now
-                    var tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
-                    tmpFolderContents.should.be.an.Array().with.lengthOf(3);
-                    tmpFolderContents[0].should.eql('broken-theme');
-                    tmpFolderContents[1].should.eql('casper');
-                    tmpFolderContents[2].should.eql('test-theme');
+                    const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
+                    tmpFolderContents.forEach((theme, index) => {
+                        if (theme.match(/^\./)) {
+                            tmpFolderContents.splice(index, 1);
+                        }
+                    });
+                    tmpFolderContents.should.be.an.Array().with.lengthOf(9);
+
+                    tmpFolderContents.should.eql([
+                        'broken-theme',
+                        'casper',
+                        'casper-1.4',
+                        'casper.zip',
+                        'invalid.zip',
+                        'test-theme',
+                        'test-theme-channels',
+                        'valid.zip',
+                        'warnings.zip'
+                    ]);
 
                     // Check the themes API returns the correct result after deletion
                     request.get(testUtils.API.getApiQuery('themes/'))
@@ -265,7 +268,7 @@ describe('Themes API', function () {
 
                             should.exist(jsonResponse.themes);
                             testUtils.API.checkResponse(jsonResponse, 'themes');
-                            jsonResponse.themes.length.should.eql(3);
+                            jsonResponse.themes.length.should.eql(5);
 
                             // Casper should be present and still active
                             casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
@@ -330,7 +333,7 @@ describe('Themes API', function () {
 
                     should.exist(jsonResponse.themes);
                     testUtils.API.checkResponse(jsonResponse, 'themes');
-                    jsonResponse.themes.length.should.eql(3);
+                    jsonResponse.themes.length.should.eql(5);
 
                     casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
                     should.exist(casperTheme);

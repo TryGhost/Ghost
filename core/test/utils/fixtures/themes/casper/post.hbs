@@ -12,7 +12,7 @@ into the {body} of the default.hbs template --}}
 {{!-- Everything inside the #post tags pulls data from the post --}}
 {{#post}}
 
-<main id="site-main" class="site-main outer" role="main">
+<main id="site-main" class="site-main outer">
     <div class="inner">
 
         <article class="post-full {{post_class}} {{#unless feature_image}}no-image{{/unless}}">
@@ -33,7 +33,9 @@ into the {body} of the default.hbs template --}}
             {{/if}}
 
             <section class="post-full-content">
-                {{content}}
+                <div class="post-content">
+                    {{content}}
+                </div>
             </section>
 
             {{!-- Email subscribe form at the bottom of the page --}}
@@ -46,49 +48,23 @@ into the {body} of the default.hbs template --}}
             {{/if}}
 
             <footer class="post-full-footer">
-                {{!-- Everything inside the #author tags pulls data from the author --}}
-                {{#author}}
 
-                <section class="author-card">
-                    {{#if profile_image}}
-                        <img class="author-profile-image" src="{{profile_image}}" alt="{{name}}" />
-                    {{/if}}
-                    <section class="author-card-content">
-                        <h4 class="author-card-name"><a href="{{url}}">{{name}}</a></h4>
-                        {{#if bio}}
-                            <p>{{bio}}</p>
-                        {{else}}
-                            <p>Read <a href="{{url}}">more posts</a> by this author.</p>
-                        {{/if}}
-                    </section>
-                </section>
-                <div class="post-full-footer-right">
-                    <a class="author-card-button" href="{{url}}">Read More</a>
-                </div>
+                {{!-- There are two options for how we display the byline/author-info.
+                If the post has more than one author, we load a specific template
+                from includes/byline-multiple.hbs, otherwise, we just use the
+                default byline. --}}
 
-                {{/author}}
+                {{#has author="count:>1"}}
+                    {{> "byline-multiple"}}
+                {{else}}
+                    {{> "byline-single"}}
+                {{/has}}
+
             </footer>
 
             {{!--
-
-            If you use Disqus comments, just uncomment this block.
-            The only thing you need to change is "test-apkdzgmqhj" - which
-            should be replaced with your own Disqus site-id.
-
             <section class="post-full-comments">
-                <div id="disqus_thread"></div>
-                <script>
-                    var disqus_config = function () {
-                        this.page.url = '{{url absolute="true"}}';
-                        this.page.identifier = 'ghost-{{comment_id}}';
-                    };
-                    (function() {
-                        var d = document, s = d.createElement('script');
-                        s.src = 'https://test-apkdzgmqhj.disqus.com/embed.js';
-                        s.setAttribute('data-timestamp', +new Date());
-                        (d.head || d.body).appendChild(s);
-                    })();
-                </script>
+                If you want to embed comments, this is a good place to do it!
             </section>
             --}}
 
@@ -167,7 +143,7 @@ $(document).ready(function () {
     $postContent.fitVids();
     // End fitVids
 
-    var progressBar = document.querySelector('progress');
+    var progressBar = document.querySelector('#reading-progress');
     var header = document.querySelector('.floating-header');
     var title = document.querySelector('.post-full-title');
 
@@ -216,6 +192,7 @@ $(document).ready(function () {
     window.addEventListener('resize', onResize, false);
 
     update();
+
 });
 </script>
 {{/contentFor}}
