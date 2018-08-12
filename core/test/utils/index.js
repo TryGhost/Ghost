@@ -10,6 +10,7 @@ var Promise = require('bluebird'),
     uuid = require('uuid'),
     KnexMigrator = require('knex-migrator'),
     ghost = require('../../server'),
+    GhostServer = require('../../server/ghost-server'),
     api = require('../../server/api'),
     common = require('../../server/lib/common'),
     fixtureUtils = require('../../server/data/schema/fixtures/utils'),
@@ -972,6 +973,8 @@ startGhost = function startGhost(options) {
         })
         .then(function () {
             let timeout;
+
+            GhostServer.announceServerStart();
 
             return new Promise(function (resolve) {
                 (function retry() {
