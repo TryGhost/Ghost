@@ -2551,9 +2551,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-"gscan@https://github.com/TryGhost/gscan/tarball/437c99f72cd6c350ffe1388f2a95a405637592cf":
+"gscan@https://github.com/TryGhost/gscan/tarball/058e4d63f254df0920f1b257a4992acfed13a476":
   version "1.5.1"
-  resolved "https://github.com/TryGhost/gscan/tarball/437c99f72cd6c350ffe1388f2a95a405637592cf#acc0964bd2a50634a41a64870ee9cb730a6c8c4a"
+  resolved "https://github.com/TryGhost/gscan/tarball/058e4d63f254df0920f1b257a4992acfed13a476#1bae864f251f2b3b4ffaf68958c0d75d322f103e"
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
