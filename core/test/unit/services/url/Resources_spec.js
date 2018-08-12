@@ -83,13 +83,47 @@ describe('Unit: services/url/Resources', function () {
 
             queue.start.callsFake(function (options) {
                 options.event.should.eql('added');
+                const obj = _.find(resources.data.posts, {data: {slug: 'test-1234'}}).data;
+
+                Object.keys(obj).should.eql([
+                    'id',
+                    'uuid',
+                    'slug',
+                    'featured',
+                    'page',
+                    'status',
+                    'visibility',
+                    'created_at',
+                    'updated_at',
+                    'published_at',
+                    'published_by',
+                    'created_by',
+                    'updated_by',
+                    'tags',
+                    'authors',
+                    'author',
+                    'primary_author',
+                    'primary_tag',
+                    'url',
+                    'comment_id'
+                ]);
+
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
+                obj.tags.length.should.eql(1);
+                Object.keys(obj.tags[0]).should.eql(['id', 'slug']);
+                obj.authors.length.should.eql(1);
+                Object.keys(obj.authors[0]).should.eql(['id', 'slug']);
+                should.exist(obj.primary_author);
+                Object.keys(obj.primary_author).should.eql(['id', 'slug']);
+                should.exist(obj.primary_tag);
+                Object.keys(obj.primary_tag).should.eql(['id', 'slug']);
                 done();
             });
 
             models.Post.add({
-                title: 'test',
-                status: 'published'
+                slug: 'test-1234',
+                status: 'published',
+                tags: [{slug: 'tag-1', name: 'tag-name'}]
             }, testUtils.context.owner)
                 .then(function () {
                     onEvents['post.published'](emitEvents['post.published']);
@@ -110,12 +144,12 @@ describe('Unit: services/url/Resources', function () {
             randomResource.reserve();
 
             randomResource.addListener('updated', function () {
-                randomResource.data.title.should.eql('new title, wow');
+                randomResource.data.slug.should.eql('tada');
                 done();
             });
 
             models.Post.edit({
-                title: 'new title, wow'
+                slug: 'tada'
             }, _.merge({id: randomResource.data.id}, testUtils.context.owner))
                 .then(function () {
                     onEvents['post.published.edited'](emitEvents['post.published.edited']);
@@ -132,19 +166,62 @@ describe('Unit: services/url/Resources', function () {
         queue.start.callsFake(function (options) {
             options.event.should.eql('init');
 
-            const randomResource = resources.getAll().posts[Math.floor(Math.random() * (resources.getAll().posts.length - 0) + 0)];
+            const resourceToUpdate = _.find(resources.getAll().posts, (resource) => {
+                if (resource.data.tags.length && resource.data.authors.length) {
+                    return true;
+                }
 
-            randomResource.update = sandbox.stub();
+                return false;
+            });
+
+            sandbox.spy(resourceToUpdate, 'update');
 
             queue.start.callsFake(function (options) {
                 options.event.should.eql('added');
-                randomResource.update.calledOnce.should.be.true();
+
+                resourceToUpdate.update.calledOnce.should.be.true();
+                resourceToUpdate.data.slug.should.eql('eins-zwei');
+
+                const obj = _.find(resources.data.posts, {data: {id: resourceToUpdate.data.id}}).data;
+
+                Object.keys(obj).should.eql([
+                    'id',
+                    'uuid',
+                    'slug',
+                    'featured',
+                    'page',
+                    'status',
+                    'visibility',
+                    'created_at',
+                    'created_by',
+                    'updated_at',
+                    'updated_by',
+                    'published_at',
+                    'published_by',
+                    'tags',
+                    'authors',
+                    'author',
+                    'primary_author',
+                    'primary_tag',
+                    'url',
+                    'comment_id'
+                ]);
+
+                should.exist(obj.tags);
+                Object.keys(obj.tags[0]).should.eql(['id', 'slug']);
+                should.exist(obj.authors);
+                Object.keys(obj.authors[0]).should.eql(['id', 'slug']);
+                should.exist(obj.primary_author);
+                Object.keys(obj.primary_author).should.eql(['id', 'slug']);
+                should.exist(obj.primary_tag);
+                Object.keys(obj.primary_tag).should.eql(['id', 'slug']);
+
                 done();
             });
 
             models.Post.edit({
-                title: 'new title, wow'
-            }, _.merge({id: randomResource.data.id}, testUtils.context.owner))
+                slug: 'eins-zwei'
+            }, _.merge({id: resourceToUpdate.data.id}, testUtils.context.owner))
                 .then(function () {
                     onEvents['post.published.edited'](emitEvents['post.published.edited']);
                 })
