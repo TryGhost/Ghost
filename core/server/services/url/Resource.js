@@ -38,7 +38,7 @@ class Resource extends EventEmitter {
     }
 
     update(obj) {
-        this.data = obj;
+        Object.assign(this.data, obj);
 
         if (!this.isReserved()) {
             return;
