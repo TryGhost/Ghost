@@ -13,9 +13,12 @@ production stylesheet in assets/built/screen.css
 7.  Single Post
   7.1. Subscribe Form
   7.2. Post Footer
+     7.2.1 Single Author Byline
+     7.2.2 Multiple Author Byline
   7.3. Comments
   7.4. Related Posts
   7.5. Floating Header
+  7.6. Koenig Styles
 8.  Author Template
 9.  Error Template
 10. Subscribe Overlay
@@ -36,8 +39,8 @@ body {
     display: block;
     width: 100%;
     height: 100%;
-    background-size: cover;
     background-position: center center;
+    background-size: cover;
     border-radius: 100%;
 }
 
@@ -70,9 +73,9 @@ body {
 
 /* Centered content container blocks */
 .inner {
-    width: 100%;
-    max-width: 1040px;
     margin: 0 auto;
+    max-width: 1040px;
+    width: 100%;
 }
 
 /* Usage:
@@ -149,9 +152,9 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 10vw 4vw;
     min-height: 200px;
     max-height: 450px;
-    padding: 10vw 4vw;
     text-align: center;
 }
 
@@ -196,8 +199,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    height: 40px;
     overflow-y: hidden;
+    height: 40px;
     font-size: 1.2rem;
 }
 
@@ -206,11 +209,12 @@ body {
     align-items: center;
     overflow-x: auto;
     overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     margin-right: 10px;
     padding-bottom: 80px;
     letter-spacing: 0.4px;
     white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
+
     -ms-overflow-scrolling: touch;
 }
 
@@ -348,8 +352,8 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 }
 
 .rss-button svg {
-    height: 2.1rem;
     margin-bottom: 1px;
+    height: 2.1rem;
     fill: #fff;
 }
 
@@ -383,9 +387,9 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
     flex: 1 1 300px;
     display: flex;
     flex-direction: column;
-    min-height: 300px;
     overflow: hidden;
     margin: 0 20px 40px;
+    min-height: 300px;
     background: #fff center center;
     background-size: cover;
     border-radius: 5px;
@@ -394,9 +398,9 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 }
 
 .post-card:hover {
-    box-shadow: 0 0 1px rgba(39,44,49,0.10), 0 3px 16px rgba(39, 44, 49,0.07);
-    transition: all 0.3s ease;
-    transform: translate3D(0, -1px, 0);
+    box-shadow: rgba(39,44,49,0.07) 8px 28px 50px, rgba(39, 44, 49, 0.04) 1px 6px 12px;
+    transition: all 0.4s ease;
+    transform: translate3D(0, -1px, 0) scale(1.02);
 }
 
 .post-card-image-link {
@@ -415,6 +419,7 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 
 .post-card-content-link {
     position: relative;
+    flex-grow: 1;
     display: block;
     padding: 25px 25px 0;
     color: var(--darkgrey);
@@ -451,20 +456,138 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 }
 
 .post-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
     padding: 0 25px 25px;
 }
 
-.author-profile-image {
-    width: 25px;
-    height: 25px;
-    margin-right: 5px;
+.author-profile-image,
+.avatar-wrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: color(var(--lightgrey) l(+10%));
     border-radius: 100%;
 
     object-fit: cover;
 }
 
-.post-card-author {
-    font-size: 1.3rem;
+.post-card-meta .profile-image-wrapper,
+.post-card-meta .avatar-wrapper {
+    position: relative;
+}
+
+.author-list {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.author-list-item {
+    position: relative;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.author-list-item:nth-child(1) {
+    z-index: 10;
+}
+.author-list-item:nth-child(2) {
+    z-index: 9;
+}
+.author-list-item:nth-child(3) {
+    z-index: 8;
+}
+.author-list-item:nth-child(4) {
+    z-index: 7;
+}
+.author-list-item:nth-child(5) {
+    z-index: 6;
+}
+.author-list-item:nth-child(6) {
+    z-index: 5;
+}
+.author-list-item:nth-child(7) {
+    z-index: 4;
+}
+.author-list-item:nth-child(8) {
+    z-index: 3;
+}
+.author-list-item:nth-child(9) {
+    z-index: 2;
+}
+.author-list-item:nth-child(10) {
+    z-index: 1;
+}
+
+.static-avatar {
+    display: block;
+    overflow: hidden;
+    margin: 0 -5px;
+    width: 34px;
+    height: 34px;
+    border: #fff 2px solid;
+    border-radius: 100%;
+}
+
+.moving-avatar {
+    display: block;
+    overflow: hidden;
+    margin: 0 -6px;
+    width: 56px;
+    height: 56px;
+    border: #fff 2px solid;
+    border-radius: 100%;
+    transition: all 0.5s cubic-bezier(0.4, 0.01, 0.165, 0.99) 0.7s;
+}
+
+@media (min-width: 800px) {
+    .author-list:hover .moving-avatar {
+        margin: 0;
+        transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+    }
+}
+
+.author-name-tooltip {
+    position: absolute;
+    bottom: 105%;
+    z-index: 999;
+    display: block;
+    padding: 2px 8px;
+    color: white;
+    font-size: 1.2rem;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    background: var(--darkgrey);
+    border-radius: 3px;
+    box-shadow: rgba(39,44,49,0.08) 0 12px 26px, rgba(39, 44, 49, 0.03) 1px 3px 8px;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+    transform: translateY(6px);
+    pointer-events: none;
+}
+
+.author-list-item:hover .author-name-tooltip {
+    opacity: 1.0;
+    transform: translateY(0px);
+}
+
+@media (max-width: 650px) {
+    .author-name-tooltip {
+        display: none;
+    }
+}
+
+.reading-time {
+    flex-shrink: 0;
+    margin-left: 20px;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    line-height: 33px;
     font-weight: 500;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -549,9 +672,9 @@ The first (most recent) post in the list is styled to be bigger than the others 
 /* ^ Required to make .post-full-content:before/after z-index stacking work */
 
 .post-full-header {
-    max-width: 1040px;
     margin: 0 auto;
     padding: 6vw 3vw 3vw;
+    max-width: 1040px;
     text-align: center;
 }
 @media (max-width: 500px) {
@@ -585,8 +708,8 @@ The first (most recent) post in the list is styled to be bigger than the others 
 }
 
 .post-full-image {
-    height: 800px;
     margin: 0 -10vw -165px;
+    height: 800px;
     background: var(--lightgrey) center center;
     background-size: cover;
     border-radius: 5px;
@@ -594,8 +717,8 @@ The first (most recent) post in the list is styled to be bigger than the others 
 
 @media (max-width: 1170px) {
     .post-full-image {
-        height: 600px;
         margin: 0 -4vw -100px;
+        height: 600px;
         border-radius: 0;
     }
 }
@@ -608,9 +731,9 @@ The first (most recent) post in the list is styled to be bigger than the others 
 
 .post-full-content {
     position: relative;
-    min-height: 230px;
     margin: 0 auto;
     padding: 70px 100px 0;
+    min-height: 230px;
     font-family: Georgia, serif;
     font-size: 2.2rem;
     line-height: 1.6em;
@@ -665,13 +788,6 @@ The first (most recent) post in the list is styled to be bigger than the others 
     display: none;
 }
 
-.kg-card-markdown {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 920px;
-}
-
 .post-full-content h1,
 .post-full-content h2,
 .post-full-content h3,
@@ -695,11 +811,6 @@ The first (most recent) post in the list is styled to be bigger than the others 
 
 .post-full-content li p {
     margin: 0;
-}
-
-.post-template .kg-card-markdown > p:first-child {
-    font-size: 1.25em;
-    line-height: 1.5em;
 }
 
 .post-full-content a {
@@ -729,8 +840,8 @@ The first (most recent) post in the list is styled to be bigger than the others 
 .post-full-content img,
 .post-full-content video {
     display: block;
-    max-width: 1040px;
     margin: 1.5em auto;
+    max-width: 1040px;
 }
 @media (max-width: 1040px) {
     .post-full-content img,
@@ -749,8 +860,8 @@ Usage (In Ghost edtior):
 
 */
 .post-full-content img[src$="#full"] {
-    width: 100vw;
     max-width: none;
+    width: 100vw;
 }
 
 
@@ -766,6 +877,7 @@ Usage (In Ghost editor):
     display: block;
     margin-top: -3em;
     margin-bottom: 1.5em;
+    text-align: center;
 }
 
 
@@ -801,10 +913,10 @@ Usage (In Ghost editor):
 }
 
 .post-full-content pre {
-    max-width: 100%;
     overflow-x: auto;
     margin: 1.5em 0 3em;
     padding: 20px;
+    max-width: 100%;
     border: color(var(--darkgrey) l(-10%)) 1px solid;
     color: var(--whitegrey);
     font-size: 1.4rem;
@@ -818,6 +930,10 @@ Usage (In Ghost editor):
     font-size: inherit;
     line-height: inherit;
     background: transparent;
+}
+
+.post-full-content pre code * {
+    color: inherit;
 }
 
 .post-full-content .fluid-width-video-wrapper {
@@ -834,9 +950,9 @@ Usage (In Ghost editor):
     top: -15px;
     left: 50%;
     display: block;
+    margin-left: -10px;
     width: 1px;
     height: 30px;
-    margin-left: -10px;
     background: color(var(--lightgrey) l(+10%));
     box-shadow: #fff 0 0 0 5px;
     transform: rotate(45deg);
@@ -909,8 +1025,8 @@ Usage (In Ghost editor):
 }
 @media (min-width: 1180px) {
     .post-full-content h5 {
-        width: 100vw;
         max-width: 1060px;
+        width: 100vw;
     }
 }
 @media (max-width: 500px) {
@@ -961,8 +1077,8 @@ Usage (In Ghost editor):
         font-size: 2.9rem;
     }
     .post-full-image {
-        height: 350px;
         margin-bottom: 4vw;
+        height: 350px;
     }
     .post-full-content {
         padding: 0;
@@ -976,24 +1092,24 @@ Usage (In Ghost editor):
 /* Tables */
 .post-full-content table {
     display: inline-block;
-    width: auto;
-    max-width: 100%;
     overflow-x: auto;
     margin: 0.5em 0 2.5em;
+    max-width: 100%;
+    width: auto;
     border-spacing: 0;
     border-collapse: collapse;
-    vertical-align: top;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     font-size: 1.6rem;
     white-space: nowrap;
+    vertical-align: top;
 }
 
 .post-full-content table {
-    background: radial-gradient(ellipse at left, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 75%) 0 center, radial-gradient(ellipse at right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 75%) 100% center;
-    background-size: 10px 100%, 10px 100%;
-    background-attachment: scroll, scroll;
-    background-repeat: no-repeat;
     -webkit-overflow-scrolling: touch;
+    background: radial-gradient(ellipse at left, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 75%) 0 center, radial-gradient(ellipse at right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 75%) 100% center;
+    background-attachment: scroll, scroll;
+    background-size: 10px 100%, 10px 100%;
+    background-repeat: no-repeat;
 }
 
 .post-full-content table td:first-child {
@@ -1004,8 +1120,8 @@ Usage (In Ghost editor):
 
 .post-full-content table td:last-child {
     background-image: linear-gradient(to left, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
-    background-size: 20px 100%;
     background-position: 100% 0;
+    background-size: 20px 100%;
     background-repeat: no-repeat;
 }
 
@@ -1059,8 +1175,8 @@ Usage (In Ghost editor):
     display: flex;
     justify-content: center;
     align-items: center;
-    max-width: 420px;
     margin: 0 auto;
+    max-width: 420px;
 }
 
 .subscribe-form .form-group {
@@ -1069,8 +1185,8 @@ Usage (In Ghost editor):
 
 .subscribe-email {
     display: block;
-    width: 100%;
     padding: 10px;
+    width: 100%;
     border: color(var(--lightgrey) l(+7%)) 1px solid;
     color: var(--midgrey);
     font-size: 1.8rem;
@@ -1090,9 +1206,9 @@ Usage (In Ghost editor):
 
 .subscribe-form button {
     display: inline-block;
-    height: 41px;
     margin: 0 0 0 10px;
     padding: 0 20px;
+    height: 41px;
     outline: none;
     color: #fff;
     font-size: 1.5rem;
@@ -1134,8 +1250,8 @@ Usage (In Ghost editor):
         width: 100%;
     }
     .subscribe-form button {
-        width: 100%;
         margin: 10px 0 0 0;
+        width: 100%;
     }
 }
 
@@ -1147,24 +1263,27 @@ Usage (In Ghost editor):
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 840px;
     margin: 0 auto;
     padding: 3vw 0 6vw 0;
+    max-width: 840px;
 }
+
+/* 7.2.1 Single Author Byline
+/* ---------------------------------------------------------- */
 
 .author-card {
     display: flex;
-    align-items: center;
 }
 
-.author-card .author-profile-image {
+.author-card .author-profile-image,
+.author-card .avatar-wrapper {
+    margin-right: 15px;
     width: 60px;
     height: 60px;
-    margin-right: 15px;
 }
 
 .author-card-name {
-    margin: 0 0 2px 0;
+    margin: 8px 0 2px 0;
     padding: 0;
     font-size: 2rem;
 }
@@ -1207,13 +1326,144 @@ Usage (In Ghost editor):
     text-decoration: none;
 }
 
+/* 7.2.2 Multiple Author Byline
+/* ---------------------------------------------------------- */
+
+.post-full-authors {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 40px;
+    border-top: color(var(--lightgrey) l(+10%)) 1px solid;
+}
+
+.post-full-authors-content {
+    margin-bottom: 20px;
+}
+
+.post-full-authors-content p {
+    margin-bottom: 0;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    letter-spacing: 0.2px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.post-full-authors-content a {
+    display: inline-block;
+    color: color(var(--darkgrey) l(+20%));
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.post-full-footer .author-list {
+    justify-content: center;
+    padding: 10px 20px;
+}
+
+.author-card .author-profile-image,
+.author-card .avatar-wrapper {
+    position: relative;
+    margin-right: 15px;
+}
+
+.author-list-item .author-card {
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    z-index: 300;
+    display: block;
+    margin-left: -160px;
+    width: 320px;
+    font-size: 1.4rem;
+    letter-spacing: 0.2px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: rgba(39,44,49,0.08) 0 12px 26px, rgba(39, 44, 49, 0.03) 1px 3px 8px;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+    transform: scale(0.98) translateY(15px);
+    pointer-events: none;
+}
+
+.author-list-item .author-card:before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    display: block;
+    margin-left: -12px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid #fff;
+    border-right: 12px solid transparent;
+    border-left: 12px solid transparent;
+}
+
+.author-list-item .author-card.hovered {
+    opacity: 1.0;
+    transform: scale(1) translateY(0px);
+    pointer-events: auto;
+}
+
+.author-card .basic-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 20px 20px;
+    color: #fff;
+    background: var(--darkgrey);
+    border-radius: 6px 6px 0 0;
+}
+
+.author-card .basic-info h2 {
+    margin: 1em 0 0.5em;
+}
+
+.author-card .bio {
+    padding: 20px 20px 0;
+}
+
+@media (max-width: 650px) {
+    .author-list-item .author-card {
+        display: none;
+    }
+}
+
+.basic-info .author-profile-image {
+    margin: 0;
+    width: 88px;
+    height: 88px;
+    border: none;
+}
+
+.basic-info .avatar-wrapper {
+    position: relative;
+    margin: 0;
+    width: 88px;
+    height: 88px;
+    border: none;
+    background: rgba(229, 239, 245, 0.1);
+}
+
+.basic-info .avatar-wrapper svg {
+    margin: 0;
+    width: 88px;
+    height: 88px;
+    opacity: 0.15;
+}
+
 
 /* 7.3. Comments
 /* ---------------------------------------------------------- */
 
 .post-full-comments {
-    max-width: 840px;
     margin: 0 auto;
+    max-width: 840px;
 }
 
 
@@ -1298,8 +1548,9 @@ Usage (In Ghost editor):
 
 .read-next-divider svg {
     width: 40px;
-    stroke: #fff;
     fill: transparent;
+    stroke: #fff;
+
     stroke-width: 0.5px;
     stroke-opacity: 0.65;
 }
@@ -1317,8 +1568,8 @@ Usage (In Ghost editor):
     flex-direction: column;
     margin: 0 auto;
     padding: 0;
-    list-style: none;
     text-align: center;
+    list-style: none;
 }
 
 .read-next-card-content li {
@@ -1334,9 +1585,9 @@ Usage (In Ghost editor):
     display: block;
     padding: 20px 0;
     border-bottom: rgba(255,255,255,0.3) 1px solid;
-    vertical-align: top;
     color: #fff;
     font-weight: 500;
+    vertical-align: top;
     transition: opacity 0.3s ease;
 }
 
@@ -1407,8 +1658,8 @@ Usage (In Ghost editor):
 }
 
 .floating-header-logo img {
-    max-height: 20px;
     margin: 0 10px 0 0;
+    max-height: 20px;
 }
 
 .floating-header-divider {
@@ -1459,9 +1710,9 @@ Usage (In Ghost editor):
 }
 
 .floating-header-share-label svg {
+    margin: 0 5px 0 10px;
     width: 18px;
     height: 18px;
-    margin: 0 5px 0 10px;
     stroke: rgba(0,0,0,0.7);
     transform: rotate(90deg);
 }
@@ -1565,23 +1816,98 @@ Usage (In Ghost editor):
 }
 
 
+/* 7.6. Koenig Styles
+/* ---------------------------------------------------------- */
+
+.post-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 920px;
+}
+
+.post-template .post-content > p:first-child {
+    font-size: 1.25em;
+    line-height: 1.5em;
+}
+
+.post-full-content .kg-image {
+    max-width: 100%;
+}
+
+/* Preventing full-width image overlap with post image.  */
+.post-full-image + .post-full-content .kg-content *:first-child .kg-image {
+    width: 100%;
+}
+
+.post-full-content .kg-width-wide .kg-image {
+    max-width: 1040px;
+}
+
+.post-full-content .kg-width-full .kg-image {
+    max-width: 100vw;
+}
+
+.post-content figcaption {
+    font-size: 80%;
+    line-height: 1.6em;
+    text-align: center;
+}
+
+.kg-image-card {
+    margin: 0 0 1.5em;
+}
+
+.kg-image-card figcaption {
+    margin: -1.0em 0 1.5em;
+}
+
+.kg-embed-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5em 0 3em;
+    min-width: 100%;
+}
+
+.kg-embed-card figcaption {
+    margin: 0.5em 0 0;
+}
+
+.kg-embed-card .fluid-width-video-wrapper {
+    margin: 0;
+}
+
+
+.kg-image-full + figcaption {
+    padding: 0 1.5em;
+}
+
+
+@media (max-width: 1040px) {
+    .post-full-content .kg-width-full .kg-image {
+        width: 100vw;
+    }
+}
+
+
 /* 8. Author Template
 /* ---------------------------------------------------------- */
 
 .site-header-content .author-profile-image {
     z-index: 10;
     flex-shrink: 0;
+    margin: 0 0 20px 0;
     width: 100px;
     height: 100px;
-    margin: 0 0 20px 0;
     box-shadow: rgba(255,255,255,0.1) 0 0 0 6px;
 }
 
 .site-header-content .author-bio {
     z-index: 10;
     flex-shrink: 0;
-    max-width: 600px;
     margin: 5px 0 10px 0;
+    max-width: 600px;
     font-size: 2rem;
     line-height: 1.3em;
     font-weight: 300;
@@ -1733,8 +2059,8 @@ Usage (In Ghost editor):
 }
 
 .subscribe-overlay-description {
-    max-width: 650px;
     margin: 0 auto 50px;
+    max-width: 650px;
     font-family: Georgia, serif;
     font-size: 3rem;
     line-height: 1.3em;
@@ -1746,8 +2072,8 @@ Usage (In Ghost editor):
     display: flex;
     justify-content: center;
     align-items: center;
-    max-width: 500px;
     margin: 0 auto;
+    max-width: 500px;
 }
 
 .subscribe-overlay .form-group {
@@ -1756,8 +2082,8 @@ Usage (In Ghost editor):
 
 .subscribe-overlay .subscribe-email {
     display: block;
-    width: 100%;
     padding: 14px 20px;
+    width: 100%;
     border: none;
     color: var(--midgrey);
     font-size: 2rem;
@@ -1778,9 +2104,9 @@ Usage (In Ghost editor):
 
 .subscribe-overlay button {
     display: inline-block;
-    height: 52px;
     margin: 0 0 0 15px;
     padding: 0 25px;
+    height: 52px;
     outline: none;
     color: #fff;
     font-size: 1.7rem;
@@ -1858,15 +2184,15 @@ Usage (In Ghost editor):
 
 .site-footer-content {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     color: rgba(255,255,255,0.7);
     font-size: 1.3rem;
 }
 
 .site-footer-content a {
-    color: rgba(255,255,255,0.7);;
+    color: rgba(255,255,255,0.7);
 }
 
 .site-footer-content a:hover {

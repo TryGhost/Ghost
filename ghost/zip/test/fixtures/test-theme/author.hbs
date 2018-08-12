@@ -22,15 +22,15 @@
                     {{plural ../pagination.total empty='No posts' singular='% post' plural='% posts'}} <span class="bull">&bull;</span>
                 </div>
                 {{#if website}}
-                    <a class="social-link social-link-wb" href="{{website}}" target="_blank">{{> "icons/website"}}</a>
+                    <a class="social-link social-link-wb" href="{{website}}" target="_blank" rel="noopener">{{> "icons/website"}}</a>
                 {{/if}}
                 {{#if twitter}}
-                    <a class="social-link social-link-tw" href="{{twitter_url}}" target="_blank">{{> "icons/twitter"}}</a>
+                    <a class="social-link social-link-tw" href="{{twitter_url}}" target="_blank" rel="noopener">{{> "icons/twitter"}}</a>
                 {{/if}}
                 {{#if facebook}}
-                    <a class="social-link social-link-fb" href="{{facebook_url}}" target="_blank">{{> "icons/facebook"}}</a>
+                    <a class="social-link social-link-fb" href="{{facebook_url}}" target="_blank" rel="noopener">{{> "icons/facebook"}}</a>
                 {{/if}}
-                <a class="social-link social-link-rss" href="http://cloud.feedly.com/#subscription/feed/{{url absolute="true"}}/rss/" target="_blank">{{> "icons/rss"}}</a>
+                <a class="social-link social-link-rss" href="https://feedly.com/i/subscription/feed/{{url absolute="true"}}rss/" target="_blank" rel="noopener">{{> "icons/rss"}}</a>
             </div>
         </div>
     </div>
@@ -38,7 +38,7 @@
 {{/author}}
 
 {{!-- The main content area --}}
-<main id="site-main" class="site-main outer" role="main">
+<main id="site-main" class="site-main outer">
     <div class="inner">
 
         <div class="post-feed">
