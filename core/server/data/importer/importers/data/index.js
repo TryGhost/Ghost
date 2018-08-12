@@ -125,6 +125,11 @@ DataImporter = {
             return toReturn;
         }).catch(function (errors) {
             return Promise.reject(errors);
+        }).finally(() => {
+            // release memory
+            importers = {};
+            results = null;
+            importData = null;
         });
     }
 };
