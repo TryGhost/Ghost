@@ -14,7 +14,7 @@ const TOOLBAR_MARGIN = 8;
 const TOOLBAR_PADDING = 12;
 
 // ms to wait before showing the tooltip
-const DELAY = 200;
+const DELAY = 120;
 
 export default Component.extend({
     layout,
