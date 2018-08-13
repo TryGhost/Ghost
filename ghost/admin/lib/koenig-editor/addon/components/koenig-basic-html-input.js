@@ -3,11 +3,13 @@ import Editor from 'mobiledoc-kit/editor/editor';
 import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
+import validator from 'npm:validator';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
 import {cleanBasicHtml} from '../helpers/clean-basic-html';
 import {computed} from '@ember/object';
+import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerBasicTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
@@ -27,6 +29,8 @@ const BLANK_DOC = {
         ]]
     ]
 };
+
+// TODO: extract core to share functionality between this and `{{koenig-editor}}`
 
 export default Component.extend({
     layout,
@@ -204,6 +208,14 @@ export default Component.extend({
         this.didCreateEditor(editor);
     },
 
+    didInsertElement() {
+        this._super(...arguments);
+        let editorElement = this.element.querySelector('[data-kg="editor"]');
+
+        this._pasteHandler = run.bind(this, this.handlePaste);
+        editorElement.addEventListener('paste', this._pasteHandler);
+    },
+
     // our ember component has rendered, now we need to render the mobiledoc
     // editor itself if necessary
     didRender() {
@@ -219,6 +231,10 @@ export default Component.extend({
 
     willDestroyElement() {
         this._super(...arguments);
+
+        let editorElement = this.element.querySelector('[data-kg="editor"]');
+        editorElement.removeEventListener('paste', this._pasteHandler);
+
         this.editor.destroy();
     },
 
@@ -258,6 +274,33 @@ export default Component.extend({
         if (!event.relatedTarget || !this.element.contains(event.relatedTarget)) {
             this._hasFocus = false;
             run.scheduleOnce('actions', this, this.onBlur, event);
+        }
+    },
+
+    /* custom event handlers ------------------------------------------------ */
+
+    handlePaste(event) {
+        let {editor, editor: {range}} = this;
+        let {text} = getContentFromPasteEvent(event);
+
+        if (!editor.cursor.isAddressable(event.target)) {
+            return;
+        }
+
+        if (text && validator.isURL(text)) {
+            // if we have a text selection, make that selection a link
+            if (range && !range.isCollapsed && range.headSection === range.tailSection && range.headSection.isMarkerable) {
+                let linkMarkup = editor.builder.createMarkup('a', {href: text});
+                editor.run((postEditor) => {
+                    postEditor.addMarkupToRange(range, linkMarkup);
+                });
+                editor.selectRange(range.tail);
+
+                // prevent mobiledoc's default paste event handler firing
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return;
+            }
         }
     },
 
