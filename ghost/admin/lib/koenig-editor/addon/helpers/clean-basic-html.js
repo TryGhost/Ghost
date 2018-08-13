@@ -19,7 +19,13 @@ export function cleanBasicHtml(html = '') {
 
         doc.body.querySelectorAll('*').forEach((element) => {
             if (!element.textContent.trim()) {
-                element.remove();
+                if (element.textContent.length > 0) {
+                    // keep a single space to avoid collapsing spaces
+                    let space = document.createTextNode(' ');
+                    element.replaceWith(space);
+                } else {
+                    element.remove();
+                }
             }
         });
 
