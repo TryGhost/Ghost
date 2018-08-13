@@ -33,7 +33,11 @@ export function figureToImageCard(node, builder, {addSection, nodeFinished}) {
         return;
     }
 
-    let payload = {src: img.src};
+    let payload = {
+        src: img.src,
+        alt: img.alt,
+        title: img.title
+    };
 
     if (figcaption) {
         // TODO: Allow rich text in captions
@@ -50,7 +54,11 @@ export function imgToCard(node, builder, {addSection, nodeFinished}) {
         return;
     }
 
-    let payload = {src: node.src};
+    let payload = {
+        src: node.src,
+        alt: node.alt,
+        title: node.title
+    };
 
     let cardSection = builder.createCardSection('image', payload);
     addSection(cardSection);
