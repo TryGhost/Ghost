@@ -23,6 +23,9 @@ module.exports = {
         if (payload.alt) {
             img.setAttribute('alt', payload.alt);
         }
+        if (payload.title) {
+            img.setAttribute('title', payload.title);
+        }
 
         figure.appendChild(img);
 
