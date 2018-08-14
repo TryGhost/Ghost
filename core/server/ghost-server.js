@@ -230,6 +230,88 @@ GhostServer.prototype.logShutdownMessages = function () {
 
 module.exports = GhostServer;
 
+const connectToBootstrapSocket = (message) => {
+    const socketAddress = config.get('bootstrap-socket');
+    const net = require('net');
+    const client = new net.Socket();
+
+    return new Promise((resolve) => {
+        const connect = (options = {}) => {
+            let wasResolved = false;
+
+            const waitTimeout = setTimeout(() => {
+                common.logging.info('Bootstrap socket timed out.');
+
+                if (!client.destroyed) {
+                    client.destroy();
+                }
+
+                if (wasResolved) {
+                    return;
+                }
+
+                wasResolved = true;
+                resolve();
+            }, 1000 * 5);
+
+            client.connect(socketAddress.port, socketAddress.host, () => {
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                client.write(JSON.stringify(message));
+
+                if (wasResolved) {
+                    return;
+                }
+
+                wasResolved = true;
+                resolve();
+            });
+
+            client.on('close', () => {
+                common.logging.info('Bootstrap client was closed.');
+
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+            });
+
+            client.on('error', (err) => {
+                common.logging.warn(`Can\'t connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
+
+                client.removeAllListeners();
+
+                if (waitTimeout) {
+                    clearTimeout(waitTimeout);
+                }
+
+                if (options.tries < 3) {
+                    common.logging.warn(`Tries: ${options.tries}`);
+
+                    // retry
+                    common.logging.warn('Retrying...');
+
+                    options.tries = options.tries + 1;
+                    const retryTimeout = setTimeout(() => {
+                        clearTimeout(retryTimeout);
+                        connect(options);
+                    }, 150);
+                } else {
+                    if (wasResolved) {
+                        return;
+                    }
+
+                    wasResolved = true;
+                    resolve();
+                }
+            });
+        };
+
+        connect({tries: 0});
+    });
+};
+
 module.exports.announceServerStart = function announceServerStart() {
     common.events.emit('server.start');
 
@@ -242,30 +324,8 @@ module.exports.announceServerStart = function announceServerStart() {
 
     // CASE: Ghost extension - bootstrap sockets
     if (config.get('bootstrap-socket')) {
-        const socketAddress = config.get('bootstrap-socket');
-        const net = require('net');
-        const client = new net.Socket();
-
-        return new Promise((resolve) => {
-            const waitTimeout = setTimeout(() => {
-                client.destroy();
-                resolve();
-            }, 1000 * 5);
-
-            client.connect(socketAddress.port, socketAddress.host, () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                client.write(JSON.stringify({started: true}));
-                resolve();
-            });
-
-            client.on('close', () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-            });
+        return connectToBootstrapSocket({
+            started: true
         });
     }
 
@@ -283,30 +343,9 @@ module.exports.announceServerStopped = function announceServerStopped(error) {
 
     // CASE: Ghost extension - bootstrap sockets
     if (config.get('bootstrap-socket')) {
-        const socketAddress = config.get('bootstrap-socket');
-        const net = require('net');
-        const client = new net.Socket();
-
-        return new Promise((resolve) => {
-            const waitTimeout = setTimeout(() => {
-                client.destroy();
-                resolve();
-            }, 1000 * 5);
-
-            client.connect(socketAddress.port, socketAddress.host, () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                client.write(JSON.stringify({started: false, error: error}));
-                resolve();
-            });
-
-            client.on('close', () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-            });
+        return connectToBootstrapSocket({
+            started: false,
+            error: error
         });
     }
 
