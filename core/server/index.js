@@ -133,7 +133,9 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
                         return GhostServer.announceServerStopped(err)
                             .finally(() => {
                                 common.logging.error(err);
-                                process.exit(-1);
+                                setTimeout(() => {
+                                    process.exit(-1);
+                                }, 100);
                             });
                     });
 
