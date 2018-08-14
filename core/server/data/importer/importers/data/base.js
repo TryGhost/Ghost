@@ -301,7 +301,7 @@ class Base {
 
         let ops = [];
 
-        _.each(this.dataToImport, (obj) => {
+        _.each(this.dataToImport, (obj, index) => {
             ops.push(() => {
                 return models[this.modelName].add(obj, options)
                     .then((importedModel) => {
@@ -321,7 +321,8 @@ class Base {
                             email: importedModel.get('email')
                         });
 
-                        return importedModel;
+                        importedModel = null;
+                        this.dataToImport.splice(index, 1);
                     })
                     .catch((err) => {
                         return this.handleError(err, obj);
@@ -337,7 +338,11 @@ class Base {
          *
          *       Promise.map(.., {concurrency: Int}) was not really improving the end performance for me.
          */
-        return sequence(ops);
+        return sequence(ops).then((response) => {
+            this.dataToImport = null;
+            ops = null;
+            return response;
+        });
     }
 }
 
