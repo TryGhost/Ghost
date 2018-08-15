@@ -11,13 +11,14 @@ class StaticRoutesRouter extends ParentRouter {
         super('StaticRoutesRouter');
 
         this.route = {value: mainRoute};
-        this.templates = (object.templates || []).reverse();
+        this.templates = object.templates || [];
         this.data = object.data || {query: {}, router: {}};
         this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
 
         debug(this.route.value, this.templates);
 
         if (this.isChannel(object)) {
+            this.templates = this.templates.reverse();
             this.rss = object.rss !== false;
             this.filter = object.filter;
             this.limit = object.limit;
