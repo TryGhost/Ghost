@@ -56,7 +56,7 @@ describe('Configuration API', function () {
 
             // Check a few values
             props.environment.should.match(/^testing/);
-            props.version.should.eql(require('../../../../package.json').version.replace(/.\d+$/, ''));
+            props.version.should.eql(require('../../../../package.json').version);
 
             done();
         }).catch(done);
