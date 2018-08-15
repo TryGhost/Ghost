@@ -2,7 +2,6 @@
 import cajaSanitizers from 'ghost-admin/utils/caja-sanitizers';
 import {assign} from '@ember/polyfills';
 import {helper} from '@ember/component/helper';
-import {htmlSafe} from '@ember/string';
 import {isArray} from '@ember/array';
 
 export function sanitizeHtml(params, options = {}) {
