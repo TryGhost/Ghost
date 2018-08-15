@@ -3316,16 +3316,16 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@3.2.2:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.2.tgz#2b87a9a74f171fac4c3397d8a9a5c40541b374d9"
+knex-migrator@3.2.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.3.tgz#1b90b0a90891455734c064fb7432e84959be02ff"
   dependencies:
     bluebird "^3.4.6"
     commander "2.15.1"
     compare-ver "^2.0.2"
     debug "^2.2.0"
     ghost-ignition "2.9.2"
-    knex "^0.14.2"
+    knex "https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba"
     lodash "^4.16.4"
     moment "^2.19.3"
     nconf "^0.10.0"
@@ -3334,9 +3334,32 @@ knex-migrator@3.2.2:
     mysql "^2.11.1"
     sqlite3 "^4.0.0"
 
-knex@0.14.6, knex@^0.14.2:
+knex@0.14.6:
   version "0.14.6"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.14.6.tgz#ad57c4ef8fa1b51ebc8c37c2c9b483f6fb34e41e"
+  dependencies:
+    babel-runtime "^6.26.0"
+    bluebird "^3.5.1"
+    chalk "2.3.2"
+    commander "^2.15.1"
+    debug "3.1.0"
+    inherits "~2.0.3"
+    interpret "^1.1.0"
+    liftoff "2.5.0"
+    lodash "^4.17.5"
+    minimist "1.2.0"
+    mkdirp "^0.5.1"
+    pg-connection-string "2.0.0"
+    readable-stream "2.3.6"
+    safe-buffer "^5.1.1"
+    tarn "^1.1.4"
+    tildify "1.2.0"
+    uuid "^3.2.1"
+    v8flags "^3.0.2"
+
+"knex@https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba":
+  version "0.14.6"
+  resolved "https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba#31af3c65702c6d8fd459f5d68f6d0eaee27590a5"
   dependencies:
     babel-runtime "^6.26.0"
     bluebird "^3.5.1"
