@@ -19,9 +19,7 @@ export function sanitizeHtml(params, options = {}) {
     }
 
     // sanitize html
-    html = html_sanitize(html, cajaSanitizers.url, cajaSanitizers.id);
-
-    return htmlSafe(html);
+    return html_sanitize(html, cajaSanitizers.url, cajaSanitizers.id);
 }
 
 export default helper(sanitizeHtml);

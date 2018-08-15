@@ -11,7 +11,7 @@ describe('Integration: Helper: sanitize-html', function () {
     it('renders html', function () {
         this.set('inputValue', '<strong>bold</strong>');
 
-        this.render(hbs`{{sanitize-html inputValue}}`);
+        this.render(hbs`{{{sanitize-html inputValue}}}`);
 
         expect(this.$().html().trim()).to.equal('<strong>bold</strong>');
     });
@@ -19,7 +19,7 @@ describe('Integration: Helper: sanitize-html', function () {
     it('replaces scripts', function () {
         this.set('inputValue', '<script></script>');
 
-        this.render(hbs`{{sanitize-html inputValue}}`);
+        this.render(hbs`{{{sanitize-html inputValue}}}`);
 
         expect(this.$().html().trim()).to.equal('<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     });
