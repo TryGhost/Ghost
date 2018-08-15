@@ -46,22 +46,26 @@
                             {{/each}}
                         </section>
                     {{else if (and unsplash.searchTerm (not unsplash.error unsplash.isLoading))}}
-                        <section class="gh-unsplash-error">
-                            <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
-                            <h4>No photos found for '{{unsplash.searchTerm}}'</h4>
+                        <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                            <div>
+                                <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
+                                <h4>No photos found for '{{unsplash.searchTerm}}'</h4>
+                            </div>
                         </section>
                     {{/if}}
 
                     {{#if unsplash.error}}
                         {{!-- TODO: add better error styles? --}}
-                        <section class="gh-unsplash-error">
-                            <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
-                            <h4>{{unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
+                        <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                            <div>
+                                <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
+                                <h4>{{unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
+                            </div>
                         </section>
                     {{/if}}
 
                     {{#if unsplash.isLoading}}
-                        <div class="gh-unsplash-loading">
+                        <div class="gh-unsplash-loading h-100 flex items-center justify-center pb30">
                             <div class="gh-loading-spinner"></div>
                         </div>
                     {{/if}}
