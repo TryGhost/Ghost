@@ -70,14 +70,6 @@ export const CARD_MENU = [
             params: ['url']
         },
         {
-            label: 'Facebook',
-            icon: 'koenig/kg-card-type-facebook',
-            matches: ['facebook'],
-            type: 'card',
-            replaceArg: 'embed',
-            params: ['url']
-        },
-        {
             label: 'Instagram',
             icon: 'koenig/kg-card-type-instagram',
             matches: ['instagram'],
@@ -110,6 +102,14 @@ export const CARD_MENU = [
             icon: 'koenig/kg-card-type-codepen',
             iconClass: 'kg-card-type-codepen',
             matches: ['codepen'],
+            type: 'card',
+            replaceArg: 'embed',
+            params: ['url']
+        },
+        {
+            label: 'Spotify',
+            icon: 'koenig/kg-card-type-spotify',
+            matches: ['spotify'],
             type: 'card',
             replaceArg: 'embed',
             params: ['url']
