@@ -48,6 +48,15 @@ _private.validateData = function validateData(object) {
 
         let [resourceKey, slug] = shortForm.split('.');
 
+        // @NOTE: `data: author.foo` is not allowed currently, because this will make {{author}} available in the theme, which is deprecated (single author usage)
+        if (!RESOURCE_CONFIG.QUERY[resourceKey] ||
+            (RESOURCE_CONFIG.QUERY[resourceKey].hasOwnProperty('internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
+            throw new common.errors.ValidationError({
+                message: `Resource key not supported. ${resourceKey}`,
+                help: 'Please use: tag, user, post or page.'
+            });
+        }
+
         longForm.query[options.resourceKey || resourceKey] = {};
         longForm.query[options.resourceKey || resourceKey] = _.omit(_.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]), 'alias');
 
@@ -81,7 +90,22 @@ _private.validateData = function validateData(object) {
         };
 
         _.each(object.data, (value, key) => {
-            // CASE: short form e.g. data: tag.recipes
+            // CASE: a name is required to define the data longform
+            if (['resource', 'type', 'limit', 'order', 'include', 'filter', 'status', 'visibility', 'slug', 'redirect'].indexOf(key) !== -1) {
+                throw new common.errors.ValidationError({
+                    message: 'Please wrap the data definition into a custom name.',
+                    help: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n'
+                });
+            }
+
+            // @NOTE: We disallow author, because {{author}} is deprecated.
+            if (key === 'author') {
+                throw new common.errors.ValidationError({
+                    message: 'Please choose a different name. We recommend not using author.'
+                });
+            }
+
+            // CASE: short form used with custom names, resolve to longform and return
             if (typeof object.data[key] === 'string') {
                 const longForm = shortToLongForm(object.data[key], {resourceKey: key});
                 data.query = _.merge(data.query, longForm.query);
