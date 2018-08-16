@@ -48,6 +48,15 @@ _private.validateData = function validateData(object) {
 
         let [resourceKey, slug] = shortForm.split('.');
 
+        // @NOTE: `data: author.foo` is not allowed currently, because this will make {{author}} available in the theme, which is deprecated (single author usage)
+        if (!RESOURCE_CONFIG.QUERY[resourceKey] ||
+            (RESOURCE_CONFIG.QUERY[resourceKey].hasOwnProperty('internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
+            throw new common.errors.ValidationError({
+                message: `Resource key not supported. ${resourceKey}`,
+                help: 'Please use: tag, user, post or page.'
+            });
+        }
+
         longForm.query[options.resourceKey || resourceKey] = {};
         longForm.query[options.resourceKey || resourceKey] = _.omit(_.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]), 'alias');
 

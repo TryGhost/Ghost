@@ -326,6 +326,9 @@ describe('UNIT: services/settings/validate', function () {
                     '/music/': {
                         data: 'tag.music'
                     },
+                    '/ghost/': {
+                        data: 'user.ghost'
+                    },
                     '/sleep/': {
                         data: {
                             bed: 'tag.bed',
@@ -370,6 +373,24 @@ describe('UNIT: services/settings/validate', function () {
                             },
                             router: {
                                 tags: [{redirect: true, slug: 'food'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/ghost/': {
+                        data: {
+                            query: {
+                                user: {
+                                    resource: 'users',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'ghost',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                users: [{redirect: true, slug: 'ghost'}]
                             }
                         },
                         templates: []
@@ -609,7 +630,7 @@ describe('UNIT: services/settings/validate', function () {
             });
         });
 
-        it('errors', function () {
+        it('errors: data shortform incorrect', function () {
             try {
                 validate({
                     collections: {
@@ -619,7 +640,16 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     }
                 });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
 
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform resource is missing', function () {
+            try {
                 validate({
                     collections: {
                         '/magic/': {
@@ -630,7 +660,16 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     }
                 });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
 
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform type is missing', function () {
+            try {
                 validate({
                     collections: {
                         '/magic/': {
@@ -638,6 +677,24 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 resource: 'subscribers'
                             }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('errors: data shortform author is not allowed', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: 'author.food'
                         }
                     }
                 });
