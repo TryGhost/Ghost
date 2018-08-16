@@ -41,8 +41,8 @@ class LocalFileStore extends StorageBase {
         return this.getUniqueFileName(image, targetDir).then(function (filename) {
             var filenamePartials = filename.split('.');
             parsedTargetFile = {
-                "type": filenamePartials.pop(),
-                "name": filenamePartials.join('.'),
+                type: filenamePartials.pop(),
+                name: filenamePartials.join('.')
             };
             targetFilename = filename;
             return fs.mkdirs(targetDir);
@@ -50,13 +50,14 @@ class LocalFileStore extends StorageBase {
             return fs.copy(image.path, targetFilename);
         }).then(function () {
             var resizingTasks = [];
-            
-            for (var size in imageSizes) {
-                resizingTasks.push(
-                    sharp(image.path)
-                    .resize(imageSizes[size].width, imageSizes[size].height)
-                    .toFile(parsedTargetFile.name + '-' + size + '.' + parsedTargetFile.type)
-                );
+            if (Object.keys(imageSizes).length > 0) {
+                for (var size in imageSizes) {
+                    resizingTasks.push(
+                        sharp(image.path)
+                            .resize(imageSizes[size].width, imageSizes[size].height)
+                            .toFile(parsedTargetFile.name + '-' + size + '.' + parsedTargetFile.type)
+                    );
+                }
             }
             return Promise.all(resizingTasks);
         }).then(function () {
