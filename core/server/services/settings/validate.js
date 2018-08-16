@@ -90,6 +90,7 @@ _private.validateData = function validateData(object) {
         };
 
         _.each(object.data, (value, key) => {
+            // CASE: a name is required to define the data longform
             if (['resource', 'type', 'limit', 'order', 'include', 'filter', 'status', 'visibility', 'slug', 'redirect'].indexOf(key) !== -1) {
                 throw new common.errors.ValidationError({
                     message: 'Please wrap the data definition into a custom name.',
@@ -97,6 +98,7 @@ _private.validateData = function validateData(object) {
                 });
             }
 
+            // @NOTE: We disallow author, because {{author}} is deprecated.
             if (key === 'author') {
                 throw new common.errors.ValidationError({
                     message: 'Please choose a different name. We recommend not using author.'
