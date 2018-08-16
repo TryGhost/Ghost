@@ -95,7 +95,7 @@ themes = {
         }
 
         return localUtils
-        // Permissions
+            // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(function validateTheme() {

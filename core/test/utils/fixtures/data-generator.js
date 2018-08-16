@@ -45,7 +45,7 @@ DataGenerator.Content = {
             title: 'Short and Sweet',
             slug: 'short-and-sweet',
             mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
-            html: '<div class=\"kg-card-markdown\"><h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n</div>',
+            html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
             plaintext: 'testing\nmctesters\n\n * test\n * line\n * items',
             feature_image: 'http://placekitten.com/500/200',
             meta_description: 'test stuff',
@@ -530,6 +530,23 @@ DataGenerator.forKnex = (function () {
         };
     }
 
+    function createUsersRoles(userId, roleId) {
+        return {
+            id: ObjectId.generate(),
+            user_id: userId,
+            role_id: roleId
+        };
+    }
+
+    function createPostsAuthors(postId, authorId, sort_order = 0) {
+        return {
+            id: ObjectId.generate(),
+            author_id: authorId,
+            post_id: postId,
+            sort_order: sort_order
+        };
+    }
+
     function createAppField(overrides) {
         var newObj = _.cloneDeep(overrides);
 
@@ -552,6 +569,31 @@ DataGenerator.forKnex = (function () {
             app_id: DataGenerator.Content.apps[0].id,
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date()
+        });
+    }
+
+    function createSubscriber(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            email: 'subscriber@ghost.org'
+        });
+    }
+
+    function createSetting(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            uuid: "95ce1c53-69b0-4f5f-be91-d3aeb39046b5",
+            key: "title",
+            value: null,
+            type: "blog",
+            created_at: new Date(),
+            created_by: DataGenerator.Content.users[0].id,
+            updated_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id
         });
     }
 
@@ -799,6 +841,8 @@ DataGenerator.forKnex = (function () {
         createGenericPost: createGenericPost,
         createTag: createTag,
         createUser: createUser,
+        createUsersRoles: createUsersRoles,
+        createPostsAuthors: createPostsAuthors,
         createClient: createClient,
         createGenericUser: createGenericUser,
         createBasic: createBasic,
@@ -807,9 +851,10 @@ DataGenerator.forKnex = (function () {
         createPostsTags: createPostsTags,
         createApp: createBasic,
         createAppField: createAppField,
+        createSetting: createSetting,
         createAppSetting: createAppSetting,
         createToken: createToken,
-        createSubscriber: createBasic,
+        createSubscriber: createSubscriber,
         createInvite: createInvite,
         createTrustedDomain: createTrustedDomain,
         createWebhook: createWebhook,

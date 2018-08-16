@@ -15,10 +15,10 @@ Anything else should be posted to https://forum.ghost.org 👫.
 
 Alternatively, check out these resources below. Thanks! 😁.
 
-- [Forum](https://forum.ghost.org)
+- [Forum](https://forum.ghost.org/c/help)
 - [Theme Support](https://forum.ghost.org/c/themes)
-- [Theme Docs](http://themes.ghost.org/v1.23.0/)
-- [API Docs](https://api.ghost.org/v1.22.0/)
+- [Theme Docs](http://themes.ghost.org/)
+- [API Docs](https://api.ghost.org/)
 - [Feature Requests / Ideas](https://forum.ghost.org/c/Ideas)
-- [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Self-hoster Docs](https://docs.ghost.org/v1/)
+- [Contributing Guide](https://docs.ghost.org/docs/contributing)
+- [Self-hoster Docs](https://docs.ghost.org/)

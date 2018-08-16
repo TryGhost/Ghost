@@ -2,22 +2,22 @@
 # yarn lockfile v1
 
 
-"@nexes/mongo-knex@0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.0.tgz#7a44a7263d8830c8416b90ba3c963c2c722e7b72"
+"@nexes/mongo-knex@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.1.tgz#141c8ca380e95c1460fe2abcd777d7fd2bb14e8f"
   dependencies:
     lodash "^4.17.10"
 
-"@nexes/nql-lang@0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.0.tgz#eb0fb807aea8aa64d3d0b454f3d1167af394f39a"
-
-"@nexes/nql@0.0.1":
+"@nexes/nql-lang@0.0.1":
   version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.0.1.tgz#e8f5e5352badeffd67e371f22bccd41fa0c20c24"
+  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
+
+"@nexes/nql@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.1.0.tgz#b63614d5874bebb387b58d3f1b9fb9602115cf62"
   dependencies:
-    "@nexes/mongo-knex" "0.0.0"
-    "@nexes/nql-lang" "0.0.0"
+    "@nexes/mongo-knex" "0.0.1"
+    "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
 "@segment/loosely-validate-event@^1.1.2":
@@ -2551,9 +2551,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-1.5.0.tgz#b94446ab1ebc058c36e26f086ab0c0b97634832f"
+gscan@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.0.0.tgz#049e791ce3315359f7cd2280f0a334a88c22de77"
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
@@ -3316,16 +3316,16 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-knex-migrator@3.1.6:
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.1.6.tgz#480928a060595045acd06253e245920a7bc9544b"
+knex-migrator@3.2.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.3.tgz#1b90b0a90891455734c064fb7432e84959be02ff"
   dependencies:
     bluebird "^3.4.6"
     commander "2.15.1"
     compare-ver "^2.0.2"
     debug "^2.2.0"
     ghost-ignition "2.9.2"
-    knex "^0.14.2"
+    knex "https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba"
     lodash "^4.16.4"
     moment "^2.19.3"
     nconf "^0.10.0"
@@ -3334,9 +3334,32 @@ knex-migrator@3.1.6:
     mysql "^2.11.1"
     sqlite3 "^4.0.0"
 
-knex@0.14.6, knex@^0.14.2:
+knex@0.14.6:
   version "0.14.6"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.14.6.tgz#ad57c4ef8fa1b51ebc8c37c2c9b483f6fb34e41e"
+  dependencies:
+    babel-runtime "^6.26.0"
+    bluebird "^3.5.1"
+    chalk "2.3.2"
+    commander "^2.15.1"
+    debug "3.1.0"
+    inherits "~2.0.3"
+    interpret "^1.1.0"
+    liftoff "2.5.0"
+    lodash "^4.17.5"
+    minimist "1.2.0"
+    mkdirp "^0.5.1"
+    pg-connection-string "2.0.0"
+    readable-stream "2.3.6"
+    safe-buffer "^5.1.1"
+    tarn "^1.1.4"
+    tildify "1.2.0"
+    uuid "^3.2.1"
+    v8flags "^3.0.2"
+
+"knex@https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba":
+  version "0.14.6"
+  resolved "https://github.com/kirrg001/knex/tarball/d979ee6fa9b979e3be6f867dff015fdbc1f574ba#31af3c65702c6d8fd459f5d68f6d0eaee27590a5"
   dependencies:
     babel-runtime "^6.26.0"
     bluebird "^3.5.1"

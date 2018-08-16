@@ -171,8 +171,8 @@
             }
         },
         "general": {
-            "maintenance": "Ghost is currently undergoing maintenance, please wait a moment then retry.",
-            "maintenanceUrlService": "Ghost is starting up, please wait a moment then retry.",
+            "maintenance": "Site is currently undergoing maintenance, please wait a moment then retry.",
+            "maintenanceUrlService": "Site is starting up, please wait a moment then retry.",
             "requiredOnFuture": "This will be required in future. Please see {link}",
             "internalError": "Something went wrong.",
             "jsonParse": "Could not parse JSON: {context}."
@@ -343,6 +343,10 @@
             "redirects": {
                 "missingFile": "Please select a JSON file.",
                 "invalidFile": "Please select a valid JSON file to import."
+            },
+            "routes": {
+                "missingFile": "Please select a YAML file.",
+                "invalidFile": "Please select a valid YAML file to import."
             },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
@@ -543,7 +547,7 @@
                 "isDeprecated": "Warning: pageUrl is deprecated, please use page_url instead\nThe helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\nIn your theme's pagination.hbs file, pageUrl should be renamed to page_url"
             },
             "pagination": {
-                "invalidData": "The \\{\\{pagination\\}\\} helper was used outside of a paginated context. See https://themes.ghost.org/v1.23.0/docs/pagination.",
+                "invalidData": "The \\{\\{pagination\\}\\} helper was used outside of a paginated context. See https://themes.ghost.org/docs/pagination.",
                 "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
                 "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
                 "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"

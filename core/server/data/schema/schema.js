@@ -6,7 +6,7 @@ module.exports = {
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
-        amp: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        comment_id: {type: 'string', maxlength: 50, nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
@@ -23,7 +23,7 @@ module.exports = {
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         /**
-         * @deprecated: `author_id`, will be (maybe) removed in Ghost 2.0
+         * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
          */
         author_id: {type: 'string', maxlength: 24, nullable: false},

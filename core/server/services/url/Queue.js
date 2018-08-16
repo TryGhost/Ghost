@@ -143,6 +143,8 @@ class Queue extends EventEmitter {
                 debug('ended (2)', event, action);
                 this.emit('ended', event);
             } else {
+                debug('retry', event, action, this.toNotify[action].timeoutInMS);
+
                 this.toNotify[action].timeoutInMS = this.toNotify[action].timeoutInMS * 1.1;
 
                 this.toNotify[action].timeout = setTimeout(() => {

@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    exporter = require('../../server/data/export'),
+    exporter = require('../../server/data/exporter'),
     ghostVersion = require('../../server/lib/ghost-version'),
 
     sandbox = sinon.sandbox.create();
@@ -34,6 +34,8 @@ describe('Exporter', function () {
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);
             });
+
+            should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
 
             // should not export sqlite data
             should.not.exist(exportData.data.sqlite_sequence);

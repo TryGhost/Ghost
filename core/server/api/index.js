@@ -26,7 +26,7 @@ var _ = require('lodash'),
     subscribers = require('./subscribers'),
     authentication = require('./authentication'),
     uploads = require('./upload'),
-    exporter = require('../data/export'),
+    exporter = require('../data/exporter'),
     slack = require('./slack'),
     webhooks = require('./webhooks'),
     oembed = require('./oembed'),
@@ -37,7 +37,8 @@ var _ = require('lodash'),
     locationHeader,
     contentDispositionHeaderExport,
     contentDispositionHeaderSubscribers,
-    contentDispositionHeaderRedirects;
+    contentDispositionHeaderRedirects,
+    contentDispositionHeaderRoutes;
 
 function isActiveThemeUpdate(method, endpoint, result) {
     if (endpoint === 'themes') {
@@ -180,6 +181,10 @@ contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects()
     return Promise.resolve('Attachment; filename="redirects.json"');
 };
 
+contentDispositionHeaderRoutes = () => {
+    return Promise.resolve('Attachment; filename="routes.yaml"');
+};
+
 addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
@@ -233,6 +238,18 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
             });
     }
 
+    // Add Routes Content-Disposition Header
+    if (apiMethod === settings.download) {
+        contentDisposition = contentDispositionHeaderRoutes()
+            .then((header) => {
+                res.set({
+                    'Content-Disposition': header,
+                    'Content-Type': 'application/yaml',
+                    'Content-Length': JSON.stringify(result).length
+                });
+            });
+    }
+
     return contentDisposition;
 };
 
@@ -252,7 +269,7 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.file, {ip: req.ip}, req.query, req.params, {
                 context: {
-                    // @TODO: forward the client and user obj in 1.0 (options.context.user.id)
+                    // @TODO: forward the client and user obj (options.context.user.id)
                     user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
                     client: (req.client && req.client.slug) ? req.client.slug : null,
                     client_id: (req.client && req.client.id) ? req.client.id : null
@@ -273,8 +290,10 @@ http = function http(apiMethod) {
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
-            // Keep CSV header and formatting
-            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
+
+            // Keep CSV, yaml formatting
+            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0 ||
+                res.get('Content-Type') && res.get('Content-Type').indexOf('application/yaml') === 0) {
                 return res.status(200).send(response);
             }
 

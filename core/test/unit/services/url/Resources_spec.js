@@ -89,6 +89,7 @@ describe('Unit: services/url/Resources', function () {
                     'id',
                     'uuid',
                     'slug',
+                    'comment_id',
                     'featured',
                     'page',
                     'status',
@@ -104,8 +105,7 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url',
-                    'comment_id'
+                    'url'
                 ]);
 
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
@@ -188,6 +188,7 @@ describe('Unit: services/url/Resources', function () {
                     'id',
                     'uuid',
                     'slug',
+                    'comment_id',
                     'featured',
                     'page',
                     'status',
@@ -203,8 +204,7 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url',
-                    'comment_id'
+                    'url'
                 ]);
 
                 should.exist(obj.tags);

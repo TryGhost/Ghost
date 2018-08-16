@@ -1,9 +1,11 @@
 var debug = require('ghost-ignition').debug('blog'),
     path = require('path'),
     express = require('express'),
+    setPrototypeOf = require('setprototypeof'),
 
     // App requires
     config = require('../../config'),
+    apps = require('../../services/apps'),
     constants = require('../../lib/constants'),
     storage = require('../../adapters/storage'),
     urlService = require('../../services/url'),
@@ -32,7 +34,13 @@ var debug = require('ghost-ignition').debug('blog'),
     // middleware for themes
     themeMiddleware = require('../../services/themes').middleware;
 
-module.exports = function setupSiteApp() {
+let router;
+
+function SiteRouter(req, res, next) {
+    router(req, res, next);
+}
+
+module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
     var siteApp = express();
@@ -123,8 +131,11 @@ module.exports = function setupSiteApp() {
 
     debug('General middleware done');
 
+    router = siteRoutes(options);
+    setPrototypeOf(SiteRouter, router);
+
     // Set up Frontend routes (including private blogging routes)
-    siteApp.use(siteRoutes());
+    siteApp.use(SiteRouter);
 
     // ### Error handlers
     siteApp.use(errorHandler.pageNotFound);
@@ -133,4 +144,20 @@ module.exports = function setupSiteApp() {
     debug('Site setup end');
 
     return siteApp;
+};
+
+module.exports.reload = () => {
+    // https://github.com/expressjs/express/issues/2596
+    router = siteRoutes({start: true});
+    setPrototypeOf(SiteRouter, router);
+
+    // re-initialse apps (register app routers, because we have re-initialised the site routers)
+    apps.init();
+
+    // connect routers and resources again
+    urlService.queue.start({
+        event: 'init',
+        tolerance: 100,
+        requiredSubscriberCount: 1
+    });
 };

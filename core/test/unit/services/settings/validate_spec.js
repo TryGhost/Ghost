@@ -191,27 +191,6 @@ describe('UNIT: services/settings/validate', function () {
         throw new Error('should fail');
     });
 
-    it('no validation error for {globals.permalinks}', function () {
-        const object = validate({
-            collections: {
-                '/magic/': {
-                    permalink: '{globals.permalinks}'
-                }
-            }
-        });
-
-        object.should.eql({
-            taxonomies: {},
-            routes: {},
-            collections: {
-                '/magic/': {
-                    permalink: '{globals.permalinks}',
-                    templates: []
-                }
-            }
-        });
-    });
-
     it('no validation error for routes', function () {
         validate({
             routes: {
@@ -344,9 +323,11 @@ describe('UNIT: services/settings/validate', function () {
                     '/food/': {
                         data: 'tag.food'
                     },
-                    // @TODO: enable redirect
                     '/music/': {
                         data: 'tag.music'
+                    },
+                    '/ghost/': {
+                        data: 'user.ghost'
                     },
                     '/sleep/': {
                         data: {
@@ -391,7 +372,25 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'food'}]
+                                tags: [{redirect: true, slug: 'food'}]
+                            }
+                        },
+                        templates: []
+                    },
+                    '/ghost/': {
+                        data: {
+                            query: {
+                                user: {
+                                    resource: 'users',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'ghost',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                users: [{redirect: true, slug: 'ghost'}]
                             }
                         },
                         templates: []
@@ -409,7 +408,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'music'}]
+                                tags: [{redirect: true, slug: 'music'}]
                             }
                         },
                         templates: []
@@ -435,7 +434,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'bed'}, {redirect: false, slug: 'dream'}]
+                                tags: [{redirect: true, slug: 'bed'}, {redirect: true, slug: 'dream'}]
                             }
                         },
                         templates: []
@@ -457,7 +456,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                pages: [{redirect: false, slug: 'home'}]
+                                pages: [{redirect: true, slug: 'home'}]
                             }
                         },
                         templates: []
@@ -476,7 +475,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'something'}]
+                                tags: [{redirect: true, slug: 'something'}]
                             }
                         },
                         templates: []
@@ -495,7 +494,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                tags: [{redirect: false, slug: 'sport'}]
+                                tags: [{redirect: true, slug: 'sport'}]
                             }
                         },
                         templates: []
@@ -520,7 +519,7 @@ describe('UNIT: services/settings/validate', function () {
                             posts: {
                                 resource: 'posts',
                                 type: 'read',
-                                redirect: true
+                                redirect: false
                             }
                         }
                     },
@@ -563,7 +562,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: false}]
+                                posts: [{redirect: true}]
                             }
                         },
                         templates: []
@@ -582,7 +581,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: true}]
+                                posts: [{redirect: false}]
                             }
                         },
                         templates: []
@@ -622,7 +621,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                posts: [{redirect: false, slug: 'ups'}]
+                                posts: [{redirect: true, slug: 'ups'}]
                             }
                         },
                         templates: []
@@ -631,7 +630,7 @@ describe('UNIT: services/settings/validate', function () {
             });
         });
 
-        it('errors', function () {
+        it('errors: data shortform incorrect', function () {
             try {
                 validate({
                     collections: {
@@ -641,7 +640,16 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     }
                 });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
 
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform resource is missing', function () {
+            try {
                 validate({
                     collections: {
                         '/magic/': {
@@ -652,13 +660,82 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     }
                 });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
 
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform type is missing', function () {
+            try {
                 validate({
                     collections: {
                         '/magic/': {
                             permalink: '/{slug}/',
                             data: {
                                 resource: 'subscribers'
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('errors: data shortform author is not allowed', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: 'author.food'
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform name is author', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                author: {
+                                    resource: 'users'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform does not use a custom name at all', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                resource: 'users'
                             }
                         }
                     }
