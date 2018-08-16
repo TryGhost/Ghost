@@ -45,6 +45,20 @@ describe('Image card', function () {
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image"></figure>');
     });
 
+    it('renders an image with title attribute', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                src: 'https://www.ghost.org/image.png',
+                title: 'example image'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" title="example image"></figure>');
+    });
+
     it('renders nothing with no src', function () {
         let opts = {
             env: {

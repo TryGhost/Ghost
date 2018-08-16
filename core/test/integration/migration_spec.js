@@ -188,7 +188,7 @@ describe('Database Migration (special functions)', function () {
                     // Post
                     should.exist(result.posts);
                     result.posts.length.should.eql(7);
-                    result.posts.at(0).get('title').should.eql('Setting up your own Ghost theme');
+                    result.posts.at(0).get('title').should.eql('Creating a custom theme');
 
                     // Tag
                     should.exist(result.tags);

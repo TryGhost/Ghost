@@ -10,6 +10,16 @@ module.exports.QUERY = {
         }
     },
     author: {
+        internal: true,
+        alias: 'users',
+        type: 'read',
+        resource: 'users',
+        options: {
+            slug: '%s',
+            visibility: 'public'
+        }
+    },
+    user: {
         alias: 'users',
         type: 'read',
         resource: 'users',

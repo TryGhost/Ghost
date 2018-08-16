@@ -1,6 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:collection-router');
 const common = require('../../lib/common');
-const settingsCache = require('../settings/cache');
 const urlService = require('../url');
 const ParentRouter = require('./ParentRouter');
 
@@ -33,15 +32,6 @@ class CollectionRouter extends ParentRouter {
         this.data = object.data || {query: {}, router: {}};
         this.order = object.order;
         this.limit = object.limit;
-
-        /**
-         * @deprecated Remove in Ghost 2.0
-         */
-        if (this.permalinks.originalValue.match(/globals\.permalinks/)) {
-            this.permalinks.originalValue = this.permalinks.originalValue.replace('{globals.permalinks}', '{settings.permalinks}');
-            this.permalinks.value = this.permalinks.originalValue.replace('{settings.permalinks}', settingsCache.get('permalinks'));
-            this.permalinks.value = urlService.utils.deduplicateDoubleSlashes(this.permalinks.value);
-        }
 
         this.permalinks.getValue = (options) => {
             options = options || {};
@@ -122,14 +112,6 @@ class CollectionRouter extends ParentRouter {
 
     _listeners() {
         /**
-         * @deprecated Remove in Ghost 2.0
-         */
-        if (this.getPermalinks() && this.getPermalinks().originalValue.match(/settings\.permalinks/)) {
-            this._onPermalinksEditedListener = this._onPermalinksEdited.bind(this);
-            common.events.on('settings.permalinks.edited', this._onPermalinksEditedListener);
-        }
-
-        /**
          * CASE: timezone changes
          *
          * If your permalink contains a date reference, we have to regenerate the urls.
@@ -138,19 +120,6 @@ class CollectionRouter extends ParentRouter {
          */
         this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
         common.events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
-    }
-
-    /**
-     * We unmount and mount the permalink url. This enables the ability to change urls on runtime.
-     */
-    _onPermalinksEdited() {
-        this.unmountRoute(this.permalinks.getValue({withUrlOptions: true}));
-
-        this.permalinks.value = this.permalinks.originalValue.replace('{settings.permalinks}', settingsCache.get('permalinks'));
-        this.permalinks.value = urlService.utils.deduplicateDoubleSlashes(this.permalinks.value);
-
-        this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
-        this.emit('updated');
     }
 
     _onTimezoneEdited(settingModel) {
@@ -186,10 +155,6 @@ class CollectionRouter extends ParentRouter {
     }
 
     reset() {
-        if (this._onPermalinksEditedListener) {
-            common.events.removeListener('settings.permalinks.edited', this._onPermalinksEditedListener);
-        }
-
         if (this._onTimezoneEditedListener) {
             common.events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
         }

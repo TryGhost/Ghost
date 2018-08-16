@@ -81,7 +81,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve multiple post formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc,amp'))
+                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -96,7 +96,7 @@ describe('Post API', function () {
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
@@ -291,7 +291,7 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(2);
+                        jsonResponse.posts.should.have.length(1);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
@@ -354,7 +354,7 @@ describe('Post API', function () {
 
             it('can retrieve multiple post formats', function (done) {
                 request
-                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc,amp'))
+                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -370,7 +370,7 @@ describe('Post API', function () {
                         jsonResponse.posts.should.have.length(1);
                         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
 
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext', 'amp'], ['html']);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
 
                         done();
                     });

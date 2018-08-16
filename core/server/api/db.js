@@ -4,7 +4,7 @@ const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    exporter = require('../data/export'),
+    exporter = require('../data/exporter'),
     importer = require('../data/importer'),
     backupDatabase = require('../data/db/backup'),
     models = require('../models'),
@@ -36,6 +36,7 @@ db = {
         }
 
         tasks = [
+            localUtils.convertOptions(exporter.EXCLUDED_TABLES, null, {forModel: false}),
             backupDatabase,
             jsonResponse
         ];

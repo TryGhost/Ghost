@@ -1,21 +1,24 @@
 ---
 name: "\U0001F4A1Anything else"
-about: "For help, support, questions & ideas - please use https://forum.ghost.org
-  \U0001F46B"
+about: "For help, support, features & ideas - please use https://forum.ghost.org \U0001F46B "
 
 ---
 
 --------------^ Click "Preview" for a nicer view!
 
-We primarily use GitHub as an issue tracker.
+We use GitHub only for bug reports 🐛
 
-For usage and support questions, or ideas & feature requests please check out [our forum](https://forum.ghost.org).
+Anything else should be posted to https://forum.ghost.org 👫.
+
+🚨For support, help & questions use https://forum.ghost.org/c/help
+💡For feature requests & ideas you can post and vote on https://forum.ghost.org/c/Ideas
 
 Alternatively, check out these resources below. Thanks! 😁.
 
-- [Forum Support](https://forum.ghost.org/c/help)
-- [Theme Docs](http://themes.ghost.org/v1.23.0/)
-- [API Docs](https://api.ghost.org/v1.22.0/)
-- [Ideas](https://forum.ghost.org/c/Ideas)
-- [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Self-hoster Docs](https://docs.ghost.org/v1/)
+- [Forum](https://forum.ghost.org/c/help)
+- [Theme Support](https://forum.ghost.org/c/themes)
+- [Theme Docs](http://themes.ghost.org/)
+- [API Docs](https://api.ghost.org/)
+- [Feature Requests / Ideas](https://forum.ghost.org/c/Ideas)
+- [Contributing Guide](https://docs.ghost.org/docs/contributing)
+- [Self-hoster Docs](https://docs.ghost.org/)

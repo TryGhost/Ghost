@@ -6,7 +6,6 @@ const should = require('should'),
     configUtils = require('../../utils/configUtils'),
     api = require('../../../server/api'),
     settingsService = require('../../../server/services/settings'),
-    RESOURCE_CONFIG = require('../../../server/services/routing/assets/resource-config'),
     themeConfig = require('../../../server/services/themes/config'),
     siteApp = require('../../../server/web/parent-app'),
     sandbox = sinon.sandbox.create();
@@ -29,8 +28,7 @@ describe('Integration - Web - Site', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    app = siteApp();
-
+                    app = siteApp({start: true});
                     return testUtils.integrationTesting.urlService.waitTillFinished();
                 });
         });
@@ -457,8 +455,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -573,8 +570,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -631,8 +627,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -730,8 +725,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -813,8 +807,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -947,8 +940,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -1047,8 +1039,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -1114,8 +1105,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -1170,8 +1160,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -1278,12 +1267,13 @@ describe('Integration - Web - Site', function () {
                                         resource: 'users',
                                         type: 'read',
                                         options: {
-                                            slug: 'joe-bloggs'
+                                            slug: 'joe-bloggs',
+                                            redirect: false
                                         }
                                     }
                                 },
                                 router: {
-                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                    users: [{redirect: false, slug: 'joe-bloggs'}]
                                 }
                             }
                         },
@@ -1301,12 +1291,13 @@ describe('Integration - Web - Site', function () {
                                         resource: 'users',
                                         type: 'read',
                                         options: {
-                                            slug: 'joe-bloggs'
+                                            slug: 'joe-bloggs',
+                                            redirect: false
                                         }
                                     }
                                 },
                                 router: {
-                                    users: [{redirect: true, slug: 'joe-bloggs'}]
+                                    users: [{redirect: false, slug: 'joe-bloggs'}]
                                 }
                             }
                         }
@@ -1324,8 +1315,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        app = siteApp();
-
+                        app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     });
             });
@@ -1490,8 +1480,7 @@ describe('Integration - Web - Site', function () {
 
                 return testUtils.mocks.express.invoke(app, req)
                     .then(function (response) {
-                        response.statusCode.should.eql(301);
-                        response.headers.location.should.eql('/channel3/');
+                        response.statusCode.should.eql(200);
                     });
             });
         });
@@ -1539,8 +1528,7 @@ describe('Integration - Web - Site', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    app = siteApp();
-
+                    app = siteApp({start: true});
                     return testUtils.integrationTesting.urlService.waitTillFinished();
                 });
         });

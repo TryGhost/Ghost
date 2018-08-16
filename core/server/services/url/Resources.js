@@ -16,8 +16,32 @@ const resourcesConfig = [
         modelOptions: {
             modelName: 'Post',
             filter: 'visibility:public+status:published+page:false',
-            reducedFields: true,
+            exclude: [
+                'title',
+                'mobiledoc',
+                'html',
+                'plaintext',
+                'amp',
+                'codeinjection_head',
+                'codeinjection_foot',
+                'meta_title',
+                'meta_description',
+                'custom_excerpt',
+                'og_image',
+                'og_title',
+                'og_description',
+                'twitter_image',
+                'twitter_title',
+                'twitter_description',
+                'custom_template',
+                'feature_image',
+                'locale'
+            ],
             withRelated: ['tags', 'authors'],
+            withRelatedPrimary: {
+                primary_tag: 'tags',
+                primary_author: 'authors'
+            },
             withRelatedFields: {
                 tags: ['tags.id', 'tags.slug'],
                 authors: ['users.id', 'users.slug']
@@ -33,7 +57,31 @@ const resourcesConfig = [
         type: 'pages',
         modelOptions: {
             modelName: 'Post',
-            reducedFields: true,
+            exclude: [
+                'title',
+                'mobiledoc',
+                'html',
+                'plaintext',
+                'amp',
+                'codeinjection_head',
+                'codeinjection_foot',
+                'meta_title',
+                'meta_description',
+                'custom_excerpt',
+                'og_image',
+                'og_title',
+                'og_description',
+                'twitter_image',
+                'twitter_title',
+                'twitter_description',
+                'custom_template',
+                'feature_image',
+                'locale',
+                'tags',
+                'authors',
+                'primary_tag',
+                'primary_author'
+            ],
             filter: 'visibility:public+status:published+page:true'
         },
         events: {
@@ -47,7 +95,11 @@ const resourcesConfig = [
         keep: ['id', 'slug', 'updated_at', 'created_at'],
         modelOptions: {
             modelName: 'Tag',
-            reducedFields: true,
+            exclude: [
+                'description',
+                'meta_title',
+                'meta_description'
+            ],
             filter: 'visibility:public'
         },
         events: {
@@ -60,7 +112,17 @@ const resourcesConfig = [
         type: 'users',
         modelOptions: {
             modelName: 'User',
-            reducedFields: true,
+            exclude: [
+                'bio',
+                'website',
+                'location',
+                'facebook',
+                'twitter',
+                'accessibility',
+                'meta_title',
+                'meta_description',
+                'tour'
+            ],
             filter: 'visibility:public'
         },
         events: {
@@ -154,14 +216,51 @@ class Resources {
                 });
 
                 if (objects.length && isSQLite) {
-                    options.offset = (options.offset + 1) * options.limit;
+                    options.offset = options.offset + options.limit;
                     return this._fetch(resourceConfig, {offset: options.offset, limit: options.limit});
                 }
             });
     }
 
     _onResourceAdded(type, model) {
-        const resource = new Resource(type, model.toJSON());
+        const resourceConfig = _.find(resourcesConfig, {type: type});
+        const exclude = resourceConfig.modelOptions.exclude;
+        const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
+        const obj = _.omit(model.toJSON(), exclude);
+
+        if (withRelatedFields) {
+            _.each(withRelatedFields, (fields, key) => {
+                if (!obj[key]) {
+                    return;
+                }
+
+                obj[key] = _.map(obj[key], (relation) => {
+                    const relationToReturn = {};
+
+                    _.each(fields, (field) => {
+                        const fieldSanitized = field.replace(/^\w+./, '');
+                        relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                    });
+
+                    return relationToReturn;
+                });
+            });
+
+            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+            if (withRelatedPrimary) {
+                _.each(withRelatedPrimary, (relation, primaryKey) => {
+                    if (!obj[primaryKey] || !obj[relation]) {
+                        return;
+                    }
+
+                    const targetTagKeys = Object.keys(obj[relation].find((item) => {return item.id === obj[primaryKey].id;}));
+                    obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
+                });
+            }
+        }
+
+        const resource = new Resource(type, obj);
 
         debug('_onResourceAdded', type);
         this.data[type].push(resource);
@@ -195,7 +294,44 @@ class Resources {
 
         this.data[type].every((resource) => {
             if (resource.data.id === model.id) {
-                resource.update(model.toJSON());
+                const resourceConfig = _.find(resourcesConfig, {type: type});
+                const exclude = resourceConfig.modelOptions.exclude;
+                const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
+                const obj = _.omit(model.toJSON(), exclude);
+
+                if (withRelatedFields) {
+                    _.each(withRelatedFields, (fields, key) => {
+                        if (!obj[key]) {
+                            return;
+                        }
+
+                        obj[key] = _.map(obj[key], (relation) => {
+                            const relationToReturn = {};
+
+                            _.each(fields, (field) => {
+                                const fieldSanitized = field.replace(/^\w+./, '');
+                                relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                            });
+
+                            return relationToReturn;
+                        });
+                    });
+
+                    const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+                    if (withRelatedPrimary) {
+                        _.each(withRelatedPrimary, (relation, primaryKey) => {
+                            if (!obj[primaryKey] || !obj[relation]) {
+                                return;
+                            }
+
+                            const targetTagKeys = Object.keys(obj[relation].find((item) => {return item.id === obj[primaryKey].id;}));
+                            obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
+                        });
+                    }
+                }
+
+                resource.update(obj);
 
                 // CASE: pretend it was added
                 if (!resource.isReserved()) {
@@ -238,7 +374,7 @@ class Resources {
             return;
         }
 
-        delete this.data[type][index];
+        this.data[type].splice(index, 1);
         resource.remove();
     }
 
@@ -268,6 +404,14 @@ class Resources {
 
         _.each(resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
+        });
+    }
+
+    releaseAll() {
+        _.each(this.data, (resources, type) => {
+            _.each(this.data[type], (resource) => {
+                resource.release();
+            });
         });
     }
 }

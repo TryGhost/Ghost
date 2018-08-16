@@ -39,6 +39,38 @@ describe('API: oembed', function () {
                 }).catch(done);
         });
 
+        it('follows redirects to get base url', function (done) {
+            let redirectMock = nock('https://youtu.be')
+                .intercept('/yHohwmrxrto', 'HEAD')
+                .reply(302, undefined, {
+                    // eslint-disable-next-line
+                    'Location': 'https://www.youtube.com/watch?v=yHohwmrxrto&feature=youtu.be'
+                });
+
+            let videoMock = nock('https://www.youtube.com')
+                .intercept('/watch', 'HEAD')
+                .query({v: 'yHohwmrxrto', feature: 'youtu.be'})
+                .reply(200);
+
+            let requestMock = nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    html: 'test'
+                });
+
+            OembedAPI.read({url: 'https://youtu.be/yHohwmrxrto'})
+                .then((results) => {
+                    redirectMock.isDone().should.be.true;
+                    videoMock.isDone().should.be.true;
+                    requestMock.isDone().should.be.true;
+                    should.exist(results);
+                    should.exist(results.html);
+                    results.html.should.eql('test');
+                    done();
+                }).catch(done);
+        });
+
         it('returns error for missing url', function (done) {
             OembedAPI.read({url: ''})
                 .then(() => {
@@ -50,6 +82,10 @@ describe('API: oembed', function () {
         });
 
         it('returns error for unsupported provider', function (done) {
+            nock('http://example.com')
+                .intercept('/unknown', 'HEAD')
+                .reply(200);
+
             OembedAPI.read({url: 'http://example.com/unknown'})
                 .then(() => {
                     done(new Error('Fetch oembed with unknown url provider should error'));
