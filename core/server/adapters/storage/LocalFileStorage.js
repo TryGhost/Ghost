@@ -51,12 +51,13 @@ class LocalFileStore extends StorageBase {
         }).then(function () {
             var resizingTasks = [];
                 for (var size in imageSizes) {
-                if (imageSizes[size].width && typeof imageSizes[size].width === 'number' && imageSizes[size].height && typeof imageSizes[size].height === 'number' ) {
-                    resizingTasks.push(
-                        sharp(image.path)
-                            .resize(imageSizes[size].width, imageSizes[size].height)
-                            .toFile(parsedTargetFile.name + '-' + size + '.' + parsedTargetFile.type)
-                    );
+                    if (imageSizes[size].width && typeof imageSizes[size].width === 'number' && imageSizes[size].height && typeof imageSizes[size].height === 'number' ) {
+                        resizingTasks.push(
+                            sharp(image.path)
+                                .resize(imageSizes[size].width, imageSizes[size].height)
+                                .toFile(parsedTargetFile.name + '-' + size + '.' + parsedTargetFile.type)
+                        );
+                    }
                 }
             }
             return Promise.all(resizingTasks);
