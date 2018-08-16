@@ -90,7 +90,20 @@ _private.validateData = function validateData(object) {
         };
 
         _.each(object.data, (value, key) => {
-            // CASE: short form e.g. data: tag.recipes
+            if (['resource', 'type', 'limit', 'order', 'include', 'filter', 'status', 'visibility', 'slug', 'redirect'].indexOf(key) !== -1) {
+                throw new common.errors.ValidationError({
+                    message: 'Please wrap the data definition into a custom name.',
+                    help: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n'
+                });
+            }
+
+            if (key === 'author') {
+                throw new common.errors.ValidationError({
+                    message: 'Please choose a different name. We recommend not using author.'
+                });
+            }
+
+            // CASE: short form used with custom names, resolve to longform and return
             if (typeof object.data[key] === 'string') {
                 const longForm = shortToLongForm(object.data[key], {resourceKey: key});
                 data.query = _.merge(data.query, longForm.query);

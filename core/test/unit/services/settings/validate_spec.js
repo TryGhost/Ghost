@@ -705,5 +705,47 @@ describe('UNIT: services/settings/validate', function () {
 
             throw new Error('should fail');
         });
+
+        it('errors: data longform name is author', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                author: {
+                                    resource: 'users'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
+
+        it('errors: data longform does not use a custom name at all', function () {
+            try {
+                validate({
+                    collections: {
+                        '/magic/': {
+                            permalink: '/{slug}/',
+                            data: {
+                                resource: 'users'
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                (err instanceof common.errors.ValidationError).should.be.true();
+                return;
+            }
+
+            throw new Error('should fail');
+        });
     });
 });
