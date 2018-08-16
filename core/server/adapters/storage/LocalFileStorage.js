@@ -50,8 +50,8 @@ class LocalFileStore extends StorageBase {
             return fs.copy(image.path, targetFilename);
         }).then(function () {
             var resizingTasks = [];
-            if (Object.keys(imageSizes).length > 0) {
                 for (var size in imageSizes) {
+                if (imageSizes[size].width && typeof imageSizes[size].width === 'number' && imageSizes[size].height && typeof imageSizes[size].height === 'number' ) {
                     resizingTasks.push(
                         sharp(image.path)
                             .resize(imageSizes[size].width, imageSizes[size].height)
