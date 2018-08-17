@@ -4,6 +4,7 @@
 var serveStatic = require('express').static,
     fs = require('fs-extra'),
     path = require('path'),
+    sharp = require('sharp'),
     Promise = require('bluebird'),
     moment = require('moment'),
     config = require('../../config'),
@@ -17,6 +18,7 @@ class LocalFileStore extends StorageBase {
         super();
 
         this.storagePath = config.getContentPath('images');
+        this.resizerSettings = config.get('resizer');
     }
 
     /**
@@ -41,12 +43,14 @@ class LocalFileStore extends StorageBase {
         }).then(function () {
             return fs.copy(image.path, targetFilename);
         }).then(function () {
+            return self.resizeImage(image, targetFilename);
+        }).then(function () {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
             var fullUrl = (
                 urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
                     urlService.utils.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(self.storagePath, targetFilename))
+                    path.relative(self.storagePath, self.getDefaultImageFilename(image, targetFilename)))
             ).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
             return fullUrl;
@@ -148,6 +152,96 @@ class LocalFileStore extends StorageBase {
                 resolve(bytes);
             });
         });
+    }
+
+    /**
+     * Given a filename, parse it into name and type (extension)
+     * - filename is string
+     * - returns an object composed by 2 strings: type and name
+     *
+     * @param filename
+     * @returns {*}
+     */
+    getParsedFilename(filename) {
+        let filenamePartials = filename.split('.');
+        return {
+            type: filenamePartials.pop(),
+            name: filenamePartials.join('.')
+        };
+    }
+
+    /**
+     * If an image is given and resizer is enabled, then return the correct
+     * target filename for the image according to resizer settings
+     * - fileData is the express image object
+     * - targetFilename is a string of the original proposed unique target filename
+     * - returns a string
+     *
+     * @param fileData
+     * @param targetFilename
+     * @returns '*'
+     */
+    getDefaultImageFilename(fileData, targetFilename) {
+        let parsedTargetFile = this.getParsedFilename(targetFilename);
+
+        if (!this.isImage(fileData)) {
+            return targetFilename;
+        }
+        if (!this.resizerSettings || !this.resizerSettings.enabled || !this.resizerSettings.defaultSize) {
+            return targetFilename;
+        }
+        if (typeof this.resizerSettings.sizes !== 'object' || !this.resizerSettings.sizes.hasOwnProperty(this.resizerSettings.defaultSize)) {
+            return targetFilename;
+        }
+
+        return parsedTargetFile.name + this.resizerSettings.glue + this.resizerSettings.defaultSize + '.' + parsedTargetFile.type;
+    }
+
+    /**
+     * Verify if the file is image
+     * - fileData is the express image object
+     * - returns a boolean
+     *
+     * @param fileData
+     * @returns true/false
+     */
+    isImage(fileData) {
+        return (/\.(bmp|gif|jpg|jpeg|tiff|png|svg)$/i).test(fileData.originalname);
+    }
+
+    /**
+     * Build all the resied "copies" of the given image
+     * - fileData is the express image object
+     * - targetFilename is a string of the original proposed unique target filename
+     * - returns a promise which ultimately returns the full url to the uploaded image
+     *
+     * @param fileData
+     * @param targetFilename
+     * @returns {*}
+     */
+    resizeImage(fileData, targetFilename) {
+        let resizingTasks = [],
+            parsedTargetFile = this.getParsedFilename(targetFilename),
+            sizes;
+
+        // if the file is not an image, image settings
+        // are missing or image resizer is disabled
+        // do not attempt to resize the file
+        if (!this.isImage(fileData) || !this.resizerSettings || !this.resizerSettings.enabled || typeof this.resizerSettings.sizes !== 'object') {
+            return Promise.all(resizingTasks);
+        }
+
+        sizes = this.resizerSettings.sizes;
+        for (let size in sizes) {
+            if (typeof sizes[size] === 'object' && sizes[size].width && typeof sizes[size].width === 'number' && sizes[size].height && typeof sizes[size].height === 'number') {
+                resizingTasks.push(
+                    sharp(fileData.path)
+                        .resize(sizes[size].width, sizes[size].height)
+                        .toFile(parsedTargetFile.name + this.resizerSettings.glue + size + '.' + parsedTargetFile.type)
+                );
+            }
+        }
+        return Promise.all(resizingTasks);
     }
 }
 
