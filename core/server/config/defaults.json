@@ -28,6 +28,29 @@
         },
         "transports": ["stdout"]
     },
+    "resizer": {
+        "defaultSize": "medium",
+        "enabled": true,
+        "glue": "-",
+        "sizes": {
+            "small": {
+                "height": 279,
+                "width": 496
+            },
+            "medium": {
+                "height": 558,
+                "width": 992
+            },
+            "large": {
+                "height": 720,
+                "width": 1280
+            },
+            "thumbnail": {
+                "height": 150,
+                "width": 150
+            }
+        }
+    },
     "spam": {
         "user_login": {
             "minWait": 600000,
