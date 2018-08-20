@@ -4311,9 +4311,9 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-oembed-parser@1.1.1:
+"oembed-parser@https://github.com/kevinansfield/oembed-parser.git#ghost":
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.1.1.tgz#6c7e8fb87faefbf99a9408f87325151e274aa80a"
+  resolved "https://github.com/kevinansfield/oembed-parser.git#448496419130fa4c6c40c2471b6403bc6025f36a"
   dependencies:
     bellajs "^7.2.2"
     node-fetch "^2.1.2"
