@@ -268,6 +268,45 @@ describe('Unit: models/post', function () {
     });
 
     describe('edit', function () {
+        it('update post with options.migrating', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            let originalUpdatedAt;
+            let originalUpdatedBy;
+
+            return models.Post.findOne({
+                id: testUtils.DataGenerator.forKnex.posts[3].id,
+                status: 'draft'
+            }, {withRelated: ['tags']})
+                .then((post) => {
+                    originalUpdatedAt = post.get('updated_at');
+                    originalUpdatedBy = post.get('updated_by');
+
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        html: 'changed html'
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id, migrating: true}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.get('updated_at').should.eql(originalUpdatedAt);
+                    post.get('updated_by').should.eql(originalUpdatedBy);
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql([]);
+                });
+        });
+
         it('update post, relation has not changed', function () {
             const events = {
                 post: [],
