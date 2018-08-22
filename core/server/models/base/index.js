@@ -283,7 +283,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     onUpdating: function onUpdating(newObj, attr, options) {
         if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
-            if (!options.importing) {
+            if (!options.importing && !options.migrating) {
                 this.set('updated_by', this.contextUser(options));
             }
         }
@@ -304,7 +304,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // CASE: do not allow setting only the `updated_at` field, exception: importing
         if (schema.tables[this.tableName].hasOwnProperty('updated_at') && !options.importing) {
-            if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.updated_at) {
+            if (options.migrating) {
+                newObj.set('updated_at', newObj.previous('updated_at'));
+            } else if (newObj.hasChanged() && Object.keys(newObj.changed).length === 1 && newObj.changed.updated_at) {
                 newObj.set('updated_at', newObj.previous('updated_at'));
             }
         }
