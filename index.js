@@ -3,7 +3,7 @@
 
 var startTime = Date.now(),
     debug = require('ghost-ignition').debug('boot:index'),
-    ghost, express, common, urlService, parentApp, config, GhostServer;
+    ghost, express, common, urlService, parentApp;
 
 debug('First requires...');
 
@@ -12,8 +12,6 @@ ghost = require('./core');
 debug('Required ghost');
 
 express = require('express');
-GhostServer = require('./core/server/ghost-server');
-config = require('./core/server/config');
 common = require('./core/server/lib/common');
 urlService = require('./core/server/services/url');
 parentApp = express();
@@ -28,21 +26,10 @@ ghost().then(function (ghostServer) {
     return ghostServer.start(parentApp)
         .then(function afterStart() {
             common.logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
-
-            if (!config.get('maintenance:enabled')) {
-                return GhostServer.announceServerStart();
-            }
         });
 }).catch(function (err) {
-    if (!common.errors.utils.isIgnitionError(err)) {
-        err = new common.errors.GhostError({message: err.message, err: err});
-    }
-
-    return GhostServer.announceServerStopped(err)
-        .finally(() => {
-            common.logging.error(err);
-            setTimeout(() => {
-                process.exit(-1);
-            }, 100);
-        });
+    common.logging.error(err);
+    setTimeout(() => {
+        process.exit(-1);
+    }, 100);
 });
