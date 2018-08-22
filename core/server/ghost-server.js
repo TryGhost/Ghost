@@ -94,9 +94,12 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             debug('...Started');
-
             self.logStartMessages();
-            resolve(self);
+
+            return GhostServer.announceServerStart()
+                .finally(() => {
+                    resolve(self);
+                });
         });
     });
 };
@@ -312,7 +315,19 @@ const connectToBootstrapSocket = (message) => {
     });
 };
 
+/**
+ * @NOTE announceServerStartCalled:
+ *
+ * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
+ * - we told them to call `announceServerStart`, which is not required anymore, because we restructured the code
+ */
+let announceServerStartCalled = false;
 module.exports.announceServerStart = function announceServerStart() {
+    if (announceServerStartCalled || config.get('maintenance:enabled')) {
+        return Promise.resolve();
+    }
+    announceServerStartCalled = true;
+
     common.events.emit('server.start');
 
     // CASE: IPC communication to the CLI via child process.
@@ -332,7 +347,19 @@ module.exports.announceServerStart = function announceServerStart() {
     return Promise.resolve();
 };
 
+/**
+ * @NOTE announceServerStopCalled:
+ *
+ * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
+ * - we told them to call `announceServerStart`, which is not required anymore, because we restructured code
+ */
+let announceServerStopCalled = false;
 module.exports.announceServerStopped = function announceServerStopped(error) {
+    if (announceServerStopCalled) {
+        return Promise.resolve();
+    }
+    announceServerStopCalled = true;
+
     // CASE: IPC communication to the CLI via child process.
     if (process.send) {
         process.send({
