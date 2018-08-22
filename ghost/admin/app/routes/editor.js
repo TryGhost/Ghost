@@ -30,7 +30,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
         // edge has known issues
         if (this.userAgent.browser.isEdge) {
             this.notifications.showAlert(
-                htmlSafe('Microsoft Edge is not currently supported in Koenig. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
+                htmlSafe('Microsoft Edge is not currently supported. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
                 {type: 'info', key: 'koenig.browserSupport'}
             );
         }
@@ -38,7 +38,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
         // mobile browsers are not currently supported
         if (this.userAgent.device.isMobile || this.userAgent.device.isTablet) {
             this.notifications.showAlert(
-                htmlSafe('Mobile editing is not currently supported in Koenig. Please use a desktop browser or <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a>.'),
+                htmlSafe('Mobile editing is not currently supported. Please use a desktop browser or <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a>.'),
                 {type: 'info', key: 'koenig.browserSupport'}
             );
         }
