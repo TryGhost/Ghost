@@ -67,7 +67,14 @@ function ping(post) {
             timeout: 2 * 1000
         };
 
+        const goodResponse = /<member><name>flerror<\/name><value><boolean>0<\/boolean><\/value><\/member>/;
+
         request(pingHost.url, options)
+            .then(function (res) {
+                if (!goodResponse.test(res.body)) {
+                    throw new Error(res.body);
+                }
+            })
             .catch(function (err) {
                 common.logging.error(new common.errors.GhostError({
                     err: err,
