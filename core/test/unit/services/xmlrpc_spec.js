@@ -74,14 +74,13 @@ describe('XMLRPC', function () {
         var ping = xmlrpc.__get__('ping');
 
         it('with a post should execute two pings', function (done) {
-            var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
-                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
+            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             ping(testPost);
 
             (function retry() {
-                if (ping1.isDone() && ping2.isDone()) {
+                if (ping1.isDone()) {
                     return done();
                 }
 
@@ -90,8 +89,7 @@ describe('XMLRPC', function () {
         });
 
         it('with default post should not execute pings', function () {
-            var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
-                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
+            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             testPost.slug = 'welcome';
@@ -99,23 +97,19 @@ describe('XMLRPC', function () {
             ping(testPost);
 
             ping1.isDone().should.be.false();
-            ping2.isDone().should.be.false();
         });
 
         it('with a page should not execute pings', function () {
-            var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
-                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
+            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
 
             ping(testPage);
 
             ping1.isDone().should.be.false();
-            ping2.isDone().should.be.false();
         });
 
         it('when privacy.useRpcPing is false should not execute pings', function () {
-            var ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(200),
-                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(200),
+            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
                 testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             configUtils.set({privacy: {useRpcPing: false}});
@@ -123,21 +117,19 @@ describe('XMLRPC', function () {
             ping(testPost);
 
             ping1.isDone().should.be.false();
-            ping2.isDone().should.be.false();
         });
 
         it('captures && logs errors from requests', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                ping1 = nock('http://blogsearch.google.com').post('/ping/RPC2').reply(500),
-                ping2 = nock('http://rpc.pingomatic.com').post('/').reply(400),
+                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(400),
                 loggingStub = sandbox.stub(common.logging, 'error');
 
             ping(testPost);
 
             (function retry() {
-                if (ping1.isDone() && ping2.isDone()) {
-                    loggingStub.calledTwice.should.eql(true);
-                    loggingStub.args[0][0].message.should.containEql('Response code 500');
+                if (ping1.isDone()) {
+                    loggingStub.calledOnce.should.eql(true);
+                    loggingStub.args[0][0].message.should.containEql('Response code 400');
                     return done();
                 }
 

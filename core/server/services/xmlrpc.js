@@ -18,9 +18,6 @@ var _ = require('lodash'),
     // ToDo: Make this configurable
     pingList = [
         {
-            url: 'blogsearch.google.com/ping/RPC2'
-        },
-        {
             url: 'rpc.pingomatic.com'
         }
     ];
