@@ -111,8 +111,8 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
     blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
 
-    // password must be longer than 10 characters
-    if (!validator.isLength(password, 10)) {
+    // password must be longer than 8 characters
+    if (!validator.isLength(password, 8)) {
         validationResult.isValid = false;
         validationResult.message = common.i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
 
