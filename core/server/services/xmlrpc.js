@@ -42,7 +42,7 @@ function ping(post) {
     // Build XML object.
     pingXML = xml({
         methodCall: [{
-            methodName: 'weblogUpdate.ping'
+            methodName: 'weblogUpdates.ping'
         }, {
             params: [{
                 param: [{
