@@ -68,11 +68,14 @@ function ping(post) {
         };
 
         const goodResponse = /<member><name>flerror<\/name><value><boolean>0<\/boolean><\/value><\/member>/;
+        const errorMessage = /<name>(?:faultString|message)<\/name>[\s]+<value>[\s]+<string>([^<]+)/;
 
         request(pingHost.url, options)
             .then(function (res) {
                 if (!goodResponse.test(res.body)) {
-                    throw new Error(res.body);
+                    const matches = res.body.match(errorMessage);
+                    const message = matches ? matches[1] : res.body;
+                    throw new Error(message);
                 }
             })
             .catch(function (err) {

@@ -165,7 +165,7 @@ describe('XMLRPC', function () {
             (function retry() {
                 if (ping1.isDone()) {
                     loggingStub.calledOnce.should.eql(true);
-                    loggingStub.args[0][0].message.should.containEql('A wee lil error');
+                    loggingStub.args[0][0].message.should.equal('Uh oh. A wee lil error.');
                     return done();
                 }
 
