@@ -18,9 +18,6 @@ var _ = require('lodash'),
     // ToDo: Make this configurable
     pingList = [
         {
-            url: 'blogsearch.google.com/ping/RPC2'
-        },
-        {
             url: 'rpc.pingomatic.com'
         }
     ];
@@ -45,7 +42,7 @@ function ping(post) {
     // Build XML object.
     pingXML = xml({
         methodCall: [{
-            methodName: 'weblogUpdate.ping'
+            methodName: 'weblogUpdates.ping'
         }, {
             params: [{
                 param: [{
@@ -70,7 +67,17 @@ function ping(post) {
             timeout: 2 * 1000
         };
 
+        const goodResponse = /<member>[\s]*<name>flerror<\/name>[\s]*<value>[\s]*<boolean>0<\/boolean><\/value><\/member>/;
+        const errorMessage = /<name>(?:faultString|message)<\/name>[\s]*<value>[\s]*<string>([^<]+)/;
+
         request(pingHost.url, options)
+            .then(function (res) {
+                if (!goodResponse.test(res.body)) {
+                    const matches = res.body.match(errorMessage);
+                    const message = matches ? matches[1] : res.body;
+                    throw new Error(message);
+                }
+            })
             .catch(function (err) {
                 common.logging.error(new common.errors.GhostError({
                     err: err,
