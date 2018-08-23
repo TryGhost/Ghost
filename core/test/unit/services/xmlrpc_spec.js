@@ -146,7 +146,12 @@ describe('XMLRPC', function () {
                      <param>
                        <value>
                          <struct>
-                           <member><name>flerror</name><value><boolean>1</boolean></value></member>
+                           <member>
+                             <name>flerror</name>
+                             <value>
+                               <boolean>1</boolean>
+                             </value>
+                           </member>
                            <member>
                              <name>message</name>
                              <value>

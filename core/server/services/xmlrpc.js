@@ -67,7 +67,7 @@ function ping(post) {
             timeout: 2 * 1000
         };
 
-        const goodResponse = /<member><name>flerror<\/name><value><boolean>0<\/boolean><\/value><\/member>/;
+        const goodResponse = /<member>[\s]*<name>flerror<\/name>[\s]*<value>[\s]*<boolean>0<\/boolean><\/value><\/member>/;
         const errorMessage = /<name>(?:faultString|message)<\/name>[\s]+<value>[\s]+<string>([^<]+)/;
 
         request(pingHost.url, options)
