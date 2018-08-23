@@ -28,9 +28,8 @@ To automatically populate your profile picture, Ghost pings [Gravatar](http://gr
 
 ### RPC Pings
 
-When you publish a new post, Ghost sends out an RPC ping to let third party services know that new content is available on your blog. This enables search engines and other services to discover and index content on your blog more quickly. At present Ghost sends an RPC ping to the following services when you publish a new post:
+When you publish a new post, Ghost sends out an RPC ping to let third party services know that new content is available on your blog. This enables search engines and other services to discover and index content on your blog more quickly. At present Ghost sends an RPC ping to the following service when you publish a new post:
 
-- http://blogsearch.google.com
 - http://rpc.pingomatic.com
 
 RPC pings only happen when Ghost is running in the `production` environment.
