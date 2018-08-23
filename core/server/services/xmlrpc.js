@@ -68,7 +68,7 @@ function ping(post) {
         };
 
         const goodResponse = /<member>[\s]*<name>flerror<\/name>[\s]*<value>[\s]*<boolean>0<\/boolean><\/value><\/member>/;
-        const errorMessage = /<name>(?:faultString|message)<\/name>[\s]+<value>[\s]+<string>([^<]+)/;
+        const errorMessage = /<name>(?:faultString|message)<\/name>[\s]*<value>[\s]*<string>([^<]+)/;
 
         request(pingHost.url, options)
             .then(function (res) {

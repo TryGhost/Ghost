@@ -137,7 +137,7 @@ describe('XMLRPC', function () {
             }());
         });
 
-        it('captures && logs XML errors from requests', function (done) {
+        it('captures && logs XML errors from requests with newlines between tags', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
                 `<?xml version="1.0"?>
@@ -171,6 +171,77 @@ describe('XMLRPC', function () {
                 if (ping1.isDone()) {
                     loggingStub.calledOnce.should.eql(true);
                     loggingStub.args[0][0].message.should.equal('Uh oh. A wee lil error.');
+                    return done();
+                }
+
+                setTimeout(retry, 100);
+            }());
+        });
+
+        it('captures && logs XML errors from requests without newlines between tags', function (done) {
+            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
+                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
+                (`<?xml version="1.0"?>
+                 <methodResponse>
+                   <params>
+                     <param>
+                       <value>
+                         <struct>
+                           <member>
+                             <name>flerror</name>
+                             <value>
+                               <boolean>1</boolean>
+                             </value>
+                           </member>
+                           <member>
+                             <name>message</name>
+                             <value>
+                              <string>Uh oh. A wee lil error.</string>
+                             </value>
+                           </member>
+                         </struct>
+                       </value>
+                     </param>
+                   </params>
+                 </methodResponse>`).replace('\n', '')),
+                loggingStub = sandbox.stub(common.logging, 'error');
+
+            ping(testPost);
+
+            (function retry() {
+                if (ping1.isDone()) {
+                    loggingStub.calledOnce.should.eql(true);
+                    loggingStub.args[0][0].message.should.equal('Uh oh. A wee lil error.');
+                    return done();
+                }
+
+                setTimeout(retry, 100);
+            }());
+        });
+
+        it('does not error with responses that have 0 as flerror value', function (done) {
+            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
+                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
+                `<?xml version="1.0"?>
+                    <methodResponse>
+                      <params>
+                        <param>
+                          <value>
+                            <struct>
+                              <member><name>flerror</name><value><boolean>0</boolean></value></member>
+                              <member><name>message</name><value><string>Pings being forwarded to 9 services!</string></value></member>
+                    </struct>
+                          </value>
+                        </param>
+                      </params>
+                    </methodResponse>`),
+                loggingStub = sandbox.stub(common.logging, 'error');
+
+            ping(testPost);
+
+            (function retry() {
+                if (ping1.isDone()) {
+                    loggingStub.calledOnce.should.eql(false);
                     return done();
                 }
 
