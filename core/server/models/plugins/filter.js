@@ -85,6 +85,18 @@ filter = function filter(Bookshelf) {
         },
 
         preProcessFilters: function preProcessFilters() {
+            /* Lowercase filters for tags and slug no matter how they are passed in */
+            this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /tags|slug/}, function (statement) {
+                if (Array.isArray(statement.value)) {
+                    statement.value = statement.value.map(function mapValue(value) {
+                        return value.toLowerCase();
+                    });
+                } else {
+                    statement.value = statement.value.toLowerCase();
+                }
+                return statement;
+            });
+
             this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
                 statement.prop = 'tags.slug';
                 return {

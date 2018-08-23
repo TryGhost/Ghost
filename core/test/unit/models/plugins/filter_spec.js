@@ -226,7 +226,64 @@ describe('Filter', function () {
         });
 
         describe('Pre Process Filters', function () {
-            it('should not have tests yet, as this needs to be removed');
+            it('should lower case slug filter', function () {
+                ghostBookshelf.Model.prototype._filters = {
+                    statements: [
+                        {prop: 'slug', op: '=', value: 'TEST-123'}
+                    ]
+                };
+                ghostBookshelf.Model.prototype.preProcessFilters();
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .value.should.be.exactly('test-123');
+            });
+
+            it('should lower case tags filter', function () {
+                ghostBookshelf.Model.prototype._filters = {
+                    statements: [
+                        {prop: 'tags', op: '=', value: 'TEST-123'}
+                    ]
+                };
+                ghostBookshelf.Model.prototype.preProcessFilters();
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .value.should.be.exactly('test-123');
+            });
+
+            it('should not lower case other filter', function () {
+                ghostBookshelf.Model.prototype._filters = {
+                    statements: [
+                        {prop: 'title', op: '=', value: 'TEST-123'}
+                    ]
+                };
+                ghostBookshelf.Model.prototype.preProcessFilters();
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .value.should.be.exactly('TEST-123');
+            });
+
+            it('should lower case tags array filter', function () {
+                ghostBookshelf.Model.prototype._filters = {
+                    statements: [
+                        {prop: 'tags', op: '=', value: ['TEST-123', 'TEST-456']}
+                    ]
+                };
+                ghostBookshelf.Model.prototype.preProcessFilters();
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .value[0].should.be.exactly('test-123');
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .value[1].should.be.exactly('test-456');
+            });
+
+            it('should lower case tags filter inside groups', function () {
+                ghostBookshelf.Model.prototype._filters = {
+                    statements: [{
+                        group: [
+                            {prop: 'tags', op: '=', value: 'TEST-123'}
+                        ]
+                    }]
+                };
+                ghostBookshelf.Model.prototype.preProcessFilters();
+                ghostBookshelf.Model.prototype._filters.statements[0]
+                    .group[0].value.should.be.exactly('test-123');
+            });
         });
 
         describe('Post Process Filters', function () {
