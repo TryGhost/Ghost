@@ -50,7 +50,7 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else if (not previewSrc payload.src)}}
-                        <button class="flex flex-column items-center center btn-base sans-serif fw4 f7 middarkgrey" onclick={{action "triggerFileDialog"}}>
+                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa8 pt6 pb6 kg-image-button" onclick={{action "triggerFileDialog"}}>
                             {{svg-jar "summer" class="kg-placeholder-image-summer nudge-right--10"}}
                             <span class="mt2 midgrey">Click to select an image</span>
                         </button>
