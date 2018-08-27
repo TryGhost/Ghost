@@ -95,6 +95,35 @@ describe('API: oembed', function () {
                 });
         });
 
+        it('returns match for unsupported provider but with oembed link tag', function (done) {
+            nock('https://host.tld')
+                .intercept('/page', 'GET')
+                .reply(200, `
+                    <html>
+                        <head>
+                            <link rel="alternate" type="application/json+oembed"
+                                href="https://host.tld/oembed" title="Oh embed"/>
+                        </head>
+                    </html>
+                 `);
+
+            const requestMock = nock('https://host.tld')
+                .intercept('/oembed', 'GET')
+                .query(true)
+                .reply(200, {
+                    html: 'test'
+                });
+
+            OembedAPI.read({url: 'https://host.tld/page'})
+                .then((results) => {
+                    requestMock.isDone().should.be.true;
+                    should.exist(results);
+                    should.exist(results.html);
+                    results.html.should.eql('test');
+                    done();
+                }).catch(done);
+        });
+
         it('returns error for fetch failure', function (done) {
             let requestMock = nock('https://www.youtube.com')
                 .get('/oembed')
