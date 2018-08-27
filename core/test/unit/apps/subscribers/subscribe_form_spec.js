@@ -6,7 +6,7 @@ var should = require('should'),
 
 describe('{{subscribe_form}} helper', function () {
     before(function (done) {
-        hbs.express3({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
         hbs.cachePartials(function () {
             done();
         });

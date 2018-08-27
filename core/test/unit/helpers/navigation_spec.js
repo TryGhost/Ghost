@@ -15,7 +15,7 @@ describe('{{navigation}} helper', function () {
         optionsData;
 
     before(function (done) {
-        hbs.express3({
+        hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
@@ -184,7 +184,7 @@ describe('{{navigation}} helper with custom template', function () {
     var optionsData;
 
     before(function (done) {
-        hbs.express3({
+        hbs.express4({
             partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
         });
 
