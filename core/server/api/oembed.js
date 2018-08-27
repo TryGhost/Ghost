@@ -60,7 +60,7 @@ let oembed = {
 
         // see if the URL is a redirect to cater for shortened urls
         return request(url, {
-            method: 'HEAD',
+            method: 'GET',
             timeout: 2 * 1000,
             followRedirect: true
         }).then((response) => {

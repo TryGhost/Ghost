@@ -41,14 +41,14 @@ describe('API: oembed', function () {
 
         it('follows redirects to get base url', function (done) {
             let redirectMock = nock('https://youtu.be')
-                .intercept('/yHohwmrxrto', 'HEAD')
+                .intercept('/yHohwmrxrto', 'GET')
                 .reply(302, undefined, {
                     // eslint-disable-next-line
                     'Location': 'https://www.youtube.com/watch?v=yHohwmrxrto&feature=youtu.be'
                 });
 
             let videoMock = nock('https://www.youtube.com')
-                .intercept('/watch', 'HEAD')
+                .intercept('/watch', 'GET')
                 .query({v: 'yHohwmrxrto', feature: 'youtu.be'})
                 .reply(200);
 
@@ -83,7 +83,7 @@ describe('API: oembed', function () {
 
         it('returns error for unsupported provider', function (done) {
             nock('http://example.com')
-                .intercept('/unknown', 'HEAD')
+                .intercept('/unknown', 'GET')
                 .reply(200);
 
             OembedAPI.read({url: 'http://example.com/unknown'})
