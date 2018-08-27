@@ -1,7 +1,6 @@
-var config = require('../../../config'),
-    common = require('../../../lib/common'),
+var common = require('../../../lib/common'),
     imageLib = require('../../../lib/image');
-    
+
 module.exports = function profileImage() {
     // we checked for a valid image file, now we need to do validations for profile image
     return function profileImageValidation(req, res, next) {
