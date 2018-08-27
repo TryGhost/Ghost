@@ -80,6 +80,22 @@ describe('Upload API', function () {
                     done();
                 });
         });
+
+        it('valid profile image', function (done) {
+            request.post(testUtils.API.getApiQuery('uploads/profile-image'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_too_large.png'))
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    images.push(res.body);
+                    done();
+                });
+        });
     });
 
     describe('error cases', function () {
@@ -120,6 +136,21 @@ describe('Upload API', function () {
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
                 .expect(415)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
+        it('import should fail if profile image is not square', function (done) {
+            request.post(testUtils.API.getApiQuery('uploads/profile-image'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))
+                .expect(422)
                 .end(function (err) {
                     if (err) {
                         return done(err);
