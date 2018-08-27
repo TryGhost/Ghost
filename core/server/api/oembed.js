@@ -2,6 +2,7 @@ const common = require('../lib/common');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
 const request = require('../lib/request');
+const cheerio = require('cheerio');
 
 const findUrlWithProvider = function findUrlWithProvider(url) {
     let provider;
@@ -25,6 +26,10 @@ const findUrlWithProvider = function findUrlWithProvider(url) {
     }
 
     return {url, provider};
+};
+
+const getOembedUrlFromHTML = function getOembedUrlFromHTML(html) {
+    return cheerio('link[type="application/json+oembed"]', html).attr('href');
 };
 
 let oembed = {
@@ -60,7 +65,7 @@ let oembed = {
 
         // see if the URL is a redirect to cater for shortened urls
         return request(url, {
-            method: 'HEAD',
+            method: 'GET',
             timeout: 2 * 1000,
             followRedirect: true
         }).then((response) => {
@@ -69,7 +74,18 @@ let oembed = {
                 return provider ? knownProvider(url) : unknownProvider();
             }
 
-            return unknownProvider();
+            const oembedUrl = getOembedUrlFromHTML(response.body);
+
+            if (!oembedUrl) {
+                return unknownProvider();
+            }
+
+            return request(oembedUrl, {
+                method: 'GET',
+                json: true
+            }).then((response) => {
+                return response.body;
+            });
         }).catch(() => {
             return unknownProvider();
         });

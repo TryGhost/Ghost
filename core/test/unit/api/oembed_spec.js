@@ -41,14 +41,14 @@ describe('API: oembed', function () {
 
         it('follows redirects to get base url', function (done) {
             let redirectMock = nock('https://youtu.be')
-                .intercept('/yHohwmrxrto', 'HEAD')
+                .intercept('/yHohwmrxrto', 'GET')
                 .reply(302, undefined, {
                     // eslint-disable-next-line
                     'Location': 'https://www.youtube.com/watch?v=yHohwmrxrto&feature=youtu.be'
                 });
 
             let videoMock = nock('https://www.youtube.com')
-                .intercept('/watch', 'HEAD')
+                .intercept('/watch', 'GET')
                 .query({v: 'yHohwmrxrto', feature: 'youtu.be'})
                 .reply(200);
 
@@ -83,7 +83,7 @@ describe('API: oembed', function () {
 
         it('returns error for unsupported provider', function (done) {
             nock('http://example.com')
-                .intercept('/unknown', 'HEAD')
+                .intercept('/unknown', 'GET')
                 .reply(200);
 
             OembedAPI.read({url: 'http://example.com/unknown'})
@@ -93,6 +93,35 @@ describe('API: oembed', function () {
                     (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
+        });
+
+        it('returns match for unsupported provider but with oembed link tag', function (done) {
+            nock('https://host.tld')
+                .intercept('/page', 'GET')
+                .reply(200, `
+                    <html>
+                        <head>
+                            <link rel="alternate" type="application/json+oembed"
+                                href="https://host.tld/oembed" title="Oh embed"/>
+                        </head>
+                    </html>
+                 `);
+
+            const requestMock = nock('https://host.tld')
+                .intercept('/oembed', 'GET')
+                .query(true)
+                .reply(200, {
+                    html: 'test'
+                });
+
+            OembedAPI.read({url: 'https://host.tld/page'})
+                .then((results) => {
+                    requestMock.isDone().should.be.true;
+                    should.exist(results);
+                    should.exist(results.html);
+                    results.html.should.eql('test');
+                    done();
+                }).catch(done);
         });
 
         it('returns error for fetch failure', function (done) {
