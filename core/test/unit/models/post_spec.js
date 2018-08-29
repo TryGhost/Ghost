@@ -36,6 +36,9 @@ describe('Unit: models/post', function () {
 
     describe('toJSON', function () {
         const toJSON = function toJSON(model, options) {
+            if (!model.html) {
+                model.html = '<html>';
+            }
             return new models.Post(model).toJSON(options);
         };
 
@@ -77,6 +80,17 @@ describe('Unit: models/post', function () {
                 should.exist(ogImageUrlObject.host);
             });
 
+            it('converts relative content urls to absolute', function () {
+                const model = {
+                    html: '<img src="/content/images/my-coole-image.jpg">'
+                };
+                const json = toJSON(model, {context});
+                const imgSrc = json.html.match(/src="([^"]+)"/)[1];
+                const imgSrcUrlObject = url.parse(imgSrc);
+
+                should.exist(imgSrcUrlObject.protocol);
+                should.exist(imgSrcUrlObject.host);
+            });
         });
     });
 

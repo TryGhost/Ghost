@@ -10,7 +10,7 @@ var _ = require('lodash'),
     config = require('../config'),
     converters = require('../lib/mobiledoc/converters'),
     urlService = require('../services/url'),
-    {urlFor} = require('../services/url/utils'),
+    {urlFor, makeAbsoluteUrls} = require('../services/url/utils'),
     relations = require('./relations'),
     Post,
     Posts;
@@ -460,6 +460,7 @@ Post = ghostBookshelf.Model.extend({
             attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
             attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
             attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
+            attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
         }
 
         return attrs;
