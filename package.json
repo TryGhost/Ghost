@@ -89,7 +89,6 @@
     "rss": "1.2.2",
     "sanitize-html": "1.18.2",
     "semver": "5.5.0",
-    "sharp": "0.20.7",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.5",
     "superagent": "3.8.3",
@@ -99,6 +98,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
+    "sharp": "0.20.7",
     "sqlite3": "4.0.1"
   },
   "devDependencies": {

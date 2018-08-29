@@ -1,4 +1,5 @@
-const sharp = require('sharp');
+const Promise = require('bluebird');
+const common = require('../common');
 
 const getTypeByExtension = (ext) => {
     if (['.jpg', '.jpeg'].includes(ext)) {
@@ -30,8 +31,22 @@ const keepMetadata = (img) => {
     return img.withMetadata();
 };
 
+/**
+ * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
+ */
 const process = (options = {}) => {
-    let img = sharp(options.in);
+    let sharp, img;
+
+    try {
+        sharp = require('sharp');
+        img = sharp(options.in);
+    } catch (err) {
+        return Promise.reject(new common.errors.InternalServerError({
+            message: 'Sharp could not be installed',
+            code: 'SHARP_INSTALLATION',
+            err: err
+        }));
+    }
 
     if (options.resize) {
         resize(img, options);

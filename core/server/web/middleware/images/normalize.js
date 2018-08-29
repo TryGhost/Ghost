@@ -21,12 +21,15 @@ module.exports = function normalize(req, res, next) {
             next();
         })
         .catch((err) => {
-            common.logging.error(new common.errors.InternalServerError({
-                err: err,
-                context: `${req.file.name} / ${req.file.type}`,
-                code: 'IMAGE_NORMALIZATION'
-            }));
+            if (!common.errors.utils.isIgnitionError(err)) {
+                err = new common.errors.InternalServerError({
+                    err: err,
+                    context: `${req.file.name} / ${req.file.type}`,
+                    code: 'IMAGE_NORMALIZATION'
+                });
+            }
 
+            common.logging.error(err);
             next();
         })
         .finally(() => {
