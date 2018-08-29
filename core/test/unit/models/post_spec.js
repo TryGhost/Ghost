@@ -1,6 +1,7 @@
 /* eslint no-invalid-this:0 */
 
 const should = require('should'),
+    url = require('url'),
     sinon = require('sinon'),
     _ = require('lodash'),
     testUtils = require('../../utils'),
@@ -31,6 +32,52 @@ describe('Unit: models/post', function () {
 
     after(function () {
         sandbox.restore();
+    });
+
+    describe('toJSON', function () {
+        const toJSON = function toJSON(model, options) {
+            return new models.Post(model).toJSON(options);
+        };
+
+        describe('Public context', function () {
+            const context = {
+                public: true
+            };
+
+            it('converts relative feature_image url to absolute', function () {
+                const model = {
+                    feature_image: '/content/images/feature_image.jpg'
+                };
+                const json = toJSON(model, {context});
+                const featureImageUrlObject = url.parse(json.feature_image);
+
+                should.exist(featureImageUrlObject.protocol);
+                should.exist(featureImageUrlObject.host);
+            });
+
+            it('converts relative twitter_image url to absolute', function () {
+                const model = {
+                    twitter_image: '/content/images/twitter_image.jpg'
+                };
+                const json = toJSON(model, {context});
+                const twitterImageUrlObject = url.parse(json.twitter_image);
+
+                should.exist(twitterImageUrlObject.protocol);
+                should.exist(twitterImageUrlObject.host);
+            });
+
+            it('converts relative og_image url to absolute', function () {
+                const model = {
+                    og_image: '/content/images/og_image.jpg'
+                };
+                const json = toJSON(model, {context});
+                const ogImageUrlObject = url.parse(json.og_image);
+
+                should.exist(ogImageUrlObject.protocol);
+                should.exist(ogImageUrlObject.host);
+            });
+
+        });
     });
 
     describe('add', function () {
