@@ -5,10 +5,10 @@ const image = require('../../../lib/image');
 
 module.exports = function normalize(req, res, next) {
     const out = `${req.file.path}_processed`;
-    const original = req.file.path;
+    const originalPath = req.file.path;
 
     const options = Object.assign({
-        in: original,
+        in: originalPath,
         out,
         ext: req.file.ext,
         quality: 80,
