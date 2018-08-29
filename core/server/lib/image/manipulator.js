@@ -60,11 +60,14 @@ const process = (options = {}) => {
         keepMetadata(img);
     }
 
-    if (options.out) {
-        return img.toFile(options.out);
-    } else {
-        return img.toBuffer();
-    }
+    return img.toFile(options.out)
+        .catch((err) => {
+            throw new common.errors.InternalServerError({
+                message: 'Unable to manipulate image.',
+                err: err,
+                code: 'IMAGE_PROCESSING'
+            });
+        });
 };
 
 module.exports.process = process;
