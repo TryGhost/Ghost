@@ -36,9 +36,6 @@ describe('Unit: models/post', function () {
 
     describe('toJSON', function () {
         const toJSON = function toJSON(model, options) {
-            if (!model.html) {
-                model.html = '<html>';
-            }
             return new models.Post(model).toJSON(options);
         };
 

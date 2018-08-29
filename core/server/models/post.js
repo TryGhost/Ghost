@@ -457,10 +457,18 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (options && options.context && options.context.public) {
-            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
-            attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
-            attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
-            attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
+            if (attrs.feature_image) {
+                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            }
+            if (attrs.og_image) {
+                attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
+            }
+            if (attrs.twitter_image) {
+                attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
+            }
+            if (attrs.html) {
+                attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
+            }
         }
 
         return attrs;

@@ -68,7 +68,9 @@ Tag = ghostBookshelf.Model.extend({
         delete attrs.parent_id;
 
         if (options && options.context && options.context.public) {
-            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            if (attrs.feature_image) {
+                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            }
         }
 
         return attrs;
