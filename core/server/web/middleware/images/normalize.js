@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const image = require('../../../lib/image');
@@ -18,8 +18,16 @@ module.exports = function normalize(req, res, next) {
     image.manipulator.process(options)
         .then(() => {
             req.file.path = out;
-            // The path to original file is being overwritten, so cleanup needs to happen here
-            fs.unlink(original);
+
+            // CASE: the path to original file is being overwritten, so cleanup needs to happen here
+            fs.unlink(original).catch((err) => {
+                common.logging.error(new common.errors.InternalServerError({
+                    message: 'Could not unlink image',
+                    level: 'normal',
+                    err: err
+                }));
+            });
+
             next();
         })
         .catch((err) => {
