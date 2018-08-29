@@ -37,6 +37,10 @@ const keepMetadata = (img) => {
 const process = (options = {}) => {
     let sharp, img;
 
+    if (!options.resize && !options.compress && !options.stripMetadata) {
+        return Promise.resolve();
+    }
+
     try {
         sharp = require('sharp');
         img = sharp(options.in);
