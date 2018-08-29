@@ -1,5 +1,17 @@
 import createComponentCard from '../utils/create-component-card';
 
+// map card names to component names
+export const CARD_COMPONENT_MAP = {
+    hr: 'koenig-card-hr',
+    image: 'koenig-card-image',
+    markdown: 'koenig-card-markdown',
+    'card-markdown': 'koenig-card-markdown', // backwards-compat with markdown editor
+    html: 'koenig-card-html',
+    code: 'koenig-card-code',
+    embed: 'koenig-card-embed',
+    gallery: 'koenig-card-gallery'
+};
+
 // TODO: move koenigOptions directly into cards now that card components register
 // themselves so that they are available on card.component
 export default [
@@ -11,7 +23,8 @@ export default [
     createComponentCard('image', {hasEditMode: false, deleteIfEmpty(card) {
         return card.payload.imageSelector && !card.payload.src;
     }}),
-    createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'})
+    createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
+    createComponentCard('gallery', {hasEditMode: false})
 ];
 
 export const CARD_MENU = [
@@ -41,6 +54,14 @@ export const CARD_MENU = [
             matches: ['html'],
             type: 'card',
             replaceArg: 'html'
+        },
+        {
+            label: 'Gallery',
+            icon: 'koenig/kg-card-type-gallery',
+            iconClass: 'kg-card-type-native',
+            matches: ['gallery'],
+            type: 'card',
+            replaceArg: 'gallery'
         },
         {
             label: 'Divider',

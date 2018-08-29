@@ -257,8 +257,8 @@ export default Component.extend({
             }
 
             let result = {
-                fileName: file.name,
-                message: error.payload.errors[0].message
+                message,
+                fileName: file.name
             };
 
             // TODO: check for or expose known error types?
