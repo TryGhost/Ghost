@@ -1,12 +1,16 @@
-const fs = require('fs-extra');
+const _ = require('lodash');
+const path = require('path');
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const image = require('../../../lib/image');
+const storage = require('../../../adapters/storage');
 
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
 
-    if (!imageOptimizationOptions.resize && !imageOptimizationOptions.compress && !imageOptimizationOptions.stripMetadata) {
+    if (!imageOptimizationOptions.resize &&
+        !imageOptimizationOptions.compress &&
+        !imageOptimizationOptions.stripMetadata) {
         return next();
     }
 
@@ -24,6 +28,15 @@ module.exports = function normalize(req, res, next) {
     image.manipulator.process(options)
         .then(() => {
             req.file.path = out;
+
+            const parsedFileName = path.parse(req.file.name);
+            const newName = `${parsedFileName.name}_o${parsedFileName.ext}`;
+
+            // @TODO: fix that architectural problem
+            return storage.getStorage()
+                .save(Object.assign(_.cloneDeep(req.file), {path: originalPath, name: newName}));
+        })
+        .then(() => {
             next();
         })
         .catch((err) => {
