@@ -4229,7 +4229,13 @@ ember-text-measurer@^0.4.0:
   dependencies:
     ember-cli-babel "^6.8.2"
 
-ember-truth-helpers@2.0.0, ember-truth-helpers@^2.0.0:
+ember-truth-helpers@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ember-truth-helpers/-/ember-truth-helpers-2.1.0.tgz#d4dab4eee7945aa2388126485977baeb33ca0798"
+  dependencies:
+    ember-cli-babel "^6.6.0"
+
+ember-truth-helpers@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ember-truth-helpers/-/ember-truth-helpers-2.0.0.tgz#f3e2eef667859197f1328bb4f83b0b35b661c1ac"
   dependencies:
@@ -5241,9 +5247,9 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.36:
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.36.tgz#9b6ebcc9e9b0c782e4abeb7849b87b47b86b5d22"
+ghost-spirit@0.0.41:
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.41.tgz#6436f264560a9a6287bf2d6fb8f9509004b9fe6a"
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"

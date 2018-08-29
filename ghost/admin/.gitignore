@@ -50,3 +50,4 @@ Session.vim
 /libpeerconnection.log
 testem.log
 /concat-stats-for
+jsconfig.json

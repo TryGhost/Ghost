@@ -11,7 +11,7 @@ import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import calculateReadingTime from '../utils/reading-time';
 import countWords from '../utils/count-words';
 import defaultAtoms from '../options/atoms';
-import defaultCards from '../options/cards';
+import defaultCards, {CARD_COMPONENT_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-editor';
 import parserPlugins from '../options/parser-plugins';
@@ -50,17 +50,6 @@ export const BLANK_DOC = {
             [0, [], 0, '']
         ]]
     ]
-};
-
-// map card names to component names
-export const CARD_COMPONENT_MAP = {
-    hr: 'koenig-card-hr',
-    image: 'koenig-card-image',
-    markdown: 'koenig-card-markdown',
-    'card-markdown': 'koenig-card-markdown', // backwards-compat with markdown editor
-    html: 'koenig-card-html',
-    code: 'koenig-card-code',
-    embed: 'koenig-card-embed'
 };
 
 export const CURSOR_BEFORE = -1;
