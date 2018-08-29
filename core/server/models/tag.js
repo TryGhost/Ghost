@@ -1,4 +1,5 @@
-const ghostBookshelf = require('./base');
+const ghostBookshelf = require('./base'),
+    {urlFor} = require('../services/url/utils');
 let Tag, Tags;
 
 Tag = ghostBookshelf.Model.extend({
@@ -65,6 +66,10 @@ Tag = ghostBookshelf.Model.extend({
 
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
+
+        if (options && options.context && options.context.public) {
+            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+        }
 
         return attrs;
     }
