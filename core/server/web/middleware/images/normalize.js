@@ -4,6 +4,12 @@ const common = require('../../../lib/common');
 const image = require('../../../lib/image');
 
 module.exports = function normalize(req, res, next) {
+    const imageOptimizationOptions = config.get('imageOptimization');
+
+    if (!imageOptimizationOptions.resize && !imageOptimizationOptions.compress && !imageOptimizationOptions.stripMetadata) {
+        return next();
+    }
+
     const out = `${req.file.path}_processed`;
     const originalPath = req.file.path;
 
@@ -13,7 +19,7 @@ module.exports = function normalize(req, res, next) {
         ext: req.file.ext,
         quality: 80,
         width: 2000
-    }, config.get('imageOptimization'));
+    }, imageOptimizationOptions);
 
     image.manipulator.process(options)
         .then(() => {
