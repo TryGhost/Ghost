@@ -18,16 +18,6 @@ module.exports = function normalize(req, res, next) {
     image.manipulator.process(options)
         .then(() => {
             req.file.path = out;
-
-            // CASE: the path to original file is being overwritten, so cleanup needs to happen here
-            fs.unlink(original).catch((err) => {
-                common.logging.error(new common.errors.InternalServerError({
-                    message: 'Could not unlink image',
-                    level: 'normal',
-                    err: err
-                }));
-            });
-
             next();
         })
         .catch((err) => {
