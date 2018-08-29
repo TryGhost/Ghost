@@ -1,6 +1,7 @@
-const common = require('../../../lib/common'),
-    config = require('../../../config'),
-    localUtils = require('../../utils');
+const path = require('path');
+const common = require('../../../lib/common');
+const config = require('../../../config');
+const localUtils = require('../../utils');
 
 module.exports = function upload(options) {
     var type = options.type;
@@ -13,6 +14,7 @@ module.exports = function upload(options) {
         req.file = req.file || {};
         req.file.name = req.file.originalname;
         req.file.type = req.file.mimetype;
+        req.file.ext = path.extname(req.file.name).toLowerCase();
 
         // Check if a file was provided
         if (!localUtils.checkFileExists(req.file)) {
