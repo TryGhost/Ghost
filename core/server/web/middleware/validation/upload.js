@@ -14,7 +14,6 @@ module.exports = function upload(options) {
         req.file = req.file || {};
         req.file.name = req.file.originalname;
         req.file.type = req.file.mimetype;
-        req.file.ext = path.extname(req.file.name).toLowerCase();
 
         // Check if a file was provided
         if (!localUtils.checkFileExists(req.file)) {
@@ -22,6 +21,8 @@ module.exports = function upload(options) {
                 message: common.i18n.t('errors.api.' + type + '.missingFile')
             }));
         }
+
+        req.file.ext = path.extname(req.file.name).toLowerCase();
 
         // Check if the file is valid
         if (!localUtils.checkFileIsValid(req.file, contentTypes, extensions)) {
