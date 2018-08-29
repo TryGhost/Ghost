@@ -18,15 +18,13 @@ module.exports = function normalize(req, res, next) {
     image.manipulator.process(options)
         .then(() => {
             req.file.path = out;
+            // The path to original file is being overwritten, so cleanup needs to happen here
+            fs.unlink(original);
             next();
         })
         .catch((err) => {
             err.context = `${req.file.name} / ${req.file.type}`;
             common.logging.error(err);
             next();
-        })
-        .finally(() => {
-            // The path to original file is being overwritten, so cleanup needs to happen here
-            fs.unlink(original);
         });
 };
