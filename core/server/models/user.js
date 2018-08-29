@@ -15,6 +15,7 @@ const _ = require('lodash'),
      * locked user: imported users, they get a random passport
      */
     inactiveStates = ['inactive', 'locked'],
+    {urlFor} = require('../services/url/utils'),
     allStates = activeStates.concat(inactiveStates);
 
 let User, Users;
@@ -209,6 +210,8 @@ User = ghostBookshelf.Model.extend({
             delete attrs.last_seen;
             delete attrs.status;
             delete attrs.ghost_auth_id;
+            attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
+            attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
         }
 
         return attrs;
