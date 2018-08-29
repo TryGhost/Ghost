@@ -441,6 +441,7 @@ Post = ghostBookshelf.Model.extend({
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
+        attrs.url = urlService.getUrlByResourceId(attrs.id);
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
@@ -452,8 +453,8 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = urlService.getUrlByResourceId(attrs.id);
+        if (options.columns && !options.columns.includes('url')) {
+            delete attrs.url;
         }
 
         if (options && options.context && options.context.public) {
