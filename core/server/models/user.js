@@ -210,11 +210,13 @@ User = ghostBookshelf.Model.extend({
             delete attrs.last_seen;
             delete attrs.status;
             delete attrs.ghost_auth_id;
-            if (attrs.profile_image) {
-                attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
-            }
-            if (attrs.cover_image) {
-                attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
+            if (options.absoluteUrls) {
+                if (attrs.profile_image) {
+                    attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
+                }
+                if (attrs.cover_image) {
+                    attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
+                }
             }
         }
 

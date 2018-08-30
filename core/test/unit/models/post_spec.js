@@ -44,44 +44,44 @@ describe('Unit: models/post', function () {
                 public: true
             };
 
-            it('converts relative feature_image url to absolute', function () {
+            it('converts relative feature_image url to absolute when absoluteUrls flag passed', function () {
                 const model = {
                     feature_image: '/content/images/feature_image.jpg'
                 };
-                const json = toJSON(model, {context});
+                const json = toJSON(model, {context, absoluteUrls: true});
                 const featureImageUrlObject = url.parse(json.feature_image);
 
                 should.exist(featureImageUrlObject.protocol);
                 should.exist(featureImageUrlObject.host);
             });
 
-            it('converts relative twitter_image url to absolute', function () {
+            it('converts relative twitter_image url to absolute when absoluteUrls flag passed', function () {
                 const model = {
                     twitter_image: '/content/images/twitter_image.jpg'
                 };
-                const json = toJSON(model, {context});
+                const json = toJSON(model, {context, absoluteUrls: true});
                 const twitterImageUrlObject = url.parse(json.twitter_image);
 
                 should.exist(twitterImageUrlObject.protocol);
                 should.exist(twitterImageUrlObject.host);
             });
 
-            it('converts relative og_image url to absolute', function () {
+            it('converts relative og_image url to absolute when absoluteUrls flag passed', function () {
                 const model = {
                     og_image: '/content/images/og_image.jpg'
                 };
-                const json = toJSON(model, {context});
+                const json = toJSON(model, {context, absoluteUrls: true});
                 const ogImageUrlObject = url.parse(json.og_image);
 
                 should.exist(ogImageUrlObject.protocol);
                 should.exist(ogImageUrlObject.host);
             });
 
-            it('converts relative content urls to absolute', function () {
+            it('converts relative content urls to absolute when absoluteUrls flag passed', function () {
                 const model = {
                     html: '<img src="/content/images/my-coole-image.jpg">'
                 };
-                const json = toJSON(model, {context});
+                const json = toJSON(model, {context, absoluteUrls: true});
                 const imgSrc = json.html.match(/src="([^"]+)"/)[1];
                 const imgSrcUrlObject = url.parse(imgSrc);
 

@@ -457,7 +457,7 @@ Post = ghostBookshelf.Model.extend({
             delete attrs.url;
         }
 
-        if (options && options.context && options.context.public) {
+        if (options && options.context && options.context.public && options.absoluteUrls) {
             if (attrs.feature_image) {
                 attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
             }
