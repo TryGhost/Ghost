@@ -1,6 +1,7 @@
-const common = require('../../../lib/common'),
-    config = require('../../../config'),
-    localUtils = require('../../utils');
+const path = require('path');
+const common = require('../../../lib/common');
+const config = require('../../../config');
+const localUtils = require('../../utils');
 
 module.exports = function upload(options) {
     var type = options.type;
@@ -20,6 +21,8 @@ module.exports = function upload(options) {
                 message: common.i18n.t('errors.api.' + type + '.missingFile')
             }));
         }
+
+        req.file.ext = path.extname(req.file.name).toLowerCase();
 
         // Check if the file is valid
         if (!localUtils.checkFileIsValid(req.file, contentTypes, extensions)) {

@@ -18,10 +18,16 @@ describe('web utils', function () {
 
     describe('checkFileIsValid', function () {
         it('returns true if file has valid extension and type', function () {
-            webUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.txt']).should.be.true();
+            webUtils.checkFileIsValid({
+                name: 'test.txt',
+                mimetype: 'text',
+                ext: '.txt'
+            }, ['text'], ['.txt']).should.be.true();
+
             webUtils.checkFileIsValid({
                 name: 'test.jpg',
-                mimetype: 'jpeg'
+                mimetype: 'jpeg',
+                ext: '.jpg'
             }, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
         });
 
