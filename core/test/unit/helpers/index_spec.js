@@ -6,7 +6,7 @@ var should = require('should'),
     helpers = require.main.require('core/server/helpers');
 
 describe('Helpers', function () {
-    var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup'],
+    var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'],
         ghostHelpers = [
             'asset', 'author', 'authors', 'body_class', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
             'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'lang', 'meta_description', 'meta_title', 'navigation',
@@ -17,6 +17,7 @@ describe('Helpers', function () {
 
     describe('Load Core Helpers', function () {
         before(function () {
+            hbs.express4();
             helpers.loadCoreHelpers();
         });
 

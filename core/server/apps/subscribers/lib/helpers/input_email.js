@@ -29,11 +29,15 @@ module.exports = function input_email(options) { // eslint-disable-line camelcas
         extras += ' value="' + options.hash.value + '"';
     }
 
+    if (options.hash.id) {
+        extras += ' id="' + options.hash.id + '"';
+    }
+
     output = templates.input({
         type: 'email',
         name: 'email',
         className: className,
-        extras: extras
+        extras: (extras ? extras.trim() : '')
     });
 
     return new SafeString(output);
