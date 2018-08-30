@@ -85,7 +85,7 @@ describe('Upload API', function () {
             request.post(testUtils.API.getApiQuery('uploads/profile-image'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_too_large.png'))
+                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
