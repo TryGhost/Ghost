@@ -844,9 +844,13 @@ teardown = function teardown() {
  * we start with a small function set to mock non existent modules
  */
 originalRequireFn = Module.prototype.require;
-mockNotExistingModule = function mockNotExistingModule(modulePath, module) {
+mockNotExistingModule = function mockNotExistingModule(modulePath, module, error = false) {
     Module.prototype.require = function (path) {
         if (path.match(modulePath)) {
+            if (error) {
+                throw module;
+            }
+
             return module;
         }
 
