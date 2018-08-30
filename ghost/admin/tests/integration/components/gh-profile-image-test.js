@@ -10,6 +10,8 @@ import {setupComponentTest} from 'ember-mocha';
 import {timeout} from 'ember-concurrency';
 
 let pathsStub = Service.extend({
+    assetRoot: '/ghost/assets/',
+
     init() {
         this._super(...arguments);
 
