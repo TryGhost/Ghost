@@ -15,20 +15,20 @@ const process = (options = {}) => {
         img = sharp(options.in);
     } catch (err) {
         return Promise.reject(new common.errors.InternalServerError({
-            message: 'Sharp could not be installed',
+            message: 'Sharp wasn\'t installed',
             code: 'SHARP_INSTALLATION',
             err: err
         }));
     }
 
-    // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
-    //       based on theorientation. It does not rotate if no orientation is set.
     return img.metadata()
         .then((metadata) => {
             if (metadata.width > options.width) {
                 img.resize(options.width);
             }
 
+            // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
+            //       based on the orientation. It does not rotate if no orientation is set.
             img.rotate();
         })
         .then(() => {
