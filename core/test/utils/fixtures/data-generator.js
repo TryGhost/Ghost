@@ -786,7 +786,7 @@ DataGenerator.forKnex = (function () {
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[3].id,
-            author_id: DataGenerator.Content.users[2].id,
+            author_id: _.find(DataGenerator.Content.users, {email: 'jbOgendAth@example.com'}).id,
             sort_order: 1
         },
         {

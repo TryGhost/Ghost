@@ -184,25 +184,19 @@ describe('Users API', function () {
                 should.exist(response.users);
                 response.users.should.have.length(9);
 
-                testUtils.API.checkResponse(response.users[0], 'user', 'count');
-                testUtils.API.checkResponse(response.users[1], 'user', 'count');
-                testUtils.API.checkResponse(response.users[2], 'user', 'count');
-                testUtils.API.checkResponse(response.users[3], 'user', 'count');
-                testUtils.API.checkResponse(response.users[4], 'user', 'count');
-                testUtils.API.checkResponse(response.users[5], 'user', 'count');
-                testUtils.API.checkResponse(response.users[6], 'user', 'count');
-                testUtils.API.checkResponse(response.users[7], 'user', 'count');
-                testUtils.API.checkResponse(response.users[8], 'user', 'count');
+                response.users.map((user) => {
+                  testUtils.API.checkResponse(user, 'user', 'count');
+                });
 
-                response.users[0].count.posts.should.eql(0);
-                response.users[1].count.posts.should.eql(0);
-                response.users[2].count.posts.should.eql(0);
-                response.users[3].count.posts.should.eql(0);
-                response.users[4].count.posts.should.eql(0);
-                response.users[5].count.posts.should.eql(8);
-                response.users[6].count.posts.should.eql(0);
-                response.users[7].count.posts.should.eql(0);
-                response.users[8].count.posts.should.eql(0);
+                response.users.map((user) => {
+                  if (user.email === 'jbloggs@example.com') {
+                    user.count.posts.should.eql(8);
+                  } else if (user.email === 'jbOgendAth@example.com') {
+                    user.count.posts.should.eql(1);
+                  } else {
+                    response.users[1].count.posts.should.eql(0);
+                  }
+                });
 
                 response.meta.pagination.should.have.property('page', 1);
                 response.meta.pagination.should.have.property('limit', 15);
