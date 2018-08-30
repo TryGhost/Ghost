@@ -7,7 +7,7 @@ var should = require('should'),
 
 describe('{{pagination}} helper', function () {
     before(function (done) {
-        hbs.express3({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         hbs.cachePartials(function () {
             done();
@@ -122,7 +122,7 @@ describe('{{pagination}} helper', function () {
 
 describe('{{pagination}} helper with custom template', function () {
     before(function (done) {
-        hbs.express3({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
+        hbs.express4({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
 
         hbs.cachePartials(function () {
             done();
