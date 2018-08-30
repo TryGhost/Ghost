@@ -2575,9 +2575,9 @@ grunt@~0.4.0:
     underscore.string "~2.2.1"
     which "~1.0.5"
 
-gscan@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.0.0.tgz#049e791ce3315359f7cd2280f0a334a88c22de77"
+gscan@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.2.0.tgz#088006b2e4e009f7c368f4d2a4d43b118e27cde2"
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
