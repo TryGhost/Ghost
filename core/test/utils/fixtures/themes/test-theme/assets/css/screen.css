@@ -1854,13 +1854,18 @@ Usage (In Ghost editor):
     text-align: center;
 }
 
-.kg-image-card {
+.kg-image-card,
+.kg-gallery-card {
     margin: 0 0 1.5em;
 }
 
 .kg-image-card figcaption {
     margin: -1.0em 0 1.5em;
 }
+
+.kg-gallery-container {}
+.kg-gallery-row {}
+.kg-gallery-image {}
 
 .kg-embed-card {
     display: flex;
