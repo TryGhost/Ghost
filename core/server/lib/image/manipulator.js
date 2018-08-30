@@ -12,6 +12,7 @@ const process = (options = {}) => {
 
     try {
         sharp = require('sharp');
+
         // @NOTE: workaround for Windows as libvips keeps a reference to the input file
         //        which makes it impossible to fs.unlink() it on cleanup stage
         sharp.cache(false);
