@@ -8,9 +8,7 @@ const storage = require('../../../adapters/storage');
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
 
-    if (!imageOptimizationOptions.resize &&
-        !imageOptimizationOptions.compress &&
-        !imageOptimizationOptions.stripMetadata) {
+    if (!imageOptimizationOptions.resize) {
         return next();
     }
 
@@ -21,7 +19,6 @@ module.exports = function normalize(req, res, next) {
         in: originalPath,
         out,
         ext: req.file.ext,
-        quality: 80,
         width: 2000
     }, imageOptimizationOptions);
 

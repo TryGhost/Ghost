@@ -1,38 +1,11 @@
 const Promise = require('bluebird');
 const common = require('../common');
 
-const getTypeByExtension = (ext) => {
-    if (['.jpg', '.jpeg'].includes(ext)) {
-        return 'jpeg';
-    } else {
-        return null;
-    }
-};
-
-const resize = (img, options) => {
-    img.resize(options.width);
-};
-
-/**
- * @NOTE
- * for png format we don't want to use any compression method as it's meant to be used as lossless format
- */
-const compress = (img, options = {quality: 80}) => {
-    const type = getTypeByExtension(options.ext);
-
-    if (!type || type !== 'jpeg') {
-        return;
-    }
-
-    img.jpeg({quality: options.quality});
-};
-
-const keepMetadata = (img) => {
-    return img.withMetadata();
-};
-
 /**
  * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
+ *
+ * We currently can't enable compression or having more config options, because of
+ * https://github.com/lovell/sharp/issues/1360.
  */
 const process = (options = {}) => {
     let sharp, img;
@@ -48,16 +21,11 @@ const process = (options = {}) => {
         }));
     }
 
+    // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
+    //       based on the orientation. It does not rotate if no orientation is set.
     if (options.resize) {
-        resize(img, options);
-    }
-
-    if (options.compress) {
-        compress(img, options);
-    }
-
-    if (!options.stripMetadata) {
-        keepMetadata(img);
+        img.resize(options.width);
+        img.rotate();
     }
 
     return img.toFile(options.out)

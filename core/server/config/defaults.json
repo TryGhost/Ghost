@@ -80,8 +80,6 @@
         }
     },
     "imageOptimization": {
-        "resize": true,
-        "compress": true,
-        "stripMetadata": true
+        "resize": true
     }
 }
