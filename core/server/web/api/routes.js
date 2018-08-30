@@ -14,7 +14,7 @@ const express = require('express'),
     tmpdir = require('os').tmpdir,
     upload = require('multer')({dest: tmpdir()}),
     validation = require('../middleware/validation'),
-    images = require('../middleware/images'),
+    image = require('../middleware/image'),
 
     // Temporary
     // @TODO find a more appy way to do this!
@@ -183,7 +183,7 @@ module.exports = function apiRoutes() {
         mw.authenticatePrivate,
         upload.single('uploadimage'),
         validation.upload({type: 'images'}),
-        images.normalize,
+        image.normalize,
         api.http(api.uploads.add)
     );
 
