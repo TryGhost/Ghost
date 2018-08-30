@@ -22,13 +22,18 @@ const process = (options = {}) => {
     }
 
     // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
-    //       based on the orientation. It does not rotate if no orientation is set.
-    if (options.resize) {
-        img.resize(options.width);
-        img.rotate();
-    }
+    //       based on theorientation. It does not rotate if no orientation is set.
+    return img.metadata()
+        .then((metadata) => {
+            if (metadata.width > options.width) {
+                img.resize(options.width);
+            }
 
-    return img.toFile(options.out)
+            img.rotate();
+        })
+        .then(() => {
+            return img.toFile(options.out);
+        })
         .catch((err) => {
             throw new common.errors.InternalServerError({
                 message: 'Unable to manipulate image.',
