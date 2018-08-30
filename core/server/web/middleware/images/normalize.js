@@ -3,7 +3,6 @@ const path = require('path');
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const image = require('../../../lib/image');
-const storage = require('../../../adapters/storage');
 
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
@@ -24,16 +23,16 @@ module.exports = function normalize(req, res, next) {
 
     image.manipulator.process(options)
         .then(() => {
-            req.file.path = out;
+            req.files = [];
 
+            // CASE: push the processed/optimised image
+            req.files.push(Object.assign(req.file, {path: out}));
+
+            // CASE: push original image, we keep a copy of it
             const parsedFileName = path.parse(req.file.name);
             const newName = `${parsedFileName.name}_o${parsedFileName.ext}`;
+            req.files.push(Object.assign(_.cloneDeep(req.file), {path: originalPath, name: newName}));
 
-            // @TODO: fix that architectural problem
-            return storage.getStorage()
-                .save(Object.assign(_.cloneDeep(req.file), {path: originalPath, name: newName}));
-        })
-        .then(() => {
             next();
         })
         .catch((err) => {
