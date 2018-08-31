@@ -98,8 +98,8 @@ Tag = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absolute_urls'],
-                findAll: ['columns', 'absolute_urls'],
-                findOne: ['visibility', 'absolute_urls'],
+                findAll: ['columns'],
+                findOne: ['visibility'],
                 destroy: ['destroyAll']
             };
 

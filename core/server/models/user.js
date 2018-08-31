@@ -333,12 +333,12 @@ User = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['withRelated', 'status', 'absolute_urls'],
+                findOne: ['withRelated', 'status'],
                 setup: ['id'],
                 edit: ['withRelated', 'id', 'importPersistUser'],
                 add: ['importPersistUser'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absolute_urls'],
-                findAll: ['filter', 'absolute_urls']
+                findAll: ['filter']
             };
 
         if (validOptions[methodName]) {
