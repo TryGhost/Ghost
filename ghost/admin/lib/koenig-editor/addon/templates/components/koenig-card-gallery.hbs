@@ -18,6 +18,7 @@
         files=files
         accept=imageMimeTypes
         extensions=imageExtensions
+        onUploadStart=(action "addImage")
         onUploadSuccess=(action "setImageSrc")
         onUploadFailure=(action "uploadFailed")
         as |uploader|

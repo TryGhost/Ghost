@@ -117,6 +117,15 @@ export default Component.extend({
     },
 
     actions: {
+        addImage(file) {
+            let count = this.images.length + 1;
+            let row = Math.ceil(count / MAX_PER_ROW) - 1;
+
+            let image = this._readDataFromImageFile(file);
+            image.row = row;
+            this.images.pushObject(image);
+        },
+
         setImageSrc(uploadResult) {
             let image = this.images.findBy('fileName', uploadResult.fileName);
 
@@ -212,18 +221,6 @@ export default Component.extend({
             this.set('errorMessage', 'Galleries are limited to 9 images');
         }
         this.set('files', strippedFiles);
-
-        let count = this.images.length;
-        let row = Math.ceil(count / MAX_PER_ROW) - 1;
-
-        strippedFiles.forEach((file) => {
-            count = count + 1;
-            row = Math.ceil(count / MAX_PER_ROW) - 1;
-
-            let image = this._readDataFromImageFile(file);
-            image.row = row;
-            this.images.pushObject(image);
-        });
     },
 
     _readDataFromImageFile(file) {
