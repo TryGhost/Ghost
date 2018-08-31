@@ -25,7 +25,20 @@ module.exports = {
         // let version = opts.options.version;
         let dom = opts.env.dom;
 
-        if (!payload.images || payload.images.length === 0) {
+        let isValidImage = (image) => {
+            return image.fileName
+                && image.src
+                && image.width
+                && image.height;
+        };
+
+        let validImages = [];
+
+        if (payload.images && payload.images.length) {
+            validImages = payload.images.filter(isValidImage);
+        }
+
+        if (validImages.length === 0) {
             return '';
         }
 
@@ -56,7 +69,7 @@ module.exports = {
             return rows;
         };
 
-        let rows = buildStructure(payload.images);
+        let rows = buildStructure(validImages);
 
         rows.forEach((row) => {
             let rowDiv = dom.createElement('div');
