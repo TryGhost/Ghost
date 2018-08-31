@@ -92,7 +92,7 @@ describe('RSS: Generate Feed', function () {
             xmlData.should.match(/<guid isPermaLink="false">/);
             xmlData.should.match(/<\/guid><dc:creator><!\[CDATA\[Joe Bloggs\]\]><\/dc:creator>/);
             xmlData.should.match(/<pubDate>Thu, 01 Jan 2015/);
-            xmlData.should.match(/<content:encoded><!\[CDATA\[<h1>HTML Ipsum Presents<\/h1><p><strong>Pellentes/);
+            xmlData.should.match(/<content:encoded><!\[CDATA\[<h1>HTML Ipsum Presents<\/h1>/);
             xmlData.should.match(/<\/code><\/pre>\]\]><\/content:encoded><\/item>/);
             xmlData.should.not.match(/<author>/);
 

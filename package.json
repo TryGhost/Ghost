@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -51,6 +51,7 @@
     "express": "4.16.3",
     "express-brute": "1.0.1",
     "express-hbs": "1.0.4",
+    "express-query-boolean": "2.0.0",
     "extract-zip": "1.6.7",
     "fs-extra": "3.0.1",
     "ghost-gql": "0.0.10",
@@ -58,7 +59,7 @@
     "ghost-storage-base": "0.0.3",
     "glob": "5.0.15",
     "got": "7.1.0",
-    "gscan": "2.0.0",
+    "gscan": "2.2.0",
     "html-to-text": "3.3.0",
     "image-size": "0.6.3",
     "intl": "1.2.5",
@@ -98,6 +99,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
+    "sharp": "0.20.7",
     "sqlite3": "4.0.1"
   },
   "devDependencies": {

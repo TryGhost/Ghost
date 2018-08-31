@@ -1,6 +1,8 @@
 var should = require('should'),
     supertest = require('supertest'),
     _ = require('lodash'),
+    url = require('url'),
+    cheerio = require('cheerio'),
     moment = require('moment'),
     testUtils = require('../../../utils'),
     configUtils = require('../../../utils/configUtils'),
@@ -49,6 +51,39 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+                done();
+            });
+    });
+
+    it('browse posts: request absolute urls', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.exist(res.body.posts);
+
+                // kitchen sink
+                res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
+
+                let urlParts = url.parse(res.body.posts[9].feature_image);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
+                urlParts = url.parse(res.body.posts[9].url);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
+                const $ = cheerio.load(res.body.posts[9].html);
+                urlParts = url.parse($('img').attr('src'));
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
                 done();
             });
     });

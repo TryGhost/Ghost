@@ -1,5 +1,4 @@
 const url = require('url'),
-    path = require('path'),
     _ = require('lodash');
 
 let _private = {};
@@ -37,10 +36,9 @@ module.exports.checkFileExists = function checkFileExists(fileData) {
 };
 
 module.exports.checkFileIsValid = function checkFileIsValid(fileData, types, extensions) {
-    var type = fileData.mimetype,
-        ext = path.extname(fileData.name).toLowerCase();
+    const type = fileData.mimetype;
 
-    if (_.includes(types, type) && _.includes(extensions, ext)) {
+    if (_.includes(types, type) && _.includes(extensions, fileData.ext)) {
         return true;
     }
     return false;
