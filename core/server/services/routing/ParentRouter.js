@@ -75,11 +75,14 @@ class ParentRouter extends EventEmitter {
             return true;
         });
 
+        console.log(this.permalinks, targetRoute);
         if (targetRoute) {
             debug('_respectDominantRouter');
 
             const matchPath = this.permalinks.getValue().replace(':slug', '[a-zA-Z0-9-_]+');
             const toAppend = req.url.replace(new RegExp(matchPath), '');
+
+            console.log(toAppend);
 
             return urlService.utils.redirect301(res, url.format({
                 pathname: urlService.utils.createUrl(urlService.utils.urlJoin(targetRoute, toAppend), false, false, true),
