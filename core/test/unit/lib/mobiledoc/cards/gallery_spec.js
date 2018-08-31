@@ -90,4 +90,52 @@ describe('Gallery card', function () {
 
         serializer.serialize(card.render(opts)).should.eql('');
     });
+
+    it('renders nothing with no valid images', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                images: [{src: 'undefined'}],
+                caption: 'Test caption'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.eql('');
+    });
+
+    it('skips invalid images', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                images: [
+                    {
+                        row: 0,
+                        fileName: 'NatGeo01.jpg',
+                        src: '/content/images/2018/08/NatGeo01-9.jpg',
+                        width: 3200,
+                        height: 1600
+                    },
+                    {
+                        row: 0,
+                        fileName: 'NatGeo02.jpg',
+                        src: '/content/images/2018/08/NatGeo02-10.jpg',
+                    },
+                    {
+                        row: 0,
+                        fileName: 'NatGeo03.jpg',
+                        src: '/content/images/2018/08/NatGeo03-6.jpg',
+                        width: 3200,
+                        height: 1600
+                    }
+                ],
+                caption: 'Test caption'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo03-6.jpg" width="3200" height="1600"></div></div></div><figcaption>Test caption</figcaption></figure>');
+    });
 });
