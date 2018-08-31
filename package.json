@@ -51,6 +51,7 @@
     "express": "4.16.3",
     "express-brute": "1.0.1",
     "express-hbs": "1.0.4",
+    "express-query-boolean": "2.0.0",
     "extract-zip": "1.6.7",
     "fs-extra": "3.0.1",
     "ghost-gql": "0.0.10",
