@@ -499,7 +499,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         if (methodName === 'toJSON') {
-            return ['shallow', 'withRelated', 'context', 'columns'];
+            return ['shallow', 'withRelated', 'context', 'columns', 'absolute_urls'];
         }
 
         // terms to whitelist for all methods.
@@ -659,7 +659,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
      *
-     * @TODO: This model function does return JSON O_O.
+     * @TODO:
+     *   - this model function does return JSON O_O
+     *   - if you refactor that out, you should double check the allowed filter options
+     *   - because `toJSON` is called in here and is using the filtered options for the `findPage` function
      *
      * **response:**
      *

@@ -9,12 +9,14 @@ const _ = require('lodash'),
     imageLib = require('../lib/image'),
     pipeline = require('../lib/promise/pipeline'),
     validation = require('../data/validation'),
+    urlService = require('../services/url'),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
      * locked user: imported users, they get a random passport
      */
     inactiveStates = ['inactive', 'locked'],
+    {urlFor} = require('../services/url/utils'),
     allStates = activeStates.concat(inactiveStates);
 
 let User, Users;
@@ -209,6 +211,17 @@ User = ghostBookshelf.Model.extend({
             delete attrs.last_seen;
             delete attrs.status;
             delete attrs.ghost_auth_id;
+            if (options.absolute_urls) {
+                attrs.url = urlFor({
+                    relativeUrl: urlService.getUrlByResourceId(attrs.id)
+                }, true);
+                if (attrs.profile_image) {
+                    attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
+                }
+                if (attrs.cover_image) {
+                    attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
+                }
+            }
         }
 
         return attrs;
@@ -315,7 +328,7 @@ User = ghostBookshelf.Model.extend({
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName, options) {
-        var permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions(),
+        var permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions(methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
@@ -324,7 +337,7 @@ User = ghostBookshelf.Model.extend({
                 setup: ['id'],
                 edit: ['withRelated', 'id', 'importPersistUser'],
                 add: ['importPersistUser'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absolute_urls'],
                 findAll: ['filter']
             };
 
