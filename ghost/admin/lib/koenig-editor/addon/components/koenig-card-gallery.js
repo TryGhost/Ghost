@@ -157,9 +157,7 @@ export default Component.extend({
             let image = this.images.findBy('fileName', uploadResult.fileName);
             this.images.removeObject(image);
 
-            let payloadImage = this.payload.images.findBy('fileName', uploadResult.fileName);
-            this.payload.images.removeObject(payloadImage);
-            this._updatePayloadAttr('images', this.payload.images);
+            this._buildAndSaveImagesPayload();
 
             this.set('errorMessage', 'Some images failed to upload');
         },
@@ -211,7 +209,7 @@ export default Component.extend({
 
         let strippedFiles = Array.prototype.slice.call(files, 0, allowedCount);
         if (strippedFiles.length < files.length) {
-            this.set('errorMessage', 'Can contain only upto 9 images!');
+            this.set('errorMessage', 'Galleries are limited to 9 images');
         }
         this.set('files', strippedFiles);
 
