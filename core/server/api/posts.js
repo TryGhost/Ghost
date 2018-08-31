@@ -39,7 +39,7 @@ posts = {
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
     browse: function browse(options) {
-        var extraOptions = ['status', 'formats'],
+        var extraOptions = ['status', 'formats', 'absolute_urls'],
             permittedOptions,
             tasks;
 
@@ -83,7 +83,7 @@ posts = {
     read: function read(options) {
         var attrs = ['id', 'slug', 'status', 'uuid'],
             // NOTE: the scheduler API uses the post API and forwards custom options
-            extraAllowedOptions = options.opts || ['formats'],
+            extraAllowedOptions = options.opts || ['formats', 'absolute_urls'],
             tasks;
 
         /**

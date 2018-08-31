@@ -1,5 +1,6 @@
 // # API routes
 const debug = require('ghost-ignition').debug('api'),
+    boolParser = require('express-query-boolean'),
     express = require('express'),
 
     // routes
@@ -32,6 +33,9 @@ module.exports = function setupApiApp() {
     // Body parsing
     apiApp.use(bodyParser.json({limit: '1mb'}));
     apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+
+    // Query parsing
+    apiApp.use(boolParser());
 
     // send 503 json response in case of maintenance
     apiApp.use(maintenance);
