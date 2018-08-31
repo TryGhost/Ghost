@@ -11,7 +11,7 @@ module.exports = {
         }
 
         let figure = dom.createElement('figure');
-        let figureClass = 'kg-image-card';
+        let figureClass = 'kg-card kg-image-card';
         if (payload.cardWidth) {
             figureClass = `${figureClass} kg-width-${payload.cardWidth}`;
         }
