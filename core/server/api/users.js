@@ -25,7 +25,7 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var extraOptions = ['status'],
+        var extraOptions = ['status', 'absoluteUrls'],
             permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
@@ -58,6 +58,7 @@ users = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'status', 'email', 'role'],
+            permittedOptions = ['absoluteUrls'],
             tasks;
 
         // Special handling for /users/me request
@@ -88,7 +89,7 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            localUtils.validate(docName, {attrs: attrs}),
+            localUtils.validate(docName, {attrs: attrs, opts: permittedOptions}),
             localUtils.convertOptions(allowedIncludes),
             localUtils.handlePublicPermissions(docName, 'read'),
             doQuery
