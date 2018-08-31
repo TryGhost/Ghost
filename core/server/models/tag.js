@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base'),
+    urlService = require('../services/url'),
     {urlFor} = require('../services/url/utils');
 let Tag, Tags;
 
@@ -68,6 +69,9 @@ Tag = ghostBookshelf.Model.extend({
         delete attrs.parent_id;
 
         if (options && options.context && options.context.public && options.absoluteUrls) {
+            attrs.url = urlFor({
+                relativeUrl: urlService.getUrlByResourceId(attrs.id)
+            }, true);
             if (attrs.feature_image) {
                 attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
             }
