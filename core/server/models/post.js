@@ -470,6 +470,9 @@ Post = ghostBookshelf.Model.extend({
             if (attrs.html) {
                 attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
             }
+            if (attrs.url) {
+                attrs.url = urlFor({relativeUrl: attrs.url}, true);
+            }
         }
 
         return attrs;
