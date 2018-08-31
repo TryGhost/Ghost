@@ -9,6 +9,7 @@ const _ = require('lodash'),
     imageLib = require('../lib/image'),
     pipeline = require('../lib/promise/pipeline'),
     validation = require('../data/validation'),
+    urlService = require('../services/url'),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
@@ -211,6 +212,9 @@ User = ghostBookshelf.Model.extend({
             delete attrs.status;
             delete attrs.ghost_auth_id;
             if (options.absoluteUrls) {
+                attrs.url = urlFor({
+                    relativeUrl: urlService.getUrlByResourceId(attrs.id)
+                }, true);
                 if (attrs.profile_image) {
                     attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
                 }
