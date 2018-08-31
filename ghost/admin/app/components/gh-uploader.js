@@ -70,6 +70,7 @@ export default Component.extend({
     onComplete() {},
     onFailed() {},
     onStart() {},
+    onUploadStart() {},
     onUploadFailure() {},
     onUploadSuccess() {},
 
@@ -212,6 +213,8 @@ export default Component.extend({
         let url = `${ghostPaths().apiRoot}${this.get('uploadUrl')}`;
 
         try {
+            this.onUploadStart(file);
+
             let response = yield ajax.post(url, {
                 data: formData,
                 processData: false,
