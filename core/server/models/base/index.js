@@ -499,7 +499,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         if (methodName === 'toJSON') {
-            return ['shallow', 'withRelated', 'context', 'columns', 'absoluteUrls'];
+            return ['shallow', 'withRelated', 'context', 'columns', 'absolute_urls'];
         }
 
         // terms to whitelist for all methods.

@@ -25,7 +25,7 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var extraOptions = ['status', 'absoluteUrls'],
+        var extraOptions = ['status', 'absolute_urls'],
             permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
@@ -58,7 +58,7 @@ users = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'status', 'email', 'role'],
-            permittedOptions = ['absoluteUrls'],
+            permittedOptions = ['absolute_urls'],
             tasks;
 
         // Special handling for /users/me request

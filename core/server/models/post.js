@@ -437,7 +437,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = Post.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absoluteUrls']}),
+        var options = Post.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absolute_urls']}),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
@@ -457,7 +457,7 @@ Post = ghostBookshelf.Model.extend({
             delete attrs.url;
         }
 
-        if (options && options.context && options.context.public && options.absoluteUrls) {
+        if (options && options.context && options.context.public && options.absolute_urls) {
             if (attrs.feature_image) {
                 attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
             }
@@ -559,9 +559,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require', 'absoluteUrls'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages', 'absoluteUrls'],
-                findAll: ['columns', 'filter', 'absoluteUrls'],
+                findOne: ['columns', 'importing', 'withRelated', 'require', 'absolute_urls'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages', 'absolute_urls'],
+                findAll: ['columns', 'filter', 'absolute_urls'],
                 destroy: ['destroyAll']
             };
 

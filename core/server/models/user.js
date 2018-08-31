@@ -189,7 +189,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = User.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absoluteUrls']}),
+        var options = User.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absolute_urls']}),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         // remove password hash for security reasons
@@ -211,7 +211,7 @@ User = ghostBookshelf.Model.extend({
             delete attrs.last_seen;
             delete attrs.status;
             delete attrs.ghost_auth_id;
-            if (options.absoluteUrls) {
+            if (options.absolute_urls) {
                 attrs.url = urlFor({
                     relativeUrl: urlService.getUrlByResourceId(attrs.id)
                 }, true);
@@ -333,12 +333,12 @@ User = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['withRelated', 'status', 'absoluteUrls'],
+                findOne: ['withRelated', 'status', 'absolute_urls'],
                 setup: ['id'],
                 edit: ['withRelated', 'id', 'importPersistUser'],
                 add: ['importPersistUser'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absoluteUrls'],
-                findAll: ['filter', 'absoluteUrls']
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absolute_urls'],
+                findAll: ['filter', 'absolute_urls']
             };
 
         if (validOptions[methodName]) {

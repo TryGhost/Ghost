@@ -27,11 +27,11 @@ describe('Unit: models/tags', function () {
                 public: true
             };
 
-            it('converts relative feature_image url to absolute when absoluteUrls flag passed', function () {
+            it('converts relative feature_image url to absolute when absolute_urls flag passed', function () {
                 const model = {
                     feature_image: '/content/images/feature_image.jpg'
                 };
-                const json = toJSON(model, {context, absoluteUrls: true});
+                const json = toJSON(model, {context, absolute_urls: true});
                 const featureImageUrlObject = url.parse(json.feature_image);
 
                 should.exist(featureImageUrlObject.protocol);

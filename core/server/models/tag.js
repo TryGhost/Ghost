@@ -62,13 +62,13 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = Tag.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absoluteUrls']}),
+        var options = Tag.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absolute_urls']}),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
 
-        if (options && options.context && options.context.public && options.absoluteUrls) {
+        if (options && options.context && options.context.public && options.absolute_urls) {
             attrs.url = urlFor({
                 relativeUrl: urlService.getUrlByResourceId(attrs.id)
             }, true);
@@ -97,9 +97,9 @@ Tag = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absoluteUrls'],
-                findAll: ['columns', 'absoluteUrls'],
-                findOne: ['visibility', 'absoluteUrls'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absolute_urls'],
+                findAll: ['columns', 'absolute_urls'],
+                findOne: ['visibility', 'absolute_urls'],
                 destroy: ['destroyAll']
             };
 

@@ -23,7 +23,7 @@ tags = {
      */
     browse: function browse(options) {
         var tasks,
-            permittedOptions = localUtils.browseDefaultOptions.concat('absoluteUrls');
+            permittedOptions = localUtils.browseDefaultOptions.concat('absolute_urls');
 
         /**
          * ### Model Query
@@ -54,7 +54,7 @@ tags = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'visibility'],
-            permittedOptions = ['absoluteUrls'],
+            permittedOptions = ['absolute_urls'],
             tasks;
 
         /**

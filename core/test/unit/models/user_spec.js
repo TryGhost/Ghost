@@ -32,22 +32,22 @@ describe('Unit: models/user', function () {
                 public: true
             };
 
-            it('converts relative profile_image url to absolute when absoluteUrls flag passed', function () {
+            it('converts relative profile_image url to absolute when absolute_urls flag passed', function () {
                 const model = {
                     profile_image: '/content/images/profile_image.jpg'
                 };
-                const json = toJSON(model, {context, absoluteUrls: true});
+                const json = toJSON(model, {context, absolute_urls: true});
                 const profileImageUrlObject = url.parse(json.profile_image);
 
                 should.exist(profileImageUrlObject.protocol);
                 should.exist(profileImageUrlObject.host);
             });
 
-            it('converts relative cover_image url to absolute when absoluteUrls flag passed', function () {
+            it('converts relative cover_image url to absolute when absolute_urls flag passed', function () {
                 const model = {
                     cover_image: '/content/images/cover_image.jpg'
                 };
-                const json = toJSON(model, {context, absoluteUrls: true});
+                const json = toJSON(model, {context, absolute_urls: true});
                 const coverImageUrlObject = url.parse(json.cover_image);
 
                 should.exist(coverImageUrlObject.protocol);
