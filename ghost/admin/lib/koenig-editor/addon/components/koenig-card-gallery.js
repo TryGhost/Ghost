@@ -111,90 +111,32 @@ export default Component.extend({
             this._updatePayloadAttr('images', []);
         }
 
-        this.images = this.payload.images.map(image => EmberObject.create(image));
+        this._buildImages();
 
         this.registerComponent(this);
     },
 
     actions: {
-        insertImageIntoPayload(uploadResult) {
+        setImageSrc(uploadResult) {
             let image = this.images.findBy('fileName', uploadResult.fileName);
-            let idx = this.images.indexOf(image);
 
             image.set('src', uploadResult.url);
 
-            this.payload.images.replace(idx, 1, [
-                Object.assign({}, image, {previewSrc: undefined})
-            ]);
-
-            this._updatePayloadAttr('images', this.payload.images);
+            this._buildAndSaveImagesPayload();
         },
 
         setFiles(files) {
             this._startUpload(files);
         },
 
-        insertImagePreviews(files) {
-            let count = this.images.length;
-            let row = Math.ceil(count / MAX_PER_ROW) - 1;
-
-            Array.from(files).forEach((file) => {
-                count = count + 1;
-                row = Math.ceil(count / MAX_PER_ROW) - 1;
-
-                let image = EmberObject.create({
-                    row,
-                    fileName: file.name
-                });
-
-                this.images.pushObject(image);
-                this.payload.images.push(Object.assign({}, image));
-
-                let reader = new FileReader();
-
-                reader.onload = (e) => {
-                    let imageObject = new Image();
-                    let previewSrc = htmlSafe(e.target.result);
-
-                    if (!image.src) {
-                        image.set('previewSrc', previewSrc);
-                    }
-
-                    imageObject.onload = () => {
-                        // update current display images
-                        image.set('width', imageObject.width);
-                        image.set('height', imageObject.height);
-
-                        // ensure width/height makes it into the payload images
-                        let payloadImage = this.payload.images.findBy('fileName', image.fileName);
-                        if (payloadImage) {
-                            payloadImage.width = imageObject.width;
-                            payloadImage.height = imageObject.height;
-                            this._updatePayloadAttr('images', this.payload.images);
-                        }
-                    };
-
-                    imageObject.src = previewSrc;
-                };
-
-                reader.readAsDataURL(file);
-            });
-        },
-
         deleteImage(image) {
             let localImage = this.images.findBy('fileName', image.fileName);
             this.images.removeObject(localImage);
-            this.images.forEach((img, idx) => {
-                img.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
+            this.images.forEach((image, idx) => {
+                image.set('row', Math.ceil((idx + 1) / MAX_PER_ROW) - 1);
             });
 
-            let payloadImage = this.payload.images.findBy('fileName', image.fileName);
-            this.payload.images.removeObject(payloadImage);
-            this.payload.images.forEach((img, idx) => {
-                img.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
-            });
-
-            this._updatePayloadAttr('images', this.payload.images);
+            this._buildAndSaveImagesPayload();
         },
 
         updateCaption(caption) {
@@ -227,16 +169,7 @@ export default Component.extend({
         }
     },
 
-    _startUpload(files = []) {
-        let currentCount = this.images.length;
-        let allowedCount = (MAX_IMAGES - currentCount);
-
-        let strippedFiles = Array.prototype.slice.call(files, 0, allowedCount);
-        if (strippedFiles.length < files.length) {
-            this.set('errorMessage', 'Can contain only upto 9 images!');
-        }
-        this.set('files', strippedFiles);
-    },
+    // Ember event handlers ----------------------------------------------------
 
     dragOver(event) {
         if (!event.dataTransfer) {
@@ -268,6 +201,84 @@ export default Component.extend({
         if (event.dataTransfer.files) {
             this._startUpload(event.dataTransfer.files);
         }
+    },
+
+    // Private methods ---------------------------------------------------------
+
+    _startUpload(files = []) {
+        let currentCount = this.images.length;
+        let allowedCount = (MAX_IMAGES - currentCount);
+
+        let strippedFiles = Array.prototype.slice.call(files, 0, allowedCount);
+        if (strippedFiles.length < files.length) {
+            this.set('errorMessage', 'Can contain only upto 9 images!');
+        }
+        this.set('files', strippedFiles);
+
+        let count = this.images.length;
+        let row = Math.ceil(count / MAX_PER_ROW) - 1;
+
+        strippedFiles.forEach((file) => {
+            count = count + 1;
+            row = Math.ceil(count / MAX_PER_ROW) - 1;
+
+            let image = this._readDataFromImageFile(file);
+            image.row = row;
+            this.images.pushObject(image);
+        });
+    },
+
+    _readDataFromImageFile(file) {
+        let reader = new FileReader();
+        let image = EmberObject.create({
+            fileName: file.name
+        });
+
+        reader.onload = (e) => {
+            let imgElement = new Image();
+            let previewSrc = htmlSafe(e.target.result);
+
+            image.set('previewSrc', previewSrc);
+
+            imgElement.onload = () => {
+                // update current display images
+                image.set('width', imgElement.width);
+                image.set('height', imgElement.height);
+
+                // ensure width/height makes it into the payload images
+                this._buildAndSaveImagesPayload();
+            };
+
+            imgElement.src = previewSrc;
+        };
+
+        reader.readAsDataURL(file);
+
+        return image;
+    },
+
+    _buildAndSaveImagesPayload() {
+        let payloadImages = [];
+
+        let isValidImage = image => image.fileName
+                && image.src
+                && image.width
+                && image.height;
+
+        this.images.forEach((image, idx) => {
+            if (isValidImage(image)) {
+                let payloadImage = Object.assign({}, image, {previewSrc: undefined});
+                payloadImage.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
+
+                payloadImages.push(payloadImage);
+            }
+        });
+
+        this._updatePayloadAttr('images', payloadImages);
+    },
+
+    _buildImages() {
+        this.images = this.payload.images.map(image => EmberObject.create(image));
     },
 
     _updatePayloadAttr(attr, value) {

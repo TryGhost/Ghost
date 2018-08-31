@@ -18,8 +18,7 @@
         files=files
         accept=imageMimeTypes
         extensions=imageExtensions
-        onStart=(action "insertImagePreviews")
-        onUploadSuccess=(action "insertImageIntoPayload")
+        onUploadSuccess=(action "setImageSrc")
         onUploadFailure=(action "uploadFailed")
         as |uploader|
     }}
