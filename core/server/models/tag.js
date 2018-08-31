@@ -1,4 +1,6 @@
-const ghostBookshelf = require('./base');
+const ghostBookshelf = require('./base'),
+    urlService = require('../services/url'),
+    {urlFor} = require('../services/url/utils');
 let Tag, Tags;
 
 Tag = ghostBookshelf.Model.extend({
@@ -66,6 +68,15 @@ Tag = ghostBookshelf.Model.extend({
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
 
+        if (options && options.context && options.context.public && options.absolute_urls) {
+            attrs.url = urlFor({
+                relativeUrl: urlService.getUrlByResourceId(attrs.id)
+            }, true);
+            if (attrs.feature_image) {
+                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            }
+        }
+
         return attrs;
     }
 }, {
@@ -81,12 +92,12 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions(methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit', 'columns', 'filter', 'order'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absolute_urls'],
                 findAll: ['columns'],
                 findOne: ['visibility'],
                 destroy: ['destroyAll']

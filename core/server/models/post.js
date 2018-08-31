@@ -10,6 +10,7 @@ var _ = require('lodash'),
     config = require('../config'),
     converters = require('../lib/mobiledoc/converters'),
     urlService = require('../services/url'),
+    {urlFor, makeAbsoluteUrls} = require('../services/url/utils'),
     relations = require('./relations'),
     Post,
     Posts;
@@ -440,6 +441,7 @@ Post = ghostBookshelf.Model.extend({
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
+        attrs.url = urlService.getUrlByResourceId(attrs.id);
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
@@ -451,8 +453,26 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = urlService.getUrlByResourceId(attrs.id);
+        if (options.columns && !options.columns.includes('url')) {
+            delete attrs.url;
+        }
+
+        if (options && options.context && options.context.public && options.absolute_urls) {
+            if (attrs.feature_image) {
+                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            }
+            if (attrs.og_image) {
+                attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
+            }
+            if (attrs.twitter_image) {
+                attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
+            }
+            if (attrs.html) {
+                attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
+            }
+            if (attrs.url) {
+                attrs.url = urlFor({relativeUrl: attrs.url}, true);
+            }
         }
 
         return attrs;
@@ -534,13 +554,13 @@ Post = ghostBookshelf.Model.extend({
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions(methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages', 'absolute_urls'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll']
             };
