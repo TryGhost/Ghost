@@ -62,7 +62,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = Tag.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absolute_urls']}),
+        var options = Tag.filterOptions(unfilteredOptions, 'toJSON'),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.parent = attrs.parent || attrs.parent_id;
@@ -92,7 +92,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions(methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.

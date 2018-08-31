@@ -437,7 +437,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = Post.filterOptions(unfilteredOptions, 'toJSON', {extraAllowedProperties: ['absolute_urls']}),
+        var options = Post.filterOptions(unfilteredOptions, 'toJSON'),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
@@ -554,7 +554,7 @@ Post = ghostBookshelf.Model.extend({
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions(methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
