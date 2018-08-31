@@ -1746,6 +1746,10 @@ express-hbs@1.0.4, express-hbs@^1.0.3:
     js-beautify "1.6.8"
     readdirp "2.1.0"
 
+express-query-boolean@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/express-query-boolean/-/express-query-boolean-2.0.0.tgz#ea56ac8138e2b95b171b8eee2af88738302941c3"
+
 express@4.16.3, express@^4.16.2:
   version "4.16.3"
   resolved "https://registry.yarnpkg.com/express/-/express-4.16.3.tgz#6af8a502350db3246ecc4becf6b5a34d22f7ed53"
