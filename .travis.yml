@@ -10,14 +10,6 @@ cache:
   directories:
     - node_modules
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'deb https://dl.yarnpkg.com/debian/ stable main'
-        key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
-    packages:
-      - yarn
-
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
@@ -37,6 +29,10 @@ branches:
 
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+  - curl -sSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo -E apt-key add -
+  - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee -a /etc/apt/sources.list >/dev/null
+  - sudo -E apt-get -yq update &>> ~/apt-get-update.log
+  - sudo -E apt-get -yq --no-install-suggests --no-install-recommends $TRAVIS_APT_OPTS install yarn
 
 install:
   - yarn
