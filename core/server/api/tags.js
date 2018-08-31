@@ -22,7 +22,8 @@ tags = {
      * @returns {Promise<Tags>} Tags Collection
      */
     browse: function browse(options) {
-        var tasks;
+        var tasks,
+            permittedOptions = localUtils.browseDefaultOptions.concat('absoluteUrls');
 
         /**
          * ### Model Query
@@ -36,7 +37,7 @@ tags = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            localUtils.validate(docName, {opts: localUtils.browseDefaultOptions}),
+            localUtils.validate(docName, {opts: permittedOptions}),
             localUtils.convertOptions(allowedIncludes),
             localUtils.handlePublicPermissions(docName, 'browse'),
             doQuery
@@ -53,6 +54,7 @@ tags = {
      */
     read: function read(options) {
         var attrs = ['id', 'slug', 'visibility'],
+            permittedOptions = ['absoluteUrls'],
             tasks;
 
         /**
@@ -78,7 +80,7 @@ tags = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            localUtils.validate(docName, {attrs: attrs}),
+            localUtils.validate(docName, {attrs: attrs, opts: permittedOptions}),
             localUtils.convertOptions(allowedIncludes),
             localUtils.handlePublicPermissions(docName, 'read'),
             doQuery
