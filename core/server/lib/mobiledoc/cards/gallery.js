@@ -30,7 +30,7 @@ module.exports = {
         }
 
         let figure = dom.createElement('figure');
-        figure.setAttribute('class', 'kg-gallery-card kg-width-wide');
+        figure.setAttribute('class', 'kg-card kg-gallery-card kg-width-wide');
 
         let container = dom.createElement('div');
         container.setAttribute('class', 'kg-gallery-container');

@@ -9,7 +9,7 @@ module.exports = {
         let {payload, env: {dom}} = opts;
 
         let figure = dom.createElement('figure');
-        figure.setAttribute('class', 'kg-embed-card');
+        figure.setAttribute('class', 'kg-card kg-embed-card');
 
         let html = dom.createRawHTMLSection(payload.html);
         figure.appendChild(html);

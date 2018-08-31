@@ -14,7 +14,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card"><h1>HEADING</h1><p>PARAGRAPH</p></figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card"><h1>HEADING</h1><p>PARAGRAPH</p></figure>');
     });
 
     it('Plain content renders', function () {
@@ -27,7 +27,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card">CONTENT</figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card">CONTENT</figure>');
     });
 
     it('Invalid HTML returns', function () {
@@ -40,7 +40,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card"><h1>HEADING<</figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card"><h1>HEADING<</figure>');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -67,6 +67,6 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-embed-card">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
     });
 });
