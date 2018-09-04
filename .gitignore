@@ -76,3 +76,7 @@ CHANGELOG.md
 
 # Coverage reports
 coverage.html
+
+# Keys
+jwt.crt
+jwt.key
