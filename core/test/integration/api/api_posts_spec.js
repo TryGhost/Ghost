@@ -2,6 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
+    moment = require('moment'),
     ObjectId = require('bson-objectid'),
     Promise = require('bluebird'),
     configUtils = require('../../utils/configUtils'),
@@ -545,6 +546,50 @@ describe('Post API', function () {
 
                 done();
             }).catch(done);
+        });
+
+        it('can fetch all posts with correct order when unpublished draft is present', function (done) {
+            testUtils.fixtures.insertPosts([{
+                id: ObjectId.generate(),
+                title: 'Not published draft post',
+                slug: 'not-published-draft-post',
+                status: 'draft',
+                updated_at: moment().add(3, 'minutes').toDate(),
+                published_at: null
+            },
+            {
+                id: ObjectId.generate(),
+                title: 'Unpublished post',
+                slug: 'unpublished-post',
+                status: 'draft',
+                updated_at: moment().add(2, 'minutes').toDate(),
+                published_at: moment().add(1, 'minutes').toDate()
+            }])
+                .then(function () {
+                    return PostAPI.browse({context: {internal: true}});
+                })
+                .then(function (results) {
+                    should.exist(results.posts);
+                    results.posts.length.should.eql(10);
+
+                    results.posts[1].slug.should.eql('not-published-draft-post');
+                    results.posts[2].slug.should.eql('unpublished-post');
+
+                    results.posts[0].status.should.eql('scheduled');
+
+                    results.posts[1].status.should.eql('draft');
+                    results.posts[2].status.should.eql('draft');
+                    results.posts[3].status.should.eql('draft');
+                    results.posts[4].status.should.eql('draft');
+
+                    results.posts[5].status.should.eql('published');
+                    results.posts[6].status.should.eql('published');
+                    results.posts[7].status.should.eql('published');
+                    results.posts[8].status.should.eql('published');
+                    results.posts[9].status.should.eql('published');
+
+                    done();
+                }).catch(done);
         });
     });
 
