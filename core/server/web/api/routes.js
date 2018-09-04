@@ -177,6 +177,9 @@ module.exports = function apiRoutes() {
 
     apiRouter.post('/authentication/revoke', mw.authenticatePrivate, api.http(api.authentication.revoke));
 
+    // New JWT auth
+    apiRouter.post('/auth/token', api.http(api.auth.token));
+
     // ## Uploads
     // @TODO: rename endpoint to /images/upload (or similar)
     apiRouter.post('/uploads',
