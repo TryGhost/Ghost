@@ -504,7 +504,7 @@ Post = ghostBookshelf.Model.extend({
             'CASE WHEN posts.status = \'scheduled\' THEN 1 ' +
             'WHEN posts.status = \'draft\' THEN 2 ' +
             'ELSE 3 END ASC,' +
-            'posts.published_at DESC,' +
+            'CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,' +
             'posts.updated_at DESC,' +
             'posts.id DESC';
     },
