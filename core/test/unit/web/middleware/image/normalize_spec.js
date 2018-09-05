@@ -68,4 +68,15 @@ describe('normalize', function () {
             done();
         });
     });
+
+    ['.gif', '.svg', '.svgz'].forEach(function (extension) {
+        it(`should skip processing when file extension is ${extension}`, function (done) {
+            req.file.ext = extension;
+            normalize(req, res, function () {
+                req.file.should.not.be.equal(undefined);
+                should.not.exist(req.files);
+                done();
+            });
+        });
+    });
 });
