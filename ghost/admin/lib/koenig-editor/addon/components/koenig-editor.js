@@ -431,6 +431,11 @@ export default Component.extend({
             this._scrollContainer = document.querySelector(this.scrollContainerSelector);
         }
 
+        this._keydownHandler = run.bind(this, this.handleKeydown);
+        window.addEventListener('keydown', this._keydownHandler);
+        this._keyupHandler = run.bind(this, this.handleKeyup);
+        window.addEventListener('keyup', this._keyupHandler);
+
         this._dropTarget = document.querySelector(this.dropTargetSelector) || this.element;
         this._dragOverHandler = run.bind(this, this.handleDragOver);
         this._dragLeaveHandler = run.bind(this, this.handleDragLeave);
@@ -459,6 +464,9 @@ export default Component.extend({
         _dropTarget.removeEventListener('dragover', this._dragOverHandler);
         _dropTarget.removeEventListener('dragleave', this._dragLeaveHandler);
         _dropTarget.removeEventListener('drop', this._dropHandler);
+
+        window.removeEventListener('keydown', this._keydownHandler);
+        window.removeEventListener('keyup', this._keyupHandler);
 
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
@@ -759,6 +767,42 @@ export default Component.extend({
 
     /* custom event handlers ------------------------------------------------ */
 
+    // we keep track of the modifier keys that are pressed so that in other event
+    // handlers we can adjust the behaviour. Necessary because the browser doesn't
+    // natively provide any info on non-key events about which keys are pressed.
+    //
+    // German keyboard layouts use a dead key for the ` char so it doesn't
+    // fire keypress events. We watch for the event triggered when pressing
+    // spacebar to "finalise" the backtick input then call the text input
+    // handlers manually instead.
+    //
+    // Does not work on Linux but it's easier to have keymaps without dead keys there
+    handleKeydown(event) {
+        let key = Key.fromEvent(event);
+        this._updateModifiersFromKey(key, {isDown: true});
+
+        if (event.key === 'Dead' && event.keyCode === 192) {
+            return this._isGraveInput = true;
+        }
+
+        this._isGraveInput = false;
+
+        // Chrome/Safari can be matched immediately on keydown unlike Firefox
+        if (event.key === '`' && event.code === 'Space') {
+            this._triggerTextHandlers();
+        }
+    },
+
+    handleKeyup(event) {
+        let key = Key.fromEvent(event);
+        this._updateModifiersFromKey(key, {isDown: false});
+
+        if (this._isGraveInput && event.key === ' ') {
+            this._isGraveInput = false;
+            this._triggerTextHandlers();
+        }
+    },
+
     handlePaste(event) {
         let {editor} = this;
 
@@ -968,19 +1012,6 @@ export default Component.extend({
     // disable dragging
     dragStart(event) {
         event.preventDefault();
-    },
-
-    // we keep track of the modifier keys that are pressed so that in other event
-    // handlers we can adjust the behaviour. Necessary because the browser doesn't
-    // natively provide any info on non-key events about which keys are pressed
-    keyDown(event) {
-        let key = Key.fromEvent(event);
-        this._updateModifiersFromKey(key, {isDown: true});
-    },
-
-    keyUp(event) {
-        let key = Key.fromEvent(event);
-        this._updateModifiersFromKey(key, {isDown: false});
     },
 
     /* public methods ------------------------------------------------------- */
@@ -1232,6 +1263,26 @@ export default Component.extend({
 
             this.wordCountDidChange({wordCount, imageCount, readingTime});
         }
+    },
+
+    _triggerTextHandlers() {
+        let {editor} = this;
+
+        // don't trigger our text input handlers for pastes within cards or
+        // outside of the editor canvas
+        if (!editor.cursor.isAddressable(event.target)) {
+            return;
+        }
+
+        // must be run after the normal events have finished so that the
+        // backtick char exists in the editor
+        run.next(this, function () {
+            let matchedHandler = editor._eventManager._textInputHandler._findHandler();
+            if (matchedHandler) {
+                let [handler, matches] = matchedHandler;
+                handler.run(editor, matches);
+            }
+        });
     },
 
     // store a reference to the editor for the acceptance test helpers
