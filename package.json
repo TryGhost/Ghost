@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -59,7 +59,7 @@
     "ghost-storage-base": "0.0.3",
     "glob": "5.0.15",
     "got": "7.1.0",
-    "gscan": "2.2.0",
+    "gscan": "2.2.1",
     "html-to-text": "3.3.0",
     "image-size": "0.6.3",
     "intl": "1.2.5",
