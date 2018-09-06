@@ -48,6 +48,7 @@ _private.loadNconf = function loadNconf(options) {
     nconf.sanitizeDatabaseProperties();
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
     nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
+    nconf.makePathsAbsolute(nconf.get('auth:keys'), 'auth:keys');
 
     /**
      * Check if the URL in config has a protocol

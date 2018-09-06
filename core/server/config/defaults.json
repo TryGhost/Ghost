@@ -81,5 +81,13 @@
     },
     "imageOptimization": {
         "resize": true
+    },
+    "auth": {
+        "keys": {
+            "public": "./jwt.crt",
+            "private": "./jwt.key"
+        },
+        "issuer": "ghost",
+        "audience": "ghost"
     }
 }
