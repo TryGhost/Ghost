@@ -14,7 +14,8 @@ describe('normalize', function () {
         req = {
             file: {
                 name: 'test',
-                path: '/test/path'
+                path: '/test/path',
+                ext: '.jpg'
             }
         };
 
@@ -30,7 +31,7 @@ describe('normalize', function () {
     it('should do manipulation by default', function (done) {
         image.manipulator.process.resolves();
 
-        normalize(req, res, () => {
+        normalize(req, res, function () {
             image.manipulator.process.calledOnce.should.be.true();
             done();
         });
@@ -39,7 +40,7 @@ describe('normalize', function () {
     it('should add files array to request object with original and processed files', function (done) {
         image.manipulator.process.resolves();
 
-        normalize(req, res, () => {
+        normalize(req, res, function () {
             req.files.length.should.be.equal(2);
             done();
         });
@@ -52,13 +53,13 @@ describe('normalize', function () {
             }
         });
 
-        normalize(req, res, () => {
+        normalize(req, res, function () {
             image.manipulator.process.called.should.be.false();
             done();
         });
     });
 
-    it('should call manipulation when resize flag is explicitly set', function (done) {
+    it('should not create files array when processing fails', function (done) {
         image.manipulator.process.rejects();
 
         normalize(req, res, ()=> {
