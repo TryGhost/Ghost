@@ -1,4 +1,4 @@
-var util = require('util'),
+const util = require('util'),
     moment = require('moment'),
     request = require('superagent'),
     debug = require('ghost-ignition').debug('scheduling-default'),
@@ -53,8 +53,8 @@ SchedulingDefault.prototype.unschedule = function (object) {
  * because allJobs is a sorted list, we don't have to iterate over all jobs, just until the offset is too big
  */
 SchedulingDefault.prototype.run = function () {
-    var self = this,
-        timeout = null,
+    const self = this;
+    let timeout = null,
         recursiveRun;
 
     if (this.isRunning) {
@@ -65,7 +65,7 @@ SchedulingDefault.prototype.run = function () {
 
     recursiveRun = function recursiveRun() {
         timeout = setTimeout(function () {
-            var times = Object.keys(self.allJobs),
+            const times = Object.keys(self.allJobs),
                 nextJobs = {};
 
             times.every(function (time) {
@@ -93,7 +93,7 @@ SchedulingDefault.prototype.run = function () {
  * each timestamp key entry can have multiple jobs
  */
 SchedulingDefault.prototype._addJob = function (object) {
-    var timestamp = moment(object.time).valueOf(),
+    let timestamp = moment(object.time).valueOf(),
         keys = [],
         sortedJobs = {},
         instantJob = {},
@@ -127,17 +127,19 @@ SchedulingDefault.prototype._addJob = function (object) {
 };
 
 SchedulingDefault.prototype._deleteJob = function (object) {
-    if (!object.time) {
+    const {url, time} = object;
+
+    if (!time) {
         return;
     }
 
-    var deleteKey = object.url + '_' + moment(object.time).valueOf();
+    const deleteKey = `${url}_${moment(time).valueOf()}`;
 
     if (!this.deletedJobs[deleteKey]) {
         this.deletedJobs[deleteKey] = [];
     }
 
-    debug('Deleted job', object.url, moment(object.time).format('YYYY-MM-DD HH:mm:ss'));
+    debug('Deleted job', url, moment(time).format('YYYY-MM-DD HH:mm:ss'));
     this.deletedJobs[deleteKey].push(object);
 };
 
@@ -147,11 +149,11 @@ SchedulingDefault.prototype._deleteJob = function (object) {
  * we don't want to use process.nextTick, this would block any I/O operation
  */
 SchedulingDefault.prototype._execute = function (jobs) {
-    var keys = Object.keys(jobs),
+    const keys = Object.keys(jobs),
         self = this;
 
     keys.forEach(function (timestamp) {
-        var timeout = null,
+        let timeout = null,
             diff = moment(Number(timestamp)).diff(moment());
 
         // awake a little before
@@ -159,18 +161,19 @@ SchedulingDefault.prototype._execute = function (jobs) {
             clearTimeout(timeout);
 
             (function retry() {
-                var immediate = setImmediate(function () {
+                let immediate = setImmediate(function () {
                     clearImmediate(immediate);
 
                     if (moment().diff(moment(Number(timestamp))) <= self.beforePingInMs) {
                         return retry();
                     }
 
-                    var toExecute = jobs[timestamp];
+                    const toExecute = jobs[timestamp];
                     delete jobs[timestamp];
 
                     toExecute.forEach(function (job) {
-                        var deleteKey = job.url + '_' + moment(job.time).valueOf();
+                        const {url, time} = job;
+                        const deleteKey = `${url}_${moment(time).valueOf()}`;
 
                         if (self.deletedJobs[deleteKey]) {
                             if (self.deletedJobs[deleteKey].length === 1) {
@@ -196,14 +199,14 @@ SchedulingDefault.prototype._execute = function (jobs) {
 SchedulingDefault.prototype._pingUrl = function (object) {
     debug('Ping url', object.url, moment().format('YYYY-MM-DD HH:mm:ss'), moment(object.time).format('YYYY-MM-DD HH:mm:ss'));
 
-    var url = object.url,
-        time = object.time,
-        httpMethod = object.extra ? object.extra.httpMethod : 'PUT',
+    let timeout;
+    const {url, time} = object;
+    const httpMethod = object.extra ? object.extra.httpMethod : 'PUT',
         tries = object.tries || 0,
         requestTimeout = object.extra ? object.extra.timeoutInMS : 1000 * 5,
         maxTries = 30,
         req = request[httpMethod.toLowerCase()](url),
-        self = this, timeout;
+        self = this;
 
     if (moment(time).isBefore(moment())) {
         if (httpMethod === 'GET') {
@@ -236,7 +239,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 }, self.retryTimeoutInMs);
 
                 common.logging.error(new common.errors.GhostError({
-                    err: err,
+                    err,
                     context: 'Retrying...',
                     level: 'normal'
                 }));
@@ -245,7 +248,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
             }
 
             common.logging.error(new common.errors.GhostError({
-                err: err,
+                err,
                 level: 'critical'
             }));
         }
