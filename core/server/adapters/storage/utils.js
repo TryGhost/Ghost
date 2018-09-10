@@ -1,4 +1,4 @@
-var urlService = require('../../services/url');
+const urlService = require('../../services/url');
 
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
@@ -15,8 +15,17 @@ var urlService = require('../../services/url');
  */
 exports.getLocalFileStoragePath = function getLocalFileStoragePath(imagePath) {
     // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-    var urlRegExp = new RegExp('^' + urlService.utils.urlJoin(urlService.utils.urlFor('home', true), urlService.utils.getSubdir(), '/', urlService.utils.STATIC_IMAGE_URL_PREFIX)),
-        filePathRegExp = new RegExp('^' + urlService.utils.urlJoin(urlService.utils.getSubdir(), '/', urlService.utils.STATIC_IMAGE_URL_PREFIX));
+    const urlRegExp = new RegExp(`^${urlService.utils.urlJoin(
+            urlService.utils.urlFor('home', true),
+            urlService.utils.getSubdir(),
+            '/',
+            urlService.utils.STATIC_IMAGE_URL_PREFIX)}`
+        ),
+        filePathRegExp = new RegExp(`^${urlService.utils.urlJoin(
+            urlService.utils.getSubdir(),
+            '/',
+            urlService.utils.STATIC_IMAGE_URL_PREFIX)}`
+        );
 
     if (imagePath.match(urlRegExp)) {
         return imagePath.replace(urlRegExp, '');
@@ -34,7 +43,7 @@ exports.getLocalFileStoragePath = function getLocalFileStoragePath(imagePath) {
  */
 
 exports.isLocalImage = function isLocalImage(imagePath) {
-    var localImagePath = this.getLocalFileStoragePath(imagePath);
+    const localImagePath = this.getLocalFileStoragePath(imagePath);
 
     if (localImagePath !== imagePath) {
         return true;
