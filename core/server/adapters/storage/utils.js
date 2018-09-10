@@ -15,9 +15,17 @@ const urlService = require('../../services/url');
  */
 exports.getLocalFileStoragePath = function getLocalFileStoragePath(imagePath) {
     // The '/' in urlJoin is necessary to add the '/' to `content/images`, if no subdirectory is setup
-    const {urlJoin, urlFor, getSubdir, STATIC_IMAGE_URL_PREFIX} = urlService.utils;
-    const urlRegExp = new RegExp(`^${urlJoin(urlFor('home', true), getSubdir(), '/', STATIC_IMAGE_URL_PREFIX)}`),
-        filePathRegExp = new RegExp(`^${urlJoin(getSubdir(), '/', STATIC_IMAGE_URL_PREFIX)}`);
+    const urlRegExp = new RegExp(`^${urlService.utils.urlJoin(
+            urlService.utils.urlFor('home', true),
+            urlService.utils.getSubdir(),
+            '/',
+            urlService.utils.STATIC_IMAGE_URL_PREFIX)}`
+        ),
+        filePathRegExp = new RegExp(`^${urlService.utils.urlJoin(
+            urlService.utils.getSubdir(),
+            '/',
+            urlService.utils.STATIC_IMAGE_URL_PREFIX)}`
+        );
 
     if (imagePath.match(urlRegExp)) {
         return imagePath.replace(urlRegExp, '');

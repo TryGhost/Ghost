@@ -30,7 +30,6 @@ class LocalFileStore extends StorageBase {
      */
     save(image, targetDir) {
         let targetFilename;
-        const {storagePath} = this;
 
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
@@ -46,7 +45,7 @@ class LocalFileStore extends StorageBase {
             const fullUrl = (
                 urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
                     urlService.utils.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(storagePath, targetFilename))
+                    path.relative(this.storagePath, targetFilename))
             ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
             return fullUrl;
@@ -85,7 +84,7 @@ class LocalFileStore extends StorageBase {
                 {
                     maxAge: constants.ONE_YEAR_MS,
                     fallthrough: false,
-                    onEnd: function onEnd() {
+                    onEnd: () => {
                         common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
