@@ -1,16 +1,16 @@
 // # Mail API
 // API for sending Mail
 
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     mail = require('../services/mail'),
     notificationsAPI = require('./notifications'),
-    docName = 'mail',
-    mailer,
-    apiMail;
+    docName = 'mail';
+
+let mailer;
 
 /**
  * Send mail helper
@@ -20,7 +20,7 @@ function sendMail(object) {
         mailer = new mail.GhostMailer();
     }
 
-    return mailer.send(object.mail[0].message).catch(function (err) {
+    return mailer.send(object.mail[0].message).catch((err) => {
         if (mailer.state.usingDirect) {
             notificationsAPI.add(
                 {
@@ -47,7 +47,7 @@ function sendMail(object) {
  * @typedef Mail
  * @param mail
  */
-apiMail = {
+const apiMail = {
     /**
      * ### Send
      * Send an email
@@ -56,8 +56,8 @@ apiMail = {
      * @param {Mail} object details of the email to send
      * @returns {Promise}
      */
-    send: function (object, options) {
-        var tasks;
+    send: (object, options) => {
+        let tasks;
 
         /**
          * ### Format Response
@@ -100,8 +100,8 @@ apiMail = {
      * @param {Object} options required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: function (options) {
-        var tasks;
+    sendTest: (options) => {
+        let tasks;
 
         /**
          * ### Model Query
@@ -116,8 +116,8 @@ apiMail = {
          */
 
         function generateContent(result) {
-            return mail.utils.generateContent({template: 'test'}).then(function (content) {
-                var payload = {
+            return mail.utils.generateContent({template: 'test'}).then((content) => {
+                const payload = {
                     mail: [{
                         message: {
                             to: result.get('email'),

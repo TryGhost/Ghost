@@ -1,7 +1,7 @@
 // # Posts API
 // RESTful API for the Post resource
 const Promise = require('bluebird'),
-    _ = require('lodash'),
+    {omit, defaults} = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
@@ -38,9 +38,9 @@ posts = {
      * @param {{context, page, limit, status, staticPages, tag, featured}} options (optional)
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
-    browse: function browse(options) {
-        var extraOptions = ['status', 'formats', 'absolute_urls'],
-            permittedOptions,
+    browse: (options) => {
+        const extraOptions = ['status', 'formats', 'absolute_urls'];
+        let permittedOptions,
             tasks;
 
         // Workaround to remove static pages from results
@@ -80,11 +80,12 @@ posts = {
      * @param {Object} options
      * @return {Promise<Post>} Post
      */
-    read: function read(options) {
-        var attrs = ['id', 'slug', 'status', 'uuid'],
+    read: (options) => {
+        const attrs = ['id', 'slug', 'status', 'uuid'],
             // NOTE: the scheduler API uses the post API and forwards custom options
-            extraAllowedOptions = options.opts || ['formats', 'absolute_urls'],
-            tasks;
+            extraAllowedOptions = options.opts || ['formats', 'absolute_urls'];
+
+        let tasks;
 
         /**
          * ### Model Query
@@ -93,7 +94,7 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.findOne(options.data, _.omit(options, ['data']))
+            return models.Post.findOne(options.data, omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
@@ -128,10 +129,10 @@ posts = {
      * @param {{id (required), context, include,...}} options
      * @return {Promise(Post)} Edited Post
      */
-    edit: function edit(object, options) {
-        var tasks,
-            // NOTE: the scheduler API uses the post API and forwards custom options
-            extraAllowedOptions = options.opts || [];
+    edit: (object, options) => {
+        let tasks;
+        // NOTE: the scheduler API uses the post API and forwards custom options
+        const extraAllowedOptions = options.opts || [];
 
         /**
          * ### Model Query
@@ -140,7 +141,7 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.edit(options.data.posts[0], _.omit(options, ['data']))
+            return models.Post.edit(options.data.posts[0], omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
@@ -148,7 +149,7 @@ posts = {
                         }));
                     }
 
-                    var post = model.toJSON(options);
+                    const post = model.toJSON(options);
 
                     // If previously was not published and now is (or vice versa), signal the change
                     // @TODO: `statusChanged` get's added for the API headers only. Reconsider this.
@@ -184,8 +185,8 @@ posts = {
      * @param {{context, include,...}} options
      * @return {Promise(Post)} Created Post
      */
-    add: function add(object, options) {
-        var tasks;
+    add: (object, options) => {
+        let tasks;
 
         /**
          * ### Model Query
@@ -194,9 +195,9 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.add(options.data.posts[0], _.omit(options, ['data']))
+            return models.Post.add(options.data.posts[0], omit(options, ['data']))
                 .then(function onModelResponse(model) {
-                    var post = model.toJSON(options);
+                    const post = model.toJSON(options);
 
                     if (post.status === 'published') {
                         // When creating a new post that is published right now, signal the change
@@ -228,18 +229,18 @@ posts = {
      * @param {{id (required), context,...}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
-        var tasks;
+    destroy: (options) => {
+        let tasks;
 
         /**
          * @function deletePost
          * @param  {Object} options
          */
         function deletePost(options) {
-            const opts = _.defaults({require: true}, options);
+            const opts = defaults({require: true}, options);
 
             return models.Post.destroy(opts).return(null)
-                .catch(models.Post.NotFoundError, function () {
+                .catch(models.Post.NotFoundError, () => {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.api.posts.postNotFound')
                     });

@@ -1,5 +1,5 @@
-var Promise = require('bluebird'),
-    _ = require('lodash'),
+const Promise = require('bluebird'),
+    {omit, merge} = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     mail = require('../services/mail'),
     urlService = require('../services/url'),
@@ -10,12 +10,11 @@ var Promise = require('bluebird'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     docName = 'invites',
-    allowedIncludes = ['created_by', 'updated_by'],
-    invites;
+    allowedIncludes = ['created_by', 'updated_by'];
 
-invites = {
-    browse: function browse(options) {
-        var tasks;
+const invites = {
+    browse: (options) => {
+        let tasks;
 
         function modelQuery(options) {
             return models.Invite.findPage(options);
@@ -31,12 +30,12 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    read: function read(options) {
-        var attrs = ['id', 'email'],
-            tasks;
+    read: (options) => {
+        const attrs = ['id', 'email'];
+        let tasks;
 
         function modelQuery(options) {
-            return models.Invite.findOne(options.data, _.omit(options, ['data']))
+            return models.Invite.findOne(options.data, omit(options, ['data']))
                 .then(function onModelResponse(model) {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
@@ -60,12 +59,12 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    destroy: function destroy(options) {
-        var tasks;
+    destroy: (options) => {
+        let tasks;
 
         function modelQuery(options) {
-            return models.Invite.findOne({id: options.id}, _.omit(options, ['data']))
-                .then(function (invite) {
+            return models.Invite.findOne({id: options.id}, omit(options, ['data']))
+                .then((invite) => {
                     if (!invite) {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
                     }
@@ -84,23 +83,23 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    add: function add(object, options) {
-        var tasks,
-            loggedInUser = options.context.user,
+    add: (object, options) => {
+        let loggedInUser = options.context.user,
+            tasks,
             emailData,
             invite;
 
         function addInvite(options) {
-            var data = options.data;
+            const data = options.data;
 
-            return models.Invite.add(data.invites[0], _.omit(options, 'data'))
-                .then(function (_invite) {
+            return models.Invite.add(data.invites[0], omit(options, 'data'))
+                .then((_invite) => {
                     invite = _invite;
 
                     return settingsAPI.read({key: 'title'});
                 })
-                .then(function (response) {
-                    var adminUrl = urlService.utils.urlFor('admin', true);
+                .then((response) => {
+                    const adminUrl = urlService.utils.urlFor('admin', true);
 
                     emailData = {
                         blogName: response.settings[0].value,
@@ -111,8 +110,8 @@ invites = {
                     };
 
                     return mail.utils.generateContent({data: emailData, template: 'invite-user'});
-                }).then(function (emailContent) {
-                    var payload = {
+                }).then((emailContent) => {
+                    const payload = {
                         mail: [{
                             message: {
                                 to: invite.get('email'),
@@ -128,20 +127,23 @@ invites = {
                     };
 
                     return mailAPI.send(payload, {context: {internal: true}});
-                }).then(function () {
+                }).then(() => {
                     options.id = invite.id;
                     return models.Invite.edit({status: 'sent'}, options);
-                }).then(function () {
+                }).then(() => {
                     invite.set('status', 'sent');
-                    var inviteAsJSON = invite.toJSON();
+                    const inviteAsJSON = invite.toJSON();
 
                     return {
                         invites: [inviteAsJSON]
                     };
-                }).catch(function (error) {
+                }).catch((error) => {
                     if (error && error.errorType === 'EmailError') {
-                        error.message = common.i18n.t('errors.api.invites.errorSendingEmail.error', {message: error.message}) + ' ' +
-                            common.i18n.t('errors.api.invites.errorSendingEmail.help');
+                        const errorMessage = common.i18n.t('errors.api.invites.errorSendingEmail.error', {
+                            message: error.message
+                        });
+                        const helpText = common.i18n.t('errors.api.invites.errorSendingEmail.help');
+                        error.message = `${errorMessage} ${helpText}`;
                         common.logging.warn(error.message);
                     }
 
@@ -150,19 +152,17 @@ invites = {
         }
 
         function destroyOldInvite(options) {
-            var data = options.data;
+            const data = options.data;
 
-            return models.Invite.findOne({email: data.invites[0].email}, _.omit(options, 'data'))
-                .then(function (invite) {
+            return models.Invite.findOne({email: data.invites[0].email}, omit(options, 'data'))
+                .then((invite) => {
                     if (!invite) {
                         return Promise.resolve(options);
                     }
 
                     return invite.destroy(options);
                 })
-                .then(function () {
-                    return options;
-                });
+                .then(() => { return options; });
         }
 
         function validation(options) {
@@ -179,7 +179,7 @@ invites = {
             // We cannot use permissible because we don't have access to the role_id!!!
             // Adding a permissible function to the invite model, doesn't give us much context of the invite we would like to add
             // As we are looking forward to replace the permission system completely, we do not add a hack here
-            return models.Role.findOne({id: options.data.invites[0].role_id}).then(function (roleToInvite) {
+            return models.Role.findOne({id: options.data.invites[0].role_id}).then((roleToInvite) => {
                 if (!roleToInvite) {
                     return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.roleNotFound')}));
                 }
@@ -188,8 +188,8 @@ invites = {
                     return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
                 }
 
-                var loggedInUserRole = loggedInUser.related('roles').models[0].get('name'),
-                    allowed = [];
+                const loggedInUserRole = loggedInUser.related('roles').models[0].get('name');
+                let allowed = [];
 
                 if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
                     allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
@@ -202,14 +202,12 @@ invites = {
                         message: common.i18n.t('errors.api.invites.notAllowedToInvite')
                     }));
                 }
-            }).then(function () {
-                return options;
-            });
+            }).then(() => { return options; });
         }
 
         function checkIfUserExists(options) {
             return models.User.findOne({email: options.data.invites[0].email}, options)
-                .then(function (user) {
+                .then((user) => {
                     if (user) {
                         return Promise.reject(new common.errors.ValidationError({
                             message: common.i18n.t('errors.api.users.userAlreadyRegistered')
@@ -221,8 +219,8 @@ invites = {
         }
 
         function fetchLoggedInUser(options) {
-            return models.User.findOne({id: loggedInUser}, _.merge({}, _.omit(options, 'data'), {withRelated: ['roles']}))
-                .then(function (user) {
+            return models.User.findOne({id: loggedInUser}, merge({}, omit(options, 'data'), {withRelated: ['roles']}))
+                .then((user) => {
                     if (!user) {
                         return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')}));
                     }
