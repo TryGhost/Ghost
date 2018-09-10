@@ -1,8 +1,7 @@
-var labsUtil = require('../../services/labs'),
-    common = require('../../lib/common'),
-    labs;
+const labsUtil = require('../../services/labs'),
+    common = require('../../lib/common');
 
-labs = {
+const labs = {
     subscribers: function subscribers(req, res, next) {
         if (labsUtil.isSet('subscribers') === true) {
             return next();

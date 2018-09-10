@@ -1,5 +1,4 @@
-var fs = require('fs-extra'),
-    _ = require('lodash'),
+const fs = require('fs-extra'),
     express = require('express'),
     url = require('url'),
     path = require('path'),
@@ -7,8 +6,9 @@ var fs = require('fs-extra'),
     config = require('../../config'),
     common = require('../../lib/common'),
     validation = require('../../data/validation'),
-    customRedirectsRouter,
     _private = {};
+
+let customRedirectsRouter;
 
 _private.registerRoutes = function registerRoutes() {
     debug('redirects loading');
@@ -16,11 +16,11 @@ _private.registerRoutes = function registerRoutes() {
     customRedirectsRouter = express.Router();
 
     try {
-        var redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
+        let redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
         redirects = JSON.parse(redirects);
         validation.validateRedirects(redirects);
 
-        _.each(redirects, function (redirect) {
+        redirects.forEach(function (redirect) {
             /**
              * always delete trailing slashes, doesn't matter if regex or not
              * Example:
@@ -37,7 +37,7 @@ _private.registerRoutes = function registerRoutes() {
 
             debug('register', redirect.from);
             customRedirectsRouter.get(new RegExp(redirect.from), function (req, res) {
-                var maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
+                const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
                     parsedUrl = url.parse(req.originalUrl);
 
                 res.set({

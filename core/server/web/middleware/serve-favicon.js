@@ -1,15 +1,15 @@
-var fs = require('fs-extra'),
+const fs = require('fs-extra'),
     path = require('path'),
     crypto = require('crypto'),
     config = require('../../config'),
     imageLib = require('../../lib/image'),
     storage = require('../../adapters/storage'),
     urlService = require('../../services/url'),
-    settingsCache = require('../../services/settings/cache'),
-    buildContentResponse,
-    content;
+    settingsCache = require('../../services/settings/cache');
 
-buildContentResponse = function buildContentResponse(ext, buf) {
+let content;
+
+const buildContentResponse = function buildContentResponse(ext, buf) {
     content = {
         headers: {
             'Content-Type': 'image/' + ext,
@@ -26,7 +26,7 @@ buildContentResponse = function buildContentResponse(ext, buf) {
 // ### serveFavicon Middleware
 // Handles requests to favicon.png and favicon.ico
 function serveFavicon() {
-    var iconType,
+    let iconType,
         filePath;
 
     return function serveFavicon(req, res, next) {
@@ -39,8 +39,8 @@ function serveFavicon() {
             // in this case we don't use path rewrite, that's why we have to make it manually
             filePath = imageLib.blogIcon.getIconPath();
 
-            var originalExtension = path.extname(filePath).toLowerCase(),
-                requestedExtension = path.extname(req.path).toLowerCase();
+            let originalExtension = path.extname(filePath).toLowerCase();
+            const requestedExtension = path.extname(req.path).toLowerCase();
 
             // CASE: custom favicon exists, load it from local file storage
             if (settingsCache.get('icon')) {

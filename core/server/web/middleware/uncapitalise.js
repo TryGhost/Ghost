@@ -12,16 +12,17 @@
 //  req.baseUrl = /blog
 //  req.path =  /ghost/signin/
 
-var urlService = require('../../services/url'),
+const urlService = require('../../services/url'),
     common = require('../../lib/common'),
-    localUtils = require('../utils'),
-    uncapitalise;
+    localUtils = require('../utils');
 
-uncapitalise = function uncapitalise(req, res, next) {
-    var pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path,
-        isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i),
-        isAPI = pathToTest.match(/^(.*\/ghost\/api\/v[\d\.]+\/.*?\/)/i),
-        redirectPath, decodedURI;
+const uncapitalise = function uncapitalise(req, res, next) {
+    let pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path,
+        redirectPath,
+        decodedURI;
+
+    const isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i),
+        isAPI = pathToTest.match(/^(.*\/ghost\/api\/v[\d\.]+\/.*?\/)/i);
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];

@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    hbs = require('express-hbs'),
+const hbs = require('express-hbs'),
     debug = require('ghost-ignition').debug('error-handler'),
     config = require('../../config'),
     common = require('../../lib/common'),
@@ -13,7 +12,7 @@ var _ = require('lodash'),
  * It uses the {{asset}} helper, and nothing more
  */
 _private.createHbsEngine = function createHbsEngine() {
-    var engine = hbs.create();
+    const engine = hbs.create();
     engine.registerHelper('asset', require('../../helpers/asset'));
 
     return engine.express4();
@@ -27,7 +26,7 @@ _private.createHbsEngine = function createHbsEngine() {
 _private.prepareError = function prepareError(err, req, res, next) {
     debug(err);
 
-    if (_.isArray(err)) {
+    if (Array.isArray(err)) {
         err = err[0];
     }
 
@@ -74,11 +73,11 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { /
 };
 
 _private.ErrorFallbackMessage = function ErrorFallbackMessage(err) {
-    return '<h1>' + common.i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
-    '<p>' + common.i18n.t('errors.errors.encounteredError') + '</p>' +
-    '<pre>' + escapeExpression(err.message || err) + '</pre>' +
-    '<br ><p>' + common.i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
-    err.statusCode + ' ' + '<pre>' + escapeExpression(err.message || err) + '</pre>';
+    return `<h1>${common.i18n.t('errors.errors.oopsErrorTemplateHasError')}</h1>
+     <p>${common.i18n.t('errors.errors.encounteredError')}</p>
+     <pre>${escapeExpression(err.message || err)}</pre>
+     <br ><p>${common.i18n.t('errors.errors.whilstTryingToRender')}</p>
+     ${err.statusCode} <pre>${escapeExpression(err.message || err)}</pre>`;
 };
 
 _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
@@ -92,7 +91,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
 
     // Renderer begin
     // Format Data
-    var data = {
+    const data = {
         message: err.message,
         // @deprecated Remove in Ghost 3.0
         code: err.statusCode,
@@ -107,7 +106,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
     // @TODO: split the error handler for assets, admin & theme to refactor this away
-    if (_.isEmpty(req.app.engines)) {
+    if (!req.app.engines || Object.keys(req.app.engines).length === 0) {
         res._template = 'error';
         req.app.engine('hbs', _private.createHbsEngine());
         req.app.set('view engine', 'hbs');
@@ -131,7 +130,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
 };
 
 _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  // eslint-disable-line no-unused-vars
-    var data = {
+    const data = {
         message: err.message,
         statusCode: err.statusCode,
         errorDetails: err.errorDetails || []
@@ -140,7 +139,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  //
     // e.g. if you serve the admin /ghost and Ghost returns a 503 because it generates the urls at the moment.
     // This ensures that no matter what res.render will work here
     // @TODO: put to prepare error function?
-    if (_.isEmpty(req.app.engines)) {
+    if (!req.app.engines || req.app.engines.length === 0) {
         res._template = 'error';
         req.app.engine('hbs', _private.createHbsEngine());
         req.app.set('view engine', 'hbs');

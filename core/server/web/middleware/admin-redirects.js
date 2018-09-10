@@ -1,15 +1,14 @@
-var express = require('express'),
-    urlService = require('../../services/url'),
-    adminRedirect;
+const express = require('express'),
+    urlService = require('../../services/url');
 
-adminRedirect = function adminRedirect(path) {
+const adminRedirect = function adminRedirect(path) {
     return function doRedirect(req, res) {
         return urlService.utils.redirectToAdmin(301, res, path);
     };
 };
 
 module.exports = function adminRedirects() {
-    var router = express.Router();
+    const router = express.Router();
     // Admin redirects - register redirect as route
     // TODO: this should be middleware!
     router.get(/^\/(logout|signout)\/$/, adminRedirect('#/signout/'));

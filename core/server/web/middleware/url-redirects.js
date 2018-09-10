@@ -1,15 +1,14 @@
-var url = require('url'),
+const url = require('url'),
     path = require('path'),
     debug = require('ghost-ignition').debug('url-redirects'),
     urlService = require('../../services/url'),
-    urlRedirects,
     _private = {};
 
 _private.redirectUrl = function redirectUrl(options) {
-    var redirectTo = options.redirectTo,
-        pathname = options.path,
+    const redirectTo = options.redirectTo,
         query = options.query,
         parts = url.parse(redirectTo);
+    let pathname = options.path;
 
     // CASE: ensure we always add a trailing slash to reduce the number of redirects
     // e.g. you are redirected from example.com/ghost to admin.example.com/ghost and Ghost would detect a missing slash and redirect you to /ghost/
@@ -22,13 +21,13 @@ _private.redirectUrl = function redirectUrl(options) {
         protocol: parts.protocol,
         hostname: parts.hostname,
         port: parts.port,
-        pathname: pathname,
-        query: query
+        pathname,
+        query
     });
 };
 
 _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
-    var blogHostWithProtocol = urlService.utils.urlFor('home', true),
+    const blogHostWithProtocol = urlService.utils.urlFor('home', true),
         adminHostWithProtocol = urlService.utils.urlFor('admin', true),
         adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
         blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
@@ -67,7 +66,7 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
 };
 
 _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
-    var blogHostWithProtocol = urlService.utils.urlFor('home', true),
+    const blogHostWithProtocol = urlService.utils.urlFor('home', true),
         requestedHost = options.requestedHost,
         requestedUrl = options.requestedUrl,
         queryParameters = options.queryParameters,
@@ -93,8 +92,8 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
  * 1. required SSL redirects
  * 2. redirect to the correct admin url
  */
-urlRedirects = function urlRedirects(req, res, next) {
-    var redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl,
+const urlRedirects = function urlRedirects(req, res, next) {
+    const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl,
         redirectUrl = redirectFn({
             requestedHost: req.get('host'),
             requestedUrl: url.parse(req.originalUrl || req.url).pathname,
