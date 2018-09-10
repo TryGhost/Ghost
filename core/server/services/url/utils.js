@@ -42,16 +42,14 @@ function getBlogUrl(secure) {
  */
 function getSubdir() {
     // Parse local path location
-    var localPath = url.parse(config.get('url')).path,
-        subdir;
+    let localPath = url.parse(config.get('url')).path;
 
     // Remove trailing slash
     if (localPath !== '/') {
-        localPath = localPath.replace(/\/$/, '');
+        return localPath[localPath.length - 1] !== '/' ? localPath : localPath.substr(0, localPath.length - 1);
     }
 
-    subdir = localPath === '/' ? '' : localPath;
-    return subdir;
+    return '';
 }
 
 function deduplicateSubDir(url) {
@@ -436,6 +434,7 @@ module.exports.absoluteToRelative = absoluteToRelative;
 module.exports.makeAbsoluteUrls = makeAbsoluteUrls;
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
+module.exports.deduplicateSubDir = deduplicateSubDir;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.isSSL = isSSL;
