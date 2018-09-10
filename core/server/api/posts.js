@@ -38,7 +38,7 @@ posts = {
      * @param {{context, page, limit, status, staticPages, tag, featured}} options (optional)
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
-    browse: function browse(options) {
+    browse: (options) => {
         const extraOptions = ['status', 'formats', 'absolute_urls'];
         let permittedOptions,
             tasks;
@@ -80,7 +80,7 @@ posts = {
      * @param {Object} options
      * @return {Promise<Post>} Post
      */
-    read: function read(options) {
+    read: (options) => {
         const attrs = ['id', 'slug', 'status', 'uuid'],
             // NOTE: the scheduler API uses the post API and forwards custom options
             extraAllowedOptions = options.opts || ['formats', 'absolute_urls'];
@@ -129,7 +129,7 @@ posts = {
      * @param {{id (required), context, include,...}} options
      * @return {Promise(Post)} Edited Post
      */
-    edit: function edit(object, options) {
+    edit: (object, options) => {
         let tasks;
         // NOTE: the scheduler API uses the post API and forwards custom options
         const extraAllowedOptions = options.opts || [];
@@ -185,7 +185,7 @@ posts = {
      * @param {{context, include,...}} options
      * @return {Promise(Post)} Created Post
      */
-    add: function add(object, options) {
+    add: (object, options) => {
         let tasks;
 
         /**
@@ -229,7 +229,7 @@ posts = {
      * @param {{id (required), context,...}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         /**

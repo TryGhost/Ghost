@@ -12,10 +12,8 @@ const Promise = require('bluebird'),
     docName = 'invites',
     allowedIncludes = ['created_by', 'updated_by'];
 
-let invites;
-
-invites = {
-    browse: function browse(options) {
+const invites = {
+    browse: (options) => {
         let tasks;
 
         function modelQuery(options) {
@@ -32,7 +30,7 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    read: function read(options) {
+    read: (options) => {
         const attrs = ['id', 'email'];
         let tasks;
 
@@ -61,7 +59,7 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         function modelQuery(options) {
@@ -85,7 +83,7 @@ invites = {
         return pipeline(tasks, options);
     },
 
-    add: function add(object, options) {
+    add: (object, options) => {
         let loggedInUser = options.context.user,
             tasks,
             emailData,

@@ -56,7 +56,7 @@ notifications = {
      * Fetch all notifications
      * @returns {Promise(Notifications)}
      */
-    browse: function browse(options) {
+    browse: (options) => {
         return canThis(options.context).browse.notification().then(() => {
             return _private.fetchAllNotifications()
                 .then((allNotifications) => {
@@ -86,6 +86,7 @@ notifications = {
             }));
         });
     },
+
     /**
      * ### Add
      *
@@ -105,7 +106,7 @@ notifications = {
          *  }] };
      * ```
      */
-    add: function add(object, options) {
+    add: (object, options) => {
         let tasks;
 
         /**
@@ -212,7 +213,7 @@ notifications = {
      * @param {{id (required), context}} options
      * @returns {Promise}
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         /**
@@ -284,7 +285,7 @@ notifications = {
      * @private Not exposed over HTTP
      * @returns {Promise}
      */
-    destroyAll: function destroyAll(options) {
+    destroyAll: (options) => {
         return canThis(options.context).destroy.notification()
             .then(() => {
                 return _private.fetchAllNotifications()

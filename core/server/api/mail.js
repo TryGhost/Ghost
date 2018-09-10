@@ -10,8 +10,7 @@ const Promise = require('bluebird'),
     notificationsAPI = require('./notifications'),
     docName = 'mail';
 
-let mailer,
-    apiMail;
+let mailer;
 
 /**
  * Send mail helper
@@ -48,7 +47,7 @@ function sendMail(object) {
  * @typedef Mail
  * @param mail
  */
-apiMail = {
+const apiMail = {
     /**
      * ### Send
      * Send an email
@@ -57,7 +56,7 @@ apiMail = {
      * @param {Mail} object details of the email to send
      * @returns {Promise}
      */
-    send: function (object, options) {
+    send: (object, options) => {
         let tasks;
 
         /**
@@ -101,7 +100,7 @@ apiMail = {
      * @param {Object} options required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: function (options) {
+    sendTest: (options) => {
         let tasks;
 
         /**
