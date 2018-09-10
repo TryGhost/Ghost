@@ -4,7 +4,7 @@
 // Ghost's JSON API is integral to the workings of Ghost, regardless of whether you want to access data internally,
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
-var _ = require('lodash'),
+const {isEmpty} = require('lodash'),
     Promise = require('bluebird'),
     models = require('../models'),
     urlService = require('../services/url'),
@@ -29,9 +29,9 @@ var _ = require('lodash'),
     exporter = require('../data/exporter'),
     slack = require('./slack'),
     webhooks = require('./webhooks'),
-    oembed = require('./oembed'),
+    oembed = require('./oembed');
 
-    http,
+let http,
     addHeaders,
     cacheInvalidationHeader,
     locationHeader,
@@ -68,13 +68,14 @@ function isActiveThemeUpdate(method, endpoint, result) {
  * @return {String} Resolves to header string
  */
 cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
-    var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
+    const parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
         subdir = parsedUrl[1],
         jsonResult = result.toJSON ? result.toJSON() : result,
-        INVALIDATE_ALL = '/*',
-        post,
+        INVALIDATE_ALL = '/*';
+
+    let post,
         hasStatusChanged,
         wasPublishedUpdated;
 
@@ -123,15 +124,15 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
  * @return {String} Resolves to header string
  */
 locationHeader = function locationHeader(req, result) {
-    var apiRoot = urlService.utils.urlFor('api'),
-        location,
+    const apiRoot = urlService.utils.urlFor('api');
+    let location,
         newObject,
         statusQuery;
 
     if (req.method === 'POST') {
         if (result.hasOwnProperty('posts')) {
             newObject = result.posts[0];
-            statusQuery = '/?status=' + newObject.status;
+            statusQuery = `/?status=${newObject.status}`;
             location = urlService.utils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
         } else if (result.hasOwnProperty('notifications')) {
             newObject = result.notifications[0];
@@ -168,13 +169,13 @@ locationHeader = function locationHeader(req, result) {
 
 contentDispositionHeaderExport = function contentDispositionHeaderExport() {
     return exporter.fileName().then(function then(filename) {
-        return 'Attachment; filename="' + filename + '"';
+        return `Attachment; filename="${filename}"`;
     });
 };
 
 contentDispositionHeaderSubscribers = function contentDispositionHeaderSubscribers() {
-    var datetime = (new Date()).toJSON().substring(0, 10);
-    return Promise.resolve('Attachment; filename="subscribers.' + datetime + '.csv"');
+    const datetime = (new Date()).toJSON().substring(0, 10);
+    return Promise.resolve(`Attachment; filename="subscribers.${datetime}.csv"`);
 };
 
 contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects() {
@@ -186,7 +187,7 @@ contentDispositionHeaderRoutes = () => {
 };
 
 addHeaders = function addHeaders(apiMethod, req, res, result) {
-    var cacheInvalidation,
+    let cacheInvalidation,
         location,
         contentDisposition;
 
@@ -267,7 +268,7 @@ http = function http(apiMethod) {
     return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         let object = req.body,
-            options = _.extend({}, req.file, {ip: req.ip}, req.query, req.params, {
+            options = Object.assign({}, req.file, {ip: req.ip}, req.query, req.params, {
                 context: {
                     // @TODO: forward the client and user obj (options.context.user.id)
                     user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
@@ -282,7 +283,7 @@ http = function http(apiMethod) {
 
         // If this is a GET, or a DELETE, req.body should be null, so we only have options (route and query params)
         // If this is a PUT, POST, or PATCH, req.body is an object
-        if (_.isEmpty(object)) {
+        if (isEmpty(object)) {
             object = options;
             options = {};
         }
@@ -303,7 +304,7 @@ http = function http(apiMethod) {
 
             // CASE: api method response wants to handle the express response
             // example: serve files (stream)
-            if (_.isFunction(response)) {
+            if (typeof response === 'function') {
                 return response(req, res, next);
             }
 
