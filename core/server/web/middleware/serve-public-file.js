@@ -1,4 +1,4 @@
-var crypto = require('crypto'),
+const crypto = require('crypto'),
     fs = require('fs-extra'),
     path = require('path'),
     config = require('../../config'),
@@ -7,13 +7,11 @@ var crypto = require('crypto'),
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(file, type, maxAge) {
-    var content,
-        publicFilePath = config.get('paths').publicFilePath,
-        filePath,
+    let content;
+    const publicFilePath = config.get('paths').publicFilePath,
+        filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file),
         blogRegex = /(\{\{blog-url\}\})/g,
         apiRegex = /(\{\{api-url\}\})/g;
-
-    filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file);
 
     return function servePublicFile(req, res, next) {
         if (req.path === '/' + file) {

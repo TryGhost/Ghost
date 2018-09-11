@@ -32,7 +32,7 @@ const getOembedUrlFromHTML = function getOembedUrlFromHTML(html) {
     return cheerio('link[type="application/json+oembed"]', html).attr('href');
 };
 
-let oembed = {
+const oembed = {
     read(options) {
         let {url} = options;
 

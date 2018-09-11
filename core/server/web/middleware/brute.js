@@ -1,4 +1,4 @@
-var url = require('url'),
+const url = require('url'),
     spamPrevention = require('./api/spam-prevention');
 
 /**
