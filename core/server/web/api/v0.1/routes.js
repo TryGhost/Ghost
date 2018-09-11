@@ -191,6 +191,7 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         validation.upload({type: 'images'}),
         validation.profileImage(),
+        image.normalize,
         api.http(api.uploads.add)
     );
 
