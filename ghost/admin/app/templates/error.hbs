@@ -1,12 +1,15 @@
 <div class="gh-view">
-    <section class="error-content error-404 js-error-container">
-        <section class="error-details">
-             <img class="error-ghost" src="assets/img/404-ghost@2x.png" srcset="assets/img/404-ghost.png 1x, assets/img/404-ghost@2x.png 2x" />
-             <section class="error-message">
-                 <h1 class="error-code">{{code}}</h1>
-                 <h2 class="error-description">{{message}}</h2>
-             </section>
-        </section>
+
+    <section class="flex flex-column items-center flex-grow justify-center h-100 nt10">
+        <div class="absolute error-background nudge-right--5">
+            {{svg-jar "desert" class="error-background absolute"}}
+            <div class="traveler-1">{{svg-jar "tumbleweed" class="w6 h6 absolute bouncer-1"}}</div>
+            <div class="traveler-2">{{svg-jar "tumbleweed" class="w11 h11 absolute bouncer-2"}}</div>
+        </div>
+        <div class="absolute mt50 tc">
+            <h1 class="midlightgrey error-code-size fw6">{{code}}</h1>
+            <h2 class="midlightgrey f4 fw3">{{message}}</h2>
+        </div>
     </section>
 
     {{#if stack}}
