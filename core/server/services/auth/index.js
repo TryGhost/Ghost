@@ -1,6 +1,7 @@
 var passport = require('./passport'),
     authorize = require('./authorize'),
     authenticate = require('./authenticate'),
+    session = require('./session'),
     oauth = require('./oauth');
 
 exports.init = function (options) {
@@ -11,3 +12,4 @@ exports.init = function (options) {
 exports.oauth = oauth;
 exports.authorize = authorize;
 exports.authenticate = authenticate;
+exports.session = session;
