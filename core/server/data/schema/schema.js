@@ -300,5 +300,12 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    sessions: {
+        id: {type: 'string', maxlength: 32, nullable: false, primary: true},
+        user_id: {type: 'string', maxlength: 24, nullable: false},
+        session_data: {type: 'text', maxlength: 2000, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };
