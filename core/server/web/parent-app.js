@@ -45,7 +45,7 @@ module.exports = function setupParentApp(options = {}) {
     // API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
-    parentApp.use('/ghost/api/v0.1/', require('./api/app')());
+    parentApp.use('/ghost/api/', require('./api/app')());
 
     // ADMIN
     parentApp.use('/ghost', require('./admin')());

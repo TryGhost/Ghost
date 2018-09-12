@@ -49,8 +49,10 @@ module.exports = function setupApiApp() {
     apiApp.use(cacheControl('private'));
 
     // Routing
-    apiApp.use(adminRoutes());
-    apiApp.use(contentRoutes());
+    apiApp.use('v0.1/', [
+        adminRoutes(),
+        contentRoutes()
+    ]);
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
