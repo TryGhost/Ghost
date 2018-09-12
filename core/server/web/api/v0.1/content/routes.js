@@ -1,23 +1,23 @@
 const express = require('express'),
     // This essentially provides the controllers for the routes
-    api = require('../../api'),
+    api = require('../../../../api'),
 
     // Middleware
-    mw = require('./middleware'),
+    mw = require('../../middleware'),
 
     // API specific
-    auth = require('../../services/auth'),
-    cors = require('../middleware/api/cors'),
-    brute = require('../middleware/brute'),
+    auth = require('../../../../services/auth'),
+    cors = require('../../../middleware/api/cors'),
+    brute = require('../../../middleware/brute'),
 
     // Handling uploads & imports
     tmpdir = require('os').tmpdir,
     upload = require('multer')({dest: tmpdir()}),
-    validation = require('../middleware/validation'),
+    validation = require('../../../middleware/validation'),
 
     // Temporary
     // @TODO find a more appy way to do this!
-    labs = require('../middleware/labs');
+    labs = require('../../../middleware/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router();
