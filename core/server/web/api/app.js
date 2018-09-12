@@ -4,7 +4,8 @@ const debug = require('ghost-ignition').debug('api'),
     express = require('express'),
 
     // routes
-    routes = require('./routes'),
+    adminRoutes = require('./v0.1/admin/routes'),
+    contentRoutes = require('./v0.1/content/routes'),
 
     // Include the middleware
 
@@ -48,13 +49,14 @@ module.exports = function setupApiApp() {
     apiApp.use(cacheControl('private'));
 
     // Routing
-    apiApp.use(routes());
+    apiApp.use(adminRoutes());
+    apiApp.use(contentRoutes());
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse);
 
-    debug('API setup end');
+    debug('APIs setup end');
 
     return apiApp;
 };
