@@ -10,11 +10,6 @@ const express = require('express'),
     cors = require('../../../middleware/api/cors'),
     brute = require('../../../middleware/brute'),
 
-    // Handling uploads & imports
-    tmpdir = require('os').tmpdir,
-    upload = require('multer')({dest: tmpdir()}),
-    validation = require('../../../middleware/validation'),
-
     // Temporary
     // @TODO find a more appy way to do this!
     labs = require('../../../middleware/labs');
@@ -54,12 +49,6 @@ module.exports = function apiRoutes() {
     router.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
 
     // ## Subscribers
-    router.post('/subscribers/csv',
-        labs.subscribers,
-        upload.single('subscribersfile'),
-        validation.upload({type: 'subscribers'}),
-        api.http(api.subscribers.importCSV)
-    );
     router.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
 
     // ## Clients
