@@ -27,6 +27,21 @@ Session = ghostBookshelf.Model.extend({
     user: function () {
         return this.belongsTo('User');
     }
+}, {
+    upsert: function (id, data) {
+        return this.forge({id})
+            .fetch({require: true})
+            .then((model) => {
+                return model.set('session_data', data).save();
+            }, () => {
+                return this.forge({
+                    id: id
+                }).save({
+                    user_id: data.user_id,
+                    session_data: data
+                }, {method: 'insert'});
+            });
+    }
 });
 
 Sessions = ghostBookshelf.Collection.extend({

@@ -30,19 +30,8 @@ module.exports = class SessionStore extends Store {
         if (!sessionData.user_id) {
             return callback(new Error('Should not set sessions without a user_id'));
         }
-        // TODO: shit below needs to be handled in the model
-        this.SessionModel.forge({id: sid})
-            .fetch({require: true})
-            .then((model) => {
-                return model.set('session_data', sessionData).save();
-            }, () => {
-                return this.SessionModel.forge({
-                    id: sid
-                }).save({
-                    user_id: sessionData.user_id,
-                    session_data: sessionData
-                }, {method: 'insert'});
-            })
+        this.SessionModel
+            .upsert(sid, sessionData)
             .then(() => {
                 callback(null);
             })
