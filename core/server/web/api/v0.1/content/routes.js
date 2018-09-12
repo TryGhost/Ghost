@@ -20,71 +20,71 @@ const express = require('express'),
     labs = require('../middleware/labs');
 
 module.exports = function apiRoutes() {
-    const apiRouter = express.Router();
+    const router = express.Router();
 
     // alias delete with del
-    apiRouter.del = apiRouter.delete;
+    router.del = router.delete;
 
     // ## CORS pre-flight check
-    apiRouter.options('*', cors);
+    router.options('*', cors);
 
     // ## Configuration
-    apiRouter.get('/configuration', api.http(api.configuration.read));
+    router.get('/configuration', api.http(api.configuration.read));
 
     // ## Posts
-    apiRouter.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
+    router.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
 
-    apiRouter.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
-    apiRouter.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
+    router.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
+    router.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
 
     // ## Schedules
-    apiRouter.put('/schedules/posts/:id', [
+    router.put('/schedules/posts/:id', [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser
     ], api.http(api.schedules.publishPost));
 
     // ## Users
-    apiRouter.get('/users', mw.authenticatePublic, api.http(api.users.browse));
-    apiRouter.get('/users/:id', mw.authenticatePublic, api.http(api.users.read));
-    apiRouter.get('/users/slug/:slug', mw.authenticatePublic, api.http(api.users.read));
+    router.get('/users', mw.authenticatePublic, api.http(api.users.browse));
+    router.get('/users/:id', mw.authenticatePublic, api.http(api.users.read));
+    router.get('/users/slug/:slug', mw.authenticatePublic, api.http(api.users.read));
 
     // ## Tags
-    apiRouter.get('/tags', mw.authenticatePublic, api.http(api.tags.browse));
-    apiRouter.get('/tags/:id', mw.authenticatePublic, api.http(api.tags.read));
-    apiRouter.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
+    router.get('/tags', mw.authenticatePublic, api.http(api.tags.browse));
+    router.get('/tags/:id', mw.authenticatePublic, api.http(api.tags.read));
+    router.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
 
     // ## Subscribers
-    apiRouter.post('/subscribers/csv',
+    router.post('/subscribers/csv',
         labs.subscribers,
         upload.single('subscribersfile'),
         validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
-    apiRouter.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
+    router.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
 
     // ## Clients
-    apiRouter.get('/clients/slug/:slug', api.http(api.clients.read));
+    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Authentication
-    apiRouter.post('/authentication/passwordreset',
+    router.post('/authentication/passwordreset',
         brute.globalReset,
         brute.userReset,
         api.http(api.authentication.generateResetToken)
     );
-    apiRouter.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
-    apiRouter.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
-    apiRouter.get('/authentication/invitation', api.http(api.authentication.isInvitation));
-    apiRouter.post('/authentication/setup', api.http(api.authentication.setup));
-    apiRouter.get('/authentication/setup', api.http(api.authentication.isSetup));
+    router.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
+    router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
+    router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
+    router.post('/authentication/setup', api.http(api.authentication.setup));
+    router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
-    apiRouter.post('/authentication/token',
+    router.post('/authentication/token',
         mw.authenticateClient(),
         brute.globalBlock,
         brute.userLogin,
         auth.oauth.generateAccessToken
     );
 
-    apiRouter.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
+    router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
-    return apiRouter;
+    return router;
 };

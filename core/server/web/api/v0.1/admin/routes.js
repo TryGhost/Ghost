@@ -22,152 +22,152 @@ const express = require('express'),
 
 // @TODO refactor/clean this up - how do we want the routing to work long term?
 module.exports = function apiRoutes() {
-    const apiRouter = express.Router();
+    const router = express.Router();
 
     // alias delete with del
-    apiRouter.del = apiRouter.delete;
+    router.del = router.delete;
 
     // ## CORS pre-flight check
-    apiRouter.options('*', cors);
+    router.options('*', cors);
 
     // ## Configuration
-    apiRouter.get('/configuration', api.http(api.configuration.read));
-    apiRouter.get('/configuration/:key', mw.authenticatePrivate, api.http(api.configuration.read));
+    router.get('/configuration', api.http(api.configuration.read));
+    router.get('/configuration/:key', mw.authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
-    apiRouter.post('/posts', mw.authenticatePrivate, api.http(api.posts.add));
-    apiRouter.put('/posts/:id', mw.authenticatePrivate, api.http(api.posts.edit));
-    apiRouter.del('/posts/:id', mw.authenticatePrivate, api.http(api.posts.destroy));
+    router.post('/posts', mw.authenticatePrivate, api.http(api.posts.add));
+    router.put('/posts/:id', mw.authenticatePrivate, api.http(api.posts.edit));
+    router.del('/posts/:id', mw.authenticatePrivate, api.http(api.posts.destroy));
 
     // ## Schedules
-    apiRouter.put('/schedules/posts/:id', [
+    router.put('/schedules/posts/:id', [
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser
     ], api.http(api.schedules.publishPost));
 
     // ## Settings
-    apiRouter.get('/settings/routes/yaml', mw.authenticatePrivate, api.http(api.settings.download));
-    apiRouter.post('/settings/routes/yaml',
+    router.get('/settings/routes/yaml', mw.authenticatePrivate, api.http(api.settings.download));
+    router.post('/settings/routes/yaml',
         mw.authenticatePrivate,
         upload.single('routes'),
         validation.upload({type: 'routes'}),
         api.http(api.settings.upload)
     );
 
-    apiRouter.get('/settings', mw.authenticatePrivate, api.http(api.settings.browse));
-    apiRouter.get('/settings/:key', mw.authenticatePrivate, api.http(api.settings.read));
-    apiRouter.put('/settings', mw.authenticatePrivate, api.http(api.settings.edit));
+    router.get('/settings', mw.authenticatePrivate, api.http(api.settings.browse));
+    router.get('/settings/:key', mw.authenticatePrivate, api.http(api.settings.read));
+    router.put('/settings', mw.authenticatePrivate, api.http(api.settings.edit));
 
     // ## Users
-    apiRouter.get('/users/email/:email', mw.authenticatePrivate, api.http(api.users.read));
+    router.get('/users/email/:email', mw.authenticatePrivate, api.http(api.users.read));
 
-    apiRouter.put('/users/password', mw.authenticatePrivate, api.http(api.users.changePassword));
-    apiRouter.put('/users/owner', mw.authenticatePrivate, api.http(api.users.transferOwnership));
-    apiRouter.put('/users/:id', mw.authenticatePrivate, api.http(api.users.edit));
-    apiRouter.del('/users/:id', mw.authenticatePrivate, api.http(api.users.destroy));
+    router.put('/users/password', mw.authenticatePrivate, api.http(api.users.changePassword));
+    router.put('/users/owner', mw.authenticatePrivate, api.http(api.users.transferOwnership));
+    router.put('/users/:id', mw.authenticatePrivate, api.http(api.users.edit));
+    router.del('/users/:id', mw.authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
-    apiRouter.post('/tags', mw.authenticatePrivate, api.http(api.tags.add));
-    apiRouter.put('/tags/:id', mw.authenticatePrivate, api.http(api.tags.edit));
-    apiRouter.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
+    router.post('/tags', mw.authenticatePrivate, api.http(api.tags.add));
+    router.put('/tags/:id', mw.authenticatePrivate, api.http(api.tags.edit));
+    router.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Subscribers
-    apiRouter.get('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.browse));
-    apiRouter.get('/subscribers/csv', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
-    apiRouter.post('/subscribers/csv',
+    router.get('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.browse));
+    router.get('/subscribers/csv', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
+    router.post('/subscribers/csv',
         labs.subscribers,
         mw.authenticatePrivate,
         upload.single('subscribersfile'),
         validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
-    apiRouter.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    apiRouter.get('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    apiRouter.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
-    apiRouter.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
-    apiRouter.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
+    router.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
+    router.get('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
+    router.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
+    router.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
+    router.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
 
     // ## Roles
-    apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
+    router.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
 
     // ## Clients
-    apiRouter.get('/clients/slug/:slug', api.http(api.clients.read));
+    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
-    apiRouter.get('/slugs/:type/:name', mw.authenticatePrivate, api.http(api.slugs.generate));
+    router.get('/slugs/:type/:name', mw.authenticatePrivate, api.http(api.slugs.generate));
 
     // ## Themes
-    apiRouter.get('/themes/', mw.authenticatePrivate, api.http(api.themes.browse));
+    router.get('/themes/', mw.authenticatePrivate, api.http(api.themes.browse));
 
-    apiRouter.get('/themes/:name/download',
+    router.get('/themes/:name/download',
         mw.authenticatePrivate,
         api.http(api.themes.download)
     );
 
-    apiRouter.post('/themes/upload',
+    router.post('/themes/upload',
         mw.authenticatePrivate,
         upload.single('theme'),
         validation.upload({type: 'themes'}),
         api.http(api.themes.upload)
     );
 
-    apiRouter.put('/themes/:name/activate',
+    router.put('/themes/:name/activate',
         mw.authenticatePrivate,
         api.http(api.themes.activate)
     );
 
-    apiRouter.del('/themes/:name',
+    router.del('/themes/:name',
         mw.authenticatePrivate,
         api.http(api.themes.destroy)
     );
 
     // ## Notifications
-    apiRouter.get('/notifications', mw.authenticatePrivate, api.http(api.notifications.browse));
-    apiRouter.post('/notifications', mw.authenticatePrivate, api.http(api.notifications.add));
-    apiRouter.del('/notifications/:id', mw.authenticatePrivate, api.http(api.notifications.destroy));
+    router.get('/notifications', mw.authenticatePrivate, api.http(api.notifications.browse));
+    router.post('/notifications', mw.authenticatePrivate, api.http(api.notifications.add));
+    router.del('/notifications/:id', mw.authenticatePrivate, api.http(api.notifications.destroy));
 
     // ## DB
-    apiRouter.get('/db', mw.authenticatePrivate, api.http(api.db.exportContent));
-    apiRouter.post('/db',
+    router.get('/db', mw.authenticatePrivate, api.http(api.db.exportContent));
+    router.post('/db',
         mw.authenticatePrivate,
         upload.single('importfile'),
         validation.upload({type: 'db'}),
         api.http(api.db.importContent)
     );
-    apiRouter.del('/db', mw.authenticatePrivate, api.http(api.db.deleteAllContent));
+    router.del('/db', mw.authenticatePrivate, api.http(api.db.deleteAllContent));
 
     // ## Mail
-    apiRouter.post('/mail', mw.authenticatePrivate, api.http(api.mail.send));
-    apiRouter.post('/mail/test', mw.authenticatePrivate, api.http(api.mail.sendTest));
+    router.post('/mail', mw.authenticatePrivate, api.http(api.mail.send));
+    router.post('/mail/test', mw.authenticatePrivate, api.http(api.mail.sendTest));
 
     // ## Slack
-    apiRouter.post('/slack/test', mw.authenticatePrivate, api.http(api.slack.sendTest));
+    router.post('/slack/test', mw.authenticatePrivate, api.http(api.slack.sendTest));
 
     // ## Authentication
-    apiRouter.post('/authentication/passwordreset',
+    router.post('/authentication/passwordreset',
         brute.globalReset,
         brute.userReset,
         api.http(api.authentication.generateResetToken)
     );
-    apiRouter.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
-    apiRouter.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
-    apiRouter.get('/authentication/invitation', api.http(api.authentication.isInvitation));
-    apiRouter.post('/authentication/setup', api.http(api.authentication.setup));
-    apiRouter.put('/authentication/setup', mw.authenticatePrivate, api.http(api.authentication.updateSetup));
-    apiRouter.get('/authentication/setup', api.http(api.authentication.isSetup));
+    router.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
+    router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
+    router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
+    router.post('/authentication/setup', api.http(api.authentication.setup));
+    router.put('/authentication/setup', mw.authenticatePrivate, api.http(api.authentication.updateSetup));
+    router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
-    apiRouter.post('/authentication/token',
+    router.post('/authentication/token',
         mw.authenticateClient(),
         brute.globalBlock,
         brute.userLogin,
         auth.oauth.generateAccessToken
     );
 
-    apiRouter.post('/authentication/revoke', mw.authenticatePrivate, api.http(api.authentication.revoke));
+    router.post('/authentication/revoke', mw.authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
     // @TODO: rename endpoint to /images/upload (or similar)
-    apiRouter.post('/uploads',
+    router.post('/uploads',
         mw.authenticatePrivate,
         upload.single('uploadimage'),
         validation.upload({type: 'images'}),
@@ -175,9 +175,9 @@ module.exports = function apiRoutes() {
         api.http(api.uploads.add)
     );
 
-    apiRouter.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
+    router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
-    apiRouter.post('/uploads/icon',
+    router.post('/uploads/icon',
         mw.authenticatePrivate,
         upload.single('uploadimage'),
         validation.upload({type: 'icons'}),
@@ -186,14 +186,14 @@ module.exports = function apiRoutes() {
     );
 
     // ## Invites
-    apiRouter.get('/invites', mw.authenticatePrivate, api.http(api.invites.browse));
-    apiRouter.get('/invites/:id', mw.authenticatePrivate, api.http(api.invites.read));
-    apiRouter.post('/invites', mw.authenticatePrivate, api.http(api.invites.add));
-    apiRouter.del('/invites/:id', mw.authenticatePrivate, api.http(api.invites.destroy));
+    router.get('/invites', mw.authenticatePrivate, api.http(api.invites.browse));
+    router.get('/invites/:id', mw.authenticatePrivate, api.http(api.invites.read));
+    router.post('/invites', mw.authenticatePrivate, api.http(api.invites.add));
+    router.del('/invites/:id', mw.authenticatePrivate, api.http(api.invites.destroy));
 
     // ## Redirects (JSON based)
-    apiRouter.get('/redirects/json', mw.authenticatePrivate, api.http(api.redirects.download));
-    apiRouter.post('/redirects/json',
+    router.get('/redirects/json', mw.authenticatePrivate, api.http(api.redirects.download));
+    router.post('/redirects/json',
         mw.authenticatePrivate,
         upload.single('redirects'),
         validation.upload({type: 'redirects'}),
@@ -201,11 +201,11 @@ module.exports = function apiRoutes() {
     );
 
     // ## Webhooks (RESTHooks)
-    apiRouter.post('/webhooks', mw.authenticatePrivate, api.http(api.webhooks.add));
-    apiRouter.del('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
+    router.post('/webhooks', mw.authenticatePrivate, api.http(api.webhooks.add));
+    router.del('/webhooks/:id', mw.authenticatePrivate, api.http(api.webhooks.destroy));
 
     // ## Oembed (fetch response from oembed provider)
-    apiRouter.get('/oembed', mw.authenticatePrivate, api.http(api.oembed.read));
+    router.get('/oembed', mw.authenticatePrivate, api.http(api.oembed.read));
 
-    return apiRouter;
+    return router;
 };
