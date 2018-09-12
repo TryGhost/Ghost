@@ -4,7 +4,7 @@ const debug = require('ghost-ignition').debug('api'),
     express = require('express'),
 
     // routes
-    routes = require('.routes'),
+    routes = require('./routes'),
 
     // Include the middleware
 
