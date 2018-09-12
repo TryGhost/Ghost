@@ -4,8 +4,8 @@ const debug = require('ghost-ignition').debug('api'),
     express = require('express'),
 
     // routes
-    adminRoutes = require('./v0.1/admin/routes'),
-    contentRoutes = require('./v0.1/content/routes'),
+    adminRoutes = require('./v2/admin/routes'),
+    contentRoutes = require('./v2/content/routes'),
 
     // Include the middleware
 
@@ -49,7 +49,7 @@ module.exports = function setupApiApp() {
     apiApp.use(cacheControl('private'));
 
     // Routing
-    apiApp.use('v0.1/', [
+    apiApp.use('v2/', [
         adminRoutes(),
         contentRoutes()
     ]);
