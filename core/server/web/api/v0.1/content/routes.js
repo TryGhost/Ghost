@@ -6,9 +6,7 @@ const express = require('express'),
     mw = require('../../middleware'),
 
     // API specific
-    auth = require('../../../../services/auth'),
     cors = require('../../../middleware/api/cors'),
-    brute = require('../../../middleware/brute'),
 
     // Temporary
     // @TODO find a more appy way to do this!
@@ -28,15 +26,8 @@ module.exports = function apiRoutes() {
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
-
     router.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
-
-    // ## Schedules
-    router.put('/schedules/posts/:id', [
-        auth.authenticate.authenticateClient,
-        auth.authenticate.authenticateUser
-    ], api.http(api.schedules.publishPost));
 
     // ## Users
     router.get('/users', mw.authenticatePublic, api.http(api.users.browse));
@@ -53,27 +44,6 @@ module.exports = function apiRoutes() {
 
     // ## Clients
     router.get('/clients/slug/:slug', api.http(api.clients.read));
-
-    // ## Authentication
-    router.post('/authentication/passwordreset',
-        brute.globalReset,
-        brute.userReset,
-        api.http(api.authentication.generateResetToken)
-    );
-    router.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
-    router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
-    router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
-    router.post('/authentication/setup', api.http(api.authentication.setup));
-    router.get('/authentication/setup', api.http(api.authentication.isSetup));
-
-    router.post('/authentication/token',
-        mw.authenticateClient(),
-        brute.globalBlock,
-        brute.userLogin,
-        auth.oauth.generateAccessToken
-    );
-
-    router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
     return router;
 };
