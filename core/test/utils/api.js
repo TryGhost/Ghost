@@ -61,11 +61,6 @@ function getApiQuery(route) {
     return url.resolve(ApiRouteBase, route);
 }
 
-function getApiURL(route) {
-    var baseURL = url.resolve(protocol + host + ':' + port, ApiRouteBase);
-    return url.resolve(baseURL, route);
-}
-
 function getURL() {
     return protocol + host;
 }
@@ -113,7 +108,6 @@ function checkResponse(jsonResponse, objectType, additionalProperties, missingPr
 }
 
 module.exports = {
-    getApiURL: getApiURL,
     getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
