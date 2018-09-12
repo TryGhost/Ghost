@@ -4,20 +4,18 @@ const debug = require('ghost-ignition').debug('api'),
     express = require('express'),
 
     // routes
-    v01routes = require('./v0.1/routes'),
-    adminRoutes = require('./v2/admin/routes'),
-    contentRoutes = require('./v2/content/routes'),
+    routes = require('.routes'),
 
     // Include the middleware
 
     // API specific
-    versionMatch = require('../middleware/api/version-match'), // global
+    versionMatch = require('../../../middleware/api/version-match'), // global
 
     // Shared
     bodyParser = require('body-parser'), // global, shared
-    cacheControl = require('../middleware/cache-control'), // global, shared
-    maintenance = require('../middleware/maintenance'), // global, shared
-    errorHandler = require('../middleware/error-handler'); // global, shared
+    cacheControl = require('../../../middleware/cache-control'), // global, shared
+    maintenance = require('../../../middleware/maintenance'), // global, shared
+    errorHandler = require('../../../middleware/error-handler'); // global, shared
 
 module.exports = function setupApiApp() {
     debug('API setup start');
@@ -50,17 +48,13 @@ module.exports = function setupApiApp() {
     apiApp.use(cacheControl('private'));
 
     // Routing
-    apiApp.use('v0.1/', v01routes());
-    apiApp.use('v2/', [
-        adminRoutes(),
-        contentRoutes()
-    ]);
+    apiApp.use(routes());
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse);
 
-    debug('APIs setup end');
+    debug('API setup end');
 
     return apiApp;
 };

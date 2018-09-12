@@ -3,7 +3,7 @@ const express = require('express'),
     api = require('../../../../api'),
 
     // Middleware
-    mw = require('../../middleware'),
+    mw = require('./middleware'),
 
     // API specific
     cors = require('../../../middleware/api/cors'),

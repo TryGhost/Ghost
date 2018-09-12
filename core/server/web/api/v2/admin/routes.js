@@ -3,7 +3,7 @@ const express = require('express'),
     api = require('../../../../api'),
 
     // Middleware
-    mw = require('../../middleware'),
+    mw = require('../../v0.1/middleware'),
 
     // API specific
     auth = require('../../../../services/auth'),
