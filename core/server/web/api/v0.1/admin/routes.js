@@ -35,11 +35,7 @@ module.exports = function apiRoutes() {
     apiRouter.get('/configuration/:key', mw.authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
-    apiRouter.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
-
     apiRouter.post('/posts', mw.authenticatePrivate, api.http(api.posts.add));
-    apiRouter.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
-    apiRouter.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
     apiRouter.put('/posts/:id', mw.authenticatePrivate, api.http(api.posts.edit));
     apiRouter.del('/posts/:id', mw.authenticatePrivate, api.http(api.posts.destroy));
 
@@ -63,10 +59,6 @@ module.exports = function apiRoutes() {
     apiRouter.put('/settings', mw.authenticatePrivate, api.http(api.settings.edit));
 
     // ## Users
-    apiRouter.get('/users', mw.authenticatePublic, api.http(api.users.browse));
-    apiRouter.get('/users/:id', mw.authenticatePublic, api.http(api.users.read));
-    apiRouter.get('/users/slug/:slug', mw.authenticatePublic, api.http(api.users.read));
-    // NOTE: We don't expose any email addresses via the public api.
     apiRouter.get('/users/email/:email', mw.authenticatePrivate, api.http(api.users.read));
 
     apiRouter.put('/users/password', mw.authenticatePrivate, api.http(api.users.changePassword));
@@ -75,9 +67,6 @@ module.exports = function apiRoutes() {
     apiRouter.del('/users/:id', mw.authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
-    apiRouter.get('/tags', mw.authenticatePublic, api.http(api.tags.browse));
-    apiRouter.get('/tags/:id', mw.authenticatePublic, api.http(api.tags.read));
-    apiRouter.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
     apiRouter.post('/tags', mw.authenticatePrivate, api.http(api.tags.add));
     apiRouter.put('/tags/:id', mw.authenticatePrivate, api.http(api.tags.edit));
     apiRouter.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
@@ -94,7 +83,6 @@ module.exports = function apiRoutes() {
     );
     apiRouter.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
     apiRouter.get('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    apiRouter.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
     apiRouter.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
     apiRouter.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
     apiRouter.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
