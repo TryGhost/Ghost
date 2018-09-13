@@ -401,7 +401,8 @@ fixtures = {
                 Editor: DataGenerator.Content.roles[1].id,
                 Author: DataGenerator.Content.roles[2].id,
                 Owner: DataGenerator.Content.roles[3].id,
-                Contributor: DataGenerator.Content.roles[4].id
+                Contributor: DataGenerator.Content.roles[4].id,
+                'Admin API Client': DataGenerator.Content.roles[5].id
             };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug

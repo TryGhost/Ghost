@@ -44,125 +44,155 @@ describe('Database Migration (special functions)', function () {
 
             // Mail
             permissions[3].name.should.eql('Send mail');
-            permissions[3].should.be.AssignedToRoles(['Administrator']);
+            permissions[3].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
 
             // Notifications
             permissions[4].name.should.eql('Browse notifications');
-            permissions[4].should.be.AssignedToRoles(['Administrator']);
+            permissions[4].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[5].name.should.eql('Add notifications');
-            permissions[5].should.be.AssignedToRoles(['Administrator']);
+            permissions[5].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[6].name.should.eql('Delete notifications');
-            permissions[6].should.be.AssignedToRoles(['Administrator']);
+            permissions[6].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
 
             // Posts
             permissions[7].name.should.eql('Browse posts');
-            permissions[7].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[7].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[8].name.should.eql('Read posts');
-            permissions[8].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[8].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[9].name.should.eql('Edit posts');
-            permissions[9].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[9].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[10].name.should.eql('Add posts');
-            permissions[10].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[10].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[11].name.should.eql('Delete posts');
-            permissions[11].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[11].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
 
             // Settings
             permissions[12].name.should.eql('Browse settings');
-            permissions[12].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[12].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[13].name.should.eql('Read settings');
-            permissions[13].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[13].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[14].name.should.eql('Edit settings');
-            permissions[14].should.be.AssignedToRoles(['Administrator']);
+            permissions[14].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
 
             // Slugs
             permissions[15].name.should.eql('Generate slugs');
-            permissions[15].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[15].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
 
             // Tags
             permissions[16].name.should.eql('Browse tags');
-            permissions[16].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[16].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[17].name.should.eql('Read tags');
-            permissions[17].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[17].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[18].name.should.eql('Edit tags');
-            permissions[18].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[18].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[19].name.should.eql('Add tags');
-            permissions[19].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[19].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Admin API Client']);
             permissions[20].name.should.eql('Delete tags');
-            permissions[20].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[20].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
 
             // Themes
             permissions[21].name.should.eql('Browse themes');
-            permissions[21].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[21].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[22].name.should.eql('Edit themes');
-            permissions[22].should.be.AssignedToRoles(['Administrator']);
+            permissions[22].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[23].name.should.eql('Activate themes');
-            permissions[23].should.be.AssignedToRoles(['Administrator']);
+            permissions[23].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[24].name.should.eql('Upload themes');
-            permissions[24].should.be.AssignedToRoles(['Administrator']);
+            permissions[24].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[25].name.should.eql('Download themes');
-            permissions[25].should.be.AssignedToRoles(['Administrator']);
+            permissions[25].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[26].name.should.eql('Delete themes');
-            permissions[26].should.be.AssignedToRoles(['Administrator']);
+            permissions[26].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
 
             // Users
             permissions[27].name.should.eql('Browse users');
-            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[27].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[28].name.should.eql('Read users');
-            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[29].name.should.eql('Edit users');
-            permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[30].name.should.eql('Add users');
-            permissions[30].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[30].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[31].name.should.eql('Delete users');
-            permissions[31].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[31].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
 
             // Roles
             permissions[32].name.should.eql('Assign a role');
-            permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[33].name.should.eql('Browse roles');
-            permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
 
             // Clients
             permissions[34].name.should.eql('Browse clients');
-            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[35].name.should.eql('Read clients');
-            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[36].name.should.eql('Edit clients');
-            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[37].name.should.eql('Add clients');
-            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[38].name.should.eql('Delete clients');
-            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
 
             // Subscribers
             permissions[39].name.should.eql('Browse subscribers');
-            permissions[39].should.be.AssignedToRoles(['Administrator']);
+            permissions[39].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[40].name.should.eql('Read subscribers');
-            permissions[40].should.be.AssignedToRoles(['Administrator']);
+            permissions[40].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[41].name.should.eql('Edit subscribers');
-            permissions[41].should.be.AssignedToRoles(['Administrator']);
+            permissions[41].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[42].name.should.eql('Add subscribers');
-            permissions[42].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor']);
+            permissions[42].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin API Client']);
             permissions[43].name.should.eql('Delete subscribers');
-            permissions[43].should.be.AssignedToRoles(['Administrator']);
+            permissions[43].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
 
             // Invites
             permissions[44].name.should.eql('Browse invites');
-            permissions[44].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[44].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[45].name.should.eql('Read invites');
-            permissions[45].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[45].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[46].name.should.eql('Edit invites');
-            permissions[46].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[46].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[47].name.should.eql('Add invites');
-            permissions[47].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[47].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
             permissions[48].name.should.eql('Delete invites');
-            permissions[48].should.be.AssignedToRoles(['Administrator', 'Editor']);
+            permissions[48].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin API Client']);
 
             // Redirects
             permissions[49].name.should.eql('Download redirects');
-            permissions[49].should.be.AssignedToRoles(['Administrator']);
+            permissions[49].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
             permissions[50].name.should.eql('Upload redirects');
-            permissions[50].should.be.AssignedToRoles(['Administrator']);
+            permissions[50].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
+
+            // Webhooks
+            permissions[51].name.should.eql('Add webhooks');
+            permissions[51].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
+            permissions[52].name.should.eql('Delete webhooks');
+            permissions[52].should.be.AssignedToRoles(['Administrator', 'Admin API Client']);
+
+            // Integrations
+            permissions[53].name.should.eql('Browse integrations');
+            permissions[53].should.be.AssignedToRoles(['Administrator']);
+            permissions[54].name.should.eql('Read integrations');
+            permissions[54].should.be.AssignedToRoles(['Administrator']);
+            permissions[55].name.should.eql('Edit integrations');
+            permissions[55].should.be.AssignedToRoles(['Administrator']);
+            permissions[56].name.should.eql('Add integrations');
+            permissions[56].should.be.AssignedToRoles(['Administrator']);
+            permissions[57].name.should.eql('Delete integrations');
+            permissions[57].should.be.AssignedToRoles(['Administrator']);
+
+            // API Keys
+            permissions[58].name.should.eql('Browse API keys');
+            permissions[58].should.be.AssignedToRoles(['Administrator']);
+            permissions[59].name.should.eql('Read API keys');
+            permissions[59].should.be.AssignedToRoles(['Administrator']);
+            permissions[60].name.should.eql('Edit API keys');
+            permissions[60].should.be.AssignedToRoles(['Administrator']);
+            permissions[61].name.should.eql('Add API keys');
+            permissions[61].should.be.AssignedToRoles(['Administrator']);
+            permissions[62].name.should.eql('Delete API keys');
+            permissions[62].should.be.AssignedToRoles(['Administrator']);
         });
 
         describe('Populate', function () {
@@ -217,15 +247,16 @@ describe('Database Migration (special functions)', function () {
 
                     // Roles
                     should.exist(result.roles);
-                    result.roles.length.should.eql(5);
+                    result.roles.length.should.eql(6);
                     result.roles.at(0).get('name').should.eql('Administrator');
                     result.roles.at(1).get('name').should.eql('Editor');
                     result.roles.at(2).get('name').should.eql('Author');
                     result.roles.at(3).get('name').should.eql('Contributor');
                     result.roles.at(4).get('name').should.eql('Owner');
+                    result.roles.at(5).get('name').should.eql('Admin API Client');
 
                     // Permissions
-                    result.permissions.length.should.eql(53);
+                    result.permissions.length.should.eql(63);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });

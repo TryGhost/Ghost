@@ -44,24 +44,28 @@
             "name": "Role",
             "entries": [
                 {
-                    "name":             "Administrator",
-                    "description":      "Administrators"
+                    "name": "Administrator",
+                    "description": "Administrators"
                 },
                 {
-                    "name":             "Editor",
-                    "description":      "Editors"
+                    "name": "Editor",
+                    "description": "Editors"
                 },
                 {
-                    "name":             "Author",
-                    "description":      "Authors"
+                    "name": "Author",
+                    "description": "Authors"
                 },
                 {
-                    "name":             "Contributor",
-                    "description":      "Contributors"
+                    "name": "Contributor",
+                    "description": "Contributors"
                 },
                 {
-                    "name":             "Owner",
-                    "description":      "Blog Owner"
+                    "name": "Owner",
+                    "description": "Blog Owner"
+                },
+                {
+                    "name": "Admin API Client",
+                    "description": "External Apps"
                 }
             ]
         },
@@ -332,6 +336,56 @@
                     "name": "Delete webhooks",
                     "action_type": "destroy",
                     "object_type": "webhook"
+                },
+                {
+                    "name": "Browse integrations",
+                    "action_type": "browse",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Read integrations",
+                    "action_type": "read",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Edit integrations",
+                    "action_type": "edit",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Add integrations",
+                    "action_type": "add",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Delete integrations",
+                    "action_type": "destroy",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Browse API keys",
+                    "action_type": "browse",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Read API keys",
+                    "action_type": "read",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Edit API keys",
+                    "action_type": "edit",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Add API keys",
+                    "action_type": "add",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Delete API keys",
+                    "action_type": "destroy",
+                    "object_type": "api_key"
                 }
             ]
         },
@@ -485,6 +539,24 @@
             "entries": {
                 "Administrator": {
                     "db": "all",
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "client": "all",
+                    "subscriber": "all",
+                    "invite": "all",
+                    "redirect": "all",
+                    "webhook": "all",
+                    "integration": "all",
+                    "api_key": "all"
+                },
+                "Admin API Client": {
                     "mail": "all",
                     "notification": "all",
                     "post": "all",

@@ -288,6 +288,11 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Contributor',
             description: 'Contributors'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Admin API Client',
+            description: 'External Apps'
         }
     ],
 
@@ -672,7 +677,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[1]),
         createBasic(DataGenerator.Content.roles[2]),
         createBasic(DataGenerator.Content.roles[3]),
-        createBasic(DataGenerator.Content.roles[4])
+        createBasic(DataGenerator.Content.roles[4]),
+        createBasic(DataGenerator.Content.roles[5])
     ];
 
     users = [
