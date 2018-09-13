@@ -18,7 +18,7 @@ const debug = require('ghost-ignition').debug('api'),
     errorHandler = require('../../middleware/error-handler'); // global, shared
 
 module.exports = function setupApiApp() {
-    debug('API setup start');
+    debug('API v0.1 setup start');
     const apiApp = express();
 
     // @TODO finish refactoring this away.
@@ -54,7 +54,7 @@ module.exports = function setupApiApp() {
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse);
 
-    debug('APIs setup end');
+    debug('API v0.1 setup end');
 
     return apiApp;
 };
