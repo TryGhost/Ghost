@@ -320,7 +320,7 @@ module.exports = {
             nullable: false,
             validations: {isIn: [['content', 'admin']]}
         },
-        secret: {type: 'string', maxlength: 64, nullable: false, unique: true},
+        secret: {type: 'string', maxlength: 128, nullable: false, unique: true},
         role_id: {type: 'string', maxlength: 24, nullable: false},
         integration_id: {type: 'string', maxlength: 24, nullable: true},
         last_seen_at: {type: 'dateTime', nullable: true},
