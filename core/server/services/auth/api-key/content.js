@@ -34,7 +34,7 @@ const authenticateContentAPIKey = function authenticateContentAPIKey(req, res, n
         }));
     }
 
-    models.ApiKey.findOne({id: apiKeyId, type: 'content'}).then((apiKey) => {
+    models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey || token !== apiKey.get('secret')) {
             return next(new UnauthorizedError({
                 message: 'Unknown Content API Key',
