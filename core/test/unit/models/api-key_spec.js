@@ -8,7 +8,8 @@ describe('Unit: models/api_key', function () {
 
     describe('Add', function () {
         it('sets default secret', function () {
-            let role_id = testUtils.DataGenerator.forKnex.roles[0].id;
+            // roles[5] = 'Admin API Client'
+            let role_id = testUtils.DataGenerator.forKnex.roles[5].id;
             let attrs = {
                 type: 'admin',
                 role_id
@@ -27,7 +28,8 @@ describe('Unit: models/api_key', function () {
         });
 
         it('sets hardcoded role for key type', function () {
-            let role_id = testUtils.DataGenerator.forKnex.roles[0].id;
+            // roles[5] = 'Admin API Client'
+            let role_id = testUtils.DataGenerator.forKnex.roles[5].id;
 
             let adminKey = {
                 type: 'admin'

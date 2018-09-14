@@ -32,7 +32,7 @@ const ApiKey = ghostBookshelf.Model.extend({
         // - content key = no role
         if (this.hasChanged('type')) {
             if (this.get('type') === 'admin') {
-                tasks.setAdminRole = Role.findOne({name: 'Administrator'}, {columns: ['id']})
+                tasks.setAdminRole = Role.findOne({name: 'Admin API Client'}, {columns: ['id']})
                     .then((role) => {
                         this.set('role_id', role.get('id'));
                     });
