@@ -20,7 +20,6 @@ const express = require('express'),
     // @TODO find a more appy way to do this!
     labs = require('../../../middleware/labs');
 
-// @TODO refactor/clean this up - how do we want the routing to work long term?
 module.exports = function apiRoutes() {
     const router = express.Router();
 
