@@ -223,5 +223,46 @@ getImageSizeFromStoragePath = function getImageSizeFromStoragePath(imagePath) {
         });
 };
 
+/**
+ * Supported formats of https://github.com/image-size/image-size:
+ * BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG, ICO
+ * Get dimensions for a file from its real file storage path
+ * Always returns {object} getImageDimensions
+ * @param {string} path
+ * @returns {Promise<Object>} getImageDimensions
+ * @description Takes a file path and returns width and height.
+ */
+getImageSizeFromPath = function getImageSizeFromPath(path) {
+    return new Promise(function getSize(resolve, reject) {
+        var dimensions;
+
+        try {
+            dimensions = sizeOf(path);
+
+            if (dimensions.images) {
+                dimensions.width = _.maxBy(dimensions.images, function (w) {
+                    return w.width;
+                }).width;
+                dimensions.height = _.maxBy(dimensions.images, function (h) {
+                    return h.height;
+                }).height;
+            }
+
+            return resolve({
+                width: dimensions.width,
+                height: dimensions.height
+            });
+        } catch (err) {
+            return reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.images.invalidDimensions', {
+                    file: path,
+                    error: err.message
+                })
+            }));
+        }
+    });
+};
+
 module.exports.getImageSizeFromUrl = getImageSizeFromUrl;
 module.exports.getImageSizeFromStoragePath = getImageSizeFromStoragePath;
+module.exports.getImageSizeFromPath = getImageSizeFromPath;

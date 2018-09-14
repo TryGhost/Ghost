@@ -124,6 +124,9 @@
             "blogIcon": {
                 "error": "Could not fetch icon dimensions."
             },
+            "images": {
+                "invalidDimensions": "Could not fetch image dimensions."
+            },
             "redirectsWrongFormat": "Incorrect redirects file format."
         },
         "config": {
