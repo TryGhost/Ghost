@@ -10,7 +10,7 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     storage = require('../../adapters/storage'),
     storageUtils = require('../../adapters/storage/utils'),
     getImageSizeFromUrl,
-    getImageSizeFromFilePath;
+    getImageSizeFromStoragePath;
 
 /**
  * @description processes the Buffer result of an image file
@@ -67,7 +67,7 @@ function fetchDimensionsFromBuffer(options) {
 // if the dimensions can be fetched, and rejects with error, if not.
 // ***
 // In case we get a locally stored image, which is checked withing the `isLocalImage`
-// function we switch to read the image from the local file storage with `getImageSizeFromFilePath`.
+// function we switch to read the image from the local file storage with `getImageSizeFromStoragePath`.
 // In case the image is not stored locally and is missing the protocol (like //www.gravatar.com/andsoon),
 // we add the protocol and use urlFor() to get the absolute URL.
 // If the request fails or image-size is not able to read the file, we reject with error.
@@ -84,7 +84,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 
     if (storageUtils.isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
-        return getImageSizeFromFilePath(imagePath);
+        return getImageSizeFromStoragePath(imagePath);
     }
 
     // CASE: pre 1.0 users were able to use an asset path for their blog logo
@@ -163,7 +163,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 // ***
 // Takes the url or filepath of the image and reads it form the local
 // file storage.
-// getImageSizeFromFilePath returns an Object like this
+// getImageSizeFromStoragePath returns an Object like this
 // {
 //     height: 50,
 //     url: 'http://myblog.com/images/cat.jpg',
@@ -175,7 +175,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
  * @param {String} imagePath
  * @returns {object} imageObject or error
  */
-getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
+getImageSizeFromStoragePath = function getImageSizeFromStoragePath(imagePath) {
     var filePath;
 
     imagePath = urlService.utils.urlFor('image', {image: imagePath}, true);
@@ -224,4 +224,4 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
 };
 
 module.exports.getImageSizeFromUrl = getImageSizeFromUrl;
-module.exports.getImageSizeFromFilePath = getImageSizeFromFilePath;
+module.exports.getImageSizeFromStoragePath = getImageSizeFromStoragePath;
