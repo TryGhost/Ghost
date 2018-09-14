@@ -1938,6 +1938,13 @@ file-sync-cmp@^0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/file-sync-cmp/-/file-sync-cmp-0.1.1.tgz#a5e7a8ffbfa493b43b923bbd4ca89a53b63b612b"
 
+fill-keys@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/fill-keys/-/fill-keys-1.0.2.tgz#9a8fa36f4e8ad634e3bf6b4f3c8882551452eb20"
+  dependencies:
+    is-object "~1.0.1"
+    merge-descriptors "~1.0.0"
+
 fill-range@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-4.0.0.tgz#d544811d428f98eb06a63dc402d2403c328c38f7"
@@ -3069,7 +3076,7 @@ is-number@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-4.0.0.tgz#0026e37f5454d73e356dfe6564699867c6a7f0ff"
 
-is-object@^1.0.1:
+is-object@^1.0.1, is-object@~1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/is-object/-/is-object-1.0.1.tgz#8952688c5ec2ffd6b03ecc85e769e02903083470"
 
@@ -3786,7 +3793,7 @@ meow@^3.1.0, meow@^3.3.0:
     redent "^1.0.0"
     trim-newlines "^1.0.0"
 
-merge-descriptors@1.0.1:
+merge-descriptors@1.0.1, merge-descriptors@~1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
 
@@ -3974,6 +3981,10 @@ mocha@^3.1.2:
     lodash.create "3.1.1"
     mkdirp "0.5.1"
     supports-color "3.1.2"
+
+module-not-found-error@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
 
 moment-timezone@0.5.21:
   version "0.5.21"
@@ -4949,6 +4960,14 @@ proxy-addr@~2.0.3:
     forwarded "~0.1.2"
     ipaddr.js "1.6.0"
 
+proxyquire@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/proxyquire/-/proxyquire-2.1.0.tgz#c2263a38bf0725f2ae950facc130e27510edce8d"
+  dependencies:
+    fill-keys "^1.0.2"
+    module-not-found-error "^1.0.0"
+    resolve "~1.8.1"
+
 pseudomap@^1.0.1, pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
@@ -5237,6 +5256,12 @@ resolve@1.1.x, resolve@~1.1.0:
 resolve@1.7.1, resolve@^1.1.6, resolve@^1.1.7, resolve@^1.4.0:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.7.1.tgz#aadd656374fd298aee895bc026b8297418677fd3"
+  dependencies:
+    path-parse "^1.0.5"
+
+resolve@~1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.8.1.tgz#82f1ec19a423ac1fbd080b0bab06ba36e84a7a26"
   dependencies:
     path-parse "^1.0.5"
 
