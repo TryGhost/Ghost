@@ -1,18 +1,10 @@
 const models = require('../../../server/models');
-const should = require('should');
-const sinon = require('sinon');
 const testUtils = require('../../utils');
-
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: models/api_key', function () {
     before(models.init);
     before(testUtils.teardown);
     before(testUtils.setup('roles'));
-
-    afterEach(function () {
-       sandbox.restore();
-    });
 
     describe('Add', function () {
         it('sets default secret', function () {
@@ -37,7 +29,10 @@ describe('Unit: models/api_key', function () {
         it('sets hardcoded role for key type', function () {
             let role_id = testUtils.DataGenerator.forKnex.roles[0].id;
 
-            let adminCheck = models.ApiKey.add({type: 'admin'}).then((api_key) => {
+            let adminKey = {
+                type: 'admin'
+            };
+            let adminCheck = models.ApiKey.add(adminKey).then((api_key) => {
                 return models.ApiKey.where({id: api_key.id}).fetch({withRelated: ['role']})
                     .then((api_key) => {
                         api_key.get('type').should.eql('admin');
@@ -48,7 +43,11 @@ describe('Unit: models/api_key', function () {
                     });
             });
 
-            let contentCheck = models.ApiKey.add({type: 'content'}).then((api_key) => {
+            let contentKey = {
+                type: 'content',
+                role_id: testUtils.DataGenerator.forKnex.roles[0].id
+            };
+            let contentCheck = models.ApiKey.add(contentKey).then((api_key) => {
                 return models.ApiKey.where({id: api_key.id}).fetch({withRelated: ['role']})
                     .then((api_key) => {
                         api_key.get('type').should.eql('content');

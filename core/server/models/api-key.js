@@ -22,7 +22,7 @@ const ApiKey = ghostBookshelf.Model.extend({
         return this.belongsTo('Integration');
     },
 
-    onSaving(model, attrs, options) {
+    onSaving(/* model, attrs, options */) {
         let tasks = [];
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
