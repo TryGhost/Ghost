@@ -190,7 +190,7 @@ module.exports = function apiRoutes() {
         mw.authenticatePrivate,
         upload.single('uploadimage'),
         validation.upload({type: 'images'}),
-        validation.profileImage(),
+        validation.profileImage,
         image.normalize,
         api.http(api.uploads.add)
     );
