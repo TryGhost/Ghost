@@ -12,7 +12,6 @@ const debug = require('ghost-ignition').debug('api'),
     versionMatch = require('../../../middleware/api/version-match'), // global
 
     // Shared
-    bodyParser = require('body-parser'), // global, shared
     cacheControl = require('../../../middleware/cache-control'), // global, shared
     maintenance = require('../../../middleware/maintenance'), // global, shared
     errorHandler = require('../../../middleware/error-handler'); // global, shared
@@ -29,10 +28,6 @@ module.exports = function setupApiApp() {
     });
 
     // API middleware
-
-    // Body parsing
-    apiApp.use(bodyParser.json({limit: '1mb'}));
-    apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     // Query parsing
     apiApp.use(boolParser());
