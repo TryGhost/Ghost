@@ -2,6 +2,7 @@ var passport = require('passport'),
     authUtils = require('./utils'),
     models = require('../../models'),
     common = require('../../lib/common'),
+    session = require('./session'),
     authenticate;
 
 authenticate = {
@@ -98,6 +99,12 @@ authenticate = {
                 }));
             }
         )(req, res, next);
+    },
+
+    authenticateAdminAPI: [session.safeGetSession, session.getUser],
+
+    authenticateContentAPI: (req, res, next) => {
+        next();
     }
 };
 
