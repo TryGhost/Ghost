@@ -35,11 +35,11 @@ module.exports = function apiRoutes() {
     router.get('/configuration/:key', mw.authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
-    router.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
+    router.get('/posts', mw.authenticatePrivate, api.http(api.posts.browse));
 
     router.post('/posts', mw.authenticatePrivate, api.http(api.posts.add));
-    router.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
+    router.get('/posts/:id', mw.authenticatePrivate, api.http(api.posts.read));
+    router.get('/posts/slug/:slug', mw.authenticatePrivate, api.http(api.posts.read));
     router.put('/posts/:id', mw.authenticatePrivate, api.http(api.posts.edit));
     router.del('/posts/:id', mw.authenticatePrivate, api.http(api.posts.destroy));
 
@@ -63,9 +63,9 @@ module.exports = function apiRoutes() {
     router.put('/settings', mw.authenticatePrivate, api.http(api.settings.edit));
 
     // ## Users
-    router.get('/users', mw.authenticatePublic, api.http(api.users.browse));
-    router.get('/users/:id', mw.authenticatePublic, api.http(api.users.read));
-    router.get('/users/slug/:slug', mw.authenticatePublic, api.http(api.users.read));
+    router.get('/users', mw.authenticatePrivate, api.http(api.users.browse));
+    router.get('/users/:id', mw.authenticatePrivate, api.http(api.users.read));
+    router.get('/users/slug/:slug', mw.authenticatePrivate, api.http(api.users.read));
     // NOTE: We don't expose any email addresses via the public api.
     router.get('/users/email/:email', mw.authenticatePrivate, api.http(api.users.read));
 
@@ -75,9 +75,9 @@ module.exports = function apiRoutes() {
     router.del('/users/:id', mw.authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
-    router.get('/tags', mw.authenticatePublic, api.http(api.tags.browse));
-    router.get('/tags/:id', mw.authenticatePublic, api.http(api.tags.read));
-    router.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
+    router.get('/tags', mw.authenticatePrivate, api.http(api.tags.browse));
+    router.get('/tags/:id', mw.authenticatePrivate, api.http(api.tags.read));
+    router.get('/tags/slug/:slug', mw.authenticatePrivate, api.http(api.tags.read));
     router.post('/tags', mw.authenticatePrivate, api.http(api.tags.add));
     router.put('/tags/:id', mw.authenticatePrivate, api.http(api.tags.edit));
     router.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
@@ -94,7 +94,7 @@ module.exports = function apiRoutes() {
     );
     router.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
     router.get('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    router.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
+    router.post('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.add));
     router.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
     router.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
     router.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
