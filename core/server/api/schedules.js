@@ -1,4 +1,4 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment'),
     pipeline = require('../lib/promise/pipeline'),
@@ -23,7 +23,7 @@ exports.publishPost = function publishPost(object, options) {
         object = {};
     }
 
-    var post, publishedAtMoment,
+    let post, publishedAtMoment,
         publishAPostBySchedulerToleranceInMinutes = config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)

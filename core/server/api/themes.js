@@ -1,6 +1,6 @@
 // # Themes API
 // RESTful API for Themes
-var debug = require('ghost-ignition').debug('api:themes'),
+const debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
     localUtils = require('./utils'),
@@ -8,8 +8,9 @@ var debug = require('ghost-ignition').debug('api:themes'),
     settingsModel = require('../models/settings').Settings,
     settingsCache = require('../services/settings/cache'),
     themeUtils = require('../services/themes'),
-    themeList = themeUtils.list,
-    themes;
+    themeList = themeUtils.list;
+
+let themes;
 
 /**
  * ## Themes API Methods
@@ -35,7 +36,7 @@ themes = {
     },
 
     activate: function activate(options) {
-        var themeName = options.name,
+        let themeName = options.name,
             newSettings = [{
                 key: 'active_theme',
                 value: themeName
@@ -82,7 +83,7 @@ themes = {
         // consistent filename uploads
         options.originalname = options.originalname.toLowerCase();
 
-        var zip = {
+        let zip = {
                 path: options.path,
                 name: options.originalname,
                 shortName: themeUtils.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
@@ -160,7 +161,7 @@ themes = {
     },
 
     download: function download(options) {
-        var themeName = options.name,
+        let themeName = options.name,
             theme = themeList.get(themeName);
 
         if (!theme) {
@@ -182,7 +183,7 @@ themes = {
      * remove theme folder
      */
     destroy: function destroy(options) {
-        var themeName = options.name,
+        let themeName = options.name,
             theme;
 
         return localUtils

@@ -1,12 +1,13 @@
 // # Slug API
 // RESTful API for the Slug resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
-    docName = 'slugs',
-    slugs,
+    docName = 'slugs';
+
+let slugs,
     allowedTypes;
 
 /**
@@ -24,7 +25,7 @@ slugs = {
      * @returns {Promise(String)} Unique string
      */
     generate: function (options) {
-        var opts = ['type'],
+        let opts = ['type'],
             attrs = ['name'],
             tasks;
 

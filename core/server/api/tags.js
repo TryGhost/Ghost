@@ -1,14 +1,15 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'tags',
-    allowedIncludes = ['count.posts'],
-    tags;
+    allowedIncludes = ['count.posts'];
+
+let tags;
 
 /**
  * ### Tags API Methods
@@ -22,7 +23,7 @@ tags = {
      * @returns {Promise<Tags>} Tags Collection
      */
     browse: function browse(options) {
-        var tasks,
+        let tasks,
             permittedOptions = localUtils.browseDefaultOptions.concat('absolute_urls');
 
         /**
@@ -53,7 +54,7 @@ tags = {
      * @return {Promise<Tag>} Tag
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'visibility'],
+        let attrs = ['id', 'slug', 'visibility'],
             permittedOptions = ['absolute_urls'],
             tasks;
 
@@ -96,7 +97,7 @@ tags = {
      * @returns {Promise(Tag)} Newly created Tag
      */
     add: function add(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Model Query
@@ -134,7 +135,7 @@ tags = {
      * @return {Promise<Tag>} Edited Tag
      */
     edit: function edit(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * Make the call to the Model layer
@@ -176,7 +177,7 @@ tags = {
      * @return {Promise}
      */
     destroy: function destroy(options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Delete Tag

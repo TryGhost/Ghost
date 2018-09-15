@@ -1,11 +1,12 @@
 // # API Utils
 // Shared helpers for working with the API
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     permissions = require('../services/permissions'),
     validation = require('../data/validation'),
-    common = require('../lib/common'),
-    utils;
+    common = require('../lib/common');
+
+let utils;
 
 utils = {
     // ## Default Options
@@ -39,7 +40,7 @@ utils = {
          * @argument {...*} [arguments] object or object and options hash
          */
         return function doValidate() {
-            var object, options, permittedOptions;
+            let object, options, permittedOptions;
 
             if (arguments.length === 2) {
                 object = arguments[0];
@@ -81,7 +82,7 @@ utils = {
                 // @TODO: should we throw an error if there are incorrect options provided?
                 options = _.pick(options, permittedOptions);
 
-                var validationErrors = utils.validateOptions(options);
+                let validationErrors = utils.validateOptions(options);
 
                 if (_.isEmpty(validationErrors)) {
                     return Promise.resolve(options);
@@ -106,7 +107,7 @@ utils = {
     },
 
     validateOptions: function validateOptions(options) {
-        var globalValidations = {
+        let globalValidations = {
                 id: {matches: /^[a-f\d]{24}$|^1$|me/i},
                 uuid: {isUUID: true},
                 slug: {isSlug: true},
@@ -167,7 +168,7 @@ utils = {
      * @returns {Function}
      */
     handlePublicPermissions: function handlePublicPermissions(docName, method) {
-        var singular = docName.replace(/s$/, '');
+        let singular = docName.replace(/s$/, '');
 
         /**
          * Check if this is a public request, if so use the public permissions, otherwise use standard canThis
@@ -175,7 +176,7 @@ utils = {
          * @returns {Object} options
          */
         return function doHandlePublicPermissions(options) {
-            var permsPromise;
+            let permsPromise;
 
             if (utils.detectPublicContext(options)) {
                 permsPromise = utils.applyPublicPermissions(docName, method, options);
@@ -197,7 +198,7 @@ utils = {
      * @returns {Function}
      */
     handlePermissions: function handlePermissions(docName, method, unsafeAttrNames) {
-        var singular = docName.replace(/s$/, '');
+        let singular = docName.replace(/s$/, '');
 
         /**
          * ### Handle Permissions
@@ -206,7 +207,7 @@ utils = {
          * @returns {Object} options
          */
         return function doHandlePermissions(options) {
-            var unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
+            let unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
             return permsPromise.then(function permissionGranted(result) {

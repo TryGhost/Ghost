@@ -1,6 +1,6 @@
 // # Users API
 // RESTful API for the User resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
@@ -9,8 +9,9 @@ var Promise = require('bluebird'),
     common = require('../lib/common'),
     docName = 'users',
     // TODO: implement created_by, updated_by
-    allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'],
-    users;
+    allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
+
+let users;
 
 /**
  * ### Users API Methods
@@ -25,7 +26,7 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var extraOptions = ['status', 'absolute_urls'],
+        let extraOptions = ['status', 'absolute_urls'],
             permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
@@ -57,7 +58,7 @@ users = {
      * @returns {Promise<Users>} User
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'status', 'email', 'role'],
+        let attrs = ['id', 'slug', 'status', 'email', 'role'],
             permittedOptions = ['absolute_urls'],
             tasks;
 
@@ -106,7 +107,7 @@ users = {
      * @returns {Promise<User>}
      */
     edit: function edit(object, options) {
-        var extraOptions = ['editRoles'],
+        let extraOptions = ['editRoles'],
             permittedOptions = extraOptions.concat(localUtils.idDefaultOptions),
             tasks;
 
@@ -149,14 +150,14 @@ users = {
                 }
 
                 // @TODO move role permissions out of here
-                var role = options.data.users[0].roles[0],
+                let role = options.data.users[0].roles[0],
                     roleId = role.id || role,
                     editedUserId = options.id;
 
                 return models.User.findOne(
                     {id: options.context.user, status: 'all'}, {withRelated: ['roles']}
                 ).then(function (contextUser) {
-                    var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
+                    let contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
                         return Promise.reject(new common.errors.NoPermissionError({
@@ -228,7 +229,7 @@ users = {
      * @returns {Promise}
      */
     destroy: function destroy(options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Handle Permissions
@@ -290,12 +291,12 @@ users = {
      * @returns {Promise<password>} success message
      */
     changePassword: function changePassword(object, options) {
-        var tasks;
+        let tasks;
 
         function validateRequest() {
             return localUtils.validate('password')(object, options)
                 .then(function (options) {
-                    var data = options.data.password[0];
+                    let data = options.data.password[0];
 
                     if (data.newPassword !== data.ne2Password) {
                         return Promise.reject(new common.errors.ValidationError({
@@ -360,7 +361,7 @@ users = {
      * @returns {Promise<User>}
      */
     transferOwnership: function transferOwnership(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Handle Permissions

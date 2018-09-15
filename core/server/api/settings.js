@@ -1,6 +1,6 @@
 // # Settings API
 // RESTful API for the Setting resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment-timezone'),
     fs = require('fs-extra'),
@@ -12,8 +12,9 @@ var Promise = require('bluebird'),
     urlService = require('../services/url'),
     common = require('../lib/common'),
     settingsCache = require('../services/settings/cache'),
-    docName = 'settings',
-    settings,
+    docName = 'settings';
+
+let settings,
     settingsFilter,
     settingsResult,
     canEditAllSettings;
@@ -61,7 +62,7 @@ settingsFilter = function (settings, filter) {
  * @returns {{settings: *}}
  */
 settingsResult = function settingsResult(settings, type) {
-    var filteredSettings = _.values(settingsFilter(settings, type)),
+    let filteredSettings = _.values(settingsFilter(settings, type)),
         result = {
             settings: filteredSettings,
             meta: {}
@@ -84,7 +85,7 @@ settingsResult = function settingsResult(settings, type) {
  * @returns {*}
  */
 canEditAllSettings = function (settingsInfo, options) {
-    var checkSettingPermissions = function checkSettingPermissions(setting) {
+    let checkSettingPermissions = function checkSettingPermissions(setting) {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
                     new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
@@ -96,7 +97,7 @@ canEditAllSettings = function (settingsInfo, options) {
             });
         },
         checks = _.map(settingsInfo, function (settingInfo) {
-            var setting = settingsCache.get(settingInfo.key, {resolve: false});
+            let setting = settingsCache.get(settingInfo.key, {resolve: false});
 
             if (!setting) {
                 return Promise.reject(new common.errors.NotFoundError(
@@ -134,7 +135,7 @@ settings = {
     browse: function browse(options) {
         options = options || {};
 
-        var result = settingsResult(settingsCache.getAll(), options.type);
+        let result = settingsResult(settingsCache.getAll(), options.type);
 
         // If there is no context, return only blog settings
         if (!options.context) {
@@ -166,7 +167,7 @@ settings = {
             options = {key: options};
         }
 
-        var setting = settingsCache.get(options.key, {resolve: false}),
+        let setting = settingsCache.get(options.key, {resolve: false}),
             result = {};
 
         if (!setting) {
@@ -209,8 +210,7 @@ settings = {
      */
     edit: function edit(object, options) {
         options = options || {};
-        var self = this,
-            type;
+        let type;
 
         // Allow shorthand syntax where a single key and value are passed to edit instead of object and options
         if (_.isString(object)) {
@@ -243,14 +243,14 @@ settings = {
         }
 
         return canEditAllSettings(object.settings, options).then(function () {
-            return localUtils.checkObject(object, docName).then(function (checkedData) {
-                options.user = self.user;
+            return localUtils.checkObject(object, docName).then((checkedData) => {
+                options.user = this.user;
                 return models.Settings.edit(checkedData.settings, options);
             }).then(function (settingsModelsArray) {
                 // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
                 // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
                 // We use keyBy to create an object that uses the 'key' as a key for each setting.
-                var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
+                let settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
                 return settingsResult(settingsKeyedJSON, type);
             });
         });

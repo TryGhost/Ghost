@@ -1,6 +1,6 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     pipeline = require('../lib/promise/pipeline'),
@@ -8,8 +8,9 @@ var Promise = require('bluebird'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
-    docName = 'subscribers',
-    subscribers;
+    docName = 'subscribers';
+
+let subscribers;
 
 /**
  * ### Subscribers API Methods
@@ -23,7 +24,7 @@ subscribers = {
      * @returns {Promise<Subscriber>} Subscriber Collection
      */
     browse: function browse(options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Model Query
@@ -53,7 +54,7 @@ subscribers = {
      * @return {Promise<Subscriber>} Subscriber
      */
     read: function read(options) {
-        var attrs = ['id', 'email'],
+        let attrs = ['id', 'email'],
             tasks;
 
         /**
@@ -95,7 +96,7 @@ subscribers = {
      * @returns {Promise(Subscriber)} Newly created Subscriber
      */
     add: function add(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Model Query
@@ -149,7 +150,7 @@ subscribers = {
      * @return {Promise<Subscriber>} Edited Subscriber
      */
     edit: function edit(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * Make the call to the Model layer
@@ -191,7 +192,7 @@ subscribers = {
      * @return {Promise}
      */
     destroy: function destroy(options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Delete Subscriber
@@ -247,12 +248,12 @@ subscribers = {
      * @returns {Promise} Ghost Export CSV format
      */
     exportCSV: function exportCSV(options) {
-        var tasks = [];
+        let tasks = [];
 
         options = options || {};
 
         function formatCSV(data) {
-            var fields = ['id', 'email', 'created_at', 'deleted_at'],
+            let fields = ['id', 'email', 'created_at', 'deleted_at'],
                 csv = fields.join(',') + '\r\n',
                 subscriber,
                 field,
@@ -301,11 +302,11 @@ subscribers = {
      * @returns {Promise} Success
      */
     importCSV: function (options) {
-        var tasks = [];
+        let tasks = [];
         options = options || {};
 
         function importCSV(options) {
-            var filePath = options.path,
+            let filePath = options.path,
                 fulfilled = 0,
                 invalid = 0,
                 duplicates = 0;

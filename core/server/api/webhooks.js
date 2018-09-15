@@ -1,18 +1,19 @@
 // # Webhooks API
 // RESTful API for creating webhooks
 // also known as "REST Hooks", see http://resthooks.org
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     request = require('../lib/request'),
-    docName = 'webhooks',
-    webhooks;
+    docName = 'webhooks';
+
+let webhooks;
 
 function makeRequest(webhook, payload, options) {
-    var event = webhook.get('event'),
+    let event = webhook.get('event'),
         targetUrl = webhook.get('target_url'),
         webhookId = webhook.get('id'),
         reqPayload = JSON.stringify(payload);
@@ -65,7 +66,7 @@ webhooks = {
      * @returns {Promise(Webhook)} newly created Webhook
      */
     add: function add(object, options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Model Query
@@ -109,7 +110,7 @@ webhooks = {
      * @return {Promise}
      */
     destroy: function destroy(options) {
-        var tasks;
+        let tasks;
 
         /**
          * ### Delete Webhook
@@ -133,7 +134,7 @@ webhooks = {
     },
 
     trigger: function trigger(event, payload, options) {
-        var tasks;
+        let tasks;
 
         function doQuery(options) {
             return models.Webhook.findAllByEvent(event, options);
