@@ -30,7 +30,7 @@ let settings,
  * @returns {*}
  */
 settingsFilter = function (settings, filter) {
-    return _.fromPairs(_.filter(_.toPairs(settings), function (setting) {
+    return _.fromPairs(_.toPairs(settings).filter((setting) => {
         if (filter) {
             return _.some(filter.split(','), function (f) {
                 return setting[1].type === f;
@@ -96,7 +96,7 @@ canEditAllSettings = function (settingsInfo, options) {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToEditSettings')}));
             });
         },
-        checks = _.map(settingsInfo, function (settingInfo) {
+        checks = settingsInfo.map((settingInfo) => {
             let setting = settingsCache.get(settingInfo.key, {resolve: false});
 
             if (!setting) {
@@ -139,7 +139,7 @@ settings = {
 
         // If there is no context, return only blog settings
         if (!options.context) {
-            return Promise.resolve(_.filter(result.settings, function (setting) {
+            return Promise.resolve(result.settings.filter((setting) => {
                 return setting.type === 'blog';
             }));
         }
@@ -148,7 +148,7 @@ settings = {
         return canThis(options.context).browse.setting().then(function () {
             // Omit core settings unless internal request
             if (!options.context.internal) {
-                result.settings = _.filter(result.settings, function (setting) {
+                result.settings = result.settings.filter((setting) => {
                     return setting.type !== 'core' && setting.key !== 'permalinks';
                 });
             }
@@ -218,13 +218,13 @@ settings = {
         }
 
         // clean data
-        _.each(object.settings, function (setting) {
+        object.settings.forEach((setting) => {
             if (!_.isString(setting.value)) {
                 setting.value = JSON.stringify(setting.value);
             }
         });
 
-        type = _.find(object.settings, function (setting) {
+        type = object.settings.find((setting) => {
             return setting.key === 'type';
         });
 
