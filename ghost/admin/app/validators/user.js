@@ -1,9 +1,13 @@
-import PasswordValidator from 'ghost-admin/validators/password';
+import BaseValidator from './base';
+import PasswordValidatorMixin from './mixins/password';
 import validator from 'npm:validator';
 import {isBlank} from '@ember/utils';
 
-export default PasswordValidator.create({
-    properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],
+const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
+    init() {
+        this.properties = this.properties || ['name', 'bio', 'email', 'location', 'website', 'roles'];
+        this._super(...arguments);
+    },
 
     isActive(model) {
         return (model.get('status') === 'active');
@@ -121,3 +125,5 @@ export default PasswordValidator.create({
         }
     }
 });
+
+export default userValidator.create();

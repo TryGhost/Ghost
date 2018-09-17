@@ -1,11 +1,12 @@
-import PasswordValidator from 'ghost-admin/validators/password';
+import BaseValidator from './base';
+import PasswordValidatorMixin from './mixins/password';
 import validator from 'npm:validator';
 import {isBlank} from '@ember/utils';
 
-export default PasswordValidator.extend({
+export default BaseValidator.extend(PasswordValidatorMixin, {
     init() {
-        this._super(...arguments);
         this.properties = this.properties || ['name', 'email', 'password'];
+        this._super(...arguments);
     },
 
     name(model) {

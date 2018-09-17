@@ -1,9 +1,13 @@
-import PasswordValidator from 'ghost-admin/validators/password';
+import BaseValidator from './base';
+import PasswordValidatorMixin from './mixins/password';
 import validator from 'npm:validator';
 import {isBlank} from '@ember/utils';
 
-export default PasswordValidator.create({
-    properties: ['newPassword'],
+const resetValidator = BaseValidator.extend(PasswordValidatorMixin, {
+    init() {
+        this.properties = this.properties || ['newPassword'];
+        this._super(...arguments);
+    },
 
     newPassword(model) {
         let p1 = model.get('newPassword');
@@ -20,3 +24,5 @@ export default PasswordValidator.create({
         this.passwordValidation(model, p1, 'newPassword');
     }
 });
+
+export default resetValidator.create();
