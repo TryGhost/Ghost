@@ -32,8 +32,15 @@ const extractCredentialsFromHeader = function extractCredentialsFromHeader(heade
 
 const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next) {
     // allow fallthrough to other auth methods or final ensureAuthenticated check
-    if (!req.headers || (req.headers && !req.headers.authorization)) {
+    if (!req.headers || !req.headers.authorization) {
         return next();
+    }
+
+    if (req.query && req.query.content_key) {
+        return next(new UnauthorizedError({
+            message: 'Admin API does not support query param authentication',
+            code: 'INVALID_AUTH_TYPE'
+        }));
     }
 
     let {apiKeyId, token} = extractCredentialsFromHeader(req.headers.authorization);
@@ -48,8 +55,15 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
             return next(new UnauthorizedError({
-                message: 'Unknown API Key',
-                code: 'UNKNOWN_API_KEY'
+                message: 'Unknown Admin API Key',
+                code: 'UNKNOWN_ADMIN_API_KEY'
+            }));
+        }
+
+        if (apiKey.get('type') !== 'admin') {
+            return next(new UnauthorizedError({
+                message: 'Incorrect API Key type',
+                code: 'INCORRECT_API_KEY_TYPE'
             }));
         }
 
