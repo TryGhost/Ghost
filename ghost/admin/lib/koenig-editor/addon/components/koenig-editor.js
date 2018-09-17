@@ -1257,9 +1257,11 @@ export default Component.extend({
         if (wordCount !== this.wordCount || imageCount !== this.imageCount) {
             let readingTime = calculateReadingTime({wordCount, imageCount});
 
-            this.wordCount = wordCount;
-            this.imageCount = imageCount;
-            this.readingTime = readingTime;
+            this.setProperties({
+                wordCount,
+                imageCount,
+                readingTime
+            });
 
             this.wordCountDidChange({wordCount, imageCount, readingTime});
         }
