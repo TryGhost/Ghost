@@ -257,15 +257,15 @@ utils = {
         });
     },
 
-    prepareInclude: (include, allowedIncludes) => {
+    prepareInclude: function prepareInclude(include, allowedIncludes) {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
-    prepareFields: (fields) => {
+    prepareFields: function prepareFields(fields) {
         return this.trimAndLowerCase(fields);
     },
 
-    prepareFormats: (formats, allowedFormats) => {
+    prepareFormats: function prepareFormats(formats, allowedFormats) {
         return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
     },
 
