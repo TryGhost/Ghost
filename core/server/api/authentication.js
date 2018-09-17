@@ -326,7 +326,9 @@ authentication = {
                     updatedUser.set('status', 'active');
                     return updatedUser.save(options);
                 })
-                .catch(common.errors.ValidationError, (err) => { return Promise.reject(err); })
+                .catch(common.errors.ValidationError, (err) => {
+                    return Promise.reject(err); 
+                })
                 .catch((err) => {
                     if (common.errors.utils.isIgnitionError(err)) {
                         return Promise.reject(err);
@@ -411,7 +413,9 @@ authentication = {
                         roles: [invite.toJSON().role_id]
                     }, options);
                 })
-                .then(() => { return invite.destroy(options); });
+                .then(() => {
+                    return invite.destroy(options); 
+                });
         }
 
         function formatResponse() {

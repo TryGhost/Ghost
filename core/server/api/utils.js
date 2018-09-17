@@ -115,7 +115,7 @@ utils = {
                 from: {isDate: true},
                 to: {isDate: true},
                 fields: {matches: /^[\w, ]+$/},
-                order: {matches: /^[a-z0-9_,\. ]+$/i},
+                order: {matches: /^[a-z0-9_,. ]+$/i},
                 name: {},
                 email: {isEmail: true}
             },

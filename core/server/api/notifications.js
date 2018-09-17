@@ -167,7 +167,9 @@ notifications = {
 
                     // CASE: remove any existing release notifications if a new release notification comes in
                     if (hasReleaseNotification) {
-                        remove(allNotifications, (el) => { return !el.custom; });
+                        remove(allNotifications, (el) => {
+                            return !el.custom; 
+                        });
                     }
 
                     // CASE: nothing to add, skip
@@ -194,7 +196,9 @@ notifications = {
                         }]
                     }, internalContext);
                 })
-                .then(() => { return _private.publicResponse(addedNotifications); });
+                .then(() => {
+                    return _private.publicResponse(addedNotifications); 
+                });
         }
 
         tasks = [
