@@ -46,6 +46,21 @@ describe('UNIT: services/settings/validate', function () {
         throw new Error('should fail');
     });
 
+    it('throws error when using an undefined taxonomy', function () {
+        try {
+            validate({
+                taxonomies: {
+                    sweet_baked_good: '/patisserie/{slug}'
+                }
+            });
+        } catch (err) {
+            (err instanceof common.errors.ValidationError).should.be.true();
+            return;
+        }
+
+        throw new Error('should fail');
+    });
+
     it('throws error when permalink is missing (collection)', function () {
         try {
             validate({
