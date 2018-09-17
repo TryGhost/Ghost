@@ -257,6 +257,7 @@ utils = {
         });
     },
 
+    // Not converted to ES6 arrow functions as functions use `this` context to access object function(trimAndLowerCase)
     prepareInclude: function prepareInclude(include, allowedIncludes) {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
