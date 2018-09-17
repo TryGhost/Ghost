@@ -87,7 +87,7 @@ function getAjaxHelper(clientId, clientSecret) {
  *  }
  *
  * `blog`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
- *  Also see how the root object get's created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
+ *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
 module.exports = function ghost_head(options) { // eslint-disable-line camelcase
@@ -135,6 +135,11 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 head.push('<link rel="canonical" href="' +
                     escapeExpression(metaData.canonicalUrl) + '" />');
                 head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
+
+                // don't allow indexing of preview URLs!
+                if (_.includes(context, 'preview')) {
+                    head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                }
 
                 // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
                 if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
