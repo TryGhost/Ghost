@@ -16,7 +16,7 @@
     --green: #a4d037;
     /* Style values */
     --border-radius: 4px;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Droid Sans", "Helvetica Neue", sans-serif;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
