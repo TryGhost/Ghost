@@ -1,6 +1,6 @@
 var urlService = require('../../services/url'),
     getUrl = require('./url'),
-    _      = require('lodash');
+    _ = require('lodash');
 
 function getAmplUrl(data) {
     var context = data.context ? data.context : null;

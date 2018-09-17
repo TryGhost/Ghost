@@ -3,7 +3,7 @@ const common = require('../../../lib/common'),
     PagesMapGenerator = require('./page-generator'),
     PostsMapGenerator = require('./post-generator'),
     UsersMapGenerator = require('./user-generator'),
-    TagsMapGenerator  = require('./tag-generator');
+    TagsMapGenerator = require('./tag-generator');
 
 class SiteMapManager {
     constructor(options) {

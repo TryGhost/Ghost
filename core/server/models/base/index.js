@@ -925,7 +925,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         _.each(rules, function (rule) {
             var match, field, direction;
 
-            match = /^([a-z0-9_\.]+)\s+(asc|desc)$/i.exec(rule.trim());
+            match = /^([a-z0-9_.]+)\s+(asc|desc)$/i.exec(rule.trim());
 
             // invalid order syntax
             if (!match) {

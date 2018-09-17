@@ -162,7 +162,9 @@ const invites = {
 
                     return invite.destroy(options);
                 })
-                .then(() => { return options; });
+                .then(() => {
+                    return options; 
+                });
         }
 
         function validation(options) {
@@ -202,7 +204,9 @@ const invites = {
                         message: common.i18n.t('errors.api.invites.notAllowedToInvite')
                     }));
                 }
-            }).then(() => { return options; });
+            }).then(() => {
+                return options; 
+            });
         }
 
         function checkIfUserExists(options) {

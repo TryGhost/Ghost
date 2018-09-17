@@ -1,5 +1,5 @@
 var getContextObject = require('./context_object.js'),
-    _                = require('lodash');
+    _ = require('lodash');
 
 function getAuthorFacebookUrl(data) {
     var context = data.context ? data.context : null,

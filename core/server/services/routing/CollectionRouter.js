@@ -66,7 +66,7 @@ class CollectionRouter extends ParentRouter {
 
         // REGISTER: is rss enabled?
         if (this.rss) {
-            this.rssRouter =  new RSSRouter();
+            this.rssRouter = new RSSRouter();
             this.mountRouter(this.route.value, this.rssRouter.router());
         }
 

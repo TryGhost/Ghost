@@ -129,7 +129,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     });
 };
 
-_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) {  // eslint-disable-line no-unused-vars
+_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) { // eslint-disable-line no-unused-vars
     const data = {
         message: err.message,
         statusCode: err.statusCode,

@@ -1,7 +1,7 @@
-var crypto         = require('crypto'),
-    uuid           = require('uuid'),
+var crypto = require('crypto'),
+    uuid = require('uuid'),
     ghostBookshelf = require('./base'),
-    config         = require('../config'),
+    config = require('../config'),
     Client,
     Clients;
 

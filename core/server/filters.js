@@ -1,8 +1,8 @@
 // # Filters
 // Filters are not yet properly used, this system is intended to allow Apps to extend Ghost in various ways.
-var Promise       = require('bluebird'),
-    pipeline      = require('./lib/promise/pipeline'),
-    _             = require('lodash'),
+var Promise = require('bluebird'),
+    pipeline = require('./lib/promise/pipeline'),
+    _ = require('lodash'),
     defaults;
 
 // ## Default values

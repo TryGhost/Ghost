@@ -32,7 +32,7 @@ _private.registerRoutes = function registerRoutes() {
             }
 
             if (redirect.from[redirect.from.length - 1] !== '$') {
-                redirect.from += '\/?$';
+                redirect.from += '/?$';
             }
 
             debug('register', redirect.from);

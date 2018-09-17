@@ -22,7 +22,7 @@ const uncapitalise = function uncapitalise(req, res, next) {
         decodedURI;
 
     const isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i),
-        isAPI = pathToTest.match(/^(.*\/ghost\/api\/v[\d\.]+\/.*?\/)/i);
+        isAPI = pathToTest.match(/^(.*\/ghost\/api\/v[\d.]+\/.*?\/)/i);
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];

@@ -134,7 +134,7 @@ function getAmperizeHTML(html, post) {
                 if (err) {
                     if (err.src) {
                         logging.error(new errors.GhostError({
-                            message: `AMP HTML couldn\'t get parsed: ${err.src}`,
+                            message: `AMP HTML couldn't get parsed: ${err.src}`,
                             err: err,
                             context: post.url,
                             help: i18n.t('errors.apps.appWillNotBeLoaded.help')

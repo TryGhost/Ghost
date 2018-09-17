@@ -49,24 +49,24 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
  */
 exports.getContentPath = function getContentPath(type) {
     switch (type) {
-        case 'images':
-            return path.join(this.get('paths:contentPath'), 'images/');
-        case 'apps':
-            return path.join(this.get('paths:contentPath'), 'apps/');
-        case 'themes':
-            return path.join(this.get('paths:contentPath'), 'themes/');
-        case 'storage':
-            return path.join(this.get('paths:contentPath'), 'adapters', 'storage/');
-        case 'scheduling':
-            return path.join(this.get('paths:contentPath'), 'adapters', 'scheduling/');
-        case 'logs':
-            return path.join(this.get('paths:contentPath'), 'logs/');
-        case 'data':
-            return path.join(this.get('paths:contentPath'), 'data/');
-        case 'settings':
-            return path.join(this.get('paths:contentPath'), 'settings/');
-        default:
-            throw new Error('getContentPath was called with: ' + type);
+    case 'images':
+        return path.join(this.get('paths:contentPath'), 'images/');
+    case 'apps':
+        return path.join(this.get('paths:contentPath'), 'apps/');
+    case 'themes':
+        return path.join(this.get('paths:contentPath'), 'themes/');
+    case 'storage':
+        return path.join(this.get('paths:contentPath'), 'adapters', 'storage/');
+    case 'scheduling':
+        return path.join(this.get('paths:contentPath'), 'adapters', 'scheduling/');
+    case 'logs':
+        return path.join(this.get('paths:contentPath'), 'logs/');
+    case 'data':
+        return path.join(this.get('paths:contentPath'), 'data/');
+    case 'settings':
+        return path.join(this.get('paths:contentPath'), 'settings/');
+    default:
+        throw new Error('getContentPath was called with: ' + type);
     }
 };
 
