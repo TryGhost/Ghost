@@ -244,7 +244,6 @@ settings = {
 
         return canEditAllSettings(object.settings, options).then(() => {
             return localUtils.checkObject(object, docName).then((checkedData) => {
-                options.user = this.user;
                 return models.Settings.edit(checkedData.settings, options);
             }).then((settingsModelsArray) => {
                 // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
