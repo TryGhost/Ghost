@@ -23,7 +23,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise<Subscriber>} Subscriber Collection
      */
-    browse: (options) => {
+    browse(options) {
         let tasks;
 
         /**
@@ -53,7 +53,7 @@ subscribers = {
      * @param {{id}} options
      * @return {Promise<Subscriber>} Subscriber
      */
-    read: (options) => {
+    read(options) {
         let attrs = ['id', 'email'],
             tasks;
 
@@ -95,7 +95,7 @@ subscribers = {
      * @param {Subscriber} object the subscriber to create
      * @returns {Promise(Subscriber)} Newly created Subscriber
      */
-    add: (object, options) => {
+    add(object, options) {
         let tasks;
 
         /**
@@ -149,7 +149,7 @@ subscribers = {
      * @param {{id, context, include}} options
      * @return {Promise<Subscriber>} Edited Subscriber
      */
-    edit: (object, options) => {
+    edit(object, options) {
         let tasks;
 
         /**
@@ -191,7 +191,7 @@ subscribers = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: (options) => {
+    destroy(options) {
         let tasks;
 
         /**
@@ -247,7 +247,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export CSV format
      */
-    exportCSV: (options) => {
+    exportCSV(options) {
         let tasks = [];
 
         options = options || {};
@@ -301,7 +301,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    importCSV: (options) => {
+    importCSV(options) {
         let tasks = [];
         options = options || {};
 

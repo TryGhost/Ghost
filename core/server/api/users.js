@@ -25,7 +25,7 @@ users = {
      * @param {{context}} options (optional)
      * @returns {Promise<Users>} Users Collection
      */
-    browse: (options) => {
+    browse(options) {
         let extraOptions = ['status', 'absolute_urls'],
             permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
@@ -57,7 +57,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise<Users>} User
      */
-    read: (options) => {
+    read(options) {
         let attrs = ['id', 'slug', 'status', 'email', 'role'],
             permittedOptions = ['absolute_urls'],
             tasks;
@@ -106,7 +106,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise<User>}
      */
-    edit: (object, options) => {
+    edit(object, options) {
         let extraOptions = ['editRoles'],
             permittedOptions = extraOptions.concat(localUtils.idDefaultOptions),
             tasks;
@@ -228,7 +228,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise}
      */
-    destroy: (options) => {
+    destroy(options) {
         let tasks;
 
         /**
@@ -290,7 +290,7 @@ users = {
      * @param {{context}} options
      * @returns {Promise<password>} success message
      */
-    changePassword: (object, options) => {
+    changePassword(object, options) {
         let tasks;
 
         function validateRequest() {
@@ -360,7 +360,7 @@ users = {
      * @param {Object} options
      * @returns {Promise<User>}
      */
-    transferOwnership: (object, options) => {
+    transferOwnership(object, options) {
         let tasks;
 
         /**

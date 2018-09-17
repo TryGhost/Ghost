@@ -51,7 +51,7 @@ configuration = {
      * @param {Object} options
      * @returns {Promise<Object>}
      */
-    read: (options) => {
+    read(options) {
         options = options || {};
 
         if (!options.key) {

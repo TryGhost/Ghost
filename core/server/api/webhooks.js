@@ -65,7 +65,7 @@ webhooks = {
      * @param {Webhook} object the webhook to create
      * @returns {Promise(Webhook)} newly created Webhook
      */
-    add: (object, options) => {
+    add(object, options) {
         let tasks;
 
         /**
@@ -109,7 +109,7 @@ webhooks = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: (options) => {
+    destroy(options) {
         let tasks;
 
         /**
@@ -133,7 +133,7 @@ webhooks = {
         return pipeline(tasks, options);
     },
 
-    trigger: (event, payload, options) => {
+    trigger(event, payload, options) {
         let tasks;
 
         function doQuery(options) {

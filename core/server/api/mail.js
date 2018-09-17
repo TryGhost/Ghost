@@ -56,7 +56,7 @@ const apiMail = {
      * @param {Mail} object details of the email to send
      * @returns {Promise}
      */
-    send: (object, options) => {
+    send(object, options) {
         let tasks;
 
         /**
@@ -100,7 +100,7 @@ const apiMail = {
      * @param {Object} options required property 'to' which contains the recipient address
      * @returns {Promise}
      */
-    sendTest: (options) => {
+    sendTest(options) {
         let tasks;
 
         /**

@@ -138,7 +138,7 @@ authentication = {
      * @param {Object} object
      * @returns {Promise<Object>} message
      */
-    generateResetToken: (object) => {
+    generateResetToken(object) {
         let tasks;
 
         function validateRequest(object) {
@@ -235,7 +235,7 @@ authentication = {
      * @param {Object} object
      * @returns {Promise<Object>} message
      */
-    resetPassword: (object, opts) => {
+    resetPassword(object, opts) {
         let tasks,
             tokenIsCorrect,
             dbHash,
@@ -362,7 +362,7 @@ authentication = {
      * @param {Object} invitation an invitation object
      * @returns {Promise<Object>}
      */
-    acceptInvitation: (invitation) => {
+    acceptInvitation(invitation) {
         let tasks,
             invite;
         const options = {context: {internal: true}};
@@ -441,7 +441,7 @@ authentication = {
      * @param {Object} options
      * @returns {Promise<Object>} An invitation status
      */
-    isInvitation: (options) => {
+    isInvitation(options) {
         let tasks;
         const localOptions = cloneDeep(options || {});
 
@@ -485,7 +485,7 @@ authentication = {
      * Checks the setup status
      * @return {Promise}
      */
-    isSetup: () => {
+    isSetup() {
         let tasks;
 
         function checkSetupStatus() {
@@ -519,7 +519,7 @@ authentication = {
      * @param  {Object} setupDetails
      * @return {Promise<Object>} a user api payload
      */
-    setup: (setupDetails) => {
+    setup(setupDetails) {
         let tasks;
 
         function doSetup(setupDetails) {
@@ -577,7 +577,7 @@ authentication = {
      * @param  {Object} options
      * @return {Promise<Object>} a User API response payload
      */
-    updateSetup: (setupDetails, options) => {
+    updateSetup(setupDetails, options) {
         let tasks;
         const localOptions = cloneDeep(options || {});
 
@@ -621,7 +621,7 @@ authentication = {
      * @param {Object} options
      * @return {Promise<Object>} an object containing the revoked token.
      */
-    revoke: (tokenDetails, options) => {
+    revoke(tokenDetails, options) {
         let tasks;
         const localOptions = cloneDeep(options || {});
 

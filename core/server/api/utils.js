@@ -33,7 +33,7 @@ utils = {
      * @param {Object} extras
      * @returns {Function} doValidate
      */
-    validate: (docName, extras) => {
+    validate(docName, extras) {
         /**
          * ### Do Validate
          * Validate the object and options passed to an endpoint
@@ -106,7 +106,7 @@ utils = {
         };
     },
 
-    validateOptions: (options) => {
+    validateOptions(options) {
         let globalValidations = {
                 id: {matches: /^[a-f\d]{24}$|^1$|me/i},
                 uuid: {isUUID: true},
@@ -145,7 +145,7 @@ utils = {
      * @param {Object} options
      * @returns {Boolean}
      */
-    detectPublicContext: (options) => {
+    detectPublicContext(options) {
         options.context = permissions.parseContext(options.context);
         return options.context.public;
     },
@@ -157,7 +157,7 @@ utils = {
      * @param {Object} options
      * @returns {Object} options
      */
-    applyPublicPermissions: (docName, method, options) => {
+    applyPublicPermissions(docName, method, options) {
         return permissions.applyPublicRules(docName, method, options);
     },
 
@@ -167,7 +167,7 @@ utils = {
      * @param {String} method (read || browse)
      * @returns {Function}
      */
-    handlePublicPermissions: (docName, method) => {
+    handlePublicPermissions(docName, method) {
         let singular = docName.replace(/s$/, '');
 
         /**
@@ -197,7 +197,7 @@ utils = {
      * @param {Array} unsafeAttrNames - attribute names (e.g. post.status) that could change the outcome
      * @returns {Function}
      */
-    handlePermissions: (docName, method, unsafeAttrNames) => {
+    handlePermissions(docName, method, unsafeAttrNames) {
         let singular = docName.replace(/s$/, '');
 
         /**
@@ -246,7 +246,7 @@ utils = {
         };
     },
 
-    trimAndLowerCase: (params) => {
+    trimAndLowerCase(params) {
         params = params || '';
         if (_.isString(params)) {
             params = params.split(',');
@@ -258,15 +258,15 @@ utils = {
     },
 
     // Not converted to ES6 arrow functions as functions use `this` context to access object function(trimAndLowerCase)
-    prepareInclude: function prepareInclude(include, allowedIncludes) {
+    prepareInclude(include, allowedIncludes) {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
-    prepareFields: function prepareFields(fields) {
+    prepareFields(fields) {
         return this.trimAndLowerCase(fields);
     },
 
-    prepareFormats: function prepareFormats(formats, allowedFormats) {
+    prepareFormats(formats, allowedFormats) {
         return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
     },
 
@@ -275,7 +275,7 @@ utils = {
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */
-    convertOptions: (allowedIncludes, allowedFormats, convertOptions = {forModel: true}) => {
+    convertOptions(allowedIncludes, allowedFormats, convertOptions = {forModel: true}) {
         /**
          * Convert our options from API-style to Model-style (default)
          * @param {Object} options
@@ -325,7 +325,7 @@ utils = {
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
      */
-    checkObject: (object, docName, editId) => {
+    checkObject(object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return Promise.reject(new common.errors.BadRequestError({
                 message: common.i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})

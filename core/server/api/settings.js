@@ -132,7 +132,7 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    browse: (options) => {
+    browse(options) {
         options = options || {};
 
         let result = settingsResult(settingsCache.getAll(), options.type);
@@ -162,7 +162,7 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    read: (options) => {
+    read(options) {
         if (_.isString(options)) {
             options = {key: options};
         }
@@ -208,7 +208,7 @@ settings = {
      * @param {{id (required), include,...}} options (optional) or a single string value
      * @return {Promise(Setting)} Edited Setting
      */
-    edit: (object, options) => {
+    edit(object, options) {
         options = options || {};
         let type;
 
@@ -266,7 +266,7 @@ settings = {
      *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
      * - then we reload the whole site app, which will reset all routers and re-create the url generators
      */
-    upload: (options) => {
+    upload(options) {
         const backupRoutesPath = path.join(config.getContentPath('settings'), `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
 
         return localUtils.handlePermissions('settings', 'edit')(options)
@@ -297,7 +297,7 @@ settings = {
             });
     },
 
-    download: (options) => {
+    download(options) {
         const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
 
         return localUtils.handlePermissions('settings', 'browse')(options)

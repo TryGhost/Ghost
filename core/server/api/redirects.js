@@ -42,13 +42,13 @@ _private.readRedirectsFile = (customRedirectsPath) => {
 };
 
 redirectsAPI = {
-    download: (options) => {
+    download(options) {
         return localUtils.handlePermissions('redirects', 'download')(options)
             .then(() => {
                 return _private.readRedirectsFile();
             });
     },
-    upload: (options) => {
+    upload(options) {
         const redirectsPath = path.join(config.getContentPath('data'), 'redirects.json'),
             backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 

@@ -33,7 +33,7 @@ const getOembedUrlFromHTML = (html) => {
 };
 
 const oembed = {
-    read: (options) => {
+    read(options) {
         let {url} = options;
 
         if (!url || !url.trim()) {

@@ -24,7 +24,7 @@ themes = {
      * contains the custom templates of the active theme. These custom templates are used to show a dropdown
      * in the PSM to be able to choose a custom post template.
      */
-    browse: (options) => {
+    browse(options) {
         return localUtils
         // Permissions
             .handlePermissions('themes', 'browse')(options)
@@ -35,7 +35,7 @@ themes = {
             });
     },
 
-    activate: (options) => {
+    activate(options) {
         let themeName = options.name,
             newSettings = [{
                 key: 'active_theme',
@@ -77,7 +77,7 @@ themes = {
             });
     },
 
-    upload: (options) => {
+    upload(options) {
         options = options || {};
 
         // consistent filename uploads
@@ -160,7 +160,7 @@ themes = {
             });
     },
 
-    download: (options) => {
+    download(options) {
         let themeName = options.name,
             theme = themeList.get(themeName);
 
@@ -182,7 +182,7 @@ themes = {
      * remove theme zip
      * remove theme folder
      */
-    destroy: (options) => {
+    destroy(options) {
         let themeName = options.name,
             theme;
 
