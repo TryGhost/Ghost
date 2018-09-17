@@ -1,4 +1,4 @@
-const config  = require('../../../config'),
+const config = require('../../../config'),
     Manager = require('./manager'),
     manager = new Manager();
 

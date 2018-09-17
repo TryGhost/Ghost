@@ -281,7 +281,7 @@ const connectToBootstrapSocket = (message) => {
             });
 
             client.on('error', (err) => {
-                common.logging.warn(`Can\'t connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
+                common.logging.warn(`Can't connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
 
                 client.removeAllListeners();
 

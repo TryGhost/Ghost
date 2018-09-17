@@ -32,14 +32,18 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
     }
 
     if (tags) {
-        classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
+        classes = classes.concat(tags.map(function (tag) {
+            return 'tag-' + tag.slug; 
+        }));
     }
 
     if (_.includes(context, 'paged')) {
         classes.push('paged');
     }
 
-    classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+    classes = _.reduce(classes, function (memo, item) {
+        return memo + ' ' + item; 
+    }, '');
     return new SafeString(classes.trim());
 };
 

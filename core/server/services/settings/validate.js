@@ -147,7 +147,7 @@ _private.validateData = function validateData(object) {
                 data.query[key][option] = object.data[key][option];
             });
 
-            const DEFAULT_RESOURCE =  _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+            const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
 
             data.query[key].options = _.pick(object.data[key], allowedQueryOptions);
             if (data.query[key].type === 'read') {
@@ -279,7 +279,7 @@ _private.validateCollections = function validateCollections(collections) {
         }
 
         // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
-        if (routingTypeObject.permalink && routingTypeObject.permalink.match(/\/\:\w+/)) {
+        if (routingTypeObject.permalink && routingTypeObject.permalink.match(/\/:\w+/)) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObject.permalink,
@@ -334,7 +334,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
         }
 
         // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
-        if (routingTypeObject && routingTypeObject.match(/\/\:\w+/)) {
+        if (routingTypeObject && routingTypeObject.match(/\/:\w+/)) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObject,
