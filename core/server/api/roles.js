@@ -28,7 +28,7 @@ roles = {
      * @param {{context, permissions}} options (optional)
      * @returns {Promise(Roles)} Roles Collection
      */
-    browse:  (options) => {
+    browse: (options) => {
         let permittedOptions = ['permissions'],
             tasks;
 
