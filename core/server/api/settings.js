@@ -29,10 +29,10 @@ let settings,
  * @param {String} filter
  * @returns {*}
  */
-settingsFilter = function (settings, filter) {
+settingsFilter = (settings, filter) => {
     return _.fromPairs(_.toPairs(settings).filter((setting) => {
         if (filter) {
-            return _.some(filter.split(','), function (f) {
+            return _.some(filter.split(','), (f) => {
                 return setting[1].type === f;
             });
         }
@@ -61,7 +61,7 @@ settingsFilter = function (settings, filter) {
  * @param {String} type
  * @returns {{settings: *}}
  */
-settingsResult = function settingsResult(settings, type) {
+settingsResult = (settings, type) => {
     let filteredSettings = _.values(settingsFilter(settings, type)),
         result = {
             settings: filteredSettings,
@@ -84,15 +84,15 @@ settingsResult = function settingsResult(settings, type) {
  * @param {Object} settingsInfo
  * @returns {*}
  */
-canEditAllSettings = function (settingsInfo, options) {
-    let checkSettingPermissions = function checkSettingPermissions(setting) {
+canEditAllSettings = (settingsInfo, options) => {
+    let checkSettingPermissions = (setting) => {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
                     new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
                 );
             }
 
-            return canThis(options.context).edit.setting(setting.key).catch(function () {
+            return canThis(options.context).edit.setting(setting.key).catch(() => {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToEditSettings')}));
             });
         },
@@ -132,7 +132,7 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    browse: function browse(options) {
+    browse: (options) => {
         options = options || {};
 
         let result = settingsResult(settingsCache.getAll(), options.type);
@@ -145,7 +145,7 @@ settings = {
         }
 
         // Otherwise return whatever this context is allowed to browse
-        return canThis(options.context).browse.setting().then(function () {
+        return canThis(options.context).browse.setting().then(() => {
             // Omit core settings unless internal request
             if (!options.context.internal) {
                 result.settings = result.settings.filter((setting) => {
@@ -162,7 +162,7 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    read: function read(options) {
+    read: (options) => {
         if (_.isString(options)) {
             options = {key: options};
         }
@@ -194,9 +194,9 @@ settings = {
             return Promise.resolve(settingsResult(result));
         }
 
-        return canThis(options.context).read.setting(options.key).then(function () {
+        return canThis(options.context).read.setting(options.key).then(() => {
             return settingsResult(result);
-        }, function () {
+        }, () => {
             return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToReadSettings')}));
         });
     },
@@ -208,7 +208,7 @@ settings = {
      * @param {{id (required), include,...}} options (optional) or a single string value
      * @return {Promise(Setting)} Edited Setting
      */
-    edit: function edit(object, options) {
+    edit: (object, options) => {
         options = options || {};
         let type;
 
@@ -232,7 +232,7 @@ settings = {
             type = type.value;
         }
 
-        object.settings = _.reject(object.settings, function (setting) {
+        object.settings = _.reject(object.settings, (setting) => {
             return setting.key === 'type';
         });
 
@@ -242,11 +242,11 @@ settings = {
             }));
         }
 
-        return canEditAllSettings(object.settings, options).then(function () {
+        return canEditAllSettings(object.settings, options).then(() => {
             return localUtils.checkObject(object, docName).then((checkedData) => {
                 options.user = this.user;
                 return models.Settings.edit(checkedData.settings, options);
-            }).then(function (settingsModelsArray) {
+            }).then((settingsModelsArray) => {
                 // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
                 // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
                 // We use keyBy to create an object that uses the 'key' as a key for each setting.
@@ -305,7 +305,7 @@ settings = {
             .then(() => {
                 return fs.readFile(routesPath, 'utf-8');
             })
-            .catch(function handleError(err) {
+            .catch((err) => {
                 if (err.code === 'ENOENT') {
                     return Promise.resolve([]);
                 }

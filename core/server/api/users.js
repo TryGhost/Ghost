@@ -25,7 +25,7 @@ users = {
      * @param {{context}} options (optional)
      * @returns {Promise<Users>} Users Collection
      */
-    browse: function browse(options) {
+    browse: (options) => {
         let extraOptions = ['status', 'absolute_urls'],
             permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions),
             tasks;
@@ -57,7 +57,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise<Users>} User
      */
-    read: function read(options) {
+    read: (options) => {
         let attrs = ['id', 'slug', 'status', 'email', 'role'],
             permittedOptions = ['absolute_urls'],
             tasks;
@@ -106,7 +106,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise<User>}
      */
-    edit: function edit(object, options) {
+    edit: (object, options) => {
         let extraOptions = ['editRoles'],
             permittedOptions = extraOptions.concat(localUtils.idDefaultOptions),
             tasks;
@@ -134,7 +134,7 @@ users = {
                 options.id = options.context.user;
             }
 
-            return canThis(options.context).edit.user(options.id).then(function () {
+            return canThis(options.context).edit.user(options.id).then(() => {
                 // CASE: can't edit my own status to inactive or locked
                 if (options.id === options.context.user) {
                     if (models.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
@@ -156,7 +156,7 @@ users = {
 
                 return models.User.findOne(
                     {id: options.context.user, status: 'all'}, {withRelated: ['roles']}
-                ).then(function (contextUser) {
+                ).then((contextUser) => {
                     let contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
@@ -165,7 +165,7 @@ users = {
                         }));
                     }
 
-                    return models.User.findOne({role: 'Owner'}).then(function (owner) {
+                    return models.User.findOne({role: 'Owner'}).then((owner) => {
                         if (contextUser.id !== owner.id) {
                             if (editedUserId === owner.id) {
                                 if (owner.related('roles').at(0).id !== roleId) {
@@ -174,7 +174,7 @@ users = {
                                     }));
                                 }
                             } else if (roleId !== contextRoleId) {
-                                return canThis(options.context).assign.role(role).then(function () {
+                                return canThis(options.context).assign.role(role).then(() => {
                                     return options;
                                 });
                             }
@@ -228,7 +228,7 @@ users = {
      * @param {{id, context}} options
      * @returns {Promise}
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         /**
@@ -255,17 +255,17 @@ users = {
          * @param {Object} options
          */
         function deleteUser(options) {
-            return models.Base.transaction(function (t) {
+            return models.Base.transaction((t) => {
                 options.transacting = t;
 
                 return Promise.all([
                     models.Accesstoken.destroyByUser(options),
                     models.Refreshtoken.destroyByUser(options),
                     models.Post.destroyByAuthor(options)
-                ]).then(function () {
+                ]).then(() => {
                     return models.User.destroy(options);
                 }).return(null);
-            }).catch(function (err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err
                 }));
@@ -290,12 +290,12 @@ users = {
      * @param {{context}} options
      * @returns {Promise<password>} success message
      */
-    changePassword: function changePassword(object, options) {
+    changePassword: (object, options) => {
         let tasks;
 
         function validateRequest() {
             return localUtils.validate('password')(object, options)
-                .then(function (options) {
+                .then((options) => {
                     let data = options.data.password[0];
 
                     if (data.newPassword !== data.ne2Password) {
@@ -317,7 +317,7 @@ users = {
         function handlePermissions(options) {
             return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
-            }).catch(function (err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
                     context: common.i18n.t('errors.api.users.noPermissionToChangeUsersPwd')
@@ -360,7 +360,7 @@ users = {
      * @param {Object} options
      * @returns {Promise<User>}
      */
-    transferOwnership: function transferOwnership(object, options) {
+    transferOwnership: (object, options) => {
         let tasks;
 
         /**
@@ -370,9 +370,9 @@ users = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+            return models.Role.findOne({name: 'Owner'}).then((ownerRole) => {
                 return canThis(options.context).assign.role(ownerRole);
-            }).then(function () {
+            }).then(() => {
                 return options;
             });
         }

@@ -22,7 +22,7 @@ clients = {
      * @param {{id}} options
      * @return {Promise<Client>} Client
      */
-    read: function read(options) {
+    read: (options) =>  {
         const attrs = ['id', 'slug'];
         let tasks;
 

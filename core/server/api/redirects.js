@@ -11,7 +11,7 @@ const fs = require('fs-extra'),
 let redirectsAPI,
     _private = {};
 
-_private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
+_private.readRedirectsFile = (customRedirectsPath) => {
     const redirectsPath = customRedirectsPath || path.join(config.getContentPath('data'), 'redirects.json');
 
     return fs.readFile(redirectsPath, 'utf-8')

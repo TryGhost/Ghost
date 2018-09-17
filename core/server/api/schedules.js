@@ -35,10 +35,10 @@ exports.publishPost = function publishPost(object, options) {
 
     return pipeline([
         localUtils.validate('posts', {opts: localUtils.idDefaultOptions}),
-        function (cleanOptions) {
+        (cleanOptions) => {
             cleanOptions.status = 'scheduled';
 
-            return models.Base.transaction(function (transacting) {
+            return models.Base.transaction((transacting) => {
                 cleanOptions.transacting = transacting;
                 cleanOptions.forUpdate = true;
 
@@ -46,7 +46,7 @@ exports.publishPost = function publishPost(object, options) {
                 cleanOptions.opts = ['forUpdate', 'transacting'];
 
                 return postsAPI.read(cleanOptions)
-                    .then(function (result) {
+                    .then((result) => {
                         post = result.posts[0];
                         publishedAtMoment = moment(post.published_at);
 
@@ -80,7 +80,7 @@ exports.getScheduledPosts = function readPosts(options) {
 
     return pipeline([
         localUtils.validate('posts', {opts: ['from', 'to']}),
-        function (cleanOptions) {
+        (cleanOptions) => {
             cleanOptions.filter = 'status:scheduled';
             cleanOptions.columns = ['id', 'published_at', 'created_at'];
 
@@ -93,7 +93,7 @@ exports.getScheduledPosts = function readPosts(options) {
             }
 
             return models.Post.findAll(cleanOptions)
-                .then(function (result) {
+                .then((result) => {
                     return Promise.resolve({posts: result.models});
                 });
         }

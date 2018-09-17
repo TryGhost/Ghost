@@ -24,7 +24,7 @@ slugs = {
      * @param {{type (required), name (required), context, transacting}} options
      * @returns {Promise(String)} Unique string
      */
-    generate: function (options) {
+    generate: (options) => {
         let opts = ['type'],
             attrs = ['name'],
             tasks;

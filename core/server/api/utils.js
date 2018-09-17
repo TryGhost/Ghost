@@ -33,7 +33,7 @@ utils = {
      * @param {Object} extras
      * @returns {Function} doValidate
      */
-    validate: function validate(docName, extras) {
+    validate: (docName, extras) => {
         /**
          * ### Do Validate
          * Validate the object and options passed to an endpoint
@@ -94,7 +94,7 @@ utils = {
 
             // If we got an object, check that too
             if (object) {
-                return utils.checkObject(object, docName, options.id).then(function (data) {
+                return utils.checkObject(object, docName, options.id).then((data) => {
                     options.data = data;
 
                     return checkOptions(options);
@@ -106,7 +106,7 @@ utils = {
         };
     },
 
-    validateOptions: function validateOptions(options) {
+    validateOptions: (options) => {
         let globalValidations = {
                 id: {matches: /^[a-f\d]{24}$|^1$|me/i},
                 uuid: {isUUID: true},
@@ -124,7 +124,7 @@ utils = {
             noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting', 'formats'],
             errors = [];
 
-        _.each(options, function (value, key) {
+        _.each(options, (value, key) => {
             // data is validated elsewhere
             if (noValidation.indexOf(key) === -1) {
                 if (globalValidations[key]) {
@@ -145,7 +145,7 @@ utils = {
      * @param {Object} options
      * @returns {Boolean}
      */
-    detectPublicContext: function detectPublicContext(options) {
+    detectPublicContext: (options) => {
         options.context = permissions.parseContext(options.context);
         return options.context.public;
     },
@@ -157,7 +157,7 @@ utils = {
      * @param {Object} options
      * @returns {Object} options
      */
-    applyPublicPermissions: function applyPublicPermissions(docName, method, options) {
+    applyPublicPermissions: (docName, method, options) => {
         return permissions.applyPublicRules(docName, method, options);
     },
 
@@ -167,7 +167,7 @@ utils = {
      * @param {String} method (read || browse)
      * @returns {Function}
      */
-    handlePublicPermissions: function handlePublicPermissions(docName, method) {
+    handlePublicPermissions: (docName, method) => {
         let singular = docName.replace(/s$/, '');
 
         /**
@@ -197,7 +197,7 @@ utils = {
      * @param {Array} unsafeAttrNames - attribute names (e.g. post.status) that could change the outcome
      * @returns {Function}
      */
-    handlePermissions: function handlePermissions(docName, method, unsafeAttrNames) {
+    handlePermissions: (docName, method, unsafeAttrNames) => {
         let singular = docName.replace(/s$/, '');
 
         /**
@@ -246,7 +246,7 @@ utils = {
         };
     },
 
-    trimAndLowerCase: function trimAndLowerCase(params) {
+    trimAndLowerCase: (params) => {
         params = params || '';
         if (_.isString(params)) {
             params = params.split(',');
@@ -257,15 +257,15 @@ utils = {
         });
     },
 
-    prepareInclude: function prepareInclude(include, allowedIncludes) {
+    prepareInclude: (include, allowedIncludes) => {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
-    prepareFields: function prepareFields(fields) {
+    prepareFields: (fields) => {
         return this.trimAndLowerCase(fields);
     },
 
-    prepareFormats: function prepareFormats(formats, allowedFormats) {
+    prepareFormats: (formats, allowedFormats) => {
         return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
     },
 
@@ -274,7 +274,7 @@ utils = {
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */
-    convertOptions: function convertOptions(allowedIncludes, allowedFormats, convertOptions = {forModel: true}) {
+    convertOptions: (allowedIncludes, allowedFormats, convertOptions = {forModel: true}) => {
         /**
          * Convert our options from API-style to Model-style (default)
          * @param {Object} options
@@ -324,7 +324,7 @@ utils = {
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
      */
-    checkObject: function checkObject(object, docName, editId) {
+    checkObject: (object, docName, editId) => {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return Promise.reject(new common.errors.BadRequestError({
                 message: common.i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})
@@ -416,7 +416,7 @@ utils = {
         }
 
         // will remove unwanted null values
-        _.each(object[docName], function (value, index) {
+        _.each(object[docName], (value, index) => {
             if (!_.isObject(object[docName][index])) {
                 return;
             }

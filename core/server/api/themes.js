@@ -24,7 +24,7 @@ themes = {
      * contains the custom templates of the active theme. These custom templates are used to show a dropdown
      * in the PSM to be able to choose a custom post template.
      */
-    browse: function browse(options) {
+    browse: (options) => {
         return localUtils
         // Permissions
             .handlePermissions('themes', 'browse')(options)
@@ -35,7 +35,7 @@ themes = {
             });
     },
 
-    activate: function activate(options) {
+    activate: (options) => {
         let themeName = options.name,
             newSettings = [{
                 key: 'active_theme',
@@ -77,7 +77,7 @@ themes = {
             });
     },
 
-    upload: function upload(options) {
+    upload: (options) => {
         options = options || {};
 
         // consistent filename uploads
@@ -139,12 +139,12 @@ themes = {
                 // @TODO: unify the name across gscan and Ghost!
                 return themeUtils.toJSON(zip.shortName, checkedTheme);
             })
-            .finally(function () {
+            .finally(() => {
                 // @TODO we should probably do this as part of saving the theme
                 // remove zip upload from multer
                 // happens in background
                 fs.remove(zip.path)
-                    .catch(function (err) {
+                    .catch((err) => {
                         common.logging.error(new common.errors.GhostError({err: err}));
                     });
 
@@ -153,14 +153,14 @@ themes = {
                 // happens in background
                 if (checkedTheme) {
                     fs.remove(checkedTheme.path)
-                        .catch(function (err) {
+                        .catch((err) => {
                             common.logging.error(new common.errors.GhostError({err: err}));
                         });
                 }
             });
     },
 
-    download: function download(options) {
+    download: (options) => {
         let themeName = options.name,
             theme = themeList.get(themeName);
 
@@ -182,7 +182,7 @@ themes = {
      * remove theme zip
      * remove theme folder
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let themeName = options.name,
             theme;
 

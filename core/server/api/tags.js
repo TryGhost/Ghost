@@ -22,7 +22,7 @@ tags = {
      * @param {{context}} options
      * @returns {Promise<Tags>} Tags Collection
      */
-    browse: function browse(options) {
+    browse: (options) => {
         let tasks,
             permittedOptions = localUtils.browseDefaultOptions.concat('absolute_urls');
 
@@ -53,7 +53,7 @@ tags = {
      * @param {{id}} options
      * @return {Promise<Tag>} Tag
      */
-    read: function read(options) {
+    read: (options) => {
         let attrs = ['id', 'slug', 'visibility'],
             permittedOptions = ['absolute_urls'],
             tasks;
@@ -96,7 +96,7 @@ tags = {
      * @param {Tag} object the tag to create
      * @returns {Promise(Tag)} Newly created Tag
      */
-    add: function add(object, options) {
+    add: (object, options) => {
         let tasks;
 
         /**
@@ -134,7 +134,7 @@ tags = {
      * @param {{id, context, include}} options
      * @return {Promise<Tag>} Edited Tag
      */
-    edit: function edit(object, options) {
+    edit: (object, options) => {
         let tasks;
 
         /**
@@ -176,7 +176,7 @@ tags = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         /**

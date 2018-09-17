@@ -19,7 +19,7 @@ slack = {
      *
      * @public
      */
-    sendTest: function () {
+    sendTest: () => {
         common.events.emit('slack.test');
         return Promise.resolve();
     }

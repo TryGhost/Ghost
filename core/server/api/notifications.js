@@ -18,7 +18,7 @@ const Promise = require('bluebird'),
 let notifications,
     _private = {};
 
-_private.fetchAllNotifications = function fetchAllNotifications() {
+_private.fetchAllNotifications = () => {
     let allNotifications;
 
     return SettingsAPI.read(merge({key: 'notifications'}, internalContext))
@@ -33,7 +33,7 @@ _private.fetchAllNotifications = function fetchAllNotifications() {
         });
 };
 
-_private.publicResponse = function publicResponse(notificationsToReturn) {
+_private.publicResponse = (notificationsToReturn) => {
     notificationsToReturn.forEach((notification) => {
         delete notification.seen;
         delete notification.addedAt;

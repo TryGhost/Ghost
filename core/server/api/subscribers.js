@@ -23,7 +23,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise<Subscriber>} Subscriber Collection
      */
-    browse: function browse(options) {
+    browse: (options) => {
         let tasks;
 
         /**
@@ -53,7 +53,7 @@ subscribers = {
      * @param {{id}} options
      * @return {Promise<Subscriber>} Subscriber
      */
-    read: function read(options) {
+    read: (options) => {
         let attrs = ['id', 'email'],
             tasks;
 
@@ -95,7 +95,7 @@ subscribers = {
      * @param {Subscriber} object the subscriber to create
      * @returns {Promise(Subscriber)} Newly created Subscriber
      */
-    add: function add(object, options) {
+    add: (object, options) => {
         let tasks;
 
         /**
@@ -106,7 +106,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.getByEmail(options.data.subscribers[0].email)
-                .then(function (subscriber) {
+                .then((subscriber) => {
                     if (subscriber && options.context.external) {
                         // we don't expose this information
                         return Promise.resolve(subscriber);
@@ -114,7 +114,7 @@ subscribers = {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                     }
 
-                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
+                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch((error) => {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                             return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                         }
@@ -149,7 +149,7 @@ subscribers = {
      * @param {{id, context, include}} options
      * @return {Promise<Subscriber>} Edited Subscriber
      */
-    edit: function edit(object, options) {
+    edit: (object, options) => {
         let tasks;
 
         /**
@@ -191,7 +191,7 @@ subscribers = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
+    destroy: (options) => {
         let tasks;
 
         /**
@@ -202,7 +202,7 @@ subscribers = {
         function getSubscriberByEmail(options) {
             if (options.email) {
                 return models.Subscriber.getByEmail(options.email, options)
-                    .then(function (subscriber) {
+                    .then((subscriber) => {
                         if (!subscriber) {
                             return Promise.reject(new common.errors.NotFoundError({
                                 message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
@@ -247,7 +247,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export CSV format
      */
-    exportCSV: function exportCSV(options) {
+    exportCSV: (options) => {
         let tasks = [];
 
         options = options || {};
@@ -277,9 +277,9 @@ subscribers = {
 
         // Export data, otherwise send error 500
         function exportSubscribers() {
-            return models.Subscriber.findAll(options).then(function (data) {
+            return models.Subscriber.findAll(options).then((data) => {
                 return formatCSV(data.toJSON(options));
-            }).catch(function (err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
@@ -301,7 +301,7 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    importCSV: function (options) {
+    importCSV: (options) => {
         let tasks = [];
         options = options || {};
 
@@ -314,13 +314,13 @@ subscribers = {
             return fsLib.readCSV({
                 path: filePath,
                 columnsToExtract: [{name: 'email', lookup: /email/i}]
-            }).then(function (result) {
-                return Promise.all(result.map(function (entry) {
+            }).then((result) => {
+                return Promise.all(result.map((entry) => {
                     return subscribers.add(
                         {subscribers: [{email: entry.email}]},
                         {context: options.context}
                     ).reflect();
-                })).each(function (inspection) {
+                })).each((inspection) => {
                     if (inspection.isFulfilled()) {
                         fulfilled = fulfilled + 1;
                     } else {
@@ -331,7 +331,7 @@ subscribers = {
                         }
                     }
                 });
-            }).then(function () {
+            }).then(() => {
                 return {
                     meta: {
                         stats: {
@@ -341,7 +341,7 @@ subscribers = {
                         }
                     }
                 };
-            }).finally(function () {
+            }).finally(() => {
                 // Remove uploaded file from tmp location
                 return fs.unlink(filePath);
             });
