@@ -210,7 +210,7 @@ I18n = {
             } catch (err) {
                 themeStrings = undefined;
                 if (err.code === 'ENOENT') {
-                    logging.warn(`Theme\'s file locales/${currentLocale}.json not found.`);
+                    logging.warn(`Theme's file locales/${currentLocale}.json not found.`);
                 } else {
                     throw err;
                 }

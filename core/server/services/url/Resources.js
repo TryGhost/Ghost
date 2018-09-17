@@ -254,7 +254,9 @@ class Resources {
                         return;
                     }
 
-                    const targetTagKeys = Object.keys(obj[relation].find((item) => {return item.id === obj[primaryKey].id;}));
+                    const targetTagKeys = Object.keys(obj[relation].find((item) => {
+                        return item.id === obj[primaryKey].id;
+                    }));
                     obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
                 });
             }
@@ -325,7 +327,9 @@ class Resources {
                                 return;
                             }
 
-                            const targetTagKeys = Object.keys(obj[relation].find((item) => {return item.id === obj[primaryKey].id;}));
+                            const targetTagKeys = Object.keys(obj[relation].find((item) => {
+                                return item.id === obj[primaryKey].id;
+                            }));
                             obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
                         });
                     }
