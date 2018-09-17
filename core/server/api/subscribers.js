@@ -254,7 +254,7 @@ subscribers = {
 
         function formatCSV(data) {
             let fields = ['id', 'email', 'created_at', 'deleted_at'],
-                csv = fields.join(',') + '\r\n',
+                csv = `${fields.join(',')}\r\n`,
                 subscriber,
                 field,
                 j,

@@ -207,7 +207,7 @@ utils = {
          * @returns {Object} options
          */
         return function doHandlePermissions(options) {
-            let unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
+            let unsafeAttrObject = unsafeAttrNames && _.has(options, `data.[${docName}][0]`) ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
             return permsPromise.then(function permissionGranted(result) {
@@ -221,7 +221,7 @@ utils = {
                  * TODO: This is currently only needed because of the posts model and the contributor role. Once we extend the
                  * contributor role to be able to edit existing tags, this concept can be removed.
                  */
-                if (result && result.excludedAttrs && _.has(options, 'data.[' + docName + '][0]')) {
+                if (result && result.excludedAttrs && _.has(options, `data.[${docName}][0]`)) {
                     options.data[docName][0] = _.omit(options.data[docName][0], result.excludedAttrs);
                 }
 

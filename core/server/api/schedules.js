@@ -85,11 +85,11 @@ exports.getScheduledPosts = function readPosts(options) {
             cleanOptions.columns = ['id', 'published_at', 'created_at'];
 
             if (cleanOptions.from) {
-                cleanOptions.filter += '+created_at:>=\'' + moment(cleanOptions.from).format('YYYY-MM-DD HH:mm:ss') + '\'';
+                cleanOptions.filter += `+created_at:>='${moment(cleanOptions.from).format('YYYY-MM-DD HH:mm:ss')}'`;
             }
 
             if (cleanOptions.to) {
-                cleanOptions.filter += '+created_at:<=\'' + moment(cleanOptions.to).format('YYYY-MM-DD HH:mm:ss') + '\'';
+                cleanOptions.filter += `+created_at:<='${moment(cleanOptions.to).format('YYYY-MM-DD HH:mm:ss')}'`;
             }
 
             return models.Post.findAll(cleanOptions)

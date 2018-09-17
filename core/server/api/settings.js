@@ -272,10 +272,10 @@ settings = {
 
         return localUtils.handlePermissions('settings', 'edit')(options)
             .then(() => {
-                return fs.copy(config.getContentPath('settings') + '/routes.yaml', backupRoutesPath);
+                return fs.copy(`${config.getContentPath('settings')}/routes.yaml`, backupRoutesPath);
             })
             .then(() => {
-                return fs.copy(options.path, config.getContentPath('settings') + '/routes.yaml');
+                return fs.copy(options.path, `${config.getContentPath('settings')}/routes.yaml`);
             })
             .then(() => {
                 urlService.resetGenerators({releaseResourcesOnly: true});
@@ -287,7 +287,7 @@ settings = {
                     return siteApp.reload();
                 } catch (err) {
                     // bring back backup, otherwise your Ghost blog is broken
-                    return fs.copy(backupRoutesPath, config.getContentPath('settings') + '/routes.yaml')
+                    return fs.copy(backupRoutesPath, `${config.getContentPath('settings')}/routes.yaml`)
                         .then(() => {
                             return siteApp.reload();
                         })
