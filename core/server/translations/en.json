@@ -392,7 +392,7 @@
             "images": {
                 "missingFile": "Please select an image.",
                 "invalidFile": "Please select a valid image.",
-                "isNotSquare": "Please select a valid image, must be a square."
+                "isNotSquare": "Please select a valid square image file."
             },
             "icons": {
                 "missingFile": "Please select an icon.",
