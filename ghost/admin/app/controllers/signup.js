@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
 import RSVP from 'rsvp';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {
     VersionMismatchError,
     isVersionMismatchError
@@ -10,7 +9,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default Controller.extend(ValidationEngine, {
+export default Controller.extend({
     ajax: service(),
     config: service(),
     ghostPaths: service(),
@@ -21,13 +20,11 @@ export default Controller.extend(ValidationEngine, {
     flowErrors: '',
     profileImage: null,
 
-    // ValidationEngine settings
-    validationType: 'signup',
     signupDetails: alias('model'),
 
     actions: {
-        signup() {
-            this.get('signup').perform();
+        validate(property) {
+            return this.signupDetails.validate({property});
         },
 
         setImage(image) {
@@ -84,10 +81,10 @@ export default Controller.extend(ValidationEngine, {
         let notifications = this.get('notifications');
 
         this.set('flowErrors', '');
-        this.get('hasValidated').addObjects(setupProperties);
+        this.get('signupDetails.hasValidated').addObjects(setupProperties);
 
         try {
-            yield this.validate();
+            yield this.signupDetails.validate();
             yield this._completeInvitation();
 
             try {
@@ -100,6 +97,7 @@ export default Controller.extend(ValidationEngine, {
             // ValidationEngine throws undefined
             if (!error) {
                 this.set('flowErrors', 'Please fill out the form to complete your sign-up');
+                return false;
             }
 
             if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
@@ -111,7 +109,7 @@ export default Controller.extend(ValidationEngine, {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
         }
-    }),
+    }).drop(),
 
     _completeInvitation() {
         let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');

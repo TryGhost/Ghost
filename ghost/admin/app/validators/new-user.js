@@ -14,6 +14,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
 
         if (!validator.isLength(name || '', 1)) {
             model.get('errors').add('name', 'Please enter a name.');
+            model.get('hasValidated').addObject('email');
             this.invalidate();
         }
     },
@@ -28,6 +29,8 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
             model.get('errors').add('email', 'Invalid Email.');
             this.invalidate();
         }
+
+        model.get('hasValidated').addObject('email');
     },
 
     password(model) {

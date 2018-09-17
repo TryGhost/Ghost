@@ -3,6 +3,7 @@ import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
@@ -27,7 +28,10 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     },
 
     model(params) {
-        let signupDetails = EmberObject.create();
+        let SignupDetails = EmberObject.extend(ValidationEngine, {
+            validationType: 'signup'
+        });
+        let signupDetails = SignupDetails.create();
         let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
             tokenText;
