@@ -8,14 +8,6 @@ describe('parent app', function () {
         should.exist(require('../../../server/web/parent-app')());
     });
 
-    it('should mount applications', function () {
-        const app = require('../../../server/web/parent-app')();
-        const mountedApps = app._router.stack.filter(r => (r.name === 'mounted_app'));
-        // making sure we register 5 applications:
-        // v0.1, Content API v2, Admin API v2, Admin, Public Site
-        mountedApps.length.should.equal(5);
-    });
-
     describe('correct apps are mounted', function () {
         let expressStub;
         let use;
