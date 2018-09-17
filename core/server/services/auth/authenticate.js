@@ -98,6 +98,11 @@ authenticate = {
                 }));
             }
         )(req, res, next);
+    },
+
+    // ### Authenticate API Key Middleware
+    authenticateAPIKey(req, res, next) {
+        return next();
     }
 };
 
