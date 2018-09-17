@@ -24,7 +24,7 @@ const GhTaskButton = Component.extend({
         'isSuccessClass',
         'isFailureClass'
     ],
-    attributeBindings: ['disabled', 'type', 'tabindex'],
+    attributeBindings: ['disabled', 'form', 'type', 'tabindex'],
 
     task: null,
     disabled: false,

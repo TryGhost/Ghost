@@ -6,19 +6,20 @@
                 <h1>Create your account</h1>
             </header>
 
-            <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate">
+            <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate" {{action (perform submit) on="submit"}}>
                 {{!-- Hack to stop Chrome's broken auto-fills --}}
                 <input style="display:none;" type="text" name="fakeusernameremembered"/>
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
                 {{gh-profile-image email=signupDetails.email setImage=(action "setImage")}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="email"}}
-                    <label for="email-address">Email address</label>
+                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="email"}}
+                    <label for="email">Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
                         {{svg-jar "email"}}
                         {{gh-text-input
                             type="email"
+                            id="email"
                             name="email"
                             placeholder="Eg. john@example.com"
                             disabled="disabled"
@@ -29,37 +30,35 @@
                     </span>
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="name"}}
-                    <label for="full-name">Full name</label>
+                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="name"}}
+                    <label for="name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
                         {{svg-jar "user-circle"}}
                         {{gh-trim-focus-input
                             tabindex="1"
                             type="text"
+                            id="name"
                             name="name"
                             placeholder="Eg. John H. Watson"
                             autocorrect="off"
                             value=(readonly signupDetails.name)
                             input=(action (mut signupDetails.name) value="target.value")
-                            keyEvents=(hash
-                                Enter=(action "signup")
-                            )
                             focus-out=(action "validate" "name")
                         }}
                     </span>
                     {{gh-error-message errors=signupDetails.errors property="name"}}
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=hasValidated property="password"}}
+                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="password"}}
                     <label for="password">Password</label>
                     <span class="gh-input-icon gh-icon-lock">
                         {{svg-jar "lock"}}
                         {{gh-text-input
                             tabindex="2"
                             type="password"
+                            id="password"
                             name="password"
                             placeholder="At least 10 characters"
-                            onenter=(action "signup")
                             autocorrect="off"
                             value=(readonly signupDetails.password)
                             input=(action (mut signupDetails.password) value="target.value")
@@ -67,9 +66,14 @@
                     </span>
                     {{gh-error-message errors=signupDetails.errors property="password"}}
                 {{/gh-form-group}}
+
+                {{!-- include the email field again in case password managers ignore the disabled input --}}
+                <input type="hidden" name="email" value={{signupDetails.email}} />
             </form>
 
             {{gh-task-button "Create Account"
+                type="submit"
+                form="signup"
                 runningText="Creating"
                 task=signup
                 class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
