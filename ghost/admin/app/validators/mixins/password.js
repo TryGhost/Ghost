@@ -1,4 +1,4 @@
-import BaseValidator from './base';
+import Mixin from '@ember/object/mixin';
 import validator from 'npm:validator';
 
 const BAD_PASSWORDS = [
@@ -13,7 +13,7 @@ const BAD_PASSWORDS = [
 ];
 const DISALLOWED_PASSWORDS = ['ghost', 'password', 'passw0rd'];
 
-export default BaseValidator.extend({
+export default Mixin.create({
     /**
     * Counts repeated characters if a string. When 50% or more characters are the same,
     * we return false and therefore invalidate the string.
