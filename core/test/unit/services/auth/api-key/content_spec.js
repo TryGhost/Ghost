@@ -1,6 +1,6 @@
-const models = require('../../../../server/models');
+const models = require('../../../../../server/models');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
+const testUtils = require('../../../../utils');
 
 const sandbox = sinon.sandbox.create();
 
