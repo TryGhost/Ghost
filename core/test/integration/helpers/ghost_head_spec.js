@@ -1218,6 +1218,32 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('disallows indexing for preview pages', function (done) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<meta name="robots" content="noindex,nofollow" \/>/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('implicit indexing settings for non-preview pages', function (done) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.match(/<meta name="robots" content="noindex,nofollow" \/>/);
+
+                done();
+            }).catch(done);
+        });
+
         it('outputs structured data but not schema for custom collection', function (done) {
             helpers.ghost_head(testUtils.createHbsResponse({
                 locals: {

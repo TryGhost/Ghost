@@ -83,12 +83,6 @@ describe('Private Blogging', function () {
                 req.session = {};
             });
 
-            it('filterPrivateRoutes should call next if admin', function () {
-                res.isAdmin = true;
-                privateBlogging.filterPrivateRoutes(req, res, next);
-                next.called.should.be.true();
-            });
-
             it('filterPrivateRoutes should call next if is the "private" route', function () {
                 req.path = req.url = '/private/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
