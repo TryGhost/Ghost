@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const models = require('../../../models');
 const {
+    BadRequestError,
     InternalServerError,
     UnauthorizedError
 } = require('../../../lib/common/errors');
@@ -26,16 +27,16 @@ const extractTokenFromHeader = function extractTokenFromHeader(header) {
 };
 
 const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next) {
-    // allow fallthrough to other auth methods or final ensureAuthenticated check
-    if (!req.headers || !req.headers.authorization) {
-        return next();
-    }
-
     if (req.query && req.query.content_key) {
-        return next(new UnauthorizedError({
+        return next(new BadRequestError({
             message: 'Admin API does not support query param authentication',
             code: 'INVALID_AUTH_TYPE'
         }));
+    }
+
+    // allow fallthrough to other auth methods or final ensureAuthenticated check
+    if (!req.headers || !req.headers.authorization) {
+        return next();
     }
 
     const token = extractTokenFromHeader(req.headers.authorization);
