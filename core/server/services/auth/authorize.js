@@ -13,6 +13,17 @@ authorize = {
         }
     },
 
+    // used by Admin API v2 endpoints
+    requiresAuthorizedUserOrAPIKey(req, res, next) {
+        const hasUser = req.user && req.user.id;
+        const hasAPIKey = req.api_key && req.api_key.id;
+        if (hasUser || hasAPIKey) {
+            return next();
+        } else {
+            return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')}));
+        }
+    },
+
     // ### Require user depending on public API being activated.
     requiresAuthorizedUserPublicAPI: function requiresAuthorizedUserPublicAPI(req, res, next) {
         if (labs.isSet('publicAPI') === true) {

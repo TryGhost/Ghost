@@ -25,8 +25,8 @@ module.exports = function setupApiApp() {
     // Therefore must come after themeHandler.ghostLocals, for now
     apiApp.use(shared.middlewares.api.versionMatch);
 
-    // API shouldn't be cached
     apiApp.use(shared.middlewares.cacheControl('private'));
+    // Admin API shouldn't be cached
 
     // Routing
     apiApp.use(routes());

@@ -74,7 +74,8 @@
                 "clientCredentialsNotValid": "Client credentials were not valid",
                 "forInformationRead": "For information on how to fix this, please read {url}.",
                 "accessDenied": "Access denied.",
-                "pleaseSignIn": "Please Sign In"
+                "pleaseSignIn": "Please Sign In",
+                "pleaseSignInOrAuthenticate": "Please sign in or authenticate with an Admin API Key"
             },
             "oauth": {
                 "invalidClient": "Invalid client.",
