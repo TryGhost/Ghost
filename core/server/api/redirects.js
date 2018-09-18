@@ -11,11 +11,11 @@ const fs = require('fs-extra'),
 let redirectsAPI,
     _private = {};
 
-_private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
+_private.readRedirectsFile = (customRedirectsPath) => {
     const redirectsPath = customRedirectsPath || path.join(config.getContentPath('data'), 'redirects.json');
 
     return fs.readFile(redirectsPath, 'utf-8')
-        .then(function serveContent(content) {
+        .then((content) => {
             try {
                 content = JSON.parse(content);
             } catch (err) {
@@ -26,7 +26,7 @@ _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
 
             return content;
         })
-        .catch(function handleError(err) {
+        .catch((err) => {
             if (err.code === 'ENOENT') {
                 return Promise.resolve([]);
             }
@@ -42,18 +42,18 @@ _private.readRedirectsFile = function readRedirectsFile(customRedirectsPath) {
 };
 
 redirectsAPI = {
-    download: (options) => {
+    download(options) {
         return localUtils.handlePermissions('redirects', 'download')(options)
             .then(() => {
                 return _private.readRedirectsFile();
             });
     },
-    upload: (options) => {
+    upload(options) {
         const redirectsPath = path.join(config.getContentPath('data'), 'redirects.json'),
             backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 
         return localUtils.handlePermissions('redirects', 'upload')(options)
-            .then(function backupOldRedirectsFile() {
+            .then(() => {
                 return fs.pathExists(redirectsPath)
                     .then((exists) => {
                         if (!exists) {
@@ -72,7 +72,7 @@ redirectsAPI = {
                                 return fs.move(redirectsPath, backupRedirectsPath);
                             });
                     })
-                    .then(function overrideFile() {
+                    .then(() => {
                         return _private.readRedirectsFile(options.path)
                             .then((content) => {
                                 validation.validateRedirects(content);

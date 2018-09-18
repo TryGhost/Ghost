@@ -67,7 +67,7 @@ function isActiveThemeUpdate(method, endpoint, result) {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
+cacheInvalidationHeader = (req, result) => {
     const parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
@@ -123,7 +123,7 @@ cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-locationHeader = function locationHeader(req, result) {
+locationHeader = (req, result) => {
     const apiRoot = urlService.utils.urlFor('api');
     let location,
         newObject,
@@ -167,18 +167,18 @@ locationHeader = function locationHeader(req, result) {
  * @return {string}
  */
 
-contentDispositionHeaderExport = function contentDispositionHeaderExport() {
-    return exporter.fileName().then(function then(filename) {
+contentDispositionHeaderExport = () => {
+    return exporter.fileName().then((filename) => {
         return `Attachment; filename="${filename}"`;
     });
 };
 
-contentDispositionHeaderSubscribers = function contentDispositionHeaderSubscribers() {
+contentDispositionHeaderSubscribers = () => {
     const datetime = (new Date()).toJSON().substring(0, 10);
     return Promise.resolve(`Attachment; filename="subscribers.${datetime}.csv"`);
 };
 
-contentDispositionHeaderRedirects = function contentDispositionHeaderRedirects() {
+contentDispositionHeaderRedirects = () => {
     return Promise.resolve('Attachment; filename="redirects.json"');
 };
 
@@ -186,7 +186,7 @@ contentDispositionHeaderRoutes = () => {
     return Promise.resolve('Attachment; filename="routes.yaml"');
 };
 
-addHeaders = function addHeaders(apiMethod, req, res, result) {
+addHeaders = (apiMethod, req, res, result) => {
     let cacheInvalidation,
         location,
         contentDisposition;
@@ -209,7 +209,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
     // Add Export Content-Disposition Header
     if (apiMethod === db.exportContent) {
         contentDisposition = contentDispositionHeaderExport()
-            .then(function addContentDispositionHeaderExport(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header
                 });
@@ -219,7 +219,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
     // Add Subscribers Content-Disposition Header
     if (apiMethod === subscribers.exportCSV) {
         contentDisposition = contentDispositionHeaderSubscribers()
-            .then(function addContentDispositionHeaderSubscribers(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'text/csv'
@@ -230,7 +230,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
     // Add Redirects Content-Disposition Header
     if (apiMethod === redirects.download) {
         contentDisposition = contentDispositionHeaderRedirects()
-            .then(function contentDispositionHeaderRedirects(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'application/json',
@@ -264,7 +264,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
  * @param {Function} apiMethod API method to call
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
-http = function http(apiMethod) {
+http = (apiMethod) => {
     return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         let object = req.body,
@@ -288,10 +288,10 @@ http = function http(apiMethod) {
             options = {};
         }
 
-        return apiMethod(object, options).tap(function onSuccess(response) {
+        return apiMethod(object, options).tap((response) => {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
             return addHeaders(apiMethod, req, res, (response || {}));
-        }).then(function then(response) {
+        }).then((response) => {
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
@@ -310,7 +310,7 @@ http = function http(apiMethod) {
 
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
-        }).catch(function onAPIError(error) {
+        }).catch((error) => {
             // To be handled by the API middleware
             next(error);
         });

@@ -1,14 +1,15 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     docName = 'tags',
-    allowedIncludes = ['count.posts'],
-    tags;
+    allowedIncludes = ['count.posts'];
+
+let tags;
 
 /**
  * ### Tags API Methods
@@ -21,8 +22,8 @@ tags = {
      * @param {{context}} options
      * @returns {Promise<Tags>} Tags Collection
      */
-    browse: function browse(options) {
-        var tasks,
+    browse(options) {
+        let tasks,
             permittedOptions = localUtils.browseDefaultOptions.concat('absolute_urls');
 
         /**
@@ -52,8 +53,8 @@ tags = {
      * @param {{id}} options
      * @return {Promise<Tag>} Tag
      */
-    read: function read(options) {
-        var attrs = ['id', 'slug', 'visibility'],
+    read(options) {
+        let attrs = ['id', 'slug', 'visibility'],
             permittedOptions = ['absolute_urls'],
             tasks;
 
@@ -65,7 +66,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.findOne(options.data, _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.tags.tagNotFound')
@@ -95,8 +96,8 @@ tags = {
      * @param {Tag} object the tag to create
      * @returns {Promise(Tag)} Newly created Tag
      */
-    add: function add(object, options) {
-        var tasks;
+    add(object, options) {
+        let tasks;
 
         /**
          * ### Model Query
@@ -106,7 +107,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.add(options.data.tags[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         tags: [model.toJSON(options)]
                     };
@@ -133,8 +134,8 @@ tags = {
      * @param {{id, context, include}} options
      * @return {Promise<Tag>} Edited Tag
      */
-    edit: function edit(object, options) {
-        var tasks;
+    edit(object, options) {
+        let tasks;
 
         /**
          * Make the call to the Model layer
@@ -143,7 +144,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.tags.tagNotFound')
@@ -175,8 +176,8 @@ tags = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
-        var tasks;
+    destroy(options) {
+        let tasks;
 
         /**
          * ### Delete Tag

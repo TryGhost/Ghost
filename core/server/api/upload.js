@@ -20,14 +20,14 @@ upload = {
      * @param {{context}} options
      * @returns {Promise<String>} location of uploaded file
      */
-    add: Promise.method(function (options) {
+    add: Promise.method((options) => {
         const store = storage.getStorage();
 
         if (options.files) {
             return Promise.map(options.files, (file) => {
                 return store
                     .save(file)
-                    .finally(function () {
+                    .finally(() => {
                         // Remove uploaded file from tmp location
                         return fs.unlink(file.path);
                     });
@@ -36,7 +36,7 @@ upload = {
             });
         }
 
-        return store.save(options).finally(function () {
+        return store.save(options).finally(() => {
             // Remove uploaded file from tmp location
             return fs.unlink(options.path);
         });

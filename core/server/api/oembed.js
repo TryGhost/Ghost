@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const request = require('../lib/request');
 const cheerio = require('cheerio');
 
-const findUrlWithProvider = function findUrlWithProvider(url) {
+const findUrlWithProvider = (url) => {
     let provider;
 
     // build up a list of URL variations to test against because the oembed
@@ -28,7 +28,7 @@ const findUrlWithProvider = function findUrlWithProvider(url) {
     return {url, provider};
 };
 
-const getOembedUrlFromHTML = function getOembedUrlFromHTML(html) {
+const getOembedUrlFromHTML = (html) => {
     return cheerio('link[type="application/json+oembed"]', html).attr('href');
 };
 

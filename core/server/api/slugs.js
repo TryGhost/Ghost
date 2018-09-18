@@ -1,12 +1,13 @@
 // # Slug API
 // RESTful API for the Slug resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
-    docName = 'slugs',
-    slugs,
+    docName = 'slugs';
+
+let slugs,
     allowedTypes;
 
 /**
@@ -23,8 +24,8 @@ slugs = {
      * @param {{type (required), name (required), context, transacting}} options
      * @returns {Promise(String)} Unique string
      */
-    generate: function (options) {
-        var opts = ['type'],
+    generate(options) {
+        let opts = ['type'],
             attrs = ['name'],
             tasks;
 
@@ -57,7 +58,7 @@ slugs = {
          */
         function modelQuery(options) {
             return models.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'})
-                .then(function onModelResponse(slug) {
+                .then((slug) => {
                     if (!slug) {
                         return Promise.reject(new common.errors.GhostError({
                             message: common.i18n.t('errors.api.slugs.couldNotGenerateSlug')

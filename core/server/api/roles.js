@@ -1,13 +1,13 @@
 // # Roles API
 // RESTful API for the Role resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     canThis = require('../services/permissions').canThis,
     models = require('../models'),
-    docName = 'roles',
+    docName = 'roles';
 
-    roles;
+let roles;
 
 /**
  * ## Roles API Methods
@@ -28,8 +28,8 @@ roles = {
      * @param {{context, permissions}} options (optional)
      * @returns {Promise(Roles)} Roles Collection
      */
-    browse: function browse(options) {
-        var permittedOptions = ['permissions'],
+    browse(options) {
+        let permittedOptions = ['permissions'],
             tasks;
 
         /**
@@ -40,8 +40,8 @@ roles = {
          */
         function modelQuery(options) {
             return models.Role.findAll(options)
-                .then(function onModelResponse(models) {
-                    var roles = models.map(function (role) {
+                .then((models) => {
+                    let roles = models.map((role) => {
                         return role.toJSON();
                     });
 
@@ -49,13 +49,13 @@ roles = {
                         return {roles: roles};
                     }
 
-                    return Promise.filter(roles.map(function (role) {
+                    return Promise.filter(roles.map((role) => {
                         return canThis(options.context).assign.role(role)
                             .return(role)
-                            .catch(function () {});
-                    }), function (value) {
+                            .catch(() => {});
+                    }), (value) => {
                         return value && value.name !== 'Owner';
-                    }).then(function (roles) {
+                    }).then((roles) => {
                         return {
                             roles: roles
                         };

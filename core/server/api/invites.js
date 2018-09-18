@@ -13,7 +13,7 @@ const Promise = require('bluebird'),
     allowedIncludes = ['created_by', 'updated_by'];
 
 const invites = {
-    browse: (options) => {
+    browse(options) {
         let tasks;
 
         function modelQuery(options) {
@@ -30,13 +30,13 @@ const invites = {
         return pipeline(tasks, options);
     },
 
-    read: (options) => {
+    read(options) {
         const attrs = ['id', 'email'];
         let tasks;
 
         function modelQuery(options) {
             return models.Invite.findOne(options.data, omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.invites.inviteNotFound')
@@ -59,7 +59,7 @@ const invites = {
         return pipeline(tasks, options);
     },
 
-    destroy: (options) => {
+    destroy(options) {
         let tasks;
 
         function modelQuery(options) {
@@ -83,7 +83,7 @@ const invites = {
         return pipeline(tasks, options);
     },
 
-    add: (object, options) => {
+    add(object, options) {
         let loggedInUser = options.context.user,
             tasks,
             emailData,

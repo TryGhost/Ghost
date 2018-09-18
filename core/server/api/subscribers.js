@@ -1,6 +1,6 @@
 // # Tag API
 // RESTful API for the Tag resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     pipeline = require('../lib/promise/pipeline'),
@@ -8,8 +8,9 @@ var Promise = require('bluebird'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
-    docName = 'subscribers',
-    subscribers;
+    docName = 'subscribers';
+
+let subscribers;
 
 /**
  * ### Subscribers API Methods
@@ -22,8 +23,8 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise<Subscriber>} Subscriber Collection
      */
-    browse: function browse(options) {
-        var tasks;
+    browse(options) {
+        let tasks;
 
         /**
          * ### Model Query
@@ -52,8 +53,8 @@ subscribers = {
      * @param {{id}} options
      * @return {Promise<Subscriber>} Subscriber
      */
-    read: function read(options) {
-        var attrs = ['id', 'email'],
+    read(options) {
+        let attrs = ['id', 'email'],
             tasks;
 
         /**
@@ -64,7 +65,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.findOne(options.data, _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
@@ -94,8 +95,8 @@ subscribers = {
      * @param {Subscriber} object the subscriber to create
      * @returns {Promise(Subscriber)} Newly created Subscriber
      */
-    add: function add(object, options) {
-        var tasks;
+    add(object, options) {
+        let tasks;
 
         /**
          * ### Model Query
@@ -105,7 +106,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.getByEmail(options.data.subscribers[0].email)
-                .then(function (subscriber) {
+                .then((subscriber) => {
                     if (subscriber && options.context.external) {
                         // we don't expose this information
                         return Promise.resolve(subscriber);
@@ -113,7 +114,7 @@ subscribers = {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                     }
 
-                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
+                    return models.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch((error) => {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                             return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.subscriberAlreadyExists')}));
                         }
@@ -121,7 +122,7 @@ subscribers = {
                         return Promise.reject(error);
                     });
                 })
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         subscribers: [model.toJSON(options)]
                     };
@@ -148,8 +149,8 @@ subscribers = {
      * @param {{id, context, include}} options
      * @return {Promise<Subscriber>} Edited Subscriber
      */
-    edit: function edit(object, options) {
-        var tasks;
+    edit(object, options) {
+        let tasks;
 
         /**
          * Make the call to the Model layer
@@ -158,7 +159,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
@@ -190,8 +191,8 @@ subscribers = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
-        var tasks;
+    destroy(options) {
+        let tasks;
 
         /**
          * ### Delete Subscriber
@@ -201,7 +202,7 @@ subscribers = {
         function getSubscriberByEmail(options) {
             if (options.email) {
                 return models.Subscriber.getByEmail(options.email, options)
-                    .then(function (subscriber) {
+                    .then((subscriber) => {
                         if (!subscriber) {
                             return Promise.reject(new common.errors.NotFoundError({
                                 message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
@@ -246,14 +247,14 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export CSV format
      */
-    exportCSV: function exportCSV(options) {
-        var tasks = [];
+    exportCSV(options) {
+        let tasks = [];
 
         options = options || {};
 
         function formatCSV(data) {
-            var fields = ['id', 'email', 'created_at', 'deleted_at'],
-                csv = fields.join(',') + '\r\n',
+            let fields = ['id', 'email', 'created_at', 'deleted_at'],
+                csv = `${fields.join(',')}\r\n`,
                 subscriber,
                 field,
                 j,
@@ -276,9 +277,9 @@ subscribers = {
 
         // Export data, otherwise send error 500
         function exportSubscribers() {
-            return models.Subscriber.findAll(options).then(function (data) {
+            return models.Subscriber.findAll(options).then((data) => {
                 return formatCSV(data.toJSON(options));
-            }).catch(function (err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.GhostError({err: err}));
             });
         }
@@ -300,12 +301,12 @@ subscribers = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    importCSV: function (options) {
-        var tasks = [];
+    importCSV(options) {
+        let tasks = [];
         options = options || {};
 
         function importCSV(options) {
-            var filePath = options.path,
+            let filePath = options.path,
                 fulfilled = 0,
                 invalid = 0,
                 duplicates = 0;
@@ -313,13 +314,13 @@ subscribers = {
             return fsLib.readCSV({
                 path: filePath,
                 columnsToExtract: [{name: 'email', lookup: /email/i}]
-            }).then(function (result) {
-                return Promise.all(result.map(function (entry) {
+            }).then((result) => {
+                return Promise.all(result.map((entry) => {
                     return subscribers.add(
                         {subscribers: [{email: entry.email}]},
                         {context: options.context}
                     ).reflect();
-                })).each(function (inspection) {
+                })).each((inspection) => {
                     if (inspection.isFulfilled()) {
                         fulfilled = fulfilled + 1;
                     } else {
@@ -330,7 +331,7 @@ subscribers = {
                         }
                     }
                 });
-            }).then(function () {
+            }).then(() => {
                 return {
                     meta: {
                         stats: {
@@ -340,7 +341,7 @@ subscribers = {
                         }
                     }
                 };
-            }).finally(function () {
+            }).finally(() => {
                 // Remove uploaded file from tmp location
                 return fs.unlink(filePath);
             });
