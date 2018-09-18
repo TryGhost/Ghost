@@ -23,17 +23,21 @@ _private.registerRoutes = () => {
 
         redirects.forEach((redirect) => {
             /**
-             * always delete trailing slashes, doesn't matter if regex or not
-             * Example:
-             *   - you define /my-blog-post-1/ as from property
-             *   - /my-blog-post-1 or /my-blog-post-1/ should work
+             * Detect case insensitive modifier when regex is enclosed by
+             * / ... /i
              */
-
             let options = '';
             if (redirect.from.match(/\/.*\/i/)) {
                 redirect.from = redirect.from.slice(1, -2);
                 options = 'i';
             }
+
+            /**
+             * always delete trailing slashes, doesn't matter if regex or not
+             * Example:
+             *   - you define /my-blog-post-1/ as from property
+             *   - /my-blog-post-1 or /my-blog-post-1/ should work
+             */
 
             if (redirect.from.match(/\/$/)) {
                 redirect.from = redirect.from.slice(0, -1);
