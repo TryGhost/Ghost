@@ -4,6 +4,7 @@ var _ = require('lodash'),
     config = require('../../server/config'),
     schema = require('../../server/data/schema').tables,
     ApiRouteBase = '/ghost/api/v0.1/',
+    ApiV2AdminRouteBase = '/ghost/api/v2/admin/',
     host = config.get('server').host,
     port = config.get('server').port,
     protocol = 'http://',
@@ -57,8 +58,12 @@ var _ = require('lodash'),
         webhook: _.keys(schema.webhooks)
     };
 
-function getApiQuery(route) {
-    return url.resolve(ApiRouteBase, route);
+function getApiQuery(route, {version = '0.1', type = 'admin'} = {}) {
+    if (version === '0.1') {
+        return url.resolve(ApiRouteBase, route);
+    }
+
+    return url.resolve(`/ghost/api/${version}/${type}/`, route);
 }
 
 function getURL() {
