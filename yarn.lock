@@ -498,10 +498,6 @@ bcryptjs@2.4.3:
   version "2.4.3"
   resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.3.tgz#9ab5627b93e60621ff7cdac5da9733027df1d0cb"
 
-bellajs@^7.2.2:
-  version "7.2.2"
-  resolved "https://registry.yarnpkg.com/bellajs/-/bellajs-7.2.2.tgz#dc6f8c13acb248dc2ef1b46d01286a16ca31025a"
-
 bignumber.js@4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.0.4.tgz#7c40f5abcd2d6623ab7b99682ee7db81b11889a4"
@@ -4377,11 +4373,10 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-"oembed-parser@https://github.com/kevinansfield/oembed-parser/tarball/448496419130fa4c6c40c2471b6403bc6025f36a":
+"oembed-parser@https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7":
   version "1.1.1"
-  resolved "https://github.com/kevinansfield/oembed-parser/tarball/448496419130fa4c6c40c2471b6403bc6025f36a#c6bf49487c4239e7c1cadd4a85c06714e1cf6dce"
+  resolved "https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7#42f417d83d79ee0d8631546e171e50d5b2f14027"
   dependencies:
-    bellajs "^7.2.2"
     node-fetch "^2.1.2"
     promise-wtf "^1.2.4"
 
