@@ -1,11 +1,12 @@
 // # API Utils
 // Shared helpers for working with the API
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     permissions = require('../services/permissions'),
     validation = require('../data/validation'),
-    common = require('../lib/common'),
-    utils;
+    common = require('../lib/common');
+
+let utils;
 
 utils = {
     // ## Default Options
@@ -32,14 +33,14 @@ utils = {
      * @param {Object} extras
      * @returns {Function} doValidate
      */
-    validate: function validate(docName, extras) {
+    validate(docName, extras) {
         /**
          * ### Do Validate
          * Validate the object and options passed to an endpoint
          * @argument {...*} [arguments] object or object and options hash
          */
         return function doValidate() {
-            var object, options, permittedOptions;
+            let object, options, permittedOptions;
 
             if (arguments.length === 2) {
                 object = arguments[0];
@@ -81,7 +82,7 @@ utils = {
                 // @TODO: should we throw an error if there are incorrect options provided?
                 options = _.pick(options, permittedOptions);
 
-                var validationErrors = utils.validateOptions(options);
+                let validationErrors = utils.validateOptions(options);
 
                 if (_.isEmpty(validationErrors)) {
                     return Promise.resolve(options);
@@ -93,7 +94,7 @@ utils = {
 
             // If we got an object, check that too
             if (object) {
-                return utils.checkObject(object, docName, options.id).then(function (data) {
+                return utils.checkObject(object, docName, options.id).then((data) => {
                     options.data = data;
 
                     return checkOptions(options);
@@ -105,8 +106,8 @@ utils = {
         };
     },
 
-    validateOptions: function validateOptions(options) {
-        var globalValidations = {
+    validateOptions(options) {
+        let globalValidations = {
                 id: {matches: /^[a-f\d]{24}$|^1$|me/i},
                 uuid: {isUUID: true},
                 slug: {isSlug: true},
@@ -123,7 +124,7 @@ utils = {
             noValidation = ['data', 'context', 'include', 'filter', 'forUpdate', 'transacting', 'formats'],
             errors = [];
 
-        _.each(options, function (value, key) {
+        _.each(options, (value, key) => {
             // data is validated elsewhere
             if (noValidation.indexOf(key) === -1) {
                 if (globalValidations[key]) {
@@ -144,7 +145,7 @@ utils = {
      * @param {Object} options
      * @returns {Boolean}
      */
-    detectPublicContext: function detectPublicContext(options) {
+    detectPublicContext(options) {
         options.context = permissions.parseContext(options.context);
         return options.context.public;
     },
@@ -156,7 +157,7 @@ utils = {
      * @param {Object} options
      * @returns {Object} options
      */
-    applyPublicPermissions: function applyPublicPermissions(docName, method, options) {
+    applyPublicPermissions(docName, method, options) {
         return permissions.applyPublicRules(docName, method, options);
     },
 
@@ -166,8 +167,8 @@ utils = {
      * @param {String} method (read || browse)
      * @returns {Function}
      */
-    handlePublicPermissions: function handlePublicPermissions(docName, method) {
-        var singular = docName.replace(/s$/, '');
+    handlePublicPermissions(docName, method) {
+        let singular = docName.replace(/s$/, '');
 
         /**
          * Check if this is a public request, if so use the public permissions, otherwise use standard canThis
@@ -175,7 +176,7 @@ utils = {
          * @returns {Object} options
          */
         return function doHandlePublicPermissions(options) {
-            var permsPromise;
+            let permsPromise;
 
             if (utils.detectPublicContext(options)) {
                 permsPromise = utils.applyPublicPermissions(docName, method, options);
@@ -183,7 +184,7 @@ utils = {
                 permsPromise = permissions.canThis(options.context)[method][singular](options.data);
             }
 
-            return permsPromise.then(function permissionGranted() {
+            return permsPromise.then(() => {
                 return options;
             });
         };
@@ -196,8 +197,8 @@ utils = {
      * @param {Array} unsafeAttrNames - attribute names (e.g. post.status) that could change the outcome
      * @returns {Function}
      */
-    handlePermissions: function handlePermissions(docName, method, unsafeAttrNames) {
-        var singular = docName.replace(/s$/, '');
+    handlePermissions(docName, method, unsafeAttrNames) {
+        let singular = docName.replace(/s$/, '');
 
         /**
          * ### Handle Permissions
@@ -206,10 +207,10 @@ utils = {
          * @returns {Object} options
          */
         return function doHandlePermissions(options) {
-            var unsafeAttrObject = unsafeAttrNames && _.has(options, 'data.[' + docName + '][0]') ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
+            let unsafeAttrObject = unsafeAttrNames && _.has(options, `data.[${docName}][0]`) ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
-            return permsPromise.then(function permissionGranted(result) {
+            return permsPromise.then((result) => {
                 /*
                  * Allow the permissions function to return a list of excluded attributes.
                  * If it does, omit those attrs from the data passed through
@@ -220,12 +221,12 @@ utils = {
                  * TODO: This is currently only needed because of the posts model and the contributor role. Once we extend the
                  * contributor role to be able to edit existing tags, this concept can be removed.
                  */
-                if (result && result.excludedAttrs && _.has(options, 'data.[' + docName + '][0]')) {
+                if (result && result.excludedAttrs && _.has(options, `data.[${docName}][0]`)) {
                     options.data[docName][0] = _.omit(options.data[docName][0], result.excludedAttrs);
                 }
 
                 return options;
-            }).catch(function handleNoPermissionError(err) {
+            }).catch((err) => {
                 if (err instanceof common.errors.NoPermissionError) {
                     err.message = common.i18n.t('errors.api.utils.noPermissionToCall', {
                         method: method,
@@ -245,26 +246,26 @@ utils = {
         };
     },
 
-    trimAndLowerCase: function trimAndLowerCase(params) {
+    trimAndLowerCase(params) {
         params = params || '';
         if (_.isString(params)) {
             params = params.split(',');
         }
 
-        return _.map(params, function (item) {
+        return params.map((item) => {
             return item.trim().toLowerCase();
         });
     },
 
-    prepareInclude: function prepareInclude(include, allowedIncludes) {
+    prepareInclude(include, allowedIncludes) {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
-    prepareFields: function prepareFields(fields) {
+    prepareFields(fields) {
         return this.trimAndLowerCase(fields);
     },
 
-    prepareFormats: function prepareFormats(formats, allowedFormats) {
+    prepareFormats(formats, allowedFormats) {
         return _.intersection(this.trimAndLowerCase(formats), allowedFormats);
     },
 
@@ -273,7 +274,7 @@ utils = {
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */
-    convertOptions: function convertOptions(allowedIncludes, allowedFormats, convertOptions = {forModel: true}) {
+    convertOptions(allowedIncludes, allowedFormats, convertOptions = {forModel: true}) {
         /**
          * Convert our options from API-style to Model-style (default)
          * @param {Object} options
@@ -323,7 +324,7 @@ utils = {
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
      */
-    checkObject: function checkObject(object, docName, editId) {
+    checkObject(object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return Promise.reject(new common.errors.BadRequestError({
                 message: common.i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})
@@ -415,7 +416,7 @@ utils = {
         }
 
         // will remove unwanted null values
-        _.each(object[docName], function (value, index) {
+        _.each(object[docName], (value, index) => {
             if (!_.isObject(object[docName][index])) {
                 return;
             }

@@ -1,6 +1,6 @@
 // # Settings API
 // RESTful API for the Setting resource
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment-timezone'),
     fs = require('fs-extra'),
@@ -12,8 +12,9 @@ var Promise = require('bluebird'),
     urlService = require('../services/url'),
     common = require('../lib/common'),
     settingsCache = require('../services/settings/cache'),
-    docName = 'settings',
-    settings,
+    docName = 'settings';
+
+let settings,
     settingsFilter,
     settingsResult,
     canEditAllSettings;
@@ -28,10 +29,10 @@ var Promise = require('bluebird'),
  * @param {String} filter
  * @returns {*}
  */
-settingsFilter = function (settings, filter) {
-    return _.fromPairs(_.filter(_.toPairs(settings), function (setting) {
+settingsFilter = (settings, filter) => {
+    return _.fromPairs(_.toPairs(settings).filter((setting) => {
         if (filter) {
-            return _.some(filter.split(','), function (f) {
+            return _.some(filter.split(','), (f) => {
                 return setting[1].type === f;
             });
         }
@@ -60,8 +61,8 @@ settingsFilter = function (settings, filter) {
  * @param {String} type
  * @returns {{settings: *}}
  */
-settingsResult = function settingsResult(settings, type) {
-    var filteredSettings = _.values(settingsFilter(settings, type)),
+settingsResult = (settings, type) => {
+    let filteredSettings = _.values(settingsFilter(settings, type)),
         result = {
             settings: filteredSettings,
             meta: {}
@@ -83,20 +84,20 @@ settingsResult = function settingsResult(settings, type) {
  * @param {Object} settingsInfo
  * @returns {*}
  */
-canEditAllSettings = function (settingsInfo, options) {
-    var checkSettingPermissions = function checkSettingPermissions(setting) {
+canEditAllSettings = (settingsInfo, options) => {
+    let checkSettingPermissions = (setting) => {
             if (setting.type === 'core' && !(options.context && options.context.internal)) {
                 return Promise.reject(
                     new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')})
                 );
             }
 
-            return canThis(options.context).edit.setting(setting.key).catch(function () {
+            return canThis(options.context).edit.setting(setting.key).catch(() => {
                 return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToEditSettings')}));
             });
         },
-        checks = _.map(settingsInfo, function (settingInfo) {
-            var setting = settingsCache.get(settingInfo.key, {resolve: false});
+        checks = settingsInfo.map((settingInfo) => {
+            let setting = settingsCache.get(settingInfo.key, {resolve: false});
 
             if (!setting) {
                 return Promise.reject(new common.errors.NotFoundError(
@@ -131,23 +132,23 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    browse: function browse(options) {
+    browse(options) {
         options = options || {};
 
-        var result = settingsResult(settingsCache.getAll(), options.type);
+        let result = settingsResult(settingsCache.getAll(), options.type);
 
         // If there is no context, return only blog settings
         if (!options.context) {
-            return Promise.resolve(_.filter(result.settings, function (setting) {
+            return Promise.resolve(result.settings.filter((setting) => {
                 return setting.type === 'blog';
             }));
         }
 
         // Otherwise return whatever this context is allowed to browse
-        return canThis(options.context).browse.setting().then(function () {
+        return canThis(options.context).browse.setting().then(() => {
             // Omit core settings unless internal request
             if (!options.context.internal) {
-                result.settings = _.filter(result.settings, function (setting) {
+                result.settings = result.settings.filter((setting) => {
                     return setting.type !== 'core' && setting.key !== 'permalinks';
                 });
             }
@@ -161,12 +162,12 @@ settings = {
      * @param {Object} options
      * @returns {*}
      */
-    read: function read(options) {
+    read(options) {
         if (_.isString(options)) {
             options = {key: options};
         }
 
-        var setting = settingsCache.get(options.key, {resolve: false}),
+        let setting = settingsCache.get(options.key, {resolve: false}),
             result = {};
 
         if (!setting) {
@@ -193,9 +194,9 @@ settings = {
             return Promise.resolve(settingsResult(result));
         }
 
-        return canThis(options.context).read.setting(options.key).then(function () {
+        return canThis(options.context).read.setting(options.key).then(() => {
             return settingsResult(result);
-        }, function () {
+        }, () => {
             return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.settings.noPermissionToReadSettings')}));
         });
     },
@@ -207,10 +208,9 @@ settings = {
      * @param {{id (required), include,...}} options (optional) or a single string value
      * @return {Promise(Setting)} Edited Setting
      */
-    edit: function edit(object, options) {
+    edit(object, options) {
         options = options || {};
-        var self = this,
-            type;
+        let type;
 
         // Allow shorthand syntax where a single key and value are passed to edit instead of object and options
         if (_.isString(object)) {
@@ -218,13 +218,13 @@ settings = {
         }
 
         // clean data
-        _.each(object.settings, function (setting) {
+        object.settings.forEach((setting) => {
             if (!_.isString(setting.value)) {
                 setting.value = JSON.stringify(setting.value);
             }
         });
 
-        type = _.find(object.settings, function (setting) {
+        type = object.settings.find((setting) => {
             return setting.key === 'type';
         });
 
@@ -232,7 +232,7 @@ settings = {
             type = type.value;
         }
 
-        object.settings = _.reject(object.settings, function (setting) {
+        object.settings = _.reject(object.settings, (setting) => {
             return setting.key === 'type';
         });
 
@@ -242,15 +242,14 @@ settings = {
             }));
         }
 
-        return canEditAllSettings(object.settings, options).then(function () {
-            return localUtils.checkObject(object, docName).then(function (checkedData) {
-                options.user = self.user;
+        return canEditAllSettings(object.settings, options).then(() => {
+            return localUtils.checkObject(object, docName).then((checkedData) => {
                 return models.Settings.edit(checkedData.settings, options);
-            }).then(function (settingsModelsArray) {
+            }).then((settingsModelsArray) => {
                 // Instead of a standard bookshelf collection, Settings.edit returns an array of Settings Models.
                 // We convert this to JSON, by calling toJSON on each Model (using invokeMap for ease)
                 // We use keyBy to create an object that uses the 'key' as a key for each setting.
-                var settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
+                let settingsKeyedJSON = _.keyBy(_.invokeMap(settingsModelsArray, 'toJSON'), 'key');
                 return settingsResult(settingsKeyedJSON, type);
             });
         });
@@ -267,15 +266,15 @@ settings = {
      *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
      * - then we reload the whole site app, which will reset all routers and re-create the url generators
      */
-    upload: (options) => {
+    upload(options) {
         const backupRoutesPath = path.join(config.getContentPath('settings'), `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
 
         return localUtils.handlePermissions('settings', 'edit')(options)
             .then(() => {
-                return fs.copy(config.getContentPath('settings') + '/routes.yaml', backupRoutesPath);
+                return fs.copy(`${config.getContentPath('settings')}/routes.yaml`, backupRoutesPath);
             })
             .then(() => {
-                return fs.copy(options.path, config.getContentPath('settings') + '/routes.yaml');
+                return fs.copy(options.path, `${config.getContentPath('settings')}/routes.yaml`);
             })
             .then(() => {
                 urlService.resetGenerators({releaseResourcesOnly: true});
@@ -287,7 +286,7 @@ settings = {
                     return siteApp.reload();
                 } catch (err) {
                     // bring back backup, otherwise your Ghost blog is broken
-                    return fs.copy(backupRoutesPath, config.getContentPath('settings') + '/routes.yaml')
+                    return fs.copy(backupRoutesPath, `${config.getContentPath('settings')}/routes.yaml`)
                         .then(() => {
                             return siteApp.reload();
                         })
@@ -298,14 +297,14 @@ settings = {
             });
     },
 
-    download: (options) => {
+    download(options) {
         const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
 
         return localUtils.handlePermissions('settings', 'browse')(options)
             .then(() => {
                 return fs.readFile(routesPath, 'utf-8');
             })
-            .catch(function handleError(err) {
+            .catch((err) => {
                 if (err.code === 'ENOENT') {
                     return Promise.resolve([]);
                 }
