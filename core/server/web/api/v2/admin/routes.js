@@ -145,6 +145,12 @@ module.exports = function apiRoutes() {
     // ## Slack
     router.post('/slack/test', mw.authenticatePrivate, api.http(api.slack.sendTest));
 
+    // ## Sessions
+    // Only need to `getSession` here because this is only route they don't
+    // have to be authenticated for.
+    router.post('/session', auth.session.getSession, auth.session.createSession);
+    router.del('/session', auth.auth.adminAPI, auth.session.destroySession);
+
     // ## Authentication
     router.post('/authentication/passwordreset',
         shared.middlewares.brute.globalReset,
