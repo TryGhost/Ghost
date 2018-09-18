@@ -95,7 +95,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.findOne(options.data, omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.posts.postNotFound')
@@ -142,7 +142,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.edit(options.data.posts[0], omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.posts.postNotFound')
@@ -196,7 +196,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.add(options.data.posts[0], omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     const post = model.toJSON(options);
 
                     if (post.status === 'published') {

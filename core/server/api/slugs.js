@@ -58,7 +58,7 @@ slugs = {
          */
         function modelQuery(options) {
             return models.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'})
-                .then(function onModelResponse(slug) {
+                .then((slug) => {
                     if (!slug) {
                         return Promise.reject(new common.errors.GhostError({
                             message: common.i18n.t('errors.api.slugs.couldNotGenerateSlug')

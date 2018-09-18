@@ -75,7 +75,7 @@ users = {
          */
         function doQuery(options) {
             return models.User.findOne(options.data, _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.users.userNotFound')
@@ -183,7 +183,7 @@ users = {
                         return options;
                     });
                 });
-            }).catch(function handleError(err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
                     context: common.i18n.t('errors.api.users.noPermissionToEditUser')
@@ -199,7 +199,7 @@ users = {
          */
         function doQuery(options) {
             return models.User.edit(options.data.users[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.users.userNotFound')
@@ -238,10 +238,10 @@ users = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return canThis(options.context).destroy.user(options.id).then(function permissionGranted() {
+            return canThis(options.context).destroy.user(options.id).then(() => {
                 options.status = 'all';
                 return options;
-            }).catch(function handleError(err) {
+            }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err,
                     context: common.i18n.t('errors.api.users.noPermissionToDestroyUser')
@@ -315,7 +315,7 @@ users = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
+            return canThis(options.context).edit.user(options.data.password[0].user_id).then(() => {
                 return options;
             }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
@@ -335,7 +335,7 @@ users = {
             return models.User.changePassword(
                 options.data.password[0],
                 _.omit(options, ['data'])
-            ).then(function onModelResponse() {
+            ).then(() => {
                 return Promise.resolve({
                     password: [{message: common.i18n.t('notices.api.users.pwdChangedSuccessfully')}]
                 });
@@ -385,7 +385,7 @@ users = {
          */
         function doQuery(options) {
             return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     // NOTE: model returns json object already
                     // @TODO: why?
                     return {

@@ -66,7 +66,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.findOne(options.data, _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.tags.tagNotFound')
@@ -107,7 +107,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.add(options.data.tags[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         tags: [model.toJSON(options)]
                     };
@@ -144,7 +144,7 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.edit(options.data.tags[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.tags.tagNotFound')

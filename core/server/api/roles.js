@@ -40,7 +40,7 @@ roles = {
          */
         function modelQuery(options) {
             return models.Role.findAll(options)
-                .then(function onModelResponse(models) {
+                .then((models) => {
                     let roles = models.map((role) => {
                         return role.toJSON();
                     });

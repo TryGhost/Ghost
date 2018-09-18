@@ -160,12 +160,12 @@ authentication = {
             let dbHash, token;
 
             return settingsAPI.read(merge({key: 'db_hash'}, options))
-                .then(function fetchedSettings(response) {
+                .then((response) => {
                     dbHash = response.settings[0].value;
 
                     return models.User.getByEmail(email, options);
                 })
-                .then(function fetchedUser(user) {
+                .then((user) => {
                     if (!user) {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
@@ -292,12 +292,12 @@ authentication = {
                 newPassword = data.newPassword;
 
             return settingsAPI.read(merge({key: 'db_hash'}, omit(options, 'data')))
-                .then(function fetchedSettings(response) {
+                .then((response) => {
                     dbHash = response.settings[0].value;
 
                     return models.User.getByEmail(tokenParts.email, options);
                 })
-                .then(function fetchedUser(user) {
+                .then((user) => {
                     if (!user) {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
                     }
@@ -322,7 +322,7 @@ authentication = {
                         user_id: user.id
                     }, options);
                 })
-                .then(function changedPassword(updatedUser) {
+                .then((updatedUser) => {
                     updatedUser.set('status', 'active');
                     return updatedUser.save(options);
                 })
@@ -460,13 +460,13 @@ authentication = {
         function checkInvitation(email) {
             return models.Invite
                 .findOne({email: email, status: 'sent'}, options)
-                .then(function fetchedInvite(invite) {
+                .then((invite) => {
                     if (!invite) {
                         return {invitation: [{valid: false}]};
                     }
 
                     return models.User.findOne({id: invite.get('created_by')})
-                        .then(function fetchedUser(user) {
+                        .then((user) => {
                             return {invitation: [{valid: true, invitedBy: user.get('name')}]};
                         });
                 });

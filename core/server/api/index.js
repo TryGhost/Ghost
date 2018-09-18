@@ -168,7 +168,7 @@ locationHeader = (req, result) => {
  */
 
 contentDispositionHeaderExport = () => {
-    return exporter.fileName().then(function then(filename) {
+    return exporter.fileName().then((filename) => {
         return `Attachment; filename="${filename}"`;
     });
 };
@@ -209,7 +209,7 @@ addHeaders = (apiMethod, req, res, result) => {
     // Add Export Content-Disposition Header
     if (apiMethod === db.exportContent) {
         contentDisposition = contentDispositionHeaderExport()
-            .then(function addContentDispositionHeaderExport(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header
                 });
@@ -219,7 +219,7 @@ addHeaders = (apiMethod, req, res, result) => {
     // Add Subscribers Content-Disposition Header
     if (apiMethod === subscribers.exportCSV) {
         contentDisposition = contentDispositionHeaderSubscribers()
-            .then(function addContentDispositionHeaderSubscribers(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'text/csv'
@@ -230,7 +230,7 @@ addHeaders = (apiMethod, req, res, result) => {
     // Add Redirects Content-Disposition Header
     if (apiMethod === redirects.download) {
         contentDisposition = contentDispositionHeaderRedirects()
-            .then(function contentDispositionHeaderRedirects(header) {
+            .then((header) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ http = (apiMethod) => {
             options = {};
         }
 
-        return apiMethod(object, options).tap(function onSuccess(response) {
+        return apiMethod(object, options).tap((response) => {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
             return addHeaders(apiMethod, req, res, (response || {}));
         }).then((response) => {
@@ -310,7 +310,7 @@ http = (apiMethod) => {
 
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
-        }).catch(function onAPIError(error) {
+        }).catch((error) => {
             // To be handled by the API middleware
             next(error);
         });

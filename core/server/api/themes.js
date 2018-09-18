@@ -29,7 +29,7 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'browse')(options)
             // Main action
-            .then(function makeApiResult() {
+            .then(() => {
                 // Return JSON result
                 return themeUtils.toJSON();
             });
@@ -48,7 +48,7 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'activate')(options)
             // Validation
-            .then(function validateTheme() {
+            .then(() => {
                 loadedTheme = themeList.get(themeName);
 
                 if (!loadedTheme) {
@@ -61,13 +61,13 @@ themes = {
                 return themeUtils.validate.check(loadedTheme);
             })
             // Update setting
-            .then(function changeActiveThemeSetting(_checkedTheme) {
+            .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
                 // We use the model, not the API here, as we don't want to trigger permissions
                 return settingsModel.edit(newSettings, options);
             })
             // Call activate
-            .then(function hasEditedSetting() {
+            .then(() => {
                 // Activate! (sort of)
                 debug('Activating theme (method B on API "activate")', themeName);
                 themeUtils.activate(loadedTheme, checkedTheme);
@@ -99,35 +99,35 @@ themes = {
             // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
-            .then(function validateTheme() {
+            .then(() => {
                 return themeUtils.validate.check(zip, true);
             })
             // More validation (existence check)
-            .then(function checkExists(_checkedTheme) {
+            .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
 
                 return themeUtils.storage.exists(zip.shortName);
             })
             // If the theme existed we need to delete it
-            .then(function removeOldTheme(themeExists) {
+            .then((themeExists) => {
                 // delete existing theme
                 if (themeExists) {
                     return themeUtils.storage.delete(zip.shortName);
                 }
             })
-            .then(function storeNewTheme() {
+            .then(() => {
                 // store extracted theme
                 return themeUtils.storage.save({
                     name: zip.shortName,
                     path: checkedTheme.path
                 });
             })
-            .then(function loadNewTheme() {
+            .then(() => {
                 // Loads the theme from the filesystem
                 // Sets the theme on the themeList
                 return themeUtils.loadOne(zip.shortName);
             })
-            .then(function activateAndReturn(loadedTheme) {
+            .then((loadedTheme) => {
                 // If this is the active theme, we are overriding
                 // This is a special case of activation
                 if (zip.shortName === settingsCache.get('active_theme')) {
@@ -171,7 +171,7 @@ themes = {
         return localUtils
         // Permissions
             .handlePermissions('themes', 'read')(options)
-            .then(function sendTheme() {
+            .then(() => {
                 return themeUtils.storage.serve({
                     name: themeName
                 });
@@ -190,7 +190,7 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'destroy')(options)
             // Validation
-            .then(function validateTheme() {
+            .then(() => {
                 if (themeName === 'casper') {
                     throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.destroyCasper')});
                 }
@@ -209,7 +209,7 @@ themes = {
                 return themeUtils.storage.delete(themeName);
             })
             // And some extra stuff to maintain state here
-            .then(function deleteTheme() {
+            .then(() => {
                 themeList.del(themeName);
                 // Delete returns an empty 204 response
             });

@@ -65,7 +65,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.findOne(options.data, _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.subscribers.subscriberNotFound')
@@ -122,7 +122,7 @@ subscribers = {
                         return Promise.reject(error);
                     });
                 })
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         subscribers: [model.toJSON(options)]
                     };
@@ -159,7 +159,7 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.edit(options.data.subscribers[0], _.omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.subscribers.subscriberNotFound')

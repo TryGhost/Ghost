@@ -83,7 +83,7 @@ webhooks = {
 
                     return models.Webhook.add(options.data.webhooks[0], _.omit(options, ['data']));
                 })
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         webhooks: [model.toJSON(options)]
                     };

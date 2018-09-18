@@ -37,7 +37,7 @@ clients = {
             options.data = extend(options.data, {type: 'ua'});
 
             return models.Client.findOne(options.data, omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('common.api.clients.clientNotFound')

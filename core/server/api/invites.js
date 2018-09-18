@@ -36,7 +36,7 @@ const invites = {
 
         function modelQuery(options) {
             return models.Invite.findOne(options.data, omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.invites.inviteNotFound')

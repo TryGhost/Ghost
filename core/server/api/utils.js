@@ -184,7 +184,7 @@ utils = {
                 permsPromise = permissions.canThis(options.context)[method][singular](options.data);
             }
 
-            return permsPromise.then(function permissionGranted() {
+            return permsPromise.then(() => {
                 return options;
             });
         };
@@ -210,7 +210,7 @@ utils = {
             let unsafeAttrObject = unsafeAttrNames && _.has(options, `data.[${docName}][0]`) ? _.pick(options.data[docName][0], unsafeAttrNames) : {},
                 permsPromise = permissions.canThis(options.context)[method][singular](options.id, unsafeAttrObject);
 
-            return permsPromise.then(function permissionGranted(result) {
+            return permsPromise.then((result) => {
                 /*
                  * Allow the permissions function to return a list of excluded attributes.
                  * If it does, omit those attrs from the data passed through
@@ -226,7 +226,7 @@ utils = {
                 }
 
                 return options;
-            }).catch(function handleNoPermissionError(err) {
+            }).catch((err) => {
                 if (err instanceof common.errors.NoPermissionError) {
                     err.message = common.i18n.t('errors.api.utils.noPermissionToCall', {
                         method: method,
