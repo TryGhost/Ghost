@@ -1,41 +1,26 @@
 const models = require('../../../models');
 const {
+    BadRequestError,
     UnauthorizedError
 } = require('../../../lib/common/errors');
 
-const extractCredentialsFromQuery = function extractCredentialsFromQuery(query) {
-    let [apiKeyId, token] = query.split('|');
-
-    return {
-        apiKeyId,
-        token
-    };
-};
-
 const authenticateContentAPIKey = function authenticateContentAPIKey(req, res, next) {
-    // allow fallthrough to other auth methods or final ensureAuthenticated check
-    if (!req.query || !req.query.content_key) {
-        return next();
-    }
-
     if (req.headers && req.headers.authorization) {
-        return next(new UnauthorizedError({
+        return next(new BadRequestError({
             message: 'Content API does not support header authentication',
             code: 'INVALID_AUTH_TYPE'
         }));
     }
 
-    let {apiKeyId, token} = extractCredentialsFromQuery(req.query.content_key);
-
-    if (!apiKeyId || !token) {
-        return next(new UnauthorizedError({
-            message: 'Content API auth format is "?content_key=[api key id]|[token]"',
-            code: 'INVALID_AUTH_PARAM'
-        }));
+    // allow fallthrough to other auth methods or final ensureAuthenticated check
+    if (!req.query || !req.query.content_key) {
+        return next();
     }
 
-    models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
-        if (!apiKey || token !== apiKey.get('secret')) {
+    let key = req.query.content_key;
+
+    models.ApiKey.findOne({secret: key}).then((apiKey) => {
+        if (!apiKey) {
             return next(new UnauthorizedError({
                 message: 'Unknown Content API Key',
                 code: 'UNKNOWN_CONTENT_API_KEY'
