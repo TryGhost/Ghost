@@ -74,11 +74,8 @@ module.exports.up = function setupIntegrations(options) {
         context: {internal: true}
     }, options);
 
-    // TODO: does this rule need adjusting in our eslint config?
-    /* eslint-disable arrow-body-style */
     return _private.addIntegrationsTable(localOptions)
         .then(() => _private.addApiKeysTable(localOptions))
         .then(() => _private.addApiKeyRole(localOptions))
         .then(() => _private.addApiKeyPermissions(localOptions));
-    /* eslint-enable arrow-body-style */
 };
