@@ -11,23 +11,18 @@ const JWT_OPTIONS = {
 };
 
 /**
- * Remove 'Bearer' from raw authorization header and extract the API Key ID and
- * JWT token. Eg. Authorization: Bearer ${objectId}:${JWT}
+ * Remove 'Bearer' from raw authorization header and extract the JWT token.
+ * Eg. Authorization: Bearer ${JWT}
  * @param {string} header
  */
-const extractCredentialsFromHeader = function extractCredentialsFromHeader(header) {
-    let [scheme, credentials] = header.split(' ');
+const extractTokenFromHeader = function extractTokenFromHeader(header) {
+    const [scheme, token] = header.split(' ');
 
     if (/^Bearer$/i.test(scheme)) {
-        let [apiKeyId, token] = credentials.split('|');
-
-        return {
-            apiKeyId,
-            token
-        };
-    } else {
-        return {};
+        return token;
     }
+
+    return;
 };
 
 const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next) {
@@ -43,14 +38,17 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
         }));
     }
 
-    let {apiKeyId, token} = extractCredentialsFromHeader(req.headers.authorization);
+    const token = extractTokenFromHeader(req.headers.authorization);
 
-    if (!apiKeyId || !token) {
+    if (!token) {
         return next(new UnauthorizedError({
-            message: 'Authorization header format is "Authorization: Bearer [api key id]|[token]"',
+            message: 'Authorization header format is "Authorization: Bearer [token]"',
             code: 'INVALID_AUTH_HEADER'
         }));
     }
+
+    const decoded = jwt.decode(token, {complete: true});
+    const apiKeyId = decoded.header.kid;
 
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
@@ -67,11 +65,14 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
             }));
         }
 
-        // TODO: should we do Buffer.from(x, 'hex') or is using the secret as-is ok?
+        const secret = Buffer.from(apiKey.get('secret'), 'hex');
+        const options = Object.assign({
+            // ensure the token was meant for this endpoint
+            aud: req.originalUrl
+        }, JWT_OPTIONS);
+
         try {
-            // TODO: grab the decoded payload and check if the payload endpoint
-            // matches the requested endpoint
-            jwt.verify(token, apiKey.get('secret'), JWT_OPTIONS);
+            jwt.verify(token, secret, options);
         } catch (err) {
             if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
                 return next(new UnauthorizedError({
