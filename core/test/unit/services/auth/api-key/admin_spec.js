@@ -19,7 +19,7 @@ describe('Admin API Key Auth', function () {
         const fakeApiKey = {
             id: '1234',
             type: 'admin',
-            secret: 'asdfghjkl',
+            secret: Buffer.from('testing').toString('hex'),
             get(prop) {
                 return this[prop];
             }
