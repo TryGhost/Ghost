@@ -164,15 +164,6 @@ module.exports = function apiRoutes() {
     router.put('/authentication/setup', mw.authenticatePrivate, api.http(api.authentication.updateSetup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
-    router.post('/authentication/token',
-        mw.authenticateClient(),
-        shared.middlewares.brute.globalBlock,
-        shared.middlewares.brute.userLogin,
-        auth.oauth.generateAccessToken
-    );
-
-    router.post('/authentication/revoke', mw.authenticatePrivate, api.http(api.authentication.revoke));
-
     // ## Uploads
     // @TODO: rename endpoint to /images/upload (or similar)
     router.post('/uploads',
