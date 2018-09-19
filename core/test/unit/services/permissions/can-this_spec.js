@@ -423,6 +423,33 @@ describe('Permissions', function () {
             });
         });
 
+        describe('API Key-based permissions', function () {
+            // TODO change to using fake models in tests!
+            // Permissions need to be NOT fundamentally baked into Ghost, but a separate module, at some point
+            // It can depend on bookshelf, but should NOT use hard coded model knowledge.
+            // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
+            it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
+                const apiKeyProviderStub = sandbox.stub(providers, 'apiKey').callsFake(() => {
+                    // Fake the response from providers.user, which contains permissions and roles
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        // This should be JSON, so no need to run it through the model layer. 5 === admin api key
+                        roles: [testUtils.DataGenerator.Content.roles[5]]
+                    });
+                });
+
+                permissions.canThis({api_key: {}}) // api key context
+                    .edit
+                    .tag({id: 1}) // tag id in model syntax
+                    .then(function (res) {
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+        });
+
         describe('App-based permissions (requires user as well)', function () {
             // @TODO: revisit this - do we really need to have USER permissions AND app permissions?
             it('No permissions: cannot edit tag with app only (no permissible function on model)', function (done) {
@@ -553,7 +580,7 @@ describe('Permissions', function () {
                 })
                 .catch(function (err) {
                     permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(7);
+                    permissibleStub.firstCall.args.should.have.lengthOf(8);
 
                     permissibleStub.firstCall.args[0].should.eql(1);
                     permissibleStub.firstCall.args[1].should.eql('edit');
@@ -562,6 +589,7 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[4].should.be.an.Object();
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
+                    permissibleStub.firstCall.args[7].should.be.true();
 
                     userProviderStub.callCount.should.eql(1);
                     err.message.should.eql('Hello World!');
@@ -587,7 +615,7 @@ describe('Permissions', function () {
                 .post({id: 1}) // tag id in model syntax
                 .then(function (res) {
                     permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(7);
+                    permissibleStub.firstCall.args.should.have.lengthOf(8);
                     permissibleStub.firstCall.args[0].should.eql(1);
                     permissibleStub.firstCall.args[1].should.eql('edit');
                     permissibleStub.firstCall.args[2].should.be.an.Object();
@@ -595,6 +623,7 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[4].should.be.an.Object();
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
+                    permissibleStub.firstCall.args[7].should.be.true();
 
                     userProviderStub.callCount.should.eql(1);
                     should.not.exist(res);

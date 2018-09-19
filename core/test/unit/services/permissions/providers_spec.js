@@ -193,10 +193,10 @@ describe('Permission Providers', function () {
         it('can load api_key with role, and role.permissions', function (done) {
             const findApiKeySpy = sandbox.stub(models.ApiKey, 'findOne').callsFake(function () {
                 const fakeApiKey = models.ApiKey.forge(testUtils.DataGenerator.Content.api_keys[0]);
-                const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
+                const fakeAdminRole = models.Role.forge(testUtils.DataGenerator.Content.roles[0]);
                 const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 
-                fakeAdminRole.models[0].relations = {
+                fakeAdminRole.relations = {
                     permissions: fakeAdminRolePermissions
                 };
                 fakeApiKey.relations = {

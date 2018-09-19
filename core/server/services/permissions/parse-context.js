@@ -11,6 +11,7 @@ module.exports = function parseContext(context) {
         internal: false,
         external: false,
         user: null,
+        api_key: null,
         app: null,
         public: true
     };
@@ -28,6 +29,11 @@ module.exports = function parseContext(context) {
 
     if (context && context.user) {
         parsed.user = context.user;
+        parsed.public = false;
+    }
+
+    if (context && context.api_key) {
+        parsed.api_key = context.api_key;
         parsed.public = false;
     }
 

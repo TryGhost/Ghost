@@ -45,7 +45,8 @@ posts = {
 
         // Workaround to remove static pages from results
         // TODO: rework after https://github.com/TryGhost/Ghost/issues/5151
-        if (options && options.context && (options.context.user || options.context.internal)) {
+        // TODO: always allow staticPages for v2 Admin API requests?
+        if (options && options.context && (options.context.user || options.context.api_key || options.context.internal)) {
             extraOptions.push('staticPages');
         }
         permittedOptions = localUtils.browseDefaultOptions.concat(extraOptions);

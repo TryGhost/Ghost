@@ -44,7 +44,7 @@ Role = ghostBookshelf.Model.extend({
         return options;
     },
 
-    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasAppPermission) {
         var self = this,
             checkAgainst = [],
             origArgs;
@@ -84,7 +84,13 @@ Role = ghostBookshelf.Model.extend({
             hasUserPermission = roleModelOrId && _.includes(checkAgainst, roleModelOrId.get('name'));
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        // API Key requests should not be able to assign Owner permissions
+        if (action === 'assign' && loadedPermissions.api_key) {
+            checkAgainst = ['Adminstrator', 'Editor', 'Author', 'Contributor'];
+            hasApiKeyPermission = roleModelOrId && _.includes(checkAgainst, roleModelOrId.get('name'));
+        }
+
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
             return Promise.resolve();
         }
 

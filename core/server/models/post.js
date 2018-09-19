@@ -708,7 +708,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
-    permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, result) {
+    permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasAppPermission, result) {
         let isContributor, isEdit, isAdd, isDestroy;
 
         result = result || {};
@@ -754,7 +754,7 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
             return Promise.resolve(result);
         }
 

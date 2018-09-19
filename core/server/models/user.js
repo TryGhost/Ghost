@@ -198,7 +198,7 @@ User = ghostBookshelf.Model.extend({
 
         // NOTE: We don't expose the email address for for external, app and public context.
         // @TODO: Why? External+Public is actually the same context? Was also mentioned here https://github.com/TryGhost/Ghost/issues/9043
-        if (!options || !options.context || (!options.context.user && !options.context.internal)) {
+        if (!options || !options.context || (!options.context.user && !options.context.internal && !options.context.api_key)) {
             delete attrs.email;
         }
 
@@ -604,7 +604,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasAppPermission) {
         var self = this,
             userModel = userModelOrId,
             origArgs;
@@ -665,7 +665,7 @@ User = ghostBookshelf.Model.extend({
             }
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
             return Promise.resolve();
         }
 

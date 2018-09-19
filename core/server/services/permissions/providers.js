@@ -55,10 +55,10 @@ module.exports = {
 
                 // api keys have a belongs_to relationship to a role and no individual permissions
                 // so there's no need for permission deduplication
-                const rolePerms = foundApiKey.related('role').models[0].related('permissions').models;
+                const rolePerms = foundApiKey.related('role').related('permissions').models;
                 const apiKey = foundApiKey.toJSON();
 
-                return {permissions: rolePerms, roles: apiKey.role};
+                return {permissions: rolePerms, roles: [apiKey.role]};
             });
     },
 
