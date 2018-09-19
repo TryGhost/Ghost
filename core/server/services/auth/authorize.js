@@ -1,9 +1,8 @@
-var labs = require('../labs'),
-    session = require('./session'),
-    common = require('../../lib/common'),
-    authorize;
+const labs = require('../labs');
+const session = require('./session');
+const common = require('../../lib/common');
 
-authorize = {
+const authorize = {
     // Workaround for missing permissions
     // TODO: rework when https://github.com/TryGhost/Ghost/issues/3911 is  done
     requiresAuthorizedUser: function requiresAuthorizedUser(req, res, next) {
@@ -38,11 +37,7 @@ authorize = {
         };
     },
 
-    authorizeAdminAPI: [session.ensureUser],
-
-    authorizeContentAPI: (req, res, next) => {
-        next();
-    }
+    authorizeAdminAPI: [session.ensureUser]
 };
 
 module.exports = authorize;
