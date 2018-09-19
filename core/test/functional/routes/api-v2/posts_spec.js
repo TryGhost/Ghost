@@ -2,6 +2,7 @@ const ObjectId = require('bson-objectid');
 const _ = require('lodash');
 const config = require('../../../../../core/server/config');
 const jwt = require('jsonwebtoken');
+const models = require('../../../../../core/server/models');
 const moment = require('moment');
 const should = require('should');
 const supertest = require('supertest');
@@ -10,41 +11,55 @@ const testUtils = require('../../../utils');
 const ghost = testUtils.startGhost;
 const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
-const apiOptions = {
-    version: 'v2',
-    type: 'admin'
-};
-
 let request;
 
 describe('Admin API v2 - Post API', function () {
     let ghostServer;
 
-    describe('As API Key', function () {
-        let apiToken;
+    describe('with API Key', function () {
+        let generateToken;
+
+        const apiOptions = {
+            version: 'v2',
+            type: 'admin'
+        };
 
         before(function () {
+            generateToken = (path) => {
+                let secret = Buffer.from(this.apiKey.get('secret'), 'hex');
+                return jwt.sign({}, secret, {
+                    algorithm: 'HS256',
+                    expiresIn: '5m',
+                    audience: path,
+                    issuer: this.apiKey.get('id'),
+                    keyid: this.apiKey.get('id')
+                });
+            };
+
             return ghost()
-                .then(function (_ghostServer) {
+                .then((_ghostServer) => {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
                 })
-                .then(function () {
-                    // TODO: replace with client auth and associated db setup
-                    return testUtils.doAuth(request, 'users:extra', 'posts');
+                .then(() => {
+                    return testUtils.initFixtures(
+                        'users:extra',
+                        'posts',
+                        'integrations',
+                        'api_keys'
+                    );
                 })
-                .then(function (token) {
-                    // TODO: create signed JWT - will likely need a different
-                    // method because the token will vary depending on the
-                    // endpoint being hit
-                    apiToken = token;
+                .then(() => models.ApiKey.findOne({id: testUtils.DataGenerator.Content.api_keys[0].id}))
+                .then((apiKey) => {
+                    this.apiKey = apiKey;
                 });
         });
 
         describe('Browse', function () {
             it('retrieves all published posts only by default', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -68,8 +83,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve a single post format', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?formats=mobiledoc', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -93,8 +109,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve multiple post formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -118,8 +135,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can handle unknown post formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledo', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?formats=plaintext,mobiledo', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -143,8 +161,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can handle empty formats (default html is expected)', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?formats=', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -168,8 +187,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('fields and formats', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -199,8 +219,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve all published posts and pages', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?staticPages=all', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?staticPages=all', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -223,8 +244,9 @@ describe('Admin API v2 - Post API', function () {
             // Test bits of the API we don't use in the app yet to ensure the API behaves properly
 
             it('can retrieve all status posts and pages', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?staticPages=all&status=all', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?staticPages=all&status=all', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -245,8 +267,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve just published pages', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?staticPages=true', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?staticPages=true', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -267,8 +290,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve just featured posts', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?filter=featured:true', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?filter=featured:true', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -289,8 +313,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve just draft posts', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?status=draft', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?status=draft', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -311,8 +336,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve just scheduled posts', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?status=scheduled', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/?status=scheduled', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -336,8 +362,9 @@ describe('Admin API v2 - Post API', function () {
         // ## Read
         describe('Read', function () {
             it('can retrieve a post by id', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -365,9 +392,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve multiple post formats', function (done) {
-                request
-                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?formats=plaintext,mobiledoc', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -389,8 +416,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve a post by slug', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/slug/welcome/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/slug/welcome/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -417,8 +445,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('[DEPRECATED] can retrieve a post with author, created_by, and tags', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=author,tags,created_by', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=author,tags,created_by', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -443,8 +472,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve a post with authors, created_by, and tags', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,created_by', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,created_by', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -473,8 +503,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can retrieve a static page', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -495,8 +526,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t retrieve non existent post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/99/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/99/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -516,8 +548,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t retrieve a draft post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/5/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/5/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -537,8 +570,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t retrieve a draft page', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/8/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/8/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -569,8 +603,9 @@ describe('Admin API v2 - Post API', function () {
                     }]
                 };
 
-                request.post(testUtils.API.getApiQuery('posts', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send(newPost)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -583,8 +618,9 @@ describe('Admin API v2 - Post API', function () {
                         res.body.posts[0].published_at.should.eql('2016-05-30T07:00:00.000Z');
                         res.body.posts[0].published_at = '2016-05-30T09:00:00.000Z';
 
-                        request.put(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(res.body)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -596,8 +632,9 @@ describe('Admin API v2 - Post API', function () {
 
                                 res.body.posts[0].published_at.should.eql('2016-05-30T09:00:00.000Z');
 
-                                request.get(testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/', apiOptions))
-                                    .set('Authorization', 'Bearer ' + apiToken)
+                                let path = testUtils.API.getApiQuery('posts/' + res.body.posts[0].id + '/', apiOptions);
+                                request.get(path)
+                                    .set('Authorization', `Bearer ${generateToken(path)}`)
                                     .expect('Content-Type', /json/)
                                     .expect('Cache-Control', testUtils.cacheRules.private)
                                     .expect(200)
@@ -627,8 +664,9 @@ describe('Admin API v2 - Post API', function () {
                         }]
                     };
 
-                request.post(testUtils.API.getApiQuery('posts/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                    let path = testUtils.API.getApiQuery('posts/?include=tags', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send(newPost)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -651,8 +689,9 @@ describe('Admin API v2 - Post API', function () {
                         draftPost.posts[0].tags[0].name.should.eql(newTagName);
                         testUtils.API.checkResponse(draftPost.posts[0].tags[0], 'tag');
 
-                        request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(draftPost)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -678,8 +717,9 @@ describe('Admin API v2 - Post API', function () {
                                 publishedPost.posts[0].tags[0].name.should.eql(newTagName);
                                 testUtils.API.checkResponse(publishedPost.posts[0].tags[0], 'tag');
 
-                                request.put(testUtils.API.getApiQuery('posts/' + publishedPost.posts[0].id + '/?include=tags', apiOptions))
-                                    .set('Authorization', 'Bearer ' + apiToken)
+                                let path = testUtils.API.getApiQuery('posts/' + publishedPost.posts[0].id + '/?include=tags', apiOptions);
+                                request.put(path)
+                                    .set('Authorization', `Bearer ${generateToken(path)}`)
                                     .send(publishedPost)
                                     .expect('Content-Type', /json/)
                                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -723,9 +763,9 @@ describe('Admin API v2 - Post API', function () {
                     updated_by: ObjectId.generate()
                 };
 
-                request
-                    .post(testUtils.API.getApiQuery('posts/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send({posts: [newPost]})
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -757,8 +797,9 @@ describe('Admin API v2 - Post API', function () {
         // ## edit
         describe('Edit', function () {
             it('can edit a post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -776,8 +817,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].author = changedAuthor;
                         jsonResponse.posts[0].custom_template = 'custom-about';
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -814,8 +856,9 @@ describe('Admin API v2 - Post API', function () {
                         }]
                     };
 
-                request.post(testUtils.API.getApiQuery('posts/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                    let path = testUtils.API.getApiQuery('posts/?include=tags', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send(newPost)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -834,8 +877,9 @@ describe('Admin API v2 - Post API', function () {
 
                         draftPost.posts[0].title = 'Vote for Casper in red';
 
-                        request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(draftPost)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -866,8 +910,9 @@ describe('Admin API v2 - Post API', function () {
                         }]
                     };
 
-                request.post(testUtils.API.getApiQuery('posts/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                    let path = testUtils.API.getApiQuery('posts/?include=tags', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send(newPost)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -887,8 +932,9 @@ describe('Admin API v2 - Post API', function () {
                         draftPost.posts[0].title = 'Vote for Casper in red';
                         draftPost.posts[0].status = draftState;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(draftPost)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -906,8 +952,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can change a post to a static page', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -921,8 +968,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].page.should.not.be.ok();
                         jsonResponse.posts[0].page = true;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -944,8 +992,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can change a static page to a post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -959,8 +1008,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].page.should.be.ok();
                         jsonResponse.posts[0].page = false;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -982,8 +1032,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t edit post with invalid page field', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -997,8 +1048,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].page.should.eql(false);
                         jsonResponse.posts[0].page = changedValue;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1018,8 +1070,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t edit a post with invalid accesstoken', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1028,7 +1081,8 @@ describe('Admin API v2 - Post API', function () {
                         }
 
                         var jsonResponse = res.body;
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                        request.put(path)
                             .set('Authorization', 'Bearer ' + 'invalidtoken')
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
@@ -1045,8 +1099,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('throws an error if there is an id mismatch', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1057,8 +1112,9 @@ describe('Admin API v2 - Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1074,8 +1130,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('published_at = null', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=tags', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1090,8 +1147,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].title = changedValue;
                         jsonResponse.posts[0].published_at = null;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1117,8 +1175,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t edit non existent post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1132,8 +1191,9 @@ describe('Admin API v2 - Post API', function () {
                         jsonResponse.posts[0].testvalue = changedValue;
                         jsonResponse.posts[0].id = ObjectId.generate();
 
-                        request.put(testUtils.API.getApiQuery('posts/' + jsonResponse.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + jsonResponse.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1155,9 +1215,9 @@ describe('Admin API v2 - Post API', function () {
             it('check which fields can be modified', function (done) {
                 var existingPostData, modifiedPostData;
 
-                request
-                    .get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1175,9 +1235,9 @@ describe('Admin API v2 - Post API', function () {
                         modifiedPostData.posts[0].created_at = moment().add(2, 'days').format();
                         modifiedPostData.posts[0].updated_at = moment().add(2, 'days').format();
 
-                        request
-                            .put(testUtils.API.getApiQuery('posts/' + modifiedPostData.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + modifiedPostData.posts[0].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(modifiedPostData)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1207,8 +1267,9 @@ describe('Admin API v2 - Post API', function () {
             it('can delete a post', function (done) {
                 var deletePostId = testUtils.DataGenerator.Content.posts[0].id;
 
-                request.del(testUtils.API.getApiQuery('posts/' + deletePostId + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + deletePostId + '/', apiOptions);
+                request.del(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(204)
                     .end(function (err, res) {
@@ -1224,8 +1285,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('can\'t delete a non existent post', function (done) {
-                request.del(testUtils.API.getApiQuery('posts/' + ObjectId.generate() + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + ObjectId.generate() + '/', apiOptions);
+                request.del(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1255,8 +1317,9 @@ describe('Admin API v2 - Post API', function () {
                         }]
                     };
 
-                request.post(testUtils.API.getApiQuery('posts/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                    let path = testUtils.API.getApiQuery('posts/', apiOptions);
+                request.post(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .send(newPost)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1273,8 +1336,9 @@ describe('Admin API v2 - Post API', function () {
                         draftPost.posts[0].status = publishedState;
                         testUtils.API.checkResponse(draftPost.posts[0], 'post');
 
-                        request.del(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/', apiOptions);
+                        request.del(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .expect(204)
                             .end(function (err, res) {
@@ -1292,8 +1356,9 @@ describe('Admin API v2 - Post API', function () {
 
         describe('Dated Permalinks', function () {
             before(function (done) {
-                request.get(testUtils.API.getApiQuery('settings/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('settings/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1304,8 +1369,9 @@ describe('Admin API v2 - Post API', function () {
                         var jsonResponse = res.body;
                         jsonResponse.permalinks = '/:year/:month/:day/:slug/';
 
-                        request.put(testUtils.API.getApiQuery('settings/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('settings/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -1319,8 +1385,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             after(function (done) {
-                request.get(testUtils.API.getApiQuery('settings/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('settings/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1331,8 +1398,9 @@ describe('Admin API v2 - Post API', function () {
                         var jsonResponse = res.body;
                         jsonResponse.permalinks = '/:slug/';
 
-                        request.put(testUtils.API.getApiQuery('settings/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('settings/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .send(jsonResponse)
@@ -1348,8 +1416,9 @@ describe('Admin API v2 - Post API', function () {
 
             it('Can read a post', function (done) {
                 // nothing should have changed here
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -1371,8 +1440,9 @@ describe('Admin API v2 - Post API', function () {
             });
 
             it('Can edit a post', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/?include=tags', apiOptions))
-                    .set('Authorization', 'Bearer ' + apiToken)
+                let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/?include=tags', apiOptions);
+                request.get(path)
+                    .set('Authorization', `Bearer ${generateToken(path)}`)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .end(function (err, res) {
@@ -1386,8 +1456,9 @@ describe('Admin API v2 - Post API', function () {
                         should.exist(jsonResponse.posts);
                         jsonResponse.posts[0].title = changedValue;
 
-                        request.put(testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions))
-                            .set('Authorization', 'Bearer ' + apiToken)
+                        let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/', apiOptions);
+                        request.put(path)
+                            .set('Authorization', `Bearer ${generateToken(path)}`)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
                             .send(jsonResponse)

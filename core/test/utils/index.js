@@ -479,7 +479,19 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.webhooks, function (webhook) {
             return models.Webhook.add(webhook, module.exports.context.internal);
         });
-    }
+    },
+
+    insertIntegrations: function insertIntegrations() {
+        return Promise.map(DataGenerator.forKnex.integrations, function (integration) {
+            return models.Integration.add(integration, module.exports.context.internal);
+        });
+    },
+
+    insertApiKeys: function insertApiKeys() {
+        return Promise.map(DataGenerator.forKnex.api_keys, function (api_key) {
+            return models.ApiKey.add(api_key, module.exports.context.internal);
+        });
+    },
 };
 
 /** Test Utility Functions **/
@@ -625,6 +637,12 @@ toDoList = {
     },
     webhooks: function insertWebhooks() {
         return fixtures.insertWebhooks();
+    },
+    integrations: function insertIntegrations() {
+        return fixtures.insertIntegrations();
+    },
+    api_keys: function insertApiKeys() {
+        return fixtures.insertApiKeys();
     }
 };
 

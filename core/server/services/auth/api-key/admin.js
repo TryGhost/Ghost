@@ -93,6 +93,4 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     });
 };
 
-module.exports = {
-    authenticateAdminAPIKey
-};
+module.exports = authenticateAdminAPIKey;
