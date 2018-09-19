@@ -41,5 +41,6 @@ module.exports.checkFileIsValid = function checkFileIsValid(fileData, types, ext
     if (_.includes(types, type) && _.includes(extensions, fileData.ext)) {
         return true;
     }
+
     return false;
 };

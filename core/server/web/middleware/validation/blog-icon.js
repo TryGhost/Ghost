@@ -1,6 +1,7 @@
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const imageLib = require('../../../lib/image');
+
 let validIconFileSize;
 
 validIconFileSize = function validIconFileSize(size) {
