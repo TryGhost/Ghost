@@ -92,7 +92,7 @@ const ensureUser = function ensureUser(req, res, next) {
 
 const getSession = session({
     store: new SessionStore(Session),
-    secret: settingsCache.get('session-secret'),
+    secret: settingsCache.get('session_secret'),
     resave: false,
     saveUninitialized: false,
     cookie: {
