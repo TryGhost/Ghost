@@ -24,7 +24,7 @@ let userLogin;
 let userReset;
 const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
-handleStoreError = function handleStoreError(err) {
+handleStoreError = (err) => {
     const customError = new common.errors.InternalServerError({
         message: 'Unknown error',
         err: err.parent ? err.parent : err
@@ -46,7 +46,7 @@ handleStoreError = function handleStoreError(err) {
 // requests from a single IP
 // We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single suer
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
-globalBlock = function globalBlock() {
+globalBlock = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../data/db');
@@ -60,7 +60,7 @@ globalBlock = function globalBlock() {
     globalBlockInstance = globalBlockInstance || new ExpressBrute(store,
         _.extend({
             attachResetToRequest: false,
-            failCallback: function (req, res, next, nextValidRequestDate) {
+            failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
@@ -75,7 +75,7 @@ globalBlock = function globalBlock() {
     return globalBlockInstance;
 };
 
-globalReset = function globalReset() {
+globalReset = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../data/db');
@@ -89,7 +89,7 @@ globalReset = function globalReset() {
     globalResetInstance = globalResetInstance || new ExpressBrute(store,
         _.extend({
             attachResetToRequest: false,
-            failCallback: function (req, res, next, nextValidRequestDate) {
+            failCallback(req, res, next, nextValidRequestDate) {
                 // TODO use i18n again
                 return next(new common.errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -109,7 +109,7 @@ globalReset = function globalReset() {
 // and rising to a week in a fibonnaci sequence
 // The user+IP count is reset when on successful login
 // Default value of 5 attempts per user+IP pair
-userLogin = function userLogin() {
+userLogin = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../data/db');
@@ -123,7 +123,7 @@ userLogin = function userLogin() {
     userLoginInstance = userLoginInstance || new ExpressBrute(store,
         _.extend({
             attachResetToRequest: true,
-            failCallback: function (req, res, next, nextValidRequestDate) {
+            failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
                     message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     // TODO add more options to i18n
@@ -155,7 +155,7 @@ userReset = function userReset() {
     userResetInstance = userResetInstance || new ExpressBrute(store,
         _.extend({
             attachResetToRequest: true,
-            failCallback: function (req, res, next, nextValidRequestDate) {
+            failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
                     message: `Too many password reset attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
@@ -172,7 +172,7 @@ userReset = function userReset() {
 
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
 // The endpoint is then locked for an hour
-privateBlog = function privateBlog() {
+privateBlog = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
     const db = require('../../../data/db');
@@ -186,7 +186,7 @@ privateBlog = function privateBlog() {
     privateBlogInstance = privateBlogInstance || new ExpressBrute(store,
         _.extend({
             attachResetToRequest: false,
-            failCallback: function (req, res, next, nextValidRequestDate) {
+            failCallback(req, res, next, nextValidRequestDate) {
                 common.logging.error(new common.errors.GhostError({
                     message: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
                         {

@@ -12,7 +12,7 @@ const errorHandler = {};
  * This is a bare minimum setup, which allows us to render the error page
  * It uses the {{asset}} helper, and nothing more
  */
-_private.createHbsEngine = function createHbsEngine() {
+_private.createHbsEngine = () => {
     const engine = hbs.create();
     engine.registerHelper('asset', require('../../helpers/asset'));
 
@@ -24,7 +24,7 @@ _private.createHbsEngine = function createHbsEngine() {
  *
  * @TODO: support multiple errors within one single error, see https://github.com/TryGhost/Ghost/issues/7116#issuecomment-252231809
  */
-_private.prepareError = function prepareError(err, req, res, next) {
+_private.prepareError = (err, req, res, next) => {
     debug(err);
 
     if (Array.isArray(err)) {
@@ -61,7 +61,7 @@ _private.prepareError = function prepareError(err, req, res, next) {
     next(err);
 };
 
-_private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
+_private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     // @TODO: jsonapi errors format (http://jsonapi.org/format/#error-objects)
     res.json({
         errors: [{
@@ -73,15 +73,13 @@ _private.JSONErrorRenderer = function JSONErrorRenderer(err, req, res, next) { /
     });
 };
 
-_private.ErrorFallbackMessage = function ErrorFallbackMessage(err) {
-    return `<h1>${common.i18n.t('errors.errors.oopsErrorTemplateHasError')}</h1>
+_private.ErrorFallbackMessage = err => `<h1>${common.i18n.t('errors.errors.oopsErrorTemplateHasError')}</h1>
      <p>${common.i18n.t('errors.errors.encounteredError')}</p>
      <pre>${escapeExpression(err.message || err)}</pre>
      <br ><p>${common.i18n.t('errors.errors.whilstTryingToRender')}</p>
      ${err.statusCode} <pre>${escapeExpression(err.message || err)}</pre>`;
-};
 
-_private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
+_private.ThemeErrorRenderer = (err, req, res, next) => {
     // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
     // Skip trying to render an HTML error, and move on to the basic error renderer
     // We do this because customised 404 templates could reference the image that's missing
@@ -116,7 +114,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
 
     // @TODO use renderer here?!
     // Render Call - featuring an error handler for what happens if rendering fails
-    res.render(res._template, data, function renderResponse(err, html) {
+    res.render(res._template, data, (err, html) => {
         if (!err) {
             return res.send(html);
         }
@@ -130,7 +128,7 @@ _private.ThemeErrorRenderer = function ThemeErrorRenderer(err, req, res, next) {
     });
 };
 
-_private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) { // eslint-disable-line no-unused-vars
+_private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     const data = {
         message: err.message,
         statusCode: err.statusCode,
@@ -147,7 +145,7 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) { // 
         req.app.set('views', config.get('paths').defaultViews);
     }
 
-    res.render('error', data, function renderResponse(err, html) {
+    res.render('error', data, (err, html) => {
         if (!err) {
             return res.send(html);
         }
@@ -161,17 +159,17 @@ _private.HTMLErrorRenderer = function HTMLErrorRender(err, req, res, next) { // 
     });
 };
 
-_private.BasicErrorRenderer = function BasicErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
+_private.BasicErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     return res.send(res.statusCode + ' ' + err.message);
 };
 
-errorHandler.resourceNotFound = function resourceNotFound(req, res, next) {
+errorHandler.resourceNotFound = (req, res, next) => {
     // TODO, handle unknown resources & methods differently, so that we can also produce
     // 405 Method Not Allowed
     next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.resourceNotFound')}));
 };
 
-errorHandler.pageNotFound = function pageNotFound(req, res, next) {
+errorHandler.pageNotFound = (req, res, next) => {
     next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
 };
 

@@ -24,7 +24,7 @@ module.exports = function setupAdminApp() {
 
     // First determine whether we're serving admin or theme content
     // @TODO finish refactoring this away.
-    adminApp.use(function setIsAdmin(req, res, next) {
+    adminApp.use((req, res, next) => {
         res.isAdmin = true;
         next();
     });
@@ -42,7 +42,7 @@ module.exports = function setupAdminApp() {
 
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
-        adminApp.get('/ember-cli-live-reload.js', function (req, res) {
+        adminApp.get('/ember-cli-live-reload.js', (req, res) => {
             res.redirect(`http://localhost:4200${urlService.utils.getSubdir()}/ghost/ember-cli-live-reload.js`);
         });
     }

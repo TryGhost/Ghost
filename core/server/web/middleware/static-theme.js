@@ -31,7 +31,7 @@ function forwardToExpressStatic(req, res, next) {
 }
 
 function staticTheme() {
-    return function blackListStatic(req, res, next) {
+    return (req, res, next) => {
         if (!isWhiteListedFile(req.path) && isBlackListedFileType(req.path)) {
             return next();
         }

@@ -10,7 +10,7 @@ validIconFileSize = function validIconFileSize(size) {
 
 module.exports = function blogIcon() {
     // we checked for a valid image file, now we need to do validations for blog icons
-    return function blogIconValidation(req, res, next) {
+    return (req, res, next) => {
         const iconExtensions = (config.get('uploads').icons && config.get('uploads').icons.extensions) || [];
 
         // CASE: file should not be larger than 100kb
@@ -20,7 +20,7 @@ module.exports = function blogIcon() {
             }));
         }
 
-        return imageLib.blogIcon.getIconDimensions(req.file.path).then(function (response) {
+        return imageLib.blogIcon.getIconDimensions(req.file.path).then((response) => {
             // save the image dimensions in new property for file
             req.file.dimensions = response;
 

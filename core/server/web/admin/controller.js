@@ -12,7 +12,7 @@ module.exports = function adminController(req, res) {
 
     // run in background, don't block the admin rendering
     updateCheck()
-        .catch(function onError(err) {
+        .catch((err) => {
             common.logging.error(err);
         });
 

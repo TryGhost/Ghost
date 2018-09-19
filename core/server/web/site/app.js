@@ -106,7 +106,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
-    config.get('apps:internal').forEach(function (appName) {
+    config.get('apps:internal').forEach((appName) => {
         const app = require(path.join(config.get('paths').internalAppPath, appName));
 
         if (app.hasOwnProperty('setupMiddleware')) {

@@ -3,10 +3,10 @@ const _ = require('lodash');
 
 const _private = {};
 
-_private.removeDoubleCharacters = function removeDoubleCharacters(character, string) {
+_private.removeDoubleCharacters = (character, string) => {
     const stringArray = string.split('');
 
-    return stringArray.reduce(function (newString, currentCharacter, index) {
+    return stringArray.reduce((newString, currentCharacter, index) => {
         if (
             currentCharacter === character &&
             stringArray[index + 1] === character
@@ -14,7 +14,7 @@ _private.removeDoubleCharacters = function removeDoubleCharacters(character, str
             return newString;
         }
 
-        return newString + currentCharacter;
+        return `${newString}${currentCharacter}`;
     }, '');
 };
 

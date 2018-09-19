@@ -4,7 +4,7 @@ const debug = require('ghost-ignition').debug('url-redirects');
 const urlService = require('../../services/url');
 const _private = {};
 
-_private.redirectUrl = function redirectUrl(options) {
+_private.redirectUrl = (options) => {
     const redirectTo = options.redirectTo;
     const query = options.query;
     const parts = url.parse(redirectTo);
@@ -26,7 +26,7 @@ _private.redirectUrl = function redirectUrl(options) {
     });
 };
 
-_private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
+_private.getAdminRedirectUrl = (options) => {
     const blogHostWithProtocol = urlService.utils.urlFor('home', true);
     const adminHostWithProtocol = urlService.utils.urlFor('admin', true);
     const adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, '');
@@ -65,7 +65,7 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     }
 };
 
-_private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
+_private.getBlogRedirectUrl = (options) => {
     const blogHostWithProtocol = urlService.utils.urlFor('home', true);
     const requestedHost = options.requestedHost;
     const requestedUrl = options.requestedUrl;

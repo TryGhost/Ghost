@@ -9,7 +9,7 @@ const settingsCache = require('../../services/settings/cache');
 
 let content;
 
-const buildContentResponse = function buildContentResponse(ext, buf) {
+const buildContentResponse = (ext, buf) => {
     content = {
         headers: {
             'Content-Type': `image/${ext}`,
@@ -29,7 +29,7 @@ function serveFavicon() {
     let iconType;
     let filePath;
 
-    return function serveFavicon(req, res, next) {
+    return (req, res, next) => {
         if (req.path.match(/^\/favicon\.(ico|png)/i)) {
             // CASE: favicon is default
             // confusing: if you upload an icon, it's same logic as storing images
@@ -51,7 +51,7 @@ function serveFavicon() {
 
                 storage.getStorage()
                     .read({path: filePath})
-                    .then(function readFile(buf) {
+                    .then((buf) => {
                         iconType = imageLib.blogIcon.getIconType();
                         content = buildContentResponse(iconType, buf);
 
@@ -67,7 +67,7 @@ function serveFavicon() {
                     return res.redirect(302, urlService.utils.urlFor({relativeUrl: '/favicon.ico'}));
                 }
 
-                fs.readFile(filePath, function readFile(err, buf) {
+                fs.readFile(filePath, (err, buf) => {
                     if (err) {
                         return next(err);
                     }

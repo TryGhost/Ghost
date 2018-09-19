@@ -16,7 +16,7 @@ const urlService = require('../../services/url');
 const common = require('../../lib/common');
 const localUtils = require('../utils');
 
-const uncapitalise = function uncapitalise(req, res, next) {
+const uncapitalise = (req, res, next) => {
     let pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path;
     let redirectPath;
     let decodedURI;

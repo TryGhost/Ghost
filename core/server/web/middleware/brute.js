@@ -9,7 +9,7 @@ module.exports = {
     /**
      * block per route per ip
      */
-    globalBlock: function (req, res, next) {
+    globalBlock(req, res, next) {
         return spamPrevention.globalBlock().getMiddleware({
             ignoreIP: false,
             key: function (req, res, next) {
@@ -20,10 +20,10 @@ module.exports = {
     /**
      * block per route per ip
      */
-    globalReset: function (req, res, next) {
+    globalReset(req, res, next) {
         return spamPrevention.globalReset().getMiddleware({
             ignoreIP: false,
-            key: function (req, res, next) {
+            key(req, res, next) {
                 next(url.parse(req.url).pathname);
             }
         })(req, res, next);
@@ -32,10 +32,10 @@ module.exports = {
      * block per user
      * username === email!
      */
-    userLogin: function (req, res, next) {
+    userLogin(req, res, next) {
         return spamPrevention.userLogin().getMiddleware({
             ignoreIP: false,
-            key: function (req, res, next) {
+            key(req, res, next) {
                 if (req.body.username) {
                     return next(`${req.body.username}login`);
                 }
@@ -55,10 +55,10 @@ module.exports = {
     /**
      * block per user
      */
-    userReset: function (req, res, next) {
+    userReset(req, res, next) {
         return spamPrevention.userReset().getMiddleware({
             ignoreIP: false,
-            key: function (req, res, next) {
+            key(req, res, next) {
                 next(`${req.body.username}reset`);
             }
         })(req, res, next);
@@ -66,10 +66,10 @@ module.exports = {
     /**
      * block per ip
      */
-    privateBlog: function (req, res, next) {
+    privateBlog(req, res, next) {
         return spamPrevention.privateBlog().getMiddleware({
             ignoreIP: false,
-            key: function (req, res, next) {
+            key(req, res, next) {
                 next('privateblog');
             }
         })(req, res, next);

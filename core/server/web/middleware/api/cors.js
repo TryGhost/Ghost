@@ -18,8 +18,8 @@ function getIPs() {
             'localhost'
         ];
 
-    Object.keys(ifaces).forEach(function (ifname) {
-        ifaces[ifname].forEach(function (iface) {
+    Object.keys(ifaces).forEach((ifname) => {
+        ifaces[ifname].forEach((iface) => {
             // only support IPv4
             if (iface.family !== 'IPv4') {
                 return;
