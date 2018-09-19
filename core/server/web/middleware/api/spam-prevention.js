@@ -1,30 +1,31 @@
-var moment = require('moment'),
-    _ = require('lodash'),
-    config = require('../../../config'),
-    common = require('../../../lib/common'),
-    spam = config.get('spam') || {},
-    spamPrivateBlog = spam.private_blog || {},
-    spamGlobalBlock = spam.global_block || {},
-    spamGlobalReset = spam.global_reset || {},
-    spamUserReset = spam.user_reset || {},
-    spamUserLogin = spam.user_login || {},
+const moment = require('moment');
+const _ = require('lodash');
+const config = require('../../../config');
+const common = require('../../../lib/common');
+const spam = config.get('spam') || {};
 
-    store,
-    handleStoreError,
-    globalBlock,
-    globalReset,
-    privateBlogInstance,
-    globalResetInstance,
-    globalBlockInstance,
-    userLoginInstance,
-    userResetInstance,
-    privateBlog,
-    userLogin,
-    userReset,
-    spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
+const spamPrivateBlog = spam.private_blog || {};
+const spamGlobalBlock = spam.global_block || {};
+const spamGlobalReset = spam.global_reset || {};
+const spamUserReset = spam.user_reset || {};
+const spamUserLogin = spam.user_login || {};
+
+let store;
+let handleStoreError;
+let globalBlock;
+let globalReset;
+let privateBlogInstance;
+let globalResetInstance;
+let globalBlockInstance;
+let userLoginInstance;
+let userResetInstance;
+let privateBlog;
+let userLogin;
+let userReset;
+const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 handleStoreError = function handleStoreError(err) {
-    var customError = new common.errors.InternalServerError({
+    const customError = new common.errors.InternalServerError({
         message: 'Unknown error',
         err: err.parent ? err.parent : err
     });
@@ -46,9 +47,9 @@ handleStoreError = function handleStoreError(err) {
 // We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single suer
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 globalBlock = function globalBlock() {
-    var ExpressBrute = require('express-brute'),
-        BruteKnex = require('brute-knex'),
-        db = require('../../../data/db');
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -75,9 +76,9 @@ globalBlock = function globalBlock() {
 };
 
 globalReset = function globalReset() {
-    var ExpressBrute = require('express-brute'),
-        BruteKnex = require('brute-knex'),
-        db = require('../../../data/db');
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -109,9 +110,9 @@ globalReset = function globalReset() {
 // The user+IP count is reset when on successful login
 // Default value of 5 attempts per user+IP pair
 userLogin = function userLogin() {
-    var ExpressBrute = require('express-brute'),
-        BruteKnex = require('brute-knex'),
-        db = require('../../../data/db');
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -141,9 +142,9 @@ userLogin = function userLogin() {
 // Defaults here are 5 attempts per hour for a user+IP pair
 // The endpoint is then locked for an hour
 userReset = function userReset() {
-    var ExpressBrute = require('express-brute'),
-        BruteKnex = require('brute-knex'),
-        db = require('../../../data/db');
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -172,9 +173,9 @@ userReset = function userReset() {
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
 // The endpoint is then locked for an hour
 privateBlog = function privateBlog() {
-    var ExpressBrute = require('express-brute'),
-        BruteKnex = require('brute-knex'),
-        db = require('../../../data/db');
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',

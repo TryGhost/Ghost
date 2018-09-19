@@ -1,5 +1,5 @@
-const express = require('express'),
-    urlService = require('../../services/url');
+const express = require('express');
+const urlService = require('../../services/url');
 
 const adminRedirect = function adminRedirect(path) {
     return function doRedirect(req, res) {

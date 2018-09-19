@@ -6,8 +6,8 @@
 //
 // Allows each app to declare its own default caching rules
 
-const _ = require('lodash'),
-    config = require('../../config');
+const _ = require('lodash');
+const config = require('../../config');
 
 const cacheControl = function cacheControl(options) {
     const profiles = {

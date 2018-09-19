@@ -1,5 +1,5 @@
-const url = require('url'),
-    spamPrevention = require('./api/spam-prevention');
+const url = require('url');
+const spamPrevention = require('./api/spam-prevention');
 
 /**
  * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.

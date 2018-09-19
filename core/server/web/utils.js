@@ -1,10 +1,10 @@
-const url = require('url'),
-    _ = require('lodash');
+const url = require('url');
+const _ = require('lodash');
 
-let _private = {};
+const _private = {};
 
 _private.removeDoubleCharacters = function removeDoubleCharacters(character, string) {
-    let stringArray = string.split('');
+    const stringArray = string.split('');
 
     return stringArray.reduce(function (newString, currentCharacter, index) {
         if (
@@ -19,7 +19,7 @@ _private.removeDoubleCharacters = function removeDoubleCharacters(character, str
 };
 
 module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(urlString) {
-    let parsedUrl = url.parse(urlString);
+    const parsedUrl = url.parse(urlString);
 
     return (
         // http://

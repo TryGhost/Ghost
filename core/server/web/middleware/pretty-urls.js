@@ -6,8 +6,8 @@
 // Uncapitalise changes case to lowercase
 // @TODO optimise this to reduce the number of redirects required to get to a pretty URL
 // @TODO move this to being used by routers?
-const slashes = require('connect-slashes'),
-    config = require('../../config');
+const slashes = require('connect-slashes');
+const config = require('../../config');
 
 module.exports = [
     slashes(true, {

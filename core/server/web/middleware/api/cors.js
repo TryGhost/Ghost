@@ -1,18 +1,19 @@
-var cors = require('cors'),
-    _ = require('lodash'),
-    url = require('url'),
-    os = require('os'),
-    urlService = require('../../../services/url'),
-    whitelist = [],
-    ENABLE_CORS = {origin: true, maxAge: 86400},
-    DISABLE_CORS = {origin: false};
+const cors = require('cors');
+const _ = require('lodash');
+const url = require('url');
+const os = require('os');
+const urlService = require('../../../services/url');
+
+let whitelist = [];
+const ENABLE_CORS = {origin: true, maxAge: 86400};
+const DISABLE_CORS = {origin: false};
 
 /**
  * Gather a list of local ipv4 addresses
  * @return {Array<String>}
  */
 function getIPs() {
-    var ifaces = os.networkInterfaces(),
+    const ifaces = os.networkInterfaces(),
         ips = [
             'localhost'
         ];
@@ -32,9 +33,9 @@ function getIPs() {
 }
 
 function getUrls() {
-    var blogHost = url.parse(urlService.utils.urlFor('home', true)).hostname,
-        adminHost = url.parse(urlService.utils.urlFor('admin', true)).hostname,
-        urls = [];
+    const blogHost = url.parse(urlService.utils.urlFor('home', true)).hostname;
+    const adminHost = url.parse(urlService.utils.urlFor('admin', true)).hostname;
+    const urls = [];
 
     urls.push(blogHost);
 
@@ -64,8 +65,8 @@ function getWhitelist() {
  * @return {null}
  */
 function handleCORS(req, cb) {
-    var origin = req.get('origin'),
-        trustedDomains = req.client && req.client.trustedDomains;
+    const origin = req.get('origin');
+    const trustedDomains = req.client && req.client.trustedDomains;
 
     // Request must have an Origin header
     if (!origin) {

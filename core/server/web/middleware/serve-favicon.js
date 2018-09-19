@@ -1,11 +1,11 @@
-const fs = require('fs-extra'),
-    path = require('path'),
-    crypto = require('crypto'),
-    config = require('../../config'),
-    imageLib = require('../../lib/image'),
-    storage = require('../../adapters/storage'),
-    urlService = require('../../services/url'),
-    settingsCache = require('../../services/settings/cache');
+const fs = require('fs-extra');
+const path = require('path');
+const crypto = require('crypto');
+const config = require('../../config');
+const imageLib = require('../../lib/image');
+const storage = require('../../adapters/storage');
+const urlService = require('../../services/url');
+const settingsCache = require('../../services/settings/cache');
 
 let content;
 
@@ -26,8 +26,8 @@ const buildContentResponse = function buildContentResponse(ext, buf) {
 // ### serveFavicon Middleware
 // Handles requests to favicon.png and favicon.ico
 function serveFavicon() {
-    let iconType,
-        filePath;
+    let iconType;
+    let filePath;
 
     return function serveFavicon(req, res, next) {
         if (req.path.match(/^\/favicon\.(ico|png)/i)) {

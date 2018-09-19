@@ -1,12 +1,13 @@
-const fs = require('fs-extra'),
-    express = require('express'),
-    url = require('url'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('custom-redirects'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    validation = require('../../data/validation'),
-    _private = {};
+const fs = require('fs-extra');
+const express = require('express');
+const url = require('url');
+const path = require('path');
+const debug = require('ghost-ignition').debug('custom-redirects');
+const config = require('../../config');
+const common = require('../../lib/common');
+const validation = require('../../data/validation');
+
+const _private = {};
 
 let customRedirectsRouter;
 

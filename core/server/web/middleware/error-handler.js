@@ -1,11 +1,12 @@
-const hbs = require('express-hbs'),
-    debug = require('ghost-ignition').debug('error-handler'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    helpers = require('../../services/routing/helpers'),
-    escapeExpression = hbs.Utils.escapeExpression,
-    _private = {},
-    errorHandler = {};
+const hbs = require('express-hbs');
+const debug = require('ghost-ignition').debug('error-handler');
+const config = require('../../config');
+const common = require('../../lib/common');
+const helpers = require('../../services/routing/helpers');
+
+const escapeExpression = hbs.Utils.escapeExpression;
+const _private = {};
+const errorHandler = {};
 
 /**
  * This is a bare minimum setup, which allows us to render the error page

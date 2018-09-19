@@ -4,12 +4,12 @@ const config = require('../../../config');
 const localUtils = require('../../utils');
 
 module.exports = function upload(options) {
-    var type = options.type;
+    const type = options.type;
 
     // if we finish the data/importer logic, we forward the request to the specified importer
     return function uploadValidation(req, res, next) {
-        var extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [],
-            contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
+        const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
+        const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 
         req.file = req.file || {};
         req.file.name = req.file.originalname;
