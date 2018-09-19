@@ -129,6 +129,7 @@ users = {
          * @param {Object} options
          * @returns {Object} options
          */
+        // TODO: update for API Key requests which won't have options.context.user
         function handlePermissions(options) {
             if (options.id === 'me' && options.context && options.context.user) {
                 options.id = options.context.user;

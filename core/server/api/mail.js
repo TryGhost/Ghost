@@ -100,6 +100,7 @@ const apiMail = {
      * @param {Object} options required property 'to' which contains the recipient address
      * @returns {Promise}
      */
+    // TODO: ensure this can't be triggered by API Key requests
     sendTest(options) {
         let tasks;
 

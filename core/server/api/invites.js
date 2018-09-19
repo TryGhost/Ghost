@@ -101,6 +101,7 @@ const invites = {
                 .then((response) => {
                     const adminUrl = urlService.utils.urlFor('admin', true);
 
+                    // TODO: how to handle invitedBy for API Key requests
                     emailData = {
                         blogName: response.settings[0].value,
                         invitedByName: loggedInUser.get('name'),
@@ -163,7 +164,7 @@ const invites = {
                     return invite.destroy(options);
                 })
                 .then(() => {
-                    return options; 
+                    return options;
                 });
         }
 
@@ -205,7 +206,7 @@ const invites = {
                     }));
                 }
             }).then(() => {
-                return options; 
+                return options;
             });
         }
 

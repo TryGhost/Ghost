@@ -13,6 +13,7 @@ module.exports = function logRequest(req, res, next) {
         res.responseTime = (Date.now() - startTime) + 'ms';
         req.requestId = requestId;
         req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
+        // TODO: add req.apiKeyId?
 
         if (req.err && req.err.statusCode !== 404) {
             common.logging.error({req: req, res: res, err: req.err});
