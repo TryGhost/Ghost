@@ -22,7 +22,7 @@ module.exports = function setupApiApp() {
     const apiApp = express();
 
     // @TODO finish refactoring this away.
-    apiApp.use((req, res, next) => {
+    apiApp.use(function setIsAdmin(req, res, next) {
         // api === isAdmin
         res.isAdmin = true;
         next();

@@ -24,7 +24,7 @@ module.exports = function setupAdminApp() {
 
     // First determine whether we're serving admin or theme content
     // @TODO finish refactoring this away.
-    adminApp.use((req, res, next) => {
+    adminApp.use(function setIsAdmin(req, res, next) {
         res.isAdmin = true;
         next();
     });
