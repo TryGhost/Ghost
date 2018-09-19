@@ -1,7 +1,11 @@
 const express = require('express');
 const urlService = require('../../services/url');
 
-const adminRedirect = path => (req, res) => urlService.utils.redirectToAdmin(301, res, path);
+const adminRedirect = (path) => {
+    return (req, res) => {
+        return urlService.utils.redirectToAdmin(301, res, path);
+    };
+};
 
 module.exports = function adminRedirects() {
     const router = express.Router();
