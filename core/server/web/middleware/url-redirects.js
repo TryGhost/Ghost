@@ -111,7 +111,7 @@ _private.redirect = function redirect(req, res, next, redirectFn) {
 };
 
 /*
- * NOTE: this method is deprecated and is only to be used in API v0.1
+ * @deprecated: in favor of adminRedirect (extract public getBlogRedirectUrl method when needed)
  */
 const urlRedirects = function urlRedirects(req, res, next) {
     const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl;
