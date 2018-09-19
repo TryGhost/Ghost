@@ -47,7 +47,7 @@ module.exports = function blogIcon() {
             }
 
             next();
-        }).catch(function (err) {
+        }).catch((err) => {
             next(err);
         });
     };
