@@ -1,11 +1,11 @@
-var common = require('../../../../lib/common'),
-    commands = require('../../../schema').commands,
-    table = 'sessions',
-    message1 = 'Adding table: ' + table,
-    message2 = 'Dropping table: ' + table;
+const common = require('../../../../lib/common');
+const commands = require('../../../schema').commands;
+const table = 'sessions';
+const message1 = 'Adding table: ' + table;
+const message2 = 'Dropping table: ' + table;
 
 module.exports.up = function addSessionsTable(options) {
-    let connection = options.connection;
+    const connection = options.connection;
 
     return connection.schema.hasTable(table)
         .then(function (exists) {
@@ -20,7 +20,7 @@ module.exports.up = function addSessionsTable(options) {
 };
 
 module.exports.down = function removeSessionsTable(options) {
-    let connection = options.connection;
+    const connection = options.connection;
 
     return connection.schema.hasTable(table)
         .then(function (exists) {
