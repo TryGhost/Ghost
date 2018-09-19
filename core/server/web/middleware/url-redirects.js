@@ -92,28 +92,9 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
  * 1. required SSL redirects
  * 2. redirect to the correct admin url
  *
- * NOTE: this method is deprecated and is only to be used in API v0.1
  */
-const urlRedirects = function urlRedirects(req, res, next) {
-    const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl,
-        redirectUrl = redirectFn({
-            requestedHost: req.get('host'),
-            requestedUrl: url.parse(req.originalUrl || req.url).pathname,
-            queryParameters: req.query,
-            secure: req.secure
-        });
-
-    if (redirectUrl) {
-        debug('url redirect to: ' + redirectUrl);
-        return urlService.utils.redirect301(res, redirectUrl);
-    }
-
-    debug('no url redirect');
-    next();
-};
-
-const adminRedirect = function adminRedirect(req, res, next) {
-    const redirectUrl = _private.getAdminRedirectUrl ({
+_private.redirect = function redirect(req, res, next, redirectFn) {
+    const redirectUrl = redirectFn({
         requestedHost: req.get('host'),
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
         queryParameters: req.query,
@@ -127,6 +108,18 @@ const adminRedirect = function adminRedirect(req, res, next) {
 
     debug('no url redirect');
     next();
+};
+
+/*
+ * NOTE: this method is deprecated and is only to be used in API v0.1
+ */
+const urlRedirects = function urlRedirects(req, res, next) {
+    const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl;
+    _private.redirect(req, res, next, redirectFn);
+};
+
+const adminRedirect = function adminRedirect(req, res, next) {
+    _private.redirect(req, res, next, _private.getAdminRedirectUrl);
 };
 
 module.exports = urlRedirects;
