@@ -12,10 +12,10 @@ let content;
 const buildContentResponse = function buildContentResponse(ext, buf) {
     content = {
         headers: {
-            'Content-Type': 'image/' + ext,
+            'Content-Type': `image/${ext}`,
             'Content-Length': buf.length,
-            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-            'Cache-Control': 'public, max-age=' + config.get('caching:favicon:maxAge')
+            ETag: `"${crypto.createHash('md5').update(buf, 'utf8').digest('hex')}"`,
+            'Cache-Control': `public, max-age=${config.get('caching:favicon:maxAge')}`
         },
         body: buf
     };
@@ -46,7 +46,7 @@ function serveFavicon() {
             if (settingsCache.get('icon')) {
                 // depends on the uploaded icon extension
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: '/favicon' + originalExtension}));
+                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: `/favicon${originalExtension}`}));
                 }
 
                 storage.getStorage()

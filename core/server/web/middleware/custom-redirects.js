@@ -42,7 +42,7 @@ _private.registerRoutes = function registerRoutes() {
                     parsedUrl = url.parse(req.originalUrl);
 
                 res.set({
-                    'Cache-Control': 'public, max-age=' + maxAge
+                    'Cache-Control': `public, max-age=${maxAge}`
                 });
 
                 res.redirect(redirect.permanent ? 301 : 302, url.format({

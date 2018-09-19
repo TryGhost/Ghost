@@ -32,8 +32,8 @@ function servePublicFile(file, type, maxAge) {
                         headers: {
                             'Content-Type': type,
                             'Content-Length': buf.length,
-                            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-                            'Cache-Control': 'public, max-age=' + maxAge
+                            ETag: `"${crypto.createHash('md5').update(buf, 'utf8').digest('hex')}"`,
+                            'Cache-Control': `public, max-age=${maxAge}`
                         },
                         body: buf
                     };

@@ -79,7 +79,7 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
-            redirectTo: 'https://' + requestedHost,
+            redirectTo: `https://${requestedHost}`,
             path: requestedUrl,
             query: queryParameters
         });
@@ -102,7 +102,7 @@ _private.redirect = (req, res, next, redirectFn) => {
     });
 
     if (redirectUrl) {
-        debug('url redirect to: ' + redirectUrl);
+        debug(`url redirect to: ${redirectUrl}`);
         return urlService.utils.redirect301(res, redirectUrl);
     }
 

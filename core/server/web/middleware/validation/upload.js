@@ -18,7 +18,7 @@ module.exports = function upload(options) {
         // Check if a file was provided
         if (!localUtils.checkFileExists(req.file)) {
             return next(new common.errors.NoPermissionError({
-                message: common.i18n.t('errors.api.' + type + '.missingFile')
+                message: common.i18n.t(`errors.api.${type}.missingFile`)
             }));
         }
 
@@ -27,7 +27,7 @@ module.exports = function upload(options) {
         // Check if the file is valid
         if (!localUtils.checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new common.errors.UnsupportedMediaTypeError({
-                message: common.i18n.t('errors.api.' + type + '.invalidFile', {extensions: extensions})
+                message: common.i18n.t(`errors.api.${type}.invalidFile`, {extensions: extensions})
             }));
         }
 

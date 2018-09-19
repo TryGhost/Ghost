@@ -37,15 +37,15 @@ module.exports = {
             ignoreIP: false,
             key: function (req, res, next) {
                 if (req.body.username) {
-                    return next(req.body.username + 'login');
+                    return next(`${req.body.username}login`);
                 }
 
                 if (req.body.authorizationCode) {
-                    return next(req.body.authorizationCode + 'login');
+                    return next(`${req.body.authorizationCode}login`);
                 }
 
                 if (req.body.refresh_token) {
-                    return next(req.body.refresh_token + 'login');
+                    return next(`${req.body.refresh_token}login`);
                 }
 
                 return next();
@@ -59,7 +59,7 @@ module.exports = {
         return spamPrevention.userReset().getMiddleware({
             ignoreIP: false,
             key: function (req, res, next) {
-                next(req.body.username + 'reset');
+                next(`${req.body.username}reset`);
             }
         })(req, res, next);
     },
