@@ -4,7 +4,7 @@ var _ = require('lodash'),
     common = require('../../lib/common');
 
 module.exports = {
-    user: function (id) {
+    user(id) {
         return models.User.findOne({id: id, status: 'all'}, {withRelated: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
                 // CASE: {context: {user: id}} where the id is not in our database
@@ -44,7 +44,25 @@ module.exports = {
             });
     },
 
-    app: function (appName) {
+    apiKey(id) {
+        return models.ApiKey.findOne({id: id}, {withRelated: ['role', 'role.permissions']})
+            .then(function (foundApiKey) {
+                if (!foundApiKey) {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.api_key.apiKeyNotFound')
+                    }));
+                }
+
+                // api keys have a belongs_to relationship to a role and no individual permissions
+                // so there's no need for permission deduplication
+                const rolePerms = foundApiKey.related('role').models[0].related('permissions').models;
+                const apiKey = foundApiKey.toJSON();
+
+                return {permissions: rolePerms, roles: apiKey.role};
+            });
+    },
+
+    app(appName) {
         return models.App.findOne({name: appName}, {withRelated: ['permissions']})
             .then(function (foundApp) {
                 if (!foundApp) {
