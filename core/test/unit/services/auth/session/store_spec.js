@@ -1,9 +1,9 @@
-const SessionStore = require('../../../../../server/services/auth/session/store'),
-    models = require('../../../../../server/models'),
-    EventEmitter = require('events'),
-    {Store} = require('express-session'),
-    sinon = require('sinon'),
-    should = require('should');
+const SessionStore = require('../../../../../server/services/auth/session/store');
+const models = require('../../../../../server/models');
+const EventEmitter = require('events');
+const {Store} = require('express-session');
+const sinon = require('sinon');
+const should = require('should');
 
 describe('Auth Service SessionStore', function () {
     let sandbox;

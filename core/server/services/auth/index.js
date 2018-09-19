@@ -1,9 +1,9 @@
-var passport = require('./passport'),
-    auth = require('./auth'),
-    authorize = require('./authorize'),
-    authenticate = require('./authenticate'),
-    session = require('./session'),
-    oauth = require('./oauth');
+const passport = require('./passport');
+const auth = require('./auth');
+const authorize = require('./authorize');
+const authenticate = require('./authenticate');
+const session = require('./session');
+const oauth = require('./oauth');
 
 /* TODO: Remove when v0.1 is dropped */
 exports.init = function (options) {

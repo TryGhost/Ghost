@@ -1,10 +1,14 @@
-const sessionService = require('../../../../../server/services/auth/session'),
-    SessionStore = require('../../../../../server/services/auth/session/store'),
-    config = require('../../../../../server/config'),
-    models = require('../../../../../server/models'),
-    {BadRequestError, UnauthorizedError, InternalServerError} = require('../../../../../server/lib/common/errors'),
-    sinon = require('sinon'),
-    should = require('should');
+const sessionService = require('../../../../../server/services/auth/session');
+const SessionStore = require('../../../../../server/services/auth/session/store');
+const config = require('../../../../../server/config');
+const models = require('../../../../../server/models');
+const sinon = require('sinon');
+const should = require('should');
+const {
+    BadRequestError,
+    UnauthorizedError,
+    InternalServerError
+} = require('../../../../../server/lib/common/errors');
 
 describe('Session Service', function () {
     let sandbox;
@@ -184,15 +188,15 @@ describe('Session Service', function () {
             sessionService.getUser(req, res);
         });
 
-        it('calls next with UnauthorizedError if the user is not found', function (done) {
+        it('sets req.user to null and calls next if the user is not found', function (done) {
             const req = fakeReq();
             const res = fakeRes();
             sandbox.stub(models.User, 'findOne')
                 .rejects();
 
             req.session.user_id = 23;
-            sessionService.getUser(req, res, function next(err) {
-                should.equal(err instanceof UnauthorizedError, true);
+            sessionService.getUser(req, res, function next() {
+                should.equal(req.user, null);
                 done();
             });
         });
