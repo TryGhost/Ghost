@@ -38,7 +38,7 @@ module.exports.checkFileExists = function checkFileExists(fileData) {
 module.exports.checkFileIsValid = function checkFileIsValid(fileData, types, extensions) {
     const type = fileData.mimetype;
 
-    if (_.includes(types, type) && _.includes(extensions, fileData.ext)) {
+    if (types.includes(type) && extensions.includes(fileData.ext)) {
         return true;
     }
 
