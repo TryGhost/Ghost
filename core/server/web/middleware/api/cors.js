@@ -48,7 +48,7 @@ function getUrls() {
 
 function getWhitelist() {
     // This needs doing just one time after init
-    if (_.isEmpty(whitelist)) {
+    if (whitelist.length === 0) {
         // origins that always match: localhost, local IPs, etc.
         whitelist = whitelist.concat(getIPs());
         // Trusted urls from config.js
