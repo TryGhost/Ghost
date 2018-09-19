@@ -1,11 +1,10 @@
-var passport = require('passport'),
-    authUtils = require('./utils'),
-    models = require('../../models'),
-    common = require('../../lib/common'),
-    session = require('./session'),
-    authenticate;
+const passport = require('passport');
+const authUtils = require('./utils');
+const models = require('../../models');
+const common = require('../../lib/common');
+const session = require('./session');
 
-authenticate = {
+const authenticate = {
     // ### Authenticate Client Middleware
     authenticateClient: function authenticateClient(req, res, next) {
         /**
@@ -101,11 +100,7 @@ authenticate = {
         )(req, res, next);
     },
 
-    authenticateAdminAPI: [session.safeGetSession, session.getUser],
-
-    authenticateContentAPI: (req, res, next) => {
-        next();
-    }
+    authenticateAdminAPI: [session.safeGetSession, session.getUser]
 };
 
 module.exports = authenticate;
