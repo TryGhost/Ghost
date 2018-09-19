@@ -1,9 +1,6 @@
 const ghostBookshelf = require('./base');
 
-let Session,
-    Sessions;
-
-Session = ghostBookshelf.Model.extend({
+const Session = ghostBookshelf.Model.extend({
     tableName: 'sessions',
 
     parse: function parse(attrs) {
@@ -44,7 +41,7 @@ Session = ghostBookshelf.Model.extend({
     }
 });
 
-Sessions = ghostBookshelf.Collection.extend({
+const Sessions = ghostBookshelf.Collection.extend({
     model: Session
 });
 

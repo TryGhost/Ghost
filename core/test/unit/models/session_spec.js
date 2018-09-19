@@ -1,5 +1,5 @@
-const should = require('should'),
-    models = require('../../../server/models');
+const should = require('should');
+const models = require('../../../server/models');
 
 describe('Unit: models/session', function () {
     before(function () {
