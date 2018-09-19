@@ -2,11 +2,7 @@ const config = require('../../../config');
 const common = require('../../../lib/common');
 const imageLib = require('../../../lib/image');
 
-let validIconFileSize;
-
-validIconFileSize = function validIconFileSize(size) {
-    return size / 1024 <= 100 ? true : false;
-};
+const validIconFileSize = size => (size / 1024) <= 100;
 
 module.exports = function blogIcon() {
     // we checked for a valid image file, now we need to do validations for blog icons
