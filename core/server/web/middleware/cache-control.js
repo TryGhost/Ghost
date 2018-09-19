@@ -6,7 +6,7 @@
 //
 // Allows each app to declare its own default caching rules
 
-const _ = require('lodash');
+const isString = require('lodash/isString');
 const config = require('../../config');
 
 const cacheControl = (options) => {
@@ -17,7 +17,7 @@ const cacheControl = (options) => {
 
     let output;
 
-    if (_.isString(options) && profiles.hasOwnProperty(options)) {
+    if (isString(options) && profiles.hasOwnProperty(options)) {
         output = profiles[options];
     }
 

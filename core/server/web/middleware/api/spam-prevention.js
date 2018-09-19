@@ -1,5 +1,6 @@
 const moment = require('moment');
-const _ = require('lodash');
+const extend = require('lodash/extend');
+const pick = require('lodash/pick');
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const spam = config.get('spam') || {};
@@ -58,7 +59,7 @@ globalBlock = () => {
     });
 
     globalBlockInstance = globalBlockInstance || new ExpressBrute(store,
-        _.extend({
+        extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
@@ -69,7 +70,7 @@ globalBlock = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, _.pick(spamGlobalBlock, spamConfigKeys))
+        }, pick(spamGlobalBlock, spamConfigKeys))
     );
 
     return globalBlockInstance;
@@ -87,7 +88,7 @@ globalReset = () => {
     });
 
     globalResetInstance = globalResetInstance || new ExpressBrute(store,
-        _.extend({
+        extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
                 // TODO use i18n again
@@ -99,7 +100,7 @@ globalReset = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, _.pick(spamGlobalReset, spamConfigKeys))
+        }, pick(spamGlobalReset, spamConfigKeys))
     );
 
     return globalResetInstance;
@@ -121,7 +122,7 @@ userLogin = () => {
     });
 
     userLoginInstance = userLoginInstance || new ExpressBrute(store,
-        _.extend({
+        extend({
             attachResetToRequest: true,
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
@@ -132,7 +133,7 @@ userLogin = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, _.pick(spamUserLogin, spamConfigKeys))
+        }, pick(spamUserLogin, spamConfigKeys))
     );
 
     return userLoginInstance;
@@ -153,7 +154,7 @@ userReset = function userReset() {
     });
 
     userResetInstance = userResetInstance || new ExpressBrute(store,
-        _.extend({
+        extend({
             attachResetToRequest: true,
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new common.errors.TooManyRequestsError({
@@ -164,7 +165,7 @@ userReset = function userReset() {
                 }));
             },
             handleStoreError: handleStoreError
-        }, _.pick(spamUserReset, spamConfigKeys))
+        }, pick(spamUserReset, spamConfigKeys))
     );
 
     return userResetInstance;
@@ -184,7 +185,7 @@ privateBlog = () => {
     });
 
     privateBlogInstance = privateBlogInstance || new ExpressBrute(store,
-        _.extend({
+        extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
                 common.logging.error(new common.errors.GhostError({
@@ -201,7 +202,7 @@ privateBlog = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, _.pick(spamPrivateBlog, spamConfigKeys))
+        }, pick(spamPrivateBlog, spamConfigKeys))
     );
 
     return privateBlogInstance;
