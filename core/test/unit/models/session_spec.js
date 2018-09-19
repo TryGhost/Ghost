@@ -22,14 +22,6 @@ describe('Unit: models/session', function () {
             should.equal(typeof parsed.session_data, 'object');
             should.equal(parsed.session_data.some, 'data');
         });
-
-        it('does not add session_data key if missing', function () {
-            const attrs = {
-                id: 'something'
-            };
-            const parsed = parse(attrs);
-            should.equal(parsed.session_data, undefined);
-        });
     });
 
     describe('format', function () {

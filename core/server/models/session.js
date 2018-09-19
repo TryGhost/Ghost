@@ -4,21 +4,15 @@ const Session = ghostBookshelf.Model.extend({
     tableName: 'sessions',
 
     parse: function parse(attrs) {
-        if (!attrs.session_data) {
-            return attrs;
-        }
-        return Object.assign(attrs, {
-            session_data: JSON.parse(attrs.session_data)
-        });
+        attrs.session_data = JSON.parse(attrs.session_data);
+        return attrs;
     },
 
     format: function format(attrs) {
-        if (!attrs.session_data) {
-            return attrs;
+        if (attrs.session_data) {
+            attrs.session_data = JSON.stringify(attrs.session_data);
         }
-        return Object.assign(attrs, {
-            session_data: JSON.stringify(attrs.session_data)
-        });
+        return attrs;
     },
 
     user: function () {
