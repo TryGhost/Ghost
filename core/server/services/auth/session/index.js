@@ -1,4 +1,5 @@
 const {URL} = require('url'),
+    common = require('../../../lib/common'),
     config = require('../../../config'),
     settingsCache = require('../../settings/cache'),
     {User} = require('../../../models/user'),
@@ -28,11 +29,15 @@ const getOrigin = function getOrigin(req) {
 
 const createSession = function createSession(req, res, next) {
     if (!req.body) {
-        return next(new BadRequestError());
+        return next(new UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.accessDenied')
+        }));
     }
     const origin = getOrigin(req);
     if (!origin) {
-        return next(new BadRequestError());
+        return next(new BadRequestError({
+            message: common.i18n.t('errors.middleware.auth.unknownOrigin')
+        }));
     }
     const {username, password} = req.body;
     User.check({
@@ -44,8 +49,10 @@ const createSession = function createSession(req, res, next) {
         req.session.user_agent = req.get('user-agent');
         req.session.ip = req.ip;
         res.sendStatus(201);
-    }).catch((err) => {
-        next(new UnauthorizedError(err.message));
+    }).catch(() => {
+        next(new UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.accessDenied')
+        }));
     });
 };
 
@@ -68,7 +75,9 @@ const getUser = function getUser(req, res, next) {
             req.user = user;
             next();
         }).catch(() => {
-            next(new UnauthorizedError('No user found'));
+            next(new UnauthorizedError({
+                message: common.i18n.t('errors.middleware.auth.accessDenied')
+            }));
         });
 };
 
@@ -76,7 +85,9 @@ const ensureUser = function ensureUser(req, res, next) {
     if (req.user && req.user.id) {
         return next();
     }
-    next(new UnauthorizedError('Missing credentials'));
+    next(new UnauthorizedError({
+        message: common.i18n.t('errors.middleware.auth.accessDenied')
+    }));
 };
 
 const getSession = session({
@@ -100,7 +111,9 @@ const cookieCsrfProtection = function cookieCsrfProtection(req, res, next) {
     }
 
     if (req.session.origin !== getOrigin(req)) {
-        return next(new BadRequestError('Origin does not match initial'));
+        return next(new BadRequestError({
+            message: common.i18n.t('errors.middleware.auth.mismatchedOrigin')
+        }));
     }
 
     return next();

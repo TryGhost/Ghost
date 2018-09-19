@@ -34,11 +34,11 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('calls next with a BadRequestError if there is no body', function (done) {
+        it('calls next with a UnauthorizedError if there is no body', function (done) {
             const req = fakeReq();
             delete req.body;
             sessionService.createSession(req, fakeRes(), function next(err) {
-                should.equal(err instanceof BadRequestError, true);
+                should.equal(err instanceof UnauthorizedError, true);
                 done();
             });
         });
