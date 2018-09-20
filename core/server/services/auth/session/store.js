@@ -1,4 +1,5 @@
 const {Store} = require('express-session');
+const common = require('../../../lib/common');
 
 module.exports = class SessionStore extends Store {
     constructor(SessionModel) {
@@ -36,7 +37,9 @@ module.exports = class SessionStore extends Store {
 
     set(sid, sessionData, callback) {
         if (!sessionData.user_id) {
-            return callback(new Error('Should not set sessions without a user_id'));
+            return callback(new common.errors.InternalServerError({
+                message: common.i18n.t('errors.middleware.auth.missingUserID')
+            }));
         }
         this.SessionModel
             .setSession(sid, sessionData)

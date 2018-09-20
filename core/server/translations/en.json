@@ -75,6 +75,7 @@
                 "forInformationRead": "For information on how to fix this, please read {url}.",
                 "unknownOrigin": "Could not determine origin of request.",
                 "mismatchedOrigin": "Request made from incorrect origin.",
+                "missingUserIDForSession": "Cannot create session without user id.",
                 "accessDenied": "Access denied.",
                 "pleaseSignIn": "Please Sign In"
             },
