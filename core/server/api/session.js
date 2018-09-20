@@ -31,6 +31,9 @@ const session = {
         return Promise.resolve((req, res, next) => {
             auth.session.destroySession(req, res, next);
         });
+    },
+    read(options) {
+        return models.User.findOne({id: options.context.user});
     }
 };
 

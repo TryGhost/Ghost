@@ -81,6 +81,7 @@ describe('Session controller', function () {
             });
         });
     });
+
     describe('#delete', function () {
         it('returns a function that calls destroySession', function () {
             const fakeReq = {};
@@ -95,6 +96,24 @@ describe('Session controller', function () {
                 should.equal(destroySessionStubCall.args[0], fakeReq);
                 should.equal(destroySessionStubCall.args[1], fakeRes);
                 should.equal(destroySessionStubCall.args[2], fakeNext);
+            });
+        });
+    });
+
+    describe('#get', function () {
+        it('returns the result of User.findOne', function () {
+            const findOneReturnVal = new Promise(() => {});
+            const findOneStub = sandbox.stub(models.User, 'findOne')
+                .returns(findOneReturnVal);
+
+            const result = sessionController.read({
+                context: {
+                    user: 108
+                }
+            });
+            should.equal(result, findOneReturnVal);
+            should.deepEqual(findOneStub.args[0][0], {
+                id: 108
             });
         });
     });

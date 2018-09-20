@@ -149,9 +149,7 @@ module.exports = function apiRoutes() {
     // We don't need auth when creating a new session (logging in)
     router.post('/session', api.http(api.session.add));
     router.del('/session', auth.auth.adminAPI, api.http(api.session.delete));
-    router.get('/session', auth.auth.adminAPI, function (req, res) {
-        res.json(req.user);
-    });
+    router.get('/session', auth.auth.adminAPI, api.http(api.session.read));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
