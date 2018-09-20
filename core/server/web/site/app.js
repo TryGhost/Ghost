@@ -2,9 +2,6 @@ const debug = require('ghost-ignition').debug('blog');
 const path = require('path');
 const express = require('express');
 
-// this module is missing in package.json
-const setPrototypeOf = require('setprototypeof');
-
 // App requires
 const config = require('../../config');
 const apps = require('../../services/apps');
@@ -135,7 +132,7 @@ module.exports = function setupSiteApp(options = {}) {
     debug('General middleware done');
 
     router = siteRoutes(options);
-    setPrototypeOf(SiteRouter, router);
+    Object.setPrototypeOf(SiteRouter, router);
 
     // Set up Frontend routes (including private blogging routes)
     siteApp.use(SiteRouter);
@@ -152,7 +149,7 @@ module.exports = function setupSiteApp(options = {}) {
 module.exports.reload = () => {
     // https://github.com/expressjs/express/issues/2596
     router = siteRoutes({start: true});
-    setPrototypeOf(SiteRouter, router);
+    Object.setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)
     apps.init();
