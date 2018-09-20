@@ -19,18 +19,22 @@ const Session = ghostBookshelf.Model.extend({
         return this.belongsTo('User');
     }
 }, {
-    upsert: function (id, data) {
-        return this.forge({id})
-            .fetch({require: true})
+    setSession: function (id, data) {
+        const userId = data.user_id;
+        return this.findOne({session_id: id, user_id: userId})
             .then((model) => {
-                return model.set('session_data', data).save();
-            }, () => {
-                return this.forge({
-                    id: id
-                }).save({
-                    user_id: data.user_id,
-                    session_data: data
-                }, {method: 'insert'});
+                if (model) {
+                    return this.edit({
+                        session_data: data
+                    }, {
+                        id: model.id
+                    });
+                }
+                return this.add({
+                    session_id: id,
+                    session_data: data,
+                    user_id: userId
+                });
             });
     }
 });

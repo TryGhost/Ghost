@@ -7,16 +7,24 @@ module.exports = class SessionStore extends Store {
     }
 
     destroy(sid, callback) {
-        this.SessionModel.forge({id: sid})
-            .destroy({require: false})
-            .then(() => {
-                callback(null);
-            }).catch(callback);
+        this.SessionModel
+            .findOne({session_id: sid})
+            .then((model) => {
+                if (!model) {
+                    return callback(null);
+                }
+                return this.SessionModel
+                    .destroy(model)
+                    .then(() => {
+                        callback(null);
+                    });
+            })
+            .catch(callback);
     }
 
     get(sid, callback) {
-        this.SessionModel.forge({id: sid})
-            .fetch()
+        this.SessionModel
+            .findOne({session_id: sid})
             .then((model) => {
                 if (!model) {
                     return callback(null, null);
@@ -31,7 +39,7 @@ module.exports = class SessionStore extends Store {
             return callback(new Error('Should not set sessions without a user_id'));
         }
         this.SessionModel
-            .upsert(sid, sessionData)
+            .setSession(sid, sessionData)
             .then(() => {
                 callback(null);
             })

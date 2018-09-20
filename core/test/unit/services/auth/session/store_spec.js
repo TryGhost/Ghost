@@ -28,21 +28,23 @@ describe('Auth Service SessionStore', function () {
     });
 
     describe('SessionStore#destroy', function () {
-        it('calls destroy on the model with the id `sid` passing require: false', function (done) {
-            const destroyStub = sandbox.stub(models.Session.prototype, 'destroy')
+        it('calls findOne on the model with the session_id `sid`', function (done) {
+            const findOneStub = sandbox.stub(models.Session, 'findOne')
                 .resolves();
 
             const store = new SessionStore(models.Session);
             const sid = 1;
             store.destroy(sid, function () {
-                const destroyStubCall = destroyStub.getCall(0);
-                should.equal(destroyStubCall.args[0].require, false);
-                should.equal(destroyStubCall.thisValue.id, sid);
+                const findOneStubCall = findOneStub.getCall(0);
+                should.equal(findOneStubCall.args[0].session_id, sid);
                 done();
             });
         });
 
-        it('callsback with null or undefined if the destroy does not error', function (done) {
+        it('calls back with null if findOne resolve without model', function (done) {
+            sandbox.stub(models.Session, 'findOne')
+                .resolves();
+
             const store = new SessionStore(models.Session);
             const sid = 1;
             store.destroy(sid, function (err) {
@@ -51,9 +53,9 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('callsback with an error if the destroy does error', function (done) {
-            const error = new Error('hot damn');
-            const destroyStub = sandbox.stub(models.Session.prototype, 'destroy')
+        it('calls back with the error if findOne errors', function (done) {
+            const error = new Error('beam me up scotty');
+            sandbox.stub(models.Session, 'findOne')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -63,23 +65,79 @@ describe('Auth Service SessionStore', function () {
                 done();
             });
         });
+
+        describe('when findOne resolves with a model', function () {
+            it('calls destroy on the model with the session_id `sid` passing require: false', function (done) {
+                const model = models.Session.forge();
+                sandbox.stub(models.Session, 'findOne')
+                    .resolves(model);
+
+                const destroyStub = sandbox.stub(models.Session, 'destroy')
+                    .resolves();
+
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.destroy(sid, function () {
+                    const destroyStubCall = destroyStub.getCall(0);
+                    should.equal(destroyStubCall.args[0], model);
+                    done();
+                });
+            });
+
+            it('callsback with null or undefined if the destroy does not error', function (done) {
+                const model = models.Session.forge();
+                sandbox.stub(models.Session, 'findOne')
+                    .resolves(model);
+
+                sandbox.stub(models.Session, 'destroy')
+                    .resolves();
+
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+
+                store.destroy(sid, function (err) {
+                    should.equal(err, null);
+                    done();
+                });
+            });
+
+            it('callsback with an error if the destroy does error', function (done) {
+                const model = models.Session.forge();
+                sandbox.stub(models.Session, 'findOne')
+                    .resolves(model);
+
+                const error = new Error('hot damn');
+                sandbox.stub(models.Session, 'destroy')
+                    .rejects(error);
+
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.destroy(sid, function (err) {
+                    should.equal(err, error);
+                    done();
+                });
+            });
+        });
     });
 
     describe('SessionStore#get', function () {
-        it('calls fetch on the model with the id `sid`', function (done) {
-            const fetchStub = sandbox.stub(models.Session.prototype, 'fetch')
+        it('calls findOne on the model with the session_id `sid`', function (done) {
+            const findOneStub = sandbox.stub(models.Session, 'findOne')
                 .resolves();
 
             const store = new SessionStore(models.Session);
             const sid = 1;
             store.get(sid, function () {
-                const fetchStubCall = fetchStub.getCall(0);
-                should.equal(fetchStubCall.thisValue.id, sid);
+                const findOneStubCall = findOneStub.getCall(0);
+                should.equal(findOneStubCall.args[0].session_id, sid);
                 done();
             });
         });
 
-        it('callsback with null, null if fetch does not return a model', function (done) {
+        it('callsback with null, null if findOne does not return a model', function (done) {
+            sandbox.stub(models.Session, 'findOne')
+                .resolves(null);
+
             const store = new SessionStore(models.Session);
             const sid = 1;
             store.get(sid, function (err, session) {
@@ -89,13 +147,13 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('callsback with null, model.session_data if fetch does return a model', function (done) {
+        it('callsback with null, model.session_data if findOne does return a model', function (done) {
             const model = models.Session.forge({
                 session_data: {
                     ice: 'cube'
                 }
             });
-            const fetchStub = sandbox.stub(models.Session.prototype, 'fetch')
+            sandbox.stub(models.Session, 'findOne')
                 .resolves(model);
 
             const store = new SessionStore(models.Session);
@@ -109,9 +167,9 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('callsback with an error if the fetch does error', function (done) {
+        it('callsback with an error if the findOne does error', function (done) {
             const error = new Error('hot damn');
-            const fetchStub = sandbox.stub(models.Session.prototype, 'fetch')
+            sandbox.stub(models.Session, 'findOne')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -124,10 +182,6 @@ describe('Auth Service SessionStore', function () {
     });
 
     describe('SessionStore#set', function () {
-        const getSavedAttributes = function getSavedAttributes(saveStubCall) {
-            return Object.assign({}, saveStubCall.thisValue.attributes, saveStubCall.args[0]);
-        };
-
         it('calls back with an error if there is no user_id on the session_data', function (done) {
             const store = new SessionStore(models.Session);
             const sid = 1;
@@ -138,117 +192,46 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        describe('new session', function () {
-            it('sets the session_data and user_id property and saves the model forcing insert', function (done) {
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .resolves();
+        it('calls setSession on the model with the session_id and the session_data', function (done) {
+            const setSessionStub = sandbox.stub(models.Session, 'setSession')
+                .resolves();
 
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id: 100
-                };
-                store.set(sid, session_data, function () {
-                    const saveStubCall = saveStub.getCall(0);
-                    const savedAttributes = getSavedAttributes(saveStubCall);
-                    should.deepEqual(savedAttributes, {
-                        id: 1,
-                        user_id: 100,
-                        session_data
-                    });
-                    should.deepEqual(saveStubCall.args[1], {
-                        method: 'insert'
-                    });
-                    done();
-                });
-            });
-            it('calls back with null if the save succeeds', function (done) {
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .resolves();
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id: 100
-                };
-                store.set(sid, session_data, function (err) {
-                    should.equal(err, null);
-                    done();
-                });
-            });
-            it('calls back with error if the save errors', function (done) {
-                const error = new Error('uh-uh');
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .rejects(error);
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id: 100
-                };
-                store.set(sid, session_data, function (err) {
-                    should.equal(err, error);
-                    done();
-                });
+            const store = new SessionStore(models.Session);
+            const sid = 1;
+            const session_data = {user_id: 100};
+            store.set(sid, session_data, function () {
+                const setSessionStubCall = setSessionStub.getCall(0);
+                should.equal(setSessionStubCall.args[0], sid);
+                should.equal(setSessionStubCall.args[1], session_data);
+                done();
             });
         });
-        describe('existing session', function () {
-            const user_id = 100;
-            beforeEach(function () {
-                sandbox.stub(models.Session.prototype, 'fetch').callsFake(function () {
-                    this.set('user_id', user_id);
-                    return Promise.resolve(this);
-                });
+
+        it('calls back with an error if setSession errors', function (done) {
+            const error = new Error('huuuuuurrr');
+            sandbox.stub(models.Session, 'setSession')
+                .rejects(error);
+
+            const store = new SessionStore(models.Session);
+            const sid = 1;
+            const session_data = {user_id: 100};
+            store.set(sid, session_data, function (err) {
+                should.equal(err, error);
+                done();
             });
+        });
 
-            it('sets the session_data and user_id property and saves the model', function (done) {
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .resolves();
+        it('calls back with null, null if setSession succeed', function (done) {
+            sandbox.stub(models.Session, 'setSession')
+                .resolves('success');
 
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id
-                };
-                store.set(sid, session_data, function () {
-                    const saveStubCall = saveStub.getCall(0);
-                    const savedAttributes = getSavedAttributes(saveStubCall);
-                    should.deepEqual(savedAttributes, {
-                        id: 1,
-                        user_id,
-                        session_data
-                    });
-                    done();
-                });
-            });
-            it('calls back with null if the save succeeds', function (done) {
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .resolves();
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id
-                };
-                store.set(sid, session_data, function (err) {
-                    should.equal(err, null);
-                    done();
-                });
-            });
-            it('calls back with error if the save errors', function (done) {
-                const error = new Error('i did not leave the south side for this');
-                const saveStub = sandbox.stub(models.Session.prototype, 'save')
-                    .rejects(error);
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                const session_data = {
-                    user_id
-                };
-                store.set(sid, session_data, function (err) {
-                    should.equal(err, error);
-                    done();
-                });
+            const store = new SessionStore(models.Session);
+            const sid = 1;
+            const session_data = {user_id: 100};
+            store.set(sid, session_data, function (err, data) {
+                should.equal(err, null);
+                should.equal(data, null);
+                done();
             });
         });
     });
