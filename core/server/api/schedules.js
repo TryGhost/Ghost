@@ -6,7 +6,7 @@ const Promise = require('bluebird'),
     models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
-    postsAPI = require('../api/posts');
+    postsAPI = require('./posts');
 
 /**
  * Publish a scheduled post
