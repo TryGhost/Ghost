@@ -11,7 +11,6 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     express = require('express'),
     _ = require('lodash'),
     url = require('url'),
-    setPrototypeOf = require('setprototypeof'),
     security = require('../../lib/security'),
     urlService = require('../url'),
     // This the route registry for the whole site
@@ -24,7 +23,7 @@ function GhostRouter(options) {
         return innerRouter.handle(req, res, next);
     }
 
-    setPrototypeOf(innerRouter, router);
+    Object.setPrototypeOf(innerRouter, router);
 
     Object.defineProperty(innerRouter, 'name', {
         value: options.parent.name,
