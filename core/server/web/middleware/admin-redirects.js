@@ -2,7 +2,7 @@ const express = require('express');
 const urlService = require('../../services/url');
 
 const adminRedirect = (path) => {
-    return (req, res) => {
+    return function doRedirect(req, res) {
         return urlService.utils.redirectToAdmin(301, res, path);
     };
 };
