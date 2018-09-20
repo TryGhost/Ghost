@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
 const image = require('../../../../../server/lib/image');
 const common = require('../../../../../server/lib/common');
-const normalize = require('../../../../../server/web/shared/middleware/image/normalize');
+const normalize = require('../../../../../server/web/shared/middlewares/image/normalize');
 
 const sandbox = sinon.sandbox.create();
 

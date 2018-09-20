@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    uncapitalise = require('../../../../server/web/shared/middleware/uncapitalise'),
+    uncapitalise = require('../../../../server/web/shared/middlewares/uncapitalise'),
 
     sandbox = sinon.sandbox.create();
 

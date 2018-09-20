@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     fs = require('fs-extra'),
-    servePublicFile = require('../../../../server/web/shared/middleware/serve-public-file'),
+    servePublicFile = require('../../../../server/web/shared/middlewares/serve-public-file'),
 
     sandbox = sinon.sandbox.create();
 

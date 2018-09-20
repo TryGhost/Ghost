@@ -5,7 +5,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     oAuth = require('../../../../server/services/auth/oauth'),
     authUtils = require('../../../../server/services/auth/utils'),
-    spamPrevention = require('../../../../server/web/shared/middleware/api/spam-prevention'),
+    spamPrevention = require('../../../../server/web/shared/middlewares/api/spam-prevention'),
     common = require('../../../../server/lib/common'),
     models = require('../../../../server/models'),
 
