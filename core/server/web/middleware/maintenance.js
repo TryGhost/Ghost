@@ -1,6 +1,6 @@
-const config = require('../../config'),
-    common = require('../../lib/common'),
-    urlService = require('../../services/url');
+const config = require('../../config');
+const common = require('../../lib/common');
+const urlService = require('../../services/url');
 
 module.exports = function maintenance(req, res, next) {
     if (config.get('maintenance').enabled) {

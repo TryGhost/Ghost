@@ -1,38 +1,40 @@
-var debug = require('ghost-ignition').debug('blog'),
-    path = require('path'),
-    express = require('express'),
-    setPrototypeOf = require('setprototypeof'),
+const debug = require('ghost-ignition').debug('blog');
+const path = require('path');
+const express = require('express');
 
-    // App requires
-    config = require('../../config'),
-    apps = require('../../services/apps'),
-    constants = require('../../lib/constants'),
-    storage = require('../../adapters/storage'),
-    urlService = require('../../services/url'),
+// this module is missing in package.json
+const setPrototypeOf = require('setprototypeof');
 
-    // This should probably be an internal app
-    sitemapHandler = require('../../data/xml/sitemap/handler'),
+// App requires
+const config = require('../../config');
+const apps = require('../../services/apps');
+const constants = require('../../lib/constants');
+const storage = require('../../adapters/storage');
+const urlService = require('../../services/url');
 
-    // Route Service
-    siteRoutes = require('./routes'),
+// This should probably be an internal app
+const sitemapHandler = require('../../data/xml/sitemap/handler');
 
-    // Global/shared middleware
-    cacheControl = require('../middleware/cache-control'),
-    errorHandler = require('../middleware/error-handler'),
-    frontendClient = require('../middleware/frontend-client'),
-    maintenance = require('../middleware/maintenance'),
-    prettyURLs = require('../middleware/pretty-urls'),
-    urlRedirects = require('../middleware/url-redirects'),
+// Route Service
+const siteRoutes = require('./routes');
 
-    // local middleware
-    servePublicFile = require('../middleware/serve-public-file'),
-    staticTheme = require('../middleware/static-theme'),
-    customRedirects = require('../middleware/custom-redirects'),
-    serveFavicon = require('../middleware/serve-favicon'),
-    adminRedirects = require('../middleware/admin-redirects'),
+// Global/shared middleware
+const cacheControl = require('../middleware/cache-control');
+const errorHandler = require('../middleware/error-handler');
+const frontendClient = require('../middleware/frontend-client');
+const maintenance = require('../middleware/maintenance');
+const prettyURLs = require('../middleware/pretty-urls');
+const urlRedirects = require('../middleware/url-redirects');
 
-    // middleware for themes
-    themeMiddleware = require('../../services/themes').middleware;
+// local middleware
+const servePublicFile = require('../middleware/serve-public-file');
+const staticTheme = require('../middleware/static-theme');
+const customRedirects = require('../middleware/custom-redirects');
+const serveFavicon = require('../middleware/serve-favicon');
+const adminRedirects = require('../middleware/admin-redirects');
+
+// middleware for themes
+const themeMiddleware = require('../../services/themes').middleware;
 
 let router;
 
@@ -43,7 +45,7 @@ function SiteRouter(req, res, next) {
 module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
-    var siteApp = express();
+    const siteApp = express();
 
     // ## App - specific code
     // set the view engine
@@ -104,8 +106,9 @@ module.exports = function setupSiteApp(options = {}) {
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal & external apps
-    config.get('apps:internal').forEach(function (appName) {
-        var app = require(path.join(config.get('paths').internalAppPath, appName));
+    config.get('apps:internal').forEach((appName) => {
+        const app = require(path.join(config.get('paths').internalAppPath, appName));
+
         if (app.hasOwnProperty('setupMiddleware')) {
             app.setupMiddleware(siteApp);
         }

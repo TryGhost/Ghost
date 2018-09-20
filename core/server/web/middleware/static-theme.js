@@ -1,18 +1,20 @@
-const express = require('express'),
-    path = require('path'),
-    config = require('../../config'),
-    constants = require('../../lib/constants'),
-    themeUtils = require('../../services/themes');
+const express = require('express');
+const path = require('path');
+const config = require('../../config');
+const constants = require('../../lib/constants');
+const themeUtils = require('../../services/themes');
 
 function isBlackListedFileType(file) {
-    const blackListedFileTypes = ['.hbs', '.md', '.json'],
-        ext = path.extname(file);
+    const blackListedFileTypes = ['.hbs', '.md', '.json'];
+    const ext = path.extname(file);
+
     return blackListedFileTypes.includes(ext);
 }
 
 function isWhiteListedFile(file) {
-    const whiteListedFiles = ['manifest.json'],
-        base = path.basename(file);
+    const whiteListedFiles = ['manifest.json'];
+    const base = path.basename(file);
+
     return whiteListedFiles.includes(base);
 }
 
@@ -33,6 +35,7 @@ function staticTheme() {
         if (!isWhiteListedFile(req.path) && isBlackListedFileType(req.path)) {
             return next();
         }
+
         return forwardToExpressStatic(req, res, next);
     };
 }
