@@ -1,10 +1,6 @@
 const jwt = require('jsonwebtoken');
 const models = require('../../../models');
-const {
-    BadRequestError,
-    InternalServerError,
-    UnauthorizedError
-} = require('../../../lib/common/errors');
+const common = require('../../../lib/common');
 
 const JWT_OPTIONS = {
     maxAge: '5m',
@@ -28,7 +24,7 @@ const extractTokenFromHeader = function extractTokenFromHeader(header) {
 
 const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next) {
     if (req.query && req.query.content_key) {
-        return next(new BadRequestError({
+        return next(new common.errors.BadRequestError({
             message: 'Admin API does not support query param authentication',
             code: 'INVALID_AUTH_TYPE'
         }));
@@ -42,7 +38,7 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     const token = extractTokenFromHeader(req.headers.authorization);
 
     if (!token) {
-        return next(new UnauthorizedError({
+        return next(new common.errors.UnauthorizedError({
             message: 'Authorization header format is "Authorization: Bearer [token]"',
             code: 'INVALID_AUTH_HEADER'
         }));
@@ -51,7 +47,7 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {
-        return next(BadRequestError({
+        return next(new common.errors.BadRequestError({
             message: 'Invalid JWT',
             code: 'INVALID_JWT'
         }));
@@ -61,14 +57,14 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
 
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
-            return next(new UnauthorizedError({
+            return next(new common.errors.UnauthorizedError({
                 message: 'Unknown Admin API Key',
                 code: 'UNKNOWN_ADMIN_API_KEY'
             }));
         }
 
         if (apiKey.get('type') !== 'admin') {
-            return next(new UnauthorizedError({
+            return next(new common.errors.UnauthorizedError({
                 message: 'Incorrect API Key type',
                 code: 'INCORRECT_API_KEY_TYPE'
             }));
@@ -84,7 +80,7 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
             jwt.verify(token, secret, options);
         } catch (err) {
             if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
-                return next(new UnauthorizedError({
+                return next(new common.errors.UnauthorizedError({
                     message: `Invalid JWT: ${err.message}`,
                     code: 'INVALID_JWT',
                     err
@@ -92,7 +88,7 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
             }
 
             // unknown error
-            return next(InternalServerError(err));
+            return next(new common.errors.InternalServerError(err));
         }
 
         // authenticated OK, store the api key on the request for later checks and logging

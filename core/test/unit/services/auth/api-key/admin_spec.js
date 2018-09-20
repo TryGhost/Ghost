@@ -1,13 +1,10 @@
 const authenticateAdminAPIKey = require('../../../../../server/services/auth/api-key/admin');
+const common = require('../../../../../server/lib/common');
 const jwt = require('jsonwebtoken');
 const models = require('../../../../../server/models');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const {
-    BadRequestError,
-    UnauthorizedError
-} = require('../../../../../server/lib/common/errors');
 
 const sandbox = sinon.sandbox.create();
 
@@ -71,7 +68,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_AUTH_HEADER');
             should.not.exist(req.api_key);
             done();
@@ -89,7 +86,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof BadRequestError, true);
+            should.equal(err instanceof common.errors.BadRequestError, true);
             err.code.should.eql('INVALID_JWT');
             should.not.exist(req.api_key);
             done();
@@ -115,7 +112,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.code.should.eql('UNKNOWN_ADMIN_API_KEY');
             should.not.exist(req.api_key);
             done();
@@ -133,7 +130,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof BadRequestError, true);
+            should.equal(err instanceof common.errors.BadRequestError, true);
             err.code.should.eql('INVALID_AUTH_TYPE');
             should.not.exist(req.api_key);
             done();
@@ -162,7 +159,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_JWT');
             err.message.should.match(/maxAge exceeded/);
             should.not.exist(req.api_key);
@@ -191,7 +188,7 @@ describe('Admin API Key Auth', function () {
 
         authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.code.should.eql('INCORRECT_API_KEY_TYPE');
             should.not.exist(req.api_key);
             done();

@@ -1,12 +1,9 @@
+const common = require('../../../../../server/lib/common');
 const contentKeyAuth = require('../../../../../server/services/auth/api-key/content');
 const models = require('../../../../../server/models');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const {
-    BadRequestError,
-    UnauthorizedError
-} = require('../../../../../server/lib/common/errors');
 
 const sandbox = sinon.sandbox.create();
 
@@ -62,7 +59,7 @@ describe('Content API Key Auth', function () {
 
         contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof BadRequestError, true);
+            should.equal(err instanceof common.errors.BadRequestError, true);
             err.message.should.match(/does not support header authentication/);
             should.not.exist(req.api_key);
             done();
@@ -79,7 +76,7 @@ describe('Content API Key Auth', function () {
 
         contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.message.should.match(/Unknown Content API Key/);
             should.not.exist(req.api_key);
             done();
@@ -98,7 +95,7 @@ describe('Content API Key Auth', function () {
 
         contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof UnauthorizedError, true);
+            should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.message.should.match(/Incorrect API Key type/);
             should.not.exist(req.api_key);
             done();
