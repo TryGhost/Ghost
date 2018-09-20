@@ -7,7 +7,7 @@ module.exports = function upload(options) {
     const type = options.type;
 
     // if we finish the data/importer logic, we forward the request to the specified importer
-    return (req, res, next) => {
+    return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 

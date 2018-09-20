@@ -76,7 +76,7 @@ exports.use = function use(siteApp) {
 
     // Recommended approach by express, see https://github.com/expressjs/express/issues/2596#issuecomment-81353034.
     // As soon as the express router get's re-instantiated, the old router instance is not used anymore.
-    siteApp.use((req, res, next) => {
+    siteApp.use(function customRedirect(req, res, next) {
         customRedirectsRouter(req, res, next);
     });
 };

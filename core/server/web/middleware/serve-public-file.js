@@ -13,7 +13,7 @@ function servePublicFile(file, type, maxAge) {
     const blogRegex = /(\{\{blog-url\}\})/g;
     const apiRegex = /(\{\{api-url\}\})/g;
 
-    return (req, res, next) => {
+    return function servePublicFile(req, res, next) {
         if (req.path === '/' + file) {
             if (content) {
                 res.writeHead(200, content.headers);

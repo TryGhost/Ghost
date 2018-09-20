@@ -6,7 +6,7 @@ const validIconFileSize = size => (size / 1024) <= 100;
 
 module.exports = function blogIcon() {
     // we checked for a valid image file, now we need to do validations for blog icons
-    return (req, res, next) => {
+    return function blogIconValidation(req, res, next) {
         const iconExtensions = (config.get('uploads').icons && config.get('uploads').icons.extensions) || [];
 
         // CASE: file should not be larger than 100kb
