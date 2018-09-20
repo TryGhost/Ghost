@@ -4,9 +4,8 @@ const models = require('../models');
 const auth = require('../services/auth');
 
 const session = {
-    add(object, options) {
-        // CASE: if there is no options it means no body was sent.
-        if (!object || !options) {
+    add(object) {
+        if (!object || !object.username || !object.password) {
             return Promise.reject(new common.errors.UnauthorizedError({
                 message: common.i18n.t('errors.middleware.auth.accessDenied')
             }));
