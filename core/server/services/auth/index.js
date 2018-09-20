@@ -1,11 +1,9 @@
 const passport = require('./passport');
-const auth = require('./auth');
 const authorize = require('./authorize');
 const authenticate = require('./authenticate');
 const session = require('./session');
 const oauth = require('./oauth');
 
-exports.auth = auth;
 exports.authorize = authorize;
 exports.authenticate = authenticate;
 exports.session = session;
