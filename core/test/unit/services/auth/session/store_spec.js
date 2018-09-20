@@ -28,21 +28,21 @@ describe('Auth Service SessionStore', function () {
     });
 
     describe('SessionStore#destroy', function () {
-        it('calls findOne on the model with the session_id `sid`', function (done) {
-            const findOneStub = sandbox.stub(models.Session, 'findOne')
+        it('calls destroy on the model with the session_id `sid`', function (done) {
+            const destroyStub = sandbox.stub(models.Session, 'destroy')
                 .resolves();
 
             const store = new SessionStore(models.Session);
             const sid = 1;
             store.destroy(sid, function () {
-                const findOneStubCall = findOneStub.getCall(0);
-                should.equal(findOneStubCall.args[0].session_id, sid);
+                const destroyStubCall = destroyStub.getCall(0);
+                should.equal(destroyStubCall.args[0].session_id, sid);
                 done();
             });
         });
 
-        it('calls back with null if findOne resolve without model', function (done) {
-            sandbox.stub(models.Session, 'findOne')
+        it('calls back with null if destroy resolve', function (done) {
+            sandbox.stub(models.Session, 'destroy')
                 .resolves();
 
             const store = new SessionStore(models.Session);
@@ -53,9 +53,9 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('calls back with the error if findOne errors', function (done) {
+        it('calls back with the error if destroy errors', function (done) {
             const error = new Error('beam me up scotty');
-            sandbox.stub(models.Session, 'findOne')
+            sandbox.stub(models.Session, 'destroy')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -63,59 +63,6 @@ describe('Auth Service SessionStore', function () {
             store.destroy(sid, function (err) {
                 should.equal(err, error);
                 done();
-            });
-        });
-
-        describe('when findOne resolves with a model', function () {
-            it('calls destroy on the model with the session_id `sid` passing require: false', function (done) {
-                const model = models.Session.forge();
-                sandbox.stub(models.Session, 'findOne')
-                    .resolves(model);
-
-                const destroyStub = sandbox.stub(models.Session, 'destroy')
-                    .resolves();
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                store.destroy(sid, function () {
-                    const destroyStubCall = destroyStub.getCall(0);
-                    should.equal(destroyStubCall.args[0], model);
-                    done();
-                });
-            });
-
-            it('callsback with null or undefined if the destroy does not error', function (done) {
-                const model = models.Session.forge();
-                sandbox.stub(models.Session, 'findOne')
-                    .resolves(model);
-
-                sandbox.stub(models.Session, 'destroy')
-                    .resolves();
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-
-                store.destroy(sid, function (err) {
-                    should.equal(err, null);
-                    done();
-                });
-            });
-
-            it('callsback with an error if the destroy does error', function (done) {
-                const model = models.Session.forge();
-                sandbox.stub(models.Session, 'findOne')
-                    .resolves(model);
-
-                const error = new Error('hot damn');
-                sandbox.stub(models.Session, 'destroy')
-                    .rejects(error);
-
-                const store = new SessionStore(models.Session);
-                const sid = 1;
-                store.destroy(sid, function (err) {
-                    should.equal(err, error);
-                    done();
-                });
             });
         });
     });

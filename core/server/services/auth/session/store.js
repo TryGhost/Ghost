@@ -9,16 +9,9 @@ module.exports = class SessionStore extends Store {
 
     destroy(sid, callback) {
         this.SessionModel
-            .findOne({session_id: sid})
-            .then((model) => {
-                if (!model) {
-                    return callback(null);
-                }
-                return this.SessionModel
-                    .destroy(model)
-                    .then(() => {
-                        callback(null);
-                    });
+            .destroy({session_id: sid})
+            .then(() => {
+                callback(null);
             })
             .catch(callback);
     }
