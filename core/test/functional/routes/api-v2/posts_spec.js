@@ -1069,7 +1069,7 @@ describe('Admin API v2 - Post API', function () {
                     });
             });
 
-            it('can\'t edit a post with invalid accesstoken', function (done) {
+            it('can\'t edit a post with invalid JWT', function (done) {
                 let path = testUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/', apiOptions);
                 request.get(path)
                     .set('Authorization', `Bearer ${generateToken(path)}`)
@@ -1087,7 +1087,7 @@ describe('Admin API v2 - Post API', function () {
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(422)
+                            .expect(400)
                             .end(function (err, res) {
                                 if (err) {
                                     return done(err);
