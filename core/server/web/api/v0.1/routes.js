@@ -7,18 +7,18 @@ const mw = require('./middleware');
 
 // API specific
 const auth = require('../../../services/auth');
-const cors = require('../../middleware/api/cors');
-const brute = require('../../middleware/brute');
+const cors = require('../../shared/middleware/api/cors');
+const brute = require('../../shared/middleware/brute');
 
 // Handling uploads & imports
 const tmpdir = require('os').tmpdir;
 const upload = require('multer')({dest: tmpdir()});
-const validation = require('../../middleware/validation');
-const image = require('../../middleware/image');
+const validation = require('../../shared/middleware/validation');
+const image = require('../../shared/middleware/image');
 
 // Temporary
 // @TODO find a more appy way to do this!
-const labs = require('../../middleware/labs');
+const labs = require('../../shared/middleware/labs');
 
 module.exports = function apiRoutes() {
     const apiRouter = express.Router();

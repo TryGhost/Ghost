@@ -6,7 +6,7 @@ const fs = require('fs-extra'),
     common = require('../lib/common'),
     validation = require('../data/validation'),
     localUtils = require('./utils'),
-    customRedirectsMiddleware = require('../web/middleware/custom-redirects');
+    customRedirectsMiddleware = require('../web/shared/middleware/custom-redirects');
 
 let redirectsAPI,
     _private = {};

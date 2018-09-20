@@ -1,7 +1,7 @@
 var should  = require('should'),
     sinon   = require('sinon'),
 
-    versionMatch = require('../../../../../server/web/middleware/api/version-match'),
+    versionMatch = require('../../../../../server/web/shared/middleware/api/version-match'),
 
     sandbox = sinon.sandbox.create();
 

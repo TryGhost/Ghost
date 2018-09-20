@@ -9,8 +9,8 @@ const compress = require('compression');
 const netjet = require('netjet');
 
 // local middleware
-const ghostLocals = require('./middleware/ghost-locals');
-const logRequest = require('./middleware/log-request');
+const ghostLocals = require('./shared/middleware/ghost-locals');
+const logRequest = require('./shared/middleware/log-request');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');

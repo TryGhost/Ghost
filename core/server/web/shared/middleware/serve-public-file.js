@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
-const config = require('../../config');
-const urlService = require('../../services/url');
+const config = require('../../../config');
+const urlService = require('../../../services/url');
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)

@@ -9,9 +9,9 @@ const routes = require('./routes');
 // Include the middleware
 
 // Shared
-const cacheControl = require('../../../middleware/cache-control'); // global, shared
-const maintenance = require('../../../middleware/maintenance'); // global, shared
-const errorHandler = require('../../../middleware/error-handler'); // global, shared
+const cacheControl = require('../../../shared/middleware/cache-control'); // global, shared
+const maintenance = require('../../../shared/middleware/maintenance'); // global, shared
+const errorHandler = require('../../../shared/middleware/error-handler'); // global, shared
 
 module.exports = function setupApiApp() {
     debug('Content API v2 setup start');

@@ -1,6 +1,6 @@
-const prettyURLs = require('../../../middleware/pretty-urls');
-const cors = require('../../../middleware/api/cors');
-const {adminRedirect} = require('../../../middleware/url-redirects');
+const prettyURLs = require('../../../shared/middleware/pretty-urls');
+const cors = require('../../../shared/middleware/api/cors');
+const {adminRedirect} = require('../../../shared/middleware/url-redirects');
 const auth = require('../../../../services/auth');
 
 /**

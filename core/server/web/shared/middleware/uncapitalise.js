@@ -12,8 +12,8 @@
 //  req.baseUrl = /blog
 //  req.path =  /ghost/signin/
 
-const urlService = require('../../services/url');
-const common = require('../../lib/common');
+const urlService = require('../../../services/url');
+const common = require('../../../lib/common');
 const localUtils = require('../utils');
 
 const uncapitalise = (req, res, next) => {

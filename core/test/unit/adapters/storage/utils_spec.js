@@ -35,7 +35,7 @@ describe('storage utils', function () {
         });
 
         // Very unlikely that this is necessary, because Ghost will redirect the request beforehand.
-        // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/middleware/url-redirects.js#L76
+        // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/shared/middleware/url-redirects.js#L76
         // TODO: Change the code to make this test work
         it.skip('should return local file storage path for https request, when blog setup as http', function () {
             var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
@@ -124,7 +124,7 @@ describe('storage utils', function () {
         });
 
         // Very unlikely that this is necessary, because Ghost will redirect the request beforehand.
-        // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/middleware/url-redirects.js#L76
+        // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/shared/middleware/url-redirects.js#L76
         // TODO: Change the code to make this test work
         it.skip('should return local file storage path for https request, when blog setup as http', function () {
             var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
