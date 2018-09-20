@@ -13,7 +13,7 @@ module.exports = function apiRoutes() {
     router.options('*', shared.middlewares.api.cors);
 
     // ## Configuration
-    router.get('/configuration', mw.authenticatePublic, api.http(api.configuration.read));
+    router.get('/configuration', api.http(api.configuration.read));
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
@@ -35,7 +35,7 @@ module.exports = function apiRoutes() {
     router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
 
     // ## Clients
-    router.get('/clients/slug/:slug', mw.authenticatePublic, api.http(api.clients.read));
+    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     return router;
 };
