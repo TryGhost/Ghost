@@ -128,7 +128,7 @@ describe('Middleware: uncapitalise', function () {
 
     describe('An API request', function () {
         ['v0.1', 'v2', 'v10'].forEach((apiVersion) => {
-            describe(`for ${apiVersion}`, function() {
+            describe(`for ${apiVersion}`, function () {
                 it('does nothing if there are no capitals', function (done) {
                     req.path = `/ghost/api/${apiVersion}/endpoint/`;
                     uncapitalise(req, res, next);
