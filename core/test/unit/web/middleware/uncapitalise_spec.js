@@ -137,6 +137,18 @@ describe('Middleware: uncapitalise', function () {
                     done();
                 });
 
+                it('version identifier is uppercase', function (done) {
+                    req.path = `/ghost/api/${apiVersion.toUpperCase()}/endpoint/`;
+                    req.url = req.path;
+
+                    uncapitalise(req, res, next);
+
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/endpoint/`).should.be.true();
+                    done();
+                });
+
                 it('redirects to the lower case slug if there are capitals', function (done) {
                     req.path = `/ghost/api/${apiVersion}/ASDfJ/`;
                     req.url = req.path;
