@@ -608,7 +608,7 @@ describe('API Utils', function () {
     describe('handlePublicPermissions', function () {
         it('should return empty options if passed empty options', function (done) {
             apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
-                options.should.eql({context: {app: null, external: false, internal: false, public: true, user: null}});
+                options.should.eql({context: {app: null, external: false, internal: false, public: true, user: null, api_key: null}});
                 done();
             }).catch(done);
         });
@@ -617,7 +617,7 @@ describe('API Utils', function () {
             var aPPStub = sandbox.stub(apiUtils, 'applyPublicPermissions').returns(Promise.resolve({}));
             apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
                 aPPStub.calledOnce.should.eql(true);
-                options.should.eql({context: {app: null, external: false, internal: false, public: true, user: null}});
+                options.should.eql({context: {app: null, external: false, internal: false, public: true, user: null, api_key: null}});
                 done();
             }).catch(done);
         });
@@ -633,7 +633,7 @@ describe('API Utils', function () {
             apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function (options) {
                 cTStub.calledOnce.should.eql(true);
                 cTMethodStub.test.test.calledOnce.should.eql(true);
-                options.should.eql({context: {app: null, external: false, internal: false, public: false, user: 1}});
+                options.should.eql({context: {app: null, external: false, internal: false, public: false, user: 1, api_key: null}});
                 done();
             }).catch(done);
         });
