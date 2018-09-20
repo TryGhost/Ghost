@@ -93,7 +93,7 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
  * 2. redirect to the correct admin url
  *
  */
-_private.redirect = function redirect(req, res, next, redirectFn) {
+_private.redirect = (req, res, next, redirectFn) => {
     const redirectUrl = redirectFn({
         requestedHost: req.get('host'),
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
@@ -113,12 +113,12 @@ _private.redirect = function redirect(req, res, next, redirectFn) {
 /*
  * @deprecated: in favor of adminRedirect (extract public getBlogRedirectUrl method when needed)
  */
-const urlRedirects = function urlRedirects(req, res, next) {
+const urlRedirects = (req, res, next) => {
     const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl;
     _private.redirect(req, res, next, redirectFn);
 };
 
-const adminRedirect = function adminRedirect(req, res, next) {
+const adminRedirect = (req, res, next) => {
     _private.redirect(req, res, next, _private.getAdminRedirectUrl);
 };
 
