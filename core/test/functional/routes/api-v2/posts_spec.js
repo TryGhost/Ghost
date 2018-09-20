@@ -17,7 +17,7 @@ describe('Admin API v2 - Post API', function () {
     let ghostServer;
 
     describe('with API Key', function () {
-        let generateToken;
+        let author, generateToken;
 
         const apiOptions = {
             version: 'v2',
@@ -52,6 +52,10 @@ describe('Admin API v2 - Post API', function () {
                 .then(() => models.ApiKey.findOne({id: testUtils.DataGenerator.Content.api_keys[0].id}))
                 .then((apiKey) => {
                     this.apiKey = apiKey;
+                })
+                .then(() => models.User.findOne({id: testUtils.DataGenerator.Content.extraUsers[0].id}))
+                .then((user) => {
+                    author = user;
                 });
         });
 
@@ -599,7 +603,8 @@ describe('Admin API v2 - Post API', function () {
                     posts: [{
                         status: 'published',
                         published_at: '2016-05-30T07:00:00.000Z',
-                        mobiledoc: markdownToMobiledoc()
+                        mobiledoc: markdownToMobiledoc(),
+                        authors: [author.toJSON()]
                     }]
                 };
 
@@ -660,7 +665,8 @@ describe('Admin API v2 - Post API', function () {
                             status: 'draft',
                             title: newTitle,
                             mobiledoc: markdownToMobiledoc('my post'),
-                            tags: [newTag]
+                            tags: [newTag],
+                            authors: [author.toJSON()]
                         }]
                     };
 
@@ -757,6 +763,7 @@ describe('Admin API v2 - Post API', function () {
                     status: 'draft',
                     title: 'title',
                     mobiledoc: markdownToMobiledoc('my post'),
+                    authors: [author.toJSON()],
                     created_at: moment().subtract(2, 'days').toDate(),
                     updated_at: moment().subtract(2, 'days').toDate(),
                     created_by: ObjectId.generate(),
@@ -852,7 +859,8 @@ describe('Admin API v2 - Post API', function () {
                             status: 'draft',
                             title: newTitle,
                             mobiledoc: markdownToMobiledoc('my post'),
-                            tags: [newTag]
+                            tags: [newTag],
+                            authors: [author.toJSON()]
                         }]
                     };
 
@@ -906,7 +914,8 @@ describe('Admin API v2 - Post API', function () {
                             status: 'published',
                             title: newTitle,
                             mobiledoc: markdownToMobiledoc('my post'),
-                            tags: [newTag]
+                            tags: [newTag],
+                            authors: [author.toJSON()]
                         }]
                     };
 
@@ -1313,7 +1322,8 @@ describe('Admin API v2 - Post API', function () {
                         posts: [{
                             status: publishedState,
                             title: newTitle,
-                            mobiledoc: markdownToMobiledoc('my post')
+                            mobiledoc: markdownToMobiledoc('my post'),
+                            authors: [author.toJSON()]
                         }]
                     };
 

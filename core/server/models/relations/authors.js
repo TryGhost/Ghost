@@ -79,6 +79,14 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         // NOTE: sending `post.author = {}` was always ignored [unsupported]
         onCreating: function onCreating(model, attrs, options) {
+            // there is no context.user for API Key requests so we can't
+            // auto-assign the currently logged in user
+            if (options.context.api_key && !model.get('author_id')) {
+                throw new common.errors.ValidationError({
+                    message: 'At least one author is required.'
+                });
+            }
+
             if (!model.get('author_id')) {
                 model.set('author_id', this.contextUser(options));
             }
