@@ -13,7 +13,7 @@ const serveStatic = require('express').static;
 
 // Global/shared middleware
 const cacheControl = require('../shared/middlewares/cache-control');
-const urlRedirects = require('../shared/middlewares/url-redirects');
+const {adminRedirect} = require('../shared/middlewares/url-redirects');
 const errorHandler = require('../shared/middlewares/error-handler');
 const maintenance = require('../shared/middlewares/maintenance');
 const prettyURLs = require('../shared/middlewares/pretty-urls');
@@ -21,13 +21,6 @@ const prettyURLs = require('../shared/middlewares/pretty-urls');
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express();
-
-    // First determine whether we're serving admin or theme content
-    // @TODO finish refactoring this away.
-    adminApp.use(function setIsAdmin(req, res, next) {
-        res.isAdmin = true;
-        next();
-    });
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
@@ -52,7 +45,7 @@ module.exports = function setupAdminApp() {
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(urlRedirects);
+    adminApp.use(adminRedirect);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
