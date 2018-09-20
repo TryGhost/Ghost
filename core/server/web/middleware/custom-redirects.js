@@ -37,7 +37,7 @@ _private.registerRoutes = () => {
             }
 
             debug('register', redirect.from);
-            customRedirectsRouter.get(new RegExp(redirect.from), (req, res) => {
+            customRedirectsRouter.get(new RegExp(redirect.from), function customRedirect(req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
                     parsedUrl = url.parse(req.originalUrl);
 
