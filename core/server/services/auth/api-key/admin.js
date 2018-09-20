@@ -22,7 +22,7 @@ const extractTokenFromHeader = function extractTokenFromHeader(header) {
     return;
 };
 
-const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next) {
+const authenticateAdminApiKey = function authenticateAdminApiKey(req, res, next) {
     if (req.query && req.query.content_key) {
         return next(new common.errors.BadRequestError({
             message: 'Admin API does not support query param authentication',
@@ -97,4 +97,4 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     });
 };
 
-module.exports = authenticateAdminAPIKey;
+module.exports = authenticateAdminApiKey;

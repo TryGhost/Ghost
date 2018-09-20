@@ -4,7 +4,7 @@ const {
     UnauthorizedError
 } = require('../../../lib/common/errors');
 
-const authenticateContentAPIKey = function authenticateContentAPIKey(req, res, next) {
+const authenticateContentApiKey = function authenticateContentApiKey(req, res, next) {
     if (req.headers && req.headers.authorization) {
         return next(new BadRequestError({
             message: 'Content API does not support header authentication',
@@ -42,5 +42,5 @@ const authenticateContentAPIKey = function authenticateContentAPIKey(req, res, n
 };
 
 module.exports = {
-    authenticateContentAPIKey
+    authenticateContentApiKey
 };

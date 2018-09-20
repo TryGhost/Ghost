@@ -2,7 +2,7 @@ const passport = require('passport');
 const authUtils = require('./utils');
 const models = require('../../models');
 const common = require('../../lib/common');
-const authenticateAdminAPIKey = require('./api-key/admin');
+const authenticateAdminApiKey = require('./api-key/admin');
 
 const authenticate = {
     // ### Authenticate Client Middleware
@@ -101,7 +101,7 @@ const authenticate = {
     },
 
     // ### Authenticate Admin API Key Middleware
-    authenticateAdminAPIKey
+    authenticateAdminApiKey
 };
 
 module.exports = authenticate;

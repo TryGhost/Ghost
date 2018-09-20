@@ -39,7 +39,7 @@ describe('Content API Key Auth', function () {
         };
         const res = {};
 
-        contentKeyAuth.authenticateContentAPIKey(req, res, (arg) => {
+        contentKeyAuth.authenticateContentApiKey(req, res, (arg) => {
             should.not.exist(arg);
             req.api_key.should.eql(this.fakeApiKey);
             done();
@@ -57,7 +57,7 @@ describe('Content API Key Auth', function () {
         };
         const res = {};
 
-        contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
+        contentKeyAuth.authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof common.errors.BadRequestError, true);
             err.message.should.match(/does not support header authentication/);
@@ -74,7 +74,7 @@ describe('Content API Key Auth', function () {
         };
         const res = {};
 
-        contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
+        contentKeyAuth.authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.message.should.match(/Unknown Content API Key/);
@@ -93,7 +93,7 @@ describe('Content API Key Auth', function () {
 
         this.fakeApiKey.type = 'admin';
 
-        contentKeyAuth.authenticateContentAPIKey(req, res, function next(err) {
+        contentKeyAuth.authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof common.errors.UnauthorizedError, true);
             err.message.should.match(/Incorrect API Key type/);

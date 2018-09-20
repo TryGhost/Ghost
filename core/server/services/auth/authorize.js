@@ -14,10 +14,10 @@ authorize = {
     },
 
     // used by Admin API v2 endpoints
-    requiresAuthorizedUserOrAPIKey(req, res, next) {
+    requiresAuthorizedUserOrApiKey(req, res, next) {
         const hasUser = req.user && req.user.id;
-        const hasAPIKey = req.api_key && req.api_key.id;
-        if (hasUser || hasAPIKey) {
+        const hasApiKey = req.api_key && req.api_key.id;
+        if (hasUser || hasApiKey) {
             return next();
         } else {
             return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')}));
