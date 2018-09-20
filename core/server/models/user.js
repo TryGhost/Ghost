@@ -335,7 +335,7 @@ User = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
-                edit: ['withRelated', 'id', 'importPersistUser'],
+                edit: ['withRelated', 'importPersistUser'],
                 add: ['importPersistUser'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absolute_urls'],
                 findAll: ['filter']
