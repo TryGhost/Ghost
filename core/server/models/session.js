@@ -25,7 +25,24 @@ const Session = ghostBookshelf.Model.extend({
         if (methodName === 'upsert') {
             return permittedOptions.concat('session_id');
         }
+        if (methodName === 'destroy') {
+            return permittedOptions.concat('session_id');
+        }
         return permittedOptions;
+    },
+
+    destroy(unfilteredOptions) {
+        if (unfilteredOptions.id) {
+            return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
+        }
+        const options = this.filterOptions(unfilteredOptions, 'destroy');
+
+        // Fetch the object before destroying it, so that the changed data is available to events
+        return this.forge({session_id: options.session_id})
+            .fetch(options)
+            .then(function then(obj) {
+                return obj.destroy(options);
+            });
     },
 
     upsert(data, unfilteredOptions) {
