@@ -1,24 +1,25 @@
-var cors = require('cors'),
-    _ = require('lodash'),
-    url = require('url'),
-    os = require('os'),
-    urlService = require('../../../services/url'),
-    whitelist = [],
-    ENABLE_CORS = {origin: true, maxAge: 86400},
-    DISABLE_CORS = {origin: false};
+const cors = require('cors');
+const url = require('url');
+const os = require('os');
+const some = require('lodash/some');
+const urlService = require('../../../services/url');
+
+let whitelist = [];
+const ENABLE_CORS = {origin: true, maxAge: 86400};
+const DISABLE_CORS = {origin: false};
 
 /**
  * Gather a list of local ipv4 addresses
  * @return {Array<String>}
  */
 function getIPs() {
-    var ifaces = os.networkInterfaces(),
+    const ifaces = os.networkInterfaces(),
         ips = [
             'localhost'
         ];
 
-    Object.keys(ifaces).forEach(function (ifname) {
-        ifaces[ifname].forEach(function (iface) {
+    Object.keys(ifaces).forEach((ifname) => {
+        ifaces[ifname].forEach((iface) => {
             // only support IPv4
             if (iface.family !== 'IPv4') {
                 return;
@@ -32,9 +33,9 @@ function getIPs() {
 }
 
 function getUrls() {
-    var blogHost = url.parse(urlService.utils.urlFor('home', true)).hostname,
-        adminHost = url.parse(urlService.utils.urlFor('admin', true)).hostname,
-        urls = [];
+    const blogHost = url.parse(urlService.utils.urlFor('home', true)).hostname;
+    const adminHost = url.parse(urlService.utils.urlFor('admin', true)).hostname;
+    const urls = [];
 
     urls.push(blogHost);
 
@@ -47,7 +48,7 @@ function getUrls() {
 
 function getWhitelist() {
     // This needs doing just one time after init
-    if (_.isEmpty(whitelist)) {
+    if (whitelist.length === 0) {
         // origins that always match: localhost, local IPs, etc.
         whitelist = whitelist.concat(getIPs());
         // Trusted urls from config.js
@@ -64,8 +65,8 @@ function getWhitelist() {
  * @return {null}
  */
 function handleCORS(req, cb) {
-    var origin = req.get('origin'),
-        trustedDomains = req.client && req.client.trustedDomains;
+    const origin = req.get('origin');
+    const trustedDomains = req.client && req.client.trustedDomains;
 
     // Request must have an Origin header
     if (!origin) {
@@ -73,7 +74,7 @@ function handleCORS(req, cb) {
     }
 
     // Origin matches a client_trusted_domain
-    if (_.some(trustedDomains, {trusted_domain: origin})) {
+    if (some(trustedDomains, {trusted_domain: origin})) {
         return cb(null, ENABLE_CORS);
     }
 

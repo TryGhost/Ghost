@@ -1,22 +1,22 @@
-const debug = require('ghost-ignition').debug('admin'),
-    express = require('express'),
+const debug = require('ghost-ignition').debug('admin');
+const express = require('express');
 
-    // App requires
-    config = require('../../config'),
-    constants = require('../../lib/constants'),
-    urlService = require('../../services/url'),
+// App requires
+const config = require('../../config');
+const constants = require('../../lib/constants');
+const urlService = require('../../services/url');
 
-    // Middleware
-    // Admin only middleware
-    adminMiddleware = require('./middleware'),
-    serveStatic = require('express').static,
+// Middleware
+// Admin only middleware
+const adminMiddleware = require('./middleware');
+const serveStatic = require('express').static;
 
-    // Global/shared middleware
-    cacheControl = require('../middleware/cache-control'),
-    urlRedirects = require('../middleware/url-redirects'),
-    errorHandler = require('../middleware/error-handler'),
-    maintenance = require('../middleware/maintenance'),
-    prettyURLs = require('../middleware/pretty-urls');
+// Global/shared middleware
+const cacheControl = require('../middleware/cache-control');
+const urlRedirects = require('../middleware/url-redirects');
+const errorHandler = require('../middleware/error-handler');
+const maintenance = require('../middleware/maintenance');
+const prettyURLs = require('../middleware/pretty-urls');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
@@ -42,7 +42,7 @@ module.exports = function setupAdminApp() {
 
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
-        adminApp.get('/ember-cli-live-reload.js', function (req, res) {
+        adminApp.get('/ember-cli-live-reload.js', function emberLiveReload(req, res) {
             res.redirect(`http://localhost:4200${urlService.utils.getSubdir()}/ghost/ember-cli-live-reload.js`);
         });
     }

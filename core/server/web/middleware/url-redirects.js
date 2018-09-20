@@ -1,13 +1,14 @@
-const url = require('url'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('url-redirects'),
-    urlService = require('../../services/url'),
-    _private = {};
+const url = require('url');
+const path = require('path');
+const debug = require('ghost-ignition').debug('url-redirects');
+const urlService = require('../../services/url');
 
-_private.redirectUrl = function redirectUrl(options) {
-    const redirectTo = options.redirectTo,
-        query = options.query,
-        parts = url.parse(redirectTo);
+const _private = {};
+
+_private.redirectUrl = (options) => {
+    const redirectTo = options.redirectTo;
+    const query = options.query;
+    const parts = url.parse(redirectTo);
     let pathname = options.path;
 
     // CASE: ensure we always add a trailing slash to reduce the number of redirects
@@ -26,15 +27,15 @@ _private.redirectUrl = function redirectUrl(options) {
     });
 };
 
-_private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
-    const blogHostWithProtocol = urlService.utils.urlFor('home', true),
-        adminHostWithProtocol = urlService.utils.urlFor('admin', true),
-        adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
-        blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, ''),
-        requestedHost = options.requestedHost,
-        requestedUrl = options.requestedUrl,
-        queryParameters = options.queryParameters,
-        secure = options.secure;
+_private.getAdminRedirectUrl = (options) => {
+    const blogHostWithProtocol = urlService.utils.urlFor('home', true);
+    const adminHostWithProtocol = urlService.utils.urlFor('admin', true);
+    const adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, '');
+    const blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, '');
+    const requestedHost = options.requestedHost;
+    const requestedUrl = options.requestedUrl;
+    const queryParameters = options.queryParameters;
+    const secure = options.secure;
 
     debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithoutProtocol, blogHostWithoutProtocol, urlService.utils.urlJoin(blogHostWithoutProtocol, 'ghost/'));
 
@@ -65,12 +66,12 @@ _private.getAdminRedirectUrl = function getAdminRedirectUrl(options) {
     }
 };
 
-_private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
-    const blogHostWithProtocol = urlService.utils.urlFor('home', true),
-        requestedHost = options.requestedHost,
-        requestedUrl = options.requestedUrl,
-        queryParameters = options.queryParameters,
-        secure = options.secure;
+_private.getBlogRedirectUrl = (options) => {
+    const blogHostWithProtocol = urlService.utils.urlFor('home', true);
+    const requestedHost = options.requestedHost;
+    const requestedUrl = options.requestedUrl;
+    const queryParameters = options.queryParameters;
+    const secure = options.secure;
 
     debug('getBlogRedirectUrl', requestedHost, requestedUrl, blogHostWithProtocol);
 
@@ -79,7 +80,7 @@ _private.getBlogRedirectUrl = function getBlogRedirectUrl(options) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
-            redirectTo: 'https://' + requestedHost,
+            redirectTo: `https://${requestedHost}`,
             path: requestedUrl,
             query: queryParameters
         });
@@ -102,7 +103,7 @@ _private.redirect = (req, res, next, redirectFn) => {
     });
 
     if (redirectUrl) {
-        debug('url redirect to: ' + redirectUrl);
+        debug(`url redirect to: ${redirectUrl}`);
         return urlService.utils.redirect301(res, redirectUrl);
     }
 

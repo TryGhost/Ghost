@@ -1,16 +1,17 @@
-const fs = require('fs-extra'),
-    express = require('express'),
-    url = require('url'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('custom-redirects'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    validation = require('../../data/validation'),
-    _private = {};
+const fs = require('fs-extra');
+const express = require('express');
+const url = require('url');
+const path = require('path');
+const debug = require('ghost-ignition').debug('custom-redirects');
+const config = require('../../config');
+const common = require('../../lib/common');
+const validation = require('../../data/validation');
+
+const _private = {};
 
 let customRedirectsRouter;
 
-_private.registerRoutes = function registerRoutes() {
+_private.registerRoutes = () => {
     debug('redirects loading');
 
     customRedirectsRouter = express.Router();
@@ -20,7 +21,7 @@ _private.registerRoutes = function registerRoutes() {
         redirects = JSON.parse(redirects);
         validation.validateRedirects(redirects);
 
-        redirects.forEach(function (redirect) {
+        redirects.forEach((redirect) => {
             /**
              * always delete trailing slashes, doesn't matter if regex or not
              * Example:
@@ -36,12 +37,12 @@ _private.registerRoutes = function registerRoutes() {
             }
 
             debug('register', redirect.from);
-            customRedirectsRouter.get(new RegExp(redirect.from), function (req, res) {
+            customRedirectsRouter.get(new RegExp(redirect.from), function customRedirect(req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
                     parsedUrl = url.parse(req.originalUrl);
 
                 res.set({
-                    'Cache-Control': 'public, max-age=' + maxAge
+                    'Cache-Control': `public, max-age=${maxAge}`
                 });
 
                 res.redirect(redirect.permanent ? 301 : 302, url.format({
@@ -75,7 +76,7 @@ exports.use = function use(siteApp) {
 
     // Recommended approach by express, see https://github.com/expressjs/express/issues/2596#issuecomment-81353034.
     // As soon as the express router get's re-instantiated, the old router instance is not used anymore.
-    siteApp.use(function (req, res, next) {
+    siteApp.use(function customRedirect(req, res, next) {
         customRedirectsRouter(req, res, next);
     });
 };

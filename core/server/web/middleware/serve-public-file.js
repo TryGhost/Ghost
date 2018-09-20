@@ -1,17 +1,17 @@
-const crypto = require('crypto'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    config = require('../../config'),
-    urlService = require('../../services/url');
+const crypto = require('crypto');
+const fs = require('fs-extra');
+const path = require('path');
+const config = require('../../config');
+const urlService = require('../../services/url');
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(file, type, maxAge) {
     let content;
-    const publicFilePath = config.get('paths').publicFilePath,
-        filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file),
-        blogRegex = /(\{\{blog-url\}\})/g,
-        apiRegex = /(\{\{api-url\}\})/g;
+    const publicFilePath = config.get('paths').publicFilePath;
+    const filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file);
+    const blogRegex = /(\{\{blog-url\}\})/g;
+    const apiRegex = /(\{\{api-url\}\})/g;
 
     return function servePublicFile(req, res, next) {
         if (req.path === '/' + file) {
@@ -19,7 +19,7 @@ function servePublicFile(file, type, maxAge) {
                 res.writeHead(200, content.headers);
                 res.end(content.body);
             } else {
-                fs.readFile(filePath, function readFile(err, buf) {
+                fs.readFile(filePath, (err, buf) => {
                     if (err) {
                         return next(err);
                     }
@@ -32,8 +32,8 @@ function servePublicFile(file, type, maxAge) {
                         headers: {
                             'Content-Type': type,
                             'Content-Length': buf.length,
-                            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-                            'Cache-Control': 'public, max-age=' + maxAge
+                            ETag: `"${crypto.createHash('md5').update(buf, 'utf8').digest('hex')}"`,
+                            'Cache-Control': `public, max-age=${maxAge}`
                         },
                         body: buf
                     };

@@ -6,10 +6,10 @@
 //
 // Allows each app to declare its own default caching rules
 
-const _ = require('lodash'),
-    config = require('../../config');
+const isString = require('lodash/isString');
+const config = require('../../config');
 
-const cacheControl = function cacheControl(options) {
+const cacheControl = (options) => {
     const profiles = {
         public: 'public, max-age=' + config.get('caching:frontend:maxAge'),
         private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
@@ -17,7 +17,7 @@ const cacheControl = function cacheControl(options) {
 
     let output;
 
-    if (_.isString(options) && profiles.hasOwnProperty(options)) {
+    if (isString(options) && profiles.hasOwnProperty(options)) {
         output = profiles[options];
     }
 

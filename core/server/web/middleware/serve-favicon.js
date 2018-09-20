@@ -1,21 +1,21 @@
-const fs = require('fs-extra'),
-    path = require('path'),
-    crypto = require('crypto'),
-    config = require('../../config'),
-    imageLib = require('../../lib/image'),
-    storage = require('../../adapters/storage'),
-    urlService = require('../../services/url'),
-    settingsCache = require('../../services/settings/cache');
+const fs = require('fs-extra');
+const path = require('path');
+const crypto = require('crypto');
+const config = require('../../config');
+const imageLib = require('../../lib/image');
+const storage = require('../../adapters/storage');
+const urlService = require('../../services/url');
+const settingsCache = require('../../services/settings/cache');
 
 let content;
 
-const buildContentResponse = function buildContentResponse(ext, buf) {
+const buildContentResponse = (ext, buf) => {
     content = {
         headers: {
-            'Content-Type': 'image/' + ext,
+            'Content-Type': `image/${ext}`,
             'Content-Length': buf.length,
-            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
-            'Cache-Control': 'public, max-age=' + config.get('caching:favicon:maxAge')
+            ETag: `"${crypto.createHash('md5').update(buf, 'utf8').digest('hex')}"`,
+            'Cache-Control': `public, max-age=${config.get('caching:favicon:maxAge')}`
         },
         body: buf
     };
@@ -26,8 +26,8 @@ const buildContentResponse = function buildContentResponse(ext, buf) {
 // ### serveFavicon Middleware
 // Handles requests to favicon.png and favicon.ico
 function serveFavicon() {
-    let iconType,
-        filePath;
+    let iconType;
+    let filePath;
 
     return function serveFavicon(req, res, next) {
         if (req.path.match(/^\/favicon\.(ico|png)/i)) {
@@ -46,12 +46,12 @@ function serveFavicon() {
             if (settingsCache.get('icon')) {
                 // depends on the uploaded icon extension
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: '/favicon' + originalExtension}));
+                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: `/favicon${originalExtension}`}));
                 }
 
                 storage.getStorage()
                     .read({path: filePath})
-                    .then(function readFile(buf) {
+                    .then((buf) => {
                         iconType = imageLib.blogIcon.getIconType();
                         content = buildContentResponse(iconType, buf);
 
@@ -67,7 +67,7 @@ function serveFavicon() {
                     return res.redirect(302, urlService.utils.urlFor({relativeUrl: '/favicon.ico'}));
                 }
 
-                fs.readFile(filePath, function readFile(err, buf) {
+                fs.readFile(filePath, (err, buf) => {
                     if (err) {
                         return next(err);
                     }

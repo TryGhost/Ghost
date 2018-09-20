@@ -1,20 +1,20 @@
-var debug = require('ghost-ignition').debug('app'),
-    express = require('express'),
+const debug = require('ghost-ignition').debug('app');
+const express = require('express');
 
-    // App requires
-    config = require('../config'),
+// App requires
+const config = require('../config');
 
-    // middleware
-    compress = require('compression'),
-    netjet = require('netjet'),
+// middleware
+const compress = require('compression');
+const netjet = require('netjet');
 
-    // local middleware
-    ghostLocals = require('./middleware/ghost-locals'),
-    logRequest = require('./middleware/log-request');
+// local middleware
+const ghostLocals = require('./middleware/ghost-locals');
+const logRequest = require('./middleware/log-request');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
-    var parentApp = express();
+    const parentApp = express();
 
     // ## Global settings
 
