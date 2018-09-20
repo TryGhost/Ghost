@@ -498,12 +498,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Object} Keys allowed in the `options` hash of every model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
-        if (methodName === 'toJSON') {
-            return ['shallow', 'withRelated', 'context', 'columns', 'absolute_urls'];
-        }
+        const baseOptions = ['context', 'withRelated'];
+        const extraOptions = ['transacting', 'importing', 'forUpdate', 'migrating'];
 
-        // terms to whitelist for all methods.
-        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate', 'migrating'];
+        switch (methodName) {
+        case 'toJSON':
+            return baseOptions.concat('shallow', 'columns', 'absolute_urls');
+        case 'destroy':
+        case 'edit':
+            return baseOptions.concat(extraOptions, ['id']);
+        default:
+            return baseOptions.concat(extraOptions);
+        }
     },
 
     /**
@@ -753,9 +759,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
     edit: function edit(data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'edit', {extraAllowedProperties: ['id']}),
-            id = options.id,
-            model = this.forge({id: id});
+        const options = this.filterOptions(unfilteredOptions, 'edit');
+        const id = options.id;
+        const model = this.forge({id: id});
 
         data = this.filterData(data);
 
@@ -804,8 +810,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Empty Model
      */
     destroy: function destroy(unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']}),
-            id = options.id;
+        const options = this.filterOptions(unfilteredOptions, 'destroy');
+        const id = options.id;
 
         // Fetch the object before destroying it, so that the changed data is available to events
         return this.forge({id: id})
