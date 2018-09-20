@@ -1,8 +1,8 @@
-const debug = require('ghost-ignition').debug('admin:controller'),
-    path = require('path'),
-    config = require('../../config'),
-    updateCheck = require('../../update-check'),
-    common = require('../../lib/common');
+const debug = require('ghost-ignition').debug('admin:controller');
+const path = require('path');
+const config = require('../../config');
+const updateCheck = require('../../update-check');
+const common = require('../../lib/common');
 
 // Route: index
 // Path: /ghost/
@@ -12,12 +12,12 @@ module.exports = function adminController(req, res) {
 
     // run in background, don't block the admin rendering
     updateCheck()
-        .catch(function onError(err) {
+        .catch((err) => {
             common.logging.error(err);
         });
 
-    let defaultTemplate = config.get('env') === 'production' ? 'default-prod.html' : 'default.html',
-        templatePath = path.resolve(config.get('paths').adminViews, defaultTemplate);
+    const defaultTemplate = config.get('env') === 'production' ? 'default-prod.html' : 'default.html';
+    const templatePath = path.resolve(config.get('paths').adminViews, defaultTemplate);
 
     res.sendFile(templatePath);
 };

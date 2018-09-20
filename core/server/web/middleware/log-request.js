@@ -1,5 +1,5 @@
-const uuid = require('uuid'),
-    common = require('../../lib/common');
+const uuid = require('uuid');
+const common = require('../../lib/common');
 
 /**
  * @TODO:

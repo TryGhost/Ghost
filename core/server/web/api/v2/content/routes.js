@@ -1,16 +1,16 @@
-const express = require('express'),
-    // This essentially provides the controllers for the routes
-    api = require('../../../../api'),
+const express = require('express');
+// This essentially provides the controllers for the routes
+const api = require('../../../../api');
 
-    // Middleware
-    mw = require('./middleware'),
+// Middleware
+const mw = require('./middleware');
 
-    // API specific
-    cors = require('../../../middleware/api/cors'),
+// API specific
+const cors = require('../../../middleware/api/cors');
 
-    // Temporary
-    // @TODO find a more appy way to do this!
-    labs = require('../../../middleware/labs');
+// Temporary
+// @TODO find a more appy way to do this!
+const labs = require('../../../middleware/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router();
