@@ -192,24 +192,24 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('calls setSession on the model with the session_id and the session_data', function (done) {
-            const setSessionStub = sandbox.stub(models.Session, 'setSession')
+        it('calls upsert on the model with the session_id and the session_data', function (done) {
+            const upsertStub = sandbox.stub(models.Session, 'upsert')
                 .resolves();
 
             const store = new SessionStore(models.Session);
             const sid = 1;
             const session_data = {user_id: 100};
             store.set(sid, session_data, function () {
-                const setSessionStubCall = setSessionStub.getCall(0);
-                should.equal(setSessionStubCall.args[0], sid);
-                should.equal(setSessionStubCall.args[1], session_data);
+                const upsertStubCall = upsertStub.getCall(0);
+                should.equal(upsertStubCall.args[0].session_data, session_data);
+                should.equal(upsertStubCall.args[1].session_id, sid);
                 done();
             });
         });
 
-        it('calls back with an error if setSession errors', function (done) {
+        it('calls back with an error if upsert errors', function (done) {
             const error = new Error('huuuuuurrr');
-            sandbox.stub(models.Session, 'setSession')
+            sandbox.stub(models.Session, 'upsert')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -221,8 +221,8 @@ describe('Auth Service SessionStore', function () {
             });
         });
 
-        it('calls back with null, null if setSession succeed', function (done) {
-            sandbox.stub(models.Session, 'setSession')
+        it('calls back with null, null if upsert succeed', function (done) {
+            sandbox.stub(models.Session, 'upsert')
                 .resolves('success');
 
             const store = new SessionStore(models.Session);

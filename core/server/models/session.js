@@ -19,20 +19,32 @@ const Session = ghostBookshelf.Model.extend({
         return this.belongsTo('User');
     }
 }, {
-    setSession: function (id, data) {
-        const userId = data.user_id;
-        return this.findOne({session_id: id, user_id: userId})
+
+    permittedOptions(methodName) {
+        const permittedOptions = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+        if (methodName === 'upsert') {
+            return permittedOptions.concat('session_id');
+        }
+        return permittedOptions;
+    },
+
+    upsert(data, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'upsert');
+        const sessionId = options.session_id;
+        const sessionData = data.session_data;
+        const userId = sessionData.user_id;
+        return this.findOne({session_id: sessionId, user_id: userId})
             .then((model) => {
                 if (model) {
                     return this.edit({
-                        session_data: data
+                        session_data: sessionData
                     }, {
                         id: model.id
                     });
                 }
                 return this.add({
-                    session_id: id,
-                    session_data: data,
+                    session_id: sessionId,
+                    session_data: sessionData,
                     user_id: userId
                 });
             });

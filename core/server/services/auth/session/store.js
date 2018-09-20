@@ -42,7 +42,7 @@ module.exports = class SessionStore extends Store {
             }));
         }
         this.SessionModel
-            .setSession(sid, sessionData)
+            .upsert({session_data: sessionData}, {session_id: sid})
             .then(() => {
                 callback(null);
             })
