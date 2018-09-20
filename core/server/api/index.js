@@ -30,6 +30,7 @@ const exporter = require('../data/exporter');
 const slack = require('./slack');
 const webhooks = require('./webhooks');
 const oembed = require('./oembed');
+const session = require('./session');
 
 function isActiveThemeUpdate(method, endpoint, result) {
     if (endpoint === 'themes') {
@@ -334,7 +335,8 @@ module.exports = {
     invites: invites,
     redirects: redirects,
     webhooks: webhooks,
-    oembed: oembed
+    oembed: oembed,
+    session
 };
 
 /**

@@ -38,15 +38,6 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('calls next with a UnauthorizedError if there is no body', function (done) {
-            const req = fakeReq();
-            delete req.body;
-            sessionService.createSession(req, fakeRes(), function next(err) {
-                should.equal(err instanceof UnauthorizedError, true);
-                done();
-            });
-        });
-
         it('calls next with a BadRequestError if there is no Origin or Refferer', function (done) {
             const req = fakeReq();
             sandbox.stub(req, 'get')
@@ -59,49 +50,23 @@ describe('Session Service', function () {
             });
         });
 
-        it('checks the username and password from the body', function (done) {
-            const req = fakeReq();
-            req.body.username = 'AzureDiamond';
-            req.body.password = 'hunter2';
-
-            sandbox.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld');
-
-            const checkStub = sandbox.stub(models.User, 'check')
-                .resolves();
-
-            sessionService.createSession(req, fakeRes(), function next() {
-                const checkStubCall = checkStub.getCall(0);
-                should.equal(checkStubCall.args[0].email, req.body.username);
-                should.equal(checkStubCall.args[0].password, req.body.password);
-                done();
-            });
-        });
-
-        it('calls next with an UnauthorizedError if the check fails', function (done) {
-            const req = fakeReq();
-            sandbox.stub(models.User, 'check')
-                .rejects();
-            sandbox.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld');
-
-            sessionService.createSession(req, fakeRes(), function next(err) {
-                should.equal(err instanceof UnauthorizedError, true);
-                done();
-            });
-        });
-
-        it('sets req.session.user_id and calls sendStatus with 201 if the check succeeds', function (done) {
+        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            sandbox.stub(models.User, 'check')
-                .resolves(models.User.forge({id: 23}));
+
             sandbox.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld');
+                .withArgs('origin').returns('http://host.tld')
+                .withArgs('user-agent').returns('bububang');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
 
             sandbox.stub(res, 'sendStatus')
                 .callsFake(function (statusCode) {
                     should.equal(req.session.user_id, 23);
+                    should.equal(req.session.origin, 'http://host.tld');
+                    should.equal(req.session.user_agent, 'bububang');
+                    should.equal(req.session.ip, '127.0.0.1');
                     should.equal(statusCode, 201);
                     done();
                 });

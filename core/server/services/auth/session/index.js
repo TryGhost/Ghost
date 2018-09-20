@@ -26,33 +26,39 @@ const getOrigin = function getOrigin(req) {
     }
 };
 
+let UNO_SESSIONIONA;
+const getSession = function (req, res, next) {
+    if (!UNO_SESSIONIONA) {
+        UNO_SESSIONIONA = session({
+            store: new SessionStore(models.Session),
+            secret: settingsCache.get('session_secret'),
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                maxAge: 184 * 24 * 60 * 60 * 1000, // number of days in second half of year
+                httpOnly: true,
+                path: '/ghost',
+                sameSite: 'lax',
+                secure: urlService.utils.isSSL(config.get('url'))
+            }
+        });
+    }
+    return UNO_SESSIONIONA(req, res, next);
+};
+
 const createSession = function createSession(req, res, next) {
-    if (!req.body) {
-        return next(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.middleware.auth.accessDenied')
-        }));
-    }
-    const origin = getOrigin(req);
-    if (!origin) {
-        return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.unknownOrigin')
-        }));
-    }
-    const {username, password} = req.body;
-    models.User.check({
-        email: username,
-        password
-    }).then((user) => {
-        req.session.user_id = user.id;
+    getSession(req, res, function () {
+        const origin = getOrigin(req);
+        if (!origin) {
+            return next(new common.errors.BadRequestError({
+                message: common.i18n.t('errors.middleware.auth.unknownOrigin')
+            }));
+        }
+        req.session.user_id = req.user.id;
         req.session.origin = origin;
         req.session.user_agent = req.get('user-agent');
         req.session.ip = req.ip;
         res.sendStatus(201);
-    }).catch((err) => {
-        next(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.middleware.auth.accessDenied'),
-            err
-        }));
     });
 };
 
@@ -87,26 +93,6 @@ const ensureUser = function ensureUser(req, res, next) {
     next(new common.errors.UnauthorizedError({
         message: common.i18n.t('errors.middleware.auth.accessDenied')
     }));
-};
-
-let UNO_SESSIONIONA;
-const getSession = function (req, res, next) {
-    if (!UNO_SESSIONIONA) {
-        UNO_SESSIONIONA = session({
-            store: new SessionStore(models.Session),
-            secret: settingsCache.get('session_secret'),
-            resave: false,
-            saveUninitialized: false,
-            cookie: {
-                maxAge: 184 * 24 * 60 * 60 * 1000, // number of days in second half of year
-                httpOnly: true,
-                path: '/ghost',
-                sameSite: 'lax',
-                secure: urlService.utils.isSSL(config.get('url'))
-            }
-        });
-    }
-    return UNO_SESSIONIONA(req, res, next);
 };
 
 const cookieCsrfProtection = function cookieCsrfProtection(req, res, next) {

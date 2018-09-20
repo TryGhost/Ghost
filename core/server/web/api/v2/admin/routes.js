@@ -146,10 +146,12 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authenticatePrivate, api.http(api.slack.sendTest));
 
     // ## Sessions
-    // Only need to `getSession` here because this is only route they don't
-    // have to be authenticated for.
-    router.post('/session', auth.session.getSession, auth.session.createSession);
-    router.del('/session', auth.auth.adminAPI, auth.session.destroySession);
+    // We don't need auth when creating a new session (logging in)
+    router.post('/session', api.http(api.session.add));
+    router.del('/session', auth.auth.adminAPI, api.http(api.session.delete));
+    router.get('/session', auth.auth.adminAPI, function (req, res) {
+        res.json(req.user);
+    });
 
     // ## Authentication
     router.post('/authentication/passwordreset',
