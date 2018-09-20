@@ -2,7 +2,7 @@ const cors = require('cors');
 const url = require('url');
 const os = require('os');
 const some = require('lodash/some');
-const urlService = require('../../../services/url');
+const urlService = require('../../../../services/url');
 
 let whitelist = [];
 const ENABLE_CORS = {origin: true, maxAge: 86400};

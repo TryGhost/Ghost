@@ -6,11 +6,11 @@ const api = require('../../../../api');
 const mw = require('./middleware');
 
 // API specific
-const cors = require('../../../middleware/api/cors');
+const cors = require('../../../shared/middlewares/api/cors');
 
 // Temporary
 // @TODO find a more appy way to do this!
-const labs = require('../../../middleware/labs');
+const labs = require('../../../shared/middlewares/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router();

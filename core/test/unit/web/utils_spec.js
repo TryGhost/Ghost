@@ -1,5 +1,5 @@
 var should = require('should'),
-    webUtils = require('../../../server/web/utils');
+    webUtils = require('../../../server/web/shared/utils');
 
 describe('web utils', function () {
     describe('checkFileExists', function () {

@@ -16,19 +16,19 @@ const sitemapHandler = require('../../data/xml/sitemap/handler');
 const siteRoutes = require('./routes');
 
 // Global/shared middleware
-const cacheControl = require('../middleware/cache-control');
-const errorHandler = require('../middleware/error-handler');
-const frontendClient = require('../middleware/frontend-client');
-const maintenance = require('../middleware/maintenance');
-const prettyURLs = require('../middleware/pretty-urls');
-const urlRedirects = require('../middleware/url-redirects');
+const cacheControl = require('../shared/middlewares/cache-control');
+const errorHandler = require('../shared/middlewares/error-handler');
+const frontendClient = require('../shared/middlewares/frontend-client');
+const maintenance = require('../shared/middlewares/maintenance');
+const prettyURLs = require('../shared/middlewares/pretty-urls');
+const urlRedirects = require('../shared/middlewares/url-redirects');
 
 // local middleware
-const servePublicFile = require('../middleware/serve-public-file');
-const staticTheme = require('../middleware/static-theme');
-const customRedirects = require('../middleware/custom-redirects');
-const serveFavicon = require('../middleware/serve-favicon');
-const adminRedirects = require('../middleware/admin-redirects');
+const servePublicFile = require('../shared/middlewares/serve-public-file');
+const staticTheme = require('../shared/middlewares/static-theme');
+const customRedirects = require('../shared/middlewares/custom-redirects');
+const serveFavicon = require('../shared/middlewares/serve-favicon');
+const adminRedirects = require('../shared/middlewares/admin-redirects');
 
 // middleware for themes
 const themeMiddleware = require('../../services/themes').middleware;
