@@ -1,6 +1,6 @@
 const prettyURLs = require('../../../middleware/pretty-urls'),
     cors = require('../../../middleware/api/cors'),
-    urlRedirects = require('../../../middleware/url-redirects'),
+    {adminRedirect} = require('../../../middleware/url-redirects'),
     auth = require('../../../../services/auth');
 
 /**
@@ -21,6 +21,6 @@ module.exports.authenticatePublic = [
     // This is a labs-enabled middleware
     auth.authorize.requiresAuthorizedUserPublicAPI,
     cors,
-    urlRedirects,
+    adminRedirect,
     prettyURLs
 ];

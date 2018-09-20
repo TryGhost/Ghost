@@ -1,6 +1,6 @@
 const prettyURLs = require('../../../middleware/pretty-urls'),
     cors = require('../../../middleware/api/cors'),
-    urlRedirects = require('../../../middleware/url-redirects'),
+    {adminRedirect} = require('../../../middleware/url-redirects'),
     auth = require('../../../../services/auth');
 
 /**
@@ -11,7 +11,7 @@ module.exports.authenticatePrivate = [
     auth.authenticate.authenticateUser,
     auth.authorize.requiresAuthorizedUser,
     cors,
-    urlRedirects,
+    adminRedirect,
     prettyURLs
 ];
 
@@ -24,7 +24,7 @@ module.exports.authenticateClient = function authenticateClient(client) {
         auth.authenticate.authenticateUser,
         auth.authorize.requiresAuthorizedClient(client),
         cors,
-        urlRedirects,
+        adminRedirect,
         prettyURLs
     ];
 };
