@@ -1,8 +1,8 @@
 const cloneDeep = require('lodash/cloneDeep');
 const path = require('path');
-const config = require('../../../config');
-const common = require('../../../lib/common');
-const image = require('../../../lib/image');
+const config = require('../../../../config');
+const common = require('../../../../lib/common');
+const image = require('../../../../lib/image');
 
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
