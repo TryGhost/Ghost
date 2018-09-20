@@ -1,4 +1,4 @@
-const ghostVersion = require('../../lib/ghost-version');
+const ghostVersion = require('../../../lib/ghost-version');
 
 // ### GhostLocals Middleware
 // Expose the standard locals that every request will need to have available

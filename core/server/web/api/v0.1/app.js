@@ -9,13 +9,13 @@ const routes = require('./routes');
 // Include the middleware
 
 // API specific
-const versionMatch = require('../../middleware/api/version-match'); // global
+const versionMatch = require('../../shared/middlewares/api/version-match'); // global
 
 // Shared
 const bodyParser = require('body-parser'); // global, shared
-const cacheControl = require('../../middleware/cache-control'); // global, shared
-const maintenance = require('../../middleware/maintenance'); // global, shared
-const errorHandler = require('../../middleware/error-handler'); // global, shared
+const cacheControl = require('../../shared/middlewares/cache-control'); // global, shared
+const maintenance = require('../../shared/middlewares/maintenance'); // global, shared
+const errorHandler = require('../../shared/middlewares/error-handler'); // global, shared
 
 module.exports = function setupApiApp() {
     debug('API v0.1 setup start');

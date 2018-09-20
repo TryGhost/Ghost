@@ -1,6 +1,6 @@
 const path = require('path');
-const common = require('../../../lib/common');
-const config = require('../../../config');
+const common = require('../../../../lib/common');
+const config = require('../../../../config');
 const localUtils = require('../../utils');
 
 module.exports = function upload(options) {

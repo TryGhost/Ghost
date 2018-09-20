@@ -1,8 +1,8 @@
 const moment = require('moment');
 const extend = require('lodash/extend');
 const pick = require('lodash/pick');
-const config = require('../../../config');
-const common = require('../../../lib/common');
+const config = require('../../../../config');
+const common = require('../../../../lib/common');
 const spam = config.get('spam') || {};
 
 const spamPrivateBlog = spam.private_blog || {};
@@ -45,7 +45,7 @@ const handleStoreError = (err) => {
 const globalBlock = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
-    const db = require('../../../data/db');
+    const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -74,7 +74,7 @@ const globalBlock = () => {
 const globalReset = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
-    const db = require('../../../data/db');
+    const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -108,7 +108,7 @@ const globalReset = () => {
 const userLogin = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
-    const db = require('../../../data/db');
+    const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -140,7 +140,7 @@ const userLogin = () => {
 const userReset = function userReset() {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
-    const db = require('../../../data/db');
+    const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',
@@ -171,7 +171,7 @@ const userReset = function userReset() {
 const privateBlog = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
-    const db = require('../../../data/db');
+    const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
         tablename: 'brute',

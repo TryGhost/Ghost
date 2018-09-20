@@ -1,6 +1,6 @@
-const config = require('../../../config');
-const common = require('../../../lib/common');
-const imageLib = require('../../../lib/image');
+const config = require('../../../../config');
+const common = require('../../../../lib/common');
+const imageLib = require('../../../../lib/image');
 
 const validIconFileSize = (size) => {
     return (size / 1024) <= 100;

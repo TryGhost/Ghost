@@ -3,9 +3,9 @@ const express = require('express');
 const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('custom-redirects');
-const config = require('../../config');
-const common = require('../../lib/common');
-const validation = require('../../data/validation');
+const config = require('../../../config');
+const common = require('../../../lib/common');
+const validation = require('../../../data/validation');
 
 const _private = {};
 

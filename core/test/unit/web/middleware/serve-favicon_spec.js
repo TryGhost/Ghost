@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     express = require('express'),
-    serveFavicon = require('../../../../server/web/middleware/serve-favicon'),
+    serveFavicon = require('../../../../server/web/shared/middlewares/serve-favicon'),
     settingsCache = require('../../../../server/services/settings/cache'),
     storage = require('../../../../server/adapters/storage'),
     configUtils = require('../../../utils/configUtils'),

@@ -3,7 +3,7 @@ const path = require('path'),
     middleware = require('./middleware'),
     bodyParser = require('body-parser'),
     routing = require('../../../services/routing'),
-    brute = require('../../../web/middleware/brute'),
+    brute = require('../../../web/shared/middlewares/brute'),
     templateName = 'private',
     privateRouter = express.Router();
 

@@ -10,7 +10,7 @@ const Promise = require('bluebird'),
     urlService = require('../services/url'),
     localUtils = require('./utils'),
     models = require('../models'),
-    spamPrevention = require('../web/middleware/api/spam-prevention'),
+    spamPrevention = require('../web/shared/middlewares/api/spam-prevention'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     tokenSecurity = {};
@@ -327,7 +327,7 @@ authentication = {
                     return updatedUser.save(options);
                 })
                 .catch(common.errors.ValidationError, (err) => {
-                    return Promise.reject(err); 
+                    return Promise.reject(err);
                 })
                 .catch((err) => {
                     if (common.errors.utils.isIgnitionError(err)) {
@@ -414,7 +414,7 @@ authentication = {
                     }, options);
                 })
                 .then(() => {
-                    return invite.destroy(options); 
+                    return invite.destroy(options);
                 });
         }
 

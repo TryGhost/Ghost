@@ -12,11 +12,11 @@ const adminMiddleware = require('./middleware');
 const serveStatic = require('express').static;
 
 // Global/shared middleware
-const cacheControl = require('../middleware/cache-control');
-const urlRedirects = require('../middleware/url-redirects');
-const errorHandler = require('../middleware/error-handler');
-const maintenance = require('../middleware/maintenance');
-const prettyURLs = require('../middleware/pretty-urls');
+const cacheControl = require('../shared/middlewares/cache-control');
+const urlRedirects = require('../shared/middlewares/url-redirects');
+const errorHandler = require('../shared/middlewares/error-handler');
+const maintenance = require('../shared/middlewares/maintenance');
+const prettyURLs = require('../shared/middlewares/pretty-urls');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
