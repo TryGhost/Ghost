@@ -28,7 +28,7 @@ const uncapitalise = (req, res, next) => {
         pathToTest = isSignupOrReset[1];
     }
 
-    // Do not lowercase anything after /api/v0.1/ to protect :key/:slug
+    // Do not lowercase anything after e.g. /api/v0.1/ to protect :key/:slug
     if (isAPI) {
         pathToTest = isAPI[1];
     }
