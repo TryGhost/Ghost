@@ -4,7 +4,7 @@ const table = 'sessions';
 const message1 = 'Adding table: ' + table;
 const message2 = 'Dropping table: ' + table;
 
-module.exports.up = function addSessionsTable(options) {
+module.exports.up = (options) => {
     const connection = options.connection;
 
     return connection.schema.hasTable(table)
@@ -19,7 +19,7 @@ module.exports.up = function addSessionsTable(options) {
         });
 };
 
-module.exports.down = function removeSessionsTable(options) {
+module.exports.down = (options) => {
     const connection = options.connection;
 
     return connection.schema.hasTable(table)
