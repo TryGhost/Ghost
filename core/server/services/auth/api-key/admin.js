@@ -49,6 +49,14 @@ const authenticateAdminAPIKey = function authenticateAdminAPIKey(req, res, next)
     }
 
     const decoded = jwt.decode(token, {complete: true});
+
+    if (!decoded || !decoded.header) {
+        return next(BadRequestError({
+            message: 'Invalid JWT',
+            code: 'INVALID_JWT'
+        }));
+    }
+
     const apiKeyId = decoded.header.kid;
 
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {

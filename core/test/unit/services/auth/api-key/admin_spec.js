@@ -1,4 +1,4 @@
-const adminKeyAuth = require('../../../../../server/services/auth/api-key/admin');
+const authenticateAdminAPIKey = require('../../../../../server/services/auth/api-key/admin');
 const jwt = require('jsonwebtoken');
 const models = require('../../../../../server/models');
 const should = require('should');
@@ -53,14 +53,14 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        adminKeyAuth.authenticateAdminAPIKey(req, res, (arg) => {
+        authenticateAdminAPIKey(req, res, (arg) => {
             should.not.exist(arg);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
     });
 
-    it('shouldn\'t authenticate with broken bearer token', function (done) {
+    it('shouldn\'t authenticate with missing bearer token', function (done) {
         const token = '';
         const req = {
             headers: {
@@ -69,10 +69,28 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        adminKeyAuth.authenticateAdminAPIKey(req, res, function next(err) {
+        authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof UnauthorizedError, true);
-            err.message.should.match(/header format is "Authorization: Bearer \[token\]"/);
+            err.code.should.eql('INVALID_AUTH_HEADER');
+            should.not.exist(req.api_key);
+            done();
+        });
+    });
+
+    it('shouldn\'t authenticate with broken bearer token', function (done) {
+        const token = 'invalid';
+        const req = {
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        };
+        const res = {};
+
+        authenticateAdminAPIKey(req, res, function next(err) {
+            should.exist(err);
+            should.equal(err instanceof BadRequestError, true);
+            err.code.should.eql('INVALID_JWT');
             should.not.exist(req.api_key);
             done();
         });
@@ -95,10 +113,10 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        adminKeyAuth.authenticateAdminAPIKey(req, res, function next(err) {
+        authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof UnauthorizedError, true);
-            err.message.should.match(/Unknown Admin API Key/);
+            err.code.should.eql('UNKNOWN_ADMIN_API_KEY');
             should.not.exist(req.api_key);
             done();
         });
@@ -113,10 +131,10 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        adminKeyAuth.authenticateAdminAPIKey(req, res, function next(err) {
+        authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof BadRequestError, true);
-            err.message.should.match(/does not support query param authentication/);
+            err.code.should.eql('INVALID_AUTH_TYPE');
             should.not.exist(req.api_key);
             done();
         });
@@ -142,10 +160,39 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        adminKeyAuth.authenticateAdminAPIKey(req, res, function next(err) {
+        authenticateAdminAPIKey(req, res, function next(err) {
             should.exist(err);
             should.equal(err instanceof UnauthorizedError, true);
+            err.code.should.eql('INVALID_JWT');
             err.message.should.match(/maxAge exceeded/);
+            should.not.exist(req.api_key);
+            done();
+        });
+    });
+
+    it('shouldn\'t authenticate with a Content API Key', function (done) {
+        const token = jwt.sign({}, this.secret, {
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/test/',
+            issuer: this.fakeApiKey.id,
+            keyid: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: '/test/',
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        };
+        const res = {};
+
+        this.fakeApiKey.type = 'content';
+
+        authenticateAdminAPIKey(req, res, function next(err) {
+            should.exist(err);
+            should.equal(err instanceof UnauthorizedError, true);
+            err.code.should.eql('INCORRECT_API_KEY_TYPE');
             should.not.exist(req.api_key);
             done();
         });

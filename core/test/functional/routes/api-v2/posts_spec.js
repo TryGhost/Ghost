@@ -1087,8 +1087,8 @@ describe('Admin API v2 - Post API', function () {
                             .send(jsonResponse)
                             .expect('Content-Type', /json/)
                             .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(401)
-                            .end(function (err) {
+                            .expect(422)
+                            .end(function (err, res) {
                                 if (err) {
                                     return done(err);
                                 }
