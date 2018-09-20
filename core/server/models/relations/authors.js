@@ -356,6 +356,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     unsafeAttrs,
                     loadedPermissions,
                     hasUserPermission,
+                    hasApiKeyPermission,
                     hasAppPermission,
                     result
                 );

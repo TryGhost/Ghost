@@ -1215,6 +1215,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1243,6 +1244,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1271,6 +1273,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1300,6 +1303,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then((result) => {
                         should.exist(result);
@@ -1329,6 +1333,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1389,6 +1394,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then((result) => {
                         should.exist(result);
@@ -1534,6 +1540,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then((result) => {
                         should.exist(result);
@@ -1557,6 +1564,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then((result) => {
                         should.exist(result);
@@ -1583,6 +1591,7 @@ describe('Unit: models/post', function () {
                         {},
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1611,6 +1620,7 @@ describe('Unit: models/post', function () {
                         {},
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1639,6 +1649,7 @@ describe('Unit: models/post', function () {
                         {},
                         testUtils.permissions.contributor,
                         false,
+                        true,
                         true
                     ).then((result) => {
                         should.exist(result);
@@ -1670,6 +1681,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1698,6 +1710,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1727,6 +1740,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1755,6 +1769,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1784,6 +1799,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1813,6 +1829,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1842,6 +1859,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         should(mockPostObj.get.calledOnce).be.true();
@@ -1865,6 +1883,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1892,6 +1911,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
@@ -1916,6 +1936,7 @@ describe('Unit: models/post', function () {
                         unsafeAttrs,
                         testUtils.permissions.author,
                         false,
+                        true,
                         true
                     ).then(() => {
                         should(mockPostObj.get.called).be.false();
@@ -1943,6 +1964,7 @@ describe('Unit: models/post', function () {
                     unsafeAttrs,
                     testUtils.permissions.editor,
                     false,
+                    true,
                     true
                 ).then(() => {
                     done(new Error('Permissible function should have rejected.'));
@@ -1969,6 +1991,7 @@ describe('Unit: models/post', function () {
                     context,
                     unsafeAttrs,
                     testUtils.permissions.editor,
+                    true,
                     true,
                     true
                 ).then(() => {
