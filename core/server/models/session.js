@@ -55,15 +55,15 @@ const Session = ghostBookshelf.Model.extend({
                 if (model) {
                     return this.edit({
                         session_data: sessionData
-                    }, {
+                    }, Object.assign(options, {
                         id: model.id
-                    });
+                    }));
                 }
                 return this.add({
                     session_id: sessionId,
                     session_data: sessionData,
                     user_id: userId
-                });
+                }, options);
             });
     }
 });
