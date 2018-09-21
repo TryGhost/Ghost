@@ -2,9 +2,6 @@ const express = require('express');
 // This essentially provides the controllers for the routes
 const api = require('../../../../api');
 
-// Middleware
-const mw = require('./middleware');
-
 // API specific
 const cors = require('../../../shared/middlewares/api/cors');
 
@@ -15,7 +12,6 @@ const labs = require('../../../shared/middlewares/labs');
 const prettyURLs = require('../../../shared/middlewares/pretty-urls');
 const {adminRedirect} = require('../../../shared/middlewares/url-redirects');
 const auth = require('../../../../services/auth');
-
 
 /**
  * Auth Middleware Packages
