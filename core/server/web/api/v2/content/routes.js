@@ -1,16 +1,7 @@
 const express = require('express');
-// This essentially provides the controllers for the routes
 const api = require('../../../../api');
-
-// Middleware
+const shared = require('../../../shared');
 const mw = require('./middleware');
-
-// API specific
-const cors = require('../../../shared/middlewares/api/cors');
-
-// Temporary
-// @TODO find a more appy way to do this!
-const labs = require('../../../shared/middlewares/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router();
@@ -19,7 +10,7 @@ module.exports = function apiRoutes() {
     router.del = router.delete;
 
     // ## CORS pre-flight check
-    router.options('*', cors);
+    router.options('*', shared.middlewares.api.cors);
 
     // ## Configuration
     router.get('/configuration', api.http(api.configuration.read));
@@ -40,7 +31,8 @@ module.exports = function apiRoutes() {
     router.get('/tags/slug/:slug', mw.authenticatePublic, api.http(api.tags.read));
 
     // ## Subscribers
-    router.post('/subscribers', labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
+    // @TODO: find a way than `middlewares.labs`
+    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
 
     // ## Clients
     router.get('/clients/slug/:slug', api.http(api.clients.read));

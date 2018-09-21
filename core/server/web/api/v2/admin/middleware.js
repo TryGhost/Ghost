@@ -1,7 +1,5 @@
-const prettyURLs = require('../../../shared/middlewares/pretty-urls');
-const cors = require('../../../shared/middlewares/api/cors');
-const {adminRedirect} = require('../../../shared/middlewares/url-redirects');
 const auth = require('../../../../services/auth');
+const shared = require('../../../shared');
 
 /**
  * Authentication for private endpoints
@@ -10,9 +8,9 @@ module.exports.authenticatePrivate = [
     auth.authenticate.authenticateClient,
     auth.authenticate.authenticateUser,
     auth.authorize.requiresAuthorizedUser,
-    cors,
-    adminRedirect,
-    prettyURLs
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls
 ];
 
 /**
@@ -23,8 +21,8 @@ module.exports.authenticateClient = function authenticateClient(client) {
         auth.authenticate.authenticateClient,
         auth.authenticate.authenticateUser,
         auth.authorize.requiresAuthorizedClient(client),
-        cors,
-        adminRedirect,
-        prettyURLs
+        shared.middlewares.api.cors,
+        shared.middlewares.urlRedirects.adminRedirect,
+        shared.middlewares.prettyUrls
     ];
 };

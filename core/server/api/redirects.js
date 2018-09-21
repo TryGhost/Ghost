@@ -6,7 +6,7 @@ const fs = require('fs-extra'),
     common = require('../lib/common'),
     validation = require('../data/validation'),
     localUtils = require('./utils'),
-    customRedirectsMiddleware = require('../web/shared/middlewares/custom-redirects');
+    web = require('../web');
 
 let redirectsAPI,
     _private = {};
@@ -80,7 +80,7 @@ redirectsAPI = {
                             })
                             .then(() => {
                                 // CASE: trigger that redirects are getting re-registered
-                                customRedirectsMiddleware.reload();
+                                web.shared.middlewares.customRedirects.reload();
                             });
                     });
             });
