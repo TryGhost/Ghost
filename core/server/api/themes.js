@@ -5,7 +5,7 @@ const debug = require('ghost-ignition').debug('api:themes'),
     fs = require('fs-extra'),
     localUtils = require('./utils'),
     common = require('../lib/common'),
-    settingsModel = require('../models/settings').Settings,
+    models = require('../models'),
     settingsCache = require('../services/settings/cache'),
     themeUtils = require('../services/themes'),
     themeList = themeUtils.list;
@@ -64,7 +64,7 @@ themes = {
             .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
                 // We use the model, not the API here, as we don't want to trigger permissions
-                return settingsModel.edit(newSettings, options);
+                return models.Settings.edit(newSettings, options);
             })
             // Call activate
             .then(() => {
