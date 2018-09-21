@@ -13,7 +13,14 @@ var should = require('should'),
 
 describe('Invites API', function () {
     before(testUtils.teardown);
-    before(testUtils.setup('invites', 'settings', 'users:roles', 'perms:invite', 'perms:init'));
+    before(testUtils.setup(
+        'invites',
+        'settings',
+        'users:roles',
+        'api_keys',
+        'perms:invite',
+        'perms:init'
+    ));
 
     beforeEach(function () {
         sandbox.stub(mail, 'send').callsFake(function () {
@@ -436,6 +443,66 @@ describe('Invites API', function () {
                 }, context.editor).then(function (response) {
                     checkAddResponse(response);
                     response.invites[0].role_id.should.equal(testUtils.roles.ids.contributor);
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('Admin API Key', function () {
+            it('CANNOT invite an Owner', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.owner
+                        }
+                    ]
+                }, testUtils.context.admin_api_key).then(function () {
+                    done(new Error('API Key should not be able to add an owner'));
+                }).catch(checkForErrorType('NoPermissionError', done));
+            });
+
+            it('Can invite an Admin', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.admin
+                        }
+                    ]
+                }, _.merge({}, {include: 'roles'}, testUtils.context.admin_api_key)).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.admin);
+                    done();
+                }).catch(done);
+            });
+
+            it('Can invite an Editor', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.editor
+                        }
+                    ]
+                }, testUtils.context.admin_api_key).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.editor);
+                    done();
+                }).catch(done);
+            });
+
+            it('Can invite an Author', function (done) {
+                InvitesAPI.add({
+                    invites: [
+                        {
+                            email: 'test@example.com',
+                            role_id: testUtils.roles.ids.author
+                        }
+                    ]
+                }, testUtils.context.admin_api_key).then(function (response) {
+                    checkAddResponse(response);
+                    response.invites[0].role_id.should.equal(testUtils.roles.ids.author);
                     done();
                 }).catch(done);
             });

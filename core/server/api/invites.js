@@ -101,7 +101,6 @@ const invites = {
                 .then((response) => {
                     const adminUrl = urlService.utils.urlFor('admin', true);
 
-                    // TODO: how to handle invitedBy for API Key requests
                     emailData = {
                         blogName: response.settings[0].value,
                         invitedByName: loggedInUser.get('name'),
@@ -194,7 +193,10 @@ const invites = {
                 const loggedInUserRole = loggedInUser.related('roles').models[0].get('name');
                 let allowed = [];
 
-                if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
+                let userHasAdminRole = options.context.user && (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator');
+
+                // admin api keys have an equivalent of the Adminstrator role
+                if (options.context.api_key || userHasAdminRole) {
                     allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
                 } else if (loggedInUserRole === 'Editor') {
                     allowed = ['Author', 'Contributor'];
@@ -235,11 +237,29 @@ const invites = {
                 });
         }
 
+        function fetchOwner(options) {
+            return models.User.getOwnerUser(merge({}, omit(options, 'data'), {withRelated: ['roles']}))
+                .then((owner) => {
+                    loggedInUser = owner;
+                    return options;
+                });
+        }
+
+        // API Key requests are not tied to a user so send the invite from the
+        // owner user instead
+        function fetchLoggedInUserOrOwner(options) {
+            if (options.context.api_key && !options.context.user) {
+                return fetchOwner(options);
+            }
+
+            return fetchLoggedInUser(options);
+        }
+
         tasks = [
             localUtils.validate(docName, {opts: ['email']}),
             localUtils.convertOptions(allowedIncludes),
             localUtils.handlePermissions(docName, 'add'),
-            fetchLoggedInUser,
+            fetchLoggedInUserOrOwner,
             validation,
             checkIfUserExists,
             destroyOldInvite,

@@ -1158,7 +1158,9 @@ module.exports = {
         admin: {context: {user: DataGenerator.Content.users[1].id}},
         editor: {context: {user: DataGenerator.Content.users[2].id}},
         author: {context: {user: DataGenerator.Content.users[3].id}},
-        contributor: {context: {user: DataGenerator.Content.users[7].id}}
+        contributor: {context: {user: DataGenerator.Content.users[7].id}},
+        admin_api_key: {context: {api_key: DataGenerator.Content.api_keys[0].id}},
+        content_api_key: {context: {api_key: DataGenerator.Content.api_keys[1].id}}
     },
     permissions: {
         owner: {user: {roles: [DataGenerator.Content.roles[3]]}},
