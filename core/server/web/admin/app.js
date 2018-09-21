@@ -1,22 +1,11 @@
 const debug = require('ghost-ignition').debug('admin');
 const express = require('express');
-
-// App requires
+const serveStatic = require('express').static;
 const config = require('../../config');
 const constants = require('../../lib/constants');
 const urlService = require('../../services/url');
-
-// Middleware
-// Admin only middleware
+const shared = require('../shared');
 const adminMiddleware = require('./middleware');
-const serveStatic = require('express').static;
-
-// Global/shared middleware
-const cacheControl = require('../shared/middlewares/cache-control');
-const {adminRedirect} = require('../shared/middlewares/url-redirects');
-const errorHandler = require('../shared/middlewares/error-handler');
-const maintenance = require('../shared/middlewares/maintenance');
-const prettyURLs = require('../shared/middlewares/pretty-urls');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
@@ -41,27 +30,27 @@ module.exports = function setupAdminApp() {
     }
 
     // Render error page in case of maintenance
-    adminApp.use(maintenance);
+    adminApp.use(shared.middlewares.maintenance);
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(adminRedirect);
+    adminApp.use(shared.middlewares.urlRedirects.adminRedirect);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(prettyURLs);
+    adminApp.use(shared.middlewares.prettyUrls);
 
     // Cache headers go last before serving the request
     // Admin is currently set to not be cached at all
-    adminApp.use(cacheControl('private'));
+    adminApp.use(shared.middlewares.cacheControl('private'));
     // Special redirects for the admin (these should have their own cache-control headers)
     adminApp.use(adminMiddleware);
 
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
-    adminApp.use(errorHandler.pageNotFound);
-    adminApp.use(errorHandler.handleHTMLResponse);
+    adminApp.use(shared.middlewares.errorHandler.pageNotFound);
+    adminApp.use(shared.middlewares.errorHandler.handleHTMLResponse);
 
     debug('Admin setup end');
 

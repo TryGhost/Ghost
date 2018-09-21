@@ -1,24 +1,15 @@
 const express = require('express');
-// This essentially provides the controllers for the routes
+const os = require('os');
+const multer = require('multer');
 const api = require('../../../../api');
-
-// Middleware
 const mw = require('./middleware');
 
-// API specific
 const auth = require('../../../../services/auth');
-const cors = require('../../../shared/middlewares/api/cors');
-const brute = require('../../../shared/middlewares/brute');
+const shared = require('../../../shared');
 
 // Handling uploads & imports
-const tmpdir = require('os').tmpdir;
-const upload = require('multer')({dest: tmpdir()});
-const validation = require('../../../shared/middlewares/validation');
-const image = require('../../../shared/middlewares/image');
-
-// Temporary
-// @TODO find a more appy way to do this!
-const labs = require('../../../shared/middlewares/labs');
+const tmpdir = os.tmpdir;
+const upload = multer({dest: tmpdir()});
 
 module.exports = function apiRoutes() {
     const router = express.Router();
@@ -27,7 +18,7 @@ module.exports = function apiRoutes() {
     router.del = router.delete;
 
     // ## CORS pre-flight check
-    router.options('*', cors);
+    router.options('*', shared.middlewares.api.cors);
 
     // ## Configuration
     router.get('/configuration', api.http(api.configuration.read));
@@ -53,7 +44,7 @@ module.exports = function apiRoutes() {
     router.post('/settings/routes/yaml',
         mw.authenticatePrivate,
         upload.single('routes'),
-        validation.upload({type: 'routes'}),
+        shared.middlewares.validation.upload({type: 'routes'}),
         api.http(api.settings.upload)
     );
 
@@ -82,21 +73,21 @@ module.exports = function apiRoutes() {
     router.del('/tags/:id', mw.authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Subscribers
-    router.get('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.browse));
-    router.get('/subscribers/csv', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
+    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.browse));
+    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.exportCSV));
     router.post('/subscribers/csv',
-        labs.subscribers,
+        shared.middlewares.labs.subscribers,
         mw.authenticatePrivate,
         upload.single('subscribersfile'),
-        validation.upload({type: 'subscribers'}),
+        shared.middlewares.validation.upload({type: 'subscribers'}),
         api.http(api.subscribers.importCSV)
     );
-    router.get('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    router.get('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
-    router.post('/subscribers', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.add));
-    router.put('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
-    router.del('/subscribers/:id', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
-    router.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
+    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
+    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.read));
+    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.add));
+    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.edit));
+    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
+    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
 
     // ## Roles
     router.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
@@ -118,7 +109,7 @@ module.exports = function apiRoutes() {
     router.post('/themes/upload',
         mw.authenticatePrivate,
         upload.single('theme'),
-        validation.upload({type: 'themes'}),
+        shared.middlewares.validation.upload({type: 'themes'}),
         api.http(api.themes.upload)
     );
 
@@ -142,7 +133,7 @@ module.exports = function apiRoutes() {
     router.post('/db',
         mw.authenticatePrivate,
         upload.single('importfile'),
-        validation.upload({type: 'db'}),
+        shared.middlewares.validation.upload({type: 'db'}),
         api.http(api.db.importContent)
     );
     router.del('/db', mw.authenticatePrivate, api.http(api.db.deleteAllContent));
@@ -156,11 +147,11 @@ module.exports = function apiRoutes() {
 
     // ## Authentication
     router.post('/authentication/passwordreset',
-        brute.globalReset,
-        brute.userReset,
+        shared.middlewares.brute.globalReset,
+        shared.middlewares.brute.userReset,
         api.http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/passwordreset', brute.globalBlock, api.http(api.authentication.resetPassword));
+    router.put('/authentication/passwordreset', shared.middlewares.brute.globalBlock, api.http(api.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
     router.post('/authentication/setup', api.http(api.authentication.setup));
@@ -169,8 +160,8 @@ module.exports = function apiRoutes() {
 
     router.post('/authentication/token',
         mw.authenticateClient(),
-        brute.globalBlock,
-        brute.userLogin,
+        shared.middlewares.brute.globalBlock,
+        shared.middlewares.brute.userLogin,
         auth.oauth.generateAccessToken
     );
 
@@ -181,8 +172,8 @@ module.exports = function apiRoutes() {
     router.post('/uploads',
         mw.authenticatePrivate,
         upload.single('uploadimage'),
-        validation.upload({type: 'images'}),
-        image.normalize,
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.image.normalize,
         api.http(api.uploads.add)
     );
 
@@ -191,8 +182,8 @@ module.exports = function apiRoutes() {
     router.post('/uploads/icon',
         mw.authenticatePrivate,
         upload.single('uploadimage'),
-        validation.upload({type: 'icons'}),
-        validation.blogIcon(),
+        shared.middlewares.validation.upload({type: 'icons'}),
+        shared.middlewares.validation.blogIcon(),
         api.http(api.uploads.add)
     );
 
@@ -207,7 +198,7 @@ module.exports = function apiRoutes() {
     router.post('/redirects/json',
         mw.authenticatePrivate,
         upload.single('redirects'),
-        validation.upload({type: 'redirects'}),
+        shared.middlewares.validation.upload({type: 'redirects'}),
         api.http(api.redirects.upload)
     );
 

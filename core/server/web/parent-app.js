@@ -1,16 +1,9 @@
 const debug = require('ghost-ignition').debug('app');
 const express = require('express');
-
-// App requires
 const config = require('../config');
-
-// middleware
 const compress = require('compression');
 const netjet = require('netjet');
-
-// local middleware
-const ghostLocals = require('./shared/middlewares/ghost-locals');
-const logRequest = require('./shared/middlewares/log-request');
+const shared = require('./shared');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -22,7 +15,7 @@ module.exports = function setupParentApp(options = {}) {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
-    parentApp.use(logRequest);
+    parentApp.use(shared.middlewares.logRequest);
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
@@ -39,7 +32,7 @@ module.exports = function setupParentApp(options = {}) {
     }
 
     // This sets global res.locals which are needed everywhere
-    parentApp.use(ghostLocals);
+    parentApp.use(shared.middlewares.ghostLocals);
 
     // Mount the  apps on the parentApp
     // API

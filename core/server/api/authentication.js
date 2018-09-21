@@ -10,7 +10,7 @@ const Promise = require('bluebird'),
     urlService = require('../services/url'),
     localUtils = require('./utils'),
     models = require('../models'),
-    spamPrevention = require('../web/shared/middlewares/api/spam-prevention'),
+    web = require('../web'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     tokenSecurity = {};
@@ -314,7 +314,8 @@ authentication = {
                         }));
                     }
 
-                    spamPrevention.userLogin().reset(opts.ip, `${tokenParts.email}login`);
+                    web.shared.middlewares.api.spamPrevention.userLogin()
+                        .reset(opts.ip, `${tokenParts.email}login`);
 
                     return models.User.changePassword({
                         oldPassword: oldPassword,
