@@ -36,6 +36,11 @@ You can also grab a fresh instance of the api with `prettyCLI.Api.get()`.
 
 The style rules used are available at `prettyCLI.styles`.
 
+## Test
+
+- `yarn lint` run just eslint
+- `yarn test` run lint && tests
+
 # Copyright & License
 
 Copyright (c) 2018 Ghost Foundation - Released under the [MIT license](LICENSE).
