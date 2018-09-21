@@ -3,12 +3,12 @@
  * A collection of utilities for handling settings including a cache
  */
 const _ = require('lodash'),
-    SettingsModel = require('../../models/settings').Settings,
+    debug = require('ghost-ignition').debug('services:settings:index'),
+    common = require('../../lib/common'),
+    models = require('../../models'),
     SettingsCache = require('./cache'),
     SettingsLoader = require('./loader'),
-    ensureSettingsFiles = require('./ensure-settings'),
-    common = require('../../lib/common'),
-    debug = require('ghost-ignition').debug('services:settings:index');
+    ensureSettingsFiles = require('./ensure-settings');
 
 module.exports = {
     init: function init() {
@@ -21,7 +21,7 @@ module.exports = {
         return ensureSettingsFiles(knownSettings)
             .then(() => {
                 // Update the defaults
-                return SettingsModel.populateDefaults();
+                return models.Settings.populateDefaults();
             })
             .then((settingsCollection) => {
                 // Initialise the cache with the result
