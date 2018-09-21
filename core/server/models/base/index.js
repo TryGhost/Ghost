@@ -665,11 +665,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
      *
-     * @TODO:
-     *   - this model function does return JSON O_O
-     *   - if you refactor that out, you should double check the allowed filter options
-     *   - because `toJSON` is called in here and is using the filtered options for the `findPage` function
-     *
      * **response:**
      *
      *     {
@@ -717,19 +712,19 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            var data = {},
-                models;
+            const data = {};
+            data.meta = {pagination: response.pagination};
 
-            options.columns = requestedColumns;
-            models = response.collection.toJSON(options);
+            // Filtering attributes here so they are not leaked to api layer
+            // where models are serialized to json and do not do more filtering
+            data[tableName] = response.collection.models.map((model) => {
+                if (requestedColumns) {
+                    model.attributes = _.pick(model.attributes, requestedColumns);
+                }
 
-            // re-add any computed properties that were stripped out before the call to fetchPage
-            // pick only requested before returning JSON
-            data[tableName] = _.map(models, function transform(model) {
-                return options.columns ? _.pick(model, options.columns) : model;
+                return model;
             });
 
-            data.meta = {pagination: response.pagination};
             return data;
         });
     },

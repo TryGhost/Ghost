@@ -173,8 +173,8 @@ describe('Post Model', function () {
                             results.meta.pagination.pages.should.equal(1);
                             results.posts.length.should.equal(4);
 
-                            var firstPost = _.find(results.posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-                            checkFirstPostData(firstPost);
+                            var firstPost = _.find(results.posts, {attributes:{title: testUtils.DataGenerator.Content.posts[0].title}});
+                            checkFirstPostData(firstPost.toJSON());
 
                             done();
                         }).catch(done);
@@ -184,7 +184,7 @@ describe('Post Model', function () {
                     models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                        var post = _.find(results.posts, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
                         post.url.should.equal('/html-ipsum/');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
@@ -200,7 +200,7 @@ describe('Post Model', function () {
                     models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                        var post = _.find(results.posts, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
                         post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                         post.slug.should.equal('html-ipsum');
                         should.not.exist(post.doesnotexist);
@@ -354,7 +354,7 @@ describe('Post Model', function () {
                         should.exist(results);
                         should.exist(results.posts);
                         results.posts.length.should.be.above(0);
-                        firstPost = results.posts[0];
+                        firstPost = results.posts[0].toJSON();
 
                         return models.Post.findOne({slug: firstPost.slug});
                     }).then(function (found) {

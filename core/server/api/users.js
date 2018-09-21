@@ -37,7 +37,12 @@ users = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.User.findPage(options);
+            return models.User.findPage(options)
+                .then((result) => {
+                    result.users = result.users.map(post => post.toJSON(options));
+
+                    return result;
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

@@ -47,7 +47,7 @@ describe('Tag Model', function () {
                     results.meta.pagination.limit.should.equal('all');
                     results.meta.pagination.pages.should.equal(1);
                     results.tags.length.should.equal(5);
-                    should.exist(results.tags[0].count.posts);
+                    should.exist(results.tags[0].toJSON().count.posts);
 
                     done();
                 })
@@ -64,7 +64,7 @@ describe('Tag Model', function () {
                     should.exist(results);
                     should.exist(results.tags);
                     results.tags.length.should.be.above(0);
-                    firstTag = results.tags[0];
+                    firstTag = results.tags[0].toJSON();
 
                     return models.Tag.findOne({slug: firstTag.slug});
                 })

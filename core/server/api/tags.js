@@ -33,7 +33,12 @@ tags = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Tag.findPage(options);
+            return models.Tag.findPage(options)
+                .then((result) => {
+                    result.tags = result.tags.map(model => model.toJSON(options));
+
+                    return result;
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
