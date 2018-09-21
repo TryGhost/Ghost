@@ -7,7 +7,7 @@ const session = require('express-session');
 const SessionStore = require('./store');
 const urlService = require('../../url');
 
-const getOrigin = function getOrigin(req) {
+const getOrigin = (req) => {
     const origin = req.get('origin');
     const referrer = req.get('referrer');
 
@@ -27,7 +27,7 @@ const getOrigin = function getOrigin(req) {
 };
 
 let UNO_SESSIONIONA;
-const getSession = function (req, res, next) {
+const getSession = (req, res, next) => {
     if (!UNO_SESSIONIONA) {
         UNO_SESSIONIONA = session({
             store: new SessionStore(models.Session),
@@ -46,7 +46,7 @@ const getSession = function (req, res, next) {
     return UNO_SESSIONIONA(req, res, next);
 };
 
-const createSession = function createSession(req, res, next) {
+const createSession = (req, res, next) => {
     getSession(req, res, function () {
         const origin = getOrigin(req);
         if (!origin) {
@@ -62,7 +62,7 @@ const createSession = function createSession(req, res, next) {
     });
 };
 
-const destroySession = function destroySession(req, res, next) {
+const destroySession = (req, res, next) => {
     req.session.destroy((err) => {
         if (err) {
             return next(new common.errors.InternalServerError({err}));
@@ -71,7 +71,7 @@ const destroySession = function destroySession(req, res, next) {
     });
 };
 
-const getUser = function getUser(req, res, next) {
+const getUser = (req, res, next) => {
     if (!req.session || !req.session.user_id) {
         req.user = null;
         return next();
@@ -86,7 +86,7 @@ const getUser = function getUser(req, res, next) {
         });
 };
 
-const ensureUser = function ensureUser(req, res, next) {
+const ensureUser = (req, res, next) => {
     if (req.user && req.user.id) {
         return next();
     }
@@ -95,7 +95,7 @@ const ensureUser = function ensureUser(req, res, next) {
     }));
 };
 
-const cookieCsrfProtection = function cookieCsrfProtection(req, res, next) {
+const cookieCsrfProtection = (req, res, next) => {
     // If there is no origin on the session object it means this is a *new*
     // session, that hasn't been initialised yet. So we don't need CSRF protection
     if (!req.session.origin) {
