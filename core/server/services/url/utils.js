@@ -9,15 +9,14 @@ const moment = require('moment-timezone'),
     BASE_API_PATH = '/ghost/api/',
     STATIC_IMAGE_URL_PREFIX = 'content/images';
 
-
 /**
  * Returns API path combining base path and path for specific version asked or stable by default
  * @param {string} version version for which to get the path(stable, actice, deprecated), defaults to stable
  * @return {string} API Path for version
  */
-function getApiPath(version = "stable") {
+function getApiPath(version = 'stable') {
     const apiVersions = config.get('api:versions') || {};
-    let versionPath = apiVersions[version] || apiVersions['stable'];
+    let versionPath = apiVersions[version] || apiVersions.stable;
     return `${BASE_API_PATH}${versionPath}/`;
 }
 
