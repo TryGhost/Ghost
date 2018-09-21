@@ -1,21 +1,9 @@
-// # API routes
 const debug = require('ghost-ignition').debug('api');
 const boolParser = require('express-query-boolean');
 const express = require('express');
-
-// routes
+const bodyParser = require('body-parser');
+const shared = require('../../../shared');
 const routes = require('./routes');
-
-// Include the middleware
-
-// API specific
-const versionMatch = require('../../../shared/middlewares/api/version-match'); // global
-
-// Shared
-const bodyParser = require('body-parser'); // global, shared
-const cacheControl = require('../../../shared/middlewares/cache-control'); // global, shared
-const maintenance = require('../../../shared/middlewares/maintenance'); // global, shared
-const errorHandler = require('../../../shared/middlewares/error-handler'); // global, shared
 
 module.exports = function setupApiApp() {
     debug('Admin API v2 setup start');
@@ -31,21 +19,21 @@ module.exports = function setupApiApp() {
     apiApp.use(boolParser());
 
     // send 503 json response in case of maintenance
-    apiApp.use(maintenance);
+    apiApp.use(shared.middlewares.maintenance);
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
-    apiApp.use(versionMatch);
+    apiApp.use(shared.middlewares.api.versionMatch);
 
     // API shouldn't be cached
-    apiApp.use(cacheControl('private'));
+    apiApp.use(shared.middlewares.cacheControl('private'));
 
     // Routing
     apiApp.use(routes());
 
     // API error handling
-    apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(errorHandler.handleJSONResponse);
+    apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
+    apiApp.use(shared.middlewares.errorHandler.handleJSONResponse);
 
     debug('Admin API v2 setup end');
 
