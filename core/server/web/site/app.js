@@ -9,7 +9,7 @@ const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
-const themeService = require('../../services/themes');
+const themeMiddleware = require('../../services/themes').middleware;
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 
@@ -71,7 +71,7 @@ module.exports = function setupSiteApp(options = {}) {
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
     // go after staticTheme() as well, however I would really like to simplify this and be certain
-    siteApp.use(themeService.middleware);
+    siteApp.use(themeMiddleware);
     debug('Themes done');
 
     // Theme static assets/files
