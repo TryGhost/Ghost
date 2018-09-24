@@ -10,7 +10,8 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
     storage = require('../../adapters/storage'),
     storageUtils = require('../../adapters/storage/utils'),
     getImageSizeFromUrl,
-    getImageSizeFromStoragePath;
+    getImageSizeFromStoragePath,
+    getImageSizeFromPath;
 
 /**
  * @description processes the Buffer result of an image file
