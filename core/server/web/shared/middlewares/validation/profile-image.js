@@ -1,9 +1,9 @@
-var common = require('../../../../lib/common'),
-    imageLib = require('../../../../lib/image');
+const common = require('../../../../lib/common');
+const imageLib = require('../../../../lib/image');
 
 module.exports = function profileImage(req, res, next) {
     // we checked for a valid image file, now we need to do validations for profile image
-    imageLib.imageSize.getImageSizeFromPath(req.file.path).then(function (response) {
+    imageLib.imageSize.getImageSizeFromPath(req.file.path).then((response) => {
         // save the image dimensions in new property for file
         req.file.dimensions = response;
 
@@ -15,7 +15,7 @@ module.exports = function profileImage(req, res, next) {
         }
 
         next();
-    }).catch(function (err) {
+    }).catch((err) => {
         next(err);
     });
 };
