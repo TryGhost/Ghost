@@ -8,14 +8,6 @@ class TagsMapGenerator extends BaseMapGenerator {
         this.name = 'tags';
         _.extend(this, opts);
     }
-
-    /**
-     * @TODO:
-     * We could influence this with priority or meta information
-     */
-    getPriorityForDatum() {
-        return 0.6;
-    }
 }
 
 module.exports = TagsMapGenerator;
