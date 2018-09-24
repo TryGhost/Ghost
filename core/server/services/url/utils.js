@@ -11,12 +11,13 @@ const moment = require('moment-timezone'),
 
 /**
  * Returns API path combining base path and path for specific version asked or stable by default
- * @param {string} version version for which to get the path(stable, actice, deprecated), defaults to stable
+ * @param {string} version version for which to get the path(stable, actice, deprecated: client, admin), defaults to stable:client
  * @return {string} API Path for version
  */
-function getApiPath(version = 'stable') {
+function getApiPath(version = 'stable', admin = false) {
     const apiVersions = config.get('api:versions') || {};
-    let versionPath = apiVersions[version] || apiVersions.stable;
+    let versionType = apiVersions[version] || apiVersions.stable;
+    let versionPath = admin ? versionType['admin'] : versionType['client'];
     return `${BASE_API_PATH}${versionPath}/`;
 }
 
@@ -248,7 +249,6 @@ function urlFor(context, data, absolute) {
         // this will become really big
         knownPaths = {
             home: '/',
-            api: getApiPath('stable'),
             sitemap_xsl: '/sitemap.xsl'
         };
 
@@ -324,7 +324,7 @@ function urlFor(context, data, absolute) {
         }
 
         if (data && data.version) {
-            apiPath = getApiPath(data.version);
+            apiPath = getApiPath(data.version, data.admin);
         }
 
         if (absolute) {
