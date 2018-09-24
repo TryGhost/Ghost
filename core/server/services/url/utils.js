@@ -11,13 +11,13 @@ const moment = require('moment-timezone'),
 
 /**
  * Returns API path combining base path and path for specific version asked or stable by default
- * @param {string} version version for which to get the path(stable, actice, deprecated: client, admin), defaults to stable:client
+ * @param {string} version version for which to get the path(stable, actice, deprecated: content, admin), defaults to stable:content
  * @return {string} API Path for version
  */
 function getApiPath(version = 'stable', admin = false) {
     const apiVersions = config.get('api:versions');
     let versionType = apiVersions[version] || apiVersions.stable;
-    let versionPath = admin ? versionType.admin : versionType.client;
+    let versionPath = admin ? versionType.admin : versionType.content;
     return `${BASE_API_PATH}${versionPath}/`;
 }
 

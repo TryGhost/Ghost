@@ -69,11 +69,11 @@
         "versions": {
             "active": {
                 "admin": "v2/admin",
-                "client": "v2/client"
+                "content": "v2/content"
             },
             "stable": {
                 "admin": "v0.1",
-                "client": "v0.1"
+                "content": "v0.1"
             },
             "deprecated": {}
         }
