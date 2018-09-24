@@ -20,11 +20,11 @@ function isJSONContentType(header) {
 
 /* Version mismatch error */
 
-export function VersionMismatchError(payload) {
-    AjaxError.call(this, payload, 'API server is running a newer version of Ghost, please upgrade.');
+export class VersionMismatchError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'API server is running a newer version of Ghost, please upgrade.');
+    }
 }
-
-VersionMismatchError.prototype = Object.create(AjaxError.prototype);
 
 export function isVersionMismatchError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
@@ -34,13 +34,13 @@ export function isVersionMismatchError(errorOrStatus, payload) {
     }
 }
 
-/* Request entity too large error */
+/* Server unreachable error */
 
-export function ServerUnreachableError(payload) {
-    AjaxError.call(this, payload, 'Server was unreachable');
+export class ServerUnreachableError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Server was unreachable');
+    }
 }
-
-ServerUnreachableError.prototype = Object.create(AjaxError.prototype);
 
 export function isServerUnreachableError(error) {
     if (isAjaxError(error)) {
@@ -50,11 +50,13 @@ export function isServerUnreachableError(error) {
     }
 }
 
-export function RequestEntityTooLargeError(payload) {
-    AjaxError.call(this, payload, 'Request is larger than the maximum file size the server allows');
-}
+/* Request entity too large error */
 
-RequestEntityTooLargeError.prototype = Object.create(AjaxError.prototype);
+export class RequestEntityTooLargeError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Request is larger than the maximum file size the server allows');
+    }
+}
 
 export function isRequestEntityTooLargeError(errorOrStatus) {
     if (isAjaxError(errorOrStatus)) {
@@ -66,11 +68,11 @@ export function isRequestEntityTooLargeError(errorOrStatus) {
 
 /* Unsupported media type error */
 
-export function UnsupportedMediaTypeError(payload) {
-    AjaxError.call(this, payload, 'Request contains an unknown or unsupported file type.');
+export class UnsupportedMediaTypeError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Request contains an unknown or unsupported file type.');
+    }
 }
-
-UnsupportedMediaTypeError.prototype = Object.create(AjaxError.prototype);
 
 export function isUnsupportedMediaTypeError(errorOrStatus) {
     if (isAjaxError(errorOrStatus)) {
@@ -82,11 +84,11 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
 
 /* Maintenance error */
 
-export function MaintenanceError(payload) {
-    AjaxError.call(this, payload, 'Ghost is currently undergoing maintenance, please wait a moment then retry.');
+export class MaintenanceError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Ghost is currently undergoing maintenance, please wait a moment then retry.');
+    }
 }
-
-MaintenanceError.prototype = Object.create(AjaxError.prototype);
 
 export function isMaintenanceError(errorOrStatus) {
     if (isAjaxError(errorOrStatus)) {
@@ -98,11 +100,11 @@ export function isMaintenanceError(errorOrStatus) {
 
 /* Theme validation error */
 
-export function ThemeValidationError(payload) {
-    AjaxError.call(this, payload, 'Theme is not compatible or contains errors.');
+export class ThemeValidationError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Theme is not compatible or contains errors.');
+    }
 }
-
-ThemeValidationError.prototype = Object.create(AjaxError.prototype);
 
 export function isThemeValidationError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
