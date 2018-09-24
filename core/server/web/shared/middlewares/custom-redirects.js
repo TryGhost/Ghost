@@ -23,11 +23,22 @@ _private.registerRoutes = () => {
 
         redirects.forEach((redirect) => {
             /**
+             * Detect case insensitive modifier when regex is enclosed by
+             * / ... /i
+             */
+            let options = '';
+            if (redirect.from.match(/^\/.*\/i$/)) {
+                redirect.from = redirect.from.slice(1, -2);
+                options = 'i';
+            }
+
+            /**
              * always delete trailing slashes, doesn't matter if regex or not
              * Example:
              *   - you define /my-blog-post-1/ as from property
              *   - /my-blog-post-1 or /my-blog-post-1/ should work
              */
+
             if (redirect.from.match(/\/$/)) {
                 redirect.from = redirect.from.slice(0, -1);
             }
@@ -37,7 +48,7 @@ _private.registerRoutes = () => {
             }
 
             debug('register', redirect.from);
-            customRedirectsRouter.get(new RegExp(redirect.from), function customRedirect(req, res) {
+            customRedirectsRouter.get(new RegExp(redirect.from, options), function (req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
                     parsedUrl = url.parse(req.originalUrl);
 
@@ -46,7 +57,7 @@ _private.registerRoutes = () => {
                 });
 
                 res.redirect(redirect.permanent ? 301 : 302, url.format({
-                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from), redirect.to),
+                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from, options), redirect.to),
                     search: parsedUrl.search
                 }));
             });
