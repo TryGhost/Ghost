@@ -27,7 +27,7 @@ _private.registerRoutes = () => {
              * / ... /i
              */
             let options = '';
-            if (redirect.from.match(/\/.*\/i/)) {
+            if (redirect.from.match(/^\/.*\/i$/)) {
                 redirect.from = redirect.from.slice(1, -2);
                 options = 'i';
             }
