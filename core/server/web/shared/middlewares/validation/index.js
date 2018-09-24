@@ -5,5 +5,9 @@ module.exports = {
 
     get blogIcon() {
         return require('./blog-icon');
+    },
+
+    get profileImage() {
+        return require('./profile-image');
     }
 };

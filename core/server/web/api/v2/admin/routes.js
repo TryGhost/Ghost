@@ -177,6 +177,15 @@ module.exports = function apiRoutes() {
         api.http(api.uploads.add)
     );
 
+    router.post('/uploads/profile-image',
+        mw.authenticatePrivate,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.validation.profileImage,
+        shared.middlewares.image.normalize,
+        api.http(api.uploads.add)
+    );
+
     router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
     router.post('/uploads/icon',
