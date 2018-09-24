@@ -10,14 +10,6 @@ class UserMapGenerator extends BaseMapGenerator {
         _.extend(this, opts);
     }
 
-    /**
-     * @TODO:
-     * We could influence this with priority or meta information
-     */
-    getPriorityForDatum() {
-        return 0.6;
-    }
-
     validateImageUrl(imageUrl) {
         return imageUrl && validator.isURL(imageUrl, {protocols: ['http', 'https'], require_protocol: true});
     }
