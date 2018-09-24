@@ -1239,6 +1239,10 @@ export default Component.extend({
     },
 
     _throttledWordCount() {
+        if (this.isDestroying || this.isDestroyed) {
+            return;
+        }
+
         let wordCount = 0;
         let imageCount = 0;
 
