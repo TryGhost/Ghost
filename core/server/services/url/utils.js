@@ -17,7 +17,7 @@ const moment = require('moment-timezone'),
 function getApiPath(version = 'stable', admin = false) {
     const apiVersions = config.get('api:versions') || {};
     let versionType = apiVersions[version] || apiVersions.stable;
-    let versionPath = admin ? versionType['admin'] : versionType['client'];
+    let versionPath = admin ? versionType.admin : versionType.client;
     return `${BASE_API_PATH}${versionPath}/`;
 }
 
