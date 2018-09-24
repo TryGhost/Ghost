@@ -262,7 +262,8 @@
                     "noUserFound": "No user found",
                     "tokenNotFound": "Token not found"
                 },
-                "invalidDate": "Date format for `{key}` is invalid."
+                "invalidDate": "Date format for `{key}` is invalid.",
+                "editId": "You cannot edit the id of resources."
             },
             "plugins": {
                 "filter": {

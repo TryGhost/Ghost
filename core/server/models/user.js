@@ -382,7 +382,10 @@ User = ghostBookshelf.Model.extend({
         status = data.status;
         delete data.status;
 
-        data = this.filterData(data);
+        data = this.filterData(data, {
+            methodName: 'findOne',
+            context: options.context
+        });
 
         // Support finding by role
         if (lookupRole) {
@@ -486,7 +489,10 @@ User = ghostBookshelf.Model.extend({
         var options = this.filterOptions(unfilteredOptions, 'add'),
             self = this,
             data = _.cloneDeep(dataToClone),
-            userData = this.filterData(data),
+            userData = this.filterData(data, {
+                methodName: 'add',
+                context: options.context
+            }),
             roles;
 
         // check for too many roles
@@ -559,7 +565,10 @@ User = ghostBookshelf.Model.extend({
     setup: function setup(data, unfilteredOptions) {
         var options = this.filterOptions(unfilteredOptions, 'setup'),
             self = this,
-            userData = this.filterData(data),
+            userData = this.filterData(data, {
+                methodName: 'setup',
+                context: options.context
+            }),
             passwordValidation = {};
 
         passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);

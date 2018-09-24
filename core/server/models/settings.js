@@ -114,7 +114,10 @@ Settings = ghostBookshelf.Model.extend({
                 return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.settings.valueCannotBeBlank')}));
             }
 
-            item = self.filterData(item);
+            item = self.filterData(item, {
+                methodName: 'edit',
+                context: options.context
+            });
 
             return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {
                 if (setting) {

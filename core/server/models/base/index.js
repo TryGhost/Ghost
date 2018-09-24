@@ -97,8 +97,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
-    permittedAttributes: function permittedAttributes() {
-        return _.keys(schema.tables[this.tableName]);
+    permittedAttributes: function permittedAttributes(methodName, context) {
+        const basePermittedAttributes = _.keys(schema.tables[this.tableName]);
+        if (context && context.internal) {
+            return basePermittedAttributes;
+        }
+        switch (methodName) {
+        case 'add':
+        case 'edit':
+            return _.without(basePermittedAttributes, 'id');
+        default:
+            return basePermittedAttributes;
+        }
     },
 
     // When loading an instance, subclasses can specify default to fetch
@@ -519,10 +529,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
-    filterData: function filterData(data) {
-        var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData = _.pick(data, permittedAttributes),
-            sanitizedData = this.sanitizeData(filteredData);
+    filterData: function filterData(data, options = {}) {
+        const {methodName, context} = options;
+        const permittedAttributes = this.prototype.permittedAttributes(methodName, context);
+        const filteredData = _.pick(data, permittedAttributes);
+        const sanitizedData = this.sanitizeData(filteredData);
 
         return sanitizedData;
     },
@@ -743,7 +754,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findOne: function findOne(data, unfilteredOptions) {
         var options = this.filterOptions(unfilteredOptions, 'findOne');
-        data = this.filterData(data);
+        data = this.filterData(data, {
+            methodName: 'findOne',
+            context: options.context
+        });
         return this.forge(data).fetch(options);
     },
 
@@ -763,7 +777,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         const id = options.id;
         const model = this.forge({id: id});
 
-        data = this.filterData(data);
+        if (options.context && !options.context.internal && data.id && data.id !== options.id) {
+            return Promise.reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.models.base.editId')
+            }));
+        }
+
+        data = this.filterData(data, {
+            methodName: 'edit',
+            context: options.context
+        });
 
         // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
         if (options.importing) {
@@ -788,7 +811,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         var options = this.filterOptions(unfilteredOptions, 'add'),
             model;
 
-        data = this.filterData(data);
+        data = this.filterData(data, {
+            methodName: 'add',
+            context: options.context
+        });
         model = this.forge(data);
 
         // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
