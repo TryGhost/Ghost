@@ -522,6 +522,38 @@ describe('Url', function () {
 
             urlService.utils.urlFor('api', {cors: true}, true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
         });
+
+        it('api: with stable version, blog url is https: should return stable content api path', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com'
+            });
+
+            urlService.utils.urlFor('api', {cors: true, version: "stable"}, true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+        });
+
+        it('api: with stable version and admin true, blog url is https: should return stable admin api path', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com'
+            });
+
+            urlService.utils.urlFor('api', {cors: true, version: "stable", admin: true}, true).should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+        });
+
+        it('api: with active version, blog url is https: should return active content api path', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com'
+            });
+
+            urlService.utils.urlFor('api', {cors: true, version: "active"}, true).should.eql('https://my-ghost-blog.com/ghost/api/v2/content/');
+        });
+
+        it('api: with active version and admin true, blog url is https: should return active admin api path', function () {
+            configUtils.set({
+                url: 'https://my-ghost-blog.com'
+            });
+
+            urlService.utils.urlFor('api', {cors: true, version: "active", admin: true}, true).should.eql('https://my-ghost-blog.com/ghost/api/v2/admin/');
+        });
     });
 
     describe('replacePermalink', function () {

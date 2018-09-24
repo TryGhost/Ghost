@@ -26,7 +26,7 @@ function servePublicFile(file, type, maxAge) {
 
                     if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
                         buf = buf.toString().replace(blogRegex, urlService.utils.urlFor('home', true).replace(/\/$/, ''));
-                        buf = buf.toString().replace(apiRegex, urlService.utils.urlFor('api', {cors: true}, true));
+                        buf = buf.toString().replace(apiRegex, urlService.utils.urlFor('api', {cors: true, version: 'stable'}, true));
                     }
                     content = {
                         headers: {

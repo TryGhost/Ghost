@@ -64,5 +64,18 @@
     },
     "maintenance": {
         "enabled": false
+    },
+    "api": {
+        "versions": {
+            "active": {
+                "admin": "v2/admin",
+                "content": "v2/content"
+            },
+            "stable": {
+                "admin": "v0.1",
+                "content": "v0.1"
+            },
+            "deprecated": {}
+        }
     }
 }
