@@ -1,16 +1,15 @@
-const fs = require('fs-extra'),
-    session = require('cookie-session'),
-    crypto = require('crypto'),
-    path = require('path'),
-    config = require('../../../config'),
-    urlService = require('../../../services/url'),
-    constants = require('../../../lib/constants'),
-    common = require('../../../lib/common'),
-    settingsCache = require('../../../services/settings/cache'),
-    // routeKeywords.private: 'private'
-    privateRoute = '/private/';
-
-let privateBlogging = null;
+const fs = require('fs-extra');
+const url = require('url');
+const session = require('cookie-session');
+const crypto = require('crypto');
+const path = require('path');
+const config = require('../../../config');
+const urlService = require('../../../services/url');
+const constants = require('../../../lib/constants');
+const common = require('../../../lib/common');
+const settingsCache = require('../../../services/settings/cache');
+// routeKeywords.private: 'private'
+const privateRoute = '/private/';
 
 function verifySessionHash(salt, hash) {
     if (!salt || !hash) {
@@ -22,7 +21,16 @@ function verifySessionHash(salt, hash) {
     return hasher.digest('hex') === hash;
 }
 
-privateBlogging = {
+function getRedirectUrl(query) {
+    const redirect = decodeURIComponent(query ? query.r : '/');
+    try {
+        return new url.URL(redirect, urlService.utils.urlFor('home', true)).pathname;
+    } catch (e) {
+        return '/';
+    }
+}
+
+const privateBlogging = {
     checkIsPrivate: function checkIsPrivate(req, res, next) {
         let isPrivateBlog = settingsCache.get('is_private');
 
@@ -120,18 +128,18 @@ privateBlogging = {
             return next();
         }
 
-        let bodyPass = req.body.password,
-            pass = settingsCache.get('password'),
-            hasher = crypto.createHash('sha256'),
-            salt = Date.now().toString(),
-            forward = req.query && req.query.r ? req.query.r : '/';
+        const bodyPass = req.body.password;
+        const pass = settingsCache.get('password');
+        const hasher = crypto.createHash('sha256');
+        const salt = Date.now().toString();
+        const forward = getRedirectUrl(req.query);
 
         if (pass === bodyPass) {
             hasher.update(bodyPass + salt, 'utf8');
             req.session.token = hasher.digest('hex');
             req.session.salt = salt;
 
-            return res.redirect(urlService.utils.urlFor({relativeUrl: decodeURIComponent(forward)}));
+            return res.redirect(urlService.utils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
                 message: common.i18n.t('errors.middleware.privateblogging.wrongPassword')
