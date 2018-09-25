@@ -2205,9 +2205,9 @@ ghost-ignition@2.9.2:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@2.9.4:
-  version "2.9.4"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.4.tgz#068359a3d5b98f43666e42220afc8a61ccb1e85e"
+ghost-ignition@2.9.6:
+  version "2.9.6"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.6.tgz#cc8358f0a356bae490e5abeca3c3bda8383352fe"
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
