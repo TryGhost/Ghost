@@ -76,7 +76,7 @@ describe('Role Model', function () {
 
             return RoleModel.destroy(firstRole);
         }).then(function (response) {
-            response.toJSON().should.be.empty();
+            response.toJSON().permissions.should.be.empty();
             return RoleModel.findOne(firstRole);
         }).then(function (newResults) {
             should.equal(newResults, null);
