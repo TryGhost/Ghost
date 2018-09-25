@@ -668,13 +668,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * **response:**
      *
      *     {
-     *         posts: [
-     *         {...}, ...
-     *     ],
-     *     page: __,
-     *     limit: __,
-     *     pages: __,
-     *     total: __
+     *         data: [
+     *             {...}, ...
+     *         ],
+     *         meta: {
+     *             pagination: {
+     *                 page: __,
+     *                 limit: __,
+     *                 pages: __,
+     *                 total: __
+     *             }
+     *         }
      *     }
      *
      * @param {Object} unfilteredOptions
@@ -682,7 +686,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findPage: function findPage(unfilteredOptions) {
         var options = this.filterOptions(unfilteredOptions, 'findPage'),
             itemCollection = this.forge(),
-            tableName = _.result(this.prototype, 'tableName'),
             requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
@@ -712,12 +715,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            const data = {};
-            data.meta = {pagination: response.pagination};
-
             // Filtering attributes here so they are not leaked to api layer
             // where models are serialized to json and do not do more filtering
-            data[tableName] = response.collection.models.map((model) => {
+            const data = response.collection.models.map((model) => {
                 if (requestedColumns) {
                     model.attributes = _.pick(model.attributes, requestedColumns);
                 }
@@ -725,7 +725,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 return model;
             });
 
-            return data;
+            return {
+                data: data,
+                meta: {pagination: response.pagination}
+            };
         });
     },
 

@@ -38,10 +38,11 @@ users = {
          */
         function doQuery(options) {
             return models.User.findPage(options)
-                .then((result) => {
-                    result.users = result.users.map(post => post.toJSON(options));
-
-                    return result;
+                .then(({data, meta}) => {
+                    return {
+                        users: data.map(post => post.toJSON(options)),
+                        meta: meta
+                    };
                 });
         }
 

@@ -58,10 +58,11 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.findPage(options)
-                .then((result) => {
-                    result.posts = result.posts.map(model => model.toJSON(options));
-
-                    return result;
+                .then(({data, meta}) => {
+                    return {
+                        posts: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
                 });
         }
 

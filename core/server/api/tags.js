@@ -34,10 +34,11 @@ tags = {
          */
         function doQuery(options) {
             return models.Tag.findPage(options)
-                .then((result) => {
-                    result.tags = result.tags.map(model => model.toJSON(options));
-
-                    return result;
+                .then(({data, meta}) => {
+                    return {
+                        tags: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
                 });
         }
 

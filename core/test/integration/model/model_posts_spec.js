@@ -157,7 +157,7 @@ describe('Post Model', function () {
                         results.meta.pagination.page.should.equal(1);
                         results.meta.pagination.limit.should.equal(15);
                         results.meta.pagination.pages.should.equal(1);
-                        results.posts.length.should.equal(4);
+                        results.data.length.should.equal(4);
 
                         done();
                     }).catch(done);
@@ -171,9 +171,9 @@ describe('Post Model', function () {
                             results.meta.pagination.page.should.equal(1);
                             results.meta.pagination.limit.should.equal(15);
                             results.meta.pagination.pages.should.equal(1);
-                            results.posts.length.should.equal(4);
+                            results.data.length.should.equal(4);
 
-                            var firstPost = _.find(results.posts, {attributes:{title: testUtils.DataGenerator.Content.posts[0].title}});
+                            var firstPost = _.find(results.data, {attributes:{title: testUtils.DataGenerator.Content.posts[0].title}});
                             checkFirstPostData(firstPost.toJSON());
 
                             done();
@@ -184,7 +184,7 @@ describe('Post Model', function () {
                     models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
                         post.url.should.equal('/html-ipsum/');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
@@ -200,7 +200,7 @@ describe('Post Model', function () {
                     models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
                         post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                         post.slug.should.equal('html-ipsum');
                         should.not.exist(post.doesnotexist);
@@ -247,21 +247,21 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(2);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.posts.length.should.equal(15);
+                            paginationResult.data.length.should.equal(15);
 
                             return models.Post.findPage({page: 5});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(5);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.posts.length.should.equal(0);
+                            paginationResult.data.length.should.equal(0);
 
                             return models.Post.findPage({limit: 30});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(30);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(30);
+                            paginationResult.data.length.should.equal(30);
 
                             // Test both boolean formats
                             return models.Post.findPage({limit: 10, staticPages: true});
@@ -269,7 +269,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(1);
+                            paginationResult.data.length.should.equal(1);
 
                             // Test both boolean formats
                             return models.Post.findPage({limit: 10, staticPages: '1'});
@@ -277,7 +277,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(1);
+                            paginationResult.data.length.should.equal(1);
 
                             // Test featured pages
                             return models.Post.findPage({limit: 10, filter: 'featured:true'});
@@ -285,7 +285,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             // Test both boolean formats for featured pages
                             return models.Post.findPage({limit: 10, filter: 'featured:1'});
@@ -293,7 +293,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({limit: 10, page: 2, status: 'all'});
                         }).then(function (paginationResult) {
@@ -304,7 +304,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal('all');
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(108);
+                            paginationResult.data.length.should.equal(108);
 
                             done();
                         }).catch(done);
@@ -317,28 +317,28 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({page: 1, filter: 'tags:injection'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(15);
+                            paginationResult.data.length.should.equal(15);
 
                             return models.Post.findPage({page: 2, filter: 'tags:injection'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(2);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(10);
+                            paginationResult.data.length.should.equal(10);
 
                             done();
                         }).catch(done);
@@ -352,9 +352,9 @@ describe('Post Model', function () {
 
                     models.Post.findPage().then(function (results) {
                         should.exist(results);
-                        should.exist(results.posts);
-                        results.posts.length.should.be.above(0);
-                        firstPost = results.posts[0].toJSON();
+                        should.exist(results.data);
+                        results.data.length.should.be.above(0);
+                        firstPost = results.data[0].toJSON();
 
                         return models.Post.findOne({slug: firstPost.slug});
                     }).then(function (found) {

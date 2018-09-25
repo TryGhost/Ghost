@@ -33,7 +33,7 @@ describe('Tag Model', function () {
                     results.meta.pagination.page.should.equal(1);
                     results.meta.pagination.limit.should.equal('all');
                     results.meta.pagination.pages.should.equal(1);
-                    results.tags.length.should.equal(5);
+                    results.data.length.should.equal(5);
 
                     done();
                 })
@@ -46,8 +46,8 @@ describe('Tag Model', function () {
                     results.meta.pagination.page.should.equal(1);
                     results.meta.pagination.limit.should.equal('all');
                     results.meta.pagination.pages.should.equal(1);
-                    results.tags.length.should.equal(5);
-                    should.exist(results.tags[0].toJSON().count.posts);
+                    results.data.length.should.equal(5);
+                    should.exist(results.data[0].toJSON().count.posts);
 
                     done();
                 })
@@ -62,9 +62,9 @@ describe('Tag Model', function () {
             models.Tag.findPage()
                 .then(function (results) {
                     should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
-                    firstTag = results.tags[0].toJSON();
+                    should.exist(results.data);
+                    results.data.length.should.be.above(0);
+                    firstTag = results.data[0].toJSON();
 
                     return models.Tag.findOne({slug: firstTag.slug});
                 })

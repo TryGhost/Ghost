@@ -34,10 +34,11 @@ subscribers = {
          */
         function doQuery(options) {
             return models.Subscriber.findPage(options)
-                .then((result) => {
-                    result.subscribers = result.subscribers.map(model => model.toJSON(options));
-
-                    return result;
+                .then(({data, meta}) => {
+                    return {
+                        subscribers: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
                 });
         }
 

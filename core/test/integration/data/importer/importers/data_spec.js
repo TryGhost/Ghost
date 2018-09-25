@@ -330,9 +330,9 @@ describe('Integration: Importer', function () {
                     ]);
                 })
                 .then(function (data) {
-                    data[0].posts.length.should.eql(1);
-                    data[0].posts[0].toJSON().slug.should.eql('welcome-to-ghost-2');
-                    data[0].posts[0].toJSON().tags.length.should.eql(0);
+                    data[0].data.length.should.eql(1);
+                    data[0].data[0].toJSON().slug.should.eql('welcome-to-ghost-2');
+                    data[0].data[0].toJSON().tags.length.should.eql(0);
                 });
         });
 
@@ -347,9 +347,9 @@ describe('Integration: Importer', function () {
                     return models.Post.findPage(testUtils.context.internal);
                 })
                 .then(function (result) {
-                    result.posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
-                    result.posts[0].toJSON().status.should.eql('scheduled');
-                    result.posts[1].toJSON().status.should.eql('published');
+                    result.data.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
+                    result.data[0].toJSON().status.should.eql('scheduled');
+                    result.data[1].toJSON().status.should.eql('published');
                 });
         });
 
@@ -377,7 +377,7 @@ describe('Integration: Importer', function () {
                     importedData.length.should.equal(5, 'Did not get data successfully');
 
                     const users = importedData[0],
-                        posts = importedData[1].posts,
+                        posts = importedData[1].data,
                         settings = importedData[2],
                         tags = importedData[3],
                         subscribers = importedData[4];
@@ -522,8 +522,8 @@ describe('Integration: Importer', function () {
 
                     importedData.length.should.equal(2, 'Did not get data successfully');
 
-                    const users = importedData[0].users.map((model) => model.toJSON());
-                    const posts = importedData[1].posts.map((model) => model.toJSON());
+                    const users = importedData[0].data.map((model) => model.toJSON());
+                    const posts = importedData[1].data.map((model) => model.toJSON());
 
                     posts.length.should.equal(1, 'Wrong number of posts');
                     users.length.should.equal(2, 'Wrong number of users');
@@ -553,10 +553,10 @@ describe('Integration: Importer', function () {
                 .then(function () {
                     return models.Post.findPage(testUtils.context.internal);
                 }).then(function (result) {
-                    assert.equal(validator.isUUID(result.posts[0].toJSON().uuid), true, 'Old Ghost UUID NOT fixed');
-                    assert.equal(validator.isUUID(result.posts[1].toJSON().uuid), true, 'Empty UUID NOT fixed');
-                    assert.equal(validator.isUUID(result.posts[2].toJSON().uuid), true, 'Missing UUID NOT fixed');
-                    assert.equal(validator.isUUID(result.posts[3].toJSON().uuid), true, 'Malformed UUID NOT fixed');
+                    assert.equal(validator.isUUID(result.data[0].toJSON().uuid), true, 'Old Ghost UUID NOT fixed');
+                    assert.equal(validator.isUUID(result.data[1].toJSON().uuid), true, 'Empty UUID NOT fixed');
+                    assert.equal(validator.isUUID(result.data[2].toJSON().uuid), true, 'Missing UUID NOT fixed');
+                    assert.equal(validator.isUUID(result.data[3].toJSON().uuid), true, 'Malformed UUID NOT fixed');
                 });
         });
 
@@ -587,8 +587,8 @@ describe('Integration: Importer', function () {
                         models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON());
-                    const tags = result[1].tags.map((model) => model.toJSON());
+                    const posts = result[0].data.map((model) => model.toJSON());
+                    const tags = result[1].data.map((model) => model.toJSON());
 
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
@@ -690,9 +690,9 @@ describe('Integration: Importer', function () {
                         models.User.findPage(userOptions)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(postOptions));
-                    const tags = result[1].tags.map((model) => model.toJSON(tagOptions));
-                    const users = result[2].users.map((model) => model.toJSON(userOptions));
+                    const posts = result[0].data.map((model) => model.toJSON(postOptions));
+                    const tags = result[1].data.map((model) => model.toJSON(tagOptions));
+                    const users = result[2].data.map((model) => model.toJSON(userOptions));
 
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
@@ -800,7 +800,7 @@ describe('Integration: Importer', function () {
                         models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
-                    const users = result[0].users.map((model) => model.toJSON());
+                    const users = result[0].data.map((model) => model.toJSON());
 
                     users.length.should.eql(2);
                     users[1].slug.should.eql(exportData.data.users[0].slug);
@@ -832,8 +832,8 @@ describe('Integration: Importer', function () {
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
-                    const tags = result[0].tags.map((model) => model.toJSON());
-                    const posts = result[1].posts.map((model) => model.toJSON());
+                    const tags = result[0].data.map((model) => model.toJSON());
+                    const posts = result[1].data.map((model) => model.toJSON());
 
                     posts.length.should.eql(1);
                     tags.length.should.eql(1);
@@ -886,7 +886,7 @@ describe('Integration: Importer', function () {
                         models.Post.findPage(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON());
+                    const posts = result[0].data.map((model) => model.toJSON());
 
                     posts.length.should.eql(2);
                     posts[0].comment_id.should.eql(exportData.data.posts[1].id);
@@ -978,8 +978,8 @@ describe('Integration: Importer', function () {
                         models.User.findPage(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON());
-                    const users = result[1].users.map((model) => model.toJSON());
+                    const posts = result[0].data.map((model) => model.toJSON());
+                    const users = result[1].data.map((model) => model.toJSON());
 
                     // 2 duplicates, 1 owner, 4 imported users
                     users.length.should.eql(exportData.data.users.length - 2 + 1);
@@ -1136,9 +1136,9 @@ describe('Integration: Importer', function () {
                         models.ClientTrustedDomain.findAll(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(postOptions));
-                    const tags = result[1].tags.map((model) => model.toJSON(tagOptions));
-                    const users = result[2].users.map((model) => model.toJSON(userOptions));
+                    const posts = result[0].data.map((model) => model.toJSON(postOptions));
+                    const tags = result[1].data.map((model) => model.toJSON(tagOptions));
+                    const users = result[2].data.map((model) => model.toJSON(userOptions));
 
                     let clients = result[3];
                     let trustedDomains = result[4];
@@ -1203,7 +1203,7 @@ describe('1.0', function () {
                     models.Post.findPage(testUtils.context.internal)
                 ]);
             }).then(function (result) {
-                const posts = result[0].posts.map((model) => model.toJSON());
+                const posts = result[0].data.map((model) => model.toJSON());
 
                 posts.length.should.eql(2);
                 posts[0].comment_id.should.eql(exportData.data.posts[1].id);
@@ -1234,7 +1234,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(2);
                     posts[0].html.should.eql('<p></p>');
@@ -1263,7 +1263,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<p></p>');
@@ -1289,7 +1289,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<p></p>');
@@ -1314,7 +1314,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<h2 id="markdown">markdown</h2>\n');
@@ -1339,7 +1339,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<h1 id="thisismypostcontent">This is my post content</h1>\n');
@@ -1401,7 +1401,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].posts.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(2);
 

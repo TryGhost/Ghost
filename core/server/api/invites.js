@@ -18,10 +18,11 @@ const invites = {
 
         function modelQuery(options) {
             return models.Invite.findPage(options)
-                .then((result) => {
-                    result.invites = result.invites.map(model => model.toJSON(options));
-
-                    return result;
+                .then(({data, meta}) => {
+                    return {
+                        invites: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
                 });
         }
 
