@@ -1,4 +1,4 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment'),
     pipeline = require('../lib/promise/pipeline'),
@@ -6,7 +6,7 @@ var Promise = require('bluebird'),
     models = require('../models'),
     config = require('../config'),
     common = require('../lib/common'),
-    postsAPI = require('../api/posts');
+    postsAPI = require('./posts');
 
 /**
  * Publish a scheduled post
@@ -23,7 +23,7 @@ exports.publishPost = function publishPost(object, options) {
         object = {};
     }
 
-    var post, publishedAtMoment,
+    let post, publishedAtMoment,
         publishAPostBySchedulerToleranceInMinutes = config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
     // CASE: only the scheduler client is allowed to publish (hardcoded because of missing client permission system)
@@ -35,10 +35,10 @@ exports.publishPost = function publishPost(object, options) {
 
     return pipeline([
         localUtils.validate('posts', {opts: localUtils.idDefaultOptions}),
-        function (cleanOptions) {
+        (cleanOptions) => {
             cleanOptions.status = 'scheduled';
 
-            return models.Base.transaction(function (transacting) {
+            return models.Base.transaction((transacting) => {
                 cleanOptions.transacting = transacting;
                 cleanOptions.forUpdate = true;
 
@@ -46,7 +46,7 @@ exports.publishPost = function publishPost(object, options) {
                 cleanOptions.opts = ['forUpdate', 'transacting'];
 
                 return postsAPI.read(cleanOptions)
-                    .then(function (result) {
+                    .then((result) => {
                         post = result.posts[0];
                         publishedAtMoment = moment(post.published_at);
 
@@ -80,20 +80,20 @@ exports.getScheduledPosts = function readPosts(options) {
 
     return pipeline([
         localUtils.validate('posts', {opts: ['from', 'to']}),
-        function (cleanOptions) {
+        (cleanOptions) => {
             cleanOptions.filter = 'status:scheduled';
             cleanOptions.columns = ['id', 'published_at', 'created_at'];
 
             if (cleanOptions.from) {
-                cleanOptions.filter += '+created_at:>=\'' + moment(cleanOptions.from).format('YYYY-MM-DD HH:mm:ss') + '\'';
+                cleanOptions.filter += `+created_at:>='${moment(cleanOptions.from).format('YYYY-MM-DD HH:mm:ss')}'`;
             }
 
             if (cleanOptions.to) {
-                cleanOptions.filter += '+created_at:<=\'' + moment(cleanOptions.to).format('YYYY-MM-DD HH:mm:ss') + '\'';
+                cleanOptions.filter += `+created_at:<='${moment(cleanOptions.to).format('YYYY-MM-DD HH:mm:ss')}'`;
             }
 
             return models.Post.findAll(cleanOptions)
-                .then(function (result) {
+                .then((result) => {
                     return Promise.resolve({posts: result.models});
                 });
         }

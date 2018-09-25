@@ -26,7 +26,7 @@ db = {
      * @public
      * @returns {Promise} Ghost Export JSON format
      */
-    backupContent: function (options) {
+    backupContent(options) {
         let tasks;
 
         options = options || {};
@@ -51,7 +51,7 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export JSON format
      */
-    exportContent: function exportContent(options) {
+    exportContent(options) {
         let tasks;
 
         options = options || {};
@@ -83,7 +83,7 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    importContent: function importContent(options) {
+    importContent(options) {
         let tasks;
         options = options || {};
 
@@ -114,7 +114,7 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    deleteAllContent: function deleteAllContent(options) {
+    deleteAllContent(options) {
         let tasks;
         const queryOpts = {columns: 'id', context: {internal: true}, destroyAll: true};
 

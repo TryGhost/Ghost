@@ -38,7 +38,7 @@ posts = {
      * @param {{context, page, limit, status, staticPages, tag, featured}} options (optional)
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
-    browse: (options) => {
+    browse(options) {
         const extraOptions = ['status', 'formats', 'absolute_urls'];
         let permittedOptions,
             tasks;
@@ -80,7 +80,7 @@ posts = {
      * @param {Object} options
      * @return {Promise<Post>} Post
      */
-    read: (options) => {
+    read(options) {
         const attrs = ['id', 'slug', 'status', 'uuid'],
             // NOTE: the scheduler API uses the post API and forwards custom options
             extraAllowedOptions = options.opts || ['formats', 'absolute_urls'];
@@ -95,7 +95,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.findOne(options.data, omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.posts.postNotFound')
@@ -129,7 +129,7 @@ posts = {
      * @param {{id (required), context, include,...}} options
      * @return {Promise(Post)} Edited Post
      */
-    edit: (object, options) => {
+    edit(object, options) {
         let tasks;
         // NOTE: the scheduler API uses the post API and forwards custom options
         const extraAllowedOptions = options.opts || [];
@@ -142,7 +142,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.edit(options.data.posts[0], omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
                             message: common.i18n.t('errors.api.posts.postNotFound')
@@ -185,7 +185,7 @@ posts = {
      * @param {{context, include,...}} options
      * @return {Promise(Post)} Created Post
      */
-    add: (object, options) => {
+    add(object, options) {
         let tasks;
 
         /**
@@ -196,7 +196,7 @@ posts = {
          */
         function modelQuery(options) {
             return models.Post.add(options.data.posts[0], omit(options, ['data']))
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     const post = model.toJSON(options);
 
                     if (post.status === 'published') {
@@ -229,7 +229,7 @@ posts = {
      * @param {{id (required), context,...}} options
      * @return {Promise}
      */
-    destroy: (options) => {
+    destroy(options) {
         let tasks;
 
         /**

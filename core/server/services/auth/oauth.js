@@ -3,7 +3,7 @@ var oauth2orize = require('oauth2orize'),
     passport = require('passport'),
     models = require('../../models'),
     authUtils = require('./utils'),
-    spamPrevention = require('../../web/middleware/api/spam-prevention'),
+    web = require('../../web'),
     common = require('../../lib/common'),
     oauthServer,
     oauth;
@@ -31,7 +31,8 @@ function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done)
                 }
 
                 // @TODO: this runs outside of the transaction
-                spamPrevention.userLogin().reset(authInfo.ip, body.refresh_token + 'login');
+                web.shared.middlewares.api.spamPrevention.userLogin()
+                    .reset(authInfo.ip, body.refresh_token + 'login');
 
                 return authUtils.createTokens({
                     clientId: token.client_id,
@@ -76,7 +77,9 @@ function exchangePassword(client, username, password, scope, body, authInfo, don
             });
         })
         .then(function then(response) {
-            spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
+            web.shared.middlewares.api.spamPrevention.userLogin()
+                .reset(authInfo.ip, username + 'login');
+
             return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
         })
         .catch(function (err) {
@@ -104,7 +107,8 @@ function exchangeAuthorizationCode(req, res, next) {
             }));
         }
 
-        spamPrevention.userLogin().reset(req.authInfo.ip, req.body.authorizationCode + 'login');
+        web.shared.middlewares.api.spamPrevention.userLogin()
+            .reset(req.authInfo.ip, req.body.authorizationCode + 'login');
 
         authUtils.createTokens({
             clientId: req.client.id,

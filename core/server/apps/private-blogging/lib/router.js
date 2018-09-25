@@ -3,7 +3,7 @@ const path = require('path'),
     middleware = require('./middleware'),
     bodyParser = require('body-parser'),
     routing = require('../../../services/routing'),
-    brute = require('../../../web/middleware/brute'),
+    web = require('../../../web'),
     templateName = 'private',
     privateRouter = express.Router();
 
@@ -36,7 +36,7 @@ privateRouter
     .post(
         bodyParser.urlencoded({extended: true}),
         middleware.isPrivateSessionAuth,
-        brute.privateBlog,
+        web.shared.middlewares.brute.privateBlog,
         middleware.authenticateProtection,
         _renderer
     );

@@ -1,18 +1,19 @@
 // # Webhooks API
 // RESTful API for creating webhooks
 // also known as "REST Hooks", see http://resthooks.org
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../lib/promise/pipeline'),
     localUtils = require('./utils'),
     models = require('../models'),
     common = require('../lib/common'),
     request = require('../lib/request'),
-    docName = 'webhooks',
-    webhooks;
+    docName = 'webhooks';
+
+let webhooks;
 
 function makeRequest(webhook, payload, options) {
-    var event = webhook.get('event'),
+    let event = webhook.get('event'),
         targetUrl = webhook.get('target_url'),
         webhookId = webhook.get('id'),
         reqPayload = JSON.stringify(payload);
@@ -27,7 +28,7 @@ function makeRequest(webhook, payload, options) {
         },
         timeout: 2 * 1000,
         retries: 5
-    }).catch(function (err) {
+    }).catch((err) => {
         // when a webhook responds with a 410 Gone response we should remove the hook
         if (err.statusCode === 410) {
             common.logging.info('webhook.destroy (410 response)', event, targetUrl);
@@ -47,7 +48,7 @@ function makeRequest(webhook, payload, options) {
 }
 
 function makeRequests(webhooksCollection, payload, options) {
-    _.each(webhooksCollection.models, function (webhook) {
+    _.each(webhooksCollection.models, (webhook) => {
         makeRequest(webhook, payload, options);
     });
 }
@@ -64,8 +65,8 @@ webhooks = {
      * @param {Webhook} object the webhook to create
      * @returns {Promise(Webhook)} newly created Webhook
      */
-    add: function add(object, options) {
-        var tasks;
+    add(object, options) {
+        let tasks;
 
         /**
          * ### Model Query
@@ -75,14 +76,14 @@ webhooks = {
          */
         function doQuery(options) {
             return models.Webhook.getByEventAndTarget(options.data.webhooks[0].event, options.data.webhooks[0].target_url, _.omit(options, ['data']))
-                .then(function (webhook) {
+                .then((webhook) => {
                     if (webhook) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.webhooks.webhookAlreadyExists')}));
                     }
 
                     return models.Webhook.add(options.data.webhooks[0], _.omit(options, ['data']));
                 })
-                .then(function onModelResponse(model) {
+                .then((model) => {
                     return {
                         webhooks: [model.toJSON(options)]
                     };
@@ -108,8 +109,8 @@ webhooks = {
      * @param {{id, context}} options
      * @return {Promise}
      */
-    destroy: function destroy(options) {
-        var tasks;
+    destroy(options) {
+        let tasks;
 
         /**
          * ### Delete Webhook
@@ -132,8 +133,8 @@ webhooks = {
         return pipeline(tasks, options);
     },
 
-    trigger: function trigger(event, payload, options) {
-        var tasks;
+    trigger(event, payload, options) {
+        let tasks;
 
         function doQuery(options) {
             return models.Webhook.findAllByEvent(event, options);

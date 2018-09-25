@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    uncapitalise = require('../../../../server/web/middleware/uncapitalise'),
+    uncapitalise = require('../../../../server/web/shared/middlewares/uncapitalise'),
 
     sandbox = sinon.sandbox.create();
 
@@ -127,66 +127,82 @@ describe('Middleware: uncapitalise', function () {
     });
 
     describe('An API request', function () {
-        it('does nothing if there are no capitals', function (done) {
-            req.path = '/ghost/api/v0.1/endpoint/';
-            uncapitalise(req, res, next);
+        ['v0.1', 'v2', 'v10'].forEach((apiVersion) => {
+            describe(`for ${apiVersion}`, function () {
+                it('does nothing if there are no capitals', function (done) {
+                    req.path = `/ghost/api/${apiVersion}/endpoint/`;
+                    uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
-            done();
-        });
+                    next.calledOnce.should.be.true();
+                    done();
+                });
 
-        it('redirects to the lower case slug if there are capitals', function (done) {
-            req.path = '/ghost/api/v0.1/ASDfJ/';
-            req.url = req.path;
+                it('version identifier is uppercase', function (done) {
+                    req.path = `/ghost/api/${apiVersion.toUpperCase()}/endpoint/`;
+                    req.url = req.path;
 
-            uncapitalise(req, res, next);
+                    uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/api/v0.1/asdfj/').should.be.true();
-            done();
-        });
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/endpoint/`).should.be.true();
+                    done();
+                });
 
-        it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
-            req.baseUrl = '/Blog';
-            req.path = '/ghost/api/v0.1/ASDfJ/';
-            req.url = req.path;
-            req.originalUrl = req.baseUrl + req.path;
+                it('redirects to the lower case slug if there are capitals', function (done) {
+                    req.path = `/ghost/api/${apiVersion}/ASDfJ/`;
+                    req.url = req.path;
 
-            uncapitalise(req, res, next);
+                    uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/ghost/api/v0.1/asdfj/').should.be.true();
-            done();
-        });
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/asdfj/`).should.be.true();
+                    done();
+                });
 
-        it('does not convert any capitals after the endpoint', function (done) {
-            var query = '?filter=mAgic';
-            req.path = '/Ghost/API/v0.1/settings/is_private/';
-            req.url = req.path + query;
+                it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
+                    req.baseUrl = '/Blog';
+                    req.path = `/ghost/api/${apiVersion}/ASDfJ/`;
+                    req.url = req.path;
+                    req.originalUrl = req.baseUrl + req.path;
 
-            uncapitalise(req, res, next);
+                    uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/api/v0.1/settings/is_private/?filter=mAgic').should.be.true();
-            done();
-        });
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/blog/ghost/api/${apiVersion}/asdfj/`).should.be.true();
+                    done();
+                });
 
-        it('does not convert any capitals after the endpoint with baseUrl', function (done) {
-            var query = '?filter=mAgic';
-            req.baseUrl = '/Blog';
-            req.path = '/ghost/api/v0.1/mail/test@example.COM/';
-            req.url = req.path + query;
-            req.originalUrl = req.baseUrl + req.path + query;
+                it('does not convert any capitals after the endpoint', function (done) {
+                    var query = '?filter=mAgic';
+                    req.path = `/Ghost/API/${apiVersion}/settings/is_private/`;
+                    req.url = req.path + query;
 
-            uncapitalise(req, res, next);
+                    uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/ghost/api/v0.1/mail/test@example.COM/?filter=mAgic').should.be.true();
-            done();
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/settings/is_private/?filter=mAgic`).should.be.true();
+                    done();
+                });
+
+                it('does not convert any capitals after the endpoint with baseUrl', function (done) {
+                    var query = '?filter=mAgic';
+                    req.baseUrl = '/Blog';
+                    req.path = `/ghost/api/${apiVersion}/mail/test@example.COM/`;
+                    req.url = req.path + query;
+                    req.originalUrl = req.baseUrl + req.path + query;
+
+                    uncapitalise(req, res, next);
+
+                    next.called.should.be.false();
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith(301, `/blog/ghost/api/${apiVersion}/mail/test@example.COM/?filter=mAgic`).should.be.true();
+                    done();
+                });
+            });
         });
     });
 

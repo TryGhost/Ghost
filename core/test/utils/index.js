@@ -23,7 +23,7 @@ var Promise = require('bluebird'),
     settingsService = require('../../server/services/settings'),
     settingsCache = require('../../server/services/settings/cache'),
     imageLib = require('../../server/lib/image'),
-    customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
+    web = require('../../server/web'),
     permissions = require('../../server/services/permissions'),
     sequence = require('../../server/lib/promise/sequence'),
     themes = require('../../server/services/themes'),
@@ -943,7 +943,7 @@ startGhost = function startGhost(options) {
                 });
             })
             .then(function () {
-                customRedirectsMiddleware.reload();
+                web.shared.middlewares.customRedirects.reload();
 
                 common.events.emit('server.start');
                 return ghostServer;

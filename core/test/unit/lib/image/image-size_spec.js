@@ -33,7 +33,7 @@ describe('lib/image: image size', function () {
 
     it('[success] should have an image size function', function () {
         should.exist(imageSize.getImageSizeFromUrl);
-        should.exist(imageSize.getImageSizeFromFilePath);
+        should.exist(imageSize.getImageSizeFromStoragePath);
     });
 
     describe('getImageSizeFromUrl', function () {
@@ -413,7 +413,7 @@ describe('lib/image: image size', function () {
         });
     });
 
-    describe('getImageSizeFromFilePath', function () {
+    describe('getImageSizeFromStoragePath', function () {
         it('[success] should return image dimensions for locally stored images', function (done) {
             var url = '/content/images/ghost-logo.png',
                 urlForStub,
@@ -432,7 +432,7 @@ describe('lib/image: image size', function () {
             urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
+            result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
                 should.exist(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -462,7 +462,7 @@ describe('lib/image: image size', function () {
             urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
-            result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
+            result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
                 should.exist(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -492,7 +492,7 @@ describe('lib/image: image size', function () {
             urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = imageSize.getImageSizeFromFilePath(url).then(function (res) {
+            result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
                 should.exist(res.width);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -516,7 +516,7 @@ describe('lib/image: image size', function () {
             urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = imageSize.getImageSizeFromFilePath(url)
+            result = imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
                     should.exist(err);
                     (err instanceof common.errors.NotFoundError).should.eql(true);
@@ -540,7 +540,7 @@ describe('lib/image: image size', function () {
             urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = imageSize.getImageSizeFromFilePath(url)
+            result = imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
                     should.exist(err);
                     err.error.should.be.equal('image-size could not find dimensions');
