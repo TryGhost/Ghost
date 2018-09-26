@@ -97,7 +97,7 @@ Tag = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absolute_urls'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order'],
                 findAll: ['columns'],
                 findOne: ['visibility'],
                 destroy: ['destroyAll']
