@@ -2,6 +2,7 @@ const express = require('express');
 const os = require('os');
 const multer = require('multer');
 const api = require('../../../../api');
+const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
 const auth = require('../../../../services/auth');
@@ -144,6 +145,12 @@ module.exports = function apiRoutes() {
 
     // ## Slack
     router.post('/slack/test', mw.authAdminAPI, api.http(api.slack.sendTest));
+
+    // ## Sessions
+    router.get('/session', mw.authAdminAPI, api.http(apiv2.session.read));
+    // We don't need auth when creating a new session (logging in)
+    router.post('/session', api.http(apiv2.session.add));
+    router.del('/session', mw.authAdminAPI, api.http(apiv2.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
