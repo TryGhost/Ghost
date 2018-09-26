@@ -665,6 +665,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
      *
+     * When touching this part of code you should double check the allowed filter options,
+     * as models attributes are filtered here to not allow leaking unnecessary data into calling layer
+     *
      * **response:**
      *
      *     {
@@ -715,7 +718,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            // Filtering attributes here so they are not leaked to api layer
+            // Attributes are being filtered here, so they are not leaked into calling layer
             // where models are serialized to json and do not do more filtering
             const data = response.collection.models.map((model) => {
                 if (requestedColumns) {
