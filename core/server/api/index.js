@@ -4,41 +4,32 @@
 // Ghost's JSON API is integral to the workings of Ghost, regardless of whether you want to access data internally,
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
-const {isEmpty} = require('lodash'),
-    Promise = require('bluebird'),
-    models = require('../models'),
-    urlService = require('../services/url'),
-    configuration = require('./configuration'),
-    db = require('./db'),
-    mail = require('./mail'),
-    notifications = require('./notifications'),
-    posts = require('./posts'),
-    schedules = require('./schedules'),
-    roles = require('./roles'),
-    settings = require('./settings'),
-    tags = require('./tags'),
-    invites = require('./invites'),
-    redirects = require('./redirects'),
-    clients = require('./clients'),
-    users = require('./users'),
-    slugs = require('./slugs'),
-    themes = require('./themes'),
-    subscribers = require('./subscribers'),
-    authentication = require('./authentication'),
-    uploads = require('./upload'),
-    exporter = require('../data/exporter'),
-    slack = require('./slack'),
-    webhooks = require('./webhooks'),
-    oembed = require('./oembed');
-
-let http,
-    addHeaders,
-    cacheInvalidationHeader,
-    locationHeader,
-    contentDispositionHeaderExport,
-    contentDispositionHeaderSubscribers,
-    contentDispositionHeaderRedirects,
-    contentDispositionHeaderRoutes;
+const {isEmpty} = require('lodash');
+const Promise = require('bluebird');
+const models = require('../models');
+const urlService = require('../services/url');
+const configuration = require('./configuration');
+const db = require('./db');
+const mail = require('./mail');
+const notifications = require('./notifications');
+const posts = require('./posts');
+const schedules = require('./schedules');
+const roles = require('./roles');
+const settings = require('./settings');
+const tags = require('./tags');
+const invites = require('./invites');
+const redirects = require('./redirects');
+const clients = require('./clients');
+const users = require('./users');
+const slugs = require('./slugs');
+const themes = require('./themes');
+const subscribers = require('./subscribers');
+const authentication = require('./authentication');
+const uploads = require('./upload');
+const exporter = require('../data/exporter');
+const slack = require('./slack');
+const webhooks = require('./webhooks');
+const oembed = require('./oembed');
 
 function isActiveThemeUpdate(method, endpoint, result) {
     if (endpoint === 'themes') {
@@ -67,7 +58,7 @@ function isActiveThemeUpdate(method, endpoint, result) {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-cacheInvalidationHeader = (req, result) => {
+const cacheInvalidationHeader = (req, result) => {
     const parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
@@ -123,7 +114,7 @@ cacheInvalidationHeader = (req, result) => {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-locationHeader = (req, result) => {
+const locationHeader = (req, result) => {
     const apiRoot = urlService.utils.urlFor('api', {version: 'stable'});
     let location,
         newObject,
@@ -167,26 +158,26 @@ locationHeader = (req, result) => {
  * @return {string}
  */
 
-contentDispositionHeaderExport = () => {
+const contentDispositionHeaderExport = () => {
     return exporter.fileName().then((filename) => {
         return `Attachment; filename="${filename}"`;
     });
 };
 
-contentDispositionHeaderSubscribers = () => {
+const contentDispositionHeaderSubscribers = () => {
     const datetime = (new Date()).toJSON().substring(0, 10);
     return Promise.resolve(`Attachment; filename="subscribers.${datetime}.csv"`);
 };
 
-contentDispositionHeaderRedirects = () => {
+const contentDispositionHeaderRedirects = () => {
     return Promise.resolve('Attachment; filename="redirects.json"');
 };
 
-contentDispositionHeaderRoutes = () => {
+const contentDispositionHeaderRoutes = () => {
     return Promise.resolve('Attachment; filename="routes.yaml"');
 };
 
-addHeaders = (apiMethod, req, res, result) => {
+const addHeaders = (apiMethod, req, res, result) => {
     let cacheInvalidation,
         location,
         contentDisposition;
@@ -264,7 +255,7 @@ addHeaders = (apiMethod, req, res, result) => {
  * @param {Function} apiMethod API method to call
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
-http = (apiMethod) => {
+const http = (apiMethod) => {
     return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         let object = req.body,
@@ -292,6 +283,12 @@ http = (apiMethod) => {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
             return addHeaders(apiMethod, req, res, (response || {}));
         }).then((response) => {
+            // CASE: api method response wants to handle the express response
+            // example: serve files (stream)
+            if (typeof response === 'function') {
+                return response(req, res, next);
+            }
+
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
@@ -300,12 +297,6 @@ http = (apiMethod) => {
             if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0 ||
                 res.get('Content-Type') && res.get('Content-Type').indexOf('application/yaml') === 0) {
                 return res.status(200).send(response);
-            }
-
-            // CASE: api method response wants to handle the express response
-            // example: serve files (stream)
-            if (typeof response === 'function') {
-                return response(req, res, next);
             }
 
             // Send a properly formatting HTTP response containing the data with correct headers
