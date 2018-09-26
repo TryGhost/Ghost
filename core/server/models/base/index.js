@@ -665,21 +665,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * information about the request (page, limit), along with the
      * info needed for pagination (pages, total).
      *
-     * @TODO:
-     *   - this model function does return JSON O_O
-     *   - if you refactor that out, you should double check the allowed filter options
-     *   - because `toJSON` is called in here and is using the filtered options for the `findPage` function
-     *
      * **response:**
      *
      *     {
-     *         posts: [
-     *         {...}, ...
-     *     ],
-     *     page: __,
-     *     limit: __,
-     *     pages: __,
-     *     total: __
+     *         data: [
+     *             {...}, ...
+     *         ],
+     *         meta: {
+     *             pagination: {
+     *                 page: __,
+     *                 limit: __,
+     *                 pages: __,
+     *                 total: __
+     *             }
+     *         }
      *     }
      *
      * @param {Object} unfilteredOptions
@@ -687,7 +686,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     findPage: function findPage(unfilteredOptions) {
         var options = this.filterOptions(unfilteredOptions, 'findPage'),
             itemCollection = this.forge(),
-            tableName = _.result(this.prototype, 'tableName'),
             requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
@@ -717,20 +715,22 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
-            var data = {},
-                models;
+            // Attributes are being filtered here, so they are not leaked into calling layer
+            // where models are serialized to json and do not do more filtering.
+            // Re-add and pick any computed properties that were stripped before fetchPage call.
+            const data = response.collection.models.map((model) => {
+                if (requestedColumns) {
+                    model.attributes = _.pick(model.attributes, requestedColumns);
+                    model._previousAttributes = _.pick(model._previousAttributes, requestedColumns);
+                }
 
-            options.columns = requestedColumns;
-            models = response.collection.toJSON(options);
-
-            // re-add any computed properties that were stripped out before the call to fetchPage
-            // pick only requested before returning JSON
-            data[tableName] = _.map(models, function transform(model) {
-                return options.columns ? _.pick(model, options.columns) : model;
+                return model;
             });
 
-            data.meta = {pagination: response.pagination};
-            return data;
+            return {
+                data: data,
+                meta: {pagination: response.pagination}
+            };
         });
     },
 

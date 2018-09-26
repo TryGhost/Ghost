@@ -17,7 +17,13 @@ const invites = {
         let tasks;
 
         function modelQuery(options) {
-            return models.Invite.findPage(options);
+            return models.Invite.findPage(options)
+                .then(({data, meta}) => {
+                    return {
+                        invites: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
+                });
         }
 
         tasks = [
@@ -163,7 +169,7 @@ const invites = {
                     return invite.destroy(options);
                 })
                 .then(() => {
-                    return options; 
+                    return options;
                 });
         }
 
@@ -205,7 +211,7 @@ const invites = {
                     }));
                 }
             }).then(() => {
-                return options; 
+                return options;
             });
         }
 

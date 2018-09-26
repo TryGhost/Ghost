@@ -57,7 +57,13 @@ posts = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return models.Post.findPage(options);
+            return models.Post.findPage(options)
+                .then(({data, meta}) => {
+                    return {
+                        posts: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
