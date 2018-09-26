@@ -6,6 +6,10 @@ module.exports = {
     get authenticate() {
         return require('./authenticate');
     },
+
+    get session() {
+        return require('./session');
+    },
     /*
      * TODO: Get rid of these when v0.1 is gone
      */
