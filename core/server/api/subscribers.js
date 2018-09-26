@@ -33,7 +33,13 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return models.Subscriber.findPage(options);
+            return models.Subscriber.findPage(options)
+                .then(({data, meta}) => {
+                    return {
+                        subscribers: data.map(model => model.toJSON(options)),
+                        meta: meta
+                    };
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

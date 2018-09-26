@@ -186,7 +186,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('fields and formats and include ignores include', function (done) {
+            it('fields and formats and include', function (done) {
                 request.get(testUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title&include=authors'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -200,7 +200,6 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        should.not.exist(jsonResponse.posts[0].authors);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
                         testUtils.API.checkResponse(
@@ -208,7 +207,7 @@ describe('Post API', function () {
                             'post',
                             null,
                             null,
-                            ['mobiledoc', 'id', 'title', 'html']
+                            ['mobiledoc', 'id', 'title', 'html', 'authors']
                         );
 
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
