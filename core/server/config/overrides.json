@@ -71,11 +71,11 @@
                 "admin": "v2/admin",
                 "content": "v2/content"
             },
-            "stable": {
+            "stable": {},
+            "deprecated": {
                 "admin": "v0.1",
                 "content": "v0.1"
-            },
-            "deprecated": {}
+            }
         }
     }
 }
