@@ -22,7 +22,7 @@ var should = require('should'),
  * - using rewire is not possible, because each model self registers it's model registry in bookshelf
  * - rewire would add 1 registry, a file who requires the models, tries to register the model another time
  */
-describe.only('Post Model', function () {
+describe('Post Model', function () {
     var eventsTriggered = {};
 
     before(testUtils.teardown);
