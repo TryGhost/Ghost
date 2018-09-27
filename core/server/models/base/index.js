@@ -503,7 +503,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         switch (methodName) {
         case 'toJSON':
-            return baseOptions.concat('shallow', 'columns', 'absolute_urls');
+            return baseOptions.concat('shallow', 'columns');
         case 'destroy':
         case 'edit':
             return baseOptions.concat(extraOptions, ['id']);
