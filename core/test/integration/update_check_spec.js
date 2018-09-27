@@ -10,14 +10,14 @@ var _ = require('lodash'),
     packageInfo = require('../../../package'),
     updateCheck = rewire('../../server/update-check'),
     ghostVersion = rewire('../../server/lib/ghost-version'),
-    SettingsAPI = require('../../server/api/settings'),
-    NotificationsAPI = rewire('../../server/api/notifications'),
+    SettingsAPI = require('../../server/api/v0.1/settings'),
+    NotificationsAPI = rewire('../../server/api/v0.1/notifications'),
     sandbox = sinon.sandbox.create();
 
 describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../server/update-check');
-        NotificationsAPI = rewire('../../server/api/notifications');
+        NotificationsAPI = rewire('../../server/api/v0.1/notifications');
     });
 
     afterEach(function () {

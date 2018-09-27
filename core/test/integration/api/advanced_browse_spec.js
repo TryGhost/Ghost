@@ -3,9 +3,9 @@ var should = require('should'),
     _ = require('lodash'),
 
 // Stuff we are testing
-    PostAPI = require('../../../server/api/posts'),
-    TagAPI = require('../../../server/api/tags'),
-    UserAPI = require('../../../server/api/users');
+    PostAPI = require('../../../server/api/v0.1/posts'),
+    TagAPI = require('../../../server/api/v0.1/tags'),
+    UserAPI = require('../../../server/api/v0.1/users');
 
 describe('Advanced Browse', function () {
     // Initialise the DB just once, the tests are fetch-only

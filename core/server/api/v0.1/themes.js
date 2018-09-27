@@ -4,10 +4,10 @@ const debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
     fs = require('fs-extra'),
     localUtils = require('./utils'),
-    common = require('../lib/common'),
-    models = require('../models'),
-    settingsCache = require('../services/settings/cache'),
-    themeUtils = require('../services/themes'),
+    common = require('../../lib/common'),
+    models = require('../../models'),
+    settingsCache = require('../../services/settings/cache'),
+    themeUtils = require('../../services/themes'),
     themeList = themeUtils.list;
 
 let themes;
