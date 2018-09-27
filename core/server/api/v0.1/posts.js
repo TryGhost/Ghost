@@ -4,8 +4,10 @@ const Promise = require('bluebird'),
     {omit, defaults} = require('lodash'),
     pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    models = require('../../models'),
-    common = require('../../lib/common'),
+    models = require('../models'),
+    urlService = require('../services/url'),
+    {urlFor, makeAbsoluteUrls} = require('../services/url/utils'),
+    common = require('../lib/common'),
     docName = 'posts',
     /**
      * @deprecated: `author`, will be removed in Ghost 3.0
@@ -14,6 +16,32 @@ const Promise = require('bluebird'),
         'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'authors', 'authors.roles'
     ],
     unsafeAttrs = ['author_id', 'status', 'authors'];
+
+const decorate = (post, options) => {
+    post.url = urlService.getUrlByResourceId(post.id);
+
+    if (options.columns && !options.columns.includes('url')) {
+        delete post.url;
+    }
+
+    if (options && options.context && options.context.public && options.absolute_urls) {
+        if (post.feature_image) {
+            post.feature_image = urlFor('image', {image: post.feature_image}, true);
+        }
+        if (post.og_image) {
+            post.og_image = urlFor('image', {image: post.og_image}, true);
+        }
+        if (post.twitter_image) {
+            post.twitter_image = urlFor('image', {image: post.twitter_image}, true);
+        }
+        if (post.html) {
+            post.html = makeAbsoluteUrls(post.html, urlFor('home', true), post.url).html();
+        }
+        if (post.url) {
+            post.url = urlFor({relativeUrl: post.url}, true);
+        }
+    }
+};
 
 let posts;
 
@@ -60,7 +88,7 @@ posts = {
             return models.Post.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        posts: data.map(model => model.toJSON(options)),
+                        posts: data.map(model => decorate(model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -109,7 +137,7 @@ posts = {
                     }
 
                     return {
-                        posts: [model.toJSON(options)]
+                        posts: [decorate(model.toJSON(options), options)]
                     };
                 });
         }
@@ -155,7 +183,7 @@ posts = {
                         }));
                     }
 
-                    const post = model.toJSON(options);
+                    const post = decorate(model.toJSON(options), options);
 
                     // If previously was not published and now is (or vice versa), signal the change
                     // @TODO: `statusChanged` get's added for the API headers only. Reconsider this.
@@ -203,7 +231,7 @@ posts = {
         function modelQuery(options) {
             return models.Post.add(options.data.posts[0], omit(options, ['data']))
                 .then((model) => {
-                    const post = model.toJSON(options);
+                    const post = decorate(model.toJSON(options), options);
 
                     if (post.status === 'published') {
                         // When creating a new post that is published right now, signal the change
