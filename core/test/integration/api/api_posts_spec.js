@@ -6,7 +6,7 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     configUtils = require('../../utils/configUtils'),
     common = require('../../../server/lib/common'),
-    PostAPI = require('../../../server/api/posts'),
+    PostAPI = require('../../../server/api/v0.1/posts'),
     urlService = require('../../../server/services/url'),
     settingsCache = require('../../../server/services/settings/cache'),
 

@@ -1,7 +1,7 @@
-const common = require('../lib/common');
+const common = require('../../lib/common');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
-const request = require('../lib/request');
+const request = require('../../lib/request');
 const cheerio = require('cheerio');
 
 const findUrlWithProvider = (url) => {

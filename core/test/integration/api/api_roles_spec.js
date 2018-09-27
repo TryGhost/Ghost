@@ -1,7 +1,7 @@
 var should = require('should'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
-    RoleAPI = require('../../../server/api/roles'),
+    RoleAPI = require('../../../server/api/v0.1/roles'),
     context = testUtils.context;
 
 describe('Roles API', function () {

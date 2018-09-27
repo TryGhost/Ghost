@@ -2,10 +2,10 @@
 // RESTful API for the Post resource
 const Promise = require('bluebird'),
     {omit, defaults} = require('lodash'),
-    pipeline = require('../lib/promise/pipeline'),
+    pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    models = require('../models'),
-    common = require('../lib/common'),
+    models = require('../../models'),
+    common = require('../../lib/common'),
     docName = 'posts',
     /**
      * @deprecated: `author`, will be removed in Ghost 3.0
