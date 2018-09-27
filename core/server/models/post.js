@@ -389,8 +389,7 @@ Post = ghostBookshelf.Model.extend({
      * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
      * But the model layer is complex and needs specific fields in specific situations.
      *
-     * ### url generation
-     *  // TODO ask about this?? should it be removed?
+     * ### url generation was removed but default columns need to be checked before removal
      *   - @TODO: with dynamic routing, we no longer need default columns to fetch
      *   - because with static routing Ghost generated the url on runtime and needed the following attributes:
      *     - `slug`: /:slug/
