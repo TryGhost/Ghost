@@ -115,7 +115,7 @@ const cacheInvalidationHeader = (req, result) => {
  * @return {String} Resolves to header string
  */
 const locationHeader = (req, result) => {
-    const apiRoot = urlService.utils.urlFor('api', {version: 'stable'});
+    const apiRoot = urlService.utils.urlFor('api', {version: 'deprecated'});
     let location,
         newObject,
         statusQuery;
