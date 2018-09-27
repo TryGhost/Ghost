@@ -5,7 +5,7 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     permissions = require('../../../server/services/permissions'),
     common = require('../../../server/lib/common'),
-    apiUtils = require('../../../server/api/utils'),
+    apiUtils = require('../../../server/api/v0.1/utils'),
 
     sandbox = sinon.sandbox.create();
 

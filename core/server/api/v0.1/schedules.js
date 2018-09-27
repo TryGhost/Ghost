@@ -1,11 +1,11 @@
 const Promise = require('bluebird'),
     _ = require('lodash'),
     moment = require('moment'),
-    pipeline = require('../lib/promise/pipeline'),
+    pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    models = require('../models'),
-    config = require('../config'),
-    common = require('../lib/common'),
+    models = require('../../models'),
+    config = require('../../config'),
+    common = require('../../lib/common'),
     postsAPI = require('./posts');
 
 /**

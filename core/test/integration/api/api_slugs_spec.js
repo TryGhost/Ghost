@@ -1,7 +1,7 @@
 var should = require('should'),
     testUtils = require('../../utils'),
 
-    SlugAPI = require('../../../server/api/slugs');
+    SlugAPI = require('../../../server/api/v0.1/slugs');
 
 describe('Slug API', function () {
     // Keep the DB clean

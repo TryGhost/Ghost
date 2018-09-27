@@ -1,10 +1,10 @@
 // # Slug API
 // RESTful API for the Slug resource
 const Promise = require('bluebird'),
-    pipeline = require('../lib/promise/pipeline'),
+    pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    models = require('../models'),
-    common = require('../lib/common'),
+    models = require('../../models'),
+    common = require('../../lib/common'),
     docName = 'slugs';
 
 let slugs,

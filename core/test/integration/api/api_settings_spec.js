@@ -3,7 +3,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    SettingsAPI = require('../../../server/api/settings'),
+    SettingsAPI = require('../../../server/api/v0.1/settings'),
     settingsCache = require('../../../server/services/settings/cache'),
     defaultContext = {user: 1},
     internalContext = {internal: true},

@@ -4,7 +4,7 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
 
     // Stuff we are testing
-    ConfigurationAPI = rewire('../../../server/api/configuration');
+    ConfigurationAPI = rewire('../../../server/api/v0.1/configuration');
 
 describe('Configuration API', function () {
     // Keep the DB clean

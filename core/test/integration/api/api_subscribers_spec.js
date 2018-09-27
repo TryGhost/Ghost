@@ -8,7 +8,7 @@ var should = require('should'),
     context = testUtils.context,
     common = require('../../../server/lib/common'),
     fsLib = require('../../../server/lib/fs'),
-    SubscribersAPI = require('../../../server/api/subscribers'),
+    SubscribersAPI = require('../../../server/api/v0.1/subscribers'),
     sandbox = sinon.sandbox.create();
 
 describe('Subscribers API', function () {

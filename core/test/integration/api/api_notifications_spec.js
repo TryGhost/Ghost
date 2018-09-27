@@ -4,7 +4,7 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     testUtils = require('../../utils'),
     models = require('../../../server/models'),
-    NotificationsAPI = require('../../../server/api/notifications');
+    NotificationsAPI = require('../../../server/api/v0.1/notifications');
 
 describe('Notifications API', function () {
     // Keep the DB clean

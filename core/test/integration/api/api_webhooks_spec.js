@@ -3,7 +3,7 @@ var _ = require('lodash'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
     Promise = require('bluebird'),
-    WebhookAPI = require('../../../server/api/webhooks'),
+    WebhookAPI = require('../../../server/api/v0.1/webhooks'),
     sandbox = sinon.sandbox.create();
 
 describe('Webhooks API', function () {

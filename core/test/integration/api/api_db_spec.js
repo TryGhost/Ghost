@@ -3,7 +3,7 @@ var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
     common = require('../../../server/lib/common'),
-    dbAPI = require('../../../server/api/db'),
+    dbAPI = require('../../../server/api/v0.1/db'),
     models = require('../../../server/models'),
     sandbox = sinon.sandbox.create();
 

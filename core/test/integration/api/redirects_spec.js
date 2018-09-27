@@ -2,8 +2,8 @@ var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
     Promise = require('bluebird'),
-    RedirectsAPI = require('../../../server/api/redirects'),
-    mail = require('../../../server/api/mail'),
+    RedirectsAPI = require('../../../server/api/v0.1/redirects'),
+    mail = require('../../../server/api/v0.1/mail'),
     sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
