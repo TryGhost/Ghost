@@ -1,5 +1,5 @@
-const urlService = require('../services/url');
-const {urlFor, makeAbsoluteUrls} = require('../services/url/utils');
+const urlService = require('../../services/url');
+const {urlFor, makeAbsoluteUrls} = require('../../services/url/utils');
 
 const urlsForPost = (post, options) => {
     post.url = urlService.getUrlByResourceId(post.id);
@@ -65,6 +65,6 @@ const urlsForTag = (tag, options) => {
     return tag;
 };
 
-module.export.urlsForPost = urlsForPost;
+module.exports.urlsForPost = urlsForPost;
 module.exports.urlsForUser = urlsForUser;
 module.exports.urlsForTag = urlsForTag;
