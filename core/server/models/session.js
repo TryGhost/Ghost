@@ -3,12 +3,12 @@ const ghostBookshelf = require('./base');
 const Session = ghostBookshelf.Model.extend({
     tableName: 'sessions',
 
-    parse: function parse(attrs) {
+    parse(attrs) {
         attrs.session_data = JSON.parse(attrs.session_data);
         return attrs;
     },
 
-    format: function format(attrs) {
+    format(attrs) {
         // CASE: format will be called when formatting all data for the DB
         // including for SELECTs meaning that if we call findOne without
         // a session_data property we'll get unintended JSON.stringify(undefined) calls
@@ -18,7 +18,7 @@ const Session = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    user: function () {
+    user() {
         return this.belongsTo('User');
     }
 }, {
