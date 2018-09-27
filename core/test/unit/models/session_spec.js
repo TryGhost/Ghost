@@ -178,6 +178,7 @@ describe('Unit: models/session', function () {
                     session_id,
                     user_id: data.session_data.user_id
                 });
+                should.equal(findOneStub.args[0][1], filteredOptions);
 
                 should.deepEqual(addStub.args[0][0], {
                     session_id: filteredOptions.session_id,
@@ -217,6 +218,7 @@ describe('Unit: models/session', function () {
                     session_id,
                     user_id: data.session_data.user_id
                 });
+                should.equal(findOneStub.args[0][1], filteredOptions);
 
                 should.deepEqual(editStub.args[0][0], {
                     session_data: data.session_data,
