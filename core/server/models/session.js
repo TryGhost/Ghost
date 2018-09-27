@@ -43,7 +43,7 @@ const Session = ghostBookshelf.Model.extend({
         // Fetch the object before destroying it, so that the changed data is available to events
         return this.forge({session_id: options.session_id})
             .fetch(options)
-            .then(function then(obj) {
+            .then((obj) => {
                 return obj.destroy(options);
             });
     },
