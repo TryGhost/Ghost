@@ -249,6 +249,10 @@ User = ghostBookshelf.Model.extend({
         return this.hasMany('Posts', 'created_by');
     },
 
+    sessions: function sessions() {
+        return this.hasMany('Sessions');
+    },
+
     roles: function roles() {
         return this.belongsToMany('Role');
     },
