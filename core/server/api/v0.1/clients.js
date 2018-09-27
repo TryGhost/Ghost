@@ -2,10 +2,10 @@
 // RESTful API for the Client resource
 const Promise = require('bluebird'),
     {extend, omit} = require('lodash'),
-    pipeline = require('../lib/promise/pipeline'),
+    pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    models = require('../models'),
-    common = require('../lib/common'),
+    models = require('../../models'),
+    common = require('../../lib/common'),
     docName = 'clients';
 
 let clients;

@@ -6,11 +6,11 @@ const Promise = require('bluebird'),
     semver = require('semver'),
     moment = require('moment'),
     ObjectId = require('bson-objectid'),
-    ghostVersion = require('../lib/ghost-version'),
-    pipeline = require('../lib/promise/pipeline'),
-    permissions = require('../services/permissions'),
+    ghostVersion = require('../../lib/ghost-version'),
+    pipeline = require('../../lib/promise/pipeline'),
+    permissions = require('../../services/permissions'),
     localUtils = require('./utils'),
-    common = require('../lib/common'),
+    common = require('../../lib/common'),
     SettingsAPI = require('./settings'),
     internalContext = {context: {internal: true}},
     canThis = permissions.canThis;
@@ -168,7 +168,7 @@ notifications = {
                     // CASE: remove any existing release notifications if a new release notification comes in
                     if (hasReleaseNotification) {
                         remove(allNotifications, (el) => {
-                            return !el.custom; 
+                            return !el.custom;
                         });
                     }
 
@@ -197,7 +197,7 @@ notifications = {
                     }, internalContext);
                 })
                 .then(() => {
-                    return _private.publicResponse(addedNotifications); 
+                    return _private.publicResponse(addedNotifications);
                 });
         }
 
