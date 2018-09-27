@@ -4,12 +4,32 @@ const Promise = require('bluebird'),
     _ = require('lodash'),
     pipeline = require('../../lib/promise/pipeline'),
     localUtils = require('./utils'),
-    canThis = require('../../services/permissions').canThis,
-    models = require('../../models'),
-    common = require('../../lib/common'),
+    canThis = require('../services/permissions').canThis,
+    models = require('../models'),
+    common = require('../lib/common'),
+    urlService = require('../services/url'),
+    {urlFor} = require('../services/url/utils'),
     docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
+
+const decorate = (user, options) => {
+    if (options && options.context && options.context.public && options.absolute_urls) {
+        user.url = urlFor({
+            relativeUrl: urlService.getUrlByResourceId(user.id)
+        }, true);
+
+        if (user.profile_image) {
+            user.profile_image = urlFor('image', {image: user.profile_image}, true);
+        }
+
+        if (user.cover_image) {
+            user.cover_image = urlFor('image', {image: user.cover_image}, true);
+        }
+    }
+
+    return user;
+};
 
 let users;
 
@@ -40,7 +60,7 @@ users = {
             return models.User.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        users: data.map(post => post.toJSON(options)),
+                        users: data.map(post => decorate(post.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -89,7 +109,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [decorate(model.toJSON(options), options)]
                     };
                 });
         }
@@ -213,7 +233,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [decorate(model.toJSON(options), options)]
                     };
                 });
         }
