@@ -1,6 +1,5 @@
 const Api = require('sywac/api');
 const styles = require('./styles');
-
 /**
  * Pretty CLI
  *
