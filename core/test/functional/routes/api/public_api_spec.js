@@ -88,6 +88,33 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts: request to include tags with absolute_urls', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.exist(res.body.posts);
+
+                // kitchen sink
+                res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
+
+                should.exist(res.body.posts[9].tags);
+                should.exist(res.body.posts[9].tags[0].url);
+
+                const urlParts = url.parse(res.body.posts[9].tags[0].url);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
+                done();
+            });
+    });
+
     it('browse posts from different origin', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-test&client_secret=not_available'))
             .set('Origin', 'https://example.com')
