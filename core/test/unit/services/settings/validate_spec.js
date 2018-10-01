@@ -35,7 +35,7 @@ describe('UNIT: services/settings/validate', function () {
         try {
             validate({
                 taxonomies: {
-                    tags: '/categories/:slug/'
+                    tag: '/categories/:slug/'
                 }
             });
         } catch (err) {
@@ -220,7 +220,7 @@ describe('UNIT: services/settings/validate', function () {
                 }
             },
             taxonomies: {
-                tags: '/tags/{slug}/',
+                tag: '/tags/{slug}/',
                 author: '/authors/{slug}/',
             }
         });
@@ -228,7 +228,7 @@ describe('UNIT: services/settings/validate', function () {
         object.should.eql({
             routes: {},
             taxonomies: {
-                tags: '/tags/:slug/',
+                tag: '/tags/:slug/',
                 author: '/authors/:slug/'
             },
             collections: {
