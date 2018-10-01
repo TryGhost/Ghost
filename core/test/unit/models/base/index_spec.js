@@ -153,4 +153,174 @@ describe('Models: base', function () {
             });
         });
     });
+
+    describe('static findOne(data, unfilteredOptions)', function () {
+        it('forges model using filtered data, fetches it passing filtered options and resolves with the fetched model', function () {
+            const data = {
+                id: 670
+            };
+            const unfilteredOptions = {
+                donny: 'donson'
+            };
+            const model = models.Base.Model.forge({});
+            const fetchedModel = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves(fetchedModel);
+
+            const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
+
+            should.equal(findOneReturnValue, fetchStub.returnValues[0]);
+
+            return findOneReturnValue.then((result) => {
+                should.equal(result, fetchedModel);
+
+                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                should.equal(filterOptionsSpy.args[0][1], 'findOne');
+
+                should.equal(filterDataSpy.args[0][0], data);
+
+                const filteredData = filterDataSpy.returnValues[0];
+                should.deepEqual(forgeStub.args[0][0], filteredData);
+
+                const filteredOptions = filterOptionsSpy.returnValues[0];
+                should.equal(fetchStub.args[0][0], filteredOptions);
+            });
+        });
+    });
+
+    describe('static edit(data, unfilteredOptions)', function () {
+        it('resolves with the savedModel after forges model w/ id, fetches w/ filtered options, saves w/ filtered data and options and method=update', function () {
+            const data = {
+                life: 'suffering'
+            };
+            const unfilteredOptions = {
+                id: 'something real special',
+            };
+            const model = models.Base.Model.forge({});
+            const savedModel = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves(model);
+            const saveStub = sandbox.stub(model, 'save')
+                .resolves(savedModel);
+
+            return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
+                should.equal(result, savedModel);
+
+                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                should.equal(filterOptionsSpy.args[0][1], 'edit');
+
+                should.equal(filterDataSpy.args[0][0], data);
+
+                const filteredOptions = filterOptionsSpy.returnValues[0];
+                should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
+
+                should.equal(fetchStub.args[0][0], filteredOptions);
+
+                const filteredData = filterDataSpy.returnValues[0];
+                should.equal(saveStub.args[0][0], filteredData);
+                should.equal(saveStub.args[0][1].method, 'update');
+                should.deepEqual(_.omit(saveStub.args[0][1], 'method'), filteredOptions);
+            });
+        });
+
+        it('sets model.hasTimestamps to false if options.importing is truthy', function () {
+            const data = {
+                base: 'cannon'
+            };
+            const unfilteredOptions = {
+                importing: true
+            };
+            const model = models.Base.Model.forge({});
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves();
+
+            return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
+                should.equal(model.hasTimestamps, true);
+            });
+        });
+
+        it('resolves with nothing and does not call save if no model is fetched', function () {
+            const data = {
+                db: 'cooper'
+            };
+            const unfilteredOptions = {
+                id: 'something real special',
+            };
+            const model = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves();
+            const saveSpy = sandbox.stub(model, 'save');
+
+            return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
+                should.equal(result, undefined);
+                should.equal(saveSpy.callCount, 0);
+            });
+        });
+    });
+
+    describe('static add(data, unfilteredOptions)', function () {
+        it('forges model w/ filtered data,  saves w/ null and options and method=insert', function () {
+            const data = {
+                rum: 'ham'
+            };
+            const unfilteredOptions = {};
+            const model = models.Base.Model.forge({});
+            const savedModel = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const saveStub = sandbox.stub(model, 'save')
+                .resolves(savedModel);
+
+            return models.Base.Model.add(data, unfilteredOptions).then((result) => {
+                should.equal(result, savedModel);
+
+                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                should.equal(filterOptionsSpy.args[0][1], 'add');
+
+                should.equal(filterDataSpy.args[0][0], data);
+
+                const filteredData = filterDataSpy.returnValues[0];
+                should.deepEqual(forgeStub.args[0][0], filteredData);
+
+                const filteredOptions = filterOptionsSpy.returnValues[0];
+                should.equal(saveStub.args[0][0], null);
+                should.equal(saveStub.args[0][1].method, 'insert');
+                should.deepEqual(saveStub.args[0][1], filteredOptions);
+            });
+        });
+
+        it('sets model.hasTimestamps to false if options.importing is truthy', function () {
+            const data = {
+                newham: 'generals'
+            };
+            const unfilteredOptions = {
+                importing: true
+            };
+            const model = models.Base.Model.forge({});
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const saveStub = sandbox.stub(model, 'save')
+                .resolves();
+
+            return models.Base.Model.add(data, unfilteredOptions).then(() => {
+                should.equal(model.hasTimestamps, false);
+            });
+        });
+    });
 });
