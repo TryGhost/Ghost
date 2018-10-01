@@ -16,8 +16,10 @@ const MobiledocRevision = ghostBookshelf.Model.extend({
         return options;
     },
 
-    orderDefaultRaw() {
-        return 'created_at_ts DESC';
+    lol(itemCollection) {
+        itemCollection.query((qb) => {
+            qb.orderByRaw('created_at_ts DESC');
+        });
     },
 
     toJSON(unfilteredOptions) {

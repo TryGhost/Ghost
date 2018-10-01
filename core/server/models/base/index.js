@@ -647,13 +647,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.processOptions(options);
         }
 
-        itemCollection.applyDefaultAndCustomFilters(options);
-
-        if (this.orderDefaultRaw) {
-            itemCollection.query((qb) => {
-                qb.orderByRaw(this.orderDefaultRaw());
-            });
+        // @TODO: FIX ME
+        if (this.lol) {
+            this.lol(itemCollection);
         }
+
+        itemCollection.applyDefaultAndCustomFilters(options);
 
         return itemCollection.fetchAll(options).then(function then(result) {
             if (options.withRelated) {
