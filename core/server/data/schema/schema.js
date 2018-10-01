@@ -44,12 +44,6 @@ module.exports = {
         twitter_description: {type: 'string', maxlength: 500, nullable: true},
         custom_template: {type: 'string', maxlength: 100, nullable: true}
     },
-    mobiledoc_revisions: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        post_id: {type: 'string', maxlength: 24, nullable: false, index: true},
-        mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
-        created_at: {type: 'dateTime', nullable: false}
-    },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
