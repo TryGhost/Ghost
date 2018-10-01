@@ -376,7 +376,7 @@ Post = ghostBookshelf.Model.extend({
                             model.set('mobiledoc_revisions', [{
                                 post_id: model.id,
                                 mobiledoc: model.previous('mobiledoc'),
-                                created_at_ts: Date.now()
+                                created_at_ts: Date.now() - 1
                             }, {
                                 post_id: model.id,
                                 mobiledoc: model.get('mobiledoc'),

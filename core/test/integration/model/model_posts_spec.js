@@ -1766,9 +1766,12 @@ describe('Post Model', function () {
 
         it('creates 2 revisions after first edit for previously unversioned post', function () {
             let unversionedPost;
+
             const newPost = {
+                title: 'post title',
                 mobiledoc: markdownToMobiledoc('a')
             };
+
             // passing 'migrating' flag to simulate unversioned post
             const options = Object.assign(_.clone(context), {migrating: true});
 
