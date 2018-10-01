@@ -30,19 +30,21 @@ const urlsForPost = (post, options) => {
         }
     }
 
-    options.withRelated.forEach((relation) => {
-        if (relation === 'tags' && post.tags) {
-            post.tags = post.tags.map(tag => urlsForTag(tag, options));
-        }
+    if (options && options.withRelated) {
+        options.withRelated.forEach((relation) => {
+            if (relation === 'tags' && post.tags) {
+                post.tags = post.tags.map(tag => urlsForTag(tag, options));
+            }
 
-        if (relation === 'author' && post.author) {
-            post.author = urlsForUser(post.author, options);
-        }
+            if (relation === 'author' && post.author) {
+                post.author = urlsForUser(post.author, options);
+            }
 
-        if (relation === 'authors' && post.authors) {
-            post.authors = post.authors.map(author => urlsForUser(author, options));
-        }
-    });
+            if (relation === 'authors' && post.authors) {
+                post.authors = post.authors.map(author => urlsForUser(author, options));
+            }
+        });
+    }
 
     return post;
 };
