@@ -1763,6 +1763,49 @@ describe('Post Model', function () {
                     mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
                 });
         });
+
+        it('creates 2 revisions after first edit for previously unversioned post', function () {
+            let unversionedPost;
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+            // passing 'migrating' flag to simulate unversioned post
+            const options = Object.assign(_.clone(context), {migrating: true});
+
+            return models.Post.add(newPost, options)
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    unversionedPost = createdPost;
+                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+
+                    return ghostBookshelf.model('MobiledocRevision')
+                        .findAll({
+                            filter: `post_id:${createdPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 0);
+
+                    return models.Post.edit({
+                        mobiledoc: markdownToMobiledoc('b')
+                    }, _.extend({}, context, {id: unversionedPost.id}));
+                })
+                .then((editedPost) => {
+                    should.exist(editedPost);
+                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return ghostBookshelf.model('MobiledocRevision')
+                        .findAll({
+                            filter: `post_id:${editedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
+        });
     });
 
     describe('Multiauthor Posts', function () {
