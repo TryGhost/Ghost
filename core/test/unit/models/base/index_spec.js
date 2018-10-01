@@ -95,4 +95,62 @@ describe('Models: base', function () {
             base.get('a').should.eql('');
         });
     });
+
+    describe('static destroy()', function () {
+        it('forges model using destroyBy, fetches it, and calls destroy, passing filtered options', function () {
+            const unfilteredOptions = {
+                destroyBy: {
+                    prop: 'whatever'
+                }
+            };
+            const model = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves(model);
+            const destroyStub = sandbox.stub(model, 'destroy');
+
+            return models.Base.Model.destroy(unfilteredOptions).then(() => {
+                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                should.equal(filterOptionsSpy.args[0][1], 'destroy');
+
+                should.deepEqual(forgeStub.args[0][0], {
+                    prop: 'whatever'
+                });
+
+                const filteredOptions = filterOptionsSpy.returnValues[0];
+
+                should.equal(fetchStub.args[0][0], filteredOptions);
+                should.equal(destroyStub.args[0][0], filteredOptions);
+            });
+        });
+
+        it('uses options.id to forge model, if no destroyBy is provided', function () {
+            const unfilteredOptions = {
+                id: 23
+            };
+            const model = models.Base.Model.forge({});
+            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
+            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sandbox.stub(model, 'fetch')
+                .resolves(model);
+            const destroyStub = sandbox.stub(model, 'destroy');
+
+            return models.Base.Model.destroy(unfilteredOptions).then(() => {
+                should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
+                should.equal(filterOptionsSpy.args[0][1], 'destroy');
+
+                should.deepEqual(forgeStub.args[0][0], {
+                    id: 23
+                });
+
+                const filteredOptions = filterOptionsSpy.returnValues[0];
+
+                should.equal(fetchStub.args[0][0], filteredOptions);
+                should.equal(destroyStub.args[0][0], filteredOptions);
+            });
+        });
+    });
 });

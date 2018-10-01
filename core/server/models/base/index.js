@@ -505,6 +505,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         case 'toJSON':
             return baseOptions.concat('shallow', 'columns', 'absolute_urls');
         case 'destroy':
+            return baseOptions.concat(extraOptions, ['id', 'destroyBy']);
         case 'edit':
             return baseOptions.concat(extraOptions, ['id']);
         default:
@@ -811,10 +812,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     destroy: function destroy(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'destroy');
-        const id = options.id;
+        if (!options.destroyBy) {
+            options.destroyBy = {
+                id: options.id
+            };
+        }
 
         // Fetch the object before destroying it, so that the changed data is available to events
-        return this.forge({id: id})
+        return this.forge(options.destroyBy)
             .fetch(options)
             .then(function then(obj) {
                 return obj.destroy(options);
