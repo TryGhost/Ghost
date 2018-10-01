@@ -302,6 +302,7 @@ _private.validateCollections = function validateCollections(collections) {
 };
 
 _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
+    const validRoutingTypeObjectKeys = Object.keys(RESOURCE_CONFIG.TAXONOMIES);
     _.each(taxonomies, (routingTypeObject, routingTypeObjectKey) => {
         if (!routingTypeObject) {
             throw new common.errors.ValidationError({
@@ -310,6 +311,15 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
                     reason: 'Please define a taxonomy permalink route.'
                 }),
                 help: 'e.g. tag: /tag/{slug}/'
+            });
+        }
+
+        if (!validRoutingTypeObjectKeys.includes(routingTypeObjectKey)) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.services.settings.yaml.validate', {
+                    at: routingTypeObjectKey,
+                    reason: 'Unknown taxonomy.'
+                })
             });
         }
 
