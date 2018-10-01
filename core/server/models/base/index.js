@@ -647,6 +647,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.processOptions(options);
         }
 
+        if (this.orderDefaultOptions) {
+            options.order = this.orderDefaultOptions();
+        }
+
         itemCollection.applyDefaultAndCustomFilters(options);
 
         return itemCollection.fetchAll(options).then(function then(result) {
