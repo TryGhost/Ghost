@@ -1683,6 +1683,73 @@ describe('Post Model', function () {
         });
     });
 
+    describe('mobiledoc versioning', function () {
+        it('can create revisions', function () {
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+
+                    return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
+                })
+                .then((updatedPost) => {
+                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return ghostBookshelf.model('MobiledocRevision')
+                        .findAll({
+                            filter: `post_id:${updatedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                });
+        });
+
+        it('keeps only 10 last revisions in FIFO style', function () {
+            let revisionedPost;
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('revision: 0')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    revisionedPost = createdPost;
+
+                    return sequence(_.times(11, (i) => {
+                        return () => {
+                            return models.Post.edit({
+                                mobiledoc: markdownToMobiledoc('revision: ' + (i + 1))
+                            }, _.extend({}, context, {id: createdPost.id}));
+                        };
+                    }));
+                })
+                .then(() => ghostBookshelf.model('MobiledocRevision')
+                    .findAll({
+                        filter: `post_id:${revisionedPost.id}`,
+                    })
+                )
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 10);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                });
+        });
+    });
+
     describe('Multiauthor Posts', function () {
         before(testUtils.teardown);
 
