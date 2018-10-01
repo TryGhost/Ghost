@@ -263,7 +263,7 @@
                     "tokenNotFound": "Token not found"
                 },
                 "invalidDate": "Date format for `{key}` is invalid.",
-                "editId": "You cannot edit the id of resources."
+                "editId": "Resource id does not match."
             },
             "plugins": {
                 "filter": {
