@@ -375,17 +375,20 @@ Post = ghostBookshelf.Model.extend({
                         if (!revisions.length && options.method !== 'insert') {
                             model.set('mobiledoc_revisions', [{
                                 post_id: model.id,
-                                mobiledoc: model.previous('mobiledoc')
+                                mobiledoc: model.previous('mobiledoc'),
+                                created_at_ts: Date.now()
                             }, {
                                 post_id: model.id,
-                                mobiledoc: model.get('mobiledoc')
+                                mobiledoc: model.get('mobiledoc'),
+                                created_at_ts: Date.now()
                             }]);
                         } else {
                             const revisionsJSON = revisions.toJSON().slice(0, MOBILEDOC_REVISIONS_COUNT - 1);
 
                             model.set('mobiledoc_revisions', revisionsJSON.concat([{
                                 post_id: model.id,
-                                mobiledoc: model.get('mobiledoc')
+                                mobiledoc: model.get('mobiledoc'),
+                                created_at_ts: Date.now()
                             }]));
                         }
                     });

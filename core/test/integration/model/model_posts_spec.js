@@ -1684,6 +1684,21 @@ describe('Post Model', function () {
     });
 
     describe('mobiledoc versioning', function () {
+        it('ensure mobiledoc revisions are never exposed', function () {
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['mobiledoc_revisions']});
+                })
+                .then((post) => {
+                    post = post.toJSON();
+                    should.not.exist(post.mobiledoc_revisions);
+                });
+        });
+
         it('can create revisions', function () {
             const newPost = {
                 mobiledoc: markdownToMobiledoc('a')
@@ -1709,8 +1724,8 @@ describe('Post Model', function () {
                 .then((mobiledocRevisions) => {
                     should.equal(mobiledocRevisions.length, 2);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('a'));
-                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
                 });
         });
 
@@ -1744,8 +1759,8 @@ describe('Post Model', function () {
                 .then((mobiledocRevisions) => {
                     should.equal(mobiledocRevisions.length, 10);
 
-                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
-                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
                 });
         });
     });

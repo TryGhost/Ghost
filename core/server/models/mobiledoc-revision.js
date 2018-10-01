@@ -16,10 +16,17 @@ const MobiledocRevision = ghostBookshelf.Model.extend({
         return options;
     },
 
-    orderDefaultOptions() {
-        return {
-            created_at: 'DESC'
-        };
+    orderDefaultRaw() {
+        return 'created_at_ts DESC';
+    },
+
+    toJSON(unfilteredOptions) {
+        const options = MobiledocRevision.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        // CASE: only for internal accuracy
+        delete attrs.created_at_ts;
+        return attrs;
     }
 });
 
