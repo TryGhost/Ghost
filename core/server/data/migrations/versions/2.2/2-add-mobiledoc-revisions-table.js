@@ -1,6 +1,6 @@
 const common = require('../../../../lib/common');
 const commands = require('../../../schema').commands;
-const table = 'mobiledoc-revisions';
+const table = 'mobiledoc_revisions';
 const message1 = 'Adding table: ' + table;
 const message2 = 'Dropping table: ' + table;
 
