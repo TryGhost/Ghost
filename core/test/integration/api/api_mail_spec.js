@@ -23,12 +23,12 @@ describe('Mail API', function () {
 
     beforeEach(function () {
         _.each(require.cache, function (value, key) {
-            if (key.match(/server\/api\/mail/)) {
+            if (key.match(/server\/api\/v0.1\/mail/)) {
                 delete require.cache[key];
             }
         });
 
-        require('../../../server/api/mail');
+        require('../../../server/api/v0.1/mail');
     });
 
     afterEach(function () {
@@ -38,7 +38,7 @@ describe('Mail API', function () {
     it('returns a success', function (done) {
         configUtils.set({mail: {transport: 'stub'}});
 
-        var MailAPI = require('../../../server/api/mail');
+        var MailAPI = require('../../../server/api/v0.1/mail');
 
         MailAPI.send(mailData, testUtils.context.internal).then(function (response) {
             should.exist(response.mail);
@@ -53,7 +53,7 @@ describe('Mail API', function () {
     it('returns a boo boo', function (done) {
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
-        var MailAPI = require('../../../server/api/mail');
+        var MailAPI = require('../../../server/api/v0.1/mail');
 
         MailAPI.send(mailData, testUtils.context.internal).then(function () {
             done(new Error('Stub did not error'));

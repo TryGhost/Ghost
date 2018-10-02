@@ -4,7 +4,7 @@ var should = require('should'),
     // Stuff we are testing
     context = testUtils.context,
 
-    TagAPI = require('../../../server/api/tags');
+    TagAPI = require('../../../server/api/v0.1/tags');
 
 // there are some random generated tags in test database
 // which can't be sorted easily using _.sortBy()

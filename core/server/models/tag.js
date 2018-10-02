@@ -65,6 +65,7 @@ Tag = ghostBookshelf.Model.extend({
         var options = Tag.filterOptions(unfilteredOptions, 'toJSON'),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
+        // @NOTE: this serialization should be moved into api layer, it's not being moved as it's not used
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
 
@@ -97,7 +98,7 @@ Tag = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'absolute_urls'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order'],
                 findAll: ['columns'],
                 findOne: ['visibility'],
                 destroy: ['destroyAll']

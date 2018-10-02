@@ -43,6 +43,9 @@ function addTableColumn(tableName, table, columnName) {
     if (columnSpec.hasOwnProperty('defaultTo')) {
         column.defaultTo(columnSpec.defaultTo);
     }
+    if (columnSpec.hasOwnProperty('index') && columnSpec.index === true) {
+        column.index();
+    }
 }
 
 function addColumn(tableName, column, transaction) {

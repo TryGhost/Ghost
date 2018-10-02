@@ -249,6 +249,10 @@ User = ghostBookshelf.Model.extend({
         return this.hasMany('Posts', 'created_by');
     },
 
+    sessions: function sessions() {
+        return this.hasMany('Sessions');
+    },
+
     roles: function roles() {
         return this.belongsToMany('Role');
     },
@@ -337,7 +341,7 @@ User = ghostBookshelf.Model.extend({
                 setup: ['id'],
                 edit: ['withRelated', 'importPersistUser'],
                 add: ['importPersistUser'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'absolute_urls'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
                 findAll: ['filter']
             };
 
