@@ -382,22 +382,6 @@ describe('Post Model', function () {
                             done();
                         }).catch(done);
                 });
-
-                xit('can findOne, returning a dated permalink', function (done) {
-                    urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
-
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-
-                            // published_at of post 1 is 2015-01-01 00:00:00
-                            // default blog TZ is UTC
-                            firstPost.url.should.equal('/2015/01/01/html-ipsum/');
-
-                            done();
-                        }).catch(done);
-                });
             });
         });
 
