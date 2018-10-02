@@ -227,7 +227,7 @@ describe('Models: base', function () {
                 const filteredData = filterDataSpy.returnValues[0];
                 should.equal(saveStub.args[0][0], filteredData);
                 should.equal(saveStub.args[0][1].method, 'update');
-                should.deepEqual(_.omit(saveStub.args[0][1], 'method'), filteredOptions);
+                should.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });
 
