@@ -60,7 +60,8 @@ A controller is no longer just a function, it's a set of configurations.
 
 ```
 edit: {
-  headers: object
+  headers: object,
+  validation: object | function
 }
 ```
 
@@ -71,6 +72,13 @@ edit: {
 edit: {
   headers: {
     cacheInvalidate: true
+  },
+  validation: {
+    queryOptions: ['include'],
+    queryOptionsValues: {
+      include: ['tags']
+    },
+    queryData: ['id']
   }
 }
 ```
