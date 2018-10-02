@@ -1,12 +1,10 @@
 const should = require('should');
-const Promise = require('bluebird');
 const sinon = require('sinon');
-const common = require('../../../../../../server/lib/common');
 const shared = require('../../../../../../server/api/shared');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: api/shared/validators/input/options', function () {
-    beforeEach(function () {
+    afterEach(function () {
         sandbox.restore();
     });
 

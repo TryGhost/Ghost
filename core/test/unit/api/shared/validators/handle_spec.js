@@ -6,7 +6,7 @@ const shared = require('../../../../../server/api/shared');
 const sandbox = sinon.sandbox.create();
 
 describe('Unit: api/shared/validators/handle', function () {
-    beforeEach(function () {
+    afterEach(function () {
         sandbox.restore();
     });
 
@@ -28,6 +28,8 @@ describe('Unit: api/shared/validators/handle', function () {
         });
 
         it('ensure validators are called', function () {
+            sandbox.stub(shared.validators.input.options, 'all').resolves();
+
             const apiValidators = {
                 all: {
                     add: sandbox.stub().resolves()
@@ -43,8 +45,9 @@ describe('Unit: api/shared/validators/handle', function () {
                 }
             };
 
-            return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {})
+            return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {context: {}})
                 .then(() => {
+                    shared.validators.input.options.all.calledOnce.should.be.true();
                     apiValidators.all.add.calledOnce.should.be.true();
                     apiValidators.posts.add.calledOnce.should.be.true();
                     apiValidators.users.add.called.should.be.false();

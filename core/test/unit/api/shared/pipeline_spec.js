@@ -37,7 +37,9 @@ describe('Unit: api/shared/pipeline', function () {
                 it('default', function () {
                     const apiUtils = {
                         validators: {
-                            posts: {}
+                            input: {
+                                posts: {}
+                            }
                         }
                     };
                     const apiConfig = {
@@ -53,7 +55,8 @@ describe('Unit: api/shared/pipeline', function () {
                     };
 
                     return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, options)
-                        .then((response) => {
+                        .then(() => {
+                            shared.validators.handle.input.calledOnce.should.be.true();
                             shared.validators.handle.input.calledWith(
                                 {
                                     docName: 'posts',
@@ -64,7 +67,7 @@ describe('Unit: api/shared/pipeline', function () {
                                 },
                                 {
                                     apiOptions: {}
-                                }).calledOnce.should.be.true();
+                                }).should.be.true();
                         });
                 });
             });
@@ -150,6 +153,7 @@ describe('Unit: api/shared/pipeline', function () {
 
                 return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
                     .then(() => {
+                        apiUtils.permissions.handle.calledOnce.should.be.true();
                         apiUtils.permissions.handle.calledWith(
                             {
                                 docName: 'posts',
@@ -157,7 +161,7 @@ describe('Unit: api/shared/pipeline', function () {
                             },
                             {
                                 apiOptions: {}
-                            }).calledOnce.should.be.true();
+                            }).should.be.true();
                     });
             });
         });
