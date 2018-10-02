@@ -179,17 +179,22 @@ describe('Post Model', function () {
                         }).catch(done);
                 });
 
-                xit('returns computed fields when columns are asked for explicitly', function (done) {
-                    models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
+                it('returns computed fields when columns are asked for explicitly', function (done) {
+                    const options = {
+                        columns: ['id', 'slug', 'primary_tag'],
+                        withRelated: 'tags'
+                    };
+
+                    models.Post.findPage(options).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
-                        post.url.should.equal('/html-ipsum/');
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON(options);
+                        post.primary_tag.slug.should.equal('kitchen-sink');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
                         // there's a bug in bookshelf where the model will come back with it as
                         // a column enclosed in quotes.
-                        should.not.exist(post['"url"']);
+                        should.not.exist(post['"primary_tag"']);
 
                         done();
                     }).catch(done);
