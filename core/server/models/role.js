@@ -10,12 +10,22 @@ Role = ghostBookshelf.Model.extend({
 
     tableName: 'roles',
 
+    relationships: ['permissions'],
+
+    relationshipBelongsTo: {
+        permissions: 'permissions'
+    },
+
     users: function users() {
         return this.belongsToMany('User');
     },
 
     permissions: function permissions() {
         return this.belongsToMany('Permission');
+    },
+
+    api_keys: function apiKeys() {
+        return this.hasMany('ApiKey');
     }
 }, {
     /**
