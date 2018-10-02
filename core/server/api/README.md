@@ -22,6 +22,9 @@ The framework we are building pipes a request through these stages depending on 
 
 ## Options
 
+Is a class. We pass this instance per reference. The target function can modify the original instance.
+No need to return the class instance.
+
 ### Structure
 
 ```
@@ -59,14 +62,19 @@ A controller is no longer just a function, it's a set of configurations.
 ### Structure
 
 ```
+edit: function || object
+```
+
+```
 edit: {
   headers: object,
   validation: object | function,
-  permissions: boolean | object | function
+  permissions: boolean | object | function,
+  query: function
 }
 ```
 
-### Example
+### Examples
 
 
 ```
@@ -81,6 +89,23 @@ edit: {
     },
     queryData: ['id']
   },
-  permissions: true
+  permissions: true,
+  query(options) {
+    return models.Post.findPage(options.modelOptions);
+  }
+}
+```
+
+```
+edit: {
+  validation() {
+    // custom validation, skip framework
+  },
+  permissions: {
+    unsafeAttrs: ['author']
+  },
+  query(options) {
+    return models.Post.findPage(options.modelOptions);
+  }
 }
 ```
