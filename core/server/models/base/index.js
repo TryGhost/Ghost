@@ -773,7 +773,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         return model.fetch(options).then(function then(object) {
             if (object) {
-                return object.save(data, _.merge({method: 'update'}, options));
+                options.method = 'update';
+                return object.save(data, options);
             }
         });
     },
