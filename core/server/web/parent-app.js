@@ -39,9 +39,9 @@ module.exports = function setupParentApp(options = {}) {
     // API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
-    parentApp.use(urlUtils.getApiPath('deprecated'), require('./api/v0.1/app')());
-    parentApp.use(urlUtils.getApiPath('active'), require('./api/v2/content/app')());
-    parentApp.use(urlUtils.getApiPath('active', true), require('./api/v2/admin/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'deprecated', type: 'content'}), require('./api/v0.1/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'active', type: 'content'}), require('./api/v2/content/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'active', type: 'admin'}), require('./api/v2/admin/app')());
 
     // ADMIN
     parentApp.use('/ghost', require('./admin')());
