@@ -1716,7 +1716,7 @@ describe('Post Model', function () {
                 .then((updatedPost) => {
                     updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
 
-                    return ghostBookshelf.model('MobiledocRevision')
+                    return models.MobiledocRevision
                         .findAll({
                             filter: `post_id:${updatedPost.id}`,
                         });
@@ -1751,7 +1751,7 @@ describe('Post Model', function () {
                         };
                     }));
                 })
-                .then(() => ghostBookshelf.model('MobiledocRevision')
+                .then(() => models.MobiledocRevision
                     .findAll({
                         filter: `post_id:${revisionedPost.id}`,
                     })
@@ -1781,7 +1781,7 @@ describe('Post Model', function () {
                     unversionedPost = createdPost;
                     createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
 
-                    return ghostBookshelf.model('MobiledocRevision')
+                    return models.MobiledocRevision
                         .findAll({
                             filter: `post_id:${createdPost.id}`,
                         });
@@ -1797,7 +1797,7 @@ describe('Post Model', function () {
                     should.exist(editedPost);
                     editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
 
-                    return ghostBookshelf.model('MobiledocRevision')
+                    return models.MobiledocRevision
                         .findAll({
                             filter: `post_id:${editedPost.id}`,
                         });
