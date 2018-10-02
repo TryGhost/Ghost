@@ -1,5 +1,6 @@
 const {URL} = require('url');
 const common = require('../../../lib/common');
+const constants = require('../../../lib/constants');
 const config = require('../../../config');
 const settingsCache = require('../../settings/cache');
 const models = require('../../../models');
@@ -36,7 +37,7 @@ const getSession = (req, res, next) => {
             saveUninitialized: false,
             name: 'ghost-admin-api-session',
             cookie: {
-                maxAge: 184 * 24 * 60 * 60 * 1000, // number of days in second half of year
+                maxAge: constants.SIX_MONTH_MS,
                 httpOnly: true,
                 path: '/ghost',
                 sameSite: 'lax',
