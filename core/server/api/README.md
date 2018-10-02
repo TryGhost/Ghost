@@ -20,6 +20,38 @@ Each request goes through the following stages:
 The framework we are building pipes a request through these stages depending on the API controller implementation.
 
 
+## Options
+
+### Structure
+
+```
+{
+  apiOptions: Object,
+  modelOptions: Object,
+  data: Object,
+  queryData: Object
+}
+```
+
+### Example
+
+```
+{
+  apiOptions: {
+    include: 'tags'
+  },
+  modelOptions: {
+    withRelated: ['tags']
+  },
+  data: {
+    posts: []
+  },
+  queryData: {
+    id: ObjectId
+  }
+}
+```
+
 ## API Controller
 
 A controller is no longer just a function, it's a set of configurations.
