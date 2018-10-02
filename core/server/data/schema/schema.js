@@ -344,5 +344,12 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    mobiledoc_revisions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, index: true},
+        mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        created_at_ts: {type: 'bigInteger', nullable: false},
+        created_at: {type: 'dateTime', nullable: false}
     }
 };
