@@ -594,6 +594,19 @@ describe('Post API', function () {
             });
         });
 
+        it('can fetch post returning a slug only permalink', function () {
+            sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
+
+            return PostAPI.read({
+                    id: testUtils.DataGenerator.Content.posts[0].id
+                })
+                .then(function (result) {
+                    should.exist(result);
+
+                    result.posts[0].url.should.equal('/html-ipsum/');
+                });
+        });
+
         it('can include tags', function () {
             return PostAPI.read({
                 context: {user: testUtils.DataGenerator.Content.users[1].id},
@@ -614,6 +627,7 @@ describe('Post API', function () {
                 err.message.should.eql('Post not found.');
             });
         });
+
     });
 
     describe('Destroy', function () {

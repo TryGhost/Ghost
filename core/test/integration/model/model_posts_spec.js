@@ -383,17 +383,6 @@ describe('Post Model', function () {
                         }).catch(done);
                 });
 
-                xit('can findOne, returning a slug only permalink', function (done) {
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-                            firstPost.url.should.equal('/html-ipsum/');
-
-                            done();
-                        }).catch(done);
-                });
-
                 xit('can findOne, returning a dated permalink', function (done) {
                     urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
 
