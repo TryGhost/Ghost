@@ -24,5 +24,21 @@ The framework we are building pipes a request through these stages depending on 
 
 A controller is no longer just a function, it's a set of configurations.
 
+### Structure
 
-More is coming soon...
+```
+edit: {
+  headers: object
+}
+```
+
+### Example
+
+
+```
+edit: {
+  headers: {
+    cacheInvalidate: true
+  }
+}
+```
