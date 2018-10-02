@@ -55,6 +55,29 @@ describe('Public API', function () {
             });
     });
 
+    it('browse pages', function (done) {
+        request.get('/ghost/api/v2/content/pages/?client_id=ghost-admin&client_secret=not_available')
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                res.headers.vary.should.eql('Origin, Accept-Encoding');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.pages);
+                should.exist(jsonResponse.meta);
+                jsonResponse.pages.should.have.length(1);
+                done();
+            });
+    });
+
     it('browse posts: request absolute urls', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
