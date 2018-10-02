@@ -16,12 +16,13 @@ describe('Roles API', function () {
             should.exist(response);
             testUtils.API.checkResponse(response, 'roles');
             should.exist(response.roles);
-            response.roles.should.have.length(5);
+            response.roles.should.have.length(6);
             testUtils.API.checkResponse(response.roles[0], 'role');
             testUtils.API.checkResponse(response.roles[1], 'role');
             testUtils.API.checkResponse(response.roles[2], 'role');
             testUtils.API.checkResponse(response.roles[3], 'role');
             testUtils.API.checkResponse(response.roles[4], 'role');
+            testUtils.API.checkResponse(response.roles[5], 'role');
         }
 
         it('Owner can browse', function (done) {

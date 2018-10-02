@@ -401,7 +401,8 @@ fixtures = {
                 Editor: DataGenerator.Content.roles[1].id,
                 Author: DataGenerator.Content.roles[2].id,
                 Owner: DataGenerator.Content.roles[3].id,
-                Contributor: DataGenerator.Content.roles[4].id
+                Contributor: DataGenerator.Content.roles[4].id,
+                'Admin Integration': DataGenerator.Content.roles[5].id
             };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
@@ -478,7 +479,19 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.webhooks, function (webhook) {
             return models.Webhook.add(webhook, module.exports.context.internal);
         });
-    }
+    },
+
+    insertIntegrations: function insertIntegrations() {
+        return Promise.map(DataGenerator.forKnex.integrations, function (integration) {
+            return models.Integration.add(integration, module.exports.context.internal);
+        });
+    },
+
+    insertApiKeys: function insertApiKeys() {
+        return Promise.map(DataGenerator.forKnex.api_keys, function (api_key) {
+            return models.ApiKey.add(api_key, module.exports.context.internal);
+        });
+    },
 };
 
 /** Test Utility Functions **/
@@ -624,6 +637,12 @@ toDoList = {
     },
     webhooks: function insertWebhooks() {
         return fixtures.insertWebhooks();
+    },
+    integrations: function insertIntegrations() {
+        return fixtures.insertIntegrations();
+    },
+    api_keys: function insertApiKeys() {
+        return fixtures.insertApiKeys();
     }
 };
 
@@ -1139,7 +1158,9 @@ module.exports = {
         admin: {context: {user: DataGenerator.Content.users[1].id}},
         editor: {context: {user: DataGenerator.Content.users[2].id}},
         author: {context: {user: DataGenerator.Content.users[3].id}},
-        contributor: {context: {user: DataGenerator.Content.users[7].id}}
+        contributor: {context: {user: DataGenerator.Content.users[7].id}},
+        admin_api_key: {context: {api_key: DataGenerator.Content.api_keys[0].id}},
+        content_api_key: {context: {api_key: DataGenerator.Content.api_keys[1].id}}
     },
     permissions: {
         owner: {user: {roles: [DataGenerator.Content.roles[3]]}},
