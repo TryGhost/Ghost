@@ -61,7 +61,8 @@ A controller is no longer just a function, it's a set of configurations.
 ```
 edit: {
   headers: object,
-  validation: object | function
+  validation: object | function,
+  permissions: boolean | object | function
 }
 ```
 
@@ -79,6 +80,7 @@ edit: {
       include: ['tags']
     },
     queryData: ['id']
-  }
+  },
+  permissions: true
 }
 ```
