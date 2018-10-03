@@ -32,6 +32,9 @@ const urlsForPost = (post, options) => {
 
     if (options && options.withRelated) {
         options.withRelated.forEach((relation) => {
+            // @NOTE: this block also decorates primary_tag/primary_author objects as they
+            // are being passed by reference in tags/authors. Might be refactored into more explicit call
+            // in the future, but is good enough for current use-case
             if (relation === 'tags' && post.tags) {
                 post.tags = post.tags.map(tag => urlsForTag(tag, options));
             }
