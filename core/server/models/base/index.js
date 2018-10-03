@@ -695,7 +695,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // This applies default properties like 'staticPages' and 'status'
         // And then converts them to 'where' options... this behaviour is effectively deprecated in favour
         // of using filter - it's only be being kept here so that we can transition cleanly.
-        this.processOptions(options);
+        if (this.processOptions) {
+            this.processOptions(options);
+        }
 
         // Add Filter behaviour
         itemCollection.applyDefaultAndCustomFilters(options);
