@@ -14,6 +14,63 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit: models/post', function () {
+    const mockDb = require('mock-knex');
+    let tracker;
+
+    before(function () {
+        models.init();
+        mockDb.mock(knex);
+        tracker = mockDb.getTracker();
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    after(function () {
+        mockDb.unmock(knex);
+    });
+
+    describe('filter', function () {
+        it('(1)', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
+                limit: 3,
+                withRelated: ['tags']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) order by count(tags.id) DESC');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    'photo',
+                    'video',
+                    testUtils.filterData.data.posts[3].id
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) group by `posts`.`id` order by count(tags.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    'photo',
+                    'video',
+                    testUtils.filterData.data.posts[3].id,
+                    3
+                ]);
+            });
+        });
+    });
+});
+
+describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     before(function () {
         models.init();
     });

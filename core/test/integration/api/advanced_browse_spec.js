@@ -18,59 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe('1. Posts - filter: "tags: [photo, video] + id: -4", limit: "3", include: "tags"', function () {
-            it('Will fetch 3 posts with tags which match `photo` or `video` and are not the post with id 4.', function (done) {
-                PostAPI.browse({
-                    filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
-                    limit: 3,
-                    include: 'tags'
-                }).then(function (result) {
-                    var ids;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 3 items according to the limit property
-                    result.posts.should.be.an.Array().with.lengthOf(3);
-
-                    // None of the items returned should be the post with id 4, as that was excluded
-                    ids = _.map(result.posts, 'id');
-                    ids.should.not.containEql(testUtils.filterData.data.posts[3].id);
-
-                    // Should not contain draft
-                    ids.should.not.containEql(testUtils.filterData.data.posts[18].id);
-
-                    // The ordering specifies that any post which matches both tags should be first
-                    // Post 2 is the first in the list to have both tags
-                    ids[0].should.eql(testUtils.filterData.data.posts[1].id);
-
-                    // Each post should have a tag which matches either 'photo' or 'video'
-                    _.each(result.posts, function (post) {
-                        var slugs = _.map(post.tags, 'slug');
-                        slugs.should.matchAny(/photo|video/);
-                    });
-
-                    // TODO: match order, followed by publish date
-                    // This isn't finished yet, as the 'special rule' ordering for matching 'in' requests hasn't been
-                    // implemented properly.
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(3);
-                    result.meta.pagination.pages.should.eql(3);
-                    result.meta.pagination.total.should.eql(7);
-                    result.meta.pagination.next.should.eql(2);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
             it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
                 PostAPI.browse({

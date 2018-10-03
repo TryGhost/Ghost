@@ -52,6 +52,26 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                // Public API does not return drafts
+                _.map(jsonResponse.posts, (post) => {
+                    post.status.should.eql('published');
+                });
+
+                // Default order check
+                jsonResponse.posts[0].slug.should.eql('welcome');
+                jsonResponse.posts[10].slug.should.eql('html-ipsum');
+
+                // check meta response for this test
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
+                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
+                should.not.exist(jsonResponse.meta.pagination.next);
+                should.not.exist(jsonResponse.meta.pagination.prev);
+
                 done();
             });
     });
