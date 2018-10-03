@@ -54,6 +54,8 @@ describe('Authentication API', function () {
     should.exist(AuthAPI);
 
     describe('Setup', function () {
+        // @TODO: add one success setup routing test
+        // @TODO: unit test models.User.isSetup() for error case
         describe('Cannot run', function () {
             before(function () {
                 User = require('../../../server/models/user').User;
@@ -90,6 +92,7 @@ describe('Authentication API', function () {
             // TODO: stub settings
             beforeEach(testUtils.setup('owner:pre', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
+            // @TODO: unit test models.User.isSetup() for error case
             it('should report that setup has not been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
@@ -99,6 +102,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove, should be covered by one successful routing test
             it('should allow setup to be completed', function (done) {
                 var setupData = {
                     name: 'test user',
@@ -124,6 +128,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit tesssst
             it('should allow setup to be completed without a blog title', function (done) {
                 var setupData = {
                     name: 'test user',
@@ -148,6 +153,8 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: this test tests that the setup is not completed, unit test
+            // @TODO: try to test the models as much as possible and not the controllers
             it('should return an error for an invitation check', function (done) {
                 AuthAPI.isInvitation({email: 'a@example.com'}).then(function () {
                     done(new Error('Did not receive an error response'));
@@ -161,6 +168,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: same, the setup is not completed, unit test
             it('should not allow an invitation to be accepted', function (done) {
                 AuthAPI.acceptInvitation(testInvite).then(function () {
                     done(new Error('Invitation was allowed to be accepted'));
@@ -174,6 +182,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: setup not completed, unit test that this i not possible
             it('should not generate a password reset token', function (done) {
                 AuthAPI.generateResetToken(testGenerateReset).then(function () {
                     done(new Error('Reset token was generated'));
@@ -187,6 +196,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: setup not completed, unit test that this i not possible
             it('should not allow a password reset', function (done) {
                 AuthAPI.resetPassword(testReset).then(function () {
                     done(new Error('Password was reset'));
@@ -210,6 +220,7 @@ describe('Authentication API', function () {
 
             beforeEach(testUtils.setup('invites', 'roles', 'owner', 'clients', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
+            // @TODO: one routing test, same as above, check assertions
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
@@ -219,6 +230,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should not allow setup to be run again', function (done) {
                 var setupData = {
                     name: 'test user',
@@ -239,6 +251,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should allow an invitation to be accepted, but fail on token validation', function (done) {
                 AuthAPI.acceptInvitation(testInvite).then(function () {
                     done(new Error('invitation did not fail on token validation'));
@@ -253,6 +266,8 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: one routing test to accept an invition after setup, double check if the routing test exists
+            // @TODO: double check what else this test is doing
             it('should allow an invitation to be accepted', function () {
                 var invite;
 
@@ -294,6 +309,7 @@ describe('Authentication API', function () {
                     });
             });
 
+            // @TODO: unit test
             it('should not allow an invitation to be accepted: expired', function () {
                 var invite;
 
@@ -328,6 +344,7 @@ describe('Authentication API', function () {
                     });
             });
 
+            // @TODO: unit test
             it('should generate a password reset token', function (done) {
                 AuthAPI.generateResetToken(testGenerateReset).then(function (result) {
                     should.exist(result);
@@ -337,6 +354,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should not generate a password reset token for an invalid email address', function (done) {
                 var badResetRequest = {
                     passwordreset: [{email: ''}]
@@ -354,6 +372,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should not allow a password reset', function (done) {
                 AuthAPI.resetPassword(testReset).then(function () {
                     done(new Error('password reset did not fail on token validation'));
@@ -368,6 +387,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should allow an access token to be revoked', function (done) {
                 var id = security.identifier.uid(191);
 
@@ -396,6 +416,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should know an email address has an active invitation', function () {
                 return AuthAPI.isInvitation({email: testUtils.DataGenerator.forKnex.invites[0].email})
                     .then(function (response) {
@@ -405,6 +426,7 @@ describe('Authentication API', function () {
                     });
             });
 
+            // @TODO: unit test
             it('should know an email address does not have an active invitation', function (done) {
                 var user = {
                         name: 'uninvited user',
@@ -426,6 +448,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should know an unknown email address is not an active invitation', function (done) {
                 AuthAPI.isInvitation({email: 'unknown@example.com'}).then(function (response) {
                     should.exist(response);
@@ -435,6 +458,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: one success routing test
             it('should allow a refresh token to be revoked', function (done) {
                 var id = security.identifier.uid(191);
 
@@ -463,6 +487,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit test
             it('should return success when attempting to revoke an invalid token', function (done) {
                 var id = security.identifier.uid(191);
 
@@ -494,6 +519,7 @@ describe('Authentication API', function () {
         describe('Setup not complete', function () {
             beforeEach(testUtils.setup('owner:pre', 'settings', 'perms:setting', 'perms:init'));
 
+            // @TODO: remove
             it('should report that setup has not been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
@@ -503,6 +529,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove
             it('should not allow setup to be updated', function (done) {
                 var setupData = {
                     name: 'test user',
@@ -527,6 +554,7 @@ describe('Authentication API', function () {
         describe('Not Owner', function () {
             beforeEach(testUtils.setup('users:roles', 'settings', 'perms:setting', 'perms:init', 'perms:user'));
 
+            // @TODO: double check that this endpoint is covered in routing (each authenticate route should have one success case)
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
@@ -536,6 +564,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: unit
             it('should not allow setup to be updated', function (done) {
                 var setupData = {
                     name: 'test user',
@@ -560,6 +589,7 @@ describe('Authentication API', function () {
         describe('Owner', function () {
             beforeEach(testUtils.setup('users:roles', 'settings', 'perms:setting', 'perms:init'));
 
+            // @TODO: remove
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
@@ -569,6 +599,7 @@ describe('Authentication API', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove
             it('should allow setup to be updated', function (done) {
                 var setupData = {
                     name: 'test user',
