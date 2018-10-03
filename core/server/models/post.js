@@ -9,8 +9,6 @@ var _ = require('lodash'),
     ghostBookshelf = require('./base'),
     config = require('../config'),
     converters = require('../lib/mobiledoc/converters'),
-    urlService = require('../services/url'),
-    {urlFor, makeAbsoluteUrls} = require('../services/url/utils'),
     relations = require('./relations'),
     Post,
     Posts;
@@ -391,7 +389,7 @@ Post = ghostBookshelf.Model.extend({
      * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
      * But the model layer is complex and needs specific fields in specific situations.
      *
-     * ### url generation
+     * ### url generation was removed but default columns need to be checked before removal
      *   - @TODO: with dynamic routing, we no longer need default columns to fetch
      *   - because with static routing Ghost generated the url on runtime and needed the following attributes:
      *     - `slug`: /:slug/
@@ -441,7 +439,6 @@ Post = ghostBookshelf.Model.extend({
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
-        attrs.url = urlService.getUrlByResourceId(attrs.id);
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
@@ -450,28 +447,6 @@ Post = ghostBookshelf.Model.extend({
                 attrs.primary_tag = attrs.tags[0];
             } else {
                 attrs.primary_tag = null;
-            }
-        }
-
-        if (options.columns && !options.columns.includes('url')) {
-            delete attrs.url;
-        }
-
-        if (options && options.context && options.context.public && options.absolute_urls) {
-            if (attrs.feature_image) {
-                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
-            }
-            if (attrs.og_image) {
-                attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
-            }
-            if (attrs.twitter_image) {
-                attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
-            }
-            if (attrs.html) {
-                attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
-            }
-            if (attrs.url) {
-                attrs.url = urlFor({relativeUrl: attrs.url}, true);
             }
         }
 

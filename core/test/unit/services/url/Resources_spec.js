@@ -105,7 +105,6 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url'
                 ].sort());
 
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
@@ -204,7 +203,6 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url'
                 ].sort());
 
                 should.exist(obj.tags);

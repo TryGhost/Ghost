@@ -7,6 +7,7 @@ const Promise = require('bluebird'),
     canThis = require('../../services/permissions').canThis,
     models = require('../../models'),
     common = require('../../lib/common'),
+    {urlsForUser} = require('./decorators/urls'),
     docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
@@ -40,7 +41,7 @@ users = {
             return models.User.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        users: data.map(post => post.toJSON(options)),
+                        users: data.map(model => urlsForUser(model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -89,7 +90,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [urlsForUser(model.toJSON(options), options)]
                     };
                 });
         }
@@ -213,7 +214,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [urlsForUser(model.toJSON(options), options)]
                     };
                 });
         }

@@ -22,40 +22,6 @@ describe('Unit: models/user', function () {
         sandbox.restore();
     });
 
-    describe('toJSON', function () {
-        const toJSON = function toJSON(model, options) {
-            return new models.User(model).toJSON(options);
-        };
-
-        describe('Public context', function () {
-            const context = {
-                public: true
-            };
-
-            it('converts relative profile_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    profile_image: '/content/images/profile_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const profileImageUrlObject = url.parse(json.profile_image);
-
-                should.exist(profileImageUrlObject.protocol);
-                should.exist(profileImageUrlObject.host);
-            });
-
-            it('converts relative cover_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    cover_image: '/content/images/cover_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const coverImageUrlObject = url.parse(json.cover_image);
-
-                should.exist(coverImageUrlObject.protocol);
-                should.exist(coverImageUrlObject.host);
-            });
-        });
-    });
-
     describe('validation', function () {
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');

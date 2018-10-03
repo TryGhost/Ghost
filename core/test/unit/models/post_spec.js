@@ -34,63 +34,6 @@ describe('Unit: models/post', function () {
         sandbox.restore();
     });
 
-    describe('toJSON', function () {
-        const toJSON = function toJSON(model, options) {
-            return new models.Post(model).toJSON(options);
-        };
-
-        describe('Public context', function () {
-            const context = {
-                public: true
-            };
-
-            it('converts relative feature_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    feature_image: '/content/images/feature_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const featureImageUrlObject = url.parse(json.feature_image);
-
-                should.exist(featureImageUrlObject.protocol);
-                should.exist(featureImageUrlObject.host);
-            });
-
-            it('converts relative twitter_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    twitter_image: '/content/images/twitter_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const twitterImageUrlObject = url.parse(json.twitter_image);
-
-                should.exist(twitterImageUrlObject.protocol);
-                should.exist(twitterImageUrlObject.host);
-            });
-
-            it('converts relative og_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    og_image: '/content/images/og_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const ogImageUrlObject = url.parse(json.og_image);
-
-                should.exist(ogImageUrlObject.protocol);
-                should.exist(ogImageUrlObject.host);
-            });
-
-            it('converts relative content urls to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    html: '<img src="/content/images/my-coole-image.jpg">'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const imgSrc = json.html.match(/src="([^"]+)"/)[1];
-                const imgSrcUrlObject = url.parse(imgSrc);
-
-                should.exist(imgSrcUrlObject.protocol);
-                should.exist(imgSrcUrlObject.host);
-            });
-        });
-    });
-
     describe('add', function () {
         describe('ensure full set of data for model events', function () {
             it('default', function () {

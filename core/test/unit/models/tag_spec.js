@@ -17,29 +17,6 @@ describe('Unit: models/tags', function () {
     before(testUtils.teardown);
     before(testUtils.setup('tags'));
 
-    describe('toJSON', function () {
-        const toJSON = function toJSON(model, options) {
-            return new models.Tag(model).toJSON(options);
-        };
-
-        describe('Public context', function () {
-            const context = {
-                public: true
-            };
-
-            it('converts relative feature_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    feature_image: '/content/images/feature_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const featureImageUrlObject = url.parse(json.feature_image);
-
-                should.exist(featureImageUrlObject.protocol);
-                should.exist(featureImageUrlObject.host);
-            });
-        });
-    });
-
     describe('Edit', function () {
         it('resets given empty value to null', function () {
             return models.Tag.findOne({slug: 'kitchen-sink'})

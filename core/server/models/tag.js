@@ -1,6 +1,5 @@
-const ghostBookshelf = require('./base'),
-    urlService = require('../services/url'),
-    {urlFor} = require('../services/url/utils');
+const ghostBookshelf = require('./base');
+
 let Tag, Tags;
 
 Tag = ghostBookshelf.Model.extend({
@@ -68,15 +67,6 @@ Tag = ghostBookshelf.Model.extend({
         // @NOTE: this serialization should be moved into api layer, it's not being moved as it's not used
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
-
-        if (options && options.context && options.context.public && options.absolute_urls) {
-            attrs.url = urlFor({
-                relativeUrl: urlService.getUrlByResourceId(attrs.id)
-            }, true);
-            if (attrs.feature_image) {
-                attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
-            }
-        }
 
         return attrs;
     }
