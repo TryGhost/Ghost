@@ -19,6 +19,7 @@ describe('Advanced Browse', function () {
 
     describe('Advanced Use Cases', function () {
         describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
+            // @TODO: remove, but double check if any of the assertions should be added to a routing test
             it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
                 PostAPI.browse({
                     filter: 'tag:photo,featured:true,feature_image:-null',
@@ -72,6 +73,7 @@ describe('Advanced Browse', function () {
 
         describe.skip('3. Tags - filter="count.posts:>=1" order="count.posts DESC" limit="all"', function () {
             // @TODO add support for counts/aggregates in order & filter params
+            // @TODO: assert the SQL in the model unit test?
             it('Will fetch all tags, ordered by post count, where the post count is at least 1.', function (done) {
                 TagAPI.browse({
                     filter: 'count.posts:>=1',
@@ -103,6 +105,7 @@ describe('Advanced Browse', function () {
 
         describe('4. Posts - filter="author:[leslie,pat]+(tag:hash-audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
+            // @TODO: remove, but double check if a routing test uses include=author (deprecated test) and double check the assertions
             it('[DEPRECATED] will fetch posts by the author `leslie` or `pat` which are either have tag `hash-audio` or an image.', function (done) {
                 PostAPI.browse({
                     filter: 'author:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
@@ -160,6 +163,7 @@ describe('Advanced Browse', function () {
                 }).catch(done);
             });
 
+            // @TODO: assert to SQL unit test? and remove. double check assertions
             it('will fetch posts by the authors `leslie` or `pat` which are either have tag `hash-audio` or an image.', function (done) {
                 PostAPI.browse({
                     filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
@@ -222,6 +226,7 @@ describe('Advanced Browse', function () {
 
         describe.skip('5. Users - filter="posts.tags:photo" order="count.posts DESC" limit="3"', function () {
             // @TODO: add support for joining through posts and tags for users
+            // @TODO: remove
             it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function (done) {
                 UserAPI.browse({
                     filter: 'posts.tags:special',
@@ -264,6 +269,7 @@ describe('Advanced Browse', function () {
         });
 
         describe.skip('6. Posts filter="published_at:>\'2015-07-20\'" limit="5"}}', function () {
+            // @TODO: assert the SQL
             it('Will fetch 5 posts after a given date.', function (done) {
                 PostAPI.browse({
                     filter: 'published_at:>\'2015-07-20\'',
@@ -289,6 +295,7 @@ describe('Advanced Browse', function () {
         });
 
         describe('7. Users filter: "website:-null", order: "website"', function () {
+            // @TODO: remove
             it('Will fetch users that have a website and order them by website', function (done) {
                 UserAPI.browse({filter: 'website:-null', order: 'website ASC'}).then(function (result) {
                     var ids;
@@ -327,6 +334,7 @@ describe('Advanced Browse', function () {
         });
 
         describe('8. Tags filter: "image:-null+description:-null"', function () {
+            // @TODO: remove
             it('Will fetch tags which have an image and a description', function (done) {
                 TagAPI.browse({
                     filter: 'feature_image:-null+description:-null',
@@ -375,6 +383,7 @@ describe('Advanced Browse', function () {
     });
 
     describe('Primary Tags / Primary Authors', function () {
+        // @TODO: assert SQL in unit test
         it('Will fetch posts which have a primary tag of photo', function (done) {
             PostAPI.browse({
                 filter: 'primary_tag:photo',
@@ -418,6 +427,7 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: assert SQL in unit test
         it('Will fetch posts which have a primary author', function (done) {
             PostAPI.browse({
                 filter: 'primary_author:leslie',
@@ -468,6 +478,7 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: remove
         it('Will fetch empty list if no post has matching primary-tag', function (done) {
             PostAPI.browse({
                 filter: 'primary_tag:no-posts',
@@ -495,7 +506,7 @@ describe('Advanced Browse', function () {
                 done();
             }).catch(done);
         });
-
+        // @TODO: remove
         it('Will fetch empty list if primary_tag is internal', function (done) {
             PostAPI.browse({
                 filter: 'primary_tag:no-posts',
@@ -526,6 +537,7 @@ describe('Advanced Browse', function () {
     });
 
     describe('Count capabilities', function () {
+        // @TODO: put to routing tests, double check if it exists already, double check the assertions
         it('can fetch `count.posts` for tags (public data only)', function (done) {
             TagAPI.browse({include: 'count.posts'}).then(function (result) {
                 // 1. Result should have the correct base structure
@@ -576,6 +588,7 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: remove
         it('can fetch and order by `count.posts` for tags (public data only)', function (done) {
             TagAPI.browse({include: 'count.posts', order: 'count.posts DESC'}).then(function (result) {
                 var ids;
@@ -638,12 +651,14 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: remove
         it.skip('can fetch `count.posts` for tags (all data)', function (done) {
             // This is tested elsewhere for now using user context
             // No way to override it for public requests
             done();
         });
 
+        // @TODO: remove, but double check assertions
         it('can fetch `count.posts` for users (published only)', function (done) {
             UserAPI.browse({include: 'count.posts'}).then(function (result) {
                 // 1. Result should have the correct base structure
@@ -682,6 +697,7 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: remove, but double check assertions
         it('can fetch and order by `count.posts` for users (published only)', function (done) {
             UserAPI.browse({include: 'count.posts', order: 'count.posts ASC'}).then(function (result) {
                 var ids;
@@ -730,15 +746,17 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: remove
         it.skip('can fetch `posts.all.count` for users (all posts)', function (done) {
             done();
         });
-
+        // @TODO: remove
         it.skip('can fetch `tags.count` for posts', function (done) {
             done();
         });
     });
 
+    // @TODO: remove, but double check assertions
     describe('Old Use Cases', function () {
         // Please note: these tests are mostly here to help prove certain things whilst building out new behaviour
         describe('Old post "filters"', function () {
@@ -824,6 +842,7 @@ describe('Advanced Browse', function () {
         });
 
         describe('Handling "featured"', function () {
+            // @TODO: remove, but double check assertions
             it('Will fetch all posts regardless of featured status by default', function (done) {
                 PostAPI.browse({}).then(function (result) {
                     var ids;
@@ -872,6 +891,7 @@ describe('Advanced Browse', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove, but double check assertions
             it('Will fetch only featured posts when requested', function (done) {
                 PostAPI.browse({filter: 'featured:true'}).then(function (result) {
                     var ids, featured;
@@ -913,6 +933,7 @@ describe('Advanced Browse', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove, but double check assertions
             it('Will fetch only non-featured posts when requested', function (done) {
                 PostAPI.browse({filter: 'featured:false'}).then(function (result) {
                     var ids, featured;
@@ -968,6 +989,7 @@ describe('Advanced Browse', function () {
         });
 
         describe('Handling "page" (staticPages)', function () {
+            // @TODO: remove, but double check assertions
             it('Will return only published posts by default', function (done) {
                 PostAPI.browse({limit: 'all'}).then(function (result) {
                     var ids, page;
@@ -1025,6 +1047,7 @@ describe('Advanced Browse', function () {
             });
 
             // @TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
+            // @TODO: remove, but double check assertions
             it('Will return only pages when requested', function (done) {
                 PostAPI.browse({filter: 'page:true'}).then(function (result) {
                     var ids, page;
@@ -1065,12 +1088,14 @@ describe('Advanced Browse', function () {
                 }).catch(done);
             });
 
+            // @TODO: remove
             it.skip('Will NOT return both posts and pages from post API', function (done) {
                 done();
             });
         });
 
         describe('Empty results', function () {
+            // @TODO: remove, but double check assertions
             it('Will return empty result if tag has no posts', function (done) {
                 PostAPI.browse({filter: 'tag:no-posts', include: 'tag,author'}).then(function (result) {
                     // 1. Result should have the correct base structure
@@ -1103,6 +1128,7 @@ describe('Advanced Browse', function () {
 
     describe('Bad behaviour', function () {
         it('Try to get draft posts (filter with or)', function (done) {
+            // @TODO: put to routing test
             PostAPI.browse({filter: 'status:published,status:draft', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
                 should.exist(result);
@@ -1118,6 +1144,7 @@ describe('Advanced Browse', function () {
             }).catch(done);
         });
 
+        // @TODO: put to unit test, you can test the default filter & enforce filter functions
         it('Try to get draft posts (filter with in)', function (done) {
             PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
@@ -1133,7 +1160,7 @@ describe('Advanced Browse', function () {
                 done();
             }).catch(done);
         });
-
+        // @TODO: put to unit test, you can test the default filter & enforce filter functions
         it('Try to get draft posts (filter with group)', function (done) {
             PostAPI.browse({filter: 'page:false,(status:draft)', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
@@ -1149,7 +1176,7 @@ describe('Advanced Browse', function () {
                 done();
             }).catch(done);
         });
-
+        // @TODO: put to unit test, you can test the default filter & enforce filter functions
         it('Try to get draft posts (filter with group and in)', function (done) {
             PostAPI.browse({filter: 'page:false,(status:[draft,published])', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure
