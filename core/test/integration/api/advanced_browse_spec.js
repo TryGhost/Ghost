@@ -18,59 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe('2. Posts - filter: "tag:photo,featured:true,image:-null", include: "tags"', function () {
-            // @TODO: remove, but double check if any of the assertions should be added to a routing test
-            it('Will fetch posts which have either a tag of `photo`, are marked `featured` or have an image.', function (done) {
-                PostAPI.browse({
-                    filter: 'tag:photo,featured:true,feature_image:-null',
-                    include: 'tags'
-                }).then(function (result) {
-                    var ids;
-
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(9);
-
-                    ids = _.map(result.posts, 'id');
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[13].id,
-                        testUtils.filterData.data.posts[10].id,
-                        testUtils.filterData.data.posts[8].id,
-                        testUtils.filterData.data.posts[7].id,
-                        testUtils.filterData.data.posts[6].id,
-                        testUtils.filterData.data.posts[5].id,
-                        testUtils.filterData.data.posts[4].id,
-                        testUtils.filterData.data.posts[2].id,
-                        testUtils.filterData.data.posts[1].id
-                    ]);
-
-                    _.each(result.posts, function (post) {
-                        post.page.should.be.false();
-                        post.status.should.eql('published');
-                    });
-
-                    // TODO: Should be in published order
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(9);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe.skip('3. Tags - filter="count.posts:>=1" order="count.posts DESC" limit="all"', function () {
             // @TODO add support for counts/aggregates in order & filter params
             // @TODO: assert the SQL in the model unit test?

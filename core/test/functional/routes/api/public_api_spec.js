@@ -99,6 +99,51 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts with basic filters', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+                const ids = _.map(jsonResponse.posts, 'id');
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                // should content filtered data and order
+                jsonResponse.posts.should.have.length(4);
+                ids.should.eql([
+                    testUtils.DataGenerator.Content.posts[4].id,
+                    testUtils.DataGenerator.Content.posts[2].id,
+                    testUtils.DataGenerator.Content.posts[1].id,
+                    testUtils.DataGenerator.Content.posts[0].id,
+                ]);
+
+                // API does not return drafts
+                jsonResponse.posts.forEach((post) => {
+                    post.page.should.be.false();
+                    post.status.should.eql('published');
+                });
+
+                // The meta object should contain the right detail
+                jsonResponse.meta.should.have.property('pagination');
+                jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(4);
+                should.equal(jsonResponse.meta.pagination.next, null);
+                should.equal(jsonResponse.meta.pagination.prev, null);
+                done();
+            });
+    });
+
     it('browse posts: request absolute urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
