@@ -52,12 +52,12 @@ Router.map(function () {
     this.route('settings.design', {path: '/settings/design'}, function () {
         this.route('uploadtheme');
     });
-    this.route('settings.integrations', {path: '/settings/integrations'}, function () {
-        this.route('slack', {path: 'slack'});
-        this.route('amp', {path: 'amp'});
-        this.route('unsplash', {path: 'unsplash'});
-        this.route('zapier', {path: 'zapier'});
-    });
+
+    this.route('settings.integrations', {path: '/settings/integrations'});
+    this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
+    this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
+    this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
+    this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
     this.route('subscribers', function () {
         this.route('new');
