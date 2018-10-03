@@ -27,7 +27,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/');
@@ -41,7 +41,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         ghostSdk.url.api().should.equal('https://testblog.com/ghost/api/v0.1/');
@@ -58,7 +58,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         ghostSdk.url.api().should.equal('https://admin.testblog.com/ghost/api/v0.1/');
@@ -68,7 +68,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: '',
             clientSecret: '',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         ghostSdk.url.api('a/', '/b', '/c/').should.equal('//testblog.com/ghost/api/v0.1/a/b/c/');
@@ -78,7 +78,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         ghostSdk.url.api().should.equal('//testblog.com/ghost/api/v0.1/?client_id=ghost-frontend&client_secret=notasecret');
@@ -88,7 +88,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         var rendered = ghostSdk.url.api({a: 'string', b: 5, c: 'en coded'});
@@ -126,7 +126,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -146,7 +146,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {version: 'deprecated', versionType: 'content'}, true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -165,7 +165,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {version: 'deprecated', versionType: 'content'}, true)
         });
 
         var rendered = ghostSdk.url.api('posts/', '/tags/', '/count', {include: 'tags,tests', page: 2});
@@ -185,7 +185,7 @@ describe('Ghost Ajax Helper', function () {
         ghostSdk.init({
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret',
-            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated'}, true)
+            url: urlService.utils.urlFor('api', {cors: true, version: 'deprecated', versionType: 'content'}, true)
         });
 
         var rendered = ghostSdk.url.api('posts', {limit: 3}),
