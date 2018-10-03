@@ -27,15 +27,7 @@ describe('Session controller', function () {
     });
 
     describe('#add', function () {
-        it('throws an UnauthorizedError if the object and options is missing', function () {
-            return sessionController.add().then(() => {
-                should.fail('session.add did not throw');
-            },(err) => {
-                should.equal(err instanceof UnauthorizedError, true);
-            });
-        });
-
-        it('throws an UnauthorizedError if the options is missing', function () {
+        it('throws an UnauthorizedError if the object is missing a username and password', function () {
             return sessionController.add({}).then(() => {
                 should.fail('session.add did not throw');
             },(err) => {
