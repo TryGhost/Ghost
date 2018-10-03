@@ -327,8 +327,7 @@ function urlFor(context, data, absolute) {
         }
 
         if (data && data.version) {
-            let versionType = data.admin ? 'admin' : 'content';
-            apiPath = getApiPath({version: data.version, type: versionType});
+            apiPath = getApiPath({version: data.version, type: data.versionType});
         }
 
         if (absolute) {
