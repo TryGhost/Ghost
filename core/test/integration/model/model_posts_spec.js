@@ -49,7 +49,6 @@ describe('Post Model', function () {
             firstPost.authors[0].should.eql(firstPost.author);
         }
 
-        firstPost.url.should.equal('/html-ipsum/');
         firstPost.tags.should.be.an.Array();
 
         firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
@@ -181,16 +180,21 @@ describe('Post Model', function () {
                 });
 
                 it('returns computed fields when columns are asked for explicitly', function (done) {
-                    models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
+                    const options = {
+                        columns: ['id', 'slug', 'primary_tag'],
+                        withRelated: 'tags'
+                    };
+
+                    models.Post.findPage(options).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
-                        post.url.should.equal('/html-ipsum/');
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON(options);
+                        post.primary_tag.slug.should.equal('kitchen-sink');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
                         // there's a bug in bookshelf where the model will come back with it as
                         // a column enclosed in quotes.
-                        should.not.exist(post['"url"']);
+                        should.not.exist(post['"primary_tag"']);
 
                         done();
                     }).catch(done);
@@ -374,33 +378,6 @@ describe('Post Model', function () {
                             firstPost = result.toJSON();
 
                             checkFirstPostData(firstPost);
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a slug only permalink', function (done) {
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-                            firstPost.url.should.equal('/html-ipsum/');
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a dated permalink', function (done) {
-                    urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
-
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-
-                            // published_at of post 1 is 2015-01-01 00:00:00
-                            // default blog TZ is UTC
-                            firstPost.url.should.equal('/2015/01/01/html-ipsum/');
 
                             done();
                         }).catch(done);
