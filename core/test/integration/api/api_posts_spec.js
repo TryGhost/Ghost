@@ -594,6 +594,34 @@ describe('Post API', function () {
             });
         });
 
+        it('can fetch post returning a slug only permalink', function () {
+            sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
+
+            return PostAPI.read({
+                    id: testUtils.DataGenerator.Content.posts[0].id
+                })
+                .then(function (result) {
+                    should.exist(result);
+
+                    result.posts[0].url.should.equal('/html-ipsum/');
+                });
+        });
+
+        it('can fetch post returning a dated permalink', function () {
+            sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
+
+            return PostAPI.read({
+                    id: testUtils.DataGenerator.Content.posts[0].id
+                })
+                .then(function (result) {
+                    should.exist(result);
+
+                    // published_at of post 1 is 2015-01-01 00:00:00
+                    // default blog TZ is UTC
+                    result.posts[0].url.should.equal('/2015/01/01/html-ipsum/');
+                });
+        });
+
         it('can include tags', function () {
             return PostAPI.read({
                 context: {user: testUtils.DataGenerator.Content.users[1].id},
