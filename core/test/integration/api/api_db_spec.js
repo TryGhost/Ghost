@@ -33,6 +33,7 @@ describe('DB API', function () {
 
     should.exist(dbAPI);
 
+    // @TODO: routing test
     it('delete all content (owner)', function () {
         return models.Post.findAll(testUtils.context.internal)
             .then(function (results) {
@@ -83,6 +84,7 @@ describe('DB API', function () {
             });
     });
 
+    // @TODO: remove, but double check where is the permission error thrown and look if we can improve the target unit with unit tests!!!
     it('delete all content (admin)', function () {
         return dbAPI.deleteAllContent(testUtils.context.admin).then(function (result) {
             should.exist(result.db);
@@ -101,6 +103,8 @@ describe('DB API', function () {
         });
     });
 
+    // @TODO: remove, but double check where is the permission error thrown and look if we can improve the target unit with unit tests!!!
+    // e.g. console.log(err), look at the stack and look if the target unit is covered good enough for this use case
     it('delete all content is denied (editor, author, contributor & without authentication)', function () {
         return dbAPI.deleteAllContent(testUtils.context.editor).then(function () {
             throw new Error('Delete all content is not denied for editor.');
@@ -124,6 +128,8 @@ describe('DB API', function () {
         });
     });
 
+    // @TODO: remove, but double check where is the permission error thrown and look if we can improve the target unit with unit tests!!!
+    // e.g. console.log(err), look at the stack and look if the target unit is covered good enough for this use case
     it('export content is denied (editor, author, contributor & without authentication)', function () {
         return dbAPI.exportContent(testUtils.context.editor).then(function () {
             throw new Error('Export content is not denied for editor.');
@@ -147,6 +153,8 @@ describe('DB API', function () {
         });
     });
 
+    // @TODO: remove, but double check where is the permission error thrown and look if we can improve the target unit with unit tests!!!
+    // e.g. console.log(err), look at the stack and look if the target unit is covered good enough for this use case
     it('import content is denied (editor, author, contributor & without authentication)', function () {
         var file = {
             originalname: 'myFile.json',
