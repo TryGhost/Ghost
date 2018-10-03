@@ -44,7 +44,7 @@ function initialiseServices() {
         scheduling.init({
             schedulerUrl: config.get('scheduling').schedulerUrl,
             active: config.get('scheduling').active,
-            apiUrl: urlService.utils.urlFor('api', {version: 'deprecated'}, true),
+            apiUrl: urlService.utils.urlFor('api', {version: 'deprecated', versionType: 'content'}, true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         })
