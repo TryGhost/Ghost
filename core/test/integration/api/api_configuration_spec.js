@@ -17,6 +17,7 @@ describe('Configuration API', function () {
 
     should.exist(ConfigurationAPI);
 
+    // @TODO: routing test
     it('can read basic config and get all expected properties', function (done) {
         ConfigurationAPI.read().then(function (response) {
             var props;
@@ -39,6 +40,7 @@ describe('Configuration API', function () {
         }).catch(done);
     });
 
+    // @TODO: routing test
     it('can read about config and get all expected properties', function (done) {
         ConfigurationAPI.read({key: 'about'}).then(function (response) {
             var props;
