@@ -19,22 +19,6 @@ describe('Advanced Browse', function () {
 
     describe('Bad behaviour', function () {
         // @TODO: put to unit test, you can test the default filter & enforce filter functions
-        it('Try to get draft posts (filter with in)', function (done) {
-            PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                _.each(result.posts, function (post) {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
-
-                done();
-            }).catch(done);
-        });
-        // @TODO: put to unit test, you can test the default filter & enforce filter functions
         it('Try to get draft posts (filter with group)', function (done) {
             PostAPI.browse({filter: 'page:false,(status:draft)', limit: 'all'}).then(function (result) {
                 // 1. Result should have the correct base structure

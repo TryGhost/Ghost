@@ -206,6 +206,48 @@ describe('Unit: models/post', function () {
                 });
             });
         });
+
+        describe('bad behavior', function () {
+            it('generates correct query for - filter: status:[published,draft], limit of: all', function () {
+                const queries = [];
+                tracker.install();
+
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'status:[published,draft]',
+                    limit: 'all',
+                    status: 'published',
+                    where: {
+                        statements: [{
+                            prop: 'status',
+                            op: '=',
+                            value: 'published'
+                        }]
+                    }
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?)');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'draft',
+                        'published'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'draft',
+                        'published'
+                    ]);
+                });
+            });
+        });
     });
 });
 
@@ -228,6 +270,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
     after(function () {
         sandbox.restore();
+    });
+
+    describe('processOptions', function () {
+        it('generates correct where statement when filter contains unpermitted values', function () {
+            const options = {
+                filter: 'status:[published,draft]',
+                limit: 'all',
+                status: 'published'
+            };
+
+            models.Post.processOptions(options);
+
+            options.where.statements[0].should.deepEqual({
+                prop: 'status',
+                op: '=',
+                value: 'published'
+            });
+        });
     });
 
     describe('add', function () {
