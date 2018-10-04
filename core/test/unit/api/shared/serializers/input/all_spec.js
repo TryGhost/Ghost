@@ -1,5 +1,5 @@
 const should = require('should');
-const serializers = require('../../../../../../server/api/shared/serializers');
+const shared = require('../../../../../../server/api/shared');
 
 describe('Unit: v2/utils/serializers/input/all', function () {
     it('transforms into model readable format', function () {
@@ -13,11 +13,13 @@ describe('Unit: v2/utils/serializers/input/all', function () {
             options: {
                 include: 'tags',
                 fields: 'id,status',
-                formats: 'html'
+                formats: 'html',
+                context: {}
             }
         };
 
-        serializers.input.all(apiConfig, frame);
+        shared.serializers.input.all(apiConfig, frame);
+
         should.exist(frame.original.include);
         should.exist(frame.original.fields);
         should.exist(frame.original.formats);
@@ -31,5 +33,47 @@ describe('Unit: v2/utils/serializers/input/all', function () {
         frame.options.withRelated.should.eql(['tags']);
         frame.options.columns.should.eql(['id','status','html']);
         frame.options.formats.should.eql(['html']);
+    });
+
+    describe('extra allowed internal options', function () {
+        it('internal access', function () {
+            const frame = {
+                options: {
+                    context: {
+                        internal: true
+                    },
+                    transacting: true,
+                    forUpdate: true
+                }
+            };
+
+            const apiConfig = {};
+
+            shared.serializers.input.all(apiConfig, frame);
+
+            should.exist(frame.options.transacting);
+            should.exist(frame.options.forUpdate);
+            should.exist(frame.options.context);
+        });
+
+        it('no internal access', function () {
+            const frame = {
+                options: {
+                    context: {
+                        user: true
+                    },
+                    transacting: true,
+                    forUpdate: true
+                }
+            };
+
+            const apiConfig = {};
+
+            shared.serializers.input.all(apiConfig, frame);
+
+            should.not.exist(frame.options.transacting);
+            should.not.exist(frame.options.forUpdate);
+            should.exist(frame.options.context);
+        });
     });
 });

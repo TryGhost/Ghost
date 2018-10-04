@@ -9,48 +9,6 @@ describe('Unit: api/shared/validators/input/all', function () {
         sandbox.restore();
     });
 
-    describe('extra allowed internal options', function () {
-        it('internal access', function () {
-            const frame = {
-                options: {
-                    context: {
-                        internal: true
-                    },
-                    transacting: true,
-                    forUpdate: true
-                }
-            };
-
-            const apiConfig = {};
-
-            shared.validators.input.all(apiConfig, frame);
-
-            should.exist(frame.options.transacting);
-            should.exist(frame.options.forUpdate);
-            should.exist(frame.options.context);
-        });
-
-        it('no internal access', function () {
-            const frame = {
-                options: {
-                    context: {
-                        user: true
-                    },
-                    transacting: true,
-                    forUpdate: true
-                }
-            };
-
-            const apiConfig = {};
-
-            shared.validators.input.all(apiConfig, frame);
-
-            should.not.exist(frame.options.transacting);
-            should.not.exist(frame.options.forUpdate);
-            should.exist(frame.options.context);
-        });
-    });
-
     describe('validate options', function () {
         it('default', function () {
             const frame = {
