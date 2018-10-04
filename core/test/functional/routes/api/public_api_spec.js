@@ -212,6 +212,27 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts with published and draft status, should not return drafts', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=status:published,status:draft'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
+                jsonResponse.posts.forEach((post) => {
+                    post.page.should.be.false();
+                    post.status.should.eql('published');
+                });
+
+                done();
+            });
+    });
+
     it('[deprecated] browse posts with page non matching filter', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts&include=tag,author'))
             .expect('Content-Type', /json/)

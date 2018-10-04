@@ -18,23 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Bad behaviour', function () {
-        it('Try to get draft posts (filter with or)', function (done) {
-            // @TODO: put to routing test
-            PostAPI.browse({filter: 'status:published,status:draft', limit: 'all'}).then(function (result) {
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                _.each(result.posts, function (post) {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
-
-                done();
-            }).catch(done);
-        });
-
         // @TODO: put to unit test, you can test the default filter & enforce filter functions
         it('Try to get draft posts (filter with in)', function (done) {
             PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
