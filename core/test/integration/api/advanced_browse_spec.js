@@ -19,13 +19,6 @@ describe('Advanced Browse', function () {
 
     // @TODO: remove, but double check assertions
     describe('Old Use Cases', function () {
-        describe('Handling "page" (staticPages)', function () {
-            // @TODO: remove
-            it.skip('Will NOT return both posts and pages from post API', function (done) {
-                done();
-            });
-        });
-
         describe('Empty results', function () {
             // @TODO: remove, but double check assertions
             it('Will return empty result if tag has no posts', function (done) {
