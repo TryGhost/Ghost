@@ -3,27 +3,31 @@ const models = require('../../models');
 module.exports = {
     docName: 'pages',
     browse: {
+        options: [
+            'include',
+            'filter',
+            'status',
+            'fields',
+            'formats',
+            'absolute_urls',
+            'page',
+            'limit',
+            'order',
+            'debug'
+        ],
         validation: {
-            queryOptions: [
-                'include',
-                'filter',
-                'status',
-                'fields',
-                'formats',
-                'absolute_urls',
-                'page',
-                'limit',
-                'order',
-                'debug'
-            ],
-            queryOptionsValues: {
-                include: ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'authors', 'authors.roles'],
-                formats: models.Post.allowedFormats
+            options: {
+                include: {
+                    values: ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'authors', 'authors.roles']
+                },
+                formats: {
+                    values: models.Post.allowedFormats
+                }
             }
         },
         permissions: true,
-        query(options) {
-            return models.Post.findPage(options.modelOptions);
+        query(frame) {
+            return models.Post.findPage(frame.options);
         }
     }
 };
