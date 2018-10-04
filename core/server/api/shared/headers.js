@@ -34,15 +34,15 @@ const disposition = {
 };
 
 module.exports = {
-    get(result, config = {}) {
+    get(result, apiConfig = {}) {
         let headers = {};
 
-        if (config.disposition) {
-            Object.assign(headers, disposition[config.disposition.type](result, config.disposition));
+        if (apiConfig.disposition) {
+            Object.assign(headers, disposition[apiConfig.disposition.type](result, apiConfig.disposition));
         }
 
-        if (config.cacheInvalidate) {
-            Object.assign(headers, cacheInvalidate(result, config.cacheInvalidate));
+        if (apiConfig.cacheInvalidate) {
+            Object.assign(headers, cacheInvalidate(result, apiConfig.cacheInvalidate));
         }
 
         return headers;
