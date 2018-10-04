@@ -14,11 +14,5 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
-    },
-
-    // we don't want to set the model property but we do want to ensure we have
-    // up-to-date settings so pause via afterModel
-    afterModel() {
-        return this.get('settings').reload();
     }
 });

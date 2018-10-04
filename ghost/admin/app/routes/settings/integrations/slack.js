@@ -6,11 +6,10 @@ export default AuthenticatedRoute.extend(styleBody, {
     settings: service(),
 
     titleToken: 'Slack',
-
     classNames: ['settings-view-integrations-slack'],
 
-    afterModel() {
-        return this.get('settings').reload();
+    beforeModel() {
+        return this.settings.reload();
     },
 
     actions: {
