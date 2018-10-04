@@ -735,29 +735,12 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
 
                 // Each user should have the correct count
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'joe-bloggs';
-                }).count.posts.should.eql(4);
-
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'contributor';
-                }).count.posts.should.eql(0);
-
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'slimer-mcectoplasm';
-                }).count.posts.should.eql(0);
-
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'jimothy-bogendath';
-                }).count.posts.should.eql(0);
-
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'smith-wellingsworth';
-                }).count.posts.should.eql(0);
-
-                _.find(jsonResponse.users, function (user) {
-                    return user.slug === 'ghost';
-                }).count.posts.should.eql(7);
+                _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
+                _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
 
                 const ids = jsonResponse.users
                     .filter(user => (user.slug !== 'ghost'))
