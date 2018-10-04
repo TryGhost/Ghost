@@ -1,9 +1,12 @@
+const debug = require('ghost-ignition').debug('api:v2:utils:permissions');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const permissions = require('../../../services/permissions');
 const common = require('../../../lib/common');
 
 const nonePublicAuth = (config, options) => {
+    debug('check admin permissions');
+
     const singular = config.docName.replace(/s$/, '');
 
     let unsafeAttrObject = config.unsafeAttrs && _.has(options, `data.[${config.docName}][0]`) ? _.pick(options.data[config.docName][0], config.unsafeAttrs) : {},
@@ -44,9 +47,13 @@ const nonePublicAuth = (config, options) => {
 
 module.exports = {
     handle(apiConfig, frame) {
+        debug('handle');
+
         frame.options.context = permissions.parseContext(frame.options.context);
 
         if (frame.options.context.public) {
+            debug('check content permissions');
+
             // @TODO: The permission layer relies on the API format from v0.1. The permission layer should define
             //        it's own format and should not re-use or rely on the API format. For now we have to simulate the v0.1
             //        structure. We should raise an issue asap.

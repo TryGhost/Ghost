@@ -1,3 +1,4 @@
+const debug = require('ghost-ignition').debug('api:shared:headers');
 const INVALIDATE_ALL = '/*';
 
 const cacheInvalidate = (result, options = {}) => {
@@ -45,6 +46,7 @@ module.exports = {
             Object.assign(headers, cacheInvalidate(result, apiConfig.cacheInvalidate));
         }
 
+        debug(headers);
         return headers;
     }
 };

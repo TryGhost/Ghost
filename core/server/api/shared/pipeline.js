@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:shared');
+const debug = require('ghost-ignition').debug('api:shared:pipeline');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const shared = require('../shared');
@@ -13,6 +13,7 @@ const STAGES = {
 
             // CASE: do validation completely yourself
             if (typeof apiImpl.validation === 'function') {
+                debug('validation function call');
                 return apiImpl.validation(frame);
             }
 
@@ -50,11 +51,13 @@ const STAGES = {
 
         // CASE: handle permissions completely yourself
         if (typeof apiImpl.permissions === 'function') {
+            debug('permissions function call');
             return apiImpl.permissions(frame);
         }
 
         // CASE: skip stage completely
         if (apiImpl.permissions === false) {
+            debug('disabled permissions');
             return Promise.resolve();
         }
 
@@ -118,6 +121,7 @@ const pipeline = (apiController, apiUtils) => {
 
             // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
             if (typeof apiImpl === 'function') {
+                debug('ctrl function call');
                 return apiImpl(frame);
             }
 

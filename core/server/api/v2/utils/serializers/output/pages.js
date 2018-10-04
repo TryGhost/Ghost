@@ -1,16 +1,22 @@
+const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:pages');
+
 module.exports = {
-    all(models, apiConfig, options) {
+    all(models, apiConfig, frame) {
+        debug('all');
+
         if (models.meta) {
-            options.response = {
-                pages: models.data.map(model => model.toJSON(options.modelOptions)),
+            frame.response = {
+                pages: models.data.map(model => model.toJSON(frame.modelOptions)),
                 meta: models.meta
             };
 
             return;
         }
 
-        options.response = {
-            pages: [models.toJSON(options.modelOptions)]
+        frame.response = {
+            pages: [models.toJSON(frame.modelOptions)]
         };
+
+        debug(frame.response);
     }
 };

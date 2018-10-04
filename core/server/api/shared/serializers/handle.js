@@ -1,9 +1,12 @@
+const debug = require('ghost-ignition').debug('api:shared:serializers:handle');
 const Promise = require('bluebird');
 const sequence = require('../../../lib/promise/sequence');
 const common = require('../../../lib/common');
 
 module.exports.input = (apiConfig, apiSerializers, frame) => {
-    const ops = [];
+    debug('input');
+
+    const tasks = [];
     const sharedSerializers = require('./input');
 
     if (!apiSerializers) {
@@ -16,37 +19,40 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
 
     // ##### SHARED ALL SERIALIZATION
 
-    ops.push(function serializeAllShared() {
+    tasks.push(function serializeAllShared() {
         return sharedSerializers.all(apiConfig, frame);
     });
 
     // ##### API VERSION RESOURCE SERIALIZATION
 
     if (apiSerializers.all) {
-        ops.push(function serializeOptionsShared() {
+        tasks.push(function serializeOptionsShared() {
             return apiSerializers.all(apiConfig, frame);
         });
     }
 
     if (apiSerializers[apiConfig.docName]) {
         if (apiSerializers[apiConfig.docName].all) {
-            ops.push(function serializeOptionsShared() {
+            tasks.push(function serializeOptionsShared() {
                 return apiSerializers[apiConfig.docName].all(apiConfig, frame);
             });
         }
 
         if (apiSerializers[apiConfig.docName][apiConfig.method]) {
-            ops.push(function serializeOptionsShared() {
+            tasks.push(function serializeOptionsShared() {
                 return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, frame);
             });
         }
     }
 
-    return sequence(ops);
+    debug(tasks);
+    return sequence(tasks);
 };
 
 module.exports.output = (response = {}, apiConfig, apiSerializers, options) => {
-    const ops = [];
+    debug('output');
+
+    const tasks = [];
 
     if (!apiConfig) {
         return Promise.reject(new common.errors.IncorrectUsageError());
@@ -60,17 +66,18 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, options) => {
 
     if (apiSerializers[apiConfig.docName]) {
         if (apiSerializers[apiConfig.docName].all) {
-            ops.push(function serializeOptionsShared() {
+            tasks.push(function serializeOptionsShared() {
                 return apiSerializers[apiConfig.docName].all(response, apiConfig, options);
             });
         }
 
         if (apiSerializers[apiConfig.docName][apiConfig.method]) {
-            ops.push(function serializeOptionsShared() {
+            tasks.push(function serializeOptionsShared() {
                 return apiSerializers[apiConfig.docName][apiConfig.method](response, apiConfig, options);
             });
         }
     }
 
-    return sequence(ops);
+    debug(tasks);
+    return sequence(tasks);
 };

@@ -1,9 +1,11 @@
-const debug = require('ghost-ignition').debug('api:shared');
+const debug = require('ghost-ignition').debug('api:shared:validators:handle');
 const Promise = require('bluebird');
 const common = require('../../../lib/common');
 const sequence = require('../../../lib/promise/sequence');
 
 module.exports.input = (apiConfig, apiValidators, frame) => {
+    debug('input');
+
     const tasks = [];
     const sharedValidators = require('./input');
 
@@ -44,6 +46,5 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
     }
 
     debug(tasks);
-
     return sequence(tasks);
 };

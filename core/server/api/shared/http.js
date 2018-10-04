@@ -1,8 +1,11 @@
+const debug = require('ghost-ignition').debug('api:shared:http');
 const shared = require('../shared');
 const models = require('../../models');
 
 const http = (apiImpl) => {
     return (req, res, next) => {
+        debug('request');
+
         const frame = new shared.Frame({
             body: req.body,
             file: req.file,
@@ -24,8 +27,11 @@ const http = (apiImpl) => {
 
         apiImpl(frame)
             .then((result) => {
+                debug(result);
+
                 // CASE: api ctrl wants to handle the express response (e.g. streams)
                 if (typeof result === 'function') {
+                    debug('ctrl function call');
                     return result(req, res, next);
                 }
 
@@ -34,9 +40,11 @@ const http = (apiImpl) => {
                 res.set(shared.headers.get(result, apiImpl.headers));
 
                 if (apiImpl.response && apiImpl.response.format === 'plain') {
+                    debug('plain text response');
                     return res.send(result);
                 }
 
+                debug('json response');
                 res.json(result || {});
             })
             .catch((err) => {

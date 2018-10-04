@@ -1,8 +1,8 @@
+const debug = require('ghost-ignition').debug('api:shared:validators:input:all');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
 const validation = require('../../../../data/validation');
-const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
 
 const GLOBAL_VALIDATORS = {
     id: {matches: /^[a-f\d]{24}$|^1$|me/i},
@@ -36,7 +36,11 @@ const validate = (config, attrs) => {
     });
 
     _.each(attrs, (value, key) => {
+        debug(key, value);
+
         if (config && config[key] && config[key].values) {
+            debug('ctrl validation');
+
             const valuesAsArray = value.trim().toLowerCase().split(',');
             const unallowedValues = _.filter(valuesAsArray, (value) => {
                 return !config[key].values.includes(value);
@@ -46,6 +50,7 @@ const validate = (config, attrs) => {
                 errors.push(new common.errors.ValidationError());
             }
         } else if (GLOBAL_VALIDATORS[key]) {
+            debug('global validation');
             errors = errors.concat(validation.validate(value, key, GLOBAL_VALIDATORS[key]));
         }
     });
@@ -54,9 +59,7 @@ const validate = (config, attrs) => {
 };
 
 module.exports = function validateAll(apiConfig, frame) {
-    if (!frame.options.context.internal) {
-        frame.options = _.omit(frame.options, INTERNAL_OPTIONS);
-    }
+    debug('validate all');
 
     let validationErrors = validate(apiConfig.options, frame.options);
 

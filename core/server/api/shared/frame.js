@@ -1,3 +1,4 @@
+const debug = require('ghost-ignition').debug('api:shared:frame');
 const _ = require('lodash');
 
 class Frame {
@@ -12,6 +13,8 @@ class Frame {
     }
 
     configure(apiConfig) {
+        debug('configure');
+
         if (apiConfig.options) {
             if (typeof apiConfig.options === 'function') {
                 apiConfig.options = apiConfig.options(this);
@@ -57,6 +60,10 @@ class Frame {
         this.user = this.original.user;
         this.file = this.original.file;
         this.files = this.original.files;
+
+        debug('original', this.original);
+        debug('options', this.options);
+        debug('data', this.data);
     }
 }
 
