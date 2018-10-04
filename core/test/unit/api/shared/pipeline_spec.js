@@ -23,9 +23,9 @@ describe('Unit: api/shared/pipeline', function () {
                     const apiImpl = {
                         validation: sandbox.stub().resolves('response')
                     };
-                    const options = {};
+                    const frame = {};
 
-                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, options)
+                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
                         .then((response) => {
                             response.should.eql('response');
 
@@ -46,27 +46,36 @@ describe('Unit: api/shared/pipeline', function () {
                         docName: 'posts'
                     };
                     const apiImpl = {
+                        options: ['include'],
                         validation: {
-                            queryOptions: ['include']
+                            options: {
+                                include: {
+                                    required: true
+                                }
+                            }
                         }
                     };
-                    const options = {
-                        apiOptions: {}
+                    const frame = {
+                        options: {}
                     };
 
-                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, options)
+                    return shared.pipeline.STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame)
                         .then(() => {
                             shared.validators.handle.input.calledOnce.should.be.true();
                             shared.validators.handle.input.calledWith(
                                 {
                                     docName: 'posts',
-                                    queryOptions: ['include']
+                                    options: {
+                                        include: {
+                                            required: true
+                                        }
+                                    }
                                 },
                                 {
                                     posts: {}
                                 },
                                 {
-                                    apiOptions: {}
+                                    options: {}
                                 }).should.be.true();
                         });
                 });
@@ -87,9 +96,9 @@ describe('Unit: api/shared/pipeline', function () {
             it('key is missing', function () {
                 const apiConfig = {};
                 const apiImpl = {};
-                const options = {};
+                const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.IncorrectUsageError).should.be.true();
@@ -102,9 +111,9 @@ describe('Unit: api/shared/pipeline', function () {
                 const apiImpl = {
                     permissions: sandbox.stub().resolves('lol')
                 };
-                const options = {};
+                const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then((response) => {
                         response.should.eql('lol');
                         apiImpl.permissions.calledOnce.should.be.true();
@@ -117,9 +126,9 @@ describe('Unit: api/shared/pipeline', function () {
                 const apiImpl = {
                     permissions: false
                 };
-                const options = {};
+                const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
                         apiUtils.permissions.handle.called.should.be.false();
                     });
@@ -130,9 +139,9 @@ describe('Unit: api/shared/pipeline', function () {
                 const apiImpl = {
                     permissions: true
                 };
-                const options = {};
+                const frame = {};
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
                         apiUtils.permissions.handle.calledOnce.should.be.true();
                     });
@@ -147,11 +156,11 @@ describe('Unit: api/shared/pipeline', function () {
                         unsafeAttrs: ['test']
                     }
                 };
-                const options = {
-                    apiOptions: {}
+                const frame = {
+                    options: {}
                 };
 
-                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, options)
+                return shared.pipeline.STAGES.permissions(apiUtils, apiConfig, apiImpl, frame)
                     .then(() => {
                         apiUtils.permissions.handle.calledOnce.should.be.true();
                         apiUtils.permissions.handle.calledWith(
@@ -160,7 +169,7 @@ describe('Unit: api/shared/pipeline', function () {
                                 unsafeAttrs: ['test']
                             },
                             {
-                                apiOptions: {}
+                                options: {}
                             }).should.be.true();
                     });
             });
@@ -205,8 +214,8 @@ describe('Unit: api/shared/pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, apiUtils, apiConfig, apiImpl, options) {
-                options.response = response;
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, apiUtils, apiConfig, apiImpl, frame) {
+                frame.response = response;
             });
 
             return result.add()

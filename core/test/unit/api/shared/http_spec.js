@@ -34,16 +34,16 @@ describe('Unit: api/shared/http', function () {
         shared.http(apiImpl)(req, res, next);
 
         Object.keys(apiImpl.args[0][0]).should.eql([
+            'original',
+            'options',
             'data',
-            'query',
-            'params',
+            'user',
             'file',
-            'files',
-            'apiOptions'
+            'files'
         ]);
 
         apiImpl.args[0][0].data.should.eql({a: 'a'});
-        apiImpl.args[0][0].apiOptions.should.eql({
+        apiImpl.args[0][0].options.should.eql({
             context: {
                 user: null,
                 client: null,

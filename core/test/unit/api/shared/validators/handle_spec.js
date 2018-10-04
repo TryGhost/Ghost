@@ -28,7 +28,8 @@ describe('Unit: api/shared/validators/handle', function () {
         });
 
         it('ensure validators are called', function () {
-            sandbox.stub(shared.validators.input.options, 'all').resolves();
+            const getStub = sandbox.stub();
+            sandbox.stub(shared.validators.input, 'all').get(() => {return getStub;});
 
             const apiValidators = {
                 all: {
@@ -37,9 +38,6 @@ describe('Unit: api/shared/validators/handle', function () {
                 posts: {
                     add: sandbox.stub().resolves()
                 },
-                options: {
-                    all: sandbox.stub().resolves()
-                },
                 users: {
                     add: sandbox.stub().resolves()
                 }
@@ -47,11 +45,10 @@ describe('Unit: api/shared/validators/handle', function () {
 
             return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {context: {}})
                 .then(() => {
-                    shared.validators.input.options.all.calledOnce.should.be.true();
+                    getStub.calledOnce.should.be.true();
                     apiValidators.all.add.calledOnce.should.be.true();
                     apiValidators.posts.add.calledOnce.should.be.true();
                     apiValidators.users.add.called.should.be.false();
-                    apiValidators.options.all.calledOnce.should.be.true();
                 });
         });
     });
