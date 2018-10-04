@@ -11,7 +11,7 @@ var should = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-describe('Invites API', function () {
+describe.skip('Invites API', function () {
     before(testUtils.teardown);
     before(testUtils.setup('invites', 'settings', 'users:roles', 'perms:invite', 'perms:init'));
 
