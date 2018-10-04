@@ -185,6 +185,33 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts with page filter', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(1);
+
+                const page = _.map(jsonResponse.posts, 'page');
+                page.should.matchEach(true);
+
+                jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[5].id);
+
+                done();
+            });
+    });
+
     it('browse posts: request absolute urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())

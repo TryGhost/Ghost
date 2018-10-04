@@ -20,48 +20,6 @@ describe('Advanced Browse', function () {
     // @TODO: remove, but double check assertions
     describe('Old Use Cases', function () {
         describe('Handling "page" (staticPages)', function () {
-            // @TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
-            // @TODO: remove, but double check assertions
-            it('Will return only pages when requested', function (done) {
-                PostAPI.browse({filter: 'page:true'}).then(function (result) {
-                    var ids, page;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(2);
-
-                    // All posts should be marked as page 'true'
-                    page = _.map(result.posts, 'page');
-                    page.should.matchEach(true);
-
-                    // Match exact items
-                    ids = _.map(result.posts, 'id');
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[20].id,
-                        testUtils.filterData.data.posts[14].id
-                    ]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(2);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-
             // @TODO: remove
             it.skip('Will NOT return both posts and pages from post API', function (done) {
                 done();
