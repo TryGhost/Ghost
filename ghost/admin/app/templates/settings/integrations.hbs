@@ -100,28 +100,6 @@
             </div>
         </div>
     </section>
-
-    {{#if config.enableDeveloperExperiments}}
-        <section class="apps-grid-container pt6">
-            <div class="flex flex-row items-center pb2">
-                <span class="dib flex-grow-1 midgrey">Custom integrations</span>
-                <button class="gh-btn gh-btn-green"><span>Add custom integration</span></button>
-            </div>
-
-            <div class="apps-grid">
-                {{#each integrations}}
-                    ...
-                {{else}}
-                    <div class="flex flex-column justify-center mih40 miw-100">
-                        <p class="ma0 pa0 tc midgrey">
-                            Use API keys and webhooks to create custom integrations.<br>
-                            No custom integrations.
-                        </p>
-                    </div>
-                {{/each}}
-            </div>
-        </section>
-    {{/if}}
 </section>
 
 {{outlet}}
