@@ -102,6 +102,38 @@ describe('Unit: models/post', function () {
                 ]);
             });
         });
+
+        it('generates correct query for - filter: published_at:>\'2015-07-20\', limit of: 5, with related: tags', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: 5,
+                withRelated: 'tags'
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?)');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    '2015-07-20'
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    '2015-07-20',
+                    5
+                ]);
+            });
+        });
     });
 });
 

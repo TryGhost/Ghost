@@ -18,32 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe.skip('6. Posts filter="published_at:>\'2015-07-20\'" limit="5"}}', function () {
-            // @TODO: assert the SQL
-            it('Will fetch 5 posts after a given date.', function (done) {
-                PostAPI.browse({
-                    filter: 'published_at:>\'2015-07-20\'',
-                    limit: 5,
-                    include: 'tags'
-                }).then(function (result) {
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // TODO: make dates work
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    // TODO complete meta data assertions
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe('7. Users filter: "website:-null", order: "website"', function () {
             // @TODO: remove
             it('Will fetch users that have a website and order them by website', function (done) {
