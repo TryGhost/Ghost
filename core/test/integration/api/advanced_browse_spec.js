@@ -19,50 +19,6 @@ describe('Advanced Browse', function () {
 
     describe('Primary Tags / Primary Authors', function () {
         // @TODO: assert SQL in unit test
-        it('Will fetch posts which have a primary tag of photo', function (done) {
-            PostAPI.browse({
-                filter: 'primary_tag:photo',
-                include: 'tags'
-            }).then(function (result) {
-                var ids;
-
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                // 2. The data part of the response should be correct
-                // We should have 5 matching items
-                result.posts.should.be.an.Array().with.lengthOf(4);
-
-                ids = _.map(result.posts, 'id');
-                ids.should.eql([
-                    testUtils.filterData.data.posts[10].id,
-                    testUtils.filterData.data.posts[8].id,
-                    testUtils.filterData.data.posts[2].id,
-                    testUtils.filterData.data.posts[1].id
-                ]);
-
-                _.each(result.posts, function (post) {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
-
-                // 3. The meta object should contain the right details
-                result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                result.meta.pagination.page.should.eql(1);
-                result.meta.pagination.limit.should.eql(15);
-                result.meta.pagination.pages.should.eql(1);
-                result.meta.pagination.total.should.eql(4);
-                should.equal(result.meta.pagination.next, null);
-                should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
-        });
-
-        // @TODO: assert SQL in unit test
         it('Will fetch posts which have a primary author', function (done) {
             PostAPI.browse({
                 filter: 'primary_author:leslie',
