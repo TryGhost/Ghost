@@ -1,13 +1,13 @@
 <section class="gh-canvas">
     <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Apps</h2>
+        <h2 class="gh-canvas-title" data-test-screen-title>Integrations</h2>
     </header>
 
     <section class="apps-grid-container">
-        <span class="apps-grid-title">Available integrations</span>
+        <span class="apps-grid-title">Built-in integrations</span>
         <div class="apps-grid">
             <div class="apps-grid-cell" data-test-app="slack">
-                {{#link-to "settings.apps.slack" data-test-link="slack"}}
+                {{#link-to "settings.integrations.slack" data-test-link="slack"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
                         <figure class="apps-card-app-icon" style="background-image:url(assets/img/slackicon.png)"></figure>
@@ -31,7 +31,7 @@
             </div>
 
             <div class="apps-grid-cell" data-test-app="amp">
-                {{#link-to "settings.apps.amp" data-test-link="amp"}}
+                {{#link-to "settings.integrations.amp" data-test-link="amp"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
                         <figure class="apps-card-app-icon" style="background-image:url(assets/img/ampicon.png)"></figure>
@@ -55,7 +55,7 @@
             </div>
 
             <div class="apps-grid-cell" data-test-app="unsplash">
-                {{#link-to "settings.apps.unsplash" data-test-link="unsplash"}}
+                {{#link-to "settings.integrations.unsplash" data-test-link="unsplash"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
                         <figure class="apps-card-app-icon" style="background-image:url(assets/img/unsplashicon.png);background-size:45px;"></figure>
@@ -79,7 +79,7 @@
             </div>
 
             <div class="apps-grid-cell" data-test-app="zapier">
-                {{#link-to "settings.apps.zapier" data-test-link="zapier"}}
+                {{#link-to "settings.integrations.zapier" data-test-link="zapier"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
                         <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:45px;"></figure>
@@ -98,6 +98,5 @@
                 {{/link-to}}
             </div>
         </div>
-        <p class="apps-grid-note">(More coming soon!)</p>
     </section>
 </section>

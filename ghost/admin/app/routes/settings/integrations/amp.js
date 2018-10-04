@@ -4,7 +4,7 @@ import styleBody from 'ghost-admin/mixins/style-body';
 export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'AMP',
 
-    classNames: ['settings-view-apps-amp'],
+    classNames: ['settings-view-integrations-amp'],
 
     actions: {
         save() {

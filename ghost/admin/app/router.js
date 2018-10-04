@@ -52,7 +52,7 @@ Router.map(function () {
     this.route('settings.design', {path: '/settings/design'}, function () {
         this.route('uploadtheme');
     });
-    this.route('settings.apps', {path: '/settings/apps'}, function () {
+    this.route('settings.integrations', {path: '/settings/integrations'}, function () {
         this.route('slack', {path: 'slack'});
         this.route('amp', {path: 'amp'});
         this.route('unsplash', {path: 'unsplash'});

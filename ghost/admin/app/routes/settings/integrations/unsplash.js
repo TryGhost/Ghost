@@ -8,7 +8,7 @@ export default AuthenticatedRoute.extend(styleBody, {
     settings: service(),
 
     titleToken: 'Unsplash',
-    classNames: ['settings-view-apps-unsplash'],
+    classNames: ['settings-view-integrations-unsplash'],
 
     beforeModel() {
         let settings = this.get('settings');

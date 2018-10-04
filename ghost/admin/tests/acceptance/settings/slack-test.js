@@ -6,7 +6,7 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Settings - Apps - Slack', function () {
+describe('Acceptance: Settings - Integrations - Slack', function () {
     let application;
 
     beforeEach(function () {
@@ -19,7 +19,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
 
     it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        await visit('/settings/apps/slack');
+        await visit('/settings/integrations/slack');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/slack');
+        await visit('/settings/integrations/slack');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -39,7 +39,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/slack');
+        await visit('/settings/integrations/slack');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -49,7 +49,7 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/slack');
+        await visit('/settings/integrations/slack');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
@@ -63,10 +63,10 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         });
 
         it('it validates and saves a slack url properly', async function () {
-            await visit('/settings/apps/slack');
+            await visit('/settings/integrations/slack');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/slack');
 
             await fillIn('[data-test-slack-url-input]', 'notacorrecturl');
             await click('[data-test-save-button]');
@@ -118,10 +118,10 @@ describe('Acceptance: Settings - Apps - Slack', function () {
         });
 
         it('warns when leaving without saving', async function () {
-            await visit('/settings/apps/slack');
+            await visit('/settings/integrations/slack');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/slack');
 
             await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958430');
             await triggerEvent('[data-test-slack-url-input]', 'blur');
@@ -135,9 +135,9 @@ describe('Acceptance: Settings - Apps - Slack', function () {
 
             expect(currentURL(), 'currentURL').to.equal('/settings/design');
 
-            await visit('/settings/apps/slack');
+            await visit('/settings/integrations/slack');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/slack');
 
             // settings were not saved
             expect(

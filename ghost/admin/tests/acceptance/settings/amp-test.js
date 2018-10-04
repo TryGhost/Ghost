@@ -10,7 +10,7 @@ import {
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Settings - Apps - AMP', function () {
+describe('Acceptance: Settings - Integrations - AMP', function () {
     let application;
 
     beforeEach(function () {
@@ -23,7 +23,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
 
     it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        await visit('/settings/apps/amp');
+        await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -33,7 +33,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/amp');
+        await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -43,7 +43,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/amp');
+        await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -53,7 +53,7 @@ describe('Acceptance: Settings - Apps - AMP', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/amp');
+        await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
@@ -67,10 +67,10 @@ describe('Acceptance: Settings - Apps - AMP', function () {
         });
 
         it('it enables or disables AMP properly and saves it', async function () {
-            await visit('/settings/apps/amp');
+            await visit('/settings/integrations/amp');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
             // AMP is enabled by default
             expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
@@ -104,10 +104,10 @@ describe('Acceptance: Settings - Apps - AMP', function () {
         });
 
         it('warns when leaving without saving', async function () {
-            await visit('/settings/apps/amp');
+            await visit('/settings/integrations/amp');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
             // AMP is enabled by default
             expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
@@ -125,9 +125,9 @@ describe('Acceptance: Settings - Apps - AMP', function () {
 
             expect(currentURL(), 'currentURL').to.equal('/team');
 
-            await visit('/settings/apps/amp');
+            await visit('/settings/integrations/amp');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
             // settings were not saved
             expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
