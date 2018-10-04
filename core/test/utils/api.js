@@ -63,7 +63,7 @@ function getApiQuery(route) {
 
 function getApiPath(options) {
     const baseAPIPath = '/ghost/api/';
-    switch(options.version) {
+    switch (options.version) {
         case 'deprecated':
             return `${baseAPIPath}v0.1/`;
         case 'active':
