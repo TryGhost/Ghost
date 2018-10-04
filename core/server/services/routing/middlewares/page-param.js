@@ -1,5 +1,5 @@
-const common = require('../../../lib/common/index'),
-    urlService = require('../../url/index');
+const common = require('../../../lib/common'),
+    urlService = require('../../url');
 
 module.exports = function handlePageParam(req, res, next, page) {
     // routeKeywords.page: 'page'
