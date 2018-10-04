@@ -1,4 +1,11 @@
-import Route from '@ember/routing/route';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import CurrentUserSettings from '../../../mixins/current-user-settings';
 
-export default Route.extend({
+export default AuthenticatedRoute.extend(CurrentUserSettings, {
+    beforeModel() {
+        this._super(...arguments);
+        return this.get('session.user')
+            .then(this.transitionAuthor())
+            .then(this.transitionEditor());
+    }
 });
