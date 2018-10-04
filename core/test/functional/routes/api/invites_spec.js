@@ -56,6 +56,31 @@ describe('Invites API', function () {
         });
     });
 
+    describe('read', function () {
+        it('default', function (done) {
+            request.get(testUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.invites);
+                    jsonResponse.invites.should.have.length(1);
+
+                    testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+
+                    done();
+                });
+        });
+    });
+
     describe('add', function () {
         it('default', function (done) {
             request.post(testUtils.API.getApiQuery('invites/'))
@@ -80,6 +105,38 @@ describe('Invites API', function () {
                     testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
                     jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[0].id);
 
+                    done();
+                });
+        });
+
+        it('user exists', function (done) {
+            request.post(testUtils.API.getApiQuery('invites/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send({
+                    invites: [{email: 'ghost-author@example.com', role_id: testUtils.existingData.roles[1].id}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });
+
+    describe('destroy', function () {
+        it('default', function (done) {
+            request.del(testUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
                     done();
                 });
         });
