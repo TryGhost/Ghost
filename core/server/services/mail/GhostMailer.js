@@ -51,6 +51,11 @@ GhostMailer.prototype.send = function (message) {
         help = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://docs.ghost.org/docs/mail-config'}),
         errorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
 
+    // CASE: mail is disabled
+    if (!config.get('mail')) {
+        return Promise.resolve(common.i18n.t('notices.mail.disabled'));
+    }
+
     // important to clone message as we modify it
     message = _.clone(message) || {};
     to = message.to || false;

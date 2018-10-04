@@ -49,5 +49,6 @@
         "useTinfoil": true,
         "useStructuredData": true
     },
-    "useMinFiles": false
+    "useMinFiles": false,
+    "mail": false
 }
