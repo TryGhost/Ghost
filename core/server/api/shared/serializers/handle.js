@@ -14,25 +14,11 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
         return Promise.reject(new common.errors.IncorrectUsageError());
     }
 
-    // ##### SHARED OPTIONS SERIALIZATION
+    // ##### SHARED ALL SERIALIZATION
 
-    if (sharedSerializers.options) {
-        if (sharedSerializers.options.all) {
-            ops.push(function serializeOptionsShared() {
-                return sharedSerializers.options.all(apiConfig, frame);
-            });
-        }
-    }
-
-    // ##### API VERSION OPTIONS SERIALIZATION
-
-    if (apiSerializers.options) {
-        if (apiSerializers.options.all) {
-            ops.push(function serializeOptionsShared() {
-                return apiSerializers.options.all(apiConfig, frame);
-            });
-        }
-    }
+    ops.push(function serializeAllShared() {
+        return sharedSerializers.all(apiConfig, frame);
+    });
 
     // ##### API VERSION RESOURCE SERIALIZATION
 
