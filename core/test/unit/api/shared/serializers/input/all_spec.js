@@ -1,5 +1,5 @@
 const should = require('should');
-const serializers = require('../../../../../../server/api/v2/utils/serializers/index');
+const serializers = require('../../../../../../server/api/shared/serializers');
 
 describe('Unit: v2/utils/serializers/input/all', function () {
     it('transforms into model readable format', function () {
