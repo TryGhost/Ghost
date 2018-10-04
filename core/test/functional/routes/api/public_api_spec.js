@@ -175,7 +175,7 @@ describe('Public API', function () {
                 // We should have 2 matching items
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
 
-                // Each post must either have the author 'leslie' or 'pat'
+                // Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author
                 const authors = _.map(jsonResponse.posts, function (post) {
                     return post.primary_author.slug;
                 });
