@@ -26,7 +26,10 @@
                 <div class="gh-setting-desc">Explore pre-built templates for common automation tasks</div>
                 <div class="gh-setting-content-extended">
                     <div id="zapier-templates">
-                        <script src="https://zapier.com/apps/embed/widget.js?services=ghost&container=true&limit=10&html_id=zapier-templates"></script>
+                        {{!-- we don't want the script loading during tests because it errors --}}
+                        {{#unless isTesting}}
+                            <script src="https://zapier.com/apps/embed/widget.js?services=ghost&container=true&limit=10&html_id=zapier-templates"></script>
+                        {{/unless}}
                     </div>
                 </div>
             </div>
