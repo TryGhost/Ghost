@@ -4,7 +4,7 @@ A mini-module to style a [sywac](http://sywac.io/) instance in a standard way
 
 ## Install
 
-Either: `npm i @tryghost/pretty-cli --save` 
+Either: `npm install @tryghost/pretty-cli --save`
 
 Or: `yarn add @tryghost/pretty-cli`
 
@@ -12,7 +12,7 @@ Or: `yarn add @tryghost/pretty-cli`
 
 E.g. `const prettyCLI = require('@tryghost/pretty-cli');`
 
-`prettyCLI` is a pre-styled instance of the [sywac](http://sywac.io/) API.  
+`prettyCLI` is a pre-styled instance of the [sywac](http://sywac.io/) API.
 
 See the [sywac quickstart](http://sywac.io/docs/) and [config guide](http://sywac.io/docs/sync-config.html) for full usage.
 
