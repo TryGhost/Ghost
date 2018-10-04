@@ -7,8 +7,8 @@ module.exports = {
         return require('./http');
     },
 
-    get Options() {
-        return require('./options');
+    get Frame() {
+        return require('./frame');
     },
 
     get pipeline() {

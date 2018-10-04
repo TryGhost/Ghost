@@ -100,11 +100,19 @@ const pipeline = (apiController, apiUtils) => {
                 options = {};
             }
 
-            if (!(options instanceof shared.Options)) {
-                options = new shared.Options({
-                    data: data,
-                    apiOptions: Object.assign({context: {}}, options)
+            if (!(options instanceof shared.Frame)) {
+                frame = new shared.Frame({
+                    body: data,
+                    options: options,
+                    context: {}
                 });
+
+                frame.configure({
+                    options: apiImpl.options,
+                    data: apiImpl.data
+                });
+            } else {
+                frame = options;
             }
 
             // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
