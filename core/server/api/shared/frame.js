@@ -39,7 +39,7 @@ class Frame {
 
         this.options.context = this.original.context;
 
-        if (this.original.body) {
+        if (this.original.body && Object.keys(this.original.body).length) {
             this.data = this.original.body;
         } else {
             if (apiConfig.data) {

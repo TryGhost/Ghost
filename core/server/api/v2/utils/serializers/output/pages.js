@@ -6,7 +6,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                pages: models.data.map(model => model.toJSON(frame.modelOptions)),
+                pages: models.data.map(model => model.toJSON(frame.options)),
                 meta: models.meta
             };
 
@@ -14,7 +14,7 @@ module.exports = {
         }
 
         frame.response = {
-            pages: [models.toJSON(frame.modelOptions)]
+            pages: [models.toJSON(frame.options)]
         };
 
         debug(frame.response);

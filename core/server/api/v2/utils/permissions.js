@@ -4,13 +4,13 @@ const _ = require('lodash');
 const permissions = require('../../../services/permissions');
 const common = require('../../../lib/common');
 
-const nonePublicAuth = (config, options) => {
+const nonePublicAuth = (apiConfig, frame) => {
     debug('check admin permissions');
 
-    const singular = config.docName.replace(/s$/, '');
+    const singular = apiConfig.docName.replace(/s$/, '');
 
-    let unsafeAttrObject = config.unsafeAttrs && _.has(options, `data.[${config.docName}][0]`) ? _.pick(options.data[config.docName][0], config.unsafeAttrs) : {},
-        permsPromise = permissions.canThis(options.modelOptions.context)[config.method][singular](options.modelOptions.id, unsafeAttrObject);
+    let unsafeAttrObject = apiConfig.unsafeAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`) ? _.pick(frame.data[apiConfig.docName][0], apiConfig.unsafeAttrs) : {},
+        permsPromise = permissions.canThis(frame.options.context)[apiConfig.method][singular](frame.options.id, unsafeAttrObject);
 
     return permsPromise.then((result) => {
         /*
@@ -23,14 +23,14 @@ const nonePublicAuth = (config, options) => {
          * TODO: This is currently only needed because of the posts model and the contributor role. Once we extend the
          * contributor role to be able to edit existing tags, this concept can be removed.
          */
-        if (result && result.excludedAttrs && _.has(options, `data.[${config.docName}][0]`)) {
-            options.data[config.docName][0] = _.omit(options.data[config.docName][0], result.excludedAttrs);
+        if (result && result.excludedAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`)) {
+            frame.data[apiConfig.docName][0] = _.omit(frame.data[apiConfig.docName][0], result.excludedAttrs);
         }
     }).catch((err) => {
         if (err instanceof common.errors.NoPermissionError) {
             err.message = common.i18n.t('errors.api.utils.noPermissionToCall', {
-                method: config.method,
-                docName: config.docName
+                method: apiConfig.method,
+                docName: apiConfig.docName
             });
             return Promise.reject(err);
         }

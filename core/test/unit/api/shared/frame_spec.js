@@ -82,7 +82,8 @@ describe('Unit: api/shared/frame', function () {
                 context: {user: 'id'},
                 options: {
                     id: 'id'
-                }
+                },
+                body: {}
             };
 
             const frame = new shared.Frame(original);
