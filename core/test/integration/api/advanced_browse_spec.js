@@ -18,50 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe.skip('5. Users - filter="posts.tags:photo" order="count.posts DESC" limit="3"', function () {
-            // @TODO: add support for joining through posts and tags for users
-            // @TODO: remove
-            it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function (done) {
-                UserAPI.browse({
-                    filter: 'posts.tags:special',
-                    order: 'count.posts DESC',
-                    limit: 3
-                }).then(function (result) {
-                    var ids;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('users');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 2 matching items
-                    result.users.should.be.an.Array().with.lengthOf(2);
-
-                    ids = _.map(result.users, 'id');
-
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[0].id,
-                        testUtils.filterData.data.posts[1].id
-                    ]);
-
-                    // TODO: add the order
-                    // TODO: manage the count
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(3);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(2);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe.skip('6. Posts filter="published_at:>\'2015-07-20\'" limit="5"}}', function () {
             // @TODO: assert the SQL
             it('Will fetch 5 posts after a given date.', function (done) {
