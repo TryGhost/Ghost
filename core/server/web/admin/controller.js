@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('admin:controller');
+const debug = require('ghost-ignition').debug('web:admin:controller');
 const path = require('path');
 const config = require('../../config');
 const updateCheck = require('../../update-check');

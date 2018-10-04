@@ -1,6 +1,6 @@
 const url = require('url');
 const path = require('path');
-const debug = require('ghost-ignition').debug('url-redirects');
+const debug = require('ghost-ignition').debug('web:shared:mw:url-redirects');
 const urlService = require('../../../services/url');
 
 const _private = {};

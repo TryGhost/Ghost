@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('app');
+const debug = require('ghost-ignition').debug('web:parent');
 const express = require('express');
 const config = require('../config');
 const compress = require('compression');

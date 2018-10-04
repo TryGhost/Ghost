@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api');
+const debug = require('ghost-ignition').debug('web:api:v2:content:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const express = require('express');
