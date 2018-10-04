@@ -1,6 +1,6 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
-    common = require('../../lib/common/index');
+    common = require('../../lib/common');
 
 /**
  * Why and when do we have to fetch `authors` by default?
