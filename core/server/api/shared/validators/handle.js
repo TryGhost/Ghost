@@ -3,6 +3,12 @@ const Promise = require('bluebird');
 const common = require('../../../lib/common');
 const sequence = require('../../../lib/promise/sequence');
 
+/**
+ * The shared validation handler runs the request through all the validation steps.
+ *
+ * 1. shared validation
+ * 2. api validation
+ */
 module.exports.input = (apiConfig, apiValidators, frame) => {
     debug('input');
 

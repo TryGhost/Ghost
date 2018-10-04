@@ -12,6 +12,10 @@ class Frame {
         this.files = [];
     }
 
+    /**
+     * If you instantiate a new frame, all the data you pass in, land in `this.original`.
+     * Based on the API ctrl implemented, this fn will pick allowed properties to either options or data.
+     */
     configure(apiConfig) {
         debug('configure');
 

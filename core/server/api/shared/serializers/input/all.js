@@ -13,6 +13,9 @@ const trimAndLowerCase = (params) => {
     });
 };
 
+/**
+ * Transform into model readable language.
+ */
 module.exports = function serializeAll(apiConfig, frame) {
     debug('serialize all');
 

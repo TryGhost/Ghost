@@ -85,6 +85,8 @@ const STAGES = {
 const pipeline = (apiController, apiUtils) => {
     const keys = Object.keys(apiController);
 
+    // CASE: api controllers are objects with configuration.
+    //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
     return keys.reduce((obj, key) => {
         const docName = apiController.docName;
         const method = key;
@@ -104,6 +106,7 @@ const pipeline = (apiController, apiUtils) => {
                 options = {};
             }
 
+            // CASE: http helper already creates it's own frame.
             if (!(options instanceof shared.Frame)) {
                 frame = new shared.Frame({
                     body: data,

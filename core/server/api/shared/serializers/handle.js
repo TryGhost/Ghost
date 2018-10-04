@@ -3,6 +3,12 @@ const Promise = require('bluebird');
 const sequence = require('../../../lib/promise/sequence');
 const common = require('../../../lib/common');
 
+/**
+ * The shared serialization handler runs the request through all the serialization steps.
+ *
+ * 1. shared serialization
+ * 2. api serialization
+ */
 module.exports.input = (apiConfig, apiSerializers, frame) => {
     debug('input');
 

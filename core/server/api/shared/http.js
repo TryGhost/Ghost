@@ -37,6 +37,7 @@ const http = (apiImpl) => {
 
                 res.status(apiImpl.statusCode || 200);
 
+                // CASE: generate headers based on the api ctrl configuration
                 res.set(shared.headers.get(result, apiImpl.headers));
 
                 if (apiImpl.response && apiImpl.response.format === 'plain') {
