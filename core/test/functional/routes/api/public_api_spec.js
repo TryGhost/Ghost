@@ -144,6 +144,37 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts with author filter', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=author:[joe-bloggs,pat,ghost]&include=authors'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+                const ids = _.map(jsonResponse.posts, 'id');
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                // 2. The data part of the response should be correct
+                // We should have 2 matching items
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
+
+                // Each post must either have the author 'leslie' or 'pat'
+                const authors = _.map(jsonResponse.posts, function (post) {
+                    return post.primary_author.slug;
+                });
+
+                authors.should.matchAny(/joe-bloggs|ghost'/);
+                done();
+            });
+    });
+
     it('browse posts: request absolute urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
