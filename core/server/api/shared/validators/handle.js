@@ -24,11 +24,9 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
     // ##### API VERSION VALIDATION
 
     if (apiValidators.all) {
-        if (apiValidators.all[apiConfig.method]) {
-            tasks.push(function allAPIVersion() {
-                return apiValidators.all[apiConfig.method](apiConfig, frame);
-            });
-        }
+        tasks.push(function allAPIVersion() {
+            return apiValidators.all[apiConfig.method](apiConfig, frame);
+        });
     }
 
     if (apiValidators[apiConfig.docName]) {

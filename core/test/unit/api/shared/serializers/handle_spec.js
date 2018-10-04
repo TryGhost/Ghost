@@ -28,22 +28,22 @@ describe('Unit: api/shared/serializers/handle', function () {
         });
 
         it('ensure serializers are called', function () {
+            const getStub = sandbox.stub();
+            sandbox.stub(shared.serializers.input, 'all').get(() => getStub);
+
             const apiSerializers = {
-                all: {
-                    add: sandbox.stub().resolves()
-                },
+                all: sandbox.stub().resolves(),
                 posts: {
+                    all: sandbox.stub().resolves(),
                     add: sandbox.stub().resolves()
-                },
-                options: {
-                    all: sandbox.stub().resolves()
                 }
             };
 
             return shared.serializers.handle.input({docName: 'posts', method: 'add'}, apiSerializers, {})
                 .then(() => {
-                    apiSerializers.all.add.calledOnce.should.be.true();
-                    apiSerializers.options.all.calledOnce.should.be.true();
+                    getStub.calledOnce.should.be.true();
+                    apiSerializers.all.calledOnce.should.be.true();
+                    apiSerializers.posts.all.calledOnce.should.be.true();
                     apiSerializers.posts.add.calledOnce.should.be.true();
                 });
         });

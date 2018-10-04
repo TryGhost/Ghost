@@ -23,11 +23,9 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     // ##### API VERSION RESOURCE SERIALIZATION
 
     if (apiSerializers.all) {
-        if (apiSerializers.all[apiConfig.method]) {
-            ops.push(function serializeOptionsShared() {
-                return apiSerializers.all[apiConfig.method](apiConfig, frame);
-            });
-        }
+        ops.push(function serializeOptionsShared() {
+            return apiSerializers.all(apiConfig, frame);
+        });
     }
 
     if (apiSerializers[apiConfig.docName]) {
