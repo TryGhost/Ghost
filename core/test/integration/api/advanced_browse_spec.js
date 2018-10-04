@@ -18,38 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe.skip('3. Tags - filter="count.posts:>=1" order="count.posts DESC" limit="all"', function () {
-            // @TODO add support for counts/aggregates in order & filter params
-            // @TODO: assert the SQL in the model unit test?
-            it('Will fetch all tags, ordered by post count, where the post count is at least 1.', function (done) {
-                TagAPI.browse({
-                    filter: 'count.posts:>=1',
-                    order: 'count.posts DESC',
-                    limit: 'all',
-                    include: 'count.posts'
-                }).then(function (result) {
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('tags');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 3 matching items
-                    result.tags.should.be.an.Array().with.lengthOf(3);
-
-                    // TODO: add the ordering
-                    // TODO: manage the count
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    // TODO complete meta data assertions
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe('4. Posts - filter="author:[leslie,pat]+(tag:hash-audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
             // @TODO: remove, but double check if a routing test uses include=author (deprecated test) and double check the assertions
