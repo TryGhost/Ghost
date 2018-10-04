@@ -300,9 +300,39 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(2);
+                        jsonResponse.posts.be.an.Array().with.lengthOf(2);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                        const featured = _.map(jsonResponse.posts, 'featured');
+                        featured.should.matchEach(true);
+
+                        done();
+                    });
+            });
+
+            it('can retrieve just non featured posts', function (done) {
+                request.get(testUtils.API.getApiQuery('posts/?filter=featured:false'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.be.an.Array().with.lengthOf(9);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                        const featured = _.map(jsonResponse.posts, 'featured');
+                        featured.should.matchEach(false);
+
                         done();
                     });
             });

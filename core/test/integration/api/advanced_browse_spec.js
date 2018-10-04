@@ -19,62 +19,6 @@ describe('Advanced Browse', function () {
 
     // @TODO: remove, but double check assertions
     describe('Old Use Cases', function () {
-        describe('Handling "featured"', function () {
-            // @TODO: remove, but double check assertions
-            it('Will fetch only non-featured posts when requested', function (done) {
-                PostAPI.browse({filter: 'featured:false'}).then(function (result) {
-                    var ids, featured;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(15);
-
-                    // All posts should be marked as featured 'false'
-                    featured = _.map(result.posts, 'featured');
-                    featured.should.matchEach(false);
-
-                    // Match exact items
-                    ids = _.map(result.posts, 'id');
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[19].id,
-                        testUtils.filterData.data.posts[17].id,
-                        testUtils.filterData.data.posts[16].id,
-                        testUtils.filterData.data.posts[15].id,
-                        testUtils.filterData.data.posts[12].id,
-                        testUtils.filterData.data.posts[11].id,
-                        testUtils.filterData.data.posts[10].id,
-                        testUtils.filterData.data.posts[9].id,
-                        testUtils.filterData.data.posts[8].id,
-                        testUtils.filterData.data.posts[6].id,
-                        testUtils.filterData.data.posts[5].id,
-                        testUtils.filterData.data.posts[3].id,
-                        testUtils.filterData.data.posts[2].id,
-                        testUtils.filterData.data.posts[1].id,
-                        testUtils.filterData.data.posts[0].id
-                    ]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(15);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe('Handling "page" (staticPages)', function () {
             // @TODO: remove, but double check assertions
             it('Will return only published posts by default', function (done) {
