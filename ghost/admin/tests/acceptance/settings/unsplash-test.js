@@ -5,7 +5,7 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Settings - Apps - Unsplash', function () {
+describe('Acceptance: Settings - Integrations - Unsplash', function () {
     let application;
 
     beforeEach(function () {
@@ -18,7 +18,7 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
 
     it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        await visit('/settings/apps/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -28,7 +28,7 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -38,7 +38,7 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -48,7 +48,7 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
@@ -62,10 +62,10 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
         });
 
         it('it can activate/deactivate', async function () {
-            await visit('/settings/apps/unsplash');
+            await visit('/settings/integrations/unsplash');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // verify we don't have an unsplash setting fixture loaded
             expect(
@@ -103,10 +103,10 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
         });
 
         it('warns when leaving without saving', async function () {
-            await visit('/settings/apps/unsplash');
+            await visit('/settings/integrations/unsplash');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             expect(
                 find('[data-test-checkbox="unsplash"]').prop('checked'),
@@ -126,9 +126,9 @@ describe('Acceptance: Settings - Apps - Unsplash', function () {
 
             expect(currentURL(), 'currentURL').to.equal('/settings/labs');
 
-            await visit('/settings/apps/unsplash');
+            await visit('/settings/integrations/unsplash');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // settings were not saved
             expect(find('[data-test-checkbox="unsplash"]').prop('checked'), 'Unsplash checkbox').to.be.true;

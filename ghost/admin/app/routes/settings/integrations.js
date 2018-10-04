@@ -6,8 +6,8 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     settings: service(),
 
-    titleToken: 'Settings - Apps',
-    classNames: ['settings-view-apps'],
+    titleToken: 'Settings - Integrations',
+    classNames: ['settings-view-integrations'],
 
     beforeModel() {
         this._super(...arguments);

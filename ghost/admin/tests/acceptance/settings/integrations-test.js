@@ -9,7 +9,7 @@ import {
 import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
 import {expect} from 'chai';
 
-describe('Acceptance: Settings - Apps', function () {
+describe('Acceptance: Settings - Integrations', function () {
     let application;
 
     beforeEach(function () {
@@ -22,7 +22,7 @@ describe('Acceptance: Settings - Apps', function () {
 
     it('redirects to signin when not authenticated', async function () {
         invalidateSession(application);
-        await visit('/settings/apps');
+        await visit('/settings/integrations');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -32,7 +32,7 @@ describe('Acceptance: Settings - Apps', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps');
+        await visit('/settings/integrations');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -42,7 +42,7 @@ describe('Acceptance: Settings - Apps', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps');
+        await visit('/settings/integrations');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
@@ -52,7 +52,7 @@ describe('Acceptance: Settings - Apps', function () {
         server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
-        await visit('/settings/apps');
+        await visit('/settings/integrations');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
@@ -66,7 +66,7 @@ describe('Acceptance: Settings - Apps', function () {
         });
 
         it('renders correctly', async function () {
-            await visit('/settings/apps');
+            await visit('/settings/integrations');
 
             // slack is not configured in the fixtures
             expect(
@@ -82,39 +82,39 @@ describe('Acceptance: Settings - Apps', function () {
         });
 
         it('it redirects to Slack when clicking on the grid', async function () {
-            await visit('/settings/apps');
+            await visit('/settings/integrations');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations');
 
             await click('[data-test-link="slack"]');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/slack');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/slack');
         });
 
         it('it redirects to AMP when clicking on the grid', async function () {
-            await visit('/settings/apps');
+            await visit('/settings/integrations');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations');
 
             await click('[data-test-link="amp"]');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/amp');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
         });
 
         it('it redirects to Unsplash when clicking on the grid', async function () {
-            await visit('/settings/apps');
+            await visit('/settings/integrations');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations');
 
             await click('[data-test-link="unsplash"]');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/apps/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
         });
     });
 });

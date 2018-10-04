@@ -7,7 +7,7 @@ export default AuthenticatedRoute.extend(styleBody, {
 
     titleToken: 'Slack',
 
-    classNames: ['settings-view-apps-slack'],
+    classNames: ['settings-view-integrations-slack'],
 
     afterModel() {
         return this.get('settings').reload();
