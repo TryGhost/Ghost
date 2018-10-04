@@ -32,7 +32,7 @@ describe('Unit: models/post', function () {
     });
 
     describe('filter', function () {
-        it('(1)', function () {
+        it('generates correct query for - filter: tags: [photo, video] + id: -{id},limit of: 3, with related: tags', function () {
             const queries = [];
             tracker.install();
 
