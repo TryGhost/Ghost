@@ -18,57 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Primary Tags / Primary Authors', function () {
-        // @TODO: assert SQL in unit test
-        it('Will fetch posts which have a primary author', function (done) {
-            PostAPI.browse({
-                filter: 'primary_author:leslie',
-                include: 'authors'
-            }).then(function (result) {
-                var returnedIds, insertedIds, clonedInsertedPosts;
-
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                // all posts
-                testUtils.filterData.data.posts.length.should.eql(21);
-
-                // 15 have the primary author leslie
-                result.posts.should.be.an.Array().with.lengthOf(15);
-
-                returnedIds = _.map(result.posts, 'id');
-
-                insertedIds = _.filter(testUtils.filterData.data.posts, {status: 'published'});
-                insertedIds = _.filter(insertedIds, {page: false});
-                insertedIds = _.filter(insertedIds, {author_id: testUtils.filterData.data.users[0].id});
-
-                insertedIds = _.map(insertedIds, 'id');
-                insertedIds.length.should.eql(15);
-
-                insertedIds.reverse();
-
-                returnedIds.should.eql(insertedIds);
-
-                _.each(result.posts, function (post) {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
-
-                // 3. The meta object should contain the right details
-                result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                result.meta.pagination.page.should.eql(1);
-                result.meta.pagination.limit.should.eql(15);
-                result.meta.pagination.pages.should.eql(1);
-                result.meta.pagination.total.should.eql(15);
-                should.equal(result.meta.pagination.next, null);
-                should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
-        });
-
         // @TODO: remove
         it('Will fetch empty list if no post has matching primary-tag', function (done) {
             PostAPI.browse({

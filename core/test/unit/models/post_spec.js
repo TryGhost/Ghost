@@ -115,7 +115,7 @@ describe('Unit: models/post', function () {
             return models.Post.findPage({
                 filter: 'published_at:>\'2015-07-20\'',
                 limit: 5,
-                withRelated: 'tags'
+                withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
                 queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?)');
@@ -135,38 +135,75 @@ describe('Unit: models/post', function () {
             });
         });
 
-        it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
-            const queries = [];
-            tracker.install();
+        describe('primary_tag/primary_author', function () {
+            it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
+                const queries = [];
+                tracker.install();
 
-            tracker.on('query', (query) => {
-                queries.push(query);
-                query.response([]);
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'primary_tag:photo',
+                    withRelated: ['tags']
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?))');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'photo',
+                        0,
+                        'public'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'photo',
+                        0,
+                        'public',
+                        15
+                    ]);
+                });
             });
 
-            return models.Post.findPage({
-                filter: 'primary_tag:photo',
-                withRelated: 'tags'
-            }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?))');
-                queries[0].bindings.should.eql([
-                    false,
-                    'published',
-                    'photo',
-                    0,
-                    'public'
-                ]);
+            it('generates correct query for - filter: primary_author:leslie, with related: authors', function () {
+                const queries = [];
+                tracker.install();
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
-                    false,
-                    'published',
-                    'photo',
-                    0,
-                    'public',
-                    15
-                ]);
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'primary_author:leslie',
+                    withRelated: ['authors']
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?))');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'leslie',
+                        0,
+                        'public'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'leslie',
+                        0,
+                        'public',
+                        15
+                    ]);
+                });
             });
         });
     });
