@@ -155,7 +155,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with author filter', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=author:[joe-bloggs,pat,ghost]&include=authors'))
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
