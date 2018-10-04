@@ -212,6 +212,32 @@ describe('Public API', function () {
             });
     });
 
+    it('[deprecated] browse posts with page non matching filter', function (done) {
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts&include=tag,author'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(0);
+
+                jsonResponse.meta.should.have.property('pagination');
+                jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(0);
+                should.equal(jsonResponse.meta.pagination.next, null);
+                should.equal(jsonResponse.meta.pagination.prev, null);
+
+                done();
+            });
+    });
+
     it('browse posts: request absolute urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
