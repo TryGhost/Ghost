@@ -10,24 +10,26 @@ export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'Unsplash',
     classNames: ['settings-view-integrations-unsplash'],
 
+    // reload settings to ensure we have latest values and pre-configure
+    // Unsplash to be active if the server doesn't have any unsplash setting
     beforeModel() {
-        let settings = this.get('settings');
+        let {settings} = this;
 
-        if (settings.get('unsplash')) {
-            return;
-        }
+        return settings.reload().then(() => {
+            if (settings.get('unsplash')) {
+                return;
+            }
 
-        // server doesn't have any unsplash settings by default but it can provide
-        // overrides via config:
-        // - isActive: use as default but allow settings override
-        // - applicationId: total override, no field is shown if present
-        let unsplash = UnsplashObject.create({
-            isActive: true
+            // server doesn't have any unsplash settings by default but it can provide
+            // overrides via config:
+            // - isActive: use as default but allow settings override
+            // - applicationId: total override, no field is shown if present
+            let unsplash = UnsplashObject.create({
+                isActive: true
+            });
+
+            settings.set('unsplash', unsplash);
         });
-
-        settings.set('unsplash', unsplash);
-
-        return unsplash;
     },
 
     actions: {
