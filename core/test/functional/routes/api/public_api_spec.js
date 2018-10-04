@@ -70,7 +70,7 @@ describe('Public API', function () {
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
 
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.pages);
                 should.exist(jsonResponse.meta);
                 jsonResponse.pages.should.have.length(1);
