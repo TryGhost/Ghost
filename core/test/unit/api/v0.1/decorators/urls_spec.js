@@ -1,13 +1,13 @@
 const url = require('url');
 const should = require('should');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
-const urlService = require('../../../../server/services/url');
-const urls = require('../../../../server/api/v0.1/decorators/urls');
+const testUtils = require('../../../../utils');
+const urlService = require('../../../../../server/services/url');
+const urls = require('../../../../../server/api/v0.1/decorators/urls');
 
 const sandbox = sinon.sandbox.create();
 
-describe('API:decorators:urls', function () {
+describe('Unit: api:v0.1:decorators:urls', function () {
     beforeEach(function () {
         sandbox.stub(urlService, 'getUrlByResourceId');
     });
