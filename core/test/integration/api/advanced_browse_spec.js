@@ -17,57 +17,6 @@ describe('Advanced Browse', function () {
     should.exist(TagAPI);
     should.exist(UserAPI);
 
-    describe('Count capabilities', function () {
-        // @TODO: remove, but double check assertions
-        it('can fetch and order by `count.posts` for users (published only)', function (done) {
-            UserAPI.browse({include: 'count.posts', order: 'count.posts ASC'}).then(function (result) {
-                var ids;
-
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('users');
-                result.should.have.property('meta');
-
-                // 2. The data part of the response should be correct
-                // We should have 5 matching items
-                result.users.should.be.an.Array().with.lengthOf(3);
-
-                // Each user should have the correct count
-                _.find(result.users, function (user) {
-                    return user.slug === 'leslie';
-                }).count.posts.should.eql(15);
-
-                _.find(result.users, function (user) {
-                    return user.slug === 'pat-smith';
-                }).count.posts.should.eql(3);
-
-                _.find(result.users, function (user) {
-                    return user.slug === 'camhowe';
-                }).count.posts.should.eql(0);
-
-                ids = _.map(result.users, 'id');
-
-                ids.should.eql([
-                    testUtils.filterData.data.users[2].id,
-                    testUtils.filterData.data.users[1].id,
-                    testUtils.filterData.data.users[0].id
-                ]);
-
-                // 3. The meta object should contain the right details
-                result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                result.meta.pagination.page.should.eql(1);
-                result.meta.pagination.limit.should.eql(15);
-                result.meta.pagination.pages.should.eql(1);
-                result.meta.pagination.total.should.eql(3);
-                should.equal(result.meta.pagination.next, null);
-                should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
-        });
-    });
-
     // @TODO: remove, but double check assertions
     describe('Old Use Cases', function () {
         // Please note: these tests are mostly here to help prove certain things whilst building out new behaviour

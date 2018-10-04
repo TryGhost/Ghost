@@ -715,6 +715,66 @@ describe('Public API', function () {
             });
     });
 
+    it('browse user with count.posts', function (done) {
+        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(6);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+
+                // Each user should have the correct count
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'joe-bloggs';
+                }).count.posts.should.eql(4);
+
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'contributor';
+                }).count.posts.should.eql(0);
+
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'slimer-mcectoplasm';
+                }).count.posts.should.eql(0);
+
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'jimothy-bogendath';
+                }).count.posts.should.eql(0);
+
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'smith-wellingsworth';
+                }).count.posts.should.eql(0);
+
+                _.find(jsonResponse.users, function (user) {
+                    return user.slug === 'ghost';
+                }).count.posts.should.eql(7);
+
+                const ids = jsonResponse.users
+                    .filter(user => (user.slug !== 'ghost'))
+                    .map(user=> user.id);
+
+                ids.should.eql([
+                    testUtils.DataGenerator.Content.users[1].id,
+                    testUtils.DataGenerator.Content.users[2].id,
+                    testUtils.DataGenerator.Content.users[3].id,
+                    testUtils.DataGenerator.Content.users[7].id,
+                    testUtils.DataGenerator.Content.users[0].id
+                ]);
+
+                done();
+            });
+    });
+
     it('[unsupported] browse user by email', function (done) {
         request
             .get(localUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
