@@ -447,6 +447,51 @@ describe('Public API', function () {
             });
     });
 
+    it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
+        request.get(testUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.tags);
+
+                jsonResponse.tags.should.be.an.Array().with.lengthOf(56);
+
+                // Each tag should have the correct count
+                _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'Getting Started';
+                }).count.posts.should.eql(7);
+
+                _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'kitchen sink';
+                }).count.posts.should.eql(2);
+
+                _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'bacon';
+                }).count.posts.should.eql(2);
+
+                _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'chorizo';
+                }).count.posts.should.eql(1);
+
+                _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'pollo';
+                }).count.posts.should.eql(0);
+
+               _.find(jsonResponse.tags, function (tag) {
+                    return tag.name === 'injection';
+                }).count.posts.should.eql(0);
+
+                done();
+            });
+    });
+
     it('denies access with invalid client_secret', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=invalid_secret'))
             .set('Origin', testUtils.API.getURL())
