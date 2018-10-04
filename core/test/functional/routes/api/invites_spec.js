@@ -35,7 +35,7 @@ describe('Invites API', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
-                    var jsonResponse = res.body;
+                    const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.invites);
                     jsonResponse.invites.should.have.length(2);
@@ -50,6 +50,35 @@ describe('Invites API', function () {
                     jsonResponse.invites[1].status.should.eql('sent');
                     jsonResponse.invites[1].email.should.eql('test2@ghost.org');
                     jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
+
+                    done();
+                });
+        });
+    });
+
+    describe('add', function () {
+        it('default', function (done) {
+            request.post(testUtils.API.getApiQuery('invites/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send({
+                    invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[0].id}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.invites);
+                    jsonResponse.invites.should.have.length(1);
+
+                    testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                    jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[0].id);
 
                     done();
                 });

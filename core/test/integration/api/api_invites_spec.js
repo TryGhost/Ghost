@@ -29,39 +29,6 @@ describe('Invites API', function () {
 
     describe('CRUD', function () {
         describe('Add', function () {
-            it('add invite 1', function (done) {
-                InvitesAPI.add({
-                    invites: [{email: 'test@example.com', role_id: testUtils.roles.ids.editor}]
-                }, testUtils.context.owner)
-                    .then(function (response) {
-                        response.invites.length.should.eql(1);
-                        response.invites[0].role_id.should.eql(testUtils.roles.ids.editor);
-                        done();
-                    }).catch(done);
-            });
-
-            it('add invite 2', function (done) {
-                InvitesAPI.add({
-                    invites: [{email: 'test2@example.com', role_id: testUtils.roles.ids.author}]
-                }, testUtils.context.owner)
-                    .then(function (response) {
-                        response.invites.length.should.eql(1);
-                        response.invites[0].role_id.should.eql(testUtils.roles.ids.author);
-                        done();
-                    }).catch(done);
-            });
-
-            it('add invite 3', function (done) {
-                InvitesAPI.add({
-                    invites: [{email: 'test3@example.com', role_id: testUtils.roles.ids.contributor}]
-                }, testUtils.context.owner)
-                    .then(function (response) {
-                        response.invites.length.should.eql(1);
-                        response.invites[0].role_id.should.eql(testUtils.roles.ids.contributor);
-                        done();
-                    }).catch(done);
-            });
-
             it('add invite: empty invites object', function (done) {
                 InvitesAPI.add({invites: []}, testUtils.context.owner)
                     .then(function () {
