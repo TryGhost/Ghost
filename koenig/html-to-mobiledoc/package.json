@@ -1,0 +1,20 @@
+{
+  "name": "@tryghost/html-to-mobiledoc",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/html-to-mobiledoc",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "devDependencies": {
+    "mocha": "5.2.0",
+    "should": "13.2.3",
+    "sinon": "6.3.5"
+  },
+  "dependencies": {}
+}
