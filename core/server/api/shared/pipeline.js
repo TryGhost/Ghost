@@ -54,7 +54,7 @@ const STAGES = {
         }
 
         // CASE: skip stage completely
-        if (typeof apiImpl.permissions === 'boolean' && apiImpl.permissions === false) {
+        if (apiImpl.permissions === false) {
             return Promise.resolve();
         }
 
