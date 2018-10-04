@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('blog');
+const debug = require('ghost-ignition').debug('web:site:app');
 const path = require('path');
 const express = require('express');
 

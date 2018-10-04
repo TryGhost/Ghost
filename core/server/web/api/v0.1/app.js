@@ -1,5 +1,5 @@
 // # API routes
-const debug = require('ghost-ignition').debug('api');
+const debug = require('ghost-ignition').debug('web:api:v0.1:app');
 const boolParser = require('express-query-boolean');
 const express = require('express');
 
