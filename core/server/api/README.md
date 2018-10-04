@@ -20,19 +20,21 @@ Each request goes through the following stages:
 The framework we are building pipes a request through these stages depending on the API controller implementation.
 
 
-## Options
+## Frame
 
-Is a class. We pass this instance per reference. The target function can modify the original instance.
-No need to return the class instance.
+Is a class, which holds all the information for API processing. We pass this instance per reference. 
+The target function can modify the original instance. No need to return the class instance.
 
 ### Structure
 
 ```
 {
-  apiOptions: Object,
-  modelOptions: Object,
+  original: Object,
+  options: Object,
   data: Object,
-  queryData: Object
+  user: Object,
+  file: Object,
+  files: Array
 }
 ```
 
@@ -40,17 +42,14 @@ No need to return the class instance.
 
 ```
 {
-  apiOptions: {
+  original: {
     include: 'tags'
   },
-  modelOptions: {
+  options: {
     withRelated: ['tags']
   },
   data: {
     posts: []
-  },
-  queryData: {
-    id: ObjectId
   }
 }
 ```
@@ -68,6 +67,8 @@ edit: function || object
 ```
 edit: {
   headers: object,
+  options: Array,
+  data: Array,
   validation: object | function,
   permissions: boolean | object | function,
   query: function
@@ -82,16 +83,35 @@ edit: {
   headers: {
     cacheInvalidate: true
   },
+  options: ['include']
   validation: {
-    queryOptions: ['include'],
-    queryOptionsValues: {
-      include: ['tags']
-    },
-    queryData: ['id']
+    options: {
+      include: {
+        required: true,
+        values: ['tags']
+      }
+    }
   },
   permissions: true,
-  query(options) {
-    return models.Post.findPage(options.modelOptions);
+  query(frame) {
+    return models.Post.edit(frame.data, frame.options);
+  }
+}
+```
+
+```
+read: {
+  data: ['slug']
+  validation: {
+    data: {
+      slug: {
+        values: ['eins']
+      }
+    }
+  },
+  permissions: true,
+  query(frame) {
+    return models.Post.findOne(frame.data, frame.options);
   }
 }
 ```
@@ -104,8 +124,8 @@ edit: {
   permissions: {
     unsafeAttrs: ['author']
   },
-  query(options) {
-    return models.Post.findPage(options.modelOptions);
+  query(frame) {
+    return models.Post.edit(frame.data, frame.options);
   }
 }
 ```
