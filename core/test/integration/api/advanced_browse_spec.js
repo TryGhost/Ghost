@@ -17,65 +17,6 @@ describe('Advanced Browse', function () {
     should.exist(TagAPI);
     should.exist(UserAPI);
 
-    describe('Primary Tags / Primary Authors', function () {
-        // @TODO: remove
-        it('Will fetch empty list if no post has matching primary-tag', function (done) {
-            PostAPI.browse({
-                filter: 'primary_tag:no-posts',
-                include: 'tags'
-            }).then(function (result) {
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                // 2. The data part of the response should be correct
-                // We should have 5 matching items
-                result.posts.should.be.an.Array().with.lengthOf(0);
-
-                // 3. The meta object should contain the right details
-                result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                result.meta.pagination.page.should.eql(1);
-                result.meta.pagination.limit.should.eql(15);
-                result.meta.pagination.pages.should.eql(1);
-                result.meta.pagination.total.should.eql(0);
-                should.equal(result.meta.pagination.next, null);
-                should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
-        });
-        // @TODO: remove
-        it('Will fetch empty list if primary_tag is internal', function (done) {
-            PostAPI.browse({
-                filter: 'primary_tag:no-posts',
-                include: 'tags'
-            }).then(function (result) {
-                // 1. Result should have the correct base structure
-                should.exist(result);
-                result.should.have.property('posts');
-                result.should.have.property('meta');
-
-                // 2. The data part of the response should be correct
-                // We should have 5 matching items
-                result.posts.should.be.an.Array().with.lengthOf(0);
-
-                // 3. The meta object should contain the right details
-                result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                result.meta.pagination.page.should.eql(1);
-                result.meta.pagination.limit.should.eql(15);
-                result.meta.pagination.pages.should.eql(1);
-                result.meta.pagination.total.should.eql(0);
-                should.equal(result.meta.pagination.next, null);
-                should.equal(result.meta.pagination.prev, null);
-
-                done();
-            }).catch(done);
-        });
-    });
-
     describe('Count capabilities', function () {
         // @TODO: put to routing tests, double check if it exists already, double check the assertions
         it('can fetch `count.posts` for tags (public data only)', function (done) {
