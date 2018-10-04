@@ -1,17 +1,17 @@
 module.exports = {
-    all(apiConfig, options) {
-        if (options.modelOptions.filter) {
-            if (options.modelOptions.filter.match(/page:\w+\+?/)) {
-                options.modelOptions.filter = options.modelOptions.filter.replace(/page:\w+\+?/, '');
+    all(apiConfig, frame) {
+        if (frame.options.filter) {
+            if (frame.options.filter.match(/page:\w+\+?/)) {
+                frame.options.filter = frame.options.filter.replace(/page:\w+\+?/, '');
             }
 
-            if (options.modelOptions.filter) {
-                options.modelOptions.filter = options.modelOptions.filter + '+page:true';
+            if (frame.options.filter) {
+                frame.options.filter = frame.options.filter + '+page:true';
             } else {
-                options.modelOptions.filter = 'page:true';
+                frame.options.filter = 'page:true';
             }
         } else {
-            options.modelOptions.filter = 'page:true';
+            frame.options.filter = 'page:true';
         }
     }
 };

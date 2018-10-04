@@ -43,27 +43,27 @@ const nonePublicAuth = (config, options) => {
 };
 
 module.exports = {
-    handle(config, options) {
-        options.modelOptions.context = permissions.parseContext(options.modelOptions.context);
+    handle(apiConfig, frame) {
+        frame.options.context = permissions.parseContext(frame.options.context);
 
-        if (options.modelOptions.context.public) {
+        if (frame.options.context.public) {
             // @TODO: The permission layer relies on the API format from v0.1. The permission layer should define
             //        it's own format and should not re-use or rely on the API format. For now we have to simulate the v0.1
             //        structure. We should raise an issue asap.
-            return permissions.applyPublicRules(config.docName, config.method, {
-                status: options.modelOptions.status,
-                id: options.modelOptions.id,
-                uuid: options.modelOptions.uuid,
-                slug: options.modelOptions.slug,
+            return permissions.applyPublicRules(apiConfig.docName, apiConfig.method, {
+                status: frame.options.status,
+                id: frame.options.id,
+                uuid: frame.options.uuid,
+                slug: frame.options.slug,
                 data: {
-                    status: options.queryData.status,
-                    id: options.queryData.id,
-                    uuid: options.queryData.uuid,
-                    slug: options.queryData.slug
+                    status: frame.data.status,
+                    id: frame.data.id,
+                    uuid: frame.data.uuid,
+                    slug: frame.data.slug
                 }
             });
         }
 
-        return nonePublicAuth(config, options);
+        return nonePublicAuth(apiConfig, frame);
     }
 };

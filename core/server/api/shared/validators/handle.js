@@ -3,8 +3,8 @@ const Promise = require('bluebird');
 const common = require('../../../lib/common');
 const sequence = require('../../../lib/promise/sequence');
 
-module.exports.input = (apiConfig, apiValidators, options) => {
-    const ops = [];
+module.exports.input = (apiConfig, apiValidators, frame) => {
+    const tasks = [];
     const sharedValidators = require('./input');
 
     if (!apiValidators) {
@@ -15,51 +15,37 @@ module.exports.input = (apiConfig, apiValidators, options) => {
         return Promise.reject(new common.errors.IncorrectUsageError());
     }
 
-    // ##### SHARED OPTIONS VALIDATION
-    if (sharedValidators.options) {
-        if (sharedValidators.options.all) {
-            ops.push(function validateOptionsShared() {
-                return sharedValidators.options.all(apiConfig, options);
-            });
-        }
-    }
+    // ##### SHARED ALL VALIDATION
 
-    // ##### API VERSION OPTIONS VALIDATION
-    if (apiValidators.options) {
-        if (apiValidators.options.all) {
-            ops.push(function validateOptionsApi() {
-                return apiValidators.options.all(apiConfig, options);
-            });
-        }
-    }
+    tasks.push(function allShared() {
+        return sharedValidators.all(apiConfig, frame);
+    });
 
-    // ##### SHARED RESOURCE VALIDATION
-    // ...
+    // ##### API VERSION VALIDATION
 
-    // ##### API VERSION RESOURCE VALIDATION
     if (apiValidators.all) {
         if (apiValidators.all[apiConfig.method]) {
-            ops.push(function validateResourceAllShared() {
-                return apiValidators.all[apiConfig.method](apiConfig, options);
+            tasks.push(function allAPIVersion() {
+                return apiValidators.all[apiConfig.method](apiConfig, frame);
             });
         }
     }
 
     if (apiValidators[apiConfig.docName]) {
         if (apiValidators[apiConfig.docName].all) {
-            ops.push(function validateResourceAllDocName() {
-                return apiValidators[apiConfig.docName].all(apiConfig, options);
+            tasks.push(function docNameAll() {
+                return apiValidators[apiConfig.docName].all(apiConfig, frame);
             });
         }
 
         if (apiValidators[apiConfig.docName][apiConfig.method]) {
-            ops.push(function validateResourceMethodDocName() {
-                return apiValidators[apiConfig.docName][apiConfig.method](apiConfig, options);
+            tasks.push(function docNameMethod() {
+                return apiValidators[apiConfig.docName][apiConfig.method](apiConfig, frame);
             });
         }
     }
 
-    debug(ops);
+    debug(tasks);
 
-    return sequence(ops);
+    return sequence(tasks);
 };

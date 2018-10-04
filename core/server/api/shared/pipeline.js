@@ -7,41 +7,41 @@ const sequence = require('../../lib/promise/sequence');
 
 const STAGES = {
     validation: {
-        input(apiUtils, apiConfig, apiImpl, options) {
+        input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: validation');
-            const ops = [];
+            const tasks = [];
 
             // CASE: do validation completely yourself
             if (typeof apiImpl.validation === 'function') {
-                return apiImpl.validation(options);
+                return apiImpl.validation(frame);
             }
 
-            ops.push(function doValidation() {
+            tasks.push(function doValidation() {
                 return shared.validators.handle.input(
                     Object.assign({}, apiConfig, apiImpl.validation),
                     apiUtils.validators.input,
-                    options
+                    frame
                 );
             });
 
-            return sequence(ops);
+            return sequence(tasks);
         }
     },
 
     serialisation: {
-        input(apiUtils, apiConfig, apiImpl, options) {
+        input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
-            return shared.serializers.handle.input(apiConfig, apiUtils.serializers.input, options);
+            return shared.serializers.handle.input(apiConfig, apiUtils.serializers.input, frame);
         },
-        output(response, apiUtils, apiConfig, apiImpl, options) {
+        output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
-            return shared.serializers.handle.output(response, apiConfig, apiUtils.serializers.output, options);
+            return shared.serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
         }
     },
 
-    permissions(apiUtils, apiConfig, apiImpl, options) {
+    permissions(apiUtils, apiConfig, apiImpl, frame) {
         debug('stages: permissions');
-        const ops = [];
+        const tasks = [];
 
         // CASE: it's required to put the permission key to avoid security holes
         if (!apiImpl.hasOwnProperty('permissions')) {
@@ -50,7 +50,7 @@ const STAGES = {
 
         // CASE: handle permissions completely yourself
         if (typeof apiImpl.permissions === 'function') {
-            return apiImpl.permissions(options);
+            return apiImpl.permissions(frame);
         }
 
         // CASE: skip stage completely
@@ -58,23 +58,24 @@ const STAGES = {
             return Promise.resolve();
         }
 
-        ops.push(function doPermissions() {
+        tasks.push(function doPermissions() {
             return apiUtils.permissions.handle(
                 Object.assign({}, apiConfig, apiImpl.permissions),
-                options
+                frame
             );
         });
 
-        return sequence(ops);
+        return sequence(tasks);
     },
 
-    query(apiUtils, apiConfig, apiImpl, options) {
+    query(apiUtils, apiConfig, apiImpl, frame) {
         debug('stages: query');
+
         if (!apiImpl.query) {
             return Promise.reject(new common.errors.IncorrectUsageError());
         }
 
-        return apiImpl.query(options);
+        return apiImpl.query(frame);
     }
 };
 
@@ -89,7 +90,7 @@ const pipeline = (apiController, apiUtils) => {
 
         obj[key] = function wrapper() {
             const apiConfig = {docName, method};
-            let options, data;
+            let options, data, frame;
 
             if (arguments.length === 2) {
                 data = arguments[0];
@@ -117,27 +118,27 @@ const pipeline = (apiController, apiUtils) => {
 
             // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
             if (typeof apiImpl === 'function') {
-                return apiImpl(options);
+                return apiImpl(frame);
             }
 
             return Promise.resolve()
                 .then(() => {
-                    return STAGES.validation.input(apiUtils, apiConfig, apiImpl, options);
+                    return STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
                 })
                 .then(() => {
-                    return STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, options);
+                    return STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
                 })
                 .then(() => {
-                    return STAGES.permissions(apiUtils, apiConfig, apiImpl, options);
+                    return STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
                 })
                 .then(() => {
-                    return STAGES.query(apiUtils, apiConfig, apiImpl, options);
+                    return STAGES.query(apiUtils, apiConfig, apiImpl, frame);
                 })
                 .then((response) => {
-                    return STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, options);
+                    return STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
                 })
                 .then(() => {
-                    return options.response;
+                    return frame.response;
                 });
         };
 

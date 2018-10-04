@@ -3,7 +3,7 @@ module.exports = {
         return require('./pages');
     },
 
-    get options() {
-        return require('./options');
+    get all() {
+        return require('./all');
     }
 };

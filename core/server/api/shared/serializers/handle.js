@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const sequence = require('../../../lib/promise/sequence');
 const common = require('../../../lib/common');
 
-module.exports.input = (apiConfig, apiSerializers, options) => {
+module.exports.input = (apiConfig, apiSerializers, frame) => {
     const ops = [];
     const sharedSerializers = require('./input');
 
@@ -19,7 +19,7 @@ module.exports.input = (apiConfig, apiSerializers, options) => {
     if (sharedSerializers.options) {
         if (sharedSerializers.options.all) {
             ops.push(function serializeOptionsShared() {
-                return sharedSerializers.options.all(apiConfig, options);
+                return sharedSerializers.options.all(apiConfig, frame);
             });
         }
     }
@@ -29,7 +29,7 @@ module.exports.input = (apiConfig, apiSerializers, options) => {
     if (apiSerializers.options) {
         if (apiSerializers.options.all) {
             ops.push(function serializeOptionsShared() {
-                return apiSerializers.options.all(apiConfig, options);
+                return apiSerializers.options.all(apiConfig, frame);
             });
         }
     }
@@ -39,7 +39,7 @@ module.exports.input = (apiConfig, apiSerializers, options) => {
     if (apiSerializers.all) {
         if (apiSerializers.all[apiConfig.method]) {
             ops.push(function serializeOptionsShared() {
-                return apiSerializers.all[apiConfig.method](apiConfig, options);
+                return apiSerializers.all[apiConfig.method](apiConfig, frame);
             });
         }
     }
@@ -47,13 +47,13 @@ module.exports.input = (apiConfig, apiSerializers, options) => {
     if (apiSerializers[apiConfig.docName]) {
         if (apiSerializers[apiConfig.docName].all) {
             ops.push(function serializeOptionsShared() {
-                return apiSerializers[apiConfig.docName].all(apiConfig, options);
+                return apiSerializers[apiConfig.docName].all(apiConfig, frame);
             });
         }
 
         if (apiSerializers[apiConfig.docName][apiConfig.method]) {
             ops.push(function serializeOptionsShared() {
-                return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, options);
+                return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, frame);
             });
         }
     }
