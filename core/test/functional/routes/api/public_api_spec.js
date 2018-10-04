@@ -457,36 +457,19 @@ describe('Public API', function () {
                 if (err) {
                     return done(err);
                 }
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.tags);
 
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.be.an.Array().with.lengthOf(56);
 
                 // Each tag should have the correct count
-                _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'Getting Started';
-                }).count.posts.should.eql(7);
-
-                _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'kitchen sink';
-                }).count.posts.should.eql(2);
-
-                _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'bacon';
-                }).count.posts.should.eql(2);
-
-                _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'chorizo';
-                }).count.posts.should.eql(1);
-
-                _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'pollo';
-                }).count.posts.should.eql(0);
-
-               _.find(jsonResponse.tags, function (tag) {
-                    return tag.name === 'injection';
-                }).count.posts.should.eql(0);
+                _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
+                _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
+                _.find(jsonResponse.tags, {name: 'pollo'}).count.posts.should.eql(0);
+                _.find(jsonResponse.tags, {name: 'injection'}).count.posts.should.eql(0);
 
                 done();
             });
