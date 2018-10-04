@@ -1,5 +1,6 @@
 const Api = require('sywac/api');
 const styles = require('./styles');
+const ui = require('./ui');
 /**
  * Pretty CLI
  *
@@ -24,3 +25,6 @@ module.exports.Api = Api;
 
 // Export the styles
 module.exports.styles = styles;
+
+// Export our ui tools
+module.exports.ui = ui;
