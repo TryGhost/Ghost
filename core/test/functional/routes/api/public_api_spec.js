@@ -100,7 +100,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with basic filters', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true'))
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true&include=tags'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -129,6 +129,16 @@ describe('Public API', function () {
                 jsonResponse.posts.forEach((post) => {
                     post.page.should.be.false();
                     post.status.should.eql('published');
+                });
+
+                // Each post must either be featured or have the tag 'kitchen-sink'
+                _.each(jsonResponse.posts, (post) => {
+                    if (post.featured) {
+                        post.featured.should.equal(true);
+                    } else {
+                        const tags = _.map(post.tags, 'slug');
+                        tags.should.containEql('kitchen-sink');
+                    }
                 });
 
                 // The meta object should contain the right detail

@@ -18,68 +18,6 @@ describe('Advanced Browse', function () {
     should.exist(UserAPI);
 
     describe('Advanced Use Cases', function () {
-        describe('4. Posts - filter="author:[leslie,pat]+(tag:hash-audio,image:-null)"', function () {
-             // @TODO: assert to SQL unit test? and remove. double check assertions
-            it('will fetch posts by the authors `leslie` or `pat` which are either have tag `hash-audio` or an image.', function (done) {
-                PostAPI.browse({
-                    filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
-                    include: 'authors,tags'
-                }).then(function (result) {
-                    var ids, authors;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 2 matching items
-                    result.posts.should.be.an.Array().with.lengthOf(6);
-
-                    // Each post must either have the author 'leslie' or 'pat'
-                    authors = _.map(result.posts, function (post) {
-                        return post.authors[0].slug;
-                    });
-                    authors.should.matchAny(/leslie|pat/);
-
-                    // Each post must either be featured or have the tag 'hash-audio'
-                    _.each(result.posts, function (post) {
-                        var tags = _.map(post.tags, 'slug');
-                        // This construct ensures we get an assertion or a failure
-                        if (!_.isEmpty(post.feature_image)) {
-                            post.feature_image.should.not.be.empty();
-                        } else {
-                            tags = _.map(post.tags, 'slug');
-                            tags.should.containEql('hash-audio');
-                        }
-                    });
-
-                    ids = _.map(result.posts, 'id');
-
-                    // ordered by authors.id
-                    ids.should.eql([
-                        testUtils.filterData.data.posts[6].id,
-                        testUtils.filterData.data.posts[13].id,
-                        testUtils.filterData.data.posts[11].id,
-                        testUtils.filterData.data.posts[10].id,
-                        testUtils.filterData.data.posts[8].id,
-                        testUtils.filterData.data.posts[7].id
-                    ]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(6);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    done();
-                }).catch(done);
-            });
-        });
-
         describe.skip('5. Users - filter="posts.tags:photo" order="count.posts DESC" limit="3"', function () {
             // @TODO: add support for joining through posts and tags for users
             // @TODO: remove

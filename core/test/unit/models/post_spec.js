@@ -67,6 +67,41 @@ describe('Unit: models/post', function () {
                 ]);
             });
         });
+
+        it('generates correct query for - filter: authors:[leslie,pat]+(tag:hash-audio,feature_image:-null), with related: authors,tags', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
+                withRelated: ['authors', 'tags']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) order by count(authors.id) DESC');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    'leslie',
+                    'pat',
+                    'hash-audio'
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) group by `posts`.`id`, `posts`.`id` order by count(authors.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    'leslie',
+                    'pat',
+                    'hash-audio',
+                    15
+                ]);
+            });
+        });
     });
 });
 
