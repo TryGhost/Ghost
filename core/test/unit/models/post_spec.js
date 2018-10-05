@@ -282,11 +282,82 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             models.Post.processOptions(options);
 
+            options.where.statements.should.be.an.Array().with.lengthOf(1);
             options.where.statements[0].should.deepEqual({
                 prop: 'status',
                 op: '=',
                 value: 'published'
             });
+        });
+    });
+
+    describe('enforcedFilters', function () {
+        const enforcedFilters = function enforcedFilters(model, options) {
+            return new models.Post(model).enforcedFilters(options);
+        };
+
+        it('returns published status filter for public context', function () {
+            const options = {
+                context: {
+                    public: true
+                }
+            };
+
+            const filter = enforcedFilters({}, options);
+
+            filter.should.equal('status:published');
+        });
+
+        it('returns no status filter for non public context', function () {
+            const options = {
+                context: {
+                    internal: true
+                }
+            };
+
+            const filter = enforcedFilters({}, options);
+
+            should(filter).equal(null);
+        });
+    });
+
+    describe('defaultFilters', function () {
+        const defaultFilters = function defaultFilters(model, options) {
+            return new models.Post(model).defaultFilters(options);
+        };
+
+        it('returns no default filter for internal context', function () {
+            const options = {
+                context: {
+                    internal: true
+                }
+            };
+
+            const filter = defaultFilters({}, options);
+
+            should(filter).equal(null);
+        });
+
+        it('returns page:false filter for public context', function () {
+            const options = {
+                context: {
+                    public: true
+                }
+            };
+
+            const filter = defaultFilters({}, options);
+
+            filter.should.equal('page:false');
+        });
+
+        it('returns page:false+status:published filter for non public context', function () {
+            const options = {
+                context: 'user'
+            };
+
+            const filter = defaultFilters({}, options);
+
+            filter.should.equal('page:false+status:published');
         });
     });
 
