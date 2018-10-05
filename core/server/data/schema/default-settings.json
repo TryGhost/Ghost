@@ -8,6 +8,9 @@
         },
         "notifications": {
             "defaultValue": "[]"
+        },
+        "session_secret": {
+            "defaultValue": null
         }
     },
     "blog": {
