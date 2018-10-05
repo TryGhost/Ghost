@@ -1,4 +1,3 @@
-import deparam from 'npm:deparam';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import {Response} from 'ember-cli-mirage';
@@ -37,26 +36,16 @@ describe('Acceptance: Signin', function () {
             let role = server.create('role', {name: 'Administrator'});
             server.create('user', {roles: [role], slug: 'test-user'});
 
-            server.post('/authentication/token', function (schema, {requestBody}) {
-                /* eslint-disable camelcase */
+            server.post('/session', function (schema, {requestBody}) {
                 let {
-                    grant_type: grantType,
                     username,
-                    password,
-                    client_id: clientId
-                } = deparam(requestBody);
+                    password
+                } = JSON.parse(requestBody);
 
-                expect(grantType, 'grant type').to.equal('password');
-                expect(username, 'username').to.equal('test@example.com');
-                expect(clientId, 'client id').to.equal('ghost-admin');
+                expect(username).to.equal('test@example.com');
 
                 if (password === 'thisissupersafe') {
-                    return {
-                        access_token: 'MirageAccessToken',
-                        expires_in: 3600,
-                        refresh_token: 'MirageRefreshToken',
-                        token_type: 'Bearer'
-                    };
+                    return new Response(201);
                 } else {
                     return new Response(401, {}, {
                         errors: [{
@@ -65,7 +54,6 @@ describe('Acceptance: Signin', function () {
                         }]
                     });
                 }
-                /* eslint-enable camelcase */
             });
         });
 

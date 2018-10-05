@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 function stubSlugEndpoint(server, type, slug) {
-    server.get('/ghost/api/v0.1/slugs/:type/:slug/', function (request) {
+    server.get('/ghost/api/v2/admin/slugs/:type/:slug/', function (request) {
         expect(request.params.type).to.equal(type);
         expect(request.params.slug).to.equal(slug);
 

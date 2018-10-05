@@ -1,5 +1,3 @@
-import OAuth2Authenticator from 'ghost-admin/authenticators/oauth2';
-import deparam from 'npm:deparam';
 import destroyApp from '../helpers/destroy-app';
 import startApp from '../helpers/start-app';
 import windowProxy from 'ghost-admin/utils/window-proxy';
@@ -25,85 +23,13 @@ describe('Acceptance: Authentication', function () {
         beforeEach(function () {
             // ensure the /users/me route doesn't error
             server.create('user');
-
             server.get('authentication/setup', function () {
                 return {setup: [{status: false}]};
             });
         });
-
         it('redirects to setup when setup isn\'t complete', async function () {
             await visit('settings/labs');
-
             expect(currentURL()).to.equal('/setup/one');
-        });
-    });
-
-    describe('token handling', function () {
-        beforeEach(function () {
-            // replace the default test authenticator with our own authenticator
-            application.register('authenticator:test', OAuth2Authenticator);
-
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role], slug: 'test-user'});
-        });
-
-        it('refreshes tokens on boot if last refreshed > 24hrs ago', async function () {
-            /* eslint-disable camelcase */
-            // the tokens here don't matter, we're using the actual oauth
-            // authenticator so we get the tokens back from the mirage endpoint
-            await authenticateSession(application, {
-                access_token: 'access_token',
-                refresh_token: 'refresh_token'
-            });
-
-            // authenticating the session above will trigger a token refresh
-            // request so we need to clear it to ensure we aren't testing the
-            // test behaviour instead of application behaviour
-            server.pretender.handledRequests = [];
-
-            // fake a longer session so it appears that we last refreshed > 24hrs ago
-            let {__container__: container} = application;
-            let {session} = container.lookup('service:session');
-            let newSession = session.get('content');
-            newSession.authenticated.expires_in = 172800 * 2;
-            session.get('store').persist(newSession);
-            /* eslint-enable camelcase */
-
-            await visit('/');
-
-            let requests = server.pretender.handledRequests;
-            let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
-
-            expect(refreshRequest, 'token refresh request').to.exist;
-            expect(refreshRequest.method, 'method').to.equal('POST');
-
-            let requestBody = deparam(refreshRequest.requestBody);
-            expect(requestBody.grant_type, 'grant_type').to.equal('refresh_token');
-            expect(requestBody.refresh_token, 'refresh_token').to.equal('MirageRefreshToken');
-        });
-
-        it('doesn\'t refresh tokens on boot if last refreshed < 24hrs ago', async function () {
-            /* eslint-disable camelcase */
-            // the tokens here don't matter, we're using the actual oauth
-            // authenticator so we get the tokens back from the mirage endpoint
-            await authenticateSession(application, {
-                access_token: 'access_token',
-                refresh_token: 'refresh_token'
-            });
-            /* eslint-enable camelcase */
-
-            // authenticating the session above will trigger a token refresh
-            // request so we need to clear it to ensure we aren't testing the
-            // test behaviour instead of application behaviour
-            server.pretender.handledRequests = [];
-
-            // we've only just refreshed tokens above so we should always be < 24hrs
-            await visit('/');
-
-            let requests = server.pretender.handledRequests;
-            let refreshRequest = requests.findBy('url', '/ghost/api/v0.1/authentication/token');
-
-            expect(refreshRequest, 'refresh request').to.not.exist;
         });
     });
 

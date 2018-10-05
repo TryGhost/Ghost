@@ -79,7 +79,7 @@ export default Controller.extend(ValidationEngine, {
 
     validateAndAuthenticate: task(function* () {
         let signin = this.get('signin');
-        let authStrategy = 'authenticator:oauth2';
+        let authStrategy = 'authenticator:cookie';
 
         this.set('flowErrors', '');
         // Manually trigger events for input fields, ensuring legacy compatibility with

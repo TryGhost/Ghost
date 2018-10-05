@@ -129,9 +129,7 @@ export default Controller.extend({
         },
 
         downloadFile(endpoint) {
-            let url = this.get('ghostPaths.url').api(endpoint);
-            let accessToken = this.get('session.data.authenticated.access_token');
-            let downloadURL = `${url}?access_token=${accessToken}`;
+            let downloadURL = this.get('ghostPaths.url').api(endpoint);
             let iframe = $('#iframeDownload');
 
             if (iframe.length === 0) {

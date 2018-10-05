@@ -14,14 +14,9 @@ export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
         return false;
     },
 
-    /* eslint-disable camelcase */
-    authorize(xhr) {
-        if (this.get('session.isAuthenticated')) {
-            let {access_token} = this.get('session.data.authenticated');
-            xhr.setRequestHeader('Authorization', `Bearer ${access_token}`);
-        }
+    authorize(/*xhr*/) {
+        // noop - we're using server-side session cookies
     },
-    /* eslint-enable camelcase */
 
     query(store, type, query) {
         let id;

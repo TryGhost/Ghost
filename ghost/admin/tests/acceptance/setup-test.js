@@ -200,7 +200,7 @@ describe('Acceptance: Setup', function () {
 
         it('handles invalid origin error on step 2', async function () {
             // mimick the API response for an invalid origin
-            server.post('/authentication/token', function () {
+            server.post('/session', function () {
                 return new Response(401, {}, {
                     errors: [
                         {
