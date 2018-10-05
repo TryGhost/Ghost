@@ -148,7 +148,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(6);
                 }
             });
 
@@ -190,6 +190,9 @@ describe('Integration: services/url/UrlService', function () {
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/author/contributor/');
+
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[5].id);
+            url.should.eql('/author/ad-2/');
         });
 
         it('getResource', function () {
@@ -452,7 +455,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(6);
                 }
             });
 
@@ -495,6 +498,9 @@ describe('Integration: services/url/UrlService', function () {
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/persons/contributor/');
+
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[5].id);
+            url.should.eql('/persons/ad-2/');
         });
 
         describe('update resource', function () {
@@ -692,7 +698,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(6);
                 }
             });
 
@@ -735,6 +741,9 @@ describe('Integration: services/url/UrlService', function () {
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/persons/contributor/');
+
+            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[5].id);
+            url.should.eql('/persons/ad-2/');
         });
     });
 });

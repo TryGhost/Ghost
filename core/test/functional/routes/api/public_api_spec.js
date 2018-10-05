@@ -462,7 +462,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -485,7 +485,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -635,7 +635,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
@@ -658,7 +658,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
