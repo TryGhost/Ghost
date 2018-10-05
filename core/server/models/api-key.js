@@ -2,12 +2,14 @@ const crypto = require('crypto');
 const ghostBookshelf = require('./base');
 const {Role} = require('./role');
 
+const createSecret = () => crypto.randomBytes(64).toString('hex');
+
 const ApiKey = ghostBookshelf.Model.extend({
     tableName: 'api_keys',
 
     defaults() {
         // 512bit key for HS256 JWT signing
-        const secret = crypto.randomBytes(64).toString('hex');
+        const secret = createSecret();
 
         return {
             secret
@@ -43,6 +45,11 @@ const ApiKey = ghostBookshelf.Model.extend({
                 this.set('role_id', null);
             }
         }
+    }
+}, {
+    refreshSecret(data, options) {
+        const secret = createSecret();
+        return this.edit(Object.assign({}, data, {secret}), options);
     }
 });
 
