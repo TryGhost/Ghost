@@ -21,5 +21,9 @@ module.exports = {
 
     get serializers() {
         return require('./serializers');
+    },
+
+    get utils() {
+        return require('./utils');
     }
 };
