@@ -2,6 +2,20 @@ const models = require('../../models');
 
 module.exports = {
     docName: 'api_keys',
+    edit: {
+        permissions: true,
+        data: ['id'],
+        validation: {
+            data: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        query({data, options}) {
+            return models.ApiKey.refreshSecret(data, options);
+        }
+    },
     add: {
         permissions: true,
         data: ['integration_id', 'type'],

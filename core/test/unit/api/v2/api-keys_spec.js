@@ -121,4 +121,46 @@ describe('api_keys resource controllers', function () {
             });
         });
     });
+
+    describe('edit', function () {
+        it('should enforce permissions', function () {
+            const edit = api_keys.edit;
+            should.equal(edit.permissions, true);
+        });
+
+        describe('data', function () {
+            it('should have id data', function () {
+                const data = api_keys.edit.data;
+                should.equal(data.includes('id'), true);
+            });
+        });
+
+        describe('validation', function () {
+            it('should require the id', function () {
+                const validation = api_keys.edit.validation;
+                should.equal(validation.data.id.required, true);
+            });
+        });
+
+        describe('query', function () {
+            it('returns the result of ApiKeyModel.refreshSecret(data, options)', function () {
+                const sandbox = sinon.sandbox.create();
+                const query = api_keys.edit.query;
+
+                const refreshSecretStub = sandbox.stub(models.ApiKey, 'refreshSecret').resolves();
+                const fakeFrame = {
+                    data: {id: 123},
+                    options: {andre: '3000andWOT'}
+                };
+
+                const result = query(fakeFrame);
+
+                should.equal(result, refreshSecretStub.returnValues[0]);
+                should.equal(refreshSecretStub.args[0][0], fakeFrame.data);
+                should.equal(refreshSecretStub.args[0][1], fakeFrame.options);
+
+                sandbox.restore();
+            });
+        });
+    });
 });

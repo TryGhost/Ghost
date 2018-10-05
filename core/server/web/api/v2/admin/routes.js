@@ -21,6 +21,7 @@ module.exports = function apiRoutes() {
     // ## CORS pre-flight check
     router.options('*', shared.middlewares.api.cors);
 
+    router.put('/apikeys/:id', apiv2.http(apiv2.api_keys.edit));
     router.post('/apikeys', apiv2.http(apiv2.api_keys.add));
     router.del('/apikeys/:id', apiv2.http(apiv2.api_keys.destroy));
 
