@@ -3,9 +3,9 @@ var should = require('should'),
     _ = require('lodash'),
     Promise = require('bluebird'),
     ObjectId = require('bson-objectid'),
-    permissions = require('../../../server/services/permissions'),
-    common = require('../../../server/lib/common'),
-    apiUtils = require('../../../server/api/v0.1/utils'),
+    permissions = require('../../../../server/services/permissions'),
+    common = require('../../../../server/lib/common'),
+    apiUtils = require('../../../../server/api/v0.1/utils'),
 
     sandbox = sinon.sandbox.create();
 
