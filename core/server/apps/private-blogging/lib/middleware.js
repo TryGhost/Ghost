@@ -99,7 +99,7 @@ const privateBlogging = {
             return next();
         } else {
             url = urlService.utils.urlFor({relativeUrl: privateRoute});
-            url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
+            url += '?r=' + encodeURIComponent(req.url);
             return res.redirect(url);
         }
     },
