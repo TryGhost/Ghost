@@ -18,40 +18,6 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
-    it('receive correct order', function (done) {
-        var customNotification1 = {
-            status: 'alert',
-            type: 'info',
-            custom: true,
-            id: uuid.v1(),
-            dismissible: true,
-            message: '1'
-        }, customNotification2 = {
-            status: 'alert',
-            type: 'info',
-            custom: true,
-            id: uuid.v1(),
-            dismissible: true,
-            message: '2'
-        };
-
-        NotificationsAPI
-            .add({notifications: [customNotification1]}, testUtils.context.internal)
-            .then(function () {
-                return NotificationsAPI.add({notifications: [customNotification2]}, testUtils.context.internal);
-            })
-            .then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
-            })
-            .then(function (response) {
-                response.notifications.length.should.eql(2);
-                response.notifications[0].message.should.eql('2');
-                response.notifications[1].message.should.eql('1');
-                done();
-            })
-            .catch(done);
-    });
-
     it('can destroy (internal)', function (done) {
         var msg = {
             type: 'error',

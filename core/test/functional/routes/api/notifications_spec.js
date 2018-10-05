@@ -104,6 +104,55 @@ describe('Notifications API', function () {
                         });
                 });
         });
+
+        it('should have correct order', function () {
+            const firstNotification = {
+                status: 'alert',
+                type: 'info',
+                custom: true,
+                id: 'firstId',
+                dismissible: true,
+                message: '1'
+            };
+
+            const secondNotification = {
+                status: 'alert',
+                type: 'info',
+                custom: true,
+                id: 'secondId',
+                dismissible: true,
+                message: '2'
+            };
+
+            return request.post(testUtils.API.getApiQuery('notifications/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send({notifications: [firstNotification]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then(() => {
+                    return request.post(testUtils.API.getApiQuery('notifications/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send({notifications: [secondNotification]})
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(201);
+                })
+                .then(() => {
+                    return request.get(testUtils.API.getApiQuery('notifications/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .then(res => {
+                            const jsonResponse = res.body;
+
+                            jsonResponse.notifications.should.be.an.Array().with.lengthOf(2);
+                            jsonResponse.notifications[0].message.should.equal(secondNotification.message);
+                            jsonResponse.notifications[1].message.should.equal(firstNotification.message);
+                        });
+                });
+        });
     });
 
     describe('Delete', function () {
