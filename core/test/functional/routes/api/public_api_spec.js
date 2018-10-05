@@ -234,7 +234,7 @@ describe('Public API', function () {
     });
 
     it('[deprecated] browse posts with page non matching filter', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts&include=tag,author'))
+        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
