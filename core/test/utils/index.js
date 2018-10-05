@@ -728,7 +728,7 @@ setup = function setup() {
     };
 };
 
-// ## Functions for Route Tests (!!)
+// ## Shared functions for Routing Tests
 
 /**
  * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
@@ -736,12 +736,14 @@ setup = function setup() {
  */
 // TODO make this do the DB init as well
 doAuth = function doAuth() {
-    var options = arguments,
-        request = arguments[0],
-        fixtureOps;
+    let API_URL = arguments[0];
+    let request = arguments[1];
+    let options = arguments;
+    let fixtureOps;
 
-    // Remove request from this list
+    // Remove API_URL & request from this list
     delete options[0];
+    delete options[1];
 
     // No DB setup, but override the owner
     options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
@@ -753,7 +755,7 @@ doAuth = function doAuth() {
     fixtureOps = getFixtureOps(options);
 
     return sequence(fixtureOps).then(function () {
-        return login(request);
+        return login(request, API_URL);
     });
 };
 
@@ -784,14 +786,14 @@ createPost = function createPost(options) {
     return models.Post.add(post, module.exports.context.internal);
 };
 
-login = function login(request) {
+login = function login(request, API_URL) {
     // CASE: by default we use the owner to login
     if (!request.user) {
         request.user = DataGenerator.Content.users[0];
     }
 
     return new Promise(function (resolve, reject) {
-        request.post('/ghost/api/v0.1/authentication/token/')
+        request.post(API_URL)
             .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',

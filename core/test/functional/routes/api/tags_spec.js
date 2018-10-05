@@ -16,7 +16,7 @@ describe('Tag API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request, 'posts');
+                return localUtils.doAuth(request, 'posts');
             })
             .then(function (token) {
                 accesstoken = token;
