@@ -51,6 +51,10 @@ describe('Notifications API', function () {
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);
                     jsonResponse.notifications[0].status.should.equal('alert');
+                    jsonResponse.notifications[0].dismissible.should.be.true();
+                    should.exist(jsonResponse.notifications[0].location);
+                    jsonResponse.notifications[0].location.should.equal('bottom');
+                    jsonResponse.notifications[0].id.should.be.a.String();
 
                     done();
                 });

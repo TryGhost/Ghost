@@ -18,49 +18,6 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
-    it('can add, adds defaults (internal)', function (done) {
-        var msg = {
-            type: 'info',
-            message: 'Hello, this is dog'
-        };
-
-        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
-            var notification;
-
-            should.exist(result);
-            should.exist(result.notifications);
-
-            notification = result.notifications[0];
-            notification.dismissible.should.be.true();
-            should.exist(notification.location);
-            notification.location.should.equal('bottom');
-
-            done();
-        }).catch(done);
-    });
-
-    it('can add, adds defaults (owner)', function (done) {
-        var msg = {
-            type: 'info',
-            message: 'Hello, this is another dog'
-        };
-
-        NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function (result) {
-            var notification;
-
-            should.exist(result);
-            should.exist(result.notifications);
-
-            notification = result.notifications[0];
-            notification.dismissible.should.be.true();
-            should.exist(notification.location);
-            notification.location.should.equal('bottom');
-            notification.id.should.be.a.String();
-
-            done();
-        }).catch(done);
-    });
-
     it('can add, adds id and status (internal)', function (done) {
         var msg = {
             type: 'info',
