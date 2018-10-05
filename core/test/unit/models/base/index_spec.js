@@ -97,7 +97,7 @@ describe('Models: base', function () {
     });
 
     describe('static destroy()', function () {
-        it('forges model using destroyBy, fetches it, and calls destroy, passing filtered options', function () {
+        it('forges model using destroyBy, fetches it, and calls destroy, passing filtered options, with require=true', function () {
             const unfilteredOptions = {
                 destroyBy: {
                     prop: 'whatever'
@@ -122,7 +122,9 @@ describe('Models: base', function () {
                 const filteredOptions = filterOptionsSpy.returnValues[0];
 
                 should.equal(fetchStub.args[0][0], filteredOptions);
+                should.equal(fetchStub.args[0][0].require, true);
                 should.equal(destroyStub.args[0][0], filteredOptions);
+                should.equal(destroyStub.args[0][0].require, true);
             });
         });
 
@@ -193,7 +195,7 @@ describe('Models: base', function () {
     });
 
     describe('static edit(data, unfilteredOptions)', function () {
-        it('resolves with the savedModel after forges model w/ id, fetches w/ filtered options, saves w/ filtered data and options and method=update', function () {
+        it('resolves with the savedModel after forges model w/ id, fetches w/ filtered options, saves w/ filtered data and options and method=update and require=true', function () {
             const data = {
                 life: 'suffering'
             };
@@ -223,10 +225,12 @@ describe('Models: base', function () {
                 should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
 
                 should.equal(fetchStub.args[0][0], filteredOptions);
+                should.equal(fetchStub.args[0][0].require, true);
 
                 const filteredData = filterDataSpy.returnValues[0];
                 should.equal(saveStub.args[0][0], filteredData);
                 should.equal(saveStub.args[0][1].method, 'update');
+                should.equal(saveStub.args[0][1].require, true);
                 should.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });

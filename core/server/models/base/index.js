@@ -773,6 +773,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             model.hasTimestamps = false;
         }
 
+        options.require = true;
+
         return model.fetch(options).then(function then(object) {
             if (object) {
                 options.method = 'update';
@@ -820,6 +822,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 id: options.id
             };
         }
+
+        options.require = true;
 
         // Fetch the object before destroying it, so that the changed data is available to events
         return this.forge(options.destroyBy)
