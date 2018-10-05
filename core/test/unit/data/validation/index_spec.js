@@ -105,6 +105,26 @@ describe('Validation', function () {
             });
         });
 
+        describe('webhooks.add', function () {
+            it('event name is not lowercase', function () {
+                const webhook = models.Webhook.forge(testUtils.DataGenerator.forKnex.createWebhook({event: 'Test'}));
+
+                // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
+                return validation.validateSchema('webhooks', webhook, {method: 'insert'})
+                    .then(function () {
+                        throw new Error('Expected ValidationError.');
+                    })
+                    .catch(function (err) {
+                        if (!_.isArray(err)) {
+                            throw err;
+                        }
+
+                        err.length.should.eql(1);
+                        err[0].errorType.should.eql('ValidationError');
+                    });
+            });
+        });
+
         describe('models.edit', function () {
             it('uuid is invalid', function () {
                 const postModel = models.Post.forge({id: ObjectId.generate(), uuid: '1234'});
