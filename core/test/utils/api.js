@@ -114,12 +114,9 @@ const doAuth = (apiOptions) => {
     return function doAuthInner() {
         let API_URL = arguments[0];
         let request = arguments[1];
-        let options = arguments;
-        let fixtureOps;
 
         // Remove API_URL & request from this list
-        delete options[0];
-        delete options[1];
+        let options = Array.prototype.slice.call(arguments, 2);
 
         // No DB setup, but override the owner
         options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
@@ -128,7 +125,7 @@ const doAuth = (apiOptions) => {
             }
         }));
 
-        fixtureOps = apiOptions.getFixtureOps(options);
+        const fixtureOps = apiOptions.getFixtureOps(options);
 
         return sequence(fixtureOps).then(function () {
             return login(request, API_URL);
