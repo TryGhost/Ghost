@@ -85,4 +85,14 @@ describe('Unit: models/api_key', function () {
             sandbox.restore();
         });
     });
+
+    describe('permittedOptions', function () {
+        it('includes "require" when methodName is "destroy"', function () {
+            should.equal(models.ApiKey.permittedOptions('destroy').includes('require'), true);
+        });
+
+        it('includes "require" when methodName is "edit"', function () {
+            should.equal(models.ApiKey.permittedOptions('edit').includes('require'), true);
+        });
+    });
 });

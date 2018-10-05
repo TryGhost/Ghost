@@ -50,6 +50,17 @@ const ApiKey = ghostBookshelf.Model.extend({
     refreshSecret(data, options) {
         const secret = createSecret();
         return this.edit(Object.assign({}, data, {secret}), options);
+    },
+
+    permittedOptions(methodName, options) {
+        const defaultPermittedOptions = ghostBookshelf.Model.permittedOptions.call(this, methodName, options);
+        if (methodName === 'destroy') {
+            return defaultPermittedOptions.concat('require');
+        }
+        if (methodName === 'edit') {
+            return defaultPermittedOptions.concat('require');
+        }
+        return defaultPermittedOptions;
     }
 });
 
