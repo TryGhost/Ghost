@@ -24,6 +24,7 @@ describe('Subscribers API', function () {
 
     should.exist(SubscribersAPI);
 
+    // @TODO: add one test of these tests to routing tests
     describe('Add', function () {
         var newSubscriber;
 
@@ -104,6 +105,7 @@ describe('Subscribers API', function () {
         });
     });
 
+    // @TODO: add one test of these tests to routing tests
     describe('Edit', function () {
         beforeEach(function () {
             return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
@@ -170,6 +172,7 @@ describe('Subscribers API', function () {
         });
     });
 
+    // @TODO: add one test of these tests to routing tests
     describe('Destroy', function () {
         beforeEach(function () {
             return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
@@ -222,6 +225,7 @@ describe('Subscribers API', function () {
         });
     });
 
+    // @TODO: add one test of these tests to routing tests
     describe('Browse', function () {
         beforeEach(function () {
             return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
@@ -262,6 +266,7 @@ describe('Subscribers API', function () {
         });
     });
 
+    // @TODO: add one test of these tests to routing tests
     describe('Read', function () {
         beforeEach(function () {
             return testUtils.fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
@@ -314,6 +319,7 @@ describe('Subscribers API', function () {
         });
     });
 
+    // @TODO: add one success test of these tests to routing tests
     describe('Read CSV', function () {
         var scope = {};
 
