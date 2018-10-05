@@ -28,7 +28,8 @@ describe('Notifications API', function () {
             const newNotification = {
                 type: 'info',
                 message: 'test notification',
-                custom: true
+                custom: true,
+                id: 'customId'
             };
 
             request.post(localUtils.API.getApiQuery('notifications/'))
