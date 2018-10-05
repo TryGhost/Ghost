@@ -2,6 +2,7 @@ const express = require('express');
 const os = require('os');
 const multer = require('multer');
 const api = require('../../../../api');
+const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
 const auth = require('../../../../services/auth');
@@ -19,6 +20,8 @@ module.exports = function apiRoutes() {
 
     // ## CORS pre-flight check
     router.options('*', shared.middlewares.api.cors);
+
+    router.post('/apikeys', apiv2.http(apiv2.api_keys.add));
 
     // ## Configuration
     router.get('/configuration', api.http(api.configuration.read));
