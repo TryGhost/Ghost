@@ -32,6 +32,7 @@ describe('Webhooks API', function () {
     }
 
     describe('Validations', function () {
+        // @TODO: add this test to the validation test (test/unit/data/validation/index_spec.js) -> event name is upper case
         it('Prevents mixed case event names', function (done) {
             WebhookAPI.add({webhooks: [{
                 event: 'Mixed.Case',
@@ -42,6 +43,7 @@ describe('Webhooks API', function () {
                 }).catch(checkForErrorType('ValidationError', done));
         });
 
+        // @TODO: this is a webhook model test for getByEventAndTarget (!)
         it('Prevents duplicate event/target pairs', function (done) {
             var duplicate = testUtils.DataGenerator.Content.webhooks[0];
 
@@ -55,6 +57,7 @@ describe('Webhooks API', function () {
         });
     });
 
+    // @TODO: just remove for now
     describe('Permissions', function () {
         var firstWebhook = testUtils.DataGenerator.Content.webhooks[0].id;
         var newWebhook;
