@@ -916,6 +916,16 @@ startGhost = function startGhost(options) {
                 return models.Role.fetchAll({columns: ['id']})
                     .then((roles) => {
                         module.exports.existingData.roles = roles.toJSON();
+
+                        return models.Client.fetchAll({columns: ['id', 'secret']});
+                    })
+                    .then((clients) => {
+                        module.exports.existingData.clients = clients.toJSON();
+
+                        return models.User.fetchAll({columns: ['id']});
+                    })
+                    .then((users) => {
+                        module.exports.existingData.users = users.toJSON();
                     })
                     .return(ghostServer);
             });
@@ -973,6 +983,16 @@ startGhost = function startGhost(options) {
             return models.Role.fetchAll({columns: ['id']})
                 .then((roles) => {
                     module.exports.existingData.roles = roles.toJSON();
+
+                    return models.Client.fetchAll({columns: ['id', 'secret']});
+                })
+                .then((clients) => {
+                    module.exports.existingData.clients = clients.toJSON();
+
+                    return models.User.fetchAll({columns: ['id']});
+                })
+                .then((users) => {
+                    module.exports.existingData.users = users.toJSON();
                 })
                 .return(ghostServer);
         });

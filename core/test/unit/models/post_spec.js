@@ -596,6 +596,47 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     });
 
     describe('edit', function () {
+        it('ensure `forUpdate` works', function (done) {
+            const originalFn = models.Post.prototype.onSaving;
+            let requestCanComeIn = false;
+            let postId = testUtils.DataGenerator.forKnex.posts[4].id;
+
+            testUtils.DataGenerator.forKnex.posts[4].featured.should.eql(true);
+
+            // @NOTE: simulate that the onSaving hook takes longer
+            sandbox.stub(models.Post.prototype, 'onSaving').callsFake(function () {
+                var self = this,
+                    args = arguments;
+
+                models.Post.prototype.onSaving.restore();
+                requestCanComeIn = true;
+                return Promise.delay(2000)
+                    .then(function () {
+                        return originalFn.apply(self, args);
+                    });
+            });
+
+            const interval = setInterval(function () {
+                if (requestCanComeIn) {
+                    clearInterval(interval);
+
+                    // @NOTE: second call, should wait till the delay finished
+                    models.Post.edit({title: 'Berlin'}, {id: postId, context: {internal: true}})
+                        .then(function (post) {
+                            post.id.should.eql(postId);
+                            post.get('title').should.eql('Berlin');
+                            post.get('status').should.eql('published');
+                            post.get('featured').should.be.false();
+                            done();
+                        })
+                        .catch(done);
+                }
+            }, 10);
+
+            // @NOTE: first call to db locks the row (!)
+            models.Post.edit({title: 'First', featured: false, status: 'published'}, _.merge({id: postId, migrating: true}, testUtils.context.editor));
+        });
+
         it('update post with options.migrating', function () {
             const events = {
                 post: [],
