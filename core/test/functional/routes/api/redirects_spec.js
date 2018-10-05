@@ -27,7 +27,7 @@ describe('Redirects API', function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
-                    return testUtils.doAuth(request, 'client:trusted-domain');
+                    return localUtils.doAuth(request, 'client:trusted-domain');
                 })
                 .then(function (token) {
                     accesstoken = token;
@@ -90,7 +90,7 @@ describe('Redirects API', function () {
                         request = supertest.agent(config.get('url'));
                     })
                     .then(function () {
-                        return testUtils.doAuth(request, 'client:trusted-domain');
+                        return localUtils.doAuth(request, 'client:trusted-domain');
                     })
                     .then(function (token) {
                         accesstoken = token;
@@ -218,7 +218,7 @@ describe('Redirects API', function () {
                         request = supertest.agent(config.get('url'));
                     })
                     .then(function () {
-                        return testUtils.doAuth(request, 'client:trusted-domain');
+                        return localUtils.doAuth(request, 'client:trusted-domain');
                     })
                     .then(function (token) {
                         accesstoken = token;

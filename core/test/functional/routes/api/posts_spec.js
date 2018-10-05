@@ -23,7 +23,7 @@ describe('Post API', function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
-                    return testUtils.doAuth(request, 'users:extra', 'posts');
+                    return localUtils.doAuth(request, 'users:extra', 'posts');
                 })
                 .then(function (token) {
                     ownerAccessToken = token;
@@ -1446,7 +1446,7 @@ describe('Post API', function () {
                 })
                 .then(function (_author) {
                     request.user = author = _author;
-                    return testUtils.doAuth(request, 'posts');
+                    return localUtils.doAuth(request, 'posts');
                 })
                 .then(function (token) {
                     authorAccessToken = token;
@@ -1586,7 +1586,7 @@ describe('Post API', function () {
                 })
                 .then(function (_contributor) {
                     request.user = contributor = _contributor;
-                    return testUtils.doAuth(request, 'posts');
+                    return localUtils.doAuth(request, 'posts');
                 })
                 .then(function (token) {
                     contributorAccessToken = token;
