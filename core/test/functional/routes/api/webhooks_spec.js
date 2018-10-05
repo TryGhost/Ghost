@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -31,7 +32,7 @@ describe('Webhooks API', function () {
             };
 
             it('creates a new webhook', function (done) {
-                request.post(testUtils.API.getApiQuery('webhooks/'))
+                request.post(localUtils.API.getApiQuery('webhooks/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .send({webhooks: [newWebhook]})
                     .expect('Content-Type', /json/)
@@ -65,7 +66,7 @@ describe('Webhooks API', function () {
 
             it('deletes a webhook', function (done) {
                 // create the webhook that is to be deleted
-                request.post(testUtils.API.getApiQuery('webhooks/'))
+                request.post(localUtils.API.getApiQuery('webhooks/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .send({webhooks: [newWebhook]})
                     .expect('Content-Type', /json/)

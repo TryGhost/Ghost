@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../server/config'),
     ghost = testUtils.startGhost,
     fs = require('fs-extra'),
@@ -19,7 +20,7 @@ describe('Themes API', function () {
                 fieldName = options.fieldName || 'theme',
                 accessToken = options.accessToken || scope.ownerAccessToken;
 
-            return request.post(testUtils.API.getApiQuery('themes/upload'))
+            return request.post(localUtils.API.getApiQuery('themes/upload'))
                 .set('Authorization', 'Bearer ' + accessToken)
                 .attach(fieldName, themePath);
         },
@@ -70,7 +71,7 @@ describe('Themes API', function () {
 
     describe('success cases', function () {
         it('get all themes', function (done) {
-            request.get(testUtils.API.getApiQuery('themes/'))
+            request.get(localUtils.API.getApiQuery('themes/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .end(function (err, res) {
                     if (err) {
@@ -112,7 +113,7 @@ describe('Themes API', function () {
         });
 
         it('download theme', function (done) {
-            request.get(testUtils.API.getApiQuery('themes/casper/download/'))
+            request.get(localUtils.API.getApiQuery('themes/casper/download/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect('Content-Type', /application\/zip/)
                 .expect('Content-Disposition', 'attachment; filename=casper.zip')
@@ -183,7 +184,7 @@ describe('Themes API', function () {
                             ]);
 
                             // Check the Themes API returns the correct result
-                            request.get(testUtils.API.getApiQuery('themes/'))
+                            request.get(localUtils.API.getApiQuery('themes/'))
                                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                                 .expect(200)
                                 .end(function (err, res) {
@@ -221,7 +222,7 @@ describe('Themes API', function () {
         it('delete new "valid" theme', function (done) {
             var jsonResponse;
 
-            request.del(testUtils.API.getApiQuery('themes/valid'))
+            request.del(localUtils.API.getApiQuery('themes/valid'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(204)
                 .end(function (err, res) {
@@ -255,7 +256,7 @@ describe('Themes API', function () {
                     ]);
 
                     // Check the themes API returns the correct result after deletion
-                    request.get(testUtils.API.getApiQuery('themes/'))
+                    request.get(localUtils.API.getApiQuery('themes/'))
                         .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                         .expect(200)
                         .end(function (err, res) {
@@ -305,7 +306,7 @@ describe('Themes API', function () {
                     jsonResponse.themes[0].warnings.should.be.an.Array();
 
                     // Delete the theme to clean up after the test
-                    request.del(testUtils.API.getApiQuery('themes/warnings'))
+                    request.del(localUtils.API.getApiQuery('themes/warnings'))
                         .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                         .expect(204)
                         .end(function (err) {
@@ -321,7 +322,7 @@ describe('Themes API', function () {
             var jsonResponse, casperTheme, testTheme;
 
             // First check the browse response to see that casper is the active theme
-            request.get(testUtils.API.getApiQuery('themes/'))
+            request.get(localUtils.API.getApiQuery('themes/'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(200)
                 .end(function (err, res) {
@@ -346,7 +347,7 @@ describe('Themes API', function () {
                     testTheme.active.should.be.false();
 
                     // Finally activate the new theme
-                    request.put(testUtils.API.getApiQuery('themes/test-theme/activate'))
+                    request.put(localUtils.API.getApiQuery('themes/test-theme/activate'))
                         .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                         .expect(200)
                         .end(function (err, res) {
@@ -407,7 +408,7 @@ describe('Themes API', function () {
         });
 
         it('activate "broken-theme" invalid theme', function (done) {
-            request.put(testUtils.API.getApiQuery('themes/broken-theme/activate'))
+            request.put(localUtils.API.getApiQuery('themes/broken-theme/activate'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(422)
                 .end(function (err, res) {
@@ -424,7 +425,7 @@ describe('Themes API', function () {
         });
 
         it('activate non-existent theme', function (done) {
-            request.put(testUtils.API.getApiQuery('themes/not-existent/activate'))
+            request.put(localUtils.API.getApiQuery('themes/not-existent/activate'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(422)
                 .end(function (err, res) {
@@ -441,7 +442,7 @@ describe('Themes API', function () {
         });
 
         it('delete casper', function (done) {
-            request.del(testUtils.API.getApiQuery('themes/casper'))
+            request.del(localUtils.API.getApiQuery('themes/casper'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(422)
                 .end(function (err, res) {
@@ -458,7 +459,7 @@ describe('Themes API', function () {
         });
 
         it('delete non-existent theme', function (done) {
-            request.del(testUtils.API.getApiQuery('themes/not-existent'))
+            request.del(localUtils.API.getApiQuery('themes/not-existent'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(404)
                 .end(function (err, res) {
@@ -477,7 +478,7 @@ describe('Themes API', function () {
         it('delete active theme', function (done) {
             var jsonResponse, testTheme;
             // ensure test-theme is active
-            request.put(testUtils.API.getApiQuery('themes/test-theme/activate'))
+            request.put(localUtils.API.getApiQuery('themes/test-theme/activate'))
                 .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                 .expect(200)
                 .end(function (err, res) {
@@ -493,7 +494,7 @@ describe('Themes API', function () {
                     testTheme.active.should.be.true();
                     testTheme.warnings.should.be.an.Array();
 
-                    request.del(testUtils.API.getApiQuery('themes/test-theme'))
+                    request.del(localUtils.API.getApiQuery('themes/test-theme'))
                         .set('Authorization', 'Bearer ' + scope.ownerAccessToken)
                         .expect(422)
                         .end(function (err, res) {
@@ -544,7 +545,7 @@ describe('Themes API', function () {
 
         describe('As Editor', function () {
             it('can browse themes', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/'))
+                request.get(localUtils.API.getApiQuery('themes/'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(200)
                     .end(function (err) {
@@ -577,7 +578,7 @@ describe('Themes API', function () {
             });
 
             it('no permissions to delete theme', function (done) {
-                request.del(testUtils.API.getApiQuery('themes/test'))
+                request.del(localUtils.API.getApiQuery('themes/test'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(403)
                     .end(function (err, res) {
@@ -595,7 +596,7 @@ describe('Themes API', function () {
             });
 
             it('no permissions to download theme', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/casper/download/'))
+                request.get(localUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.editorAccessToken)
                     .expect(403)
                     .end(function (err, res) {
@@ -615,7 +616,7 @@ describe('Themes API', function () {
 
         describe('As Author', function () {
             it('can browse themes', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/'))
+                request.get(localUtils.API.getApiQuery('themes/'))
                     .set('Authorization', 'Bearer ' + scope.authorAccessToken)
                     .expect(200)
                     .end(function (err) {
@@ -648,7 +649,7 @@ describe('Themes API', function () {
             });
 
             it('no permissions to delete theme', function (done) {
-                request.del(testUtils.API.getApiQuery('themes/test'))
+                request.del(localUtils.API.getApiQuery('themes/test'))
                     .set('Authorization', 'Bearer ' + scope.authorAccessToken)
                     .expect(403)
                     .end(function (err, res) {
@@ -666,7 +667,7 @@ describe('Themes API', function () {
             });
 
             it('no permissions to download theme', function (done) {
-                request.get(testUtils.API.getApiQuery('themes/casper/download/'))
+                request.get(localUtils.API.getApiQuery('themes/casper/download/'))
                     .set('Authorization', 'Bearer ' + scope.authorAccessToken)
                     .expect(403)
                     .end(function (err, res) {

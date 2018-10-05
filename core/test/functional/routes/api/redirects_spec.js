@@ -4,6 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     path = require('path'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     configUtils = require('../../../utils/configUtils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -38,7 +39,7 @@ describe('Redirects API', function () {
             configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/data'));
 
             request
-                .get(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                .get(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('Origin', testUtils.API.getURL())
                 .expect(200)
@@ -60,7 +61,7 @@ describe('Redirects API', function () {
 
         it('file exists', function (done) {
             request
-                .get(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                .get(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /application\/json/)
@@ -112,7 +113,7 @@ describe('Redirects API', function () {
                     })
                     .then(function () {
                         return request
-                            .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                            .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                             .set('Authorization', 'Bearer ' + accesstoken)
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.json'))
@@ -154,7 +155,7 @@ describe('Redirects API', function () {
                     .then(function () {
                         // Override redirects file
                         return request
-                            .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                            .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                             .set('Authorization', 'Bearer ' + accesstoken)
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
@@ -195,7 +196,7 @@ describe('Redirects API', function () {
                     .then(function () {
                         // Override redirects file again and ensure the backup file works twice
                         return request
-                            .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                            .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                             .set('Authorization', 'Bearer ' + accesstoken)
                             .set('Origin', testUtils.API.getURL())
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
@@ -228,7 +229,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
 
                 request
-                    .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                     .set('Authorization', 'Bearer ' + accesstoken)
                     .set('Origin', testUtils.API.getURL())
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
@@ -250,7 +251,7 @@ describe('Redirects API', function () {
                 }));
 
                 request
-                    .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                     .set('Authorization', 'Bearer ' + accesstoken)
                     .set('Origin', testUtils.API.getURL())
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
@@ -269,7 +270,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
 
                 request
-                    .post(testUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                     .set('Authorization', 'Bearer ' + accesstoken)
                     .set('Origin', testUtils.API.getURL())
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))

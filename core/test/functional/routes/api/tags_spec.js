@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -23,7 +24,7 @@ describe('Tag API', function () {
     });
 
     it('can retrieve all tags', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/'))
+        request.get(localUtils.API.getApiQuery('tags/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
