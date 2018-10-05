@@ -18,32 +18,6 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
-    it('duplicates', function (done) {
-        var customNotification1 = {
-            status: 'alert',
-            type: 'info',
-            location: 'test.to-be-deleted1',
-            custom: true,
-            id: uuid.v1(),
-            dismissible: true,
-            message: 'Hello, this is dog number 1'
-        };
-
-        NotificationsAPI
-            .add({notifications: [customNotification1]}, testUtils.context.internal)
-            .then(function () {
-                return NotificationsAPI.add({notifications: [customNotification1]}, testUtils.context.internal);
-            })
-            .then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
-            })
-            .then(function (response) {
-                response.notifications.length.should.eql(1);
-                done();
-            })
-            .catch(done);
-    });
-
     it('receive correct order', function (done) {
         var customNotification1 = {
             status: 'alert',
