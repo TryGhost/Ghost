@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     db = require('../../../../../core/server/data/db'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -46,7 +47,7 @@ describe('Spam Prevention API', function () {
         count = 0;
 
         tooManyFailedLoginAttempts = function tooManyFailedLoginAttempts(email) {
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',
@@ -74,7 +75,7 @@ describe('Spam Prevention API', function () {
         failedLoginAttempt = function failedLoginAttempt(email) {
             count += 1;
 
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',
@@ -107,7 +108,7 @@ describe('Spam Prevention API', function () {
         // failed login attempts for user2 to trigger a global block rather than user specific block
 
         tooManyFailedLoginAttempts = function tooManyFailedLoginAttempts(email) {
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',
@@ -132,7 +133,7 @@ describe('Spam Prevention API', function () {
         failedLoginAttempt = function failedLoginAttempt(email) {
             count += 1;
 
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',
@@ -169,7 +170,7 @@ describe('Spam Prevention API', function () {
         };
 
         successLoginAttempt = function successLoginAttempt(email) {
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',
@@ -197,7 +198,7 @@ describe('Spam Prevention API', function () {
         failedLoginAttempt = function failedLoginAttempt(email) {
             count += 1;
 
-            request.post(testUtils.API.getApiQuery('authentication/token'))
+            request.post(localUtils.API.getApiQuery('authentication/token'))
                 .set('Origin', config.get('url'))
                 .send({
                     grant_type: 'password',

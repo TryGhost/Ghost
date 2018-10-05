@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -23,7 +24,7 @@ describe('Slug API', function () {
     });
 
     it('should be able to get a post slug', function (done) {
-        request.get(testUtils.API.getApiQuery('slugs/post/a post title/'))
+        request.get(localUtils.API.getApiQuery('slugs/post/a post title/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -46,7 +47,7 @@ describe('Slug API', function () {
     });
 
     it('should be able to get a tag slug', function (done) {
-        request.get(testUtils.API.getApiQuery('slugs/post/atag/'))
+        request.get(localUtils.API.getApiQuery('slugs/post/atag/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -69,7 +70,7 @@ describe('Slug API', function () {
     });
 
     it('should be able to get a user slug', function (done) {
-        request.get(testUtils.API.getApiQuery('slugs/user/user name/'))
+        request.get(localUtils.API.getApiQuery('slugs/user/user name/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -92,7 +93,7 @@ describe('Slug API', function () {
     });
 
     it('should be able to get an app slug', function (done) {
-        request.get(testUtils.API.getApiQuery('slugs/app/cool app/'))
+        request.get(localUtils.API.getApiQuery('slugs/app/cool app/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -115,7 +116,7 @@ describe('Slug API', function () {
     });
 
     it('should not be able to get a slug for an unknown type', function (done) {
-        request.get(testUtils.API.getApiQuery('slugs/unknown/who knows/'))
+        request.get(localUtils.API.getApiQuery('slugs/unknown/who knows/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
