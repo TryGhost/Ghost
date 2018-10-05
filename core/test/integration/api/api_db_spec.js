@@ -33,57 +33,6 @@ describe('DB API', function () {
 
     should.exist(dbAPI);
 
-    // @TODO: routing test
-    it('delete all content (owner)', function () {
-        return models.Post.findAll(testUtils.context.internal)
-            .then(function (results) {
-                results = results.toJSON();
-
-                results.length.should.eql(8);
-
-                _.filter(results, {page: false, status: 'published'}).length.should.equal(4);
-                _.filter(results, {page: false, status: 'draft'}).length.should.equal(1);
-                _.filter(results, {page: false, status: 'scheduled'}).length.should.equal(1);
-                _.filter(results, {page: true, status: 'published'}).length.should.equal(1);
-                _.filter(results, {page: true, status: 'draft'}).length.should.equal(1);
-            })
-            .then(function () {
-                return dbAPI.deleteAllContent(testUtils.context.owner);
-            })
-            .then(function (result) {
-                should.exist(result.db);
-                result.db.should.be.instanceof(Array);
-                result.db.should.be.empty();
-
-                return models.Tag.findAll(testUtils.context.internal);
-            })
-            .then(function (results) {
-                should.exist(results);
-                results.length.should.equal(0);
-
-                return models.Post.findAll(testUtils.context.internal);
-            })
-            .then(function (results) {
-                should.exist(results);
-                results.length.should.equal(0);
-
-                return models.Subscriber.findAll(testUtils.context.internal);
-            })
-            .then(function (results) {
-                should.exist(results);
-                results.length.should.equal(1);
-            })
-            .then(function () {
-                eventsTriggered['post.unpublished'].length.should.eql(4);
-                eventsTriggered['post.deleted'].length.should.eql(6);
-
-                eventsTriggered['page.unpublished'].length.should.eql(1);
-                eventsTriggered['page.deleted'].length.should.eql(2);
-
-                eventsTriggered['tag.deleted'].length.should.eql(5);
-            });
-    });
-
     // @TODO: remove, but double check where is the permission error thrown and look if we can improve the target unit with unit tests!!!
     it('delete all content (admin)', function () {
         return dbAPI.deleteAllContent(testUtils.context.admin).then(function (result) {
