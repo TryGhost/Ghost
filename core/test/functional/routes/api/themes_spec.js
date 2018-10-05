@@ -34,7 +34,7 @@ describe('Themes API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 scope.ownerAccessToken = token;
@@ -48,7 +48,7 @@ describe('Themes API', function () {
                 scope.editor = user;
 
                 request.user = scope.editor;
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 scope.editorAccessToken = token;
@@ -62,7 +62,7 @@ describe('Themes API', function () {
                 scope.author = user;
 
                 request.user = scope.author;
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 scope.authorAccessToken = token;

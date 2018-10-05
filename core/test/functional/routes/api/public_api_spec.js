@@ -21,7 +21,7 @@ describe('Public API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request, 'users:no-owner', 'posts', 'tags:extra', 'client:trusted-domain');
+                return localUtils.doAuth(request, 'users:no-owner', 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 

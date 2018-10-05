@@ -19,7 +19,7 @@ describe('Settings API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 accesstoken = token;

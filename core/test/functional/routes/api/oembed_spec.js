@@ -17,7 +17,7 @@ describe('Oembed API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(() => {
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then((token) => {
                 accesstoken = token;

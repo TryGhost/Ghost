@@ -50,19 +50,19 @@ describe('User API', function () {
                 inactiveUser = _user3;
 
                 // by default we login with the owner
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 ownerAccessToken = token;
 
                 request.user = editor;
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 editorAccessToken = token;
 
                 request.user = author;
-                return testUtils.doAuth(request);
+                return localUtils.doAuth(request);
             })
             .then(function (token) {
                 authorAccessToken = token;
@@ -592,19 +592,19 @@ describe('User API', function () {
                     inactiveUser = _user3;
 
                     // by default we login with the owner
-                    return testUtils.doAuth(request);
+                    return localUtils.doAuth(request);
                 })
                 .then(function (token) {
                     ownerAccessToken = token;
 
                     request.user = editor;
-                    return testUtils.doAuth(request);
+                    return localUtils.doAuth(request);
                 })
                 .then(function (token) {
                     editorAccessToken = token;
 
                     request.user = author;
-                    return testUtils.doAuth(request);
+                    return localUtils.doAuth(request);
                 })
                 .then(function (token) {
                     authorAccessToken = token;
