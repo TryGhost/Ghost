@@ -906,7 +906,18 @@ startGhost = function startGhost(options) {
                 web.shared.middlewares.customRedirects.reload();
 
                 common.events.emit('server.start');
-                return ghostServer;
+
+                /**
+                 * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+                 * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+                 * I can do `testUtils.existingData.roles[0].id`.
+                 */
+                module.exports.existingData = {};
+                return models.Role.fetchAll({columns: ['id']})
+                    .then((roles) => {
+                        module.exports.existingData.roles = roles.toJSON();
+                    })
+                    .return(ghostServer);
             });
     }
 
@@ -958,17 +969,12 @@ startGhost = function startGhost(options) {
              * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
              * I can do `testUtils.existingData.roles[0].id`.
              */
-            if (!module.exports.existingData) {
-                module.exports.existingData = {};
-
-                return models.Role.fetchAll({columns: ['id']})
-                    .then((roles) => {
-                        module.exports.existingData.roles = roles.toJSON();
-                    })
-                    .return(ghostServer);
-            } else {
-                return ghostServer;
-            }
+            module.exports.existingData = {};
+            return models.Role.fetchAll({columns: ['id']})
+                .then((roles) => {
+                    module.exports.existingData.roles = roles.toJSON();
+                })
+                .return(ghostServer);
         });
 };
 
