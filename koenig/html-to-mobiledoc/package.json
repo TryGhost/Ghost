@@ -11,6 +11,9 @@
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "mocha": "5.2.0",
     "should": "13.2.3",
