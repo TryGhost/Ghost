@@ -8,6 +8,7 @@ var should = require('should'),
 
 should.equal(true, true);
 
+// @TODO: remove me completely
 describe('Redirects API', function () {
     beforeEach(testUtils.teardown);
     beforeEach(testUtils.setup('settings', 'users:roles', 'perms:redirect', 'perms:init'));
