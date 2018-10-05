@@ -24,13 +24,13 @@ describe('Notifications API', function () {
     });
 
     describe('Add', function () {
-        var newNotification = {
-            type: 'info',
-            message: 'test notification',
-            custom: true
-        };
+        it('creates a new notification and sets default fields', function (done) {
+            const newNotification = {
+                type: 'info',
+                message: 'test notification',
+                custom: true
+            };
 
-        it('creates a new notification', function (done) {
             request.post(localUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})

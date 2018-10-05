@@ -18,29 +18,6 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
-    it('can add, adds id and status (internal)', function (done) {
-        var msg = {
-            type: 'info',
-            message: 'Hello, this is dog number 3',
-            // id can't be passed from outside
-            id: ObjectId.generate()
-        };
-
-        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
-            var notification;
-
-            should.exist(result);
-            should.exist(result.notifications);
-
-            notification = result.notifications[0];
-            notification.id.should.be.a.String();
-            should.exist(notification.status);
-            notification.status.should.equal('alert');
-
-            done();
-        }).catch(done);
-    });
-
     it('duplicates', function (done) {
         var customNotification1 = {
             status: 'alert',
