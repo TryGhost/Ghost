@@ -1,6 +1,6 @@
-const common = require('../../../server/lib/common');
+const common = require('../../../../server/lib/common');
 const nock = require('nock');
-const OembedAPI = require('../../../server/api/v0.1/oembed');
+const OembedAPI = require('../../../../server/api/v0.1/oembed');
 const should = require('should');
 
 describe('API: oembed', function () {

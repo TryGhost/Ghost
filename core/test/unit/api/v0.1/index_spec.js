@@ -1,6 +1,6 @@
 var should = require('should'),
     rewire = require('rewire'),
-    config = rewire('../../../server/config'),
+    config = rewire('../../../../server/config'),
     api = rewire(config.get('paths').corePath + '/server/api/v0.1');
 
 describe('API: index', function () {
