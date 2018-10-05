@@ -3,6 +3,7 @@ var should = require('should'),
 
     SlugAPI = require('../../../server/api/v0.1/slugs');
 
+// @TODO: all these tests should be unit tests for models.Base.Model.generateSlug
 describe('Slug API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
