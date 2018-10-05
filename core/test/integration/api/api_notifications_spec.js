@@ -44,40 +44,6 @@ describe('Notifications API', function () {
             .catch(done);
     });
 
-    it('can browse (internal)', function (done) {
-        var msg = {
-            type: 'error', // this can be 'error', 'success', 'warn' and 'info'
-            message: 'This is an error', // A string. Should fit in one line.
-            custom: true
-        };
-        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function () {
-            NotificationsAPI.browse(testUtils.context.internal).then(function (results) {
-                should.exist(results);
-                should.exist(results.notifications);
-                results.notifications.length.should.be.above(0);
-                testUtils.API.checkResponse(results.notifications[0], 'notification');
-                done();
-            }).catch(done);
-        });
-    });
-
-    it('can browse (owner)', function (done) {
-        var msg = {
-            type: 'error', // this can be 'error', 'success', 'warn' and 'info'
-            message: 'This is an error', // A string. Should fit in one line.
-            custom: true
-        };
-        NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function () {
-            NotificationsAPI.browse(testUtils.context.owner).then(function (results) {
-                should.exist(results);
-                should.exist(results.notifications);
-                results.notifications.length.should.be.above(0);
-                testUtils.API.checkResponse(results.notifications[0], 'notification');
-                done();
-            }).catch(done);
-        });
-    });
-
     it('receive correct order', function (done) {
         var customNotification1 = {
             status: 'alert',
