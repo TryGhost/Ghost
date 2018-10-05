@@ -303,6 +303,16 @@ fixtures = {
         });
     },
 
+    createInactiveUser() {
+        const user = DataGenerator.forKnex.createUser({
+            email: 'inactive@test.org',
+            slug: 'inactive',
+            status: 'inactive'
+        });
+
+        return models.User.add(user, module.exports.context.internal);
+    },
+
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
         var extraUsers =  _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
@@ -595,6 +605,9 @@ toDoList = {
     },
     'users:no-owner': function createUsersWithoutOwner() {
         return fixtures.createUsersWithoutOwner();
+    },
+    'user:inactive': function createInactiveUser() {
+        return fixtures.createInactiveUser();
     },
     'users:extra': function createExtraUsers() {
         return fixtures.createExtraUsers();

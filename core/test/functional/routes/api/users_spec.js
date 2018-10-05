@@ -72,7 +72,8 @@ describe('User API', function () {
     describe('As Owner', function () {
         describe('Browse', function () {
             it('returns dates in ISO 8601 format', function (done) {
-                request.get(localUtils.API.getApiQuery('users/?order=id%20ASC'))
+                // @NOTE: ASC is default
+                request.get(localUtils.API.getApiQuery('users/?order=id%20DESC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -91,13 +92,16 @@ describe('User API', function () {
                         jsonResponse.users.should.have.length(5);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        testUtils.API.isISO8601(jsonResponse.users[0].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[4].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[4].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[4].updated_at).should.be.true();
 
-                        testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[1].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[1].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[1].updated_at).should.be.true();
+
+                        jsonResponse.users[0].email.should.eql('test+3@ghost.org');
+                        jsonResponse.users[4].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
 
                         done();
                     });

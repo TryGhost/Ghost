@@ -8,6 +8,7 @@ var should = require('should'),
     localUtils = require('./utils'),
     configUtils = require('../../../utils/configUtils'),
     config = require('../../../../../core/server/config'),
+    models = require('../../../../../core/server/models'),
     ghost = testUtils.startGhost,
     request;
 
@@ -21,7 +22,7 @@ describe('Public API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:no-owner', 'posts', 'tags:extra', 'client:trusted-domain');
+                return localUtils.doAuth(request, 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 
@@ -670,11 +671,17 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
-                // We don't expose the email address.
+                // We don't expose the email address, status and other attrs.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
+
+                // Public api returns all users, but no status! Locked/Inactive users can still have written articles.
+                models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
+                    .then((response) => {
+                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
+                        done();
+                    });
             });
     });
 
@@ -693,7 +700,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -803,7 +810,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
 
                 should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
@@ -815,9 +822,11 @@ describe('Public API', function () {
                 _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
+                _.find(jsonResponse.users, {slug:'inactive'}).count.posts.should.eql(0);
 
                 const ids = jsonResponse.users
                     .filter(user => (user.slug !== 'ghost'))
+                    .filter(user => (user.slug !== 'inactive'))
                     .map(user=> user.id);
 
                 ids.should.eql([
@@ -865,7 +874,6 @@ describe('Public API', function () {
                 should.exist(jsonResponse.users);
                 jsonResponse.users.should.have.length(1);
 
-                // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
@@ -886,7 +894,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
@@ -909,7 +917,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
