@@ -165,13 +165,6 @@ var config = require('./core/server/config'),
                     ]
                 },
 
-                // #### All Module tests
-                module: {
-                    src: [
-                        'core/test/functional/module/**/*_spec.js'
-                    ]
-                },
-
                 // #### Run single test (src is set dynamically, see grunt task 'test')
                 single: {}
             },
@@ -519,7 +512,7 @@ var config = require('./core/server/config'),
         // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
         grunt.registerTask('test-all', 'Run all server tests',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['test-routes', 'test-unit', 'test-integration']);
 
         // ### Lint
         //
@@ -600,15 +593,6 @@ var config = require('./core/server/config'),
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
             ['test-setup', 'mochacli:routes']
-        );
-
-        // ### Module tests *(sub task)*
-        // `grunt test-module` will run just the module tests
-        //
-        // The purpose of the module tests is to ensure that Ghost can be used as an npm module and exposes all
-        // required methods to interact with it.
-        grunt.registerTask('test-module', 'Run functional module tests (mocha)',
-            ['test-setup', 'mochacli:module']
         );
 
         // ### Coverage
