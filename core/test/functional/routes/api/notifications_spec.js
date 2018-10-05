@@ -201,5 +201,16 @@ describe('Notifications API', function () {
                         });
                 });
         });
+
+        it('returns 404 when removing notification with unknown id', function () {
+            return request.del(testUtils.API.getApiQuery('notifications/unknown'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .then(res => {
+                    res.body.errors[0].message.should.equal('Notification does not exist.');
+                });
+        });
     });
 });

@@ -18,18 +18,6 @@ describe('Notifications API', function () {
 
     should.exist(NotificationsAPI);
 
-    it('destroy unknown id', function (done) {
-        NotificationsAPI
-            .destroy(_.extend({}, testUtils.context.internal, {id: 1}))
-            .then(function () {
-                done(new Error('Expected notification error.'));
-            })
-            .catch(function (err) {
-                err.statusCode.should.eql(404);
-                done();
-            });
-    });
-
     it('destroy all', function (done) {
         var customNotification1 = {
             status: 'alert',
