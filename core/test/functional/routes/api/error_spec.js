@@ -5,6 +5,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -23,7 +24,7 @@ describe('Unauthorized', function () {
     });
 
     it('returns 401 error for known endpoint', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/'))
+        request.get(localUtils.API.getApiQuery('posts/'))
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(401)
             .end(function firstRequest(err, res) {
@@ -42,7 +43,7 @@ describe('Unauthorized', function () {
     });
 
     it('returns 404 error for unknown endpoint', function (done) {
-        request.get(testUtils.API.getApiQuery('unknown/'))
+        request.get(localUtils.API.getApiQuery('unknown/'))
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404)
             .end(function firstRequest(err, res) {
@@ -78,7 +79,7 @@ describe('Authorized API', function () {
     });
 
     it('serves a JSON 404 for an unknown endpoint', function (done) {
-        request.get(testUtils.API.getApiQuery('unknown/'))
+        request.get(localUtils.API.getApiQuery('unknown/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404)

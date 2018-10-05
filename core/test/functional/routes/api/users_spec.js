@@ -3,6 +3,7 @@ var should = require('should'),
     supertest = require('supertest'),
     moment = require('moment'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     ObjectId = require('bson-objectid'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -71,7 +72,7 @@ describe('User API', function () {
     describe('As Owner', function () {
         describe('Browse', function () {
             it('returns dates in ISO 8601 format', function (done) {
-                request.get(testUtils.API.getApiQuery('users/?order=id%20ASC'))
+                request.get(localUtils.API.getApiQuery('users/?order=id%20ASC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -103,7 +104,7 @@ describe('User API', function () {
             });
 
             it('can retrieve all users', function (done) {
-                request.get(testUtils.API.getApiQuery('users/'))
+                request.get(localUtils.API.getApiQuery('users/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -126,7 +127,7 @@ describe('User API', function () {
             });
 
             it('can retrieve all users with roles', function (done) {
-                request.get(testUtils.API.getApiQuery('users/?include=roles'))
+                request.get(localUtils.API.getApiQuery('users/?include=roles'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -150,7 +151,7 @@ describe('User API', function () {
 
         describe('Read', function () {
             it('can retrieve a user by "me"', function (done) {
-                request.get(testUtils.API.getApiQuery('users/me/'))
+                request.get(localUtils.API.getApiQuery('users/me/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -172,7 +173,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/' + author.id + '/'))
+                request.get(localUtils.API.getApiQuery('users/' + author.id + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -194,7 +195,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by slug', function (done) {
-                request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/'))
+                request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -216,7 +217,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by email', function (done) {
-                request.get(testUtils.API.getApiQuery('users/email/jbloggs%40example.com/'))
+                request.get(localUtils.API.getApiQuery('users/email/jbloggs%40example.com/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -238,7 +239,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user with role', function (done) {
-                request.get(testUtils.API.getApiQuery('users/me/?include=roles'))
+                request.get(localUtils.API.getApiQuery('users/me/?include=roles'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -261,7 +262,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user with role and permissions', function (done) {
-                request.get(testUtils.API.getApiQuery('users/me/?include=roles,roles.permissions'))
+                request.get(localUtils.API.getApiQuery('users/me/?include=roles,roles.permissions'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -286,7 +287,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by slug with role and permissions', function (done) {
-                request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/?include=roles,roles.permissions'))
+                request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/?include=roles,roles.permissions'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -311,7 +312,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by slug with count.posts', function (done) {
-                request.get(testUtils.API.getApiQuery('users/slug/joe-bloggs/?include=count.posts'))
+                request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/?include=count.posts'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -334,7 +335,7 @@ describe('User API', function () {
             });
 
             it('can retrieve a user by id with count.posts', function (done) {
-                request.get(testUtils.API.getApiQuery('users/1/?include=count.posts'))
+                request.get(localUtils.API.getApiQuery('users/1/?include=count.posts'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -357,7 +358,7 @@ describe('User API', function () {
             });
 
             it('can\'t retrieve non existent user by id', function (done) {
-                request.get(testUtils.API.getApiQuery('users/' + ObjectId.generate() + '/'))
+                request.get(localUtils.API.getApiQuery('users/' + ObjectId.generate() + '/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
@@ -378,7 +379,7 @@ describe('User API', function () {
             });
 
             it('can\'t retrieve non existent user by slug', function (done) {
-                request.get(testUtils.API.getApiQuery('users/slug/blargh/'))
+                request.get(localUtils.API.getApiQuery('users/slug/blargh/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
@@ -401,7 +402,7 @@ describe('User API', function () {
 
         describe('Edit', function () {
             it('can edit a user', function (done) {
-                request.get(testUtils.API.getApiQuery('users/me/'))
+                request.get(localUtils.API.getApiQuery('users/me/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -424,7 +425,7 @@ describe('User API', function () {
                             ]
                         };
 
-                        request.put(testUtils.API.getApiQuery('users/me/'))
+                        request.put(localUtils.API.getApiQuery('users/me/'))
                             .set('Authorization', 'Bearer ' + ownerAccessToken)
                             .send(dataToSend)
                             .expect('Content-Type', /json/)
@@ -447,7 +448,7 @@ describe('User API', function () {
             });
 
             it('can\'t edit a user with invalid accesstoken', function (done) {
-                request.get(testUtils.API.getApiQuery('users/me/'))
+                request.get(localUtils.API.getApiQuery('users/me/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -462,7 +463,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users[0]);
                         jsonResponse.users[0].website = changedValue;
 
-                        request.put(testUtils.API.getApiQuery('users/me/'))
+                        request.put(localUtils.API.getApiQuery('users/me/'))
                             .set('Authorization', 'Bearer ' + 'invalidtoken')
                             .send(jsonResponse)
                             .expect(401)
@@ -479,7 +480,7 @@ describe('User API', function () {
             it('check which fields can be modified', function (done) {
                 var existingUserData, modifiedUserData;
 
-                request.get(testUtils.API.getApiQuery('users/me/'))
+                request.get(localUtils.API.getApiQuery('users/me/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -503,7 +504,7 @@ describe('User API', function () {
 
                         delete jsonResponse.users[0].id;
 
-                        request.put(testUtils.API.getApiQuery('users/me/'))
+                        request.put(localUtils.API.getApiQuery('users/me/'))
                             .set('Authorization', 'Bearer ' + ownerAccessToken)
                             .send(jsonResponse)
                             .expect(200)
@@ -528,7 +529,7 @@ describe('User API', function () {
 
         describe('Destroy', function () {
             it('[success] Destroy active user', function (done) {
-                request.delete(testUtils.API.getApiQuery('users/' + editor.id))
+                request.delete(localUtils.API.getApiQuery('users/' + editor.id))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect(204)
                     .end(function (err) {
@@ -541,7 +542,7 @@ describe('User API', function () {
             });
 
             it('[failure] Destroy unknown user id', function (done) {
-                request.delete(testUtils.API.getApiQuery('users/' + ObjectId.generate()))
+                request.delete(localUtils.API.getApiQuery('users/' + ObjectId.generate()))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect(403)
                     .end(function (err) {
@@ -612,7 +613,7 @@ describe('User API', function () {
 
         describe('success cases', function () {
             it('can edit himself', function (done) {
-                request.put(testUtils.API.getApiQuery('users/' + editor.id + '/'))
+                request.put(localUtils.API.getApiQuery('users/' + editor.id + '/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
                         users: [{id: editor.id, name: 'test'}]
@@ -632,7 +633,7 @@ describe('User API', function () {
 
         describe('error cases', function () {
             it('can\'t edit the owner', function (done) {
-                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
+                request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
                     .set('Authorization', 'Bearer ' + editorAccessToken)
                     .send({
                         users: [{
@@ -656,7 +657,7 @@ describe('User API', function () {
     describe('As Author', function () {
         describe('success cases', function () {
             it('can edit himself', function (done) {
-                request.put(testUtils.API.getApiQuery('users/' + author.id + '/'))
+                request.put(localUtils.API.getApiQuery('users/' + author.id + '/'))
                     .set('Authorization', 'Bearer ' + authorAccessToken)
                     .send({
                         users: [{id: author.id, name: 'test'}]
@@ -676,7 +677,7 @@ describe('User API', function () {
 
         describe('error cases', function () {
             it('can\'t edit the owner', function (done) {
-                request.put(testUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
+                request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
                     .set('Authorization', 'Bearer ' + authorAccessToken)
                     .send({
                         users: [{

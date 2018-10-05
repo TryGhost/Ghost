@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     moment = require('moment'),
     user = testUtils.DataGenerator.forModel.users[0],
     models = require('../../../../../core/server/models'),
@@ -33,7 +34,7 @@ describe('Authentication API', function () {
     });
 
     it('can authenticate', function (done) {
-        request.post(testUtils.API.getApiQuery('authentication/token'))
+        request.post(localUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',
@@ -75,7 +76,7 @@ describe('Authentication API', function () {
     });
 
     it('can\'t authenticate unknown user', function (done) {
-        request.post(testUtils.API.getApiQuery('authentication/token'))
+        request.post(localUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .send({
@@ -99,7 +100,7 @@ describe('Authentication API', function () {
     });
 
     it('can\'t authenticate invalid password user', function (done) {
-        request.post(testUtils.API.getApiQuery('authentication/token'))
+        request.post(localUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .send({
@@ -123,7 +124,7 @@ describe('Authentication API', function () {
     });
 
     it('can request new access token', function (done) {
-        request.post(testUtils.API.getApiQuery('authentication/token'))
+        request.post(localUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
             .send({
                 grant_type: 'password',
@@ -148,7 +149,7 @@ describe('Authentication API', function () {
                 }).then(function (oldAccessToken) {
                     moment(oldAccessToken.get('expires')).diff(moment(), 'minutes').should.be.above(6);
 
-                    request.post(testUtils.API.getApiQuery('authentication/token'))
+                    request.post(localUtils.API.getApiQuery('authentication/token'))
                         .set('Origin', config.get('url'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send({
@@ -194,7 +195,7 @@ describe('Authentication API', function () {
     });
 
     it('can\'t request new access token with invalid refresh token', function (done) {
-        request.post(testUtils.API.getApiQuery('authentication/token'))
+        request.post(localUtils.API.getApiQuery('authentication/token'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .send({
@@ -226,7 +227,7 @@ describe('Authentication API', function () {
                     password: ownerUser.get('password')
                 });
 
-                request.put(testUtils.API.getApiQuery('authentication/passwordreset'))
+                request.put(localUtils.API.getApiQuery('authentication/passwordreset'))
                     .set('Origin', config.get('url'))
                     .set('Accept', 'application/json')
                     .send({

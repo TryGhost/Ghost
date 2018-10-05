@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     path = require('path'),
     fs = require('fs-extra'),
     ghost = testUtils.startGhost,
@@ -32,7 +33,7 @@ describe('Upload Icon API', function () {
 
     describe('success cases for icons', function () {
         it('valid png', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon.png'))
@@ -48,7 +49,7 @@ describe('Upload Icon API', function () {
         });
 
         it('valid ico with multiple sizes', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_multi_sizes.ico'))
@@ -63,7 +64,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('valid ico with one size', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_64x_single.ico'))
@@ -81,7 +82,7 @@ describe('Upload Icon API', function () {
 
     describe('error cases for icons', function () {
         it('import should fail without file', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -96,7 +97,7 @@ describe('Upload Icon API', function () {
         });
 
         it('import should fail with unsupported file', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
@@ -111,7 +112,7 @@ describe('Upload Icon API', function () {
         });
 
         it('incorrect extension', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('content-type', 'image/png')
                 .expect('Content-Type', /json/)
@@ -126,7 +127,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('import should fail, if icon is not square', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))
@@ -140,7 +141,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('import should fail, if icon file size is too large', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_size_too_large.png'))
@@ -154,7 +155,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('import should fail, if icon dimensions are too large', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_too_large.png'))
@@ -168,7 +169,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('import should fail, if png icon dimensions are too small', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_too_small.png'))
@@ -182,7 +183,7 @@ describe('Upload Icon API', function () {
                 });
         });
         it('import should fail, if png icon dimensions are too small', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/icon'))
+            request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_16x_single.ico'))

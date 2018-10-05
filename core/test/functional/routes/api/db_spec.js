@@ -2,6 +2,7 @@ var should = require('should'),
     supertest = require('supertest'),
     Promise = require('bluebird'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     path = require('path'),
     sinon = require('sinon'),
     config = require('../../../../../core/server/config'),
@@ -41,7 +42,7 @@ describe('DB API', function () {
     });
 
     it('attaches the Content-Disposition header on export', function (done) {
-        request.get(testUtils.API.getApiQuery('db/'))
+        request.get(localUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -61,7 +62,7 @@ describe('DB API', function () {
     });
 
     it('should work with access token set as query parameter', function (done) {
-        request.get(testUtils.API.getApiQuery('db/?access_token=' + accesstoken))
+        request.get(localUtils.API.getApiQuery('db/?access_token=' + accesstoken))
             .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
@@ -78,7 +79,7 @@ describe('DB API', function () {
     });
 
     it('include more tables', function (done) {
-        request.get(testUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
+        request.get(localUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -96,7 +97,7 @@ describe('DB API', function () {
     });
 
     it('import should fail without file', function (done) {
-        request.post(testUtils.API.getApiQuery('db/'))
+        request.post(localUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -111,7 +112,7 @@ describe('DB API', function () {
     });
 
     it('import should fail with unsupported file', function (done) {
-        request.post(testUtils.API.getApiQuery('db/'))
+        request.post(localUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
             .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
@@ -128,7 +129,7 @@ describe('DB API', function () {
     it('export can be triggered by backup client', function (done) {
         backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret;
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
-        request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
+        request.post(localUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
@@ -147,7 +148,7 @@ describe('DB API', function () {
     it('export can be triggered and named by backup client', function (done) {
         backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret + '&filename=test';
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
-        request.post(testUtils.API.getApiQuery('db/backup' + backupQuery))
+        request.post(localUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
@@ -166,7 +167,7 @@ describe('DB API', function () {
     it('export can be triggered by backup client', function (done) {
         schedulerQuery = '?client_id=' + schedulerClient.slug + '&client_secret=' + schedulerClient.secret;
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
-        request.post(testUtils.API.getApiQuery('db/backup' + schedulerQuery))
+        request.post(localUtils.API.getApiQuery('db/backup' + schedulerQuery))
             .expect('Content-Type', /json/)
             .expect(403)
             .end(function (err, res) {
