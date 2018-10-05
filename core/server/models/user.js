@@ -617,6 +617,7 @@ User = ghostBookshelf.Model.extend({
         if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
             userModelOrId = userModelOrId.id;
         }
+
         // If we passed in an id instead of a model get the model first
         if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
             // Grab the original args without the first one
@@ -643,7 +644,6 @@ User = ghostBookshelf.Model.extend({
         if (action === 'edit') {
             // Users with the role 'Editor', 'Author', and 'Contributor' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-
             if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = true;

@@ -184,9 +184,38 @@ describe('Unit: models/user', function () {
             });
         });
 
+        it('without related roles', function () {
+            sandbox.stub(models.User, 'findOne').withArgs({
+                id: 3,
+                status: 'all'
+            }, {withRelated: ['roles']}).resolves(getUserModel(3, 'Contributor'));
+
+            const mockUser = {id: 3, related: sandbox.stub().returns()};
+            const context = {user: 3};
+
+            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true)
+                .then(() => {
+                    models.User.findOne.calledOnce.should.be.true();
+                });
+        });
+
         describe('as editor', function () {
             it('can\'t edit another editor', function (done) {
                 var mockUser = getUserModel(3, 'Editor'),
+                    context = {user: 2};
+
+                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                    done(new Error('Permissible function should have errored'));
+                }).catch((error) => {
+                    error.should.be.an.instanceof(common.errors.NoPermissionError);
+                    should(mockUser.hasRole.called).be.true();
+                    should(mockUser.get.calledOnce).be.true();
+                    done();
+                });
+            });
+
+            it('can\'t edit owner', function (done) {
+                var mockUser = getUserModel(3, 'Owner'),
                     context = {user: 2};
 
                 models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
