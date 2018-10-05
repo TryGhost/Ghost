@@ -252,28 +252,6 @@ describe('Models: base', function () {
                 should.equal(model.hasTimestamps, true);
             });
         });
-
-        it('resolves with nothing and does not call save if no model is fetched', function () {
-            const data = {
-                db: 'cooper'
-            };
-            const unfilteredOptions = {
-                id: 'something real special',
-            };
-            const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
-                .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
-                .resolves();
-            const saveSpy = sandbox.stub(model, 'save');
-
-            return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
-                should.equal(result, undefined);
-                should.equal(saveSpy.callCount, 0);
-            });
-        });
     });
 
     describe('static add(data, unfilteredOptions)', function () {

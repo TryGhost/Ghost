@@ -776,10 +776,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options.require = true;
 
         return model.fetch(options).then(function then(object) {
-            if (object) {
-                options.method = 'update';
-                return object.save(data, options);
-            }
+            options.method = 'update';
+            return object.save(data, options);
         });
     },
 
