@@ -100,7 +100,7 @@ describe('Acceptance: Error Handling', function () {
 
         describe('logged out', function () {
             it('displays alert', async function () {
-                server.post('/authentication/token', versionMismatchResponse);
+                server.post('/session', versionMismatchResponse);
 
                 await visit('/signin');
                 await fillIn('[name="identification"]', 'test@example.com');

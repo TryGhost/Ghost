@@ -34,7 +34,7 @@ describe('Unit: Model: invite', function () {
             let model = this.subject();
             let role;
 
-            server.post('/ghost/api/v0.1/invites/', function () {
+            server.post('/ghost/api/v2/admin/invites/', function () {
                 return [200, {}, '{}'];
             });
 

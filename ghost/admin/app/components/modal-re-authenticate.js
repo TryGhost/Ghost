@@ -28,7 +28,7 @@ export default ModalComponent.extend(ValidationEngine, {
 
     _authenticate() {
         let session = this.get('session');
-        let authStrategy = 'authenticator:oauth2';
+        let authStrategy = 'authenticator:cookie';
         let identification = this.get('identification');
         let password = this.get('password');
 

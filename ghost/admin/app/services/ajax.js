@@ -9,7 +9,6 @@ import {inject as service} from '@ember/service';
 
 const JSON_CONTENT_TYPE = 'application/json';
 const GHOST_REQUEST = /\/ghost\/api\//;
-const TOKEN_REQUEST = /authentication\/(?:token|ghost|revoke)/;
 
 function isJSONContentType(header) {
     if (!header || isNone(header)) {
@@ -119,19 +118,17 @@ export function isThemeValidationError(errorOrStatus, payload) {
 let ajaxService = AjaxService.extend({
     session: service(),
 
+    // flag to tell our ESA authenticator not to try an invalidate DELETE request
+    // because it's been triggered by this service's 401 handling which means the
+    // DELETE would fail and get stuck in an infinite loop
+    // TODO: find a more elegant way to handle this
+    skipSessionDeletion: false,
+
     headers: computed('session.isAuthenticated', function () {
-        let session = this.get('session');
         let headers = {};
 
         headers['X-Ghost-Version'] = config.APP.version;
         headers['App-Pragma'] = 'no-cache';
-
-        if (session.get('isAuthenticated')) {
-            /* eslint-disable camelcase */
-            let {access_token} = session.get('data.authenticated');
-            headers.Authorization = `Bearer ${access_token}`;
-            /* eslint-enable camelcase */
-        }
 
         return headers;
     }).volatile(),
@@ -139,37 +136,15 @@ let ajaxService = AjaxService.extend({
     // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
     // and formats appropriately, we want to handle `application/json` the same
     _makeRequest(hash) {
-        let isAuthenticated = this.get('session.isAuthenticated');
-        let isGhostRequest = GHOST_REQUEST.test(hash.url);
-        let isTokenRequest = isGhostRequest && TOKEN_REQUEST.test(hash.url);
-        let tokenExpiry = this.get('session.authenticated.expires_at');
-        let isTokenExpired = tokenExpiry < (new Date()).getTime();
-
         if (isJSONContentType(hash.contentType) && hash.type !== 'GET') {
             if (typeof hash.data === 'object') {
                 hash.data = JSON.stringify(hash.data);
             }
         }
 
-        // we can get into a situation where the app is left open without a
-        // network connection and the token subsequently expires, this will
-        // result in the next network request returning a 401 and killing the
-        // session. This is an attempt to detect that and restore the session
-        // using the stored refresh token before continuing with the request
-        //
-        // TODO:
-        // - this might be quite blunt, if we have a lot of requests at once
-        //   we probably want to queue the requests until the restore completes
-        // BUG:
-        // - the original caller gets a rejected promise with `undefined` instead
-        //   of the AjaxError object when session restore fails. This isn't a
-        //   huge deal because the session will be invalidated and app reloaded
-        //   but it would be nice to be consistent
-        if (isAuthenticated && isGhostRequest && !isTokenRequest && isTokenExpired) {
-            return this.get('session').restore().then(() => this._makeRequest(hash));
-        }
+        hash.withCredentials = true;
 
-        return this._super(...arguments);
+        return this._super(hash);
     },
 
     handleResponse(status, headers, payload, request) {
@@ -192,7 +167,8 @@ let ajaxService = AjaxService.extend({
         let isUnauthorized = this.isUnauthorizedError(status, headers, payload);
 
         if (isAuthenticated && isGhostRequest && isUnauthorized) {
-            this.get('session').invalidate();
+            this.skipSessionDeletion = true;
+            this.session.invalidate();
         }
 
         return this._super(...arguments);

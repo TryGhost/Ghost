@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 function stubAvailableTimezonesEndpoint(server) {
-    server.get('/ghost/api/v0.1/configuration/timezones', function () {
+    server.get('/ghost/api/v2/admin/configuration/timezones', function () {
         return [
             200,
             {'Content-Type': 'application/json'},
@@ -58,7 +58,7 @@ describe('Integration: Service: config', function () {
 
     it('normalizes blogUrl to non-trailing-slash', function (done) {
         let stubBlogUrl = function stubBlogUrl(blogUrl) {
-            server.get('/ghost/api/v0.1/configuration/', function () {
+            server.get('/ghost/api/v2/admin/configuration/', function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},

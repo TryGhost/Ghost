@@ -3,14 +3,9 @@ import {Response} from 'ember-cli-mirage';
 import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
-    server.post('/authentication/token', function () {
+    server.post('/session', function () {
         // Password sign-in
-        return {
-            access_token: 'MirageAccessToken',
-            expires_in: 172800,
-            refresh_token: 'MirageRefreshToken',
-            token_type: 'Bearer'
-        };
+        return new Response(201);
     });
 
     server.post('/authentication/passwordreset', function (schema, request) {

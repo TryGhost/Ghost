@@ -133,7 +133,7 @@ export default Controller.extend({
         let password = this.get('signupDetails.password');
 
         return this.get('session')
-            .authenticate('authenticator:oauth2', email, password);
+            .authenticate('authenticator:cookie', email, password);
     },
 
     _sendImage: task(function* () {

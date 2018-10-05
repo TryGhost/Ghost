@@ -1,6 +1,4 @@
 import Pretender from 'pretender';
-import RSVP from 'rsvp';
-import Service from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -9,6 +7,7 @@ import {
     isUnauthorizedError
 } from 'ember-ajax/errors';
 import {
+    isMaintenanceError,
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError,
     isVersionMismatchError
@@ -175,96 +174,16 @@ describe('Integration: Service: ajax', function () {
         });
     });
 
-    /* eslint-disable camelcase */
-    describe('session handling', function () {
-        let sessionStub = Service.extend({
-            isAuthenticated: true,
-            restoreCalled: false,
-            authenticated: null,
+    it('handles error checking for MaintenanceError on 503 errors', function (done) {
+        stubAjaxEndpoint(server, {}, 503);
 
-            init() {
-                this._super(...arguments);
-                let authenticated = {
-                    expires_at: (new Date()).getTime() - 10000,
-                    access_token: 'AccessMe123',
-                    refresh_token: 'RefreshMe123'
-                };
-                this.authenticated = authenticated;
-                this.data = {authenticated};
-            },
+        let ajax = this.subject();
 
-            restore() {
-                this.restoreCalled = true;
-                this.authenticated.expires_at = (new Date()).getTime() + 10000;
-                return RSVP.resolve();
-            },
-
-            authorize() {
-
-            }
-        });
-
-        beforeEach(function () {
-            server.get('/ghost/api/v0.1/test/', function () {
-                return [
-                    200,
-                    {'Content-Type': 'application/json'},
-                    JSON.stringify({
-                        success: true
-                    })
-                ];
-            });
-
-            server.post('/ghost/api/v0.1/authentication/token', function () {
-                return [
-                    401,
-                    {'Content-Type': 'application/json'},
-                    JSON.stringify({})
-                ];
-            });
-        });
-
-        it('can restore an expired session', function (done) {
-            let ajax = this.subject();
-            ajax.set('session', sessionStub.create());
-
-            ajax.request('/ghost/api/v0.1/test/');
-
-            ajax.request('/ghost/api/v0.1/test/').then((result) => {
-                expect(ajax.get('session.restoreCalled'), 'restoreCalled').to.be.true;
-                expect(result.success, 'result.success').to.be.true;
-                done();
-            }).catch(() => {
-                expect(true, 'request failed').to.be.false;
-                done();
-            });
-        });
-
-        it('errors correctly when session restoration fails', function (done) {
-            let ajax = this.subject();
-            let invalidateCalled = false;
-
-            ajax.set('session', sessionStub.create());
-            ajax.set('session.restore', function () {
-                this.set('restoreCalled', true);
-                return ajax.post('/ghost/api/v0.1/authentication/token');
-            });
-            ajax.set('session.invalidate', function () {
-                invalidateCalled = true;
-            });
-
-            stubAjaxEndpoint(server, {}, 401);
-
-            ajax.request('/ghost/api/v0.1/test/').then(() => {
-                expect(true, 'request was successful').to.be.false;
-                done();
-            }).catch(() => {
-                // TODO: fix the error return when a session restore fails
-                // expect(isUnauthorizedError(error)).to.be.true;
-                expect(ajax.get('session.restoreCalled'), 'restoreCalled').to.be.true;
-                expect(invalidateCalled, 'invalidateCalled').to.be.true;
-                done();
-            });
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isMaintenanceError(error)).to.be.true;
+            done();
         });
     });
 });

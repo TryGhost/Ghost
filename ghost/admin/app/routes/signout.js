@@ -1,10 +1,6 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import Ember from 'ember';
 import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
-
-// ember-cli-shims doesn't export canInvoke
-const {canInvoke} = Ember;
 
 export default AuthenticatedRoute.extend(styleBody, {
     notifications: service(),
@@ -13,12 +9,8 @@ export default AuthenticatedRoute.extend(styleBody, {
 
     classNames: ['ghost-signout'],
 
-    afterModel(model, transition) {
-        this.get('notifications').clearAll();
-        if (canInvoke(transition, 'send')) {
-            transition.send('logout');
-        } else {
-            this.send('logout');
-        }
+    afterModel(/*model, transition*/) {
+        this.notifications.clearAll();
+        this.session.invalidate();
     }
 });
