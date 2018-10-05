@@ -11,6 +11,7 @@ describe('Roles API', function () {
 
     before(testUtils.setup('users:roles', 'perms:role', 'perms:init'));
 
+    // @TODO: move one of these tests to routing tests, remove rest
     describe('Browse', function () {
         function checkBrowseResponse(response) {
             should.exist(response);
@@ -69,6 +70,7 @@ describe('Roles API', function () {
         });
     });
 
+    // @TODO: move one of these tests to routing tests, remove rest
     describe('Browse permissions=assign', function () {
         function checkBrowseResponse(response) {
             should.exist(response);
