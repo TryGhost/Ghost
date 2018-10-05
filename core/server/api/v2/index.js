@@ -11,6 +11,10 @@ module.exports = {
         return require('./session');
     },
 
+    get api_keys() {
+        return shared.pipeline(require('./api-keys'), localUtils);
+    },
+
     get pages() {
         return shared.pipeline(require('./pages'), localUtils);
     }
