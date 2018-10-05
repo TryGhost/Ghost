@@ -1,3 +1,4 @@
+const common = require('../../lib/common');
 const models = require('../../models');
 
 module.exports = {
@@ -13,7 +14,12 @@ module.exports = {
             }
         },
         query({data, options}) {
-            return models.ApiKey.refreshSecret(data, options);
+            return models.ApiKey.refreshSecret(data, Object.assign({require: true}, options, {id: data.id}))
+                .catch(models.ApiKey.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {resource: 'ApiKey'})
+                    });
+                });
         }
     },
     add: {
@@ -47,7 +53,12 @@ module.exports = {
             }
         },
         query({data, options}) {
-            return models.ApiKey.destroy(Object.assign({}, options, {id: data.id}));
+            return models.ApiKey.destroy(Object.assign({require: true}, options, {id: data.id}))
+                .catch(models.ApiKey.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {resource: 'ApiKey'})
+                    });
+                });
         }
     }
 };

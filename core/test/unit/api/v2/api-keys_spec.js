@@ -1,6 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
+const Promise = require('bluebird');
 const models = require('../../../../server/models');
+const {NotFoundError} = require('../../../../server/lib/common/errors');
 const api_keys = require('../../../../server/api/v2/api-keys');
 
 describe('api_keys resource controllers', function () {
@@ -105,7 +107,13 @@ describe('api_keys resource controllers', function () {
                 const sandbox = sinon.sandbox.create();
                 const query = api_keys.destroy.query;
 
-                const destroyStub = sandbox.stub(models.ApiKey, 'destroy').resolves();
+                const destroyPromise = Promise.resolve();
+
+                const destroyStub = sandbox.stub(models.ApiKey, 'destroy')
+                    .returns(destroyPromise);
+
+                const destroyPromiseCatchStub = sandbox.stub(destroyPromise, 'catch').resolves();
+
                 const fakeFrame = {
                     data: {id: 123},
                     options: {base: 'cannon'}
@@ -113,9 +121,16 @@ describe('api_keys resource controllers', function () {
 
                 const result = query(fakeFrame);
 
-                should.equal(result, destroyStub.returnValues[0]);
+                should.equal(result, destroyPromiseCatchStub.returnValues[0]);
                 should.equal(destroyStub.args[0][0].id, 123);
                 should.equal(destroyStub.args[0][0].base, 'cannon');
+
+                should.equal(destroyPromiseCatchStub.args[0][0], models.ApiKey.NotFoundError);
+                try {
+                    destroyPromiseCatchStub.args[0][1]();
+                } catch (err) {
+                    should.equal(err instanceof NotFoundError, true);
+                }
 
                 sandbox.restore();
             });
@@ -143,11 +158,17 @@ describe('api_keys resource controllers', function () {
         });
 
         describe('query', function () {
-            it('returns the result of ApiKeyModel.refreshSecret(data, options)', function () {
+            it('returns the result of ApiKeyModel.refreshSecret setting options.id and require: true and handles NotFoundError', function () {
                 const sandbox = sinon.sandbox.create();
                 const query = api_keys.edit.query;
 
-                const refreshSecretStub = sandbox.stub(models.ApiKey, 'refreshSecret').resolves();
+                const refreshSecretPromise = Promise.resolve();
+
+                const refreshSecretStub = sandbox.stub(models.ApiKey, 'refreshSecret')
+                    .returns(refreshSecretPromise);
+
+                const refreshSecretCatchStub = sandbox.stub(refreshSecretPromise, 'catch').resolves();
+
                 const fakeFrame = {
                     data: {id: 123},
                     options: {andre: '3000andWOT'}
@@ -155,9 +176,21 @@ describe('api_keys resource controllers', function () {
 
                 const result = query(fakeFrame);
 
-                should.equal(result, refreshSecretStub.returnValues[0]);
+                should.equal(result, refreshSecretCatchStub.returnValues[0]);
                 should.equal(refreshSecretStub.args[0][0], fakeFrame.data);
-                should.equal(refreshSecretStub.args[0][1], fakeFrame.options);
+                should.deepEqual(refreshSecretStub.args[0][1], {
+                    require: true,
+                    andre: '3000andWOT',
+                    id: 123
+                });
+
+                should.equal(refreshSecretCatchStub.args[0][0], models.ApiKey.NotFoundError);
+
+                try {
+                    refreshSecretCatchStub.args[0][1]();
+                } catch (err) {
+                    should.equal(err instanceof NotFoundError, true);
+                }
 
                 sandbox.restore();
             });
