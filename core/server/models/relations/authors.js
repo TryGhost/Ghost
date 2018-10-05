@@ -177,7 +177,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 delete attrs.author_id;
             } else {
                 // CASE: we return `post.author=id` with or without requested columns.
-                // @NOTE: this serialization should be moved into api layer, it's not being moved as it's not used
+                // @NOTE: this serialization should be moved into api layer, it's not being moved as it's deprecated
                 if (!options.columns || (options.columns && options.columns.indexOf('author') !== -1)) {
                     attrs.author = attrs.author_id;
                     delete attrs.author_id;
