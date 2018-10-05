@@ -56,22 +56,6 @@ var _ = require('lodash'),
         webhook: _.keys(schema.webhooks)
     };
 
-function getApiPath(options) {
-    const baseAPIPath = '/ghost/api/';
-    switch (options.version) {
-        case 'deprecated':
-            return `${baseAPIPath}v0.1/`;
-        case 'active':
-            if (options.versionType === 'admin') {
-                return `${baseAPIPath}v2/admin/`;
-            } else {
-                return `${baseAPIPath}v2/content/`;
-            }
-        default:
-            return `${baseAPIPath}v0.1/`;
-    }
-}
-
 function getURL() {
     return protocol + host;
 }
@@ -119,7 +103,6 @@ function checkResponse(jsonResponse, objectType, additionalProperties, missingPr
 }
 
 module.exports = {
-    getApiPath: getApiPath,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
     getURL: getURL,
