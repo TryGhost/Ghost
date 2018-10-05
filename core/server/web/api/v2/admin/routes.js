@@ -22,6 +22,7 @@ module.exports = function apiRoutes() {
     router.options('*', shared.middlewares.api.cors);
 
     router.post('/apikeys', apiv2.http(apiv2.api_keys.add));
+    router.del('/apikeys/:id', apiv2.http(apiv2.api_keys.destroy));
 
     // ## Configuration
     router.get('/configuration', api.http(api.configuration.read));

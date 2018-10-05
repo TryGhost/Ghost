@@ -70,4 +70,55 @@ describe('api_keys resource controllers', function () {
             });
         });
     });
+
+    describe('destroy', function () {
+        it('should enforce permissions', function () {
+            const destroy = api_keys.destroy;
+            should.equal(destroy.permissions, true);
+        });
+
+        it('should have statusCode afo 204', function () {
+            const destroy = api_keys.destroy;
+            should.equal(destroy.statusCode, 204);
+        });
+        it('should have responseType of plain', function () {
+            const destroy = api_keys.destroy;
+            should.equal(destroy.responseType, 'plain');
+        });
+
+        describe('data', function () {
+            it('should have id data', function () {
+                const data = api_keys.destroy.data;
+                should.equal(data.includes('id'), true);
+            });
+        });
+
+        describe('validation', function () {
+            it('should require the id', function () {
+                const validation = api_keys.destroy.validation;
+                should.equal(validation.data.id.required, true);
+            });
+        });
+
+        describe('query', function () {
+            it('returns the result of ApiKeyModel.destroy() called with frame.options and data.id', function () {
+                const sandbox = sinon.sandbox.create();
+                const query = api_keys.destroy.query;
+
+                const destroyStub = sandbox.stub(models.ApiKey, 'destroy').resolves();
+                const fakeFrame = {
+                    data: {id: 123},
+                    options: {base: 'cannon'}
+                };
+
+                const result = query(fakeFrame);
+
+                should.equal(result, destroyStub.returnValues[0]);
+                should.equal(destroyStub.args[0][0].id, 123);
+                should.equal(destroyStub.args[0][0].base, 'cannon');
+
+                sandbox.restore();
+            });
+        });
+    });
 });

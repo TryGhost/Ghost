@@ -19,5 +19,21 @@ module.exports = {
         query({data, options}) {
             return models.ApiKey.add(data, options);
         }
+    },
+    destroy: {
+        permissions: true,
+        statusCode: 204,
+        responseType: 'plain',
+        data: ['id'],
+        validation: {
+            data: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        query({data, options}) {
+            return models.ApiKey.destroy(Object.assign({}, options, {id: data.id}));
+        }
     }
 };
