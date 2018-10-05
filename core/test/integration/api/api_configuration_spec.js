@@ -16,30 +16,6 @@ describe('Configuration API', function () {
     });
 
     should.exist(ConfigurationAPI);
-
-    // @TODO: routing test
-    it('can read basic config and get all expected properties', function (done) {
-        ConfigurationAPI.read().then(function (response) {
-            var props;
-
-            should.exist(response);
-            should.exist(response.configuration);
-            response.configuration.should.be.an.Array().with.lengthOf(1);
-            props = response.configuration[0];
-
-            props.blogUrl.should.eql('http://127.0.0.1:2369/');
-
-            props.useGravatar.should.eql(false);
-            props.publicAPI.should.eql(true);
-            props.clientId.should.eql('ghost-admin');
-            props.clientSecret.should.eql('not_available');
-
-            // value not available, because settings API was not called yet
-            props.hasOwnProperty('blogTitle').should.eql(true);
-            done();
-        }).catch(done);
-    });
-
     // @TODO: routing test
     it('can read about config and get all expected properties', function (done) {
         ConfigurationAPI.read({key: 'about'}).then(function (response) {
