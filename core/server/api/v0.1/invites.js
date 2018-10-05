@@ -10,7 +10,8 @@ const Promise = require('bluebird'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     docName = 'invites',
-    allowedIncludes = ['created_by', 'updated_by'];
+    allowedIncludes = ['created_by', 'updated_by'],
+    unsafeAttrs = ['role_id'];
 
 const invites = {
     browse(options) {
@@ -182,37 +183,7 @@ const invites = {
                 return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.invites.roleIsRequired')}));
             }
 
-            // @TODO remove when we have a new permission unit
-            // Make sure user is allowed to add a user with this role
-            // We cannot use permissible because we don't have access to the role_id!!!
-            // Adding a permissible function to the invite model, doesn't give us much context of the invite we would like to add
-            // As we are looking forward to replace the permission system completely, we do not add a hack here
-            return models.Role.findOne({id: options.data.invites[0].role_id}).then((roleToInvite) => {
-                if (!roleToInvite) {
-                    return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.roleNotFound')}));
-                }
-
-                if (roleToInvite.get('name') === 'Owner') {
-                    return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
-                }
-
-                const loggedInUserRole = loggedInUser.related('roles').models[0].get('name');
-                let allowed = [];
-
-                if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
-                    allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
-                } else if (loggedInUserRole === 'Editor') {
-                    allowed = ['Author', 'Contributor'];
-                }
-
-                if (allowed.indexOf(roleToInvite.get('name')) === -1) {
-                    return Promise.reject(new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.api.invites.notAllowedToInvite')
-                    }));
-                }
-            }).then(() => {
-                return options;
-            });
+            return options;
         }
 
         function checkIfUserExists(options) {
@@ -243,9 +214,9 @@ const invites = {
         tasks = [
             localUtils.validate(docName, {opts: ['email']}),
             localUtils.convertOptions(allowedIncludes),
-            localUtils.handlePermissions(docName, 'add'),
-            fetchLoggedInUser,
             validation,
+            localUtils.handlePermissions(docName, 'add', unsafeAttrs),
+            fetchLoggedInUser,
             checkIfUserExists,
             destroyOldInvite,
             addInvite
