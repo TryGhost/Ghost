@@ -3,7 +3,6 @@ var _ = require('lodash'),
     moment = require('moment'),
     config = require('../../server/config'),
     schema = require('../../server/data/schema').tables,
-    ApiRouteBase = '/ghost/api/v0.1/',
     host = config.get('server').host,
     port = config.get('server').port,
     protocol = 'http://',
@@ -56,10 +55,6 @@ var _ = require('lodash'),
         invites: _(schema.invites).keys().without('token').value(),
         webhook: _.keys(schema.webhooks)
     };
-
-function getApiQuery(route) {
-    return url.resolve(ApiRouteBase, route);
-}
 
 function getApiPath(options) {
     const baseAPIPath = '/ghost/api/';
@@ -124,7 +119,6 @@ function checkResponse(jsonResponse, objectType, additionalProperties, missingPr
 }
 
 module.exports = {
-    getApiQuery: getApiQuery,
     getApiPath: getApiPath,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,

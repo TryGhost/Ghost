@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -30,7 +31,7 @@ describe('Notifications API', function () {
         };
 
         it('creates a new notification', function (done) {
-            request.post(testUtils.API.getApiQuery('notifications/'))
+            request.post(localUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
@@ -66,7 +67,7 @@ describe('Notifications API', function () {
 
         it('deletes a notification', function (done) {
             // create the notification that is to be deleted
-            request.post(testUtils.API.getApiQuery('notifications/'))
+            request.post(localUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)

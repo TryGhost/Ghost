@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     path = require('path'),
     fs = require('fs-extra'),
     ghost = testUtils.startGhost,
@@ -34,7 +35,7 @@ describe('Upload API', function () {
 
     describe('success cases', function () {
         it('valid png', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
@@ -50,7 +51,7 @@ describe('Upload API', function () {
         });
 
         it('valid jpg', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
@@ -66,7 +67,7 @@ describe('Upload API', function () {
         });
 
         it('valid gif', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
@@ -82,7 +83,7 @@ describe('Upload API', function () {
         });
 
         it('valid profile image', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/profile-image'))
+            request.post(localUtils.API.getApiQuery('uploads/profile-image'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
@@ -100,7 +101,7 @@ describe('Upload API', function () {
 
     describe('error cases', function () {
         it('import should fail without file', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -115,7 +116,7 @@ describe('Upload API', function () {
         });
 
         it('import should fail with unsupported file', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
@@ -130,7 +131,7 @@ describe('Upload API', function () {
         });
 
         it('incorrect extension', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads'))
+            request.post(localUtils.API.getApiQuery('uploads'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .set('content-type', 'image/png')
                 .expect('Content-Type', /json/)
@@ -146,7 +147,7 @@ describe('Upload API', function () {
         });
 
         it('import should fail if profile image is not square', function (done) {
-            request.post(testUtils.API.getApiQuery('uploads/profile-image'))
+            request.post(localUtils.API.getApiQuery('uploads/profile-image'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))

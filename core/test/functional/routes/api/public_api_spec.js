@@ -5,6 +5,7 @@ var should = require('should'),
     cheerio = require('cheerio'),
     moment = require('moment'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     configUtils = require('../../../utils/configUtils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
@@ -29,7 +30,7 @@ describe('Public API', function () {
     });
 
     it('browse posts', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -79,7 +80,7 @@ describe('Public API', function () {
     });
 
     it('browse posts: request absolute urls', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -112,7 +113,7 @@ describe('Public API', function () {
     });
 
     it('browse posts: request to include tags and authors with absolute_urls', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -152,7 +153,7 @@ describe('Public API', function () {
     });
 
     it('browse posts: request to include tags and authors without absolute_urls', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&include=tags,authors'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -184,7 +185,7 @@ describe('Public API', function () {
     });
 
     it('browse posts from different origin', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-test&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-test&client_secret=not_available'))
             .set('Origin', 'https://example.com')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -214,7 +215,7 @@ describe('Public API', function () {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
 
-        request.get(testUtils.API.getApiQuery('posts?client_id=ghost-test&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts?client_id=ghost-test&client_secret=not_available'))
             .set('Origin', 'https://example.com')
             // 301 Redirects _should_ be cached
             .expect('Cache-Control', testUtils.cacheRules.year)
@@ -233,7 +234,7 @@ describe('Public API', function () {
     });
 
     it('browse posts, ignores staticPages', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&staticPages=true'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&staticPages=true'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -257,7 +258,7 @@ describe('Public API', function () {
     });
 
     it('browse tags without limit defaults to 15', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -279,7 +280,7 @@ describe('Public API', function () {
     });
 
     it('browse tags - limit=all should fetch all tags', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -300,7 +301,7 @@ describe('Public API', function () {
     });
 
     it('browse tags without limit=4 fetches 4 tags', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/?limit=4&client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('tags/?limit=4&client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -322,7 +323,7 @@ describe('Public API', function () {
     });
 
     it('browse tags: request absolute urls', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
+        request.get(localUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -341,7 +342,7 @@ describe('Public API', function () {
     });
 
     it('denies access with invalid client_secret', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=invalid_secret'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=invalid_secret'))
             .set('Origin', testUtils.API.getURL())
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -362,7 +363,7 @@ describe('Public API', function () {
     });
 
     it('denies access with invalid client_id', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=invalid-id&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=invalid-id&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -383,7 +384,7 @@ describe('Public API', function () {
     });
 
     it('does not send CORS headers on an invalid origin', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', 'http://invalid-origin')
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -402,7 +403,7 @@ describe('Public API', function () {
     });
 
     it('denies access to settings endpoint', function (done) {
-        request.get(testUtils.API.getApiQuery('settings/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('settings/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -423,7 +424,7 @@ describe('Public API', function () {
     });
 
     it('throws version mismatch error when request includes a version', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .set('Accept', 'application/json')
             .set('X-Ghost-Version', '0.3')
@@ -447,7 +448,7 @@ describe('Public API', function () {
     });
 
     it('browse users', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -470,7 +471,7 @@ describe('Public API', function () {
     });
 
     it('browse users: ignores fetching roles', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=roles'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -493,7 +494,7 @@ describe('Public API', function () {
     });
 
     it('browse users: request absolute urls', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -512,7 +513,7 @@ describe('Public API', function () {
     });
 
     it('browse user by slug: ignores fetching roles', function (done) {
-        request.get(testUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=roles'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -535,7 +536,7 @@ describe('Public API', function () {
     });
 
     it('browse user by slug: count.posts', function (done) {
-        request.get(testUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -558,7 +559,7 @@ describe('Public API', function () {
     });
 
     it('browse user by id: count.posts', function (done) {
-        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -582,7 +583,7 @@ describe('Public API', function () {
 
     it('[unsupported] browse user by email', function (done) {
         request
-            .get(testUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
+            .get(localUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -597,7 +598,7 @@ describe('Public API', function () {
     });
 
     it('browse user by id: ignores fetching roles', function (done) {
-        request.get(testUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -620,7 +621,7 @@ describe('Public API', function () {
     });
 
     it('browse users: post count', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -643,7 +644,7 @@ describe('Public API', function () {
     });
 
     it('browse users: wrong data type for include', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include={}'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include={}'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -673,7 +674,7 @@ describe('Public API', function () {
         }
 
         request
-            .get(testUtils.API.getApiQuery(
+            .get(localUtils.API.getApiQuery(
                 'posts/?client_id=ghost-admin&client_secret=not_available&limit=1'
             ))
             .set('Origin', testUtils.API.getURL())
@@ -688,7 +689,7 @@ describe('Public API', function () {
                 post.title.should.eql('Welcome to Ghost');
 
                 return request
-                    .get(testUtils.API.getApiQuery(
+                    .get(localUtils.API.getApiQuery(
                         'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
                         + createFilter(publishedAt, '<')
                     ))
@@ -705,7 +706,7 @@ describe('Public API', function () {
                 post.title.should.eql('Writing posts with Ghost ✍️');
 
                 return request
-                    .get(testUtils.API.getApiQuery(
+                    .get(localUtils.API.getApiQuery(
                         'posts/?client_id=ghost-admin&client_secret=not_available&limit=1&filter='
                         + createFilter(publishedAt, '>')
                     ))

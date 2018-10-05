@@ -3,6 +3,7 @@ const nock = require('nock');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
+const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
 
@@ -44,7 +45,7 @@ describe('Oembed API', function () {
                     type: 'video'
                 });
 
-            request.get(testUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0'))
+            request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DE5yFcdPAGv0'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)

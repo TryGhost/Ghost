@@ -1,6 +1,7 @@
 var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../../utils'),
+    localUtils = require('./utils'),
     config = require('../../../../../core/server/config'),
     ghost = testUtils.startGhost,
     request;
@@ -24,7 +25,7 @@ describe('Configuration API', function () {
 
     describe('success', function () {
         it('can retrieve public configuration', function (done) {
-            request.get(testUtils.API.getApiQuery('configuration/'))
+            request.get(localUtils.API.getApiQuery('configuration/'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
