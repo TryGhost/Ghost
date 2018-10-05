@@ -1,7 +1,10 @@
 var _ = require('lodash'),
     url = require('url'),
     moment = require('moment'),
+    DataGenerator = require('./fixtures/data-generator'),
     config = require('../../server/config'),
+    common = require('../../server/lib/common'),
+    sequence = require('../../server/lib/promise/sequence'),
     schema = require('../../server/data/schema').tables,
     host = config.get('server').host,
     port = config.get('server').port,
@@ -102,11 +105,73 @@ function checkResponse(jsonResponse, objectType, additionalProperties, missingPr
     checkResponseValue(jsonResponse, checkProperties);
 }
 
-module.exports = {
-    getSigninURL: getSigninURL,
-    getAdminURL: getAdminURL,
-    getURL: getURL,
-    checkResponse: checkResponse,
-    checkResponseValue: checkResponseValue,
-    isISO8601: isISO8601
+/**
+ * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
+ *
+ * @TODO make this do the DB init as well
+ */
+const doAuth = (apiOptions) => {
+    return function doAuthInner() {
+        let API_URL = arguments[0];
+        let request = arguments[1];
+        let options = arguments;
+        let fixtureOps;
+
+        // Remove API_URL & request from this list
+        delete options[0];
+        delete options[1];
+
+        // No DB setup, but override the owner
+        options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
+            if (val) {
+                result[val] = true;
+            }
+        }));
+
+        fixtureOps = apiOptions.getFixtureOps(options);
+
+        return sequence(fixtureOps).then(function () {
+            return login(request, API_URL);
+        });
+    };
+};
+
+const login = (request, API_URL) => {
+    // CASE: by default we use the owner to login
+    if (!request.user) {
+        request.user = DataGenerator.Content.users[0];
+    }
+
+    return new Promise(function (resolve, reject) {
+        request.post(API_URL)
+            .set('Origin', config.get('url'))
+            .send({
+                grant_type: 'password',
+                username: request.user.email,
+                password: 'Sl1m3rson99',
+                client_id: 'ghost-admin',
+                client_secret: 'not_available'
+            }).then(function then(res) {
+            if (res.statusCode !== 200) {
+                return reject(new common.errors.GhostError({
+                    message: res.body.errors[0].message
+                }));
+            }
+
+            resolve(res.body.access_token);
+        }, reject);
+    });
+};
+
+module.exports = (options = {}) => {
+    return {
+        getSigninURL: getSigninURL,
+        getAdminURL: getAdminURL,
+        doAuth: doAuth(options),
+        login: login,
+        getURL: getURL,
+        checkResponse: checkResponse,
+        checkResponseValue: checkResponseValue,
+        isISO8601: isISO8601
+    };
 };

@@ -30,7 +30,7 @@ var Promise = require('bluebird'),
     DataGenerator = require('./fixtures/data-generator'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
-    APIAssertions = require('./api'),
+    APIUtils = require('./api'),
     mocks = require('./mocks'),
     config = require('../../server/config'),
     knexMigrator = new KnexMigrator(),
@@ -45,12 +45,9 @@ var Promise = require('bluebird'),
     teardown,
     setup,
     truncate,
-    doAuth,
     createUser,
     createPost,
-    login,
     startGhost,
-    configureGhost,
 
     initFixtures,
     initData,
@@ -728,37 +725,6 @@ setup = function setup() {
     };
 };
 
-// ## Shared functions for Routing Tests
-
-/**
- * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
- * @returns {deferred.promise<AccessToken>}
- */
-// TODO make this do the DB init as well
-doAuth = function doAuth() {
-    let API_URL = arguments[0];
-    let request = arguments[1];
-    let options = arguments;
-    let fixtureOps;
-
-    // Remove API_URL & request from this list
-    delete options[0];
-    delete options[1];
-
-    // No DB setup, but override the owner
-    options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
-        if (val) {
-            result[val] = true;
-        }
-    }));
-
-    fixtureOps = getFixtureOps(options);
-
-    return sequence(fixtureOps).then(function () {
-        return login(request, API_URL);
-    });
-};
-
 createUser = function createUser(options) {
     var user = options.user,
         role = options.role;
@@ -784,33 +750,6 @@ createPost = function createPost(options) {
 
     post.authors = [{id: post.author_id}];
     return models.Post.add(post, module.exports.context.internal);
-};
-
-login = function login(request, API_URL) {
-    // CASE: by default we use the owner to login
-    if (!request.user) {
-        request.user = DataGenerator.Content.users[0];
-    }
-
-    return new Promise(function (resolve, reject) {
-        request.post(API_URL)
-            .set('Origin', config.get('url'))
-            .send({
-                grant_type: 'password',
-                username: request.user.email,
-                password: 'Sl1m3rson99',
-                client_id: 'ghost-admin',
-                client_secret: 'not_available'
-            }).then(function then(res) {
-            if (res.statusCode !== 200) {
-                return reject(new common.errors.GhostError({
-                    message: res.body.errors[0].message
-                }));
-            }
-
-            resolve(res.body.access_token);
-        }, reject);
-    });
 };
 
 /**
@@ -1104,10 +1043,8 @@ module.exports = {
     teardown: teardown,
     truncate: truncate,
     setup: setup,
-    doAuth: doAuth,
     createUser: createUser,
     createPost: createPost,
-    login: login,
 
     mockNotExistingModule: mockNotExistingModule,
     unmockNotExistingModule: unmockNotExistingModule,
@@ -1150,7 +1087,7 @@ module.exports = {
 
     DataGenerator: DataGenerator,
     filterData: filterData,
-    API: APIAssertions,
+    API: APIUtils({getFixtureOps: getFixtureOps}),
 
     // Helpers to make it easier to write tests which are easy to read
     context: {
