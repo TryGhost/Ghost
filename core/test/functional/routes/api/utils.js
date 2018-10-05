@@ -13,6 +13,6 @@ module.exports = {
     doAuth() {
         const args = Array.prototype.slice.call(arguments);
         args.unshift(`${API_URL}authentication/token/`);
-        return testUtils.doAuth.apply(null, args);
+        return testUtils.API.doAuth.apply(null, args);
     }
 };
