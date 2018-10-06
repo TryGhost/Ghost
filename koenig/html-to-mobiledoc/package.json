@@ -18,5 +18,9 @@
     "mocha": "5.2.0",
     "should": "13.2.3",
     "sinon": "6.3.5"
+  },
+  "dependencies": {
+    "@tryghost/mobiledoc-kit": "^0.11.1-ghost.3",
+    "jsdom": "^12.1.0"
   }
 }
