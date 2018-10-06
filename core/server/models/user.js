@@ -420,11 +420,6 @@ User = ghostBookshelf.Model.extend({
             );
         }
 
-        // The password should never be set via `edit` - there is a separate action
-        if (data.password && (!options.context || !options.context.internal)) {
-            delete data.password;
-        }
-
         if (data.email) {
             ops.push(function checkForDuplicateEmail() {
                 return self.getByEmail(data.email, options).then(function then(user) {

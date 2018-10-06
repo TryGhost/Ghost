@@ -481,20 +481,6 @@ describe('Unit: models/user', function () {
                     user.get('bio').should.eql('');
                 });
         });
-
-        it('removes password from data', function () {
-            return models.User.edit({password: 'thisissupersafe'}, {id: testUtils.DataGenerator.Content.users[0].id})
-                .then(function (user) {
-                    return models.User.isPasswordCorrect({
-                        plainPassword: 'thisissupersafe',
-                        hashedPassword: user.get('password')
-                    });
-                })
-                .then(Promise.reject)
-                .catch((err) => {
-                    err.code.should.eql('PASSWORD_INCORRECT');
-                });
-        });
     });
 
     describe('Add', function () {

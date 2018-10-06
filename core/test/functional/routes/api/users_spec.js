@@ -2,10 +2,12 @@ var should = require('should'),
     _ = require('lodash'),
     supertest = require('supertest'),
     moment = require('moment'),
+    Promise = require('bluebird'),
     testUtils = require('../../../utils'),
     localUtils = require('./utils'),
     ObjectId = require('bson-objectid'),
     config = require('../../../../../core/server/config'),
+    models = require('../../../../../core/server/models'),
     ghost = testUtils.startGhost,
     request;
 
@@ -415,7 +417,10 @@ describe('User API', function () {
 
                         dataToSend = {
                             users: [
-                                {website: changedValue}
+                                {
+                                    website: changedValue,
+                                    password: 'mynewfancypasswordwhichisnotallowed'
+                                }
                             ]
                         };
 
@@ -436,7 +441,21 @@ describe('User API', function () {
                                 putBody.users[0].website.should.eql(changedValue);
                                 putBody.users[0].email.should.eql(jsonResponse.users[0].email);
                                 testUtils.API.checkResponse(putBody.users[0], 'user');
-                                done();
+
+                                should.not.exist(putBody.users[0].password);
+
+                                models.User.findOne({id: putBody.users[0].id})
+                                    .then((user) => {
+                                        return models.User.isPasswordCorrect({
+                                            plainPassword: 'mynewfancypasswordwhichisnotallowed',
+                                            hashedPassword: user.get('password')
+                                        });
+                                    })
+                                    .then(Promise.reject)
+                                    .catch((err) => {
+                                        err.code.should.eql('PASSWORD_INCORRECT');
+                                        done();
+                                    });
                             });
                     });
             });

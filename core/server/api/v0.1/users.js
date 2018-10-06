@@ -122,6 +122,11 @@ users = {
             options.editRoles = true;
         }
 
+        // The password should never be set via this endpoint, if it is passed, ignore it
+        if (object.users && object.users[0] && object.users[0].password) {
+            delete object.users[0].password;
+        }
+
         function prepare(options) {
             if (options.id === 'me' && options.context && options.context.user) {
                 options.id = options.context.user;
