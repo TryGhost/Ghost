@@ -1,10 +1,12 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
+    Promise = require('bluebird'),
+    security = require('../../../../server/lib/security'),
     models = require('../../../../server/models'),
-    ghostBookshelf,
+    urlService = require('../../../../server/services/url'),
+    filters = require('../../../../server/filters'),
     testUtils = require('../../../utils'),
-
     sandbox = sinon.sandbox.create();
 
 describe('Models: base', function () {
@@ -16,7 +18,92 @@ describe('Models: base', function () {
         sandbox.restore();
     });
 
-    describe('fn: sanitizeData', function () {
+    describe('generateSlug', function () {
+        let Model;
+        let options = {};
+
+        beforeEach(function () {
+            sandbox.stub(security.string, 'safe');
+            sandbox.stub(filters, 'doFilter').resolves();
+            sandbox.stub(urlService.utils, 'getProtectedSlugs').returns(['upsi', 'schwupsi']);
+
+            Model = sandbox.stub();
+            Model.prototype = {
+                tableName: 'tableName'
+            };
+            Model.findOne = sandbox.stub();
+        });
+
+        it('default', function () {
+            Model.findOne.resolves(false);
+            security.string.safe.withArgs('My-Slug').returns('my-slug');
+
+            return models.Base.Model.generateSlug(Model, 'My-Slug', options)
+                .then((slug) => {
+                    slug.should.eql('my-slug');
+                });
+        });
+
+        it('slug exists', function () {
+            let i = 0;
+            Model.findOne.callsFake(() => {
+                i = i + 1;
+                if (i === 1) {
+                    return Promise.resolve(true);
+                }
+                return Promise.resolve(false);
+            });
+
+            security.string.safe.withArgs('My-Slug').returns('my-slug');
+
+            return models.Base.Model.generateSlug(Model, 'My-Slug', options)
+                .then((slug) => {
+                    slug.should.eql('my-slug-2');
+                });
+        });
+
+        it('too long', function () {
+            Model.findOne.resolves(false);
+            const slug = new Array(500).join('a');
+
+            security.string.safe.withArgs(slug).returns(slug);
+
+            return models.Base.Model.generateSlug(Model, slug, options)
+                .then((slug) => {
+                    slug.should.eql(new Array(186).join('a'));
+                });
+        });
+
+        it('protected slug', function () {
+            Model.findOne.resolves(false);
+            const slug = 'upsi';
+
+            security.string.safe.withArgs(slug).returns(slug);
+
+            return models.Base.Model.generateSlug(Model, slug, options)
+                .then((slug) => {
+                    slug.should.eql('upsi-tableName');
+                });
+        });
+
+        it('internal tag', function () {
+            Model.findOne.resolves(false);
+            const slug = '#lul';
+
+            Model.prototype = {
+                tableName: 'tag'
+            };
+
+            security.string.safe.withArgs(slug).returns(slug);
+
+            return models.Base.Model.generateSlug(Model, slug, options)
+                .then((slug) => {
+                    slug.should.eql('hash-#lul');
+                });
+        });
+    });
+
+    describe('sanitizeData', function () {
         it('date is invalid', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '0000-00-00 00:00:00'});
 
@@ -74,7 +161,7 @@ describe('Models: base', function () {
         });
     });
 
-    describe('fn: setEmptyValuesToNull', function () {
+    describe('setEmptyValuesToNull', function () {
         it('resets given empty value to null', function () {
             const base = models.Base.Model.forge({a: '', b: ''});
 
@@ -96,7 +183,7 @@ describe('Models: base', function () {
         });
     });
 
-    describe('static destroy()', function () {
+    describe('destroy', function () {
         it('forges model using destroyBy, fetches it, and calls destroy, passing filtered options', function () {
             const unfilteredOptions = {
                 destroyBy: {
@@ -154,7 +241,7 @@ describe('Models: base', function () {
         });
     });
 
-    describe('static findOne(data, unfilteredOptions)', function () {
+    describe('findOne', function () {
         it('forges model using filtered data, fetches it passing filtered options and resolves with the fetched model', function () {
             const data = {
                 id: 670
@@ -192,7 +279,7 @@ describe('Models: base', function () {
         });
     });
 
-    describe('static edit(data, unfilteredOptions)', function () {
+    describe('edit', function () {
         it('resolves with the savedModel after forges model w/ id, fetches w/ filtered options, saves w/ filtered data and options and method=update', function () {
             const data = {
                 life: 'suffering'
@@ -272,7 +359,7 @@ describe('Models: base', function () {
         });
     });
 
-    describe('static add(data, unfilteredOptions)', function () {
+    describe('add', function () {
         it('forges model w/ filtered data,  saves w/ null and options and method=insert', function () {
             const data = {
                 rum: 'ham'
