@@ -685,6 +685,7 @@ User = ghostBookshelf.Model.extend({
             let role = unsafeAttrs.roles[0];
             let roleId = role.id || role;
             let editedUserId = userModel.id;
+            // @NOTE: role id of logged in user
             let contextRoleId = loadedPermissions.user.roles[0].id;
 
             if (roleId !== contextRoleId && editedUserId === context.user) {
@@ -695,6 +696,7 @@ User = ghostBookshelf.Model.extend({
 
             return User.getOwnerUser()
                 .then((owner) => {
+                    // CASE: owner can assign role to any user
                     if (context.user === owner.id) {
                         if (hasUserPermission && hasAppPermission) {
                             return Promise.resolve();
@@ -705,6 +707,7 @@ User = ghostBookshelf.Model.extend({
                         }));
                     }
 
+                    // CASE: You try to change the role of the owner user
                     if (editedUserId === owner.id) {
                         if (owner.related('roles').at(0).id !== roleId) {
                             return Promise.reject(new common.errors.NoPermissionError({
@@ -712,6 +715,9 @@ User = ghostBookshelf.Model.extend({
                             }));
                         }
                     } else if (roleId !== contextRoleId) {
+                        // CASE: you are trying to change a role, but you are not owner
+                        // @NOTE: your role is not the same than the role you try to change (!)
+                        // e.g. admin can assign admin role to a user, but not owner
                         return permissions.canThis(context).assign.role(role)
                             .then(() => {
                                 if (hasUserPermission && hasAppPermission) {
