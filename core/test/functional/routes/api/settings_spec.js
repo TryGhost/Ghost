@@ -26,6 +26,10 @@ describe('Settings API', function () {
             });
     });
 
+    after(function () {
+        return ghostServer.stop();
+    });
+
     it('browse', function (done) {
         request.get(localUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)

@@ -2,7 +2,6 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/server/config');
 const labs = require('../../../../../core/server/services/labs');

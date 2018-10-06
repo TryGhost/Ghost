@@ -956,6 +956,8 @@ startGhost = function startGhost(options) {
             }
         })
         .then(function initialiseDatabase() {
+            settingsCache.shutdown();
+            settingsCache.reset();
             return knexMigrator.init();
         })
         .then(function initializeGhost() {
