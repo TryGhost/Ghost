@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const moment = require('moment-timezone');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
 const models = require('../../../../../core/server/models');
 const config = require('../../../../../core/server/config');
 const ghost = testUtils.startGhost;
@@ -21,7 +21,7 @@ describe('Schedules API', function () {
         models.init();
 
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post
-        sandbox.stub(postScheduling, 'init').resolves();
+        sandbox.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
     });
 
     after(function () {
@@ -105,7 +105,7 @@ describe('Schedules API', function () {
                 .expect(403);
         });
 
-        it('published at is x seconds in past, but still in tolerance', function () {
+        it('published_at is x seconds in past, but still in tolerance', function () {
             return request
                 .put(localUtils.API.getApiQuery(`schedules/posts/${posts[1].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .expect('Content-Type', /json/)
