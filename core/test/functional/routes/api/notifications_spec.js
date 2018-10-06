@@ -124,14 +124,14 @@ describe('Notifications API', function () {
                 message: '2'
             };
 
-            return request.post(testUtils.API.getApiQuery('notifications/'))
+            return request.post(localUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [firstNotification]})
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .then(() => {
-                    return request.post(testUtils.API.getApiQuery('notifications/'))
+                    return request.post(localUtils.API.getApiQuery('notifications/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .send({notifications: [secondNotification]})
                         .expect('Content-Type', /json/)
@@ -139,7 +139,7 @@ describe('Notifications API', function () {
                         .expect(201);
                 })
                 .then(() => {
-                    return request.get(testUtils.API.getApiQuery('notifications/'))
+                    return request.get(localUtils.API.getApiQuery('notifications/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
@@ -203,7 +203,7 @@ describe('Notifications API', function () {
         });
 
         it('returns 404 when removing notification with unknown id', function () {
-            return request.del(testUtils.API.getApiQuery('notifications/unknown'))
+            return request.del(localUtils.API.getApiQuery('notifications/unknown'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)

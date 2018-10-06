@@ -101,7 +101,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with basic filters', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true&include=tags'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true&include=tags'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -156,7 +156,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with author filter', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -187,7 +187,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with page filter', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -214,7 +214,7 @@ describe('Public API', function () {
     });
 
     it('browse posts with published and draft status, should not return drafts', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=status:published,status:draft'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=status:published,status:draft'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -235,7 +235,7 @@ describe('Public API', function () {
     });
 
     it('[deprecated] browse posts with page non matching filter', function (done) {
-        request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -523,7 +523,7 @@ describe('Public API', function () {
     });
 
     it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
-        request.get(testUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -797,7 +797,7 @@ describe('Public API', function () {
     });
 
     it('browse user with count.posts', function (done) {
-        request.get(testUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

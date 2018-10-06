@@ -312,7 +312,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve just non featured posts', function (done) {
-                request.get(testUtils.API.getApiQuery('posts/?filter=featured:false'))
+                request.get(localUtils.API.getApiQuery('posts/?filter=featured:false'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)

@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
 const testUtils = require('../../../utils');
+const localUtils = require('./utils');
 const postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling');
 const models = require('../../../../../core/server/models');
 const config = require('../../../../../core/server/config');
@@ -83,7 +84,7 @@ describe('Schedules API', function () {
     describe('publish', function () {
         it('default', function () {
             return request
-                .put(testUtils.API.getApiQuery(`schedules/posts/${posts[0].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${posts[0].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
@@ -98,7 +99,7 @@ describe('Schedules API', function () {
 
         it('no access', function () {
             return request
-                .put(testUtils.API.getApiQuery(`schedules/posts/${posts[0].id}/?client_id=ghost-admin&client_secret=${testUtils.existingData.clients[0].secret}`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${posts[0].id}/?client_id=ghost-admin&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
@@ -106,7 +107,7 @@ describe('Schedules API', function () {
 
         it('published at is x seconds in past, but still in tolerance', function () {
             return request
-                .put(testUtils.API.getApiQuery(`schedules/posts/${posts[1].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${posts[1].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
@@ -114,7 +115,7 @@ describe('Schedules API', function () {
 
         it('not found', function () {
             return request
-                .put(testUtils.API.getApiQuery(`schedules/posts/${posts[2].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${posts[2].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404);
@@ -122,7 +123,7 @@ describe('Schedules API', function () {
 
         it('force publish', function () {
             return request
-                .put(testUtils.API.getApiQuery(`schedules/posts/${posts[3].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${posts[3].id}/?client_id=ghost-scheduler&client_secret=${testUtils.existingData.clients[0].secret}`))
                 .send({
                     force: true
                 })

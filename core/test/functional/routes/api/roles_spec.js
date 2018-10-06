@@ -1,6 +1,7 @@
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
+const localUtils = require('./utils');
 const config = require('../../../../../core/server/config');
 const ghost = testUtils.startGhost;
 let request;
@@ -15,7 +16,7 @@ describe('Roles API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.doAuth(request, 'posts');
+                return localUtils.doAuth(request, 'posts');
             })
             .then(function (token) {
                 accesstoken = token;
@@ -24,7 +25,7 @@ describe('Roles API', function () {
 
     describe('browse', function () {
         it('default', function (done) {
-            request.get(testUtils.API.getApiQuery('roles/'))
+            request.get(localUtils.API.getApiQuery('roles/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -52,7 +53,7 @@ describe('Roles API', function () {
         });
 
         it('permissions=assign', function (done) {
-            request.get(testUtils.API.getApiQuery('roles/?permissions=assign'))
+            request.get(localUtils.API.getApiQuery('roles/?permissions=assign'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
