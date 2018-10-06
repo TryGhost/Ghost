@@ -23,6 +23,13 @@ describe('Users API', function () {
         'settings', 'users:roles', 'users:extra', 'user-token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
     ));
 
+    before(function () {
+        return testUtils.createUser({
+            user: testUtils.DataGenerator.Content.users[6],
+            role: 'Administrator'
+        });
+    });
+
     beforeEach(function () {
         eventsTriggered = {};
 
@@ -915,7 +922,7 @@ describe('Users API', function () {
 
                     return db.knex('users');
                 }).then(function (result) {
-                    _.flatten(result).length.should.eql(10);
+                    _.flatten(result).length.should.eql(9);
 
                     return UserAPI.destroy(_.extend({}, context.owner, _.merge({}, options, {id: userIdFor.editor})));
                 }).then(function () {
@@ -963,8 +970,8 @@ describe('Users API', function () {
 
                     return db.knex('users');
                 }).then(function (allUsers) {
-                    // one user was deleted, that's why 9
-                    allUsers.length.should.eql(9);
+                    // one user was deleted, that's why 8
+                    allUsers.length.should.eql(8);
                     done();
                 }).catch(done);
             });
