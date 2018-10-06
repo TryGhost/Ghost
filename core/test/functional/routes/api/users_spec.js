@@ -2,10 +2,12 @@ var should = require('should'),
     _ = require('lodash'),
     supertest = require('supertest'),
     moment = require('moment'),
+    Promise = require('bluebird'),
     testUtils = require('../../../utils'),
     localUtils = require('./utils'),
     ObjectId = require('bson-objectid'),
     config = require('../../../../../core/server/config'),
+    models = require('../../../../../core/server/models'),
     ghost = testUtils.startGhost,
     request;
 
@@ -13,7 +15,7 @@ describe('User API', function () {
     var ownerAccessToken = '',
         editorAccessToken = '',
         authorAccessToken = '',
-        editor, author, ghostServer, inactiveUser;
+        editor, author, ghostServer, inactiveUser, admin;
 
     before(function () {
         return ghost()
@@ -49,6 +51,15 @@ describe('User API', function () {
             .then(function (_user3) {
                 inactiveUser = _user3;
 
+                // create admin user
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[0].name
+                });
+            })
+            .then(function (_user4) {
+                admin = _user4;
+
                 // by default we login with the owner
                 return localUtils.doAuth(request);
             })
@@ -72,39 +83,8 @@ describe('User API', function () {
     describe('As Owner', function () {
         describe('Browse', function () {
             it('returns dates in ISO 8601 format', function (done) {
-                request.get(localUtils.API.getApiQuery('users/?order=id%20ASC'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
-
-                        // owner use + ghost-author user when Ghost starts
-                        // and two extra users, see createUser in before
-                        jsonResponse.users.should.have.length(5);
-
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        testUtils.API.isISO8601(jsonResponse.users[0].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[0].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[0].updated_at).should.be.true();
-
-                        testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
-
-                        done();
-                    });
-            });
-
-            it('can retrieve all users', function (done) {
-                request.get(localUtils.API.getApiQuery('users/'))
+                // @NOTE: ASC is default
+                request.get(localUtils.API.getApiQuery('users/?order=id%20DESC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -115,13 +95,29 @@ describe('User API', function () {
                         }
 
                         should.not.exist(res.headers['x-cache-invalidate']);
+
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(5);
+                        // owner use + ghost-author user when Ghost starts
+                        // and two extra users, see createUser in before
+                        jsonResponse.users.should.have.length(6);
+
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        jsonResponse.users[4].status.should.eql(inactiveUser.status);
+                        testUtils.API.isISO8601(jsonResponse.users[5].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[5].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[5].updated_at).should.be.true();
+
+                        testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
+
+                        jsonResponse.users[0].email.should.eql('test+admin@ghost.org');
+                        jsonResponse.users[1].email.should.eql('test+3@ghost.org');
+                        jsonResponse.users[1].status.should.eql(inactiveUser.status);
+                        jsonResponse.users[5].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
+
                         done();
                     });
             });
@@ -142,7 +138,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(5);
+                        jsonResponse.users.should.have.length(6);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });
@@ -421,7 +417,10 @@ describe('User API', function () {
 
                         dataToSend = {
                             users: [
-                                {website: changedValue}
+                                {
+                                    website: changedValue,
+                                    password: 'mynewfancypasswordwhichisnotallowed'
+                                }
                             ]
                         };
 
@@ -442,7 +441,21 @@ describe('User API', function () {
                                 putBody.users[0].website.should.eql(changedValue);
                                 putBody.users[0].email.should.eql(jsonResponse.users[0].email);
                                 testUtils.API.checkResponse(putBody.users[0], 'user');
-                                done();
+
+                                should.not.exist(putBody.users[0].password);
+
+                                models.User.findOne({id: putBody.users[0].id})
+                                    .then((user) => {
+                                        return models.User.isPasswordCorrect({
+                                            plainPassword: 'mynewfancypasswordwhichisnotallowed',
+                                            hashedPassword: user.get('password')
+                                        });
+                                    })
+                                    .then(Promise.reject)
+                                    .catch((err) => {
+                                        err.code.should.eql('PASSWORD_INCORRECT');
+                                        done();
+                                    });
                             });
                     });
             });
@@ -528,16 +541,33 @@ describe('User API', function () {
         });
 
         describe('Destroy', function () {
-            it('[success] Destroy active user', function (done) {
-                request.delete(localUtils.API.getApiQuery('users/' + editor.id))
+            it('[success] Destroy active user', function () {
+                return request
+                    .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect(204)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .expect(200)
+                    .then((res) => {
+                        res.body.posts.length.should.eql(7);
 
-                        done();
+                        return request
+                            .delete(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(204);
+                    })
+                    .then(() => {
+                        return request
+                            .get(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}/`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(404);
+                    })
+                    .then(() => {
+                        return request
+                            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(200);
+                    })
+                    .then((res) => {
+                        res.body.posts.length.should.eql(0);
                     });
             });
 
@@ -553,6 +583,26 @@ describe('User API', function () {
                         done();
                     });
             });
+        });
+    });
+
+    describe('Transfer ownership', function () {
+        it('Owner can transfer ownership to admin user', function () {
+            return request
+                .put(localUtils.API.getApiQuery('users/owner'))
+                .set('Authorization', 'Bearer ' + ownerAccessToken)
+                .send({
+                    owner: [{
+                        id: admin.id
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    res.body.users[0].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[0].name);
+                    res.body.users[1].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[3].name);
+                });
         });
     });
 

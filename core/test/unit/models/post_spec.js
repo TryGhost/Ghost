@@ -4,16 +4,258 @@ const should = require('should'),
     url = require('url'),
     sinon = require('sinon'),
     _ = require('lodash'),
+    Promise = require('bluebird'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
+    db = require('../../../server/data/db'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create(),
+    userIdFor = testUtils.users.ids,
+    context = testUtils.context;
 
 describe('Unit: models/post', function () {
+    const mockDb = require('mock-knex');
+    let tracker;
+
+    before(function () {
+        models.init();
+        mockDb.mock(knex);
+        tracker = mockDb.getTracker();
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    after(function () {
+        mockDb.unmock(knex);
+    });
+
+    describe('filter', function () {
+        it('generates correct query for - filter: tags: [photo, video] + id: -{id},limit of: 3, with related: tags', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
+                limit: 3,
+                withRelated: ['tags']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) order by count(tags.id) DESC');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    'photo',
+                    'video',
+                    testUtils.filterData.data.posts[3].id
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) group by `posts`.`id` order by count(tags.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    'photo',
+                    'video',
+                    testUtils.filterData.data.posts[3].id,
+                    3
+                ]);
+            });
+        });
+
+        it('generates correct query for - filter: authors:[leslie,pat]+(tag:hash-audio,feature_image:-null), with related: authors,tags', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
+                withRelated: ['authors', 'tags']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) order by count(authors.id) DESC');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    'leslie',
+                    'pat',
+                    'hash-audio'
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) group by `posts`.`id`, `posts`.`id` order by count(authors.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    'leslie',
+                    'pat',
+                    'hash-audio',
+                    15
+                ]);
+            });
+        });
+
+        it('generates correct query for - filter: published_at:>\'2015-07-20\', limit of: 5, with related: tags', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: 5,
+                withRelated: ['tags']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?)');
+                queries[0].bindings.should.eql([
+                    false,
+                    'published',
+                    '2015-07-20'
+                ]);
+
+                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].bindings.should.eql([
+                    false,
+                    'published',
+                    '2015-07-20',
+                    5
+                ]);
+            });
+        });
+
+        describe('primary_tag/primary_author', function () {
+            it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
+                const queries = [];
+                tracker.install();
+
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'primary_tag:photo',
+                    withRelated: ['tags']
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?))');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'photo',
+                        0,
+                        'public'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'photo',
+                        0,
+                        'public',
+                        15
+                    ]);
+                });
+            });
+
+            it('generates correct query for - filter: primary_author:leslie, with related: authors', function () {
+                const queries = [];
+                tracker.install();
+
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'primary_author:leslie',
+                    withRelated: ['authors']
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?))');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'leslie',
+                        0,
+                        'public'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'leslie',
+                        0,
+                        'public',
+                        15
+                    ]);
+                });
+            });
+        });
+
+        describe('bad behavior', function () {
+            it('generates correct query for - filter: status:[published,draft], limit of: all', function () {
+                const queries = [];
+                tracker.install();
+
+                tracker.on('query', (query) => {
+                    queries.push(query);
+                    query.response([]);
+                });
+
+                return models.Post.findPage({
+                    filter: 'status:[published,draft]',
+                    limit: 'all',
+                    status: 'published',
+                    where: {
+                        statements: [{
+                            prop: 'status',
+                            op: '=',
+                            value: 'published'
+                        }]
+                    }
+                }).then(() => {
+                    queries.length.should.eql(2);
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?)');
+                    queries[0].bindings.should.eql([
+                        false,
+                        'published',
+                        'draft',
+                        'published'
+                    ]);
+
+                    queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    queries[1].bindings.should.eql([
+                        false,
+                        'published',
+                        'draft',
+                        'published'
+                    ]);
+                });
+            });
+        });
+    });
+});
+
+describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     before(function () {
         models.init();
     });
@@ -32,6 +274,95 @@ describe('Unit: models/post', function () {
 
     after(function () {
         sandbox.restore();
+    });
+
+    describe('processOptions', function () {
+        it('generates correct where statement when filter contains unpermitted values', function () {
+            const options = {
+                filter: 'status:[published,draft]',
+                limit: 'all',
+                status: 'published'
+            };
+
+            models.Post.processOptions(options);
+
+            options.where.statements.should.be.an.Array().with.lengthOf(1);
+            options.where.statements[0].should.deepEqual({
+                prop: 'status',
+                op: '=',
+                value: 'published'
+            });
+        });
+    });
+
+    describe('enforcedFilters', function () {
+        const enforcedFilters = function enforcedFilters(model, options) {
+            return new models.Post(model).enforcedFilters(options);
+        };
+
+        it('returns published status filter for public context', function () {
+            const options = {
+                context: {
+                    public: true
+                }
+            };
+
+            const filter = enforcedFilters({}, options);
+
+            filter.should.equal('status:published');
+        });
+
+        it('returns no status filter for non public context', function () {
+            const options = {
+                context: {
+                    internal: true
+                }
+            };
+
+            const filter = enforcedFilters({}, options);
+
+            should(filter).equal(null);
+        });
+    });
+
+    describe('defaultFilters', function () {
+        const defaultFilters = function defaultFilters(model, options) {
+            return new models.Post(model).defaultFilters(options);
+        };
+
+        it('returns no default filter for internal context', function () {
+            const options = {
+                context: {
+                    internal: true
+                }
+            };
+
+            const filter = defaultFilters({}, options);
+
+            should(filter).equal(null);
+        });
+
+        it('returns page:false filter for public context', function () {
+            const options = {
+                context: {
+                    public: true
+                }
+            };
+
+            const filter = defaultFilters({}, options);
+
+            filter.should.equal('page:false');
+        });
+
+        it('returns page:false+status:published filter for non public context', function () {
+            const options = {
+                context: 'user'
+            };
+
+            const filter = defaultFilters({}, options);
+
+            filter.should.equal('page:false+status:published');
+        });
     });
 
     describe('add', function () {
@@ -269,6 +600,47 @@ describe('Unit: models/post', function () {
     });
 
     describe('edit', function () {
+        it('ensure `forUpdate` works', function (done) {
+            const originalFn = models.Post.prototype.onSaving;
+            let requestCanComeIn = false;
+            let postId = testUtils.DataGenerator.forKnex.posts[4].id;
+
+            testUtils.DataGenerator.forKnex.posts[4].featured.should.eql(true);
+
+            // @NOTE: simulate that the onSaving hook takes longer
+            sandbox.stub(models.Post.prototype, 'onSaving').callsFake(function () {
+                var self = this,
+                    args = arguments;
+
+                models.Post.prototype.onSaving.restore();
+                requestCanComeIn = true;
+                return Promise.delay(2000)
+                    .then(function () {
+                        return originalFn.apply(self, args);
+                    });
+            });
+
+            const interval = setInterval(function () {
+                if (requestCanComeIn) {
+                    clearInterval(interval);
+
+                    // @NOTE: second call, should wait till the delay finished
+                    models.Post.edit({title: 'Berlin'}, {id: postId, context: {internal: true}})
+                        .then(function (post) {
+                            post.id.should.eql(postId);
+                            post.get('title').should.eql('Berlin');
+                            post.get('status').should.eql('published');
+                            post.get('featured').should.be.false();
+                            done();
+                        })
+                        .catch(done);
+                }
+            }, 10);
+
+            // @NOTE: first call to db locks the row (!)
+            models.Post.edit({title: 'First', featured: false, status: 'published'}, _.merge({id: postId, migrating: true}, testUtils.context.editor));
+        });
+
         it('update post with options.migrating', function () {
             const events = {
                 post: [],
