@@ -104,6 +104,8 @@ describe('Mail: Ghostmailer', function () {
     it('should fail to send messages when given insufficient data', function (done) {
         mailer = new mail.GhostMailer();
 
+        configUtils.set('mail', {});
+
         Promise.all([
             mailer.send().reflect(),
             mailer.send({}).reflect(),
