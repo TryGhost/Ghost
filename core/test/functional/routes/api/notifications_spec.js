@@ -147,9 +147,11 @@ describe('Notifications API', function () {
                         .then(res => {
                             const jsonResponse = res.body;
 
-                            jsonResponse.notifications.should.be.an.Array().with.lengthOf(2);
-                            jsonResponse.notifications[0].message.should.equal(secondNotification.message);
-                            jsonResponse.notifications[1].message.should.equal(firstNotification.message);
+                            jsonResponse.notifications.should.be.an.Array().with.lengthOf(4);
+                            jsonResponse.notifications[0].id.should.equal(secondNotification.id);
+                            jsonResponse.notifications[1].id.should.equal(firstNotification.id);
+                            jsonResponse.notifications[2].id.should.equal('customId-2');
+                            jsonResponse.notifications[3].id.should.equal('customId');
                         });
                 });
         });
