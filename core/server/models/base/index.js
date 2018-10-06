@@ -897,13 +897,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // If it's a user, let's try to cut it down (unless this is a human request)
-        // @TODO: this belongs to the user model
         if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
             longSlug = slug;
             slug = (slug.indexOf('-') > -1) ? slug.substr(0, slug.indexOf('-')) : slug;
         }
 
-        // @TODO: this belongs to the tag model
         if (!_.has(options, 'importing') || !options.importing) {
             // This checks if the first character of a tag name is a #. If it is, this
             // is an internal tag, and as such we should add 'hash' to the beginning of the slug
