@@ -55,7 +55,8 @@ var _ = require('lodash'),
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location', 'custom'],
         theme: ['name', 'package', 'active'],
         themes: ['themes'],
-        invites: _(schema.invites).keys().without('token').value(),
+        invites: ['invites', 'meta'],
+        invite: _(schema.invites).keys().without('token').value(),
         webhook: _.keys(schema.webhooks)
     };
 

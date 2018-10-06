@@ -114,5 +114,9 @@ module.exports = {
         common.events.removeListener('settings.edited', _private.updateSettingFromModel);
         common.events.removeListener('settings.added', _private.updateSettingFromModel);
         common.events.removeListener('settings.deleted', _private.updateSettingFromModel);
+    },
+
+    reset() {
+        settingsCache = {};
     }
 };

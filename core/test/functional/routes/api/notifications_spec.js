@@ -24,13 +24,14 @@ describe('Notifications API', function () {
     });
 
     describe('Add', function () {
-        var newNotification = {
-            type: 'info',
-            message: 'test notification',
-            custom: true
-        };
+        it('creates a new notification and sets default fields', function (done) {
+            const newNotification = {
+                type: 'info',
+                message: 'test notification',
+                custom: true,
+                id: 'customId'
+            };
 
-        it('creates a new notification', function (done) {
             request.post(localUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
@@ -51,6 +52,10 @@ describe('Notifications API', function () {
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);
                     jsonResponse.notifications[0].status.should.equal('alert');
+                    jsonResponse.notifications[0].dismissible.should.be.true();
+                    should.exist(jsonResponse.notifications[0].location);
+                    jsonResponse.notifications[0].location.should.equal('bottom');
+                    jsonResponse.notifications[0].id.should.be.a.String();
 
                     done();
                 });
@@ -96,6 +101,57 @@ describe('Notifications API', function () {
                             jsonResponse.notifications.should.be.an.Array().with.lengthOf(0);
 
                             done();
+                        });
+                });
+        });
+
+        it('should have correct order', function () {
+            const firstNotification = {
+                status: 'alert',
+                type: 'info',
+                custom: true,
+                id: 'firstId',
+                dismissible: true,
+                message: '1'
+            };
+
+            const secondNotification = {
+                status: 'alert',
+                type: 'info',
+                custom: true,
+                id: 'secondId',
+                dismissible: true,
+                message: '2'
+            };
+
+            return request.post(localUtils.API.getApiQuery('notifications/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send({notifications: [firstNotification]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then(() => {
+                    return request.post(localUtils.API.getApiQuery('notifications/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send({notifications: [secondNotification]})
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(201);
+                })
+                .then(() => {
+                    return request.get(localUtils.API.getApiQuery('notifications/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .then(res => {
+                            const jsonResponse = res.body;
+
+                            jsonResponse.notifications.should.be.an.Array().with.lengthOf(4);
+                            jsonResponse.notifications[0].id.should.equal(secondNotification.id);
+                            jsonResponse.notifications[1].id.should.equal(firstNotification.id);
+                            jsonResponse.notifications[2].id.should.equal('customId-2');
+                            jsonResponse.notifications[3].id.should.equal('customId');
                         });
                 });
         });
@@ -145,6 +201,17 @@ describe('Notifications API', function () {
 
                             done();
                         });
+                });
+        });
+
+        it('returns 404 when removing notification with unknown id', function () {
+            return request.del(localUtils.API.getApiQuery('notifications/unknown'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .then(res => {
+                    res.body.errors[0].message.should.equal('Notification does not exist.');
                 });
         });
     });

@@ -303,6 +303,16 @@ fixtures = {
         });
     },
 
+    createInactiveUser() {
+        const user = DataGenerator.forKnex.createUser({
+            email: 'inactive@test.org',
+            slug: 'inactive',
+            status: 'inactive'
+        });
+
+        return models.User.add(user, module.exports.context.internal);
+    },
+
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
         var extraUsers =  _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
@@ -595,6 +605,9 @@ toDoList = {
     },
     'users:no-owner': function createUsersWithoutOwner() {
         return fixtures.createUsersWithoutOwner();
+    },
+    'user:inactive': function createInactiveUser() {
+        return fixtures.createInactiveUser();
     },
     'users:extra': function createExtraUsers() {
         return fixtures.createExtraUsers();
@@ -906,7 +919,33 @@ startGhost = function startGhost(options) {
                 web.shared.middlewares.customRedirects.reload();
 
                 common.events.emit('server.start');
-                return ghostServer;
+
+                /**
+                 * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+                 * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+                 * I can do `testUtils.existingData.roles[0].id`.
+                 */
+                module.exports.existingData = {};
+                return models.Role.findAll({columns: ['id']})
+                    .then((roles) => {
+                        module.exports.existingData.roles = roles.toJSON();
+
+                        return models.Client.findAll({columns: ['id', 'secret']});
+                    })
+                    .then((clients) => {
+                        module.exports.existingData.clients = clients.toJSON();
+
+                        return models.User.findAll({columns: ['id']});
+                    })
+                    .then((users) => {
+                        module.exports.existingData.users = users.toJSON();
+
+                        return models.Tag.findAll({columns: ['id']});
+                    })
+                    .then((tags) => {
+                        module.exports.existingData.tags = tags.toJSON();
+                    })
+                    .return(ghostServer);
             });
     }
 
@@ -917,6 +956,8 @@ startGhost = function startGhost(options) {
             }
         })
         .then(function initialiseDatabase() {
+            settingsCache.shutdown();
+            settingsCache.reset();
             return knexMigrator.init();
         })
         .then(function initializeGhost() {
@@ -953,7 +994,32 @@ startGhost = function startGhost(options) {
             });
         })
         .then(function returnGhost() {
-            return ghostServer;
+            /**
+             * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+             * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+             * I can do `testUtils.existingData.roles[0].id`.
+             */
+            module.exports.existingData = {};
+            return models.Role.findAll({columns: ['id']})
+                .then((roles) => {
+                    module.exports.existingData.roles = roles.toJSON();
+
+                    return models.Client.findAll({columns: ['id', 'secret']});
+                })
+                .then((clients) => {
+                    module.exports.existingData.clients = clients.toJSON();
+
+                    return models.User.findAll({columns: ['id']});
+                })
+                .then((users) => {
+                    module.exports.existingData.users = users.toJSON();
+
+                    return models.Tag.findAll({columns: ['id']});
+                })
+                .then((tags) => {
+                    module.exports.existingData.tags = tags.toJSON();
+                })
+                .return(ghostServer);
         });
 };
 

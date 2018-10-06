@@ -8,6 +8,7 @@ var should = require('should'),
     localUtils = require('./utils'),
     configUtils = require('../../../utils/configUtils'),
     config = require('../../../../../core/server/config'),
+    models = require('../../../../../core/server/models'),
     ghost = testUtils.startGhost,
     request;
 
@@ -21,7 +22,7 @@ describe('Public API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:no-owner', 'posts', 'tags:extra', 'client:trusted-domain');
+                return localUtils.doAuth(request, 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 
@@ -52,6 +53,26 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                // Public API does not return drafts
+                _.map(jsonResponse.posts, (post) => {
+                    post.status.should.eql('published');
+                });
+
+                // Default order check
+                jsonResponse.posts[0].slug.should.eql('welcome');
+                jsonResponse.posts[10].slug.should.eql('html-ipsum');
+
+                // check meta response for this test
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
+                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
+                should.not.exist(jsonResponse.meta.pagination.next);
+                should.not.exist(jsonResponse.meta.pagination.prev);
+
                 done();
             });
     });
@@ -75,6 +96,166 @@ describe('Public API', function () {
                 should.exist(jsonResponse.pages);
                 should.exist(jsonResponse.meta);
                 jsonResponse.pages.should.have.length(1);
+                done();
+            });
+    });
+
+    it('browse posts with basic filters', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true&include=tags'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+                const ids = _.map(jsonResponse.posts, 'id');
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                // should content filtered data and order
+                jsonResponse.posts.should.have.length(4);
+                ids.should.eql([
+                    testUtils.DataGenerator.Content.posts[4].id,
+                    testUtils.DataGenerator.Content.posts[2].id,
+                    testUtils.DataGenerator.Content.posts[1].id,
+                    testUtils.DataGenerator.Content.posts[0].id,
+                ]);
+
+                // API does not return drafts
+                jsonResponse.posts.forEach((post) => {
+                    post.page.should.be.false();
+                    post.status.should.eql('published');
+                });
+
+                // Each post must either be featured or have the tag 'kitchen-sink'
+                _.each(jsonResponse.posts, (post) => {
+                    if (post.featured) {
+                        post.featured.should.equal(true);
+                    } else {
+                        const tags = _.map(post.tags, 'slug');
+                        tags.should.containEql('kitchen-sink');
+                    }
+                });
+
+                // The meta object should contain the right detail
+                jsonResponse.meta.should.have.property('pagination');
+                jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(4);
+                should.equal(jsonResponse.meta.pagination.next, null);
+                should.equal(jsonResponse.meta.pagination.prev, null);
+                done();
+            });
+    });
+
+    it('browse posts with author filter', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+                const ids = _.map(jsonResponse.posts, 'id');
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                // 2. The data part of the response should be correct
+                // We should have 2 matching items
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
+
+                // Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author
+                const authors = _.map(jsonResponse.posts, function (post) {
+                    return post.primary_author.slug;
+                });
+
+                authors.should.matchAny(/joe-bloggs|ghost'/);
+                done();
+            });
+    });
+
+    it('browse posts with page filter', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(1);
+
+                const page = _.map(jsonResponse.posts, 'page');
+                page.should.matchEach(true);
+
+                jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[5].id);
+
+                done();
+            });
+    });
+
+    it('browse posts with published and draft status, should not return drafts', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=status:published,status:draft'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
+                jsonResponse.posts.forEach((post) => {
+                    post.page.should.be.false();
+                    post.status.should.eql('published');
+                });
+
+                done();
+            });
+    });
+
+    it('[deprecated] browse posts with page non matching filter', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:no-posts'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(0);
+
+                jsonResponse.meta.should.have.property('pagination');
+                jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(0);
+                should.equal(jsonResponse.meta.pagination.next, null);
+                should.equal(jsonResponse.meta.pagination.prev, null);
+
                 done();
             });
     });
@@ -341,6 +522,34 @@ describe('Public API', function () {
             });
     });
 
+    it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
+        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.tags);
+                jsonResponse.tags.should.be.an.Array().with.lengthOf(56);
+
+                // Each tag should have the correct count
+                _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
+                _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
+                _.find(jsonResponse.tags, {name: 'pollo'}).count.posts.should.eql(0);
+                _.find(jsonResponse.tags, {name: 'injection'}).count.posts.should.eql(0);
+
+                done();
+            });
+    });
+
     it('denies access with invalid client_secret', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=invalid_secret'))
             .set('Origin', testUtils.API.getURL())
@@ -462,11 +671,17 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
-                // We don't expose the email address.
+                // We don't expose the email address, status and other attrs.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
+
+                // Public api returns all users, but no status! Locked/Inactive users can still have written articles.
+                models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
+                    .then((response) => {
+                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
+                        done();
+                    });
             });
     });
 
@@ -485,7 +700,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
@@ -581,6 +796,51 @@ describe('Public API', function () {
             });
     });
 
+    it('browse user with count.posts', function (done) {
+        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.users);
+                jsonResponse.users.should.have.length(7);
+
+                // We don't expose the email address.
+                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+
+                // Each user should have the correct count
+                _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
+                _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
+                _.find(jsonResponse.users, {slug:'inactive'}).count.posts.should.eql(0);
+
+                const ids = jsonResponse.users
+                    .filter(user => (user.slug !== 'ghost'))
+                    .filter(user => (user.slug !== 'inactive'))
+                    .map(user=> user.id);
+
+                ids.should.eql([
+                    testUtils.DataGenerator.Content.users[1].id,
+                    testUtils.DataGenerator.Content.users[2].id,
+                    testUtils.DataGenerator.Content.users[3].id,
+                    testUtils.DataGenerator.Content.users[7].id,
+                    testUtils.DataGenerator.Content.users[0].id
+                ]);
+
+                done();
+            });
+    });
+
     it('[unsupported] browse user by email', function (done) {
         request
             .get(localUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
@@ -614,7 +874,6 @@ describe('Public API', function () {
                 should.exist(jsonResponse.users);
                 jsonResponse.users.should.have.length(1);
 
-                // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
@@ -635,7 +894,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
@@ -658,7 +917,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(6);
+                jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
                 testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});

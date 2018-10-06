@@ -1,18 +1,20 @@
-var should = require('should'),
-    supertest = require('supertest'),
-    Promise = require('bluebird'),
-    testUtils = require('../../../utils'),
-    localUtils = require('./utils'),
-    path = require('path'),
-    sinon = require('sinon'),
-    config = require('../../../../../core/server/config'),
-    models = require('../../../../../core/server/models'),
-    fs = require('fs-extra'),
-    _ = require('lodash'),
-    ghost = testUtils.startGhost,
-    request,
+const should = require('should');
+const supertest = require('supertest');
+const Promise = require('bluebird');
+const testUtils = require('../../../utils');
+const path = require('path');
+const sinon = require('sinon');
+const config = require('../../../../../core/server/config');
+const models = require('../../../../../core/server/models');
+const fs = require('fs-extra');
+const _ = require('lodash');
+const common = require('../../../../server/lib/common');
+const localUtils = require('./utils');
 
-    sandbox = sinon.sandbox.create();
+let ghost = testUtils.startGhost;
+let request;
+let sandbox = sinon.sandbox.create();
+let eventsTriggered;
 
 describe('DB API', function () {
     var accesstoken = '', ghostServer, clients, backupClient, schedulerClient, backupQuery, schedulerQuery, fsStub;
@@ -35,6 +37,18 @@ describe('DB API', function () {
                 backupClient = _.find(clients, {slug: 'ghost-backup'});
                 schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
             });
+    });
+
+    beforeEach(function () {
+        eventsTriggered = {};
+
+        sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+            if (!eventsTriggered[eventName]) {
+                eventsTriggered[eventName] = [];
+            }
+
+            eventsTriggered[eventName].push(eventObj);
+        });
     });
 
     afterEach(function () {
@@ -180,6 +194,48 @@ describe('DB API', function () {
                 fsStub.called.should.eql(false);
 
                 done();
+            });
+    });
+
+    it('delete all content (owner)', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                let jsonResponse = res.body;
+                let results = jsonResponse.posts;
+                jsonResponse.posts.should.have.length(7);
+                _.filter(results, {page: false, status: 'published'}).length.should.equal(7);
+
+                request.delete(localUtils.API.getApiQuery('db/'))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .set('Accept', 'application/json')
+                    .expect(204)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        request.get(localUtils.API.getApiQuery('posts/'))
+                            .set('Authorization', 'Bearer ' + accesstoken)
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+                                res.body.posts.should.have.length(0);
+                                eventsTriggered['post.unpublished'].length.should.eql(7);
+                                eventsTriggered['post.deleted'].length.should.eql(7);
+                                eventsTriggered['tag.deleted'].length.should.eql(1);
+                                done();
+                            });
+                    });
             });
     });
 });
