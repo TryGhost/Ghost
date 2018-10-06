@@ -1,6 +1,7 @@
 const should = require('should'),
     url = require('url'),
     sinon = require('sinon'),
+    Promise = require('bluebird'),
     _ = require('lodash'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
@@ -363,6 +364,20 @@ describe('Unit: models/user', function () {
                 .then(function (user) {
                     should(user.get('profile_image')).be.null();
                     user.get('bio').should.eql('');
+                });
+        });
+
+        it('removes password from data', function () {
+            return models.User.edit({password: 'thisissupersafe'}, {id: testUtils.DataGenerator.Content.users[0].id})
+                .then(function (user) {
+                    return models.User.isPasswordCorrect({
+                        plainPassword: 'thisissupersafe',
+                        hashedPassword: user.get('password')
+                    });
+                })
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.code.should.eql('PASSWORD_INCORRECT');
                 });
         });
     });
