@@ -376,11 +376,9 @@ describe('Authentication API', function () {
                     request = supertest.agent(config.get('url'));
 
                     // simulates blog setup (initialises the owner)
-                    return localUtils.doAuth(request);
+                    return localUtils.doAuth(request, 'invites');
                 });
         });
-
-        before(testUtils.setup('invites'));
 
         it('try to accept without invite', function () {
             return request
