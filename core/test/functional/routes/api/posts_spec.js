@@ -52,6 +52,13 @@ describe('Post API', function () {
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
+                        // Ensure default order
+                        jsonResponse.posts[0].slug.should.eql('welcome');
+                        jsonResponse.posts[10].slug.should.eql('html-ipsum');
+
+                        // Relative by default
+                        jsonResponse.posts[0].url.should.eql('/welcome/');
+
                         done();
                     });
             });
@@ -82,7 +89,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve multiple post formats', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc'))
+                request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc&limit=3&order=title%20ASC'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -96,11 +103,14 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(11);
+                        jsonResponse.posts.should.have.length(3);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
+                        // ensure order works
+                        jsonResponse.posts[0].slug.should.eql('apps-integrations');
 
                         done();
                     });
@@ -218,7 +228,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve all published posts and pages', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?staticPages=all'))
+                request.get(localUtils.API.getApiQuery('posts/?filter=page:[false,true]'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -240,7 +250,6 @@ describe('Post API', function () {
             });
 
             // Test bits of the API we don't use in the app yet to ensure the API behaves properly
-
             it('can retrieve all status posts and pages', function (done) {
                 request.get(localUtils.API.getApiQuery('posts/?staticPages=all&status=all'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
@@ -300,9 +309,39 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
                         testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(2);
+                        jsonResponse.posts.length.should.eql(2);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                        const featured = _.map(jsonResponse.posts, 'featured');
+                        featured.should.matchEach(true);
+
+                        done();
+                    });
+            });
+
+            it('can retrieve just non featured posts', function (done) {
+                request.get(localUtils.API.getApiQuery('posts/?filter=featured:false'))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.be.an.Array().with.lengthOf(9);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                        const featured = _.map(jsonResponse.posts, 'featured');
+                        featured.should.matchEach(false);
+
                         done();
                     });
             });
@@ -325,6 +364,11 @@ describe('Post API', function () {
                         jsonResponse.posts.should.have.length(1);
                         testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                        _.each(jsonResponse.posts, (post) => {
+                            post.status.should.eql('draft');
+                        });
+
                         done();
                     });
             });
