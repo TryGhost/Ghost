@@ -172,24 +172,13 @@ describe('Schedules API', function () {
     });
 
     describe('fn: publishPost', function () {
-        var originalCannotScheduleAPostBeforeInMinutes;
-
         before(function (done) {
-            originalCannotScheduleAPostBeforeInMinutes = config.get('times').cannotScheduleAPostBeforeInMinutes;
-
-            // we can insert published_at less then 5minutes
-            config.set('times:cannotScheduleAPostBeforeInMinutes', -15);
-
             sequence([
                 testUtils.teardown,
                 testUtils.setup('clients', 'users:roles', 'perms:post', 'perms:init')
             ]).then(function () {
                 done();
             }).catch(done);
-        });
-
-        after(function () {
-            config.set('times:cannotScheduleAPostBeforeInMinutes', originalCannotScheduleAPostBeforeInMinutes);
         });
 
         afterEach(function () {
