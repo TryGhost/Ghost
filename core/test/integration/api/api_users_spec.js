@@ -1529,6 +1529,15 @@ describe('Users API', function () {
             }).catch(done);
         });
 
+        it('Owner can transfer ownership, but `id` does not exist', function () {
+            return UserAPI
+                .transferOwnership({owner: [{id: 'id'}]}, context.owner)
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.statusCode.should.eql(404);
+                });
+        });
+
         it('Owner CANNOT downgrade own role', function (done) {
             // Cannot change own role to admin
             UserAPI.transferOwnership(
