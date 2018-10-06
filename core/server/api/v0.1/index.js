@@ -127,7 +127,11 @@ const locationHeader = (req, result) => {
             location = urlService.utils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
         } else if (result.hasOwnProperty('notifications')) {
             newObject = result.notifications[0];
-            location = urlService.utils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
+
+            // CASE: you add one notification, but it's a duplicate, the API will return {notifications: []}
+            if (newObject) {
+                location = urlService.utils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
+            }
         } else if (result.hasOwnProperty('users')) {
             newObject = result.users[0];
             location = urlService.utils.urlJoin(apiRoot, 'users', newObject.id, '/');
