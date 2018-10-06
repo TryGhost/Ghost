@@ -9,6 +9,7 @@ const _ = require('lodash'),
     imageLib = require('../lib/image'),
     pipeline = require('../lib/promise/pipeline'),
     validation = require('../data/validation'),
+    permissions = require('../services/permissions'),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
@@ -656,11 +657,76 @@ User = ghostBookshelf.Model.extend({
             }
         }
 
+        // CASE: can't edit my own status to inactive or locked
+        if (action === 'edit' && userModel.id === context.user) {
+            if (User.inactiveStates.indexOf(unsafeAttrs.status) !== -1) {
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.api.users.cannotChangeStatus')
+                }));
+            }
+        }
+
+        // CASE: i want to edit roles
+        if (action === 'edit' && unsafeAttrs.roles && unsafeAttrs.roles[0]) {
+            let role = unsafeAttrs.roles[0];
+            let roleId = role.id || role;
+            let editedUserId = userModel.id;
+            let contextRoleId = userModel.related('roles').toJSON()[0].id;
+
+            if (roleId !== contextRoleId && editedUserId === context.user) {
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.api.users.cannotChangeOwnRole')
+                }));
+            }
+
+            return User.getOwnerUser()
+                .then((owner) => {
+                    if (userModel.id === owner.id) {
+                        if (hasUserPermission && hasAppPermission) {
+                            return Promise.resolve();
+                        }
+
+                        return Promise.reject(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.models.user.notEnoughPermission')
+                        }));
+                    }
+
+                    if (editedUserId === owner.id) {
+                        if (owner.related('roles').at(0).id !== roleId) {
+                            return Promise.reject(new common.errors.NoPermissionError({
+                                message: common.i18n.t('errors.api.users.cannotChangeOwnersRole')
+                            }));
+                        }
+                    } else if (roleId !== contextRoleId) {
+                        return permissions.canThis(context).assign.role(role)
+                            .then(() => {
+                                if (hasUserPermission && hasAppPermission) {
+                                    return Promise.resolve();
+                                }
+
+                                return Promise.reject(new common.errors.NoPermissionError({
+                                    message: common.i18n.t('errors.models.user.notEnoughPermission')
+                                }));
+                            });
+                    } else {
+                        if (hasUserPermission && hasAppPermission) {
+                            return Promise.resolve();
+                        }
+
+                        return Promise.reject(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.models.user.notEnoughPermission')
+                        }));
+                    }
+                });
+        }
+
         if (hasUserPermission && hasAppPermission) {
             return Promise.resolve();
         }
 
-        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
+        return Promise.reject(new common.errors.NoPermissionError({
+            message: common.i18n.t('errors.models.user.notEnoughPermission')
+        }));
     },
 
     // Finds the user by email, and checks the password

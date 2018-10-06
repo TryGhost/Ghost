@@ -30,6 +30,20 @@ describe('Users API', function () {
         });
     });
 
+    before(function () {
+        return testUtils.createUser({
+            user: testUtils.DataGenerator.Content.users[4],
+            role: 'Editor'
+        });
+    });
+
+    before(function () {
+        return testUtils.createUser({
+            user: testUtils.DataGenerator.Content.users[5],
+            role: 'Author'
+        });
+    });
+
     beforeEach(function () {
         eventsTriggered = {};
 
@@ -74,49 +88,49 @@ describe('Users API', function () {
 
         it('Owner can browse', function (done) {
             UserAPI.browse(context.owner).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
 
         it('Admin can browse', function (done) {
             UserAPI.browse(context.admin).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
 
         it('Editor can browse', function (done) {
             UserAPI.browse(context.editor).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
 
         it('Author can browse active', function (done) {
             UserAPI.browse(context.author).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
 
         it('Contributor can browse active', function (done) {
             UserAPI.browse(context.contributor).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
 
         it('No-auth CAN browse, but only gets filtered active users', function (done) {
             UserAPI.browse().then(function (response) {
-                checkBrowseResponse(response, 10, null, null, null, {public: true});
+                checkBrowseResponse(response, 12, null, null, null, {public: true});
                 done();
             }).catch(done);
         });
 
         it('Can browse all', function (done) {
             UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'all'})).then(function (response) {
-                checkBrowseResponse(response, 10);
+                checkBrowseResponse(response, 12);
                 done();
             }).catch(done);
         });
@@ -129,7 +143,7 @@ describe('Users API', function () {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
-                response.users.should.have.length(10);
+                response.users.should.have.length(12);
                 testUtils.API.checkResponse(response.users[0], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[1], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[2], 'user', 'roles');
@@ -189,7 +203,7 @@ describe('Users API', function () {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
-                response.users.should.have.length(10);
+                response.users.should.have.length(12);
 
                 response.users.map((user) => {
                   testUtils.API.checkResponse(user, 'user', 'count');
@@ -208,7 +222,7 @@ describe('Users API', function () {
                 response.meta.pagination.should.have.property('page', 1);
                 response.meta.pagination.should.have.property('limit', 15);
                 response.meta.pagination.should.have.property('pages', 1);
-                response.meta.pagination.should.have.property('total', 10);
+                response.meta.pagination.should.have.property('total', 12);
                 response.meta.pagination.should.have.property('next', null);
                 response.meta.pagination.should.have.property('prev', null);
 
