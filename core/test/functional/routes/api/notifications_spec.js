@@ -55,6 +55,50 @@ describe('Notifications API', function () {
                     done();
                 });
         });
+
+        it('creates duplicate', function (done) {
+            const newNotification = {
+                type: 'info',
+                message: 'add twice',
+                custom: true,
+                id: 'customId-2'
+            };
+
+            request.post(localUtils.API.getApiQuery('notifications/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .send({notifications: [newNotification]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.notifications);
+                    jsonResponse.notifications.should.be.an.Array().with.lengthOf(1);
+                    jsonResponse.notifications[0].message.should.equal(newNotification.message);
+
+                    request.post(localUtils.API.getApiQuery('notifications/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send({notifications: [newNotification]})
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            const jsonResponse = res.body;
+                            should.exist(jsonResponse.notifications);
+                            jsonResponse.notifications.should.be.an.Array().with.lengthOf(0);
+
+                            done();
+                        });
+                });
+        });
     });
 
     describe('Delete', function () {
