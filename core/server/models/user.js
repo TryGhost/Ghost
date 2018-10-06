@@ -172,7 +172,9 @@ User = ghostBookshelf.Model.extend({
                 passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
 
                 if (!passwordValidation.isValid) {
-                    return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
+                    return Promise.reject(new common.errors.ValidationError({
+                        message: passwordValidation.message
+                    }));
                 }
             }
 
@@ -412,7 +414,9 @@ User = ghostBookshelf.Model.extend({
 
         if (data.roles && data.roles.length > 1) {
             return Promise.reject(
-                new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')})
+                new common.errors.ValidationError({
+                    message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')
+                })
             );
         }
 
@@ -420,7 +424,9 @@ User = ghostBookshelf.Model.extend({
             ops.push(function checkForDuplicateEmail() {
                 return self.getByEmail(data.email, options).then(function then(user) {
                     if (user && user.id !== options.id) {
-                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')}));
+                        return Promise.reject(new common.errors.ValidationError({
+                            message: common.i18n.t('errors.models.user.userUpdateError.emailIsAlreadyInUse')
+                        }));
                     }
                 });
             });
@@ -445,7 +451,9 @@ User = ghostBookshelf.Model.extend({
                 }).then(function then(roleToAssign) {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return Promise.reject(
-                            new common.errors.ValidationError({message: common.i18n.t('errors.models.user.methodDoesNotSupportOwnerRole')})
+                            new common.errors.ValidationError({
+                                message: common.i18n.t('errors.models.user.methodDoesNotSupportOwnerRole')
+                            })
                         );
                     } else {
                         // assign all other roles
@@ -483,7 +491,9 @@ User = ghostBookshelf.Model.extend({
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
-            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')}));
+            return Promise.reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.models.user.onlyOneRolePerUserSupported')
+            }));
         }
 
         function getAuthorRole() {
@@ -557,7 +567,9 @@ User = ghostBookshelf.Model.extend({
         passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
 
         if (!passwordValidation.isValid) {
-            return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
+            return Promise.reject(new common.errors.ValidationError({
+                message: passwordValidation.message
+            }));
         }
 
         userData.slug = null;
@@ -647,7 +659,9 @@ User = ghostBookshelf.Model.extend({
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
             if (userModel.hasRole('Owner')) {
-                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.notEnoughPermission')}));
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.models.user.notEnoughPermission')
+                }));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
@@ -844,7 +858,9 @@ User = ghostBookshelf.Model.extend({
                 // check if user has the owner role
                 var currentRoles = contextUser.toJSON(options).roles;
                 if (!_.some(currentRoles, {id: ownerRole.id})) {
-                    return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')}));
+                    return Promise.reject(new common.errors.NoPermissionError({
+                        message: common.i18n.t('errors.models.user.onlyOwnerCanTransferOwnerRole')
+                    }));
                 }
 
                 return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
@@ -856,7 +872,9 @@ User = ghostBookshelf.Model.extend({
                     currentRoles = user.toJSON(options).roles;
 
                 if (!_.some(currentRoles, {id: adminRole.id})) {
-                    return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')}));
+                    return Promise.reject(new common.errors.ValidationError({
+                        message: common.i18n.t('errors.models.user.onlyAdmCanBeAssignedOwnerRole')
+                    }));
                 }
 
                 // convert owner to admin
