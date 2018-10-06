@@ -702,8 +702,7 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
-        createUser(DataGenerator.Content.users[7]),
-        createUser(DataGenerator.Content.users[6]),
+        createUser(DataGenerator.Content.users[7])
     ];
 
     const clients = [
@@ -738,11 +737,6 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
-        },
-        {
-            id: ObjectId.generate(),
-            user_id: DataGenerator.Content.users[6].id,
-            role_id: DataGenerator.Content.roles[0].id
         }
     ];
 
