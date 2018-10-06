@@ -228,7 +228,8 @@ Post = ghostBookshelf.Model.extend({
             } else if (
                 publishedAtHasChanged &&
                 moment(publishedAt).isBefore(moment().add(config.get('times').cannotScheduleAPostBeforeInMinutes, 'minutes')) &&
-                !options.importing
+                !options.importing &&
+                (!options.context || !options.context.internal)
             ) {
                 return Promise.reject(new common.errors.ValidationError({
                     message: common.i18n.t('errors.models.post.expectedPublishedAtInFuture', {
