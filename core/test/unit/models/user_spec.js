@@ -596,4 +596,24 @@ describe('Unit: models/user', function () {
                 });
         });
     });
+
+    describe('isSetup', function () {
+        it('active', function () {
+            sandbox.stub(models.User, 'getOwnerUser').resolves({get: sandbox.stub().returns('active')});
+
+            return models.User.isSetup()
+                .then((result) => {
+                    result.should.be.true();
+                });
+        });
+
+        it('inactive', function () {
+            sandbox.stub(models.User, 'getOwnerUser').resolves({get: sandbox.stub().returns('inactive')});
+
+            return models.User.isSetup()
+                .then((result) => {
+                    result.should.be.false();
+                });
+        });
+    });
 });
