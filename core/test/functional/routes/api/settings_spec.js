@@ -26,8 +26,7 @@ describe('Settings API', function () {
             });
     });
 
-    // TODO: currently includes values of type=core
-    it('can retrieve all settings', function (done) {
+    it('browse', function (done) {
         request.get(localUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
@@ -48,11 +47,18 @@ describe('Settings API', function () {
                 JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
                 should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
 
+                testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
+                jsonResponse.settings[0].created_at.should.be.an.instanceof(String);
+
+                should.not.exist(_.find(jsonResponse.settings, function (setting) {
+                    return setting.type === 'core';
+                }));
+
                 done();
             });
     });
 
-    it('can retrieve a setting', function (done) {
+    it('read', function (done) {
         request.get(localUtils.API.getApiQuery('settings/title/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
@@ -76,7 +82,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('can\'t retrieve permalinks', function (done) {
+    it('can\'t read permalinks', function (done) {
         request.get(localUtils.API.getApiQuery('settings/permalinks/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
@@ -91,7 +97,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('can\'t retrieve non existent setting', function (done) {
+    it('can\'t read non existent setting', function (done) {
         request.get(localUtils.API.getApiQuery('settings/testsetting/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .set('Accept', 'application/json')
@@ -123,7 +129,7 @@ describe('Settings API', function () {
                 }
 
                 var jsonResponse = res.body,
-                    changedValue = 'Ghost changed',
+                    changedValue = [],
                     settingToChange = {
                         settings: [
                             {key: 'title', value: changedValue}
@@ -147,7 +153,7 @@ describe('Settings API', function () {
                         var putBody = res.body;
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
-                        putBody.settings[0].value.should.eql(changedValue);
+                        putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
                         testUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
