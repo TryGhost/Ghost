@@ -1,9 +1,12 @@
 const should = require('should');
 const supertest = require('supertest');
+const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/server/config');
+const mailService = require('../../../../../core/server/services/mail');
 const ghost = testUtils.startGhost;
+const sandbox = sinon.sandbox.create();
 let request;
 
 describe('Invites API', function () {
@@ -21,6 +24,14 @@ describe('Invites API', function () {
             .then(function (token) {
                 accesstoken = token;
             });
+    });
+
+    beforeEach(function () {
+        sandbox.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     describe('browse', function () {
@@ -52,6 +63,8 @@ describe('Invites API', function () {
                     jsonResponse.invites[1].email.should.eql('test2@ghost.org');
                     jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
 
+                    mailService.GhostMailer.prototype.send.called.should.be.false();
+
                     done();
                 });
         });
@@ -76,6 +89,8 @@ describe('Invites API', function () {
                     jsonResponse.invites.should.have.length(1);
 
                     testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+
+                    mailService.GhostMailer.prototype.send.called.should.be.false();
 
                     done();
                 });
@@ -106,6 +121,8 @@ describe('Invites API', function () {
                     testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
                     jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
 
+                    mailService.GhostMailer.prototype.send.called.should.be.true();
+
                     done();
                 });
         });
@@ -123,6 +140,8 @@ describe('Invites API', function () {
                     if (err) {
                         return done(err);
                     }
+
+                    mailService.GhostMailer.prototype.send.called.should.be.false();
                     done();
                 });
         });
@@ -138,6 +157,8 @@ describe('Invites API', function () {
                     if (err) {
                         return done(err);
                     }
+
+                    mailService.GhostMailer.prototype.send.called.should.be.false();
                     done();
                 });
         });

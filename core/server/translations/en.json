@@ -589,8 +589,7 @@
             "ghostIsClosingConnections": "Ghost is closing connections"
         },
         "mail": {
-            "messageSent": "Message sent. Double check inbox and spam folder!",
-            "disabled": "Mail is disabled. Double check your config."
+            "messageSent": "Message sent. Double check inbox and spam folder!"
         },
         "api": {
             "users": {

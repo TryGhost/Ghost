@@ -50,6 +50,5 @@
         "useTinfoil": true,
         "useStructuredData": true
     },
-    "useMinFiles": false,
-    "mail": false
+    "useMinFiles": false
 }
