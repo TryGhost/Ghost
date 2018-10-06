@@ -5,6 +5,7 @@ const should = require('should'),
     _ = require('lodash'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
+    permissions = require('../../../server/services/permissions'),
     validation = require('../../../server/data/validation'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
@@ -150,15 +151,16 @@ describe('Unit: models/user', function () {
         });
     });
 
-    describe('fn: permissible', function () {
-        function getUserModel(id, role) {
+    describe('permissible', function () {
+        function getUserModel(id, role, roleId) {
             var hasRole = sandbox.stub();
 
             hasRole.withArgs(role).returns(true);
 
             return {
+                id: id,
                 hasRole: hasRole,
-                related: sandbox.stub().returns([{name: role}]),
+                related: sandbox.stub().returns([{name: role, id: roleId}]),
                 get: sandbox.stub().returns(id)
             };
         }
@@ -185,6 +187,17 @@ describe('Unit: models/user', function () {
             });
         });
 
+        it('cannot edit my status to inactive', function () {
+            var mockUser = getUserModel(3, 'Editor'),
+                context = {user: 3};
+
+            return models.User.permissible(mockUser, 'edit', context, {status: 'inactive'}, testUtils.permissions.editor, false, true)
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.should.be.an.instanceof(common.errors.NoPermissionError);
+                });
+        });
+
         it('without related roles', function () {
             sandbox.stub(models.User, 'findOne').withArgs({
                 id: 3,
@@ -198,6 +211,108 @@ describe('Unit: models/user', function () {
                 .then(() => {
                     models.User.findOne.calledOnce.should.be.true();
                 });
+        });
+
+        describe('change role', function () {
+            function getUserToEdit(id, role) {
+                var hasRole = sandbox.stub();
+
+                hasRole.withArgs(role).returns(true);
+
+                return {
+                    id: id,
+                    hasRole: hasRole,
+                    related: sandbox.stub().returns([role]),
+                    get: sandbox.stub().returns(id)
+                };
+            }
+
+            beforeEach(function () {
+                sandbox.stub(models.User, 'getOwnerUser');
+                sandbox.stub(permissions, 'canThis');
+
+                models.User.getOwnerUser.resolves({
+                    id: testUtils.context.owner.context.user,
+                    related: () => {
+                        return {
+                            at: () => {
+                                return testUtils.permissions.owner.user.roles[0].id;
+                            }
+                        };
+                    }
+                });
+            });
+
+            it('cannot change own role', function () {
+                const mockUser = getUserToEdit(testUtils.context.admin.context.user, testUtils.permissions.editor.user.roles[0]);
+                const context = testUtils.context.admin.context;
+                const unsafeAttrs = testUtils.permissions.editor.user;
+
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        err.should.be.an.instanceof(common.errors.NoPermissionError);
+                    });
+            });
+
+            it('is owner and does not change the role', function () {
+                const mockUser = getUserToEdit(testUtils.context.owner.context.user, testUtils.permissions.owner.user.roles[0]);
+                const context = testUtils.context.owner.context;
+                const unsafeAttrs = testUtils.permissions.owner.user;
+
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.owner, false, true)
+                    .then(() => {
+                        models.User.getOwnerUser.calledOnce.should.be.true();
+                    });
+            });
+
+            it('cannot change owner\'s role', function () {
+                const mockUser = getUserToEdit(testUtils.context.owner.context.user, testUtils.permissions.owner.user.roles[0]);
+                const context = testUtils.context.admin.context;
+                const unsafeAttrs = testUtils.permissions.editor.user;
+
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        err.should.be.an.instanceof(common.errors.NoPermissionError);
+                    });
+            });
+
+            it('admin can change author role', function () {
+                const mockUser = getUserToEdit(testUtils.context.author.context.user, testUtils.permissions.author.user.roles[0]);
+                const context = testUtils.context.admin.context;
+                const unsafeAttrs = testUtils.permissions.editor.user;
+
+                permissions.canThis.returns({
+                    assign: {
+                        role: sandbox.stub().resolves()
+                    }
+                });
+
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, true, true)
+                    .then(() => {
+                        models.User.getOwnerUser.calledOnce.should.be.true();
+                        permissions.canThis.calledOnce.should.be.true();
+                    });
+            });
+
+            it('author can\'t change admin role', function () {
+                const mockUser = getUserToEdit(testUtils.context.admin.context.user, testUtils.permissions.admin.user.roles[0]);
+                const context = testUtils.context.author.context;
+                const unsafeAttrs = testUtils.permissions.editor.user;
+
+                permissions.canThis.returns({
+                    assign: {
+                        role: sandbox.stub().resolves()
+                    }
+                });
+
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.author, false, true)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        err.should.be.an.instanceof(common.errors.NoPermissionError);
+                    });
+            });
         });
 
         describe('as editor', function () {
