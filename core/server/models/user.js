@@ -671,7 +671,7 @@ User = ghostBookshelf.Model.extend({
             let role = unsafeAttrs.roles[0];
             let roleId = role.id || role;
             let editedUserId = userModel.id;
-            let contextRoleId = userModel.related('roles').toJSON()[0].id;
+            let contextRoleId = loadedPermissions.user.roles[0].id;
 
             if (roleId !== contextRoleId && editedUserId === context.user) {
                 return Promise.reject(new common.errors.NoPermissionError({
@@ -681,7 +681,7 @@ User = ghostBookshelf.Model.extend({
 
             return User.getOwnerUser()
                 .then((owner) => {
-                    if (userModel.id === owner.id) {
+                    if (context.user === owner.id) {
                         if (hasUserPermission && hasAppPermission) {
                             return Promise.resolve();
                         }
@@ -708,15 +708,15 @@ User = ghostBookshelf.Model.extend({
                                     message: common.i18n.t('errors.models.user.notEnoughPermission')
                                 }));
                             });
-                    } else {
-                        if (hasUserPermission && hasAppPermission) {
-                            return Promise.resolve();
-                        }
-
-                        return Promise.reject(new common.errors.NoPermissionError({
-                            message: common.i18n.t('errors.models.user.notEnoughPermission')
-                        }));
                     }
+
+                    if (hasUserPermission && hasAppPermission) {
+                        return Promise.resolve();
+                    }
+
+                    return Promise.reject(new common.errors.NoPermissionError({
+                        message: common.i18n.t('errors.models.user.notEnoughPermission')
+                    }));
                 });
         }
 
