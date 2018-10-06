@@ -873,9 +873,16 @@ User = ghostBookshelf.Model.extend({
                     User.findOne({id: object.id}, {withRelated: ['roles']}));
             })
             .then(function then(results) {
-                var adminRole = results[0],
-                    user = results[1],
-                    currentRoles = user.toJSON(options).roles;
+                const adminRole = results[0];
+                const user = results[1];
+
+                if (!user) {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.user.userNotFound')
+                    }));
+                }
+
+                const currentRoles = user.toJSON(options).roles;
 
                 if (!_.some(currentRoles, {id: adminRole.id})) {
                     return Promise.reject(new common.errors.ValidationError({
