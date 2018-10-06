@@ -87,7 +87,7 @@ describe('Invites API', function () {
             request.post(localUtils.API.getApiQuery('invites/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({
-                    invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[0].id}]
+                    invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[1].id}]
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -104,7 +104,7 @@ describe('Invites API', function () {
                     jsonResponse.invites.should.have.length(1);
 
                     testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-                    jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[0].id);
+                    jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
 
                     done();
                 });

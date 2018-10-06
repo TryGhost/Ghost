@@ -926,16 +926,16 @@ startGhost = function startGhost(options) {
                  * I can do `testUtils.existingData.roles[0].id`.
                  */
                 module.exports.existingData = {};
-                return models.Role.fetchAll({columns: ['id']})
+                return models.Role.findAll({columns: ['id']})
                     .then((roles) => {
                         module.exports.existingData.roles = roles.toJSON();
 
-                        return models.Client.fetchAll({columns: ['id', 'secret']});
+                        return models.Client.findAll({columns: ['id', 'secret']});
                     })
                     .then((clients) => {
                         module.exports.existingData.clients = clients.toJSON();
 
-                        return models.User.fetchAll({columns: ['id']});
+                        return models.User.findAll({columns: ['id']});
                     })
                     .then((users) => {
                         module.exports.existingData.users = users.toJSON();
@@ -993,16 +993,16 @@ startGhost = function startGhost(options) {
              * I can do `testUtils.existingData.roles[0].id`.
              */
             module.exports.existingData = {};
-            return models.Role.fetchAll({columns: ['id']})
+            return models.Role.findAll({columns: ['id']})
                 .then((roles) => {
                     module.exports.existingData.roles = roles.toJSON();
 
-                    return models.Client.fetchAll({columns: ['id', 'secret']});
+                    return models.Client.findAll({columns: ['id', 'secret']});
                 })
                 .then((clients) => {
                     module.exports.existingData.clients = clients.toJSON();
 
-                    return models.User.fetchAll({columns: ['id']});
+                    return models.User.findAll({columns: ['id']});
                 })
                 .then((users) => {
                     module.exports.existingData.users = users.toJSON();

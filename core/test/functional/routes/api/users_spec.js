@@ -92,6 +92,8 @@ describe('User API', function () {
                             return done(err);
                         }
 
+                        should.not.exist(res.headers['x-cache-invalidate']);
+
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
@@ -110,31 +112,10 @@ describe('User API', function () {
                         testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
 
                         jsonResponse.users[0].email.should.eql('test+admin@ghost.org');
+                        jsonResponse.users[1].email.should.eql('test+3@ghost.org');
+                        jsonResponse.users[1].status.should.eql(inactiveUser.status);
                         jsonResponse.users[5].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
 
-                        done();
-                    });
-            });
-
-            it('can retrieve all users', function (done) {
-                request.get(localUtils.API.getApiQuery('users/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
-
-                        jsonResponse.users.should.have.length(6);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        jsonResponse.users[4].status.should.eql(inactiveUser.status);
                         done();
                     });
             });
