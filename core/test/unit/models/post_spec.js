@@ -4,14 +4,18 @@ const should = require('should'),
     url = require('url'),
     sinon = require('sinon'),
     _ = require('lodash'),
+    Promise = require('bluebird'),
     testUtils = require('../../utils'),
     knex = require('../../../server/data/db').knex,
+    db = require('../../../server/data/db'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create(),
+    userIdFor = testUtils.users.ids,
+    context = testUtils.context;
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');

@@ -13,7 +13,7 @@ describe('User API', function () {
     var ownerAccessToken = '',
         editorAccessToken = '',
         authorAccessToken = '',
-        editor, author, ghostServer, inactiveUser;
+        editor, author, ghostServer, inactiveUser, admin;
 
     before(function () {
         return ghost()
@@ -48,6 +48,15 @@ describe('User API', function () {
             })
             .then(function (_user3) {
                 inactiveUser = _user3;
+
+                // create admin user
+                return testUtils.createUser({
+                    user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org'}),
+                    role: testUtils.DataGenerator.Content.roles[0].name
+                });
+            })
+            .then(function (_user4) {
+                admin = _user4;
 
                 // by default we login with the owner
                 return localUtils.doAuth(request);
@@ -89,19 +98,19 @@ describe('User API', function () {
 
                         // owner use + ghost-author user when Ghost starts
                         // and two extra users, see createUser in before
-                        jsonResponse.users.should.have.length(5);
+                        jsonResponse.users.should.have.length(6);
 
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
-                        testUtils.API.isISO8601(jsonResponse.users[4].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[4].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[4].updated_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[5].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[5].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[5].updated_at).should.be.true();
 
-                        testUtils.API.isISO8601(jsonResponse.users[1].last_seen).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[1].created_at).should.be.true();
-                        testUtils.API.isISO8601(jsonResponse.users[1].updated_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].last_seen).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].created_at).should.be.true();
+                        testUtils.API.isISO8601(jsonResponse.users[2].updated_at).should.be.true();
 
-                        jsonResponse.users[0].email.should.eql('test+3@ghost.org');
-                        jsonResponse.users[4].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
+                        jsonResponse.users[0].email.should.eql('test+admin@ghost.org');
+                        jsonResponse.users[5].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
 
                         done();
                     });
@@ -123,7 +132,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(5);
+                        jsonResponse.users.should.have.length(6);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user');
                         jsonResponse.users[4].status.should.eql(inactiveUser.status);
                         done();
@@ -146,7 +155,7 @@ describe('User API', function () {
                         should.exist(jsonResponse.users);
                         testUtils.API.checkResponse(jsonResponse, 'users');
 
-                        jsonResponse.users.should.have.length(5);
+                        jsonResponse.users.should.have.length(6);
                         testUtils.API.checkResponse(jsonResponse.users[0], 'user', 'roles');
                         done();
                     });
@@ -532,16 +541,33 @@ describe('User API', function () {
         });
 
         describe('Destroy', function () {
-            it('[success] Destroy active user', function (done) {
-                request.delete(localUtils.API.getApiQuery('users/' + editor.id))
+            it('[success] Destroy active user', function () {
+                return request
+                    .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect(204)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .expect(200)
+                    .then((res) => {
+                        res.body.posts.length.should.eql(7);
 
-                        done();
+                        return request
+                            .delete(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(204);
+                    })
+                    .then(() => {
+                        return request
+                            .get(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}/`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(404);
+                    })
+                    .then(() => {
+                        return request
+                            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
+                            .set('Authorization', 'Bearer ' + ownerAccessToken)
+                            .expect(200);
+                    })
+                    .then((res) => {
+                        res.body.posts.length.should.eql(0);
                     });
             });
 
@@ -557,6 +583,26 @@ describe('User API', function () {
                         done();
                     });
             });
+        });
+    });
+
+    describe('Transfer ownership', function () {
+        it('Owner can transfer ownership to admin user', function () {
+            return request
+                .put(localUtils.API.getApiQuery('users/owner'))
+                .set('Authorization', 'Bearer ' + ownerAccessToken)
+                .send({
+                    owner: [{
+                        id: admin.id
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    res.body.users[0].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[0].name);
+                    res.body.users[1].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[3].name);
+                });
         });
     });
 

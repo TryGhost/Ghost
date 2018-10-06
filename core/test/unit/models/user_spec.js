@@ -533,4 +533,67 @@ describe('Unit: models/user', function () {
                 });
         });
     });
+
+    describe('transferOwnership', function () {
+        let ownerRole;
+
+        beforeEach(function () {
+            ownerRole = sandbox.stub();
+
+            sandbox.stub(models.Role, 'findOne');
+
+            models.Role.findOne
+                .withArgs({name: 'Owner'})
+                .resolves(testUtils.permissions.owner.user.roles[0]);
+
+            models.Role.findOne
+                .withArgs({name: 'Administrator'})
+                .resolves(testUtils.permissions.admin.user.roles[0]);
+
+            sandbox.stub(models.User, 'findOne');
+        });
+
+        it('Cannot transfer ownership if not owner', function () {
+            const loggedInUser = testUtils.context.admin;
+            const userToChange = loggedInUser;
+            const contextUser = sandbox.stub();
+
+            contextUser.toJSON = sandbox.stub().returns(testUtils.permissions.admin.user);
+
+            models.User
+                .findOne
+                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
+                .resolves(contextUser);
+
+            return models.User.transferOwnership({id: loggedInUser.context.user}, loggedInUser)
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.should.be.an.instanceof(common.errors.NoPermissionError);
+                });
+        });
+
+        it('Owner tries to transfer ownership to author', function () {
+            const loggedInUser = testUtils.context.owner;
+            const userToChange = testUtils.context.editor;
+            const contextUser = sandbox.stub();
+
+            contextUser.toJSON = sandbox.stub().returns(testUtils.permissions.owner.user);
+
+            models.User
+                .findOne
+                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
+                .resolves(contextUser);
+
+            models.User
+                .findOne
+                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
+                .resolves(contextUser);
+
+            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.should.be.an.instanceof(common.errors.ValidationError);
+                });
+        });
+    });
 });
