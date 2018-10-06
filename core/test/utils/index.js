@@ -939,6 +939,11 @@ startGhost = function startGhost(options) {
                     })
                     .then((users) => {
                         module.exports.existingData.users = users.toJSON();
+
+                        return models.Tag.findAll({columns: ['id']});
+                    })
+                    .then((tags) => {
+                        module.exports.existingData.tags = tags.toJSON();
                     })
                     .return(ghostServer);
             });
@@ -1006,6 +1011,11 @@ startGhost = function startGhost(options) {
                 })
                 .then((users) => {
                     module.exports.existingData.users = users.toJSON();
+
+                    return models.Tag.findAll({columns: ['id']});
+                })
+                .then((tags) => {
+                    module.exports.existingData.tags = tags.toJSON();
                 })
                 .return(ghostServer);
         });
