@@ -2,7 +2,7 @@ const sinon = require('sinon'),
     should = require('should'),
     rewire = require('rewire'),
     common = require('../../../../server/lib/common'),
-    settings = rewire('../../../../server/services/settings/index'),
+    settings = rewire('../../../../server/services/settings'),
     sandbox = sinon.sandbox.create();
 
 describe('UNIT > Settings Service:', function () {

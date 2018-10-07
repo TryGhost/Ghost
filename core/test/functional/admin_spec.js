@@ -5,11 +5,11 @@
 
 var should = require('should'),
     supertest = require('supertest'),
-    testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
+    testUtils = require('../utils'),
+    configUtils = require('../utils/configUtils'),
     ghost = testUtils.startGhost,
-    common = require('../../../server/lib/common'),
-    config = require('../../../../core/server/config'),
+    common = require('../../server/lib/common'),
+    config = require('../../server/config'),
     request;
 
 common.i18n.init();

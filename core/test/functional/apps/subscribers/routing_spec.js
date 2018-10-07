@@ -1,9 +1,9 @@
 var supertest = require('supertest'),
     should = require('should'),
     sinon = require('sinon'),
-    testUtils = require('../../../../utils'),
-    labs = require('../../../../../server/services/labs'),
-    config = require('../../../../../server/config'),
+    testUtils = require('../../../utils'),
+    labs = require('../../../../server/services/labs'),
+    config = require('../../../../server/config'),
     ghost = testUtils.startGhost,
     sandbox = sinon.sandbox.create();
 
