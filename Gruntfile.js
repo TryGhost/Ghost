@@ -158,10 +158,10 @@ var config = require('./core/server/config'),
                     ]
                 },
 
-                // #### All E2E tests
-                e2e: {
+                // #### All functional tests
+                functional: {
                     src: [
-                        'core/test/e2e/**/*_spec.js'
+                        'core/test/functional/**/*_spec.js'
                     ]
                 },
 
@@ -188,7 +188,7 @@ var config = require('./core/server/config'),
                 coverage_all: {
                     src: [
                         'core/test/integration',
-                        'core/test/e2e',
+                        'core/test/functional',
                         'core/test/unit'
                     ],
                     options: {
@@ -512,7 +512,7 @@ var config = require('./core/server/config'),
         // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
         grunt.registerTask('test-all', 'Run all server tests',
-            ['test-e2e', 'test-unit', 'test-integration']);
+            ['test-functional', 'test-unit', 'test-integration']);
 
         // ### Lint
         //
@@ -575,11 +575,11 @@ var config = require('./core/server/config'),
         );
 
         // ### Route tests *(sub task)*
-        // `grunt test-e2e` will run just the route tests
+        // `grunt test-functional` will run just the route tests
         //
         // If you need to run an individual route test file, you can use the `grunt test:<file_path>` task:
         //
-        // `grunt test:e2e/admin_spec.js`
+        // `grunt test:functional/admin_spec.js`
         //
         // Route tests are run with [mocha](http://mochajs.org/) using
         // [should](https://github.com/visionmedia/should.js) and [supertest](https://github.com/visionmedia/supertest)
@@ -591,8 +591,13 @@ var config = require('./core/server/config'),
         // The purpose of the route tests is to ensure that all of the routes (pages, and API requests) in Ghost
         // are working as expected, including checking the headers and status codes received. It is very easy and
         // quick to test many permutations of routes / urls in the system.
-        grunt.registerTask('test-e2e', 'Run e2e tests (mocha)',
-            ['test-setup', 'mochacli:e2e']
+        grunt.registerTask('test-functional', 'Run functional tests (mocha)',
+            ['test-setup', 'mochacli:functional']
+        );
+
+        // Shortcut
+        grunt.registerTask('test-func', 'Run functional tests (mocha)',
+            ['test-setup', 'mochacli:functional']
         );
 
         // ### Coverage
