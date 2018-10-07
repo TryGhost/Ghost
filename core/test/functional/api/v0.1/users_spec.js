@@ -122,7 +122,7 @@ describe('User API', function () {
                     });
             });
 
-            it('can retrieve all users with roles', function (done) {
+            it('can retrieve all users with includes', function (done) {
                 request.get(localUtils.API.getApiQuery('users/?include=roles'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -234,8 +234,8 @@ describe('User API', function () {
                     });
             });
 
-            it('can retrieve a user with role', function (done) {
-                request.get(localUtils.API.getApiQuery('users/me/?include=roles'))
+            it('can retrieve a user with includes', function (done) {
+                request.get(localUtils.API.getApiQuery('users/me/?include=roles,roles.permissions,count.posts'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -251,104 +251,8 @@ describe('User API', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
-                        testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role');
-                        done();
-                    });
-            });
-
-            it('can retrieve a user with role and permissions', function (done) {
-                request.get(localUtils.API.getApiQuery('users/me/?include=roles,roles.permissions'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        should.not.exist(jsonResponse.meta);
-
-                        jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
+                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count']);
                         testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
-                        // testUtils.API.checkResponse(jsonResponse.users[0].roles[0].permissions[0], 'permission');
-
-                        done();
-                    });
-            });
-
-            it('can retrieve a user by slug with role and permissions', function (done) {
-                request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/?include=roles,roles.permissions'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        should.not.exist(jsonResponse.meta);
-
-                        jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
-                        testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
-                        // testUtils.API.checkResponse(jsonResponse.users[0].roles[0].permissions[0], 'permission');
-
-                        done();
-                    });
-            });
-
-            it('can retrieve a user by slug with count.posts', function (done) {
-                request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/?include=count.posts'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        should.not.exist(jsonResponse.meta);
-
-                        jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count']);
-
-                        done();
-                    });
-            });
-
-            it('can retrieve a user by id with count.posts', function (done) {
-                request.get(localUtils.API.getApiQuery('users/1/?include=count.posts'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users);
-                        should.not.exist(jsonResponse.meta);
-
-                        jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count']);
-
                         done();
                     });
             });
@@ -398,8 +302,14 @@ describe('User API', function () {
 
         describe('Edit', function () {
             it('can edit a user', function (done) {
-                request.get(localUtils.API.getApiQuery('users/me/'))
+                request.put(localUtils.API.getApiQuery('users/me/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .send({
+                        users: [{
+                            website: 'http://joe-bloggs.ghost.org',
+                            password: 'mynewfancypasswordwhichisnotallowed'
+                        }]
+                    })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
@@ -408,86 +318,37 @@ describe('User API', function () {
                             return done(err);
                         }
 
-                        var jsonResponse = res.body,
-                            changedValue = 'http://joe-bloggs.ghost.org',
-                            dataToSend;
+                        var putBody = res.body;
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+                        should.exist(putBody.users[0]);
+                        putBody.users[0].website.should.eql('http://joe-bloggs.ghost.org');
+                        putBody.users[0].email.should.eql('jbloggs@example.com');
+                        testUtils.API.checkResponse(putBody.users[0], 'user');
 
-                        should.exist(jsonResponse.users[0]);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                        should.not.exist(putBody.users[0].password);
 
-                        dataToSend = {
-                            users: [
-                                {
-                                    website: changedValue,
-                                    password: 'mynewfancypasswordwhichisnotallowed'
-                                }
-                            ]
-                        };
-
-                        request.put(localUtils.API.getApiQuery('users/me/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .send(dataToSend)
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                var putBody = res.body;
-                                res.headers['x-cache-invalidate'].should.eql('/*');
-                                should.exist(putBody.users[0]);
-                                putBody.users[0].website.should.eql(changedValue);
-                                putBody.users[0].email.should.eql(jsonResponse.users[0].email);
-                                testUtils.API.checkResponse(putBody.users[0], 'user');
-
-                                should.not.exist(putBody.users[0].password);
-
-                                models.User.findOne({id: putBody.users[0].id})
-                                    .then((user) => {
-                                        return models.User.isPasswordCorrect({
-                                            plainPassword: 'mynewfancypasswordwhichisnotallowed',
-                                            hashedPassword: user.get('password')
-                                        });
-                                    })
-                                    .then(Promise.reject)
-                                    .catch((err) => {
-                                        err.code.should.eql('PASSWORD_INCORRECT');
-                                        done();
-                                    });
+                        models.User.findOne({id: putBody.users[0].id})
+                            .then((user) => {
+                                return models.User.isPasswordCorrect({
+                                    plainPassword: 'mynewfancypasswordwhichisnotallowed',
+                                    hashedPassword: user.get('password')
+                                });
+                            })
+                            .then(Promise.reject)
+                            .catch((err) => {
+                                err.code.should.eql('PASSWORD_INCORRECT');
+                                done();
                             });
                     });
             });
 
-            it('can\'t edit a user with invalid accesstoken', function (done) {
-                request.get(localUtils.API.getApiQuery('users/me/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body,
-                            changedValue = 'joe-bloggs.ghost.org';
-
-                        should.exist(jsonResponse.users[0]);
-                        jsonResponse.users[0].website = changedValue;
-
-                        request.put(localUtils.API.getApiQuery('users/me/'))
-                            .set('Authorization', 'Bearer ' + 'invalidtoken')
-                            .send(jsonResponse)
-                            .expect(401)
-                            .end(function (err) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                done();
-                            });
-                    });
+            it('can\'t edit a user with invalid accesstoken', function () {
+                return request.put(localUtils.API.getApiQuery('users/me/'))
+                    .set('Authorization', 'Bearer ' + 'invalidtoken')
+                    .send({
+                        posts: []
+                    })
+                    .expect(401);
             });
 
             it('check which fields can be modified', function (done) {
@@ -607,60 +468,6 @@ describe('User API', function () {
     });
 
     describe('As Editor', function () {
-        before(function () {
-            return ghost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create editor
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then(function (_user1) {
-                    editor = _user1;
-
-                    // create author
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (_user2) {
-                    author = _user2;
-
-                    // create inactive user
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (_user3) {
-                    inactiveUser = _user3;
-
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                })
-                .then(function (token) {
-                    ownerAccessToken = token;
-
-                    request.user = editor;
-                    return localUtils.doAuth(request);
-                })
-                .then(function (token) {
-                    editorAccessToken = token;
-
-                    request.user = author;
-                    return localUtils.doAuth(request);
-                })
-                .then(function (token) {
-                    authorAccessToken = token;
-                });
-        });
-
         describe('success cases', function () {
             it('can edit himself', function (done) {
                 request.put(localUtils.API.getApiQuery('users/' + editor.id + '/'))
