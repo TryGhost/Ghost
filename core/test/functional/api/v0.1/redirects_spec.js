@@ -15,13 +15,11 @@ should.equal(true, true);
 describe('Redirects API', function () {
     var ghostServer;
 
-    afterEach(function () {
-        configUtils.restore();
-    });
-
     describe('Download', function () {
-        beforeEach(function () {
-            return ghost()
+        let originalContentPath;
+
+        before(function () {
+            return ghost({redirectsFile: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -31,7 +29,13 @@ describe('Redirects API', function () {
                 })
                 .then(function (token) {
                     accesstoken = token;
+
+                    originalContentPath = configUtils.config.get('paths:contentPath');
                 });
+        });
+
+        afterEach(function () {
+            configUtils.config.set('paths:contentPath', originalContentPath);
         });
 
         it('file does not exist', function (done) {
@@ -82,6 +86,68 @@ describe('Redirects API', function () {
     });
 
     describe('Upload', function () {
+        describe('Error cases', function () {
+            it('syntax error', function (done) {
+                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
+
+                request
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .set('Origin', testUtils.API.getURL())
+                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
+                    .expect('Content-Type', /application\/json/)
+                    .expect(400)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+
+            it('wrong format: no array', function (done) {
+                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify({
+                    from: 'c',
+                    to: 'd'
+                }));
+
+                request
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .set('Origin', testUtils.API.getURL())
+                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
+                    .expect('Content-Type', /application\/json/)
+                    .expect(422)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+
+            it('wrong format: no from/to', function (done) {
+                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
+
+                request
+                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .set('Origin', testUtils.API.getURL())
+                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
+                    .expect('Content-Type', /application\/json/)
+                    .expect(422)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        done();
+                    });
+            });
+        });
+
         describe('Ensure re-registering redirects works', function () {
             var startGhost = function (options) {
                 return ghost(options)
@@ -206,82 +272,6 @@ describe('Redirects API', function () {
                     .then(function () {
                         var dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
-                    });
-            });
-        });
-
-        describe('Error cases', function () {
-            beforeEach(function () {
-                return ghost()
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
-                        request = supertest.agent(config.get('url'));
-                    })
-                    .then(function () {
-                        return localUtils.doAuth(request, 'client:trusted-domain');
-                    })
-                    .then(function (token) {
-                        accesstoken = token;
-                    });
-            });
-
-            it('syntax error', function (done) {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
-
-                request
-                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
-                    .set('Authorization', 'Bearer ' + accesstoken)
-                    .set('Origin', testUtils.API.getURL())
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(400)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
-            });
-
-            it('wrong format: no array', function (done) {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify({
-                    from: 'c',
-                    to: 'd'
-                }));
-
-                request
-                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
-                    .set('Authorization', 'Bearer ' + accesstoken)
-                    .set('Origin', testUtils.API.getURL())
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(422)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
-            });
-
-            it('wrong format: no from/to', function (done) {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
-
-                request
-                    .post(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
-                    .set('Authorization', 'Bearer ' + accesstoken)
-                    .set('Origin', testUtils.API.getURL())
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(422)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
                     });
             });
         });

@@ -11,6 +11,7 @@ var should = require('should'),
     request;
 
 describe('Post API', function () {
+    let authorAccessToken, contributorAccessToken, author, contributor;
     var ghostServer;
 
     describe('As Owner', function () {
@@ -27,6 +28,32 @@ describe('Post API', function () {
                 })
                 .then(function (token) {
                     ownerAccessToken = token;
+
+                    // create author
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[2].name
+                    });
+                })
+                .then((_author) => {
+                    request.user = author = _author;
+                    return localUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    authorAccessToken = token;
+
+                    // create contributor
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[4].name
+                    });
+                })
+                .then(function (_contributor) {
+                    request.user = contributor = _contributor;
+                    return localUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    contributorAccessToken = token;
                 });
         });
 
@@ -228,30 +255,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve all published posts and pages', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?filter=page:[false,true]'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.have.length(12);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                        done();
-                    });
-            });
-
-            // Test bits of the API we don't use in the app yet to ensure the API behaves properly
-            it('can retrieve all status posts and pages', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?staticPages=all&status=all'))
+                request.get(localUtils.API.getApiQuery('posts/?filter=page:[false,true]&status=all'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -273,7 +277,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve just published pages', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?staticPages=true'))
+                request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -315,32 +319,6 @@ describe('Post API', function () {
 
                         const featured = _.map(jsonResponse.posts, 'featured');
                         featured.should.matchEach(true);
-
-                        done();
-                    });
-            });
-
-            it('can retrieve just non featured posts', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/?filter=featured:false'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
-                        jsonResponse.posts.should.be.an.Array().with.lengthOf(9);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                        const featured = _.map(jsonResponse.posts, 'featured');
-                        featured.should.matchEach(false);
 
                         done();
                     });
@@ -559,48 +537,6 @@ describe('Post API', function () {
 
             it('can\'t retrieve non existent post', function (done) {
                 request.get(localUtils.API.getApiQuery('posts/99/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .set('Accept', 'application/json')
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
-                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                        done();
-                    });
-            });
-
-            it('can\'t retrieve a draft post', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/5/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .set('Accept', 'application/json')
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
-                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                        done();
-                    });
-            });
-
-            it('can\'t retrieve a draft page', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/8/'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
@@ -1179,42 +1115,6 @@ describe('Post API', function () {
                     });
             });
 
-            it('can\'t edit non existent post', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body,
-                            changedValue = 'My new Title';
-                        should.exist(jsonResponse.posts[0].title);
-                        jsonResponse.posts[0].testvalue = changedValue;
-                        jsonResponse.posts[0].id = ObjectId.generate();
-
-                        request.put(localUtils.API.getApiQuery('posts/' + jsonResponse.posts[0].id + '/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .send(jsonResponse)
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(404)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                should.not.exist(res.headers['x-cache-invalidate']);
-                                jsonResponse = res.body;
-                                should.exist(jsonResponse.errors);
-                                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                                done();
-                            });
-                    });
-            });
-
             it('check which fields can be modified', function (done) {
                 var existingPostData, modifiedPostData;
 
@@ -1306,197 +1206,10 @@ describe('Post API', function () {
                         done();
                     });
             });
-
-            it('can delete a new draft', function (done) {
-                var newTitle = 'My Post',
-                    publishedState = 'draft',
-                    newPost = {
-                        posts: [{
-                            status: publishedState,
-                            title: newTitle,
-                            mobiledoc: markdownToMobiledoc('my post')
-                        }]
-                    };
-
-                request.post(localUtils.API.getApiQuery('posts/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .send(newPost)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(201)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var draftPost = res.body;
-
-                        should.exist(draftPost);
-                        draftPost.posts[0].title.should.eql(newTitle);
-                        draftPost.posts[0].status = publishedState;
-                        testUtils.API.checkResponse(draftPost.posts[0], 'post');
-
-                        request.del(localUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(204)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                res.body.should.be.empty();
-
-                                done();
-                            });
-                    });
-            });
-        });
-
-        describe('Dated Permalinks', function () {
-            before(function (done) {
-                request.get(localUtils.API.getApiQuery('settings/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body;
-                        jsonResponse.permalinks = '/:year/:month/:day/:slug/';
-
-                        request.put(localUtils.API.getApiQuery('settings/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .send(jsonResponse)
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .end(function (err) {
-                                if (err) {
-                                    return done(err);
-                                }
-                                done();
-                            });
-                    });
-            });
-
-            after(function (done) {
-                request.get(localUtils.API.getApiQuery('settings/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body;
-                        jsonResponse.permalinks = '/:slug/';
-
-                        request.put(localUtils.API.getApiQuery('settings/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .send(jsonResponse)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                done();
-                            });
-                    });
-            });
-
-            it('Can read a post', function (done) {
-                // nothing should have changed here
-                request.get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        jsonResponse.posts[0].slug.should.not.match(/^\/[0-9]{4}\/[0-9]{2}\/[0-9]{2}/);
-                        jsonResponse.posts[0].page.should.not.be.ok();
-                        done();
-                    });
-            });
-
-            it('Can edit a post', function (done) {
-                request.get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/?include=tags'))
-                    .set('Authorization', 'Bearer ' + ownerAccessToken)
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body,
-                            changedValue = 'My new Title';
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.posts);
-                        jsonResponse.posts[0].title = changedValue;
-
-                        request.put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
-                            .set('Authorization', 'Bearer ' + ownerAccessToken)
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .send(jsonResponse)
-                            .expect(200)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-                                var putBody = res.body;
-
-                                res.headers['x-cache-invalidate'].should.eql('/*');
-                                should.exist(putBody);
-                                putBody.posts[0].title.should.eql(changedValue);
-
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
-                                done();
-                            });
-                    });
-            });
         });
     });
 
     describe('As Author', function () {
-        var authorAccessToken, author;
-
-        before(function () {
-            return ghost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('url'));
-
-                    // create author
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (_author) {
-                    request.user = author = _author;
-                    return localUtils.doAuth(request, 'posts');
-                })
-                .then(function (token) {
-                    authorAccessToken = token;
-                });
-        });
-
         describe('Add', function () {
             it('can add own post', function (done) {
                 var post = {
@@ -1614,29 +1327,6 @@ describe('Post API', function () {
     });
 
     describe('As Contributor', function () {
-        var contributorAccessToken, contributor;
-
-        before(function () {
-            return ghost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('url'));
-
-                    // create contributor
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[4].name
-                    });
-                })
-                .then(function (_contributor) {
-                    request.user = contributor = _contributor;
-                    return localUtils.doAuth(request, 'posts');
-                })
-                .then(function (token) {
-                    contributorAccessToken = token;
-                });
-        });
-
         describe('Add', function () {
             it('can add own post', function (done) {
                 var post = {
@@ -1697,7 +1387,7 @@ describe('Post API', function () {
 
                         var jsonResponse = res.body,
                             changedTitle = 'My new Title',
-                            changedSlug = 'my-new-slug';
+                            changedSlug = 'my-new-slug-contributor';
 
                         should.exist(jsonResponse.posts[0]);
                         jsonResponse.posts[0].title = changedTitle;
