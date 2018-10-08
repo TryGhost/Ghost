@@ -25,7 +25,9 @@ describe('Private Blogging', function () {
         var req, res, next;
 
         beforeEach(function () {
-            req = {};
+            req = {
+                query: {}
+            };
             res = {};
             settingsStub = sandbox.stub(settingsCache, 'get');
             next = sandbox.spy();
