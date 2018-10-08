@@ -62,10 +62,11 @@ describe('Unit: sitemap/manager', function () {
 
         it('can create a SiteMapManager instance', function () {
             should.exist(manager);
-            Object.keys(eventsToRemember).length.should.eql(3);
+            Object.keys(eventsToRemember).length.should.eql(4);
             should.exist(eventsToRemember['url.added']);
             should.exist(eventsToRemember['url.removed']);
             should.exist(eventsToRemember['router.created']);
+            should.exist(eventsToRemember['routers.reset']);
         });
 
         describe('trigger url events', function () {
