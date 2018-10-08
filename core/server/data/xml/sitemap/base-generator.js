@@ -154,6 +154,11 @@ class BaseSiteMapGenerator {
         delete this.nodeLookup[datum.id];
         delete this.nodeTimeLookup[datum.id];
     }
+
+    reset() {
+        this.nodeLookup = {};
+        this.nodeTimeLookup = {};
+    }
 }
 
 module.exports = BaseSiteMapGenerator;
