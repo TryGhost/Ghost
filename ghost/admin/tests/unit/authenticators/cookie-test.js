@@ -1,4 +1,3 @@
-import RSVP from 'rsvp';
 import Service from '@ember/service';
 import sinon from 'sinon';
 import {beforeEach, describe, it} from 'mocha';
