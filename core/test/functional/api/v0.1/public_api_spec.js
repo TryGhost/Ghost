@@ -270,6 +270,26 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts: request only url fields ', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&fields=url'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.exist(res.body.posts);
+
+                should.equal(res.body.posts[0].id, undefined);
+                res.body.posts[0].url.should.eql('/welcome/');
+
+                done();
+            });
+    });
+
     it('browse posts: request to include tags and authors with absolute_urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())
