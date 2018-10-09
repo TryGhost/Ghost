@@ -365,6 +365,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         });
     });
 
+    describe('toJSON', function () {
+        const toJSON = function toJSON(model, options) {
+            return new models.Post(model).toJSON(options);
+        };
+
+        it('ensure mobiledoc revisions are never exposed', function () {
+            const post = {
+                mobiledoc: 'test',
+                mobiledoc_revisions: [],
+            };
+
+            const json = toJSON(post, {formats: ['mobiledoc']});
+
+            should.not.exist(json.mobiledoc_revisions);
+            should.exist(json.mobiledoc);
+        });
+    });
+
     describe('add', function () {
         describe('ensure full set of data for model events', function () {
             it('default', function () {

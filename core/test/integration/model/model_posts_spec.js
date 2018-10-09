@@ -1684,21 +1684,6 @@ describe('Post Model', function () {
     });
 
     describe('mobiledoc versioning', function () {
-        it('ensure mobiledoc revisions are never exposed', function () {
-            const newPost = {
-                mobiledoc: markdownToMobiledoc('a')
-            };
-
-            return models.Post.add(newPost, context)
-                .then((createdPost) => {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['mobiledoc_revisions']});
-                })
-                .then((post) => {
-                    post = post.toJSON();
-                    should.not.exist(post.mobiledoc_revisions);
-                });
-        });
-
         it('can create revisions', function () {
             const newPost = {
                 mobiledoc: markdownToMobiledoc('a')
