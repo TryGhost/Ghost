@@ -611,7 +611,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
         var self = this,
             userModel = userModelOrId,
             origArgs;
@@ -701,7 +701,7 @@ User = ghostBookshelf.Model.extend({
                 .then((owner) => {
                     // CASE: owner can assign role to any user
                     if (context.user === owner.id) {
-                        if (hasUserPermission && hasAppPermission) {
+                        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                             return Promise.resolve();
                         }
 
@@ -723,7 +723,7 @@ User = ghostBookshelf.Model.extend({
                         // e.g. admin can assign admin role to a user, but not owner
                         return permissions.canThis(context).assign.role(role)
                             .then(() => {
-                                if (hasUserPermission && hasAppPermission) {
+                                if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                                     return Promise.resolve();
                                 }
 
@@ -733,7 +733,7 @@ User = ghostBookshelf.Model.extend({
                             });
                     }
 
-                    if (hasUserPermission && hasAppPermission) {
+                    if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                         return Promise.resolve();
                     }
 
@@ -743,7 +743,7 @@ User = ghostBookshelf.Model.extend({
                 });
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
             return Promise.resolve();
         }
 
