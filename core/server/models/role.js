@@ -90,6 +90,15 @@ Role = ghostBookshelf.Model.extend({
             hasUserPermission = roleModelOrId && _.includes(checkAgainst, roleModelOrId.get('name'));
         }
 
+        if (action === 'assign' && loadedPermissions.apiKey) {
+            // apiKey cannot 'assign' the 'Owner' role
+            if (roleModel.get('name') === 'Owner') {
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.models.role.notEnoughPermission')
+                }));
+            }
+        }
+
         if (hasUserPermission && hasAppPermission) {
             return Promise.resolve();
         }
