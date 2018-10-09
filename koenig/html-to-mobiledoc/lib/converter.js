@@ -4,15 +4,16 @@ const mobiledocRenderer = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiled
 const parserPlugins = require('@tryghost/kg-parser-plugins');
 const {JSDOM} = require('jsdom');
 
-module.exports.toMobiledoc = (html) => {
+module.exports.toMobiledoc = (html, options = {}) => {
     // Vague steps:
     // 1. TODO: sanitize HTML
     let sanitizedHTML = html;
 
     // 2. Do something vaguely like loadPost
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L193
-    // @TODO: make parser plugins extensible
-    let parser = new DOMParser(new Builder(), {plugins: parserPlugins});
+    // We use our parser plugins by default, but this is extensible
+    options.plugins = options.plugins || parserPlugins;
+    let parser = new DOMParser(new Builder(), options);
     let dom = new JSDOM(sanitizedHTML);
     let post = parser.parse(dom.window.document.body);
 
