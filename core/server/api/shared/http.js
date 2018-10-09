@@ -15,9 +15,7 @@ const http = (apiImpl) => {
             user: req.user,
             context: {
                 api_key: (req.api_key && req.api_key.id) ? req.api_key.id : null,
-                user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
-                client: (req.client && req.client.slug) ? req.client.slug : null,
-                client_id: (req.client && req.client.id) ? req.client.id : null
+                user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null
             }
         });
 
