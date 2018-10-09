@@ -13,5 +13,9 @@ module.exports = {
 
     get pages() {
         return shared.pipeline(require('./pages'), localUtils);
+    },
+
+    get roles() {
+        return shared.pipeline(require('./roles'), localUtils);
     }
 };
