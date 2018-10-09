@@ -149,15 +149,16 @@ const login = (request, API_URL) => {
                 password: 'Sl1m3rson99',
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
-            }).then(function then(res) {
-            if (res.statusCode !== 200) {
-                return reject(new common.errors.GhostError({
-                    message: res.body.errors[0].message
-                }));
-            }
+            })
+            .then(function then(res) {
+                if (res.statusCode !== 200 && res.statusCode !== 201) {
+                    return reject(new common.errors.GhostError({
+                        message: res.body.errors[0].message
+                    }));
+                }
 
-            resolve(res.body.access_token);
-        }, reject);
+                resolve(res.headers['set-cookie'] || res.body.access_token);
+            }, reject);
     });
 };
 
