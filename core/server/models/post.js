@@ -1,17 +1,19 @@
 // # Post Model
-var _ = require('lodash'),
-    uuid = require('uuid'),
-    moment = require('moment'),
-    Promise = require('bluebird'),
-    sequence = require('../lib/promise/sequence'),
-    common = require('../lib/common'),
-    htmlToText = require('html-to-text'),
-    ghostBookshelf = require('./base'),
-    config = require('../config'),
-    converters = require('../lib/mobiledoc/converters'),
-    relations = require('./relations'),
-    Post,
-    Posts;
+const _ = require('lodash');
+const uuid = require('uuid');
+const moment = require('moment');
+const Promise = require('bluebird');
+const sequence = require('../lib/promise/sequence');
+const common = require('../lib/common');
+const htmlToText = require('html-to-text');
+const ghostBookshelf = require('./base');
+const config = require('../config');
+const converters = require('../lib/mobiledoc/converters');
+const relations = require('./relations');
+const MOBILEDOC_REVISIONS_COUNT = 10;
+
+let Post;
+let Posts;
 
 Post = ghostBookshelf.Model.extend({
 
@@ -46,7 +48,7 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
@@ -348,6 +350,51 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
+        // CASE: Handle mobiledoc backups/revisions. This is a pure database feature.
+        if (model.hasChanged('mobiledoc') && !options.importing && !options.migrating) {
+            ops.push(function updateRevisions() {
+                return ghostBookshelf.model('MobiledocRevision')
+                    .findAll(Object.assign({
+                        filter: `post_id:${model.id}`,
+                        columns: ['id']
+                    }, _.pick(options, 'transacting')))
+                    .then((revisions) => {
+                        /**
+                         * Store prev + latest mobiledoc content, because we have decided against a migration, which
+                         * iterates over all posts and creates a copy of the current mobiledoc content.
+                         *
+                         * Reasons:
+                         *   - usually migrations for the post table are slow and error-prone
+                         *   - there is no need to create a copy for all posts now, because we only want to ensure
+                         *     that posts, which you are currently working on, are getting a content backup
+                         *   - no need to create revisions for existing published posts
+                         *
+                         * The feature is very minimal in the beginning. As soon as you update to this Ghost version,
+                         * you
+                         */
+                        if (!revisions.length && options.method !== 'insert') {
+                            model.set('mobiledoc_revisions', [{
+                                post_id: model.id,
+                                mobiledoc: model.previous('mobiledoc'),
+                                created_at_ts: Date.now() - 1
+                            }, {
+                                post_id: model.id,
+                                mobiledoc: model.get('mobiledoc'),
+                                created_at_ts: Date.now()
+                            }]);
+                        } else {
+                            const revisionsJSON = revisions.toJSON().slice(0, MOBILEDOC_REVISIONS_COUNT - 1);
+
+                            model.set('mobiledoc_revisions', revisionsJSON.concat([{
+                                post_id: model.id,
+                                mobiledoc: model.get('mobiledoc'),
+                                created_at_ts: Date.now()
+                            }]));
+                        }
+                    });
+            });
+        }
+
         return sequence(ops);
     },
 
@@ -385,6 +432,11 @@ Post = ghostBookshelf.Model.extend({
     fields: function fields() {
         return this.morphMany('AppField', 'relatable');
     },
+
+    mobiledoc_revisions() {
+        return this.hasMany('MobiledocRevision', 'post_id');
+    },
+
     /**
      * @NOTE:
      * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
@@ -440,6 +492,9 @@ Post = ghostBookshelf.Model.extend({
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
+
+        // CASE: never expose the revisions
+        delete attrs.mobiledoc_revisions;
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
