@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('admin');
+const debug = require('ghost-ignition').debug('web:admin:app');
 const express = require('express');
 const serveStatic = require('express').static;
 const config = require('../../config');

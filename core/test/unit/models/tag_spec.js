@@ -1,46 +1,71 @@
-var should = require('should'),
-    url = require('url'),
-    sinon = require('sinon'),
-    models = require('../../../server/models'),
-    testUtils = require('../../utils'),
-    sandbox = sinon.sandbox.create();
+const should = require('should');
+const url = require('url');
+const sinon = require('sinon');
+const models = require('../../../server/models');
+const testUtils = require('../../utils');
+const {knex} = require('../../../server/data/db');
 
-describe('Unit: models/tags', function () {
+const sandbox = sinon.sandbox.create();
+
+describe('Unit: models/tag', function () {
     before(function () {
         models.init();
     });
 
-    after(function () {
+    afterEach(function () {
         sandbox.restore();
     });
 
-    before(testUtils.teardown);
-    before(testUtils.setup('tags'));
+    describe('SQL', function () {
+        const mockDb = require('mock-knex');
+        let tracker;
 
-    describe('toJSON', function () {
-        const toJSON = function toJSON(model, options) {
-            return new models.Tag(model).toJSON(options);
-        };
+        before(function () {
+            mockDb.mock(knex);
+            tracker = mockDb.getTracker();
+        });
 
-        describe('Public context', function () {
-            const context = {
-                public: true
-            };
+        after(function () {
+            sandbox.restore();
+        });
 
-            it('converts relative feature_image url to absolute when absolute_urls flag passed', function () {
-                const model = {
-                    feature_image: '/content/images/feature_image.jpg'
-                };
-                const json = toJSON(model, {context, absolute_urls: true});
-                const featureImageUrlObject = url.parse(json.feature_image);
+        after(function () {
+            mockDb.unmock(knex);
+        });
 
-                should.exist(featureImageUrlObject.protocol);
-                should.exist(featureImageUrlObject.host);
+        it('generates correct query for - filter: count.posts:>=1, order: count.posts DESC, limit of: all, withRelated: count.posts', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Tag.findPage({
+                filter: 'count.posts:>=1',
+                order: 'count.posts DESC',
+                limit: 'all',
+                withRelated: ['count.posts']
+            }).then(() => {
+                queries.length.should.eql(2);
+                queries[0].sql.should.eql('select count(distinct tags.id) as aggregate from `tags` where `count`.`posts` >= ?');
+                queries[0].bindings.should.eql([
+                    1
+                ]);
+
+                queries[1].sql.should.eql('select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
+                queries[1].bindings.should.eql([
+                    1
+                ]);
             });
         });
     });
 
     describe('Edit', function () {
+        before(testUtils.teardown);
+        before(testUtils.setup('tags'));
+
         it('resets given empty value to null', function () {
             return models.Tag.findOne({slug: 'kitchen-sink'})
                 .then(function (tag) {

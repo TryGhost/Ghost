@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('admin:serviceworker');
+const debug = require('ghost-ignition').debug('web:admin:serviceworker');
 const path = require('path');
 
 // Route: index

@@ -7,6 +7,7 @@ const Promise = require('bluebird'),
     canThis = require('../../services/permissions').canThis,
     models = require('../../models'),
     common = require('../../lib/common'),
+    {urlsForUser} = require('./decorators/urls'),
     docName = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
@@ -40,7 +41,7 @@ users = {
             return models.User.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        users: data.map(post => post.toJSON(options)),
+                        users: data.map(model => urlsForUser(model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -89,7 +90,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [urlsForUser(model.toJSON(options), options)]
                     };
                 });
         }
@@ -126,75 +127,12 @@ users = {
             delete object.users[0].password;
         }
 
-        /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * Edit user allows the related role object to be updated as well, with some rules:
-         * - No change permitted to the role of the owner
-         * - no change permitted to the role of the context user (user making the request)
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
+        function prepare(options) {
             if (options.id === 'me' && options.context && options.context.user) {
                 options.id = options.context.user;
             }
 
-            return canThis(options.context).edit.user(options.id).then(() => {
-                // CASE: can't edit my own status to inactive or locked
-                if (options.id === options.context.user) {
-                    if (models.User.inactiveStates.indexOf(options.data.users[0].status) !== -1) {
-                        return Promise.reject(new common.errors.NoPermissionError({
-                            message: common.i18n.t('errors.api.users.cannotChangeStatus')
-                        }));
-                    }
-                }
-
-                // CASE: if roles aren't in the payload, proceed with the edit
-                if (!(options.data.users[0].roles && options.data.users[0].roles[0])) {
-                    return options;
-                }
-
-                // @TODO move role permissions out of here
-                let role = options.data.users[0].roles[0],
-                    roleId = role.id || role,
-                    editedUserId = options.id;
-
-                return models.User.findOne(
-                    {id: options.context.user, status: 'all'}, {withRelated: ['roles']}
-                ).then((contextUser) => {
-                    let contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
-
-                    if (roleId !== contextRoleId && editedUserId === contextUser.id) {
-                        return Promise.reject(new common.errors.NoPermissionError({
-                            message: common.i18n.t('errors.api.users.cannotChangeOwnRole')
-                        }));
-                    }
-
-                    return models.User.findOne({role: 'Owner'}).then((owner) => {
-                        if (contextUser.id !== owner.id) {
-                            if (editedUserId === owner.id) {
-                                if (owner.related('roles').at(0).id !== roleId) {
-                                    return Promise.reject(new common.errors.NoPermissionError({
-                                        message: common.i18n.t('errors.api.users.cannotChangeOwnersRole')
-                                    }));
-                                }
-                            } else if (roleId !== contextRoleId) {
-                                return canThis(options.context).assign.role(role).then(() => {
-                                    return options;
-                                });
-                            }
-                        }
-
-                        return options;
-                    });
-                });
-            }).catch((err) => {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    err: err,
-                    context: common.i18n.t('errors.api.users.noPermissionToEditUser')
-                }));
-            });
+            return options;
         }
 
         /**
@@ -213,7 +151,7 @@ users = {
                     }
 
                     return {
-                        users: [model.toJSON(options)]
+                        users: [urlsForUser(model.toJSON(options), options)]
                     };
                 });
         }
@@ -222,7 +160,8 @@ users = {
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
             localUtils.convertOptions(allowedIncludes),
-            handlePermissions,
+            prepare,
+            localUtils.handlePermissions(docName, 'edit', ['status', 'roles']),
             doQuery
         ];
 

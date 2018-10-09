@@ -49,7 +49,6 @@ describe('Post Model', function () {
             firstPost.authors[0].should.eql(firstPost.author);
         }
 
-        firstPost.url.should.equal('/html-ipsum/');
         firstPost.tags.should.be.an.Array();
 
         firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
@@ -181,16 +180,21 @@ describe('Post Model', function () {
                 });
 
                 it('returns computed fields when columns are asked for explicitly', function (done) {
-                    models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
+                    const options = {
+                        columns: ['id', 'slug', 'primary_tag'],
+                        withRelated: 'tags'
+                    };
+
+                    models.Post.findPage(options).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
-                        post.url.should.equal('/html-ipsum/');
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON(options);
+                        post.primary_tag.slug.should.equal('kitchen-sink');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
                         // there's a bug in bookshelf where the model will come back with it as
                         // a column enclosed in quotes.
-                        should.not.exist(post['"url"']);
+                        should.not.exist(post['"primary_tag"']);
 
                         done();
                     }).catch(done);
@@ -374,33 +378,6 @@ describe('Post Model', function () {
                             firstPost = result.toJSON();
 
                             checkFirstPostData(firstPost);
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a slug only permalink', function (done) {
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-                            firstPost.url.should.equal('/html-ipsum/');
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a dated permalink', function (done) {
-                    urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
-
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-
-                            // published_at of post 1 is 2015-01-01 00:00:00
-                            // default blog TZ is UTC
-                            firstPost.url.should.equal('/2015/01/01/html-ipsum/');
 
                             done();
                         }).catch(done);
@@ -1703,6 +1680,119 @@ describe('Post Model', function () {
                     updated_at: moment().subtract(1, 'day').format()
                 }, _.extend({}, context, {id: postToUpdate.id}));
             });
+        });
+    });
+
+    describe('mobiledoc versioning', function () {
+        it('can create revisions', function () {
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+
+                    return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
+                })
+                .then((updatedPost) => {
+                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${updatedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
+        });
+
+        it('keeps only 10 last revisions in FIFO style', function () {
+            let revisionedPost;
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('revision: 0')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    revisionedPost = createdPost;
+
+                    return sequence(_.times(11, (i) => {
+                        return () => {
+                            return models.Post.edit({
+                                mobiledoc: markdownToMobiledoc('revision: ' + (i + 1))
+                            }, _.extend({}, context, {id: createdPost.id}));
+                        };
+                    }));
+                })
+                .then(() => models.MobiledocRevision
+                    .findAll({
+                        filter: `post_id:${revisionedPost.id}`,
+                    })
+                )
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 10);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                });
+        });
+
+        it('creates 2 revisions after first edit for previously unversioned post', function () {
+            let unversionedPost;
+
+            const newPost = {
+                title: 'post title',
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            // passing 'migrating' flag to simulate unversioned post
+            const options = Object.assign(_.clone(context), {migrating: true});
+
+            return models.Post.add(newPost, options)
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    unversionedPost = createdPost;
+                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${createdPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 0);
+
+                    return models.Post.edit({
+                        mobiledoc: markdownToMobiledoc('b')
+                    }, _.extend({}, context, {id: unversionedPost.id}));
+                })
+                .then((editedPost) => {
+                    should.exist(editedPost);
+                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${editedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
         });
     });
 
