@@ -1,8 +1,8 @@
 const urlService = require('../../../services/url');
 const {urlFor, makeAbsoluteUrls} = require('../../../services/url/utils');
 
-const urlsForPost = (post, options) => {
-    post.url = urlService.getUrlByResourceId(post.id);
+const urlsForPost = (id, post, options) => {
+    post.url = urlService.getUrlByResourceId(id);
 
     if (options.columns && !options.columns.includes('url')) {
         delete post.url;
@@ -36,15 +36,15 @@ const urlsForPost = (post, options) => {
             // are being passed by reference in tags/authors. Might be refactored into more explicit call
             // in the future, but is good enough for current use-case
             if (relation === 'tags' && post.tags) {
-                post.tags = post.tags.map(tag => urlsForTag(tag, options));
+                post.tags = post.tags.map(tag => urlsForTag(tag.id, tag, options));
             }
 
             if (relation === 'author' && post.author) {
-                post.author = urlsForUser(post.author, options);
+                post.author = urlsForUser(post.author.id, post.author, options);
             }
 
             if (relation === 'authors' && post.authors) {
-                post.authors = post.authors.map(author => urlsForUser(author, options));
+                post.authors = post.authors.map(author => urlsForUser(author.id, author, options));
             }
         });
     }
@@ -52,11 +52,13 @@ const urlsForPost = (post, options) => {
     return post;
 };
 
-const urlsForUser = (user, options) => {
+const urlsForUser = (id, user, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        user.url = urlFor({
-            relativeUrl: urlService.getUrlByResourceId(user.id)
-        }, true);
+        if (id) {
+            user.url = urlFor({
+                relativeUrl: urlService.getUrlByResourceId(id)
+            }, true);
+        }
 
         if (user.profile_image) {
             user.profile_image = urlFor('image', {image: user.profile_image}, true);
@@ -70,11 +72,13 @@ const urlsForUser = (user, options) => {
     return user;
 };
 
-const urlsForTag = (tag, options) => {
+const urlsForTag = (id, tag, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        tag.url = urlFor({
-            relativeUrl: urlService.getUrlByResourceId(tag.id)
-        }, true);
+        if (id) {
+            tag.url = urlFor({
+                relativeUrl: urlService.getUrlByResourceId(tag.id)
+            }, true);
+        }
 
         if (tag.feature_image) {
             tag.feature_image = urlFor('image', {image: tag.feature_image}, true);

@@ -61,7 +61,7 @@ posts = {
             return models.Post.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        posts: data.map(model => urlsForPost(model.toJSON(options), options)),
+                        posts: data.map(model => urlsForPost(model.id, model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -110,7 +110,7 @@ posts = {
                     }
 
                     return {
-                        posts: [urlsForPost(model.toJSON(options), options)]
+                        posts: [urlsForPost(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -156,7 +156,7 @@ posts = {
                         }));
                     }
 
-                    const post = urlsForPost(model.toJSON(options), options);
+                    const post = urlsForPost(model.id, model.toJSON(options), options);
 
                     // If previously was not published and now is (or vice versa), signal the change
                     // @TODO: `statusChanged` get's added for the API headers only. Reconsider this.
@@ -204,7 +204,7 @@ posts = {
         function modelQuery(options) {
             return models.Post.add(options.data.posts[0], omit(options, ['data']))
                 .then((model) => {
-                    const post = urlsForPost(model.toJSON(options), options);
+                    const post = urlsForPost(model.id, model.toJSON(options), options);
 
                     if (post.status === 'published') {
                         // When creating a new post that is published right now, signal the change
