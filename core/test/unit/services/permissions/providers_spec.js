@@ -174,6 +174,47 @@ describe('Permission Providers', function () {
         });
     });
 
+    describe('API Key', function () {
+        it('errors if api_key cannot be found', function (done) {
+            let findApiKeySpy = sandbox.stub(models.ApiKey, 'findOne');
+            findApiKeySpy.returns(new Promise.resolve());
+            providers.apiKey(1)
+                .then(() => {
+                    done(new Error('Should have thrown an api key not found error'));
+                })
+                .catch((err) => {
+                    findApiKeySpy.callCount.should.eql(1);
+                    err.errorType.should.eql('NotFoundError');
+                    done();
+                });
+        });
+        it('can load api_key with role, and role.permissions', function (done) {
+            const findApiKeySpy = sandbox.stub(models.ApiKey, 'findOne').callsFake(function () {
+                const fakeApiKey = models.ApiKey.forge(testUtils.DataGenerator.Content.api_keys[0]);
+                const fakeAdminRole = models.Role.forge(testUtils.DataGenerator.Content.roles[0]);
+                const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
+                fakeAdminRole.relations = {
+                    permissions: fakeAdminRolePermissions
+                };
+                fakeApiKey.relations = {
+                    role: fakeAdminRole
+                };
+                fakeApiKey.withRelated = ['role', 'role.permissions'];
+                return Promise.resolve(fakeApiKey);
+            });
+            providers.apiKey(1).then((res) => {
+                findApiKeySpy.callCount.should.eql(1);
+                res.should.be.an.Object().with.properties('permissions', 'roles');
+                res.roles.should.be.an.Array().with.lengthOf(1);
+                res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
+                res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
+                res.permissions[0].should.be.instanceOf(models.Base.Model);
+                res.roles[0].should.not.be.instanceOf(models.Base.Model);
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('App', function () {
         // @TODO make this consistent or sane or something!
         // Why is this an empty array, when the success is an object?
