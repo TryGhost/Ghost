@@ -250,8 +250,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
             var self = this,
                 postModel = postModelOrId,
-                origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy,
-                result = {};
+                origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy;
 
             // If we passed in an id instead of a model, get the model
             // then check the permissions
@@ -333,14 +332,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 hasUserPermission = hasUserPermission || isCurrentOwner();
             }
 
-            // @TODO: we need a concept for making a diff between incoming authors and existing authors
-            // @TODO: for now we simply re-use the new concept of `excludedAttrs`
-            // We only check the primary author of `authors`, any other change will be ignored.
-            // By this we can deprecate `author_id` more easily.
-            if (isContributor || isAuthor) {
-                result.excludedAttrs = ['authors'];
-            }
-
             if (hasUserPermission && hasAppPermission) {
                 return Post.permissible.call(
                     this,
@@ -349,9 +340,19 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     unsafeAttrs,
                     loadedPermissions,
                     hasUserPermission,
-                    hasAppPermission,
-                    result
-                );
+                    hasAppPermission
+                ).then(({excludedAttrs}) => {
+                    // @TODO: we need a concept for making a diff between incoming authors and existing authors
+                    // @TODO: for now we simply re-use the new concept of `excludedAttrs`
+                    // We only check the primary author of `authors`, any other change will be ignored.
+                    // By this we can deprecate `author_id` more easily.
+                    if (isContributor || isAuthor) {
+                        return {
+                            excludedAttrs: ['authors'].concat(excludedAttrs)
+                        };
+                    }
+                    return {excludedAttrs};
+                });
             }
 
             return Promise.reject(new common.errors.NoPermissionError({

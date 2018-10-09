@@ -684,10 +684,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
-    permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, result) {
+    permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
         let isContributor, isEdit, isAdd, isDestroy;
-
-        result = result || {};
 
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
@@ -717,21 +715,18 @@ Post = ghostBookshelf.Model.extend({
             hasUserPermission = isDraft();
         }
 
+        const excludedAttrs = [];
         if (isContributor) {
             // Note: at the moment primary_tag is a computed field,
             // meaning we don't add it to this list. However, if the primary_tag/primary_author
             // ever becomes a db field rather than a computed field, add it to this list
             // TODO: once contributors are able to edit existing tags, this can be removed
             // @TODO: we need a concept for making a diff between incoming tags and existing tags
-            if (result.excludedAttrs) {
-                result.excludedAttrs.push('tags');
-            } else {
-                result.excludedAttrs = ['tags'];
-            }
+            excludedAttrs.push('tags');
         }
 
         if (hasUserPermission && hasAppPermission) {
-            return Promise.resolve(result);
+            return Promise.resolve({excludedAttrs});
         }
 
         return Promise.reject(new common.errors.NoPermissionError({
