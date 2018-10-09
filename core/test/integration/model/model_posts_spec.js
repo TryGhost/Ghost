@@ -1683,6 +1683,119 @@ describe('Post Model', function () {
         });
     });
 
+    describe('mobiledoc versioning', function () {
+        it('can create revisions', function () {
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+
+                    return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
+                })
+                .then((updatedPost) => {
+                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${updatedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
+        });
+
+        it('keeps only 10 last revisions in FIFO style', function () {
+            let revisionedPost;
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('revision: 0')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    revisionedPost = createdPost;
+
+                    return sequence(_.times(11, (i) => {
+                        return () => {
+                            return models.Post.edit({
+                                mobiledoc: markdownToMobiledoc('revision: ' + (i + 1))
+                            }, _.extend({}, context, {id: createdPost.id}));
+                        };
+                    }));
+                })
+                .then(() => models.MobiledocRevision
+                    .findAll({
+                        filter: `post_id:${revisionedPost.id}`,
+                    })
+                )
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 10);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                });
+        });
+
+        it('creates 2 revisions after first edit for previously unversioned post', function () {
+            let unversionedPost;
+
+            const newPost = {
+                title: 'post title',
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            // passing 'migrating' flag to simulate unversioned post
+            const options = Object.assign(_.clone(context), {migrating: true});
+
+            return models.Post.add(newPost, options)
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    unversionedPost = createdPost;
+                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${createdPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 0);
+
+                    return models.Post.edit({
+                        mobiledoc: markdownToMobiledoc('b')
+                    }, _.extend({}, context, {id: unversionedPost.id}));
+                })
+                .then((editedPost) => {
+                    should.exist(editedPost);
+                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${editedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
+        });
+    });
+
     describe('Multiauthor Posts', function () {
         before(testUtils.teardown);
 

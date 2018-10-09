@@ -253,27 +253,23 @@ describe('Unit: models/post', function () {
             });
         });
     });
-});
 
-describe('Unit: models/post: uses database (@TODO: fix me)', function () {
-    before(function () {
-        models.init();
-    });
+    describe('toJSON', function () {
+        const toJSON = function toJSON(model, options) {
+            return new models.Post(model).toJSON(options);
+        };
 
-    before(testUtils.teardown);
-    before(testUtils.setup('users:roles', 'posts'));
+        it('ensure mobiledoc revisions are never exposed', function () {
+            const post = {
+                mobiledoc: 'test',
+                mobiledoc_revisions: [],
+            };
 
-    beforeEach(function () {
-        sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        sandbox.stub(urlService, 'getUrlByResourceId');
-    });
+            const json = toJSON(post, {formats: ['mobiledoc']});
 
-    afterEach(function () {
-        sandbox.restore();
-    });
-
-    after(function () {
-        sandbox.restore();
+            should.not.exist(json.mobiledoc_revisions);
+            should.exist(json.mobiledoc);
+        });
     });
 
     describe('processOptions', function () {
@@ -363,6 +359,28 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             filter.should.equal('page:false+status:published');
         });
+    });
+});
+
+describe('Unit: models/post: uses database (@TODO: fix me)', function () {
+    before(function () {
+        models.init();
+    });
+
+    before(testUtils.teardown);
+    before(testUtils.setup('users:roles', 'posts'));
+
+    beforeEach(function () {
+        sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+        sandbox.stub(urlService, 'getUrlByResourceId');
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    after(function () {
+        sandbox.restore();
     });
 
     describe('add', function () {
