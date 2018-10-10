@@ -61,6 +61,23 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
+        it('allows empty values', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    formats: ''
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    formats: ['format1']
+                }
+            };
+
+            return shared.validators.input.all.all(apiConfig, frame);
+        });
+
         it('default include array notation', function () {
             const frame = {
                 options: {
