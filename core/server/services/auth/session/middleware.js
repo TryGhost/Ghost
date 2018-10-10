@@ -1,4 +1,4 @@
-const {URL} = require('url');
+const url = require('url');
 const common = require('../../../lib/common');
 const constants = require('../../../lib/constants');
 const config = require('../../../config');
@@ -20,11 +20,11 @@ const getOrigin = (req) => {
         return origin;
     }
 
-    try {
-        return new URL(req.get('referrer')).origin;
-    } catch (e) {
-        return null;
+    const {protocol, host} = url.parse(referrer);
+    if (protocol && host) {
+        return `${protocol}//${host}`;
     }
+    return null;
 };
 
 let UNO_SESSIONIONA;
