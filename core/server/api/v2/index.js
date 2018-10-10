@@ -25,5 +25,9 @@ module.exports = {
 
     get webhooks() {
         return shared.pipeline(require('./webhooks'), localUtils);
+    },
+
+    get posts() {
+        return shared.pipeline(require('./posts'), localUtils);
     }
 };
