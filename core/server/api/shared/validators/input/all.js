@@ -38,16 +38,20 @@ const validate = (config, attrs) => {
     _.each(attrs, (value, key) => {
         debug(key, value);
 
-        if (config && config[key] && config[key].values) {
-            debug('ctrl validation');
+        if (config && config[key]) {
+            const allowedValues = Array.isArray(config[key]) ? config[key] : config[key].values;
 
-            const valuesAsArray = value.trim().toLowerCase().split(',');
-            const unallowedValues = _.filter(valuesAsArray, (value) => {
-                return !config[key].values.includes(value);
-            });
+            if (allowedValues) {
+                debug('ctrl validation');
 
-            if (unallowedValues.length) {
-                errors.push(new common.errors.ValidationError());
+                const valuesAsArray = value.trim().toLowerCase().split(',');
+                const unallowedValues = _.filter(valuesAsArray, (value) => {
+                    return !allowedValues.includes(value);
+                });
+
+                if (unallowedValues.length) {
+                    errors.push(new common.errors.ValidationError());
+                }
             }
         } else if (GLOBAL_VALIDATORS[key]) {
             debug('global validation');
