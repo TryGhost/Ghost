@@ -38,6 +38,31 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
+        it('default include array notation', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    slug: 'slug',
+                    include: 'tags,authors',
+                    page: 2
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    include: ['tags', 'authors']
+                }
+            };
+
+            return shared.validators.input.all(apiConfig, frame)
+                .then(() => {
+                    should.exist(frame.options.page);
+                    should.exist(frame.options.slug);
+                    should.exist(frame.options.include);
+                    should.exist(frame.options.context);
+                });
+        });
+
         it('fails', function () {
             const frame = {
                 options: {
@@ -51,6 +76,27 @@ describe('Unit: api/shared/validators/input/all', function () {
                     include: {
                         values: ['tags']
                     }
+                }
+            };
+
+            return shared.validators.input.all(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                });
+        });
+
+        it('fails include array notation', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    include: 'tags,authors'
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    include: ['tags']
                 }
             };
 
