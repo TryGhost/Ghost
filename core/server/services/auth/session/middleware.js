@@ -1,4 +1,4 @@
-const {parse: parseUrl} = require('url');
+const url = require('url');
 const common = require('../../../lib/common');
 const constants = require('../../../lib/constants');
 const config = require('../../../config');
@@ -20,7 +20,7 @@ const getOrigin = (req) => {
         return origin;
     }
 
-    const {protocol, host} = parseUrl(referrer);
+    const {protocol, host} = url.parse(referrer);
     if (protocol && host) {
         return `${protocol}//${host}`;
     }
