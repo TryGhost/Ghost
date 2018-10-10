@@ -18,6 +18,21 @@ describe('Models: base', function () {
         sandbox.restore();
     });
 
+    describe('contextUser', function () {
+        it('returns the id of the api_key_user if api_key_id is present and api_key_user has an id', function () {
+            const fakeOptions = {
+                context: {
+                    api_key_id: 'mmhmmm',
+                    api_key_user: models.User.forge({id: 'eieio'})
+                }
+            };
+
+            const result = models.Base.Model.prototype.contextUser(fakeOptions);
+
+            should.equal(result, 'eieio');
+        });
+    });
+
     describe('generateSlug', function () {
         let Model;
         let options = {};
