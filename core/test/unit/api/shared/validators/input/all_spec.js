@@ -168,6 +168,23 @@ describe('Unit: api/shared/validators/input/all', function () {
                     should.exist(err);
                 });
         });
+
+        it('invalid fields', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    id: 'invalid'
+                }
+            };
+
+            const apiConfig = {};
+
+            return shared.validators.input.all.all(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                });
+        });
     });
 
     describe('browse', function () {

@@ -26,13 +26,12 @@ module.exports = function apiRoutes() {
     router.get('/configuration/:key', mw.authAdminAPI, api.http(api.configuration.read));
 
     // ## Posts
-    router.get('/posts', mw.authAdminAPI, api.http(api.posts.browse));
-
-    router.post('/posts', mw.authAdminAPI, api.http(api.posts.add));
-    router.get('/posts/:id', mw.authAdminAPI, api.http(api.posts.read));
-    router.get('/posts/slug/:slug', mw.authAdminAPI, api.http(api.posts.read));
-    router.put('/posts/:id', mw.authAdminAPI, api.http(api.posts.edit));
-    router.del('/posts/:id', mw.authAdminAPI, api.http(api.posts.destroy));
+    router.get('/posts', mw.authAdminAPI, apiv2.http(apiv2.posts.browse));
+    router.post('/posts', mw.authAdminAPI, apiv2.http(apiv2.posts.add));
+    router.get('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.read));
+    router.get('/posts/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.posts.read));
+    router.put('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.edit));
+    router.del('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.destroy));
 
     // ## Schedules
     router.put('/schedules/posts/:id', [
