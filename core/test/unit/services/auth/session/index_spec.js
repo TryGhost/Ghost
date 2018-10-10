@@ -38,11 +38,11 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('calls next with a BadRequestError if there is no Origin or Refferer', function (done) {
+        it('calls next with a BadRequestError if there is no Origin or Referer', function (done) {
             const req = fakeReq();
             sandbox.stub(req, 'get')
                 .withArgs('origin').returns('')
-                .withArgs('referrer').returns('');
+                .withArgs('referer').returns('');
 
             sessionService.createSession(req, fakeRes(), function next(err) {
                 should.equal(err instanceof BadRequestError, true);
