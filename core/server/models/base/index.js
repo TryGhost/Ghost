@@ -394,17 +394,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Get the user from the options object
-    contextUser: function contextUser(options) {
-        options = options || {};
-        options.context = options.context || {};
+    contextUser: function contextUser(options = {}) {
+        const context = options.context || {};
 
-        if (options.context.user || ghostBookshelf.Model.isExternalUser(options.context.user)) {
-            return options.context.user;
-        } else if (options.context.internal) {
+
+        if (context.user || ghostBookshelf.Model.isExternalUser(context.user)) {
+            return context.user;
+        } else if (context.internal) {
             return ghostBookshelf.Model.internalUser;
         } else if (this.get('id')) {
             return this.get('id');
-        } else if (options.context.external) {
+        } else if (context.external) {
             return ghostBookshelf.Model.externalUser;
         } else {
             throw new common.errors.NotFoundError({
