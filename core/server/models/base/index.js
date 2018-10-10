@@ -397,6 +397,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     contextUser: function contextUser(options = {}) {
         const context = options.context || {};
 
+        if (context.api_key_id && context.api_key_user && context.api_key_user.get('id')) {
+            return context.api_key_user.get('id');
+        }
 
         if (context.user || ghostBookshelf.Model.isExternalUser(context.user)) {
             return context.user;
