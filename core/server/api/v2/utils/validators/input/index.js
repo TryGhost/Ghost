@@ -1,1 +1,5 @@
-module.exports = {};
+module.exports = {
+    get posts() {
+        return require('./posts');
+    }
+};
