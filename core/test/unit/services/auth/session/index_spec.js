@@ -50,6 +50,27 @@ describe('Session Service', function () {
             });
         });
 
+        it('sets req.session.origin from the Referer header', function (done) {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            sandbox.stub(req, 'get')
+                .withArgs('user-agent').returns('')
+                .withArgs('origin').returns('')
+                .withArgs('referrer').returns('http://ghost.org/path');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
+
+            sandbox.stub(res, 'sendStatus')
+                .callsFake(function (statusCode) {
+                    should.equal(req.session.origin, 'http://ghost.org');
+                    done();
+                });
+
+            sessionService.createSession(req, res);
+        });
+
         it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
             const req = fakeReq();
             const res = fakeRes();
