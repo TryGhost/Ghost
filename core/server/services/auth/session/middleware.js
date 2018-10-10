@@ -104,9 +104,13 @@ const cookieCsrfProtection = (req, res, next) => {
         return next();
     }
 
-    if (req.session.origin !== getOrigin(req)) {
+    const origin = getOrigin(req);
+    if (req.session.origin !== origin) {
         return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.mismatchedOrigin')
+            message: common.i18n.t('errors.middleware.auth.mismatchedOrigin', {
+                expected: req.session.origin,
+                actual: origin
+            })
         }));
     }
 
