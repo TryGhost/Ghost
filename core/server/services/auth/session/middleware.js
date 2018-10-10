@@ -10,9 +10,9 @@ const urlService = require('../../url');
 
 const getOrigin = (req) => {
     const origin = req.get('origin');
-    const referrer = req.get('referrer');
+    const referer = req.get('referer');
 
-    if (!origin && !referrer) {
+    if (!origin && !referer) {
         return null;
     }
 
@@ -21,7 +21,7 @@ const getOrigin = (req) => {
     }
 
     try {
-        return new URL(req.get('referrer')).origin;
+        return new URL(referer).origin;
     } catch (e) {
         return null;
     }
