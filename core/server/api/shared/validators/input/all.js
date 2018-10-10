@@ -49,6 +49,11 @@ const validate = (config, attrs) => {
             if (allowedValues) {
                 debug('ctrl validation');
 
+                // CASE: we allow e.g. `formats=`
+                if (!value || !value.length) {
+                    return;
+                }
+
                 const valuesAsArray = value.trim().toLowerCase().split(',');
                 const unallowedValues = _.filter(valuesAsArray, (value) => {
                     return !allowedValues.includes(value);
