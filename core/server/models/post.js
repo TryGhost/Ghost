@@ -614,7 +614,7 @@ Post = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(this.prototype.relationships, options.withRelated || []);
+            options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
 
         return options;

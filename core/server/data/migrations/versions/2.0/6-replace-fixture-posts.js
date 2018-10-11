@@ -108,7 +108,23 @@ module.exports.up = (options) => {
                 publishedAt = model.published_at;
 
                 // destroy the old published fixture post
-                return models.Post.destroy(Object.assign({id: model.id}, localOptions));
+                // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
+                return options
+                    .transacting('posts_authors')
+                    .where('post_id', model.id)
+                    .del()
+                    .then(() => {
+                        return options
+                            .transacting('posts_tags')
+                            .where('post_id', model.id)
+                            .del();
+                    })
+                    .then(() => {
+                        return options
+                            .transacting('posts')
+                            .where('id', model.id)
+                            .del();
+                    });
             });
     }).then(() => {
         // CASE: We only insert the new post fixtures if you had all old fixture posts in the database and they were published
@@ -181,7 +197,23 @@ module.exports.down = (options) => {
                     return;
                 }
 
-                return models.Post.destroy(Object.assign({id: model.id}, localOptions));
+                // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
+                return options
+                    .connection('posts_authors')
+                    .where('post_id', model.id)
+                    .del()
+                    .then(() => {
+                        return options
+                            .connection('posts_tags')
+                            .where('post_id', model.id)
+                            .del();
+                    })
+                    .then(() => {
+                        return options
+                            .connection('posts')
+                            .where('id', model.id)
+                            .del();
+                    });
             });
     });
 };
