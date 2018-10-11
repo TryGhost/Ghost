@@ -1,10 +1,12 @@
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
+const path = require('path');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/server/config');
 const labs = require('../../../../../core/server/services/labs');
+
 const ghost = testUtils.startGhost;
 const sandbox = sinon.sandbox.create();
 let request;
@@ -75,6 +77,159 @@ describe('Subscribers API', function () {
                 should.exist(jsonResponse.subscribers);
                 jsonResponse.subscribers.should.have.length(1);
                 testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
+            });
+    });
+
+    it('add', function () {
+        const subscriber = {
+            name: 'test',
+            email: 'subscriberTestAdd@test.com'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`subscribers/`))
+            .send({subscribers: [subscriber]})
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.subscribers);
+                jsonResponse.subscribers.should.have.length(1);
+                // testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber'); // TODO: modify checked schema
+                jsonResponse.subscribers[0].name.should.equal(subscriber.name);
+                jsonResponse.subscribers[0].email.should.equal(subscriber.email);
+            });
+    });
+
+    it('edit by id', function () {
+        const subscriberToChange = {
+            name: 'changed',
+            email: 'subscriber1Changed@test.com'
+        };
+
+        const subscriberChanged = {
+            name: 'changed',
+            email: 'subscriber1Changed@test.com'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`subscribers/`))
+            .send({subscribers: [subscriberToChange]})
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.subscribers);
+                jsonResponse.subscribers.should.have.length(1);
+
+                return jsonResponse.subscribers[0];
+            })
+            .then((newSubscriber) => {
+                return request
+                    .put(localUtils.API.getApiQuery(`subscribers/${newSubscriber.id}/`))
+                    .send({subscribers:[subscriberChanged]})
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        should.not.exist(res.headers['x-cache-invalidate']);
+
+                        const jsonResponse = res.body;
+
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.subscribers);
+                        jsonResponse.subscribers.should.have.length(1);
+                        testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
+                        jsonResponse.subscribers[0].name.should.equal(subscriberChanged.name);
+                        jsonResponse.subscribers[0].email.should.equal(subscriberChanged.email);
+                    });
+            });
+    });
+
+    it('destroy', function () {
+        const subscriber = {
+            name: 'test',
+            email: 'subscriberTestDestroy@test.com'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`subscribers/`))
+            .send({subscribers: [subscriber]})
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.subscribers);
+
+                return jsonResponse.subscribers[0];
+            })
+            .then((newSubscriber) => {
+                return request
+                    .delete(localUtils.API.getApiQuery(`subscribers/${newSubscriber.id}`))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(204)
+                    .then(() => newSubscriber);
+            })
+            .then((newSubscriber) => {
+                return request
+                    .get(localUtils.API.getApiQuery(`subscribers/${newSubscriber.id}/`))
+                    .set('Authorization', 'Bearer ' + accesstoken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404);
+            });
+    });
+
+    it('exportCSV', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`subscribers/csv/`))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /text\/csv/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                res.text.should.match(/id,email,created_at,deleted_at/);
+                res.text.should.match(/subscriber1@test.com/);
+            });
+    });
+
+    it('importCSV', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`subscribers/csv/`))
+            .attach('subscribersfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .set('Authorization', 'Bearer ' + accesstoken)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.should.equal(2);
+                jsonResponse.meta.stats.duplicates.should.equal(0);
+                jsonResponse.meta.stats.invalid.should.equal(1);    // TODO: should return 0
             });
     });
 });
