@@ -33,5 +33,9 @@ module.exports = {
 
     get mail() {
         return require('./mail');
+    },
+
+    get subscribers() {
+        return require('./subscribers');
     }
 };
