@@ -9,7 +9,7 @@ describe('Unit: api/shared/validators/input/all', function () {
         sandbox.restore();
     });
 
-    describe('validate options', function () {
+    describe('all', function () {
         it('default', function () {
             const frame = {
                 options: {
@@ -29,7 +29,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.all(apiConfig, frame)
                 .then(() => {
                     should.exist(frame.options.page);
                     should.exist(frame.options.slug);
@@ -54,7 +54,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.all(apiConfig, frame)
                 .then(() => {
                     should.exist(frame.options.page);
                     should.exist(frame.options.slug);
@@ -79,7 +79,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
@@ -100,7 +100,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
@@ -122,7 +122,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
@@ -130,7 +130,7 @@ describe('Unit: api/shared/validators/input/all', function () {
         });
     });
 
-    describe('validate data', function () {
+    describe('browse', function () {
         it('default', function () {
             const frame = {
                 options: {
@@ -143,11 +143,9 @@ describe('Unit: api/shared/validators/input/all', function () {
 
             const apiConfig = {};
 
-            return shared.validators.input.all(apiConfig, frame)
-                .then(() => {
-                    should.exist(frame.options.context);
-                    should.exist(frame.data.status);
-                });
+            shared.validators.input.all.browse(apiConfig, frame);
+            should.exist(frame.options.context);
+            should.exist(frame.data.status);
         });
 
         it('fails', function () {
@@ -162,10 +160,106 @@ describe('Unit: api/shared/validators/input/all', function () {
 
             const apiConfig = {};
 
-            return shared.validators.input.all(apiConfig, frame)
+            return shared.validators.input.all.browse(apiConfig, frame)
+                .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
                 });
             });
+    });
+
+    describe('read', function () {
+        it('default', function () {
+            sandbox.stub(shared.validators.input.all, 'browse');
+
+            const frame = {
+                options: {
+                    context: {}
+                }
+            };
+
+            const apiConfig = {};
+
+            shared.validators.input.all.read(apiConfig, frame);
+            shared.validators.input.all.browse.calledOnce.should.be.true();
+        });
+    });
+
+    describe('add', function () {
+        it('fails', function () {
+            const frame = {
+                data: {}
+            };
+
+            const apiConfig = {
+                docName: 'docName'
+            };
+
+            return shared.validators.input.all.add(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                });
+        });
+
+        it('fails', function () {
+            const frame = {
+                data: {
+                    docName: true
+                }
+            };
+
+            const apiConfig = {
+                docName: 'docName'
+            };
+
+            return shared.validators.input.all.add(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                });
+        });
+
+        it('fails', function () {
+            const frame = {
+                data: {
+                    docName: [{
+                        a: 'b'
+                    }]
+                }
+            };
+
+            const apiConfig = {
+                docName: 'docName',
+                data: {
+                    b: {
+                        required: true
+                    }
+                }
+            };
+
+            return shared.validators.input.all.add(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                });
+        });
+
+        it('success', function () {
+            const frame = {
+                data: {
+                    docName: [{
+                        a: 'b'
+                    }]
+                }
+            };
+
+            const apiConfig = {
+                docName: 'docName'
+            };
+
+            const result = shared.validators.input.all.add(apiConfig, frame);
+            (result instanceof Promise).should.not.be.true();
+        });
     });
 });

@@ -26,8 +26,14 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
     // ##### SHARED ALL VALIDATION
 
     tasks.push(function allShared() {
-        return sharedValidators.all(apiConfig, frame);
+        return sharedValidators.all.all(apiConfig, frame);
     });
+
+    if (sharedValidators.all[apiConfig.method]) {
+        tasks.push(function allShared() {
+            return sharedValidators.all[apiConfig.method](apiConfig, frame);
+        });
+    }
 
     // ##### API VERSION VALIDATION
 
