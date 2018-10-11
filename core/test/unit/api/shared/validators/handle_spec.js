@@ -29,7 +29,9 @@ describe('Unit: api/shared/validators/handle', function () {
 
         it('ensure validators are called', function () {
             const getStub = sandbox.stub();
-            sandbox.stub(shared.validators.input, 'all').get(() => {return getStub;});
+            const addStub = sandbox.stub();
+            sandbox.stub(shared.validators.input.all, 'all').get(() => {return getStub;});
+            sandbox.stub(shared.validators.input.all, 'add').get(() => {return addStub;});
 
             const apiValidators = {
                 all: {
@@ -46,6 +48,7 @@ describe('Unit: api/shared/validators/handle', function () {
             return shared.validators.handle.input({docName: 'posts', method: 'add'}, apiValidators, {context: {}})
                 .then(() => {
                     getStub.calledOnce.should.be.true();
+                    addStub.calledOnce.should.be.true();
                     apiValidators.all.add.calledOnce.should.be.true();
                     apiValidators.posts.add.calledOnce.should.be.true();
                     apiValidators.users.add.called.should.be.false();
