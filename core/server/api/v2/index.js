@@ -45,5 +45,9 @@ module.exports = {
 
     get settings() {
         return shared.pipeline(require('./settings'), localUtils);
+    },
+
+    get subscribers() {
+        return shared.pipeline(require('./subscribers'), localUtils);
     }
 };
