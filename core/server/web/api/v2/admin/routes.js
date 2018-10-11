@@ -73,21 +73,21 @@ module.exports = function apiRoutes() {
     router.del('/tags/:id', mw.authAdminAPI, api.http(api.tags.destroy));
 
     // ## Subscribers
-    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.browse));
-    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.exportCSV));
+    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.browse));
+    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.exportCSV));
     router.post('/subscribers/csv',
         shared.middlewares.labs.subscribers,
         mw.authAdminAPI,
         upload.single('subscribersfile'),
         shared.middlewares.validation.upload({type: 'subscribers'}),
-        api.http(api.subscribers.importCSV)
+        apiv2.http(apiv2.subscribers.importCSV)
     );
-    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.read));
-    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.read));
-    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.add));
-    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.edit));
-    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.destroy));
-    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.destroy));
+    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.read));
+    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.read));
+    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.add));
+    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.edit));
+    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.destroy));
+    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.destroy));
 
     // ## Roles
     router.get('/roles/', mw.authAdminAPI, apiv2.http(apiv2.roles.browse));
