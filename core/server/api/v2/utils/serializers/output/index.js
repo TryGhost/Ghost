@@ -9,5 +9,9 @@ module.exports = {
 
     get slugs() {
         return require('./slugs');
+    },
+
+    get webhooks() {
+        return require('./webhooks');
     }
 };

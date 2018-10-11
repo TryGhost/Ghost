@@ -21,5 +21,9 @@ module.exports = {
 
     get slugs() {
         return shared.pipeline(require('./slugs'), localUtils);
+    },
+
+    get webhooks() {
+        return shared.pipeline(require('./webhooks'), localUtils);
     }
 };

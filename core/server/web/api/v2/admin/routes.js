@@ -210,8 +210,8 @@ module.exports = function apiRoutes() {
     );
 
     // ## Webhooks (RESTHooks)
-    router.post('/webhooks', mw.authAdminAPI, api.http(api.webhooks.add));
-    router.del('/webhooks/:id', mw.authAdminAPI, api.http(api.webhooks.destroy));
+    router.post('/webhooks', mw.authAdminAPI, apiv2.http(apiv2.webhooks.add));
+    router.del('/webhooks/:id', mw.authAdminAPI, apiv2.http(apiv2.webhooks.destroy));
 
     // ## Oembed (fetch response from oembed provider)
     router.get('/oembed', mw.authAdminAPI, api.http(api.oembed.read));
