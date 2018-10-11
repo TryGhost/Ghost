@@ -1,4 +1,6 @@
-# Html To Mobiledoc
+# HTML To Mobiledoc
+
+Convert HTML strings into Mobiledoc objects.
 
 ## Install
 
@@ -10,6 +12,30 @@ or
 
 
 ## Usage
+
+``` js
+const converter = require('@tryghost/html-to-mobiledoc');
+converter.toMobiledoc('<p>Hello World!</p>');
+```
+
+By default, we use the parser plugins from `@tryghost/kg-parser-plugins`, which convert to Ghost's cards.
+To override this, pass in your own parser plugins:
+
+``` js
+converter.toMobiledoc('<p>Hello World!</p>', {plugins: []});
+```
+
+You can also extend Ghost's plugins:
+
+``` js
+const plugins = require('@tryghost/kg-parser-plugins');
+
+const myPlugin = (node) => {
+    // do stuff
+};
+
+plugins.push(myPlugin);
+```
 
 
 ## Develop
