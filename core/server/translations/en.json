@@ -73,8 +73,8 @@
                 "clientCredentialsNotProvided": "Client credentials were not provided",
                 "clientCredentialsNotValid": "Client credentials were not valid",
                 "forInformationRead": "For information on how to fix this, please read {url}.",
-                "unknownOrigin": "Could not determine origin of request.",
-                "mismatchedOrigin": "Request made from incorrect origin.",
+                "unknownOrigin": "Could not determine origin of request. Please ensure an Origin or Referrer header is present.",
+                "mismatchedOrigin": "Request made from incorrect origin. Expected '{expected}' received '{actual}'.",
                 "missingUserIDForSession": "Cannot create session without user id.",
                 "accessDenied": "Access denied.",
                 "pleaseSignIn": "Please Sign In"

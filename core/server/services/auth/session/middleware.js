@@ -1,4 +1,4 @@
-const {URL} = require('url');
+const url = require('url');
 const common = require('../../../lib/common');
 const constants = require('../../../lib/constants');
 const config = require('../../../config');
@@ -20,11 +20,11 @@ const getOrigin = (req) => {
         return origin;
     }
 
-    try {
-        return new URL(req.get('referrer')).origin;
-    } catch (e) {
-        return null;
+    const {protocol, host} = url.parse(referrer);
+    if (protocol && host) {
+        return `${protocol}//${host}`;
     }
+    return null;
 };
 
 let UNO_SESSIONIONA;
@@ -39,7 +39,7 @@ const getSession = (req, res, next) => {
             cookie: {
                 maxAge: constants.SIX_MONTH_MS,
                 httpOnly: true,
-                path: '/ghost',
+                path: urlService.utils.getSubdir() + '/ghost',
                 sameSite: 'lax',
                 secure: urlService.utils.isSSL(config.get('url'))
             }
@@ -104,9 +104,13 @@ const cookieCsrfProtection = (req, res, next) => {
         return next();
     }
 
-    if (req.session.origin !== getOrigin(req)) {
+    const origin = getOrigin(req);
+    if (req.session.origin !== origin) {
         return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.mismatchedOrigin')
+            message: common.i18n.t('errors.middleware.auth.mismatchedOrigin', {
+                expected: req.session.origin,
+                actual: origin
+            })
         }));
     }
 
