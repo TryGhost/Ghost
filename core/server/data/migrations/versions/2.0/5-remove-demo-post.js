@@ -30,7 +30,8 @@ module.exports.config = {
 module.exports.up = (options) => {
     let localOptions = _.merge({
         context: {internal: true},
-        columns: ['id']
+        columns: ['id'],
+        migrating: true
     }, options);
 
     return models.Post.findOne({slug: 'v2-demo-post', status: 'all'}, localOptions)
@@ -41,7 +42,18 @@ module.exports.up = (options) => {
             }
 
             common.logging.info(message1);
-            return models.Post.destroy(Object.assign({id: postModel.id}, localOptions));
+
+            // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
+            return options
+                .transacting('posts_authors')
+                .where('post_id', postModel.id)
+                .del()
+                .then(() => {
+                    return options
+                        .transacting('posts')
+                        .where('id', postModel.id)
+                        .del();
+                });
         })
         .then(() => {
             common.logging.info(message2);
@@ -51,7 +63,8 @@ module.exports.up = (options) => {
 module.exports.down = (options) => {
     let localOptions = _.merge({
         context: {internal: true},
-        columns: ['id']
+        columns: ['id'],
+        migrating: true
     }, options);
 
     return models.Post.findOne({slug: 'v2-demo-post', status: 'all'}, localOptions)
