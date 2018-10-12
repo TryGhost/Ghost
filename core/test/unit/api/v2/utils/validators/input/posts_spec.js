@@ -1,9 +1,15 @@
 const should = require('should');
+const sinon = require('sinon');
 const Promise = require('bluebird');
 const common = require('../../../../../../../server/lib/common');
 const validators = require('../../../../../../../server/api/v2/utils/validators');
+const sandbox = sinon.sandbox.create();
 
 describe('Unit: v2/utils/validators/input/posts', function () {
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     describe('add', function () {
         it('authors structure', function () {
             const apiConfig = {
@@ -77,29 +83,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
     });
 
     describe('edit', function () {
-        it('id mismatch', function () {
-            const apiConfig = {
-                docName: 'posts'
-            };
+        it('default', function () {
+            sandbox.stub(validators.input.posts, 'add');
 
-            const frame = {
-                options: {
-                    id: 'zwei'
-                },
-                data: {
-                    posts: [
-                        {
-                            id: 'eins'
-                        }
-                    ]
-                }
-            };
+            const apiConfig = {};
+            const frame = {};
 
-            return validators.input.posts.edit(apiConfig, frame)
-                .then(Promise.reject)
-                .catch((err) => {
-                    (err instanceof common.errors.BadRequestError).should.be.true();
-                });
+            validators.input.posts.edit(apiConfig, frame);
+            validators.input.posts.add.calledOnce.should.be.true();
         });
     });
 });
