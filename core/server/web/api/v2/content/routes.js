@@ -17,9 +17,9 @@ module.exports = function apiRoutes() {
     router.get('/configuration', api.http(api.configuration.read));
 
     // ## Posts
-    router.get('/posts', mw.authenticatePublic, api.http(api.posts.browse));
-    router.get('/posts/:id', mw.authenticatePublic, api.http(api.posts.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, api.http(api.posts.read));
+    router.get('/posts', mw.authenticatePublic, apiv2.http(apiv2.posts.browse));
+    router.get('/posts/:id', mw.authenticatePublic, apiv2.http(apiv2.posts.read));
+    router.get('/posts/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.posts.read));
 
     // ## Pages
     router.get('/pages', mw.authenticatePublic, apiv2.http(apiv2.pages.browse));
