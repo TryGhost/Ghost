@@ -98,7 +98,7 @@ module.exports = {
 
     read() {
         debug('validate read');
-        this.browse(...arguments);
+        return this.browse(...arguments);
     },
 
     add(apiConfig, frame) {
@@ -129,6 +129,6 @@ module.exports = {
 
     edit() {
         debug('validate edit');
-        this.add(...arguments);
+        return this.add(...arguments);
     }
 };
