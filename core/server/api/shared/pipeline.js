@@ -61,6 +61,12 @@ const STAGES = {
             return Promise.resolve();
         }
 
+        if (typeof apiImpl.permissions === 'object' && apiImpl.permissions.before) {
+            tasks.push(function beforePermissions() {
+                return apiImpl.permissions.before(frame);
+            });
+        }
+
         tasks.push(function doPermissions() {
             return apiUtils.permissions.handle(
                 Object.assign({}, apiConfig, apiImpl.permissions),
