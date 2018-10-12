@@ -139,8 +139,8 @@ module.exports = function apiRoutes() {
     router.del('/db', mw.authAdminAPI, api.http(api.db.deleteAllContent));
 
     // ## Mail
-    router.post('/mail', mw.authAdminAPI, api.http(api.mail.send));
-    router.post('/mail/test', mw.authAdminAPI, api.http(api.mail.sendTest));
+    router.post('/mail', mw.authAdminAPI, apiv2.http(apiv2.mail.send));
+    router.post('/mail/test', mw.authAdminAPI, apiv2.http(apiv2.mail.sendTest));
 
     // ## Slack
     router.post('/slack/test', mw.authAdminAPI, api.http(api.slack.sendTest));
