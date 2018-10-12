@@ -150,7 +150,7 @@ module.exports = {
         permissions: {
             docName: 'user',
             method: 'edit',
-            resource_id(frame) {
+            identifier(frame) {
                 return frame.data.password[0].user_id;
             }
         },
