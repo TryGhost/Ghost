@@ -38,6 +38,29 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
+        it('should run global validations on an type that has validation defined', function () {
+            const frame = {
+                options: {
+                    slug: 'not a valid slug %%%%% http://',
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    slug: {
+                        required: true
+                    }
+                }
+            };
+
+            return shared.validators.input.all.all(apiConfig, frame)
+                .then(() => {
+                    throw new Error('Should not resolve');
+                }, (err) => {
+                    should.exist(err);
+                });
+        });
+
         it('default include array notation', function () {
             const frame = {
                 options: {
