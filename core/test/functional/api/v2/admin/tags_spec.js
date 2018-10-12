@@ -22,7 +22,7 @@ describe('Tag API V2', function () {
 
     it('browse', function () {
         return request
-            .get(localUtils.API.getApiQuery('tags/?include=count.posts'))
+            .get(localUtils.API.getApiQuery('tags/?include=count.posts&order=name%20DESC'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -45,7 +45,7 @@ describe('Tag API V2', function () {
                 jsonResponse.meta.pagination.should.have.property('next', null);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
-                jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
+                jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/pollo/`);
 
                 should.exist(jsonResponse.tags[0].count.posts);
             });
