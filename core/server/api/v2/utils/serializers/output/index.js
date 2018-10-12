@@ -25,5 +25,9 @@ module.exports = {
 
     get notifications() {
         return require('./notifications');
+    },
+
+    get mail() {
+        return require('./mail');
     }
 };
