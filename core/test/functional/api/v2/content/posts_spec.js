@@ -8,7 +8,6 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../../core/server/config');
-const models = require('../../../../../../core/server/models');
 
 const ghost = testUtils.startGhost;
 let request;
@@ -131,6 +130,30 @@ describe('Posts', function () {
             });
     });
 
+    it('browse posts with basic page filter should not return pages', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                jsonResponse.posts.forEach((post) => {
+                    post.page.should.be.false();
+                });
+
+                done();
+            });
+    });
+
     it('browse posts with author filter', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
             .expect('Content-Type', /json/)
@@ -158,33 +181,6 @@ describe('Posts', function () {
                 });
 
                 authors.should.matchAny(/joe-bloggs|ghost'/);
-                done();
-            });
-    });
-
-    it('browse posts with page filter', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=page:true'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(1);
-
-                const page = _.map(jsonResponse.posts, 'page');
-                page.should.matchEach(true);
-
-                jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[5].id);
-
                 done();
             });
     });
@@ -269,7 +265,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts: request to include tags and authors with absolute_urls', function (done) {
+    it('browse posts: request to include tags and authors should always contain absolute_urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -304,38 +300,6 @@ describe('Posts', function () {
                 should.exist(res.body.posts[9].primary_author.url);
                 should.exist(url.parse(res.body.posts[9].primary_author.url).protocol);
                 should.exist(url.parse(res.body.posts[9].primary_author.url).host);
-
-                done();
-            });
-    });
-
-    it('browse posts: request to include tags and authors without absolute_urls', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&include=tags,authors'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.exist(res.body.posts);
-
-                // kitchen sink
-                res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
-
-                should.exist(res.body.posts[9].tags);
-                should.not.exist(res.body.posts[9].tags[0].url);
-
-                should.exist(res.body.posts[9].primary_tag);
-                should.not.exist(res.body.posts[9].primary_tag.url);
-
-                should.exist(res.body.posts[9].authors);
-                should.not.exist(res.body.posts[9].authors[0].url);
-
-                should.exist(res.body.posts[9].primary_author);
-                should.not.exist(res.body.posts[9].primary_author.url);
 
                 done();
             });

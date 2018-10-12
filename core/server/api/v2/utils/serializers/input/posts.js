@@ -1,7 +1,30 @@
 const _ = require('lodash');
+const debug = require('ghost-ignition').debug('api:v2:utils:serializers:posts:pages');
 
 module.exports = {
+    all(apiConfig, frame) {
+        debug('all');
+
+        // CASE: the content api endpoints for posts should only return non page type resources
+        if (frame.options.filter) {
+            if (frame.options.filter.match(/page:\w+\+?/)) {
+                frame.options.filter = frame.options.filter.replace(/page:\w+\+?/, '');
+            }
+
+            if (frame.options.filter) {
+                frame.options.filter = frame.options.filter + '+page:false';
+            } else {
+                frame.options.filter = 'page:false';
+            }
+        } else {
+            frame.options.filter = 'page:false';
+        }
+
+        debug(frame.options);
+    },
+
     add(apiConfig, frame) {
+        debug('add');
         /**
          * Convert author property to author_id to match the name in the database.
          *
