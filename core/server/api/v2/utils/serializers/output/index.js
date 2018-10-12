@@ -5,5 +5,9 @@ module.exports = {
 
     get roles() {
         return require('./roles');
+    },
+
+    get slugs() {
+        return require('./slugs');
     }
 };
