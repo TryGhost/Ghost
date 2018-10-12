@@ -71,6 +71,22 @@ describe('Posts', function () {
                 should.not.exist(jsonResponse.meta.pagination.next);
                 should.not.exist(jsonResponse.meta.pagination.prev);
 
+                // kitchen sink
+                res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
+
+                let urlParts = url.parse(res.body.posts[9].feature_image);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
+                urlParts = url.parse(res.body.posts[9].url);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
+                const $ = cheerio.load(res.body.posts[9].html);
+                urlParts = url.parse($('img').attr('src'));
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
+
                 done();
             });
     });
@@ -227,39 +243,6 @@ describe('Posts', function () {
                 jsonResponse.meta.pagination.total.should.eql(0);
                 should.equal(jsonResponse.meta.pagination.next, null);
                 should.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
-            });
-    });
-
-    it('browse posts: request absolute urls', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.exist(res.body.posts);
-
-                // kitchen sink
-                res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
-
-                let urlParts = url.parse(res.body.posts[9].feature_image);
-                should.exist(urlParts.protocol);
-                should.exist(urlParts.host);
-
-                urlParts = url.parse(res.body.posts[9].url);
-                should.exist(urlParts.protocol);
-                should.exist(urlParts.host);
-
-                const $ = cheerio.load(res.body.posts[9].html);
-                urlParts = url.parse($('img').attr('src'));
-                should.exist(urlParts.protocol);
-                should.exist(urlParts.host);
 
                 done();
             });
