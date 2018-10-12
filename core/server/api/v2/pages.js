@@ -9,7 +9,6 @@ module.exports = {
             'status',
             'fields',
             'formats',
-            'absolute_urls',
             'page',
             'limit',
             'order',
