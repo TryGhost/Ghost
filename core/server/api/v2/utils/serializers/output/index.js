@@ -45,5 +45,9 @@ module.exports = {
 
     get tags() {
         return require('./tags');
+    },
+
+    get users() {
+        return require('./users');
     }
 };

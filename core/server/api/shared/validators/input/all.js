@@ -146,5 +146,10 @@ module.exports = {
                 message: common.i18n.t('errors.api.utils.invalidIdProvided')
             }));
         }
+    },
+
+    changePassword() {
+        debug('validate changePassword');
+        return this.add(...arguments);
     }
 };
