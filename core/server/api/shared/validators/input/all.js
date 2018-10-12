@@ -132,8 +132,19 @@ module.exports = {
         }
     },
 
-    edit() {
+    edit(apiConfig, frame) {
         debug('validate edit');
-        return this.add(...arguments);
+        const result = this.add(...arguments);
+
+        if (result instanceof Promise) {
+            return result;
+        }
+
+        if (frame.options.id && frame.data[apiConfig.docName][0].id
+            && frame.options.id !== frame.data[apiConfig.docName][0].id) {
+            return Promise.reject(new common.errors.BadRequestError({
+                message: common.i18n.t('errors.api.utils.invalidIdProvided')
+            }));
+        }
     }
 };
