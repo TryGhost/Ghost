@@ -29,5 +29,9 @@ module.exports = {
 
     get posts() {
         return shared.pipeline(require('./posts'), localUtils);
+    },
+
+    get settings() {
+        return shared.pipeline(require('./settings'), localUtils);
     }
 };
