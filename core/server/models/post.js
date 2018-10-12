@@ -19,7 +19,7 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
-    /**generateSlug
+    /**
      * @NOTE
      *
      * We define the defaults on the schema (db) and model level.
