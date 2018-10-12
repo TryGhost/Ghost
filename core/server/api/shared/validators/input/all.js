@@ -50,7 +50,12 @@ const validate = (config, attrs) => {
                 });
 
                 if (unallowedValues.length) {
-                    errors.push(new common.errors.ValidationError());
+                    errors.push(new common.errors.ValidationError({
+                        message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                            validationName: 'AllowedValues',
+                            key: key
+                        })
+                    }));
                 }
             }
         } else if (GLOBAL_VALIDATORS[key]) {
