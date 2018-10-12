@@ -461,6 +461,7 @@ describe('User API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
+                    res.body.users.length.should.eql(2);
                     res.body.users[0].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[0].name);
                     res.body.users[1].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[3].name);
                 });
