@@ -38,6 +38,11 @@ const validate = (config, attrs) => {
     _.each(attrs, (value, key) => {
         debug(key, value);
 
+        if (GLOBAL_VALIDATORS[key]) {
+            debug('global validation');
+            errors = errors.concat(validation.validate(value, key, GLOBAL_VALIDATORS[key]));
+        }
+
         if (config && config[key]) {
             const allowedValues = Array.isArray(config[key]) ? config[key] : config[key].values;
 
@@ -53,9 +58,6 @@ const validate = (config, attrs) => {
                     errors.push(new common.errors.ValidationError());
                 }
             }
-        } else if (GLOBAL_VALIDATORS[key]) {
-            debug('global validation');
-            errors = errors.concat(validation.validate(value, key, GLOBAL_VALIDATORS[key]));
         }
     });
 
