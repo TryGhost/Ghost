@@ -53,5 +53,9 @@ module.exports = {
 
     get upload() {
         return shared.pipeline(require('./upload'), localUtils);
+    },
+
+    get tags() {
+        return shared.pipeline(require('./tags'), localUtils);
     }
 };
