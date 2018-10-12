@@ -37,5 +37,9 @@ module.exports = {
 
     get subscribers() {
         return require('./subscribers');
+    },
+
+    get upload() {
+        return require('./upload');
     }
 };
