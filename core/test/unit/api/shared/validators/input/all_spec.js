@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
+const common = require('../../../../../../server/lib/common');
 const shared = require('../../../../../../server/api/shared');
 const sandbox = sinon.sandbox.create();
 
@@ -317,6 +318,33 @@ describe('Unit: api/shared/validators/input/all', function () {
 
             const result = shared.validators.input.all.add(apiConfig, frame);
             (result instanceof Promise).should.not.be.true();
+        });
+    });
+
+    describe('edit', function () {
+        it('id mismatch', function () {
+            const apiConfig = {
+                docName: 'posts'
+            };
+
+            const frame = {
+                options: {
+                    id: 'zwei'
+                },
+                data: {
+                    posts: [
+                        {
+                            id: 'eins'
+                        }
+                    ]
+                }
+            };
+
+            return shared.validators.input.all.edit(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    (err instanceof common.errors.BadRequestError).should.be.true();
+                });
         });
     });
 });

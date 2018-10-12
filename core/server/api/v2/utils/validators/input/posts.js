@@ -38,12 +38,5 @@ module.exports = {
         if (result instanceof Promise) {
             return result;
         }
-
-        if (frame.options.id && frame.data[apiConfig.docName][0].id
-            && frame.options.id !== frame.data[apiConfig.docName][0].id) {
-            return Promise.reject(new common.errors.BadRequestError({
-                message: common.i18n.t('errors.api.utils.invalidIdProvided')
-            }));
-        }
     }
 };

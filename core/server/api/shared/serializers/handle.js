@@ -26,8 +26,14 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     // ##### SHARED ALL SERIALIZATION
 
     tasks.push(function serializeAllShared() {
-        return sharedSerializers.all(apiConfig, frame);
+        return sharedSerializers.all.all(apiConfig, frame);
     });
+
+    if (sharedSerializers.all[apiConfig.method]) {
+        tasks.push(function serializeAllShared() {
+            return sharedSerializers.all[apiConfig.method](apiConfig, frame);
+        });
+    }
 
     // ##### API VERSION RESOURCE SERIALIZATION
 
