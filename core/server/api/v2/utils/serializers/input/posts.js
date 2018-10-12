@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:posts:pages');
+const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 
 module.exports = {
     all(apiConfig, frame) {
