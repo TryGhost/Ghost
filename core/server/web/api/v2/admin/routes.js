@@ -65,12 +65,12 @@ module.exports = function apiRoutes() {
     router.del('/users/:id', mw.authAdminAPI, api.http(api.users.destroy));
 
     // ## Tags
-    router.get('/tags', mw.authAdminAPI, api.http(api.tags.browse));
-    router.get('/tags/:id', mw.authAdminAPI, api.http(api.tags.read));
-    router.get('/tags/slug/:slug', mw.authAdminAPI, api.http(api.tags.read));
-    router.post('/tags', mw.authAdminAPI, api.http(api.tags.add));
-    router.put('/tags/:id', mw.authAdminAPI, api.http(api.tags.edit));
-    router.del('/tags/:id', mw.authAdminAPI, api.http(api.tags.destroy));
+    router.get('/tags', mw.authAdminAPI, apiv2.http(apiv2.tags.browse));
+    router.get('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.read));
+    router.get('/tags/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.tags.read));
+    router.post('/tags', mw.authAdminAPI, apiv2.http(apiv2.tags.add));
+    router.put('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.edit));
+    router.del('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.destroy));
 
     // ## Subscribers
     router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.browse));

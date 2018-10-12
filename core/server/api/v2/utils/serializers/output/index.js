@@ -41,5 +41,9 @@ module.exports = {
 
     get upload() {
         return require('./upload');
+    },
+
+    get tags() {
+        return require('./tags');
     }
 };
