@@ -899,10 +899,6 @@ User = ghostBookshelf.Model.extend({
                 return Users.forge()
                     .query('whereIn', 'id', [contextUser.id, results[2]])
                     .fetch({withRelated: ['roles']});
-            })
-            .then(function then(users) {
-                options.withRelated = ['roles'];
-                return users.toJSON(options);
             });
     },
 

@@ -330,11 +330,9 @@ users = {
          */
         function doQuery(options) {
             return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']))
-                .then((model) => {
-                    // NOTE: model returns json object already
-                    // @TODO: why?
+                .then((models) => {
                     return {
-                        users: model
+                        users: models.toJSON(_.omit(options, ['data']))
                     };
                 });
         }
