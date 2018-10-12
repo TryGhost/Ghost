@@ -233,7 +233,7 @@ describe('Posts', function () {
     });
 
     it('browse posts: request absolute urls', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -265,8 +265,8 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts: request to include tags and authors should always contain absolute_urls', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
+    it('browse posts: request to include tags and authors should always contain absolute urls', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

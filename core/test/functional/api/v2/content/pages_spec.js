@@ -1,3 +1,4 @@
+const url = require('url');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../../utils');
@@ -23,17 +24,13 @@ describe('Pages', function () {
         configUtils.restore();
     });
 
-    it('browse pages', function (done) {
+    it('browse pages', function () {
         request.get(localUtils.API.getApiQuery('pages/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .then((res) => {
                 res.headers.vary.should.eql('Origin, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
@@ -42,7 +39,23 @@ describe('Pages', function () {
                 should.exist(jsonResponse.pages);
                 should.exist(jsonResponse.meta);
                 jsonResponse.pages.should.have.length(1);
-                done();
+            });
+    });
+
+    it('browse pages: request absolute urls', function () {
+        return request.get(localUtils.API.getApiQuery('pages/?client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.exist(res.body.pages);
+
+                res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[5].slug);
+
+                const urlParts = url.parse(res.body.pages[0].url);
+                should.exist(urlParts.protocol);
+                should.exist(urlParts.host);
             });
     });
 });
