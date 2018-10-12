@@ -505,9 +505,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         case 'toJSON':
             return baseOptions.concat('shallow', 'columns');
         case 'destroy':
-            return baseOptions.concat(extraOptions, ['id', 'destroyBy']);
+            return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
         case 'edit':
-            return baseOptions.concat(extraOptions, ['id']);
+            return baseOptions.concat(extraOptions, ['id', 'require']);
+        case 'findOne':
+            return baseOptions.concat(extraOptions, ['require']);
         default:
             return baseOptions.concat(extraOptions);
         }
