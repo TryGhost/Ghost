@@ -49,5 +49,9 @@ module.exports = {
 
     get subscribers() {
         return shared.pipeline(require('./subscribers'), localUtils);
+    },
+
+    get upload() {
+        return shared.pipeline(require('./upload'), localUtils);
     }
 };
