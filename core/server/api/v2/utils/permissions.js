@@ -11,8 +11,8 @@ const nonePublicAuth = (apiConfig, frame) => {
 
     let permissionIdentifier = frame.options.id;
 
-    if (apiConfig.permissionIdentifier) {
-        permissionIdentifier = apiConfig.permissionIdentifier(frame);
+    if (apiConfig.identifier) {
+        permissionIdentifier = apiConfig.identifier(frame);
     }
 
     const unsafeAttrObject = apiConfig.unsafeAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`) ? _.pick(frame.data[apiConfig.docName][0], apiConfig.unsafeAttrs) : {};
