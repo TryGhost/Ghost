@@ -53,16 +53,16 @@ module.exports = function apiRoutes() {
     router.put('/settings', mw.authAdminAPI, apiv2.http(apiv2.settings.edit));
 
     // ## Users
-    router.get('/users', mw.authAdminAPI, api.http(api.users.browse));
-    router.get('/users/:id', mw.authAdminAPI, api.http(api.users.read));
-    router.get('/users/slug/:slug', mw.authAdminAPI, api.http(api.users.read));
+    router.get('/users', mw.authAdminAPI, apiv2.http(apiv2.users.browse));
+    router.get('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.read));
+    router.get('/users/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.users.read));
     // NOTE: We don't expose any email addresses via the public api.
-    router.get('/users/email/:email', mw.authAdminAPI, api.http(api.users.read));
+    router.get('/users/email/:email', mw.authAdminAPI, apiv2.http(apiv2.users.read));
 
-    router.put('/users/password', mw.authAdminAPI, api.http(api.users.changePassword));
-    router.put('/users/owner', mw.authAdminAPI, api.http(api.users.transferOwnership));
-    router.put('/users/:id', mw.authAdminAPI, api.http(api.users.edit));
-    router.del('/users/:id', mw.authAdminAPI, api.http(api.users.destroy));
+    router.put('/users/password', mw.authAdminAPI, apiv2.http(apiv2.users.changePassword));
+    router.put('/users/owner', mw.authAdminAPI, apiv2.http(apiv2.users.transferOwnership));
+    router.put('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.edit));
+    router.del('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.destroy));
 
     // ## Tags
     router.get('/tags', mw.authAdminAPI, apiv2.http(apiv2.tags.browse));

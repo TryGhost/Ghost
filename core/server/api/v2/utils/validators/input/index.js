@@ -9,5 +9,9 @@ module.exports = {
 
     get settings() {
         return require('./settings');
+    },
+
+    get users() {
+        return require('./users');
     }
 };
