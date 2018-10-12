@@ -34,7 +34,14 @@ const http = (apiImpl) => {
                     return result(req, res, next);
                 }
 
-                res.status(apiImpl.statusCode || 200);
+                let statusCode = 200;
+                if (typeof apiImpl.statusCode === 'function') {
+                    statusCode = apiImpl.statusCode(result);
+                } else if (apiImpl.statusCode) {
+                    statusCode = apiImpl.statusCode;
+                }
+
+                res.status(statusCode);
 
                 // CASE: generate headers based on the api ctrl configuration
                 res.set(shared.headers.get(result, apiImpl.headers));
