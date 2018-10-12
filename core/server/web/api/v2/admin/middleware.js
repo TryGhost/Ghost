@@ -5,8 +5,9 @@ const shared = require('../../../shared');
  * Authentication for private endpoints
  */
 module.exports.authAdminAPI = [
+    auth.authenticate.authenticateAdminApiKey,
     auth.authenticate.authenticateAdminAPI,
-    auth.authorize.authorizeAdminAPI,
+    auth.authorize.requiresAuthorizedUserOrApiKey,
     shared.middlewares.api.cors,
     shared.middlewares.urlRedirects.adminRedirect,
     shared.middlewares.prettyUrls
