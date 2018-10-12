@@ -38,8 +38,5 @@ module.exports = function apiRoutes() {
     // @TODO: find a way than `middlewares.labs`
     router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
 
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
-
     return router;
 };
