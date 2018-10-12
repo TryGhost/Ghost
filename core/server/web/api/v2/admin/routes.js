@@ -194,10 +194,10 @@ module.exports = function apiRoutes() {
     );
 
     // ## Invites
-    router.get('/invites', mw.authAdminAPI, api.http(api.invites.browse));
-    router.get('/invites/:id', mw.authAdminAPI, api.http(api.invites.read));
-    router.post('/invites', mw.authAdminAPI, api.http(api.invites.add));
-    router.del('/invites/:id', mw.authAdminAPI, api.http(api.invites.destroy));
+    router.get('/invites', mw.authAdminAPI, apiv2.http(apiv2.invites.browse));
+    router.get('/invites/:id', mw.authAdminAPI, apiv2.http(apiv2.invites.read));
+    router.post('/invites', mw.authAdminAPI, apiv2.http(apiv2.invites.add));
+    router.del('/invites/:id', mw.authAdminAPI, apiv2.http(apiv2.invites.destroy));
 
     // ## Redirects (JSON based)
     router.get('/redirects/json', mw.authAdminAPI, api.http(api.redirects.download));
