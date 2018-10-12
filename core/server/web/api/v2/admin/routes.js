@@ -97,7 +97,7 @@ module.exports = function apiRoutes() {
     router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
-    router.get('/slugs/:type/:name', mw.authAdminAPI, api.http(api.slugs.generate));
+    router.get('/slugs/:type/:name', mw.authAdminAPI, apiv2.http(apiv2.slugs.generate));
 
     // ## Themes
     router.get('/themes/', mw.authAdminAPI, api.http(api.themes.browse));
