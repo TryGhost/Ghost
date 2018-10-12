@@ -39,17 +39,6 @@ describe('Pages', function () {
                 should.exist(jsonResponse.pages);
                 should.exist(jsonResponse.meta);
                 jsonResponse.pages.should.have.length(1);
-            });
-    });
-
-    it('browse pages: request absolute urls', function () {
-        return request.get(localUtils.API.getApiQuery('pages/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                should.exist(res.body.pages);
 
                 res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[5].slug);
 
