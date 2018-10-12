@@ -1,28 +1,26 @@
-var should = require('should'),
-    supertest = require('supertest'),
-    _ = require('lodash'),
-    url = require('url'),
-    cheerio = require('cheerio'),
-    moment = require('moment'),
-    testUtils = require('../../../utils'),
-    localUtils = require('./utils'),
-    configUtils = require('../../../utils/configUtils'),
-    config = require('../../../../../core/server/config'),
-    models = require('../../../../../core/server/models'),
-    ghost = testUtils.startGhost,
-    request;
+const should = require('should');
+const supertest = require('supertest');
+const _ = require('lodash');
+const url = require('url');
+const cheerio = require('cheerio');
+const moment = require('moment');
+const testUtils = require('../../../../utils');
+const localUtils = require('./utils');
+const configUtils = require('../../../../utils/configUtils');
+const config = require('../../../../../../core/server/config');
+const models = require('../../../../../../core/server/models');
 
-describe('Public API', function () {
-    var ghostServer;
+const ghost = testUtils.startGhost;
+let request;
 
+describe('Posts', function () {
     before(function () {
         return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
+                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
             });
     });
 
@@ -54,14 +52,15 @@ describe('Public API', function () {
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
-                // Public API does not return drafts
+                // Public API does not return drafts and pages
                 _.map(jsonResponse.posts, (post) => {
                     post.status.should.eql('published');
+                    post.page.should.eql(false);
                 });
 
                 // Default order check
                 jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[10].slug.should.eql('html-ipsum');
+                jsonResponse.posts[6].slug.should.eql('themes');
 
                 // check meta response for this test
                 jsonResponse.meta.pagination.page.should.eql(1);
@@ -384,7 +383,7 @@ describe('Public API', function () {
                 }
 
                 res.headers.vary.should.eql('Origin, Accept, Accept-Encoding');
-                res.headers.location.should.eql('http://localhost:9999/ghost/api/v0.1/posts/?client_id=ghost-test&client_secret=not_available');
+                res.headers.location.should.eql('http://localhost:9999/ghost/api/v2/content/posts/?client_id=ghost-test&client_secret=not_available');
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
                 done();
@@ -411,118 +410,6 @@ describe('Public API', function () {
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-                done();
-            });
-    });
-
-    it('browse tags without limit defaults to 15', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
-                jsonResponse.tags.should.have.length(15);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                done();
-            });
-    });
-
-    it('browse tags - limit=all should fetch all tags', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
-                jsonResponse.tags.should.have.length(56);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                done();
-            });
-    });
-
-    it('browse tags without limit=4 fetches 4 tags', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=4&client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
-                jsonResponse.tags.should.have.length(4);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                done();
-            });
-    });
-
-    it('browse tags: request absolute urls', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.exist(res.body.tags[0].url);
-                should.exist(url.parse(res.body.tags[0].url).protocol);
-                should.exist(url.parse(res.body.tags[0].url).host);
-
-                done();
-            });
-    });
-
-    it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse.tags);
-                jsonResponse.tags.should.be.an.Array().with.lengthOf(56);
-
-                // Each tag should have the correct count
-                _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
-                _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
-                _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
-                _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
-                _.find(jsonResponse.tags, {name: 'pollo'}).count.posts.should.eql(0);
-                _.find(jsonResponse.tags, {name: 'injection'}).count.posts.should.eql(0);
-
                 done();
             });
     });
@@ -588,320 +475,6 @@ describe('Public API', function () {
             });
     });
 
-    it('denies access to settings endpoint', function (done) {
-        request.get(localUtils.API.getApiQuery('settings/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.errors);
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                done();
-            });
-    });
-
-    it('throws version mismatch error when request includes a version', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .set('Accept', 'application/json')
-            .set('X-Ghost-Version', '0.3')
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.errors);
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                jsonResponse.errors[0].errorType.should.eql('VersionMismatchError');
-
-                done();
-            });
-    });
-
-    it('browse users', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(7);
-
-                // We don't expose the email address, status and other attrs.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-
-                // Public api returns all users, but no status! Locked/Inactive users can still have written articles.
-                models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
-                    .then((response) => {
-                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
-                        done();
-                    });
-            });
-    });
-
-    it('browse users: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=roles'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(7);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse users: request absolute urls', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.exist(res.body.users[0].url);
-                should.exist(url.parse(res.body.users[0].url).protocol);
-                should.exist(url.parse(res.body.users[0].url).host);
-
-                done();
-            });
-    });
-
-    it('browse user by slug: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=roles'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(1);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse user by slug: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(1);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse user by id: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(1);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse user with count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(7);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
-
-                // Each user should have the correct count
-                _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
-                _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
-                _.find(jsonResponse.users, {slug:'inactive'}).count.posts.should.eql(0);
-
-                const ids = jsonResponse.users
-                    .filter(user => (user.slug !== 'ghost'))
-                    .filter(user => (user.slug !== 'inactive'))
-                    .map(user=> user.id);
-
-                ids.should.eql([
-                    testUtils.DataGenerator.Content.users[1].id,
-                    testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[3].id,
-                    testUtils.DataGenerator.Content.users[7].id,
-                    testUtils.DataGenerator.Content.users[0].id
-                ]);
-
-                done();
-            });
-    });
-
-    it('[unsupported] browse user by email', function (done) {
-        request
-            .get(localUtils.API.getApiQuery('users/email/ghost-author@ghost.org/?client_id=ghost-admin&client_secret=not_available'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
-    });
-
-    it('browse user by id: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.users);
-                jsonResponse.users.should.have.length(1);
-
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse users: post count', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(7);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
-                done();
-            });
-    });
-
-    it('browse users: wrong data type for include', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include={}'))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
-                jsonResponse.users.should.have.length(7);
-
-                // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
-                done();
-            });
-    });
-
     it('fetch the most recent post, then the prev, then the next should match the first', function (done) {
         function createFilter(publishedAt, op) {
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
@@ -962,4 +535,3 @@ describe('Public API', function () {
             .catch(done);
     });
 });
-
