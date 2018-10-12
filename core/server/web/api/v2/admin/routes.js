@@ -40,17 +40,17 @@ module.exports = function apiRoutes() {
     ], api.http(api.schedules.publishPost));
 
     // ## Settings
-    router.get('/settings/routes/yaml', mw.authAdminAPI, api.http(api.settings.download));
+    router.get('/settings/routes/yaml', mw.authAdminAPI, apiv2.http(apiv2.settings.download));
     router.post('/settings/routes/yaml',
         mw.authAdminAPI,
         upload.single('routes'),
         shared.middlewares.validation.upload({type: 'routes'}),
-        api.http(api.settings.upload)
+        apiv2.http(apiv2.settings.upload)
     );
 
-    router.get('/settings', mw.authAdminAPI, api.http(api.settings.browse));
-    router.get('/settings/:key', mw.authAdminAPI, api.http(api.settings.read));
-    router.put('/settings', mw.authAdminAPI, api.http(api.settings.edit));
+    router.get('/settings', mw.authAdminAPI, apiv2.http(apiv2.settings.browse));
+    router.get('/settings/:key', mw.authAdminAPI, apiv2.http(apiv2.settings.read));
+    router.put('/settings', mw.authAdminAPI, apiv2.http(apiv2.settings.edit));
 
     // ## Users
     router.get('/users', mw.authAdminAPI, api.http(api.users.browse));
