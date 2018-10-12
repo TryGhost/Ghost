@@ -31,6 +31,10 @@ module.exports = {
         return shared.pipeline(require('./posts'), localUtils);
     },
 
+    get notifications() {
+        return shared.pipeline(require('./notifications'), localUtils);
+    },
+
     get settings() {
         return shared.pipeline(require('./settings'), localUtils);
     }

@@ -124,9 +124,9 @@ module.exports = function apiRoutes() {
     );
 
     // ## Notifications
-    router.get('/notifications', mw.authAdminAPI, api.http(api.notifications.browse));
-    router.post('/notifications', mw.authAdminAPI, api.http(api.notifications.add));
-    router.del('/notifications/:id', mw.authAdminAPI, api.http(api.notifications.destroy));
+    router.get('/notifications', mw.authAdminAPI, apiv2.http(apiv2.notifications.browse));
+    router.post('/notifications', mw.authAdminAPI, apiv2.http(apiv2.notifications.add));
+    router.del('/notifications/:notification_id', mw.authAdminAPI, apiv2.http(apiv2.notifications.destroy));
 
     // ## DB
     router.get('/db', mw.authAdminAPI, api.http(api.db.exportContent));

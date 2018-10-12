@@ -934,11 +934,10 @@ startGhost = function startGhost(options) {
                     })
                     .then((clients) => {
                         module.exports.existingData.clients = clients.toJSON();
-
-                        return models.User.findAll({columns: ['id']});
+                        return models.User.findAll({columns: ['id', 'email']});
                     })
                     .then((users) => {
-                        module.exports.existingData.users = users.toJSON();
+                        module.exports.existingData.users = users.toJSON(module.exports.context.internal);
 
                         return models.Tag.findAll({columns: ['id']});
                     })
@@ -1009,10 +1008,10 @@ startGhost = function startGhost(options) {
                 .then((clients) => {
                     module.exports.existingData.clients = clients.toJSON();
 
-                    return models.User.findAll({columns: ['id']});
+                    return models.User.findAll({columns: ['id', 'email']});
                 })
                 .then((users) => {
-                    module.exports.existingData.users = users.toJSON();
+                    module.exports.existingData.users = users.toJSON(module.exports.context.internal);
 
                     return models.Tag.findAll({columns: ['id']});
                 })
