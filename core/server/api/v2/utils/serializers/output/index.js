@@ -21,5 +21,9 @@ module.exports = {
 
     get settings() {
         return require('./settings');
+    },
+
+    get notifications() {
+        return require('./notifications');
     }
 };
