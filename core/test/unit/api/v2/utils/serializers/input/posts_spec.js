@@ -5,17 +5,37 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
     it('default', function () {
         const apiConfig = {};
         const frame = {
-            options: {}
+            options: {
+                context: {
+                    user: 0,
+                    client_id: 1
+                }
+            }
         };
 
         serializers.input.posts.all(apiConfig, frame);
         frame.options.filter.should.eql('page:false');
     });
 
+    it('should not work for non public context', function () {
+        const apiConfig = {};
+        const frame = {
+            options: {
+            }
+        };
+
+        serializers.input.posts.all(apiConfig, frame);
+        should.equal(frame.options.filter, undefined);
+    });
+
     it('combine filters', function () {
         const apiConfig = {};
         const frame = {
             options: {
+                context: {
+                    user: 0,
+                    client_id: 1
+                },
                 filter: 'status:published+tag:eins'
             }
         };
@@ -28,6 +48,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         const apiConfig = {};
         const frame = {
             options: {
+                context: {
+                    user: 0,
+                    client_id: 1
+                },
                 filter: 'page:true+tag:eins'
             }
         };
@@ -40,6 +64,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         const apiConfig = {};
         const frame = {
             options: {
+                context: {
+                    user: 0,
+                    client_id: 1
+                },
                 filter: 'page:true'
             }
         };
