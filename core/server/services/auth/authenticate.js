@@ -103,8 +103,9 @@ const authenticate = {
     },
 
     // ### v2 API auth middleware
-    authenticateAdminApi: [session.safeGetSession, session.getUser],
-    authenticateContentApi: [apiKeyAuth.content.authenticateContentApiKey, members.authenticateMembersToken]
+    authenticateAdminAPI: [session.safeGetSession, session.getUser],
+    authenticateAdminApiKey: apiKeyAuth.admin.authenticateAdminApiKey,
+    authenticateContentApiKey: apiKeyAuth.content.authenticateContentApiKey
 };
 
 module.exports = authenticate;
