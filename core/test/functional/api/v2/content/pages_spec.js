@@ -16,7 +16,7 @@ describe('Pages', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
+                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
             });
     });
 
@@ -25,7 +25,8 @@ describe('Pages', function () {
     });
 
     it('browse pages', function () {
-        request.get(localUtils.API.getApiQuery('pages/?client_id=ghost-admin&client_secret=not_available'))
+        const key = localUtils.getValidKey();
+        return request.get(localUtils.API.getApiQuery(`pages/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
