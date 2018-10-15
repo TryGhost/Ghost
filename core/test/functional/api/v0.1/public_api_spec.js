@@ -280,10 +280,11 @@ describe('Public API', function () {
                 if (err) {
                     return done(err);
                 }
+                const jsonResponse = res.body;
 
-                should.exist(res.body.posts);
+                should.exist(jsonResponse.posts);
 
-                should.equal(res.body.posts[0].id, undefined);
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
                 res.body.posts[0].url.should.eql('/welcome/');
                 done();
             });
@@ -299,12 +300,13 @@ describe('Public API', function () {
                 if (err) {
                     return done(err);
                 }
+                const jsonResponse = res.body;
 
-                should.exist(res.body.posts);
+                should.exist(jsonResponse.posts);
 
-                should.equal(res.body.posts[0].id, undefined);
-                res.body.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
-                res.body.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
+                jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
+                jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
                 done();
             });
     });
