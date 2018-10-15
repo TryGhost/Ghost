@@ -54,11 +54,9 @@ const urlsForPost = (id, attrs, options) => {
 
 const urlsForUser = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        if (id) {
-            attrs.url = urlFor({
-                relativeUrl: urlService.getUrlByResourceId(id)
-            }, true);
-        }
+        attrs.url = urlFor({
+            relativeUrl: urlService.getUrlByResourceId(id)
+        }, true);
 
         if (attrs.profile_image) {
             attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
@@ -74,11 +72,9 @@ const urlsForUser = (id, attrs, options) => {
 
 const urlsForTag = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        if (id) {
-            attrs.url = urlFor({
-                relativeUrl: urlService.getUrlByResourceId(attrs.id)
-            }, true);
-        }
+        attrs.url = urlFor({
+            relativeUrl: urlService.getUrlByResourceId(attrs.id)
+        }, true);
 
         if (attrs.feature_image) {
             attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
