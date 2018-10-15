@@ -10,9 +10,7 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
 
     beforeEach(function () {
         postModel = (data) => {
-            return {
-                toJSON: sandbox.stub().returns(data)
-            };
+            return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
         };
 
         sandbox.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');

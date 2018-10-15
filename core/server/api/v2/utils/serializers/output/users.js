@@ -1,27 +1,13 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:users');
 const common = require('../../../../../lib/common');
-const urlService = require('../../../../../services/url');
-
-const absoluteUrls = (user) => {
-    user.url = urlService.getUrlByResourceId(user.id, {absolute: true});
-
-    if (user.profile_image) {
-        user.profile_image = urlService.utils.urlFor('image', {image: user.profile_image}, true);
-    }
-
-    if (user.cover_image) {
-        user.cover_image = urlService.utils.urlFor('image', {image: user.cover_image}, true);
-    }
-
-    return user;
-};
+const url = require('./utils/url');
 
 module.exports = {
     browse(models, apiConfig, frame) {
         debug('browse');
 
         frame.response = {
-            users: models.data.map(model => absoluteUrls(model.toJSON(frame.options))),
+            users: models.data.map(model => url.forUser(model.id, model.toJSON(frame.options), frame.options)),
             meta: models.meta
         };
 
@@ -32,7 +18,7 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            users: [absoluteUrls(model.toJSON(frame.options))]
+            users: [url.forUser(model.id, model.toJSON(frame.options), frame.options)]
         };
 
         debug(frame.response);
