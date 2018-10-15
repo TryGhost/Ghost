@@ -37,7 +37,7 @@ tags = {
             return models.Tag.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        tags: data.map(model => urlsForTag(model.toJSON(options), options)),
+                        tags: data.map(model => urlsForTag(model.id, model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -81,7 +81,7 @@ tags = {
                     }
 
                     return {
-                        tags: [urlsForTag(model.toJSON(options), options)]
+                        tags: [urlsForTag(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -116,7 +116,7 @@ tags = {
             return models.Tag.add(options.data.tags[0], _.omit(options, ['data']))
                 .then((model) => {
                     return {
-                        tags: [urlsForTag(model.toJSON(options), options)]
+                        tags: [urlsForTag(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -159,7 +159,7 @@ tags = {
                     }
 
                     return {
-                        tags: [urlsForTag(model.toJSON(options), options)]
+                        tags: [urlsForTag(model.id, model.toJSON(options), options)]
                     };
                 });
         }

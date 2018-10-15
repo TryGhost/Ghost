@@ -270,6 +270,47 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts: request only url fields', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&fields=url'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.posts);
+
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
+                res.body.posts[0].url.should.eql('/welcome/');
+                done();
+            });
+    });
+
+    it('browse posts: request only url fields with include and absolute_urls', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&fields=url&include=tags&absolute_urls=true'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.posts);
+
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
+                jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
+                jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
+                done();
+            });
+    });
+
     it('browse posts: request to include tags and authors with absolute_urls', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&absolute_urls=true&include=tags,authors'))
             .set('Origin', testUtils.API.getURL())

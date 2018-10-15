@@ -41,7 +41,7 @@ users = {
             return models.User.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        users: data.map(model => urlsForUser(model.toJSON(options), options)),
+                        users: data.map(model => urlsForUser(model.id, model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -90,7 +90,7 @@ users = {
                     }
 
                     return {
-                        users: [urlsForUser(model.toJSON(options), options)]
+                        users: [urlsForUser(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -151,7 +151,7 @@ users = {
                     }
 
                     return {
-                        users: [urlsForUser(model.toJSON(options), options)]
+                        users: [urlsForUser(model.id, model.toJSON(options), options)]
                     };
                 });
         }
