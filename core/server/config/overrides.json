@@ -67,12 +67,14 @@
     },
     "api": {
         "versions": {
-            "active": {
+            "active": "v2",
+            "stable": "",
+            "deprecated": "v0.1",
+            "v2": {
                 "admin": "v2/admin",
                 "content": "v2/content"
             },
-            "stable": {},
-            "deprecated": {
+            "v0.1": {
                 "admin": "v0.1",
                 "content": "v0.1"
             }
