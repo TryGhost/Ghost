@@ -1,17 +1,10 @@
 const express = require('express');
 const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
-const shared = require('../../../shared');
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
     const router = express.Router();
-
-    // alias delete with del
-    router.del = router.delete;
-
-    // ## CORS pre-flight check
-    router.options('*', shared.middlewares.api.cors);
 
     // ## Configuration
     router.get('/configuration', api.http(api.configuration.read));
