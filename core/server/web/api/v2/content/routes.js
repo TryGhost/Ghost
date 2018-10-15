@@ -34,9 +34,5 @@ module.exports = function apiRoutes() {
     router.get('/tags/:id', mw.authenticatePublic, apiv2.http(apiv2.tags.read));
     router.get('/tags/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.tags.read));
 
-    // ## Subscribers
-    // @TODO: find a way than `middlewares.labs`
-    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authenticatePublic, api.http(api.subscribers.add));
-
     return router;
 };
