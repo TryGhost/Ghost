@@ -438,14 +438,16 @@ describe('Url', function () {
             urlService.utils.urlFor('admin', true).should.equal('http://something.com/blog/ghost/');
         });
 
-        ['deprecated', 'active'].forEach((apiVersion) => {
+        ['deprecated', 'active', 'v0.1', 'v2'].forEach((apiVersion) => {
             function getApiPath(options) {
                 const baseAPIPath = '/ghost/api/';
 
                 switch (options.version) {
                     case 'deprecated':
+                    case 'v0.1':
                         return `${baseAPIPath}v0.1/`;
                     case 'active':
+                    case 'v2':
                         if (options.versionType === 'admin') {
                             return `${baseAPIPath}v2/admin/`;
                         } else {
