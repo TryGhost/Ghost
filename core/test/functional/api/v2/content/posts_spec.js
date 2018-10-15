@@ -40,7 +40,7 @@ describe('Posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Origin, Accept-Encoding');
+                res.headers.vary.should.eql('Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
 
@@ -290,7 +290,7 @@ describe('Posts', function () {
             });
     });
 
-    it.skip('browse posts from different origin', function (done) {
+    it('browse posts from different origin', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', 'https://example.com')
             .expect('Content-Type', /json/)
@@ -301,7 +301,7 @@ describe('Posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Origin, Accept-Encoding');
+                res.headers.vary.should.eql('Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
 
@@ -317,7 +317,7 @@ describe('Posts', function () {
             });
     });
 
-    it.skip('ensure origin header on redirect is not getting lost', function (done) {
+    it('ensure origin header on redirect is not getting lost', function (done) {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
 
@@ -331,7 +331,7 @@ describe('Posts', function () {
                     return done(err);
                 }
 
-                res.headers.vary.should.eql('Origin, Accept, Accept-Encoding');
+                res.headers.vary.should.eql('Accept, Accept-Encoding');
                 res.headers.location.should.eql(`http://localhost:9999/ghost/api/v2/content/posts/?key=${validKey}`);
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
@@ -380,25 +380,6 @@ describe('Posts', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                done();
-            });
-    });
-
-    it('does not send CORS headers on an invalid origin', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
-            .set('Origin', 'http://invalid-origin')
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.not.exist(res.headers['access-control-allow-origin']);
-
                 done();
             });
     });
