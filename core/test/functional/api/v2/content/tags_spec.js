@@ -20,7 +20,7 @@ describe('Tags Content API V2', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
+                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
             });
     });
 
@@ -28,8 +28,10 @@ describe('Tags Content API V2', function () {
         configUtils.restore();
     });
 
+    const validKey = localUtils.getValidKey();
+
     it('browse tags without limit defaults to 15', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -56,7 +58,7 @@ describe('Tags Content API V2', function () {
     });
 
     it('browse tags - limit=all should fetch all tags', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -77,7 +79,7 @@ describe('Tags Content API V2', function () {
     });
 
     it('browse tags without limit=4 fetches 4 tags', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=4&client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery(`tags/?limit=4&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -99,7 +101,7 @@ describe('Tags Content API V2', function () {
     });
 
     it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
