@@ -148,7 +148,7 @@ describe('Posts', function () {
             });
     });
 
-    it.skip('browse posts with basic page filter should not return pages', function (done) {
+    it('browse posts with basic page filter should not return pages', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
