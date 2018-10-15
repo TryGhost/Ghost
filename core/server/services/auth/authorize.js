@@ -37,7 +37,17 @@ const authorize = {
         };
     },
 
-    authorizeAdminAPI: [session.ensureUser]
+    authorizeAdminAPI: [session.ensureUser],
+    // used by API v2 endpoints
+    requiresAuthorizedUserOrApiKey(req, res, next) {
+        const hasUser = req.user && req.user.id;
+        const hasApiKey = req.api_key && req.api_key.id;
+        if (hasUser || hasApiKey) {
+            return next();
+        } else {
+            return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')}));
+        }
+    }
 };
 
 module.exports = authorize;

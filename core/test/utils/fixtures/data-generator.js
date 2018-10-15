@@ -385,12 +385,14 @@ DataGenerator.Content = {
     api_keys: [
         {
             id: ObjectId.generate(),
-            type: 'admin'
+            type: 'admin',
+            secret: _.repeat('a', 128)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
             id: ObjectId.generate(),
-            type: 'content'
+            type: 'content',
+            secret: _.repeat('c', 128)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
