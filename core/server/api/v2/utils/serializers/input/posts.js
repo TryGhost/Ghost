@@ -5,7 +5,7 @@ module.exports = {
     all(apiConfig, frame) {
         debug('all');
 
-        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.client_id')) {
+        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
             // CASE: the content api endpoints for posts should only return non page type resources
             if (frame.options.filter) {
                 if (frame.options.filter.match(/page:\w+\+?/)) {

@@ -7,5 +7,8 @@ module.exports = {
         getApiQuery(route) {
             return url.resolve(API_URL, route);
         }
+    },
+    getValidKey() {
+        return _.repeat('c', 128);
     }
 };

@@ -20,7 +20,7 @@ describe('Users Content API V2', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'client:trusted-domain');
+                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'api_keys');
             });
     });
 
@@ -28,8 +28,10 @@ describe('Users Content API V2', function () {
         configUtils.restore();
     });
 
+    const validKey = localUtils.getValidKey();
+
     it('browse users', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available'))
+        request.get(localUtils.API.getApiQuery(`users/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -62,7 +64,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse users: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery(`users/?key=${validKey}&include=roles`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -85,7 +87,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse user by slug: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery(`users/slug/ghost/?key=${validKey}&include=roles`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -108,7 +110,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse user by slug: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/slug/ghost/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery(`users/slug/ghost/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -131,7 +133,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse user by id: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery(`users/1/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -154,7 +156,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse user with count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts&order=count.posts ASC'))
+        request.get(localUtils.API.getApiQuery(`users/?key=${validKey}&include=count.posts&order=count.posts ASC`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -199,7 +201,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse user by id: ignores fetching roles', function (done) {
-        request.get(localUtils.API.getApiQuery('users/1/?client_id=ghost-admin&client_secret=not_available&include=roles'))
+        request.get(localUtils.API.getApiQuery(`users/1/?key=${validKey}&include=roles`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -221,7 +223,7 @@ describe('Users Content API V2', function () {
     });
 
     it('browse users: post count', function (done) {
-        request.get(localUtils.API.getApiQuery('users/?client_id=ghost-admin&client_secret=not_available&include=count.posts'))
+        request.get(localUtils.API.getApiQuery(`users/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

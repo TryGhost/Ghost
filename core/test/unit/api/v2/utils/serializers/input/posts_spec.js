@@ -8,7 +8,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             options: {
                 context: {
                     user: 0,
-                    client_id: 1
+                    api_key_id: 1
                 }
             }
         };
@@ -34,7 +34,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             options: {
                 context: {
                     user: 0,
-                    client_id: 1
+                    api_key_id: 1
                 },
                 filter: 'status:published+tag:eins'
             }
@@ -50,7 +50,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             options: {
                 context: {
                     user: 0,
-                    client_id: 1
+                    api_key_id: 1
                 },
                 filter: 'page:true+tag:eins'
             }
@@ -66,7 +66,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             options: {
                 context: {
                     user: 0,
-                    client_id: 1
+                    api_key_id: 1
                 },
                 filter: 'page:true'
             }
