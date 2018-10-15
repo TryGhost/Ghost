@@ -171,7 +171,7 @@ export default Controller.extend({
         },
 
         downloadTheme(theme) {
-            let downloadURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}`;
+            let downloadURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}/download/`;
             let iframe = $('#iframeDownload');
 
             if (iframe.length === 0) {
