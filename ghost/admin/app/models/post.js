@@ -147,12 +147,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     internalTags: filterBy('tags', 'isInternal', true),
     isScheduled: equal('status', 'scheduled'),
 
-    absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
-        let blogUrl = this.get('config.blogUrl');
-        let postUrl = this.get('url');
-        return this.get('ghostPaths.url').join(blogUrl, postUrl);
-    }),
-
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
         let uuid = this.get('uuid');
