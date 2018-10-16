@@ -77,7 +77,11 @@
                 "mismatchedOrigin": "Request made from incorrect origin. Expected '{expected}' received '{actual}'.",
                 "missingUserIDForSession": "Cannot create session without user id.",
                 "accessDenied": "Access denied.",
-                "pleaseSignIn": "Please Sign In"
+                "pleaseSignIn": "Please Sign In",
+                "pleaseSignInOrAuthenticate": "Please sign in or authenticate with an API Key",
+                "unknownAdminApiKey": "Unknown Admin API Key",
+                "unknownContentApiKey": "Unknown Content API Key",
+                "invalidApiKeyType": "Invalid API Key type"
             },
             "oauth": {
                 "invalidClient": "Invalid client.",
@@ -209,6 +213,9 @@
         },
         "models": {
             "subscriber": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
+            "invite": {
                 "notEnoughPermission": "You do not have permission to perform this action"
             },
             "post": {

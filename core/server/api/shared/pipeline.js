@@ -32,7 +32,11 @@ const STAGES = {
     serialisation: {
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
-            return shared.serializers.handle.input(apiConfig, apiUtils.serializers.input, frame);
+            return shared.serializers.handle.input(
+                Object.assign({data: apiImpl.data}, apiConfig),
+                apiUtils.serializers.input,
+                frame
+            );
         },
         output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
@@ -59,6 +63,12 @@ const STAGES = {
         if (apiImpl.permissions === false) {
             debug('disabled permissions');
             return Promise.resolve();
+        }
+
+        if (typeof apiImpl.permissions === 'object' && apiImpl.permissions.before) {
+            tasks.push(function beforePermissions() {
+                return apiImpl.permissions.before(frame);
+            });
         }
 
         tasks.push(function doPermissions() {

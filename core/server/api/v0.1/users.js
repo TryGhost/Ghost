@@ -41,7 +41,7 @@ users = {
             return models.User.findPage(options)
                 .then(({data, meta}) => {
                     return {
-                        users: data.map(model => urlsForUser(model.toJSON(options), options)),
+                        users: data.map(model => urlsForUser(model.id, model.toJSON(options), options)),
                         meta: meta
                     };
                 });
@@ -90,7 +90,7 @@ users = {
                     }
 
                     return {
-                        users: [urlsForUser(model.toJSON(options), options)]
+                        users: [urlsForUser(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -151,7 +151,7 @@ users = {
                     }
 
                     return {
-                        users: [urlsForUser(model.toJSON(options), options)]
+                        users: [urlsForUser(model.id, model.toJSON(options), options)]
                     };
                 });
         }
@@ -330,11 +330,9 @@ users = {
          */
         function doQuery(options) {
             return models.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']))
-                .then((model) => {
-                    // NOTE: model returns json object already
-                    // @TODO: why?
+                .then((models) => {
                     return {
-                        users: model
+                        users: models.toJSON(_.omit(options, ['data']))
                     };
                 });
         }

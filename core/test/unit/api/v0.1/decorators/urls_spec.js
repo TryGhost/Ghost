@@ -23,7 +23,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 columns: [],
             };
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(1, object, options);
 
             should.equal(Object.keys(object).length, 0);
         });
@@ -35,7 +35,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             };
             urlService.getUrlByResourceId.withArgs(object.id).returns('url');
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(object.id, object, options);
 
             object.url.should.equal('url');
         });
@@ -51,7 +51,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(object.id, object, options);
 
             const urlObject = url.parse(object.feature_image);
             should.exist(urlObject.protocol);
@@ -69,7 +69,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(object.id, object, options);
 
             const urlObject = url.parse(object.twitter_image);
 
@@ -88,7 +88,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(object.id, object, options);
 
             const urlObject = url.parse(object.og_image);
 
@@ -107,7 +107,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForPost(object, options);
+            urls.urlsForPost(object.id, object, options);
 
             const imgSrc = object.html.match(/src="([^"]+)"/)[1];
             const imgSrcUrlObject = url.parse(imgSrc);
@@ -128,7 +128,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             };
             urlService.getUrlByResourceId.withArgs(object.id).returns('url');
 
-            urls.urlsForUser(object, options);
+            urls.urlsForUser(object.id, object, options);
             const urlObject = url.parse(object.url);
 
             should.exist(urlObject.protocol);
@@ -146,7 +146,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForUser(object, options);
+            urls.urlsForUser(object.id, object, options);
             const urlObject = url.parse(object.profile_image);
 
             should.exist(urlObject.protocol);
@@ -164,7 +164,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForUser(object, options);
+            urls.urlsForUser(object.id, object, options);
             const urlObject = url.parse(object.cover_image);
 
             should.exist(urlObject.protocol);
@@ -183,7 +183,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             };
             urlService.getUrlByResourceId.withArgs(object.id).returns('url');
 
-            urls.urlsForTag(object, options);
+            urls.urlsForTag(object.id, object, options);
             const urlObject = url.parse(object.url);
 
             should.exist(urlObject.protocol);
@@ -201,7 +201,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
                 }
             };
 
-            urls.urlsForTag(object, options);
+            urls.urlsForTag(object.id, object, options);
             const urlObject = url.parse(object.feature_image);
 
             should.exist(urlObject.protocol);

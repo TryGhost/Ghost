@@ -1,3 +1,4 @@
+const cors = require('cors');
 const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 
@@ -6,7 +7,6 @@ const shared = require('../../../shared');
  *
  * IMPORTANT
  * - cors middleware MUST happen before pretty urls, because otherwise cors header can get lost on redirect
- * - cors middleware MUST happen after authenticateClient, because authenticateClient reads the trusted domains
  * - url redirects MUST happen after cors, otherwise cors header can get lost on redirect
  */
 
@@ -14,11 +14,9 @@ const shared = require('../../../shared');
  * Authentication for public endpoints
  */
 module.exports.authenticatePublic = [
-    auth.authenticate.authenticateClient,
-    auth.authenticate.authenticateUser,
-    // This is a labs-enabled middleware
-    auth.authorize.requiresAuthorizedUserPublicAPI,
-    shared.middlewares.api.cors,
+    auth.authenticate.authenticateContentApiKey,
+    auth.authorize.requiresAuthorizedUserOrApiKey,
+    cors(),
     shared.middlewares.urlRedirects.adminRedirect,
     shared.middlewares.prettyUrls
 ];

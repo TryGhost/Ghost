@@ -1,4 +1,5 @@
 const models = require('../../../server/models');
+const {NoPermissionError} = require('../../../server/lib/common/errors');
 const ghostBookshelf = require('../../../server/models/base');
 const testUtils = require('../../utils');
 const should = require('should');
@@ -23,6 +24,25 @@ describe('Unit: models/role', function () {
                 .then(() => checkRolePermissionsCount(2))
                 .then(() => models.Role.destroy(adminRole))
                 .then(() => checkRolePermissionsCount(0));
+        });
+    });
+
+    describe('permissible', function () {
+        it('does not let api key assign the owner role', function () {
+            return models.Role.permissible(
+                models.Role.forge({name: 'Owner'}), // Owner role
+                'assign',                           // assign action
+                {},
+                {},
+                {apiKey: {}},                       // apiKey loaded permissions
+                true,
+                true,
+                true
+            ).then(() => {
+                throw new Error('models.Role.permissible should have thrown!');
+            }, (err) => {
+                should.equal(err instanceof NoPermissionError, true);
+            });
         });
     });
 });

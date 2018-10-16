@@ -1,32 +1,32 @@
 const urlService = require('../../../services/url');
 const {urlFor, makeAbsoluteUrls} = require('../../../services/url/utils');
 
-const urlsForPost = (post, options) => {
-    post.url = urlService.getUrlByResourceId(post.id);
+const urlsForPost = (id, attrs, options) => {
+    attrs.url = urlService.getUrlByResourceId(id);
 
     if (options.columns && !options.columns.includes('url')) {
-        delete post.url;
+        delete attrs.url;
     }
 
     if (options && options.context && options.context.public && options.absolute_urls) {
-        if (post.feature_image) {
-            post.feature_image = urlFor('image', {image: post.feature_image}, true);
+        if (attrs.feature_image) {
+            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
         }
 
-        if (post.og_image) {
-            post.og_image = urlFor('image', {image: post.og_image}, true);
+        if (attrs.og_image) {
+            attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
         }
 
-        if (post.twitter_image) {
-            post.twitter_image = urlFor('image', {image: post.twitter_image}, true);
+        if (attrs.twitter_image) {
+            attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
         }
 
-        if (post.html) {
-            post.html = makeAbsoluteUrls(post.html, urlFor('home', true), post.url).html();
+        if (attrs.html) {
+            attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
         }
 
-        if (post.url) {
-            post.url = urlFor({relativeUrl: post.url}, true);
+        if (attrs.url) {
+            attrs.url = urlFor({relativeUrl: attrs.url}, true);
         }
     }
 
@@ -35,53 +35,53 @@ const urlsForPost = (post, options) => {
             // @NOTE: this block also decorates primary_tag/primary_author objects as they
             // are being passed by reference in tags/authors. Might be refactored into more explicit call
             // in the future, but is good enough for current use-case
-            if (relation === 'tags' && post.tags) {
-                post.tags = post.tags.map(tag => urlsForTag(tag, options));
+            if (relation === 'tags' && attrs.tags) {
+                attrs.tags = attrs.tags.map(tag => urlsForTag(tag.id, tag, options));
             }
 
-            if (relation === 'author' && post.author) {
-                post.author = urlsForUser(post.author, options);
+            if (relation === 'author' && attrs.author) {
+                attrs.author = urlsForUser(attrs.author.id, attrs.author, options);
             }
 
-            if (relation === 'authors' && post.authors) {
-                post.authors = post.authors.map(author => urlsForUser(author, options));
+            if (relation === 'authors' && attrs.authors) {
+                attrs.authors = attrs.authors.map(author => urlsForUser(author.id, author, options));
             }
         });
     }
 
-    return post;
+    return attrs;
 };
 
-const urlsForUser = (user, options) => {
+const urlsForUser = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        user.url = urlFor({
-            relativeUrl: urlService.getUrlByResourceId(user.id)
+        attrs.url = urlFor({
+            relativeUrl: urlService.getUrlByResourceId(id)
         }, true);
 
-        if (user.profile_image) {
-            user.profile_image = urlFor('image', {image: user.profile_image}, true);
+        if (attrs.profile_image) {
+            attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
         }
 
-        if (user.cover_image) {
-            user.cover_image = urlFor('image', {image: user.cover_image}, true);
+        if (attrs.cover_image) {
+            attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
         }
     }
 
-    return user;
+    return attrs;
 };
 
-const urlsForTag = (tag, options) => {
+const urlsForTag = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        tag.url = urlFor({
-            relativeUrl: urlService.getUrlByResourceId(tag.id)
+        attrs.url = urlFor({
+            relativeUrl: urlService.getUrlByResourceId(attrs.id)
         }, true);
 
-        if (tag.feature_image) {
-            tag.feature_image = urlFor('image', {image: tag.feature_image}, true);
+        if (attrs.feature_image) {
+            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
         }
     }
 
-    return tag;
+    return attrs;
 };
 
 module.exports.urlsForPost = urlsForPost;

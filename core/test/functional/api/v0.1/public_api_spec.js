@@ -77,29 +77,6 @@ describe('Public API', function () {
             });
     });
 
-    it('browse pages', function (done) {
-        request.get('/ghost/api/v2/content/pages/?client_id=ghost-admin&client_secret=not_available')
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                res.headers.vary.should.eql('Origin, Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
-
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.pages);
-                should.exist(jsonResponse.meta);
-                jsonResponse.pages.should.have.length(1);
-                done();
-            });
-    });
-
     it('browse posts with basic filters', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:kitchen-sink,featured:true&include=tags'))
             .expect('Content-Type', /json/)
@@ -289,6 +266,47 @@ describe('Public API', function () {
                 should.exist(urlParts.protocol);
                 should.exist(urlParts.host);
 
+                done();
+            });
+    });
+
+    it('browse posts: request only url fields', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&fields=url'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.posts);
+
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
+                res.body.posts[0].url.should.eql('/welcome/');
+                done();
+            });
+    });
+
+    it('browse posts: request only url fields with include and absolute_urls', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&fields=url&include=tags&absolute_urls=true'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse.posts);
+
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
+                jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
+                jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
                 done();
             });
     });

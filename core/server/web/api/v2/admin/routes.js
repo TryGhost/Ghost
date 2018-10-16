@@ -26,13 +26,12 @@ module.exports = function apiRoutes() {
     router.get('/configuration/:key', mw.authAdminAPI, api.http(api.configuration.read));
 
     // ## Posts
-    router.get('/posts', mw.authAdminAPI, api.http(api.posts.browse));
-
-    router.post('/posts', mw.authAdminAPI, api.http(api.posts.add));
-    router.get('/posts/:id', mw.authAdminAPI, api.http(api.posts.read));
-    router.get('/posts/slug/:slug', mw.authAdminAPI, api.http(api.posts.read));
-    router.put('/posts/:id', mw.authAdminAPI, api.http(api.posts.edit));
-    router.del('/posts/:id', mw.authAdminAPI, api.http(api.posts.destroy));
+    router.get('/posts', mw.authAdminAPI, apiv2.http(apiv2.posts.browse));
+    router.post('/posts', mw.authAdminAPI, apiv2.http(apiv2.posts.add));
+    router.get('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.read));
+    router.get('/posts/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.posts.read));
+    router.put('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.edit));
+    router.del('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.destroy));
 
     // ## Schedules
     router.put('/schedules/posts/:id', [
@@ -41,54 +40,54 @@ module.exports = function apiRoutes() {
     ], api.http(api.schedules.publishPost));
 
     // ## Settings
-    router.get('/settings/routes/yaml', mw.authAdminAPI, api.http(api.settings.download));
+    router.get('/settings/routes/yaml', mw.authAdminAPI, apiv2.http(apiv2.settings.download));
     router.post('/settings/routes/yaml',
         mw.authAdminAPI,
         upload.single('routes'),
         shared.middlewares.validation.upload({type: 'routes'}),
-        api.http(api.settings.upload)
+        apiv2.http(apiv2.settings.upload)
     );
 
-    router.get('/settings', mw.authAdminAPI, api.http(api.settings.browse));
-    router.get('/settings/:key', mw.authAdminAPI, api.http(api.settings.read));
-    router.put('/settings', mw.authAdminAPI, api.http(api.settings.edit));
+    router.get('/settings', mw.authAdminAPI, apiv2.http(apiv2.settings.browse));
+    router.get('/settings/:key', mw.authAdminAPI, apiv2.http(apiv2.settings.read));
+    router.put('/settings', mw.authAdminAPI, apiv2.http(apiv2.settings.edit));
 
     // ## Users
-    router.get('/users', mw.authAdminAPI, api.http(api.users.browse));
-    router.get('/users/:id', mw.authAdminAPI, api.http(api.users.read));
-    router.get('/users/slug/:slug', mw.authAdminAPI, api.http(api.users.read));
+    router.get('/users', mw.authAdminAPI, apiv2.http(apiv2.users.browse));
+    router.get('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.read));
+    router.get('/users/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.users.read));
     // NOTE: We don't expose any email addresses via the public api.
-    router.get('/users/email/:email', mw.authAdminAPI, api.http(api.users.read));
+    router.get('/users/email/:email', mw.authAdminAPI, apiv2.http(apiv2.users.read));
 
-    router.put('/users/password', mw.authAdminAPI, api.http(api.users.changePassword));
-    router.put('/users/owner', mw.authAdminAPI, api.http(api.users.transferOwnership));
-    router.put('/users/:id', mw.authAdminAPI, api.http(api.users.edit));
-    router.del('/users/:id', mw.authAdminAPI, api.http(api.users.destroy));
+    router.put('/users/password', mw.authAdminAPI, apiv2.http(apiv2.users.changePassword));
+    router.put('/users/owner', mw.authAdminAPI, apiv2.http(apiv2.users.transferOwnership));
+    router.put('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.edit));
+    router.del('/users/:id', mw.authAdminAPI, apiv2.http(apiv2.users.destroy));
 
     // ## Tags
-    router.get('/tags', mw.authAdminAPI, api.http(api.tags.browse));
-    router.get('/tags/:id', mw.authAdminAPI, api.http(api.tags.read));
-    router.get('/tags/slug/:slug', mw.authAdminAPI, api.http(api.tags.read));
-    router.post('/tags', mw.authAdminAPI, api.http(api.tags.add));
-    router.put('/tags/:id', mw.authAdminAPI, api.http(api.tags.edit));
-    router.del('/tags/:id', mw.authAdminAPI, api.http(api.tags.destroy));
+    router.get('/tags', mw.authAdminAPI, apiv2.http(apiv2.tags.browse));
+    router.get('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.read));
+    router.get('/tags/slug/:slug', mw.authAdminAPI, apiv2.http(apiv2.tags.read));
+    router.post('/tags', mw.authAdminAPI, apiv2.http(apiv2.tags.add));
+    router.put('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.edit));
+    router.del('/tags/:id', mw.authAdminAPI, apiv2.http(apiv2.tags.destroy));
 
     // ## Subscribers
-    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.browse));
-    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.exportCSV));
+    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.browse));
+    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.exportCSV));
     router.post('/subscribers/csv',
         shared.middlewares.labs.subscribers,
         mw.authAdminAPI,
         upload.single('subscribersfile'),
         shared.middlewares.validation.upload({type: 'subscribers'}),
-        api.http(api.subscribers.importCSV)
+        apiv2.http(apiv2.subscribers.importCSV)
     );
-    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.read));
-    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.read));
-    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.add));
-    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.edit));
-    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.destroy));
-    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, api.http(api.subscribers.destroy));
+    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.read));
+    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.read));
+    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.add));
+    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.edit));
+    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.destroy));
+    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminAPI, apiv2.http(apiv2.subscribers.destroy));
 
     // ## Roles
     router.get('/roles/', mw.authAdminAPI, apiv2.http(apiv2.roles.browse));
@@ -97,7 +96,7 @@ module.exports = function apiRoutes() {
     router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
-    router.get('/slugs/:type/:name', mw.authAdminAPI, api.http(api.slugs.generate));
+    router.get('/slugs/:type/:name', mw.authAdminAPI, apiv2.http(apiv2.slugs.generate));
 
     // ## Themes
     router.get('/themes/', mw.authAdminAPI, api.http(api.themes.browse));
@@ -125,9 +124,9 @@ module.exports = function apiRoutes() {
     );
 
     // ## Notifications
-    router.get('/notifications', mw.authAdminAPI, api.http(api.notifications.browse));
-    router.post('/notifications', mw.authAdminAPI, api.http(api.notifications.add));
-    router.del('/notifications/:id', mw.authAdminAPI, api.http(api.notifications.destroy));
+    router.get('/notifications', mw.authAdminAPI, apiv2.http(apiv2.notifications.browse));
+    router.post('/notifications', mw.authAdminAPI, apiv2.http(apiv2.notifications.add));
+    router.del('/notifications/:notification_id', mw.authAdminAPI, apiv2.http(apiv2.notifications.destroy));
 
     // ## DB
     router.get('/db', mw.authAdminAPI, api.http(api.db.exportContent));
@@ -140,8 +139,8 @@ module.exports = function apiRoutes() {
     router.del('/db', mw.authAdminAPI, api.http(api.db.deleteAllContent));
 
     // ## Mail
-    router.post('/mail', mw.authAdminAPI, api.http(api.mail.send));
-    router.post('/mail/test', mw.authAdminAPI, api.http(api.mail.sendTest));
+    router.post('/mail', mw.authAdminAPI, apiv2.http(apiv2.mail.send));
+    router.post('/mail/test', mw.authAdminAPI, apiv2.http(apiv2.mail.sendTest));
 
     // ## Slack
     router.post('/slack/test', mw.authAdminAPI, api.http(api.slack.sendTest));
@@ -172,7 +171,7 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.image.normalize,
-        api.http(api.uploads.add)
+        apiv2.http(apiv2.upload.image)
     );
 
     router.post('/uploads/profile-image',
@@ -181,7 +180,7 @@ module.exports = function apiRoutes() {
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.validation.profileImage,
         shared.middlewares.image.normalize,
-        api.http(api.uploads.add)
+        apiv2.http(apiv2.upload.image)
     );
 
     router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
@@ -191,14 +190,14 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'icons'}),
         shared.middlewares.validation.blogIcon(),
-        api.http(api.uploads.add)
+        apiv2.http(apiv2.upload.image)
     );
 
     // ## Invites
-    router.get('/invites', mw.authAdminAPI, api.http(api.invites.browse));
-    router.get('/invites/:id', mw.authAdminAPI, api.http(api.invites.read));
-    router.post('/invites', mw.authAdminAPI, api.http(api.invites.add));
-    router.del('/invites/:id', mw.authAdminAPI, api.http(api.invites.destroy));
+    router.get('/invites', mw.authAdminAPI, apiv2.http(apiv2.invites.browse));
+    router.get('/invites/:id', mw.authAdminAPI, apiv2.http(apiv2.invites.read));
+    router.post('/invites', mw.authAdminAPI, apiv2.http(apiv2.invites.add));
+    router.del('/invites/:id', mw.authAdminAPI, apiv2.http(apiv2.invites.destroy));
 
     // ## Redirects (JSON based)
     router.get('/redirects/json', mw.authAdminAPI, api.http(api.redirects.download));
@@ -210,8 +209,8 @@ module.exports = function apiRoutes() {
     );
 
     // ## Webhooks (RESTHooks)
-    router.post('/webhooks', mw.authAdminAPI, api.http(api.webhooks.add));
-    router.del('/webhooks/:id', mw.authAdminAPI, api.http(api.webhooks.destroy));
+    router.post('/webhooks', mw.authAdminAPI, apiv2.http(apiv2.webhooks.add));
+    router.del('/webhooks/:id', mw.authAdminAPI, apiv2.http(apiv2.webhooks.destroy));
 
     // ## Oembed (fetch response from oembed provider)
     router.get('/oembed', mw.authAdminAPI, api.http(api.oembed.read));
