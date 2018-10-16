@@ -12,7 +12,7 @@ function makeRequests(webhooksCollection, payload, options) {
         const webhookId = webhook.get('id');
         const reqPayload = JSON.stringify(payload);
 
-        models.Webhook.edit({'last_triggered_at': Date.now()}, {id: webhookId}).catch((err) => {
+        models.Webhook.edit({last_triggered_at: Date.now()}, {id: webhookId}).catch((err) => {
             debug('Unable to update webhooks last_triggered_at in db', err);
             return Promise.reject(err);
         });
@@ -29,7 +29,10 @@ function makeRequests(webhooksCollection, payload, options) {
             // when a webhook responds with a 410 Gone response we should remove the hook
             if (err.statusCode === 410) {
                 common.logging.info('webhook.destroy (410 response)', event, targetUrl);
-                return models.Webhook.destroy({id: webhookId}, options);
+                return models.Webhook.destroy({id: webhookId}, options).catch((err) => {
+                    debug(`Unable to destroy webhook ${webhookId}`, err);
+                    return Promise.reject(err);
+                });
             }
 
             common.logging.error(new common.errors.GhostError({
