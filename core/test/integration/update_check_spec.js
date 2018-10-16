@@ -43,7 +43,7 @@ describe('Update Check', function () {
             updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
             updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
             updateCheck.__set__('updateCheckError', updateCheckErrorSpy);
-            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql', 'testing-pg']);
+            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql']);
         });
 
         it('update check was never executed', function (done) {
