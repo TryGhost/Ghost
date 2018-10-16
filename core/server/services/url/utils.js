@@ -17,10 +17,13 @@ const moment = require('moment-timezone'),
  */
 function getApiPath(options) {
     const apiVersions = config.get('api:versions');
-    let version = options.version || 'deprecated';
-    let type = options.type || 'content';
-    let versionData = apiVersions[version];
-    let versionPath = versionData[type];
+    let requestedVersion = options.version || 'deprecated';
+    let requestedVersionType = options.type || 'content';
+    let versionData = apiVersions[requestedVersion];
+    if (typeof versionData === 'string') {
+        versionData = apiVersions[versionData];
+    }
+    let versionPath = versionData[requestedVersionType];
     return `${BASE_API_PATH}${versionPath}/`;
 }
 
