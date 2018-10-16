@@ -7,6 +7,10 @@ let Webhook,
 Webhook = ghostBookshelf.Model.extend({
     tableName: 'webhooks',
 
+    integration() {
+        return this.belongsTo('Integration');
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'webhook' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
