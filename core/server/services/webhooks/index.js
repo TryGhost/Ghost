@@ -1,9 +1,9 @@
 module.exports = {
     get listen() {
-        return require('./listen.js');
+        return require('./listen');
     },
 
     get trigger() {
-        return require('./trigger.js');
+        return require('./trigger');
     }
 };
