@@ -583,6 +583,16 @@ describe('Url', function () {
                         .urlFor('api', {cors: true, version: apiVersion, versionType: 'admin'}, true)
                         .should.eql(`https://my-ghost-blog.com${getApiPath({version: apiVersion, versionType: 'admin'})}`);
                 });
+
+                it('api: with just version and no version type returns correct api path', function () {
+                    configUtils.set({
+                        url: 'https://my-ghost-blog.com'
+                    });
+
+                    urlService.utils
+                        .urlFor('api', {cors: true, version: apiVersion}, true)
+                        .should.eql(`https://my-ghost-blog.com${getApiPath({version: apiVersion})}`);
+                });
             });
         });
 
