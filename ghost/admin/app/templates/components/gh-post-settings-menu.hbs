@@ -21,7 +21,7 @@
                     {{!-- new posts don't have a preview link --}}
                     {{#unless post.isNew}}
                         {{#if post.isPublished}}
-                        <a class="post-view-link" target="_blank" href="{{post.absoluteUrl}}">
+                        <a class="post-view-link" target="_blank" href="{{post.url}}">
                             View post {{svg-jar "external"}}
                         </a>
                         {{else}}

@@ -759,7 +759,7 @@ export default Controller.extend({
 
         if (status === 'published') {
             type = this.get('post.page') ? 'Page' : 'Post';
-            path = this.get('post.absoluteUrl');
+            path = this.get('post.url');
         } else {
             type = 'Preview';
             path = this.get('post.previewUrl');
