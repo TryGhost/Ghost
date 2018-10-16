@@ -1,6 +1,6 @@
 var _ = require('lodash'),
-    common = require('../lib/common'),
-    api = require('../api'),
+    common = require('../../lib/common'),
+    api = require('../../api'),
     modelAttrs;
 
 // TODO: this can be removed once all events pass a .toJSON object through
@@ -52,6 +52,4 @@ function listen() {
 }
 
 // Public API
-module.exports = {
-    listen: listen
-};
+module.exports = listen;

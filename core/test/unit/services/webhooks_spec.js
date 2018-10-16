@@ -6,6 +6,7 @@ var _ = require('lodash'),
 
     // Stuff we test
     webhooks = rewire('../../../server/services/webhooks'),
+    webhooksListen = rewire('../../../server/services/webhooks/listen'),
     common = require('../../../server/lib/common'),
 
     sandbox = sinon.sandbox.create();
@@ -22,7 +23,7 @@ describe('Webhooks', function () {
     });
 
     it('listen() should initialise events correctly', function () {
-        webhooks.listen();
+        webhooksListen();
         eventStub.calledTwice.should.be.true();
     });
 
@@ -38,8 +39,8 @@ describe('Webhooks', function () {
                     trigger: sandbox.stub()
                 }
             },
-            resetWebhooks = webhooks.__set__('api', apiStub),
-            listener = webhooks.__get__('listener'),
+            resetWebhooks = webhooksListen.__set__('api', apiStub),
+            listener = webhooksListen.__get__('listener'),
             triggerArgs;
 
         listener('subscriber.added', testModel);
@@ -65,8 +66,8 @@ describe('Webhooks', function () {
                     trigger: sandbox.stub()
                 }
             },
-            resetWebhooks = webhooks.__set__('api', apiStub),
-            listener = webhooks.__get__('listener'),
+            resetWebhooks = webhooksListen.__set__('api', apiStub),
+            listener = webhooksListen.__get__('listener'),
             triggerArgs;
 
         listener('subscriber.deleted', testModel);
