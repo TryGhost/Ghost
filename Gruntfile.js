@@ -244,10 +244,6 @@ var config = require('./core/server/config'),
                             'yarn; git submodule foreach "git checkout master && git pull ' +
                             upstream + ' master"';
                     }
-                },
-
-                dbhealth: {
-                    command: 'knex-migrator health'
                 }
             },
 
@@ -715,7 +711,7 @@ var config = require('./core/server/config'),
         // `grunt master` [`upstream` is the default upstream to pull from]
         // `grunt master --upstream=parent`
         grunt.registerTask('master', 'Update your current working folder to latest master.',
-            ['shell:master', 'subgrunt:init', 'shell:dbhealth']
+            ['shell:master', 'subgrunt:init']
         );
 
         // ### Release
