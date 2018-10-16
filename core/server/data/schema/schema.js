@@ -300,5 +300,56 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    sessions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        session_id: {type: 'string', maxlength: 32, nullable: false, unique: true},
+        user_id: {type: 'string', maxlength: 24, nullable: false},
+        session_data: {type: 'string', maxlength: 2000, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    integrations: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        icon_image: {type: 'string', maxlength: 2000, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    api_keys: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            validations: {isIn: [['content', 'admin']]}
+        },
+        secret: {
+            type: 'string',
+            maxlength: 191,
+            nullable: false,
+            unique: true,
+            validations: {isLength: {min: 128, max: 128}}
+        },
+        role_id: {type: 'string', maxlength: 24, nullable: true},
+        // integration_id is nullable to allow "internal" API keys that don't show in the UI
+        integration_id: {type: 'string', maxlength: 24, nullable: true},
+        last_seen_at: {type: 'dateTime', nullable: true},
+        last_seen_version: {type: 'string', maxlength: 50, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    mobiledoc_revisions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, index: true},
+        mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        created_at_ts: {type: 'bigInteger', nullable: false},
+        created_at: {type: 'dateTime', nullable: false}
     }
 };

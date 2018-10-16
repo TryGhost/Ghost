@@ -1,5 +1,5 @@
-const debug = require('ghost-ignition').debug('admin:serviceworker'),
-    path = require('path');
+const debug = require('ghost-ignition').debug('web:admin:serviceworker');
+const path = require('path');
 
 // Route: index
 // Path: /ghost/sw.js|sw-registration.js

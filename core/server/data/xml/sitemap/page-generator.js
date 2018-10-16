@@ -1,4 +1,4 @@
-const _  = require('lodash'),
+const _ = require('lodash'),
     BaseMapGenerator = require('./base-generator');
 
 class PageMapGenerator extends BaseMapGenerator {
@@ -8,14 +8,6 @@ class PageMapGenerator extends BaseMapGenerator {
         this.name = 'pages';
 
         _.extend(this, opts);
-    }
-
-    /**
-     * @TODO:
-     * We could influence this with priority or meta information
-     */
-    getPriorityForDatum(page) {
-        return page && page.staticRoute ? 1.0 : 0.8;
     }
 }
 

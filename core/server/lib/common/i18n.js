@@ -1,18 +1,21 @@
 /* global Intl */
 
-var supportedLocales = ['en'],
+const supportedLocales = ['en'],
     chalk = require('chalk'),
     fs = require('fs-extra'),
     MessageFormat = require('intl-messageformat'),
     jp = require('jsonpath'),
-    _ = require('lodash'),
+    isString = require('lodash/isString'),
+    isObject = require('lodash/isObject'),
+    isEqual = require('lodash/isEqual'),
+    merge = require('lodash/merge'),
     path = require('path'),
     config = require('../../config'),
     errors = require('./errors'),
     events = require('./events'),
     logging = require('./logging'),
     settingsCache = require('../../services/settings/cache'),
-    _private = {},
+    _private = {};
 
     // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
     // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
@@ -23,7 +26,7 @@ var supportedLocales = ['en'],
     // https://www.w3.org/International/articles/language-tags/
     //
     // The corresponding translation files should be at content/themes/mytheme/locales/es.json, etc.
-    currentLocale,
+let currentLocale,
     activeTheme,
     coreStrings,
     themeStrings,
@@ -56,7 +59,7 @@ I18n = {
      * @returns {string}
      */
     t: function t(path, bindings) {
-        var string, isTheme, msg;
+        let string, isTheme, msg;
 
         currentLocale = I18n.locale();
         if (bindings !== undefined) {
@@ -68,10 +71,10 @@ I18n = {
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
         // translated/formatted string.
-        if (_.isArray(string)) {
+        if (Array.isArray(string)) {
             msg = [];
             string.forEach(function (s) {
-                var m = new MessageFormat(s, currentLocale);
+                let m = new MessageFormat(s, currentLocale);
 
                 try {
                     m.format(bindings);
@@ -109,11 +112,11 @@ I18n = {
      * @returns {string}
      */
     findString: function findString(msgPath, opts) {
-        var options = _.merge({log: true}, opts || {}),
-            candidateString, matchingString, path;
+        const options = merge({log: true}, opts || {});
+        let candidateString, matchingString, path;
 
         // no path? no string
-        if (_.isEmpty(msgPath) || !_.isString(msgPath)) {
+        if (msgPath.length === 0 || !isString(msgPath)) {
             chalk.yellow('i18n.t() - received an empty path.');
             return '';
         }
@@ -141,13 +144,13 @@ I18n = {
             // While bracket-notation allows any Unicode characters in keys for themes,
             // dot-notation allows only word characters in keys for backend messages
             // (that is \w or [A-Za-z0-9_] in RegExp)
-            path = '$.' + msgPath;
+            path = `$.${msgPath}`;
             candidateString = jp.value(coreStrings, path);
         }
 
         matchingString = candidateString || {};
 
-        if (_.isObject(matchingString) || _.isEqual(matchingString, {})) {
+        if (isObject(matchingString) || isEqual(matchingString, {})) {
             if (options.log) {
                 logging.error(new errors.IncorrectUsageError({
                     message: `i18n error: path "${msgPath}" was not found`
@@ -161,7 +164,7 @@ I18n = {
     },
 
     doesTranslationKeyExist: function doesTranslationKeyExist(msgPath) {
-        var translation = I18n.findString(msgPath, {log: false});
+        const translation = I18n.findString(msgPath, {log: false});
         return translation !== coreStrings.errors.errors.anErrorOccurred;
     },
 
@@ -207,7 +210,7 @@ I18n = {
             } catch (err) {
                 themeStrings = undefined;
                 if (err.code === 'ENOENT') {
-                    logging.warn('Theme\'s file locales/' + currentLocale + '.json not found.');
+                    logging.warn(`Theme's file locales/${currentLocale}.json not found.`);
                 } else {
                     throw err;
                 }
@@ -258,7 +261,7 @@ I18n = {
  *  - Polyfill node.js if it does not have Intl support or support for a particular locale
  */
 _private.initializeIntl = function initializeIntl() {
-    var hasBuiltInLocaleData, IntlPolyfill;
+    let hasBuiltInLocaleData, IntlPolyfill;
 
     if (global.Intl) {
         // Determine if the built-in `Intl` has the locale data we need.

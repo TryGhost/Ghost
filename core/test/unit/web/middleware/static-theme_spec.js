@@ -3,7 +3,7 @@ var should = require('should'),
 
     express = require('express'),
     themeUtils = require('../../../../server/services/themes'),
-    staticTheme = require('../../../../server/web/middleware/static-theme'),
+    staticTheme = require('../../../../server/web/shared/middlewares/static-theme'),
 
     sandbox = sinon.sandbox.create();
 

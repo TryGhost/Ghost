@@ -1,7 +1,7 @@
-var crypto         = require('crypto'),
-    uuid           = require('uuid'),
+var crypto = require('crypto'),
+    uuid = require('uuid'),
     ghostBookshelf = require('./base'),
-    config         = require('../config'),
+    config = require('../config'),
     Client,
     Clients;
 
@@ -32,7 +32,7 @@ Client = ghostBookshelf.Model.extend({
     * @return {Array} Keys allowed in the `options` hash of the model's method.
     */
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.

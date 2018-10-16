@@ -1,8 +1,8 @@
-var labs = require('../labs'),
-    common = require('../../lib/common'),
-    authorize;
+const labs = require('../labs');
+const session = require('./session');
+const common = require('../../lib/common');
 
-authorize = {
+const authorize = {
     // Workaround for missing permissions
     // TODO: rework when https://github.com/TryGhost/Ghost/issues/3911 is  done
     requiresAuthorizedUser: function requiresAuthorizedUser(req, res, next) {
@@ -35,6 +35,18 @@ authorize = {
 
             return next();
         };
+    },
+
+    authorizeAdminAPI: [session.ensureUser],
+    // used by API v2 endpoints
+    requiresAuthorizedUserOrApiKey(req, res, next) {
+        const hasUser = req.user && req.user.id;
+        const hasApiKey = req.api_key && req.api_key.id;
+        if (hasUser || hasApiKey) {
+            return next();
+        } else {
+            return next(new common.errors.NoPermissionError({message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')}));
+        }
     }
 };
 

@@ -23,14 +23,14 @@ var Promise = require('bluebird'),
     settingsService = require('../../server/services/settings'),
     settingsCache = require('../../server/services/settings/cache'),
     imageLib = require('../../server/lib/image'),
-    customRedirectsMiddleware = require('../../server/web/middleware/custom-redirects'),
+    web = require('../../server/web'),
     permissions = require('../../server/services/permissions'),
     sequence = require('../../server/lib/promise/sequence'),
     themes = require('../../server/services/themes'),
     DataGenerator = require('./fixtures/data-generator'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
-    APIAssertions = require('./api'),
+    APIUtils = require('./api'),
     mocks = require('./mocks'),
     config = require('../../server/config'),
     knexMigrator = new KnexMigrator(),
@@ -45,12 +45,9 @@ var Promise = require('bluebird'),
     teardown,
     setup,
     truncate,
-    doAuth,
     createUser,
     createPost,
-    login,
     startGhost,
-    configureGhost,
 
     initFixtures,
     initData,
@@ -306,6 +303,16 @@ fixtures = {
         });
     },
 
+    createInactiveUser() {
+        const user = DataGenerator.forKnex.createUser({
+            email: 'inactive@test.org',
+            slug: 'inactive',
+            status: 'inactive'
+        });
+
+        return models.User.add(user, module.exports.context.internal);
+    },
+
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
         var extraUsers =  _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
@@ -401,7 +408,8 @@ fixtures = {
                 Editor: DataGenerator.Content.roles[1].id,
                 Author: DataGenerator.Content.roles[2].id,
                 Owner: DataGenerator.Content.roles[3].id,
-                Contributor: DataGenerator.Content.roles[4].id
+                Contributor: DataGenerator.Content.roles[4].id,
+                'Admin Integration': DataGenerator.Content.roles[5].id
             };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
@@ -478,7 +486,19 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.webhooks, function (webhook) {
             return models.Webhook.add(webhook, module.exports.context.internal);
         });
-    }
+    },
+
+    insertIntegrations: function insertIntegrations() {
+        return Promise.map(DataGenerator.forKnex.integrations, function (integration) {
+            return models.Integration.add(integration, module.exports.context.internal);
+        });
+    },
+
+    insertApiKeys: function insertApiKeys() {
+        return Promise.map(DataGenerator.forKnex.api_keys, function (api_key) {
+            return models.ApiKey.add(api_key, module.exports.context.internal);
+        });
+    },
 };
 
 /** Test Utility Functions **/
@@ -586,6 +606,9 @@ toDoList = {
     'users:no-owner': function createUsersWithoutOwner() {
         return fixtures.createUsersWithoutOwner();
     },
+    'user:inactive': function createInactiveUser() {
+        return fixtures.createInactiveUser();
+    },
     'users:extra': function createExtraUsers() {
         return fixtures.createExtraUsers();
     },
@@ -624,6 +647,12 @@ toDoList = {
     },
     webhooks: function insertWebhooks() {
         return fixtures.insertWebhooks();
+    },
+    integrations: function insertIntegrations() {
+        return fixtures.insertIntegrations();
+    },
+    api_keys: function insertApiKeys() {
+        return fixtures.insertApiKeys();
     }
 };
 
@@ -709,35 +738,6 @@ setup = function setup() {
     };
 };
 
-// ## Functions for Route Tests (!!)
-
-/**
- * This function manages the work of ensuring we have an overridden owner user, and grabbing an access token
- * @returns {deferred.promise<AccessToken>}
- */
-// TODO make this do the DB init as well
-doAuth = function doAuth() {
-    var options = arguments,
-        request = arguments[0],
-        fixtureOps;
-
-    // Remove request from this list
-    delete options[0];
-
-    // No DB setup, but override the owner
-    options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
-        if (val) {
-            result[val] = true;
-        }
-    }));
-
-    fixtureOps = getFixtureOps(options);
-
-    return sequence(fixtureOps).then(function () {
-        return login(request);
-    });
-};
-
 createUser = function createUser(options) {
     var user = options.user,
         role = options.role;
@@ -763,33 +763,6 @@ createPost = function createPost(options) {
 
     post.authors = [{id: post.author_id}];
     return models.Post.add(post, module.exports.context.internal);
-};
-
-login = function login(request) {
-    // CASE: by default we use the owner to login
-    if (!request.user) {
-        request.user = DataGenerator.Content.users[0];
-    }
-
-    return new Promise(function (resolve, reject) {
-        request.post('/ghost/api/v0.1/authentication/token/')
-            .set('Origin', config.get('url'))
-            .send({
-                grant_type: 'password',
-                username: request.user.email,
-                password: 'Sl1m3rson99',
-                client_id: 'ghost-admin',
-                client_secret: 'not_available'
-            }).then(function then(res) {
-            if (res.statusCode !== 200) {
-                return reject(new common.errors.GhostError({
-                    message: res.body.errors[0].message
-                }));
-            }
-
-            resolve(res.body.access_token);
-        }, reject);
-    });
 };
 
 /**
@@ -943,10 +916,35 @@ startGhost = function startGhost(options) {
                 });
             })
             .then(function () {
-                customRedirectsMiddleware.reload();
+                web.shared.middlewares.customRedirects.reload();
 
                 common.events.emit('server.start');
-                return ghostServer;
+
+                /**
+                 * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+                 * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+                 * I can do `testUtils.existingData.roles[0].id`.
+                 */
+                module.exports.existingData = {};
+                return models.Role.findAll({columns: ['id']})
+                    .then((roles) => {
+                        module.exports.existingData.roles = roles.toJSON();
+
+                        return models.Client.findAll({columns: ['id', 'secret']});
+                    })
+                    .then((clients) => {
+                        module.exports.existingData.clients = clients.toJSON();
+                        return models.User.findAll({columns: ['id', 'email']});
+                    })
+                    .then((users) => {
+                        module.exports.existingData.users = users.toJSON(module.exports.context.internal);
+
+                        return models.Tag.findAll({columns: ['id']});
+                    })
+                    .then((tags) => {
+                        module.exports.existingData.tags = tags.toJSON();
+                    })
+                    .return(ghostServer);
             });
     }
 
@@ -957,6 +955,8 @@ startGhost = function startGhost(options) {
             }
         })
         .then(function initialiseDatabase() {
+            settingsCache.shutdown();
+            settingsCache.reset();
             return knexMigrator.init();
         })
         .then(function initializeGhost() {
@@ -993,7 +993,32 @@ startGhost = function startGhost(options) {
             });
         })
         .then(function returnGhost() {
-            return ghostServer;
+            /**
+             * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+             * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+             * I can do `testUtils.existingData.roles[0].id`.
+             */
+            module.exports.existingData = {};
+            return models.Role.findAll({columns: ['id']})
+                .then((roles) => {
+                    module.exports.existingData.roles = roles.toJSON();
+
+                    return models.Client.findAll({columns: ['id', 'secret']});
+                })
+                .then((clients) => {
+                    module.exports.existingData.clients = clients.toJSON();
+
+                    return models.User.findAll({columns: ['id', 'email']});
+                })
+                .then((users) => {
+                    module.exports.existingData.users = users.toJSON(module.exports.context.internal);
+
+                    return models.Tag.findAll({columns: ['id']});
+                })
+                .then((tags) => {
+                    module.exports.existingData.tags = tags.toJSON();
+                })
+                .return(ghostServer);
         });
 };
 
@@ -1083,10 +1108,8 @@ module.exports = {
     teardown: teardown,
     truncate: truncate,
     setup: setup,
-    doAuth: doAuth,
     createUser: createUser,
     createPost: createPost,
-    login: login,
 
     mockNotExistingModule: mockNotExistingModule,
     unmockNotExistingModule: unmockNotExistingModule,
@@ -1129,7 +1152,7 @@ module.exports = {
 
     DataGenerator: DataGenerator,
     filterData: filterData,
-    API: APIAssertions,
+    API: APIUtils({getFixtureOps: getFixtureOps}),
 
     // Helpers to make it easier to write tests which are easy to read
     context: {
@@ -1139,7 +1162,9 @@ module.exports = {
         admin: {context: {user: DataGenerator.Content.users[1].id}},
         editor: {context: {user: DataGenerator.Content.users[2].id}},
         author: {context: {user: DataGenerator.Content.users[3].id}},
-        contributor: {context: {user: DataGenerator.Content.users[7].id}}
+        contributor: {context: {user: DataGenerator.Content.users[7].id}},
+        admin_api_key: {context: {api_key: DataGenerator.Content.api_keys[0].id}},
+        content_api_key: {context: {api_key: DataGenerator.Content.api_keys[1].id}}
     },
     permissions: {
         owner: {user: {roles: [DataGenerator.Content.roles[3]]}},

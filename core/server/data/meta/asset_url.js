@@ -30,7 +30,7 @@ function getAssetUrl(path, hasMinFile) {
 
     // replace ".foo" with ".min.foo" if configured
     if (hasMinFile && config.get('useMinFiles') !== false) {
-        path = path.replace(/\.([^\.]*)$/, '.min.$1');
+        path = path.replace(/\.([^.]*)$/, '.min.$1');
     }
 
     // Add the path for the requested asset

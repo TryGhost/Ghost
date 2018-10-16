@@ -1,16 +1,17 @@
-var debug = require('ghost-ignition').debug('utils:image-size'),
-    sizeOf = require('image-size'),
-    url = require('url'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    request = require('../request'),
-    urlService = require('../../services/url'),
-    common = require('../common'),
-    config = require('../../config'),
-    storage = require('../../adapters/storage'),
-    storageUtils = require('../../adapters/storage/utils'),
-    getImageSizeFromUrl,
-    getImageSizeFromFilePath;
+const debug = require('ghost-ignition').debug('utils:image-size');
+const sizeOf = require('image-size');
+const url = require('url');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const request = require('../request');
+const urlService = require('../../services/url');
+const common = require('../common');
+const config = require('../../config');
+const storage = require('../../adapters/storage');
+const storageUtils = require('../../adapters/storage/utils');
+let getImageSizeFromUrl;
+let getImageSizeFromStoragePath;
+let getImageSizeFromPath;
 
 /**
  * @description processes the Buffer result of an image file
@@ -18,10 +19,10 @@ var debug = require('ghost-ignition').debug('utils:image-size'),
  * @returns {Object} dimensions
  */
 function fetchDimensionsFromBuffer(options) {
-    var buffer = options.buffer,
-        imagePath = options.imagePath,
-        imageObject = {},
-        dimensions;
+    const buffer = options.buffer;
+    const imagePath = options.imagePath;
+    const imageObject = {};
+    let dimensions;
 
     imageObject.url = imagePath;
 
@@ -33,10 +34,10 @@ function fetchDimensionsFromBuffer(options) {
         // CASE: `.ico` files might have multiple images and therefore multiple sizes.
         // We return the largest size found (image-size default is the first size found)
         if (dimensions.images) {
-            dimensions.width = _.maxBy(dimensions.images, function (w) {
+            dimensions.width = _.maxBy(dimensions.images, (w) => {
                 return w.width;
             }).width;
-            dimensions.height = _.maxBy(dimensions.images, function (h) {
+            dimensions.height = _.maxBy(dimensions.images, (h) => {
                 return h.height;
             }).height;
         }
@@ -67,7 +68,7 @@ function fetchDimensionsFromBuffer(options) {
 // if the dimensions can be fetched, and rejects with error, if not.
 // ***
 // In case we get a locally stored image, which is checked withing the `isLocalImage`
-// function we switch to read the image from the local file storage with `getImageSizeFromFilePath`.
+// function we switch to read the image from the local file storage with `getImageSizeFromStoragePath`.
 // In case the image is not stored locally and is missing the protocol (like //www.gravatar.com/andsoon),
 // we add the protocol and use urlFor() to get the absolute URL.
 // If the request fails or image-size is not able to read the file, we reject with error.
@@ -77,14 +78,14 @@ function fetchDimensionsFromBuffer(options) {
  * @param {String} imagePath as URL
  * @returns {Promise<Object>} imageObject or error
  */
-getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
-    var requestOptions,
-        parsedUrl,
-        timeout = config.get('times:getImageSizeTimeoutInMS') || 10000;
+getImageSizeFromUrl = (imagePath) => {
+    let requestOptions;
+    let parsedUrl;
+    let timeout = config.get('times:getImageSizeTimeoutInMS') || 10000;
 
     if (storageUtils.isLocalImage(imagePath)) {
         // don't make a request for a locally stored image
-        return getImageSizeFromFilePath(imagePath);
+        return getImageSizeFromStoragePath(imagePath);
     }
 
     // CASE: pre 1.0 users were able to use an asset path for their blog logo
@@ -113,7 +114,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
     return request(
         imagePath,
         requestOptions
-    ).then(function (response) {
+    ).then((response) => {
         debug('Image fetched (URL):', imagePath);
 
         return fetchDimensionsFromBuffer({
@@ -122,21 +123,21 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
             // value will be used as the URL for structured data
             imagePath: parsedUrl.href
         });
-    }).catch({code: 'URL_MISSING_INVALID'}, function (err) {
+    }).catch({code: 'URL_MISSING_INVALID'}, (err) => {
         return Promise.reject(new common.errors.InternalServerError({
             message: err.message,
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
-    }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, function (err) {
+    }).catch({code: 'ETIMEDOUT'}, {statusCode: 408}, (err) => {
         return Promise.reject(new common.errors.InternalServerError({
             message: 'Request timed out.',
             code: 'IMAGE_SIZE_URL',
             statusCode: err.statusCode,
             context: err.url || imagePath
         }));
-    }).catch({code: 'ENOENT'}, {statusCode: 404}, function (err) {
+    }).catch({code: 'ENOENT'}, {statusCode: 404}, (err) => {
         return Promise.reject(new common.errors.NotFoundError({
             message: 'Image not found.',
             code: 'IMAGE_SIZE_URL',
@@ -163,7 +164,7 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
 // ***
 // Takes the url or filepath of the image and reads it form the local
 // file storage.
-// getImageSizeFromFilePath returns an Object like this
+// getImageSizeFromStoragePath returns an Object like this
 // {
 //     height: 50,
 //     url: 'http://myblog.com/images/cat.jpg',
@@ -175,8 +176,8 @@ getImageSizeFromUrl = function getImageSizeFromUrl(imagePath) {
  * @param {String} imagePath
  * @returns {object} imageObject or error
  */
-getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
-    var filePath;
+getImageSizeFromStoragePath = (imagePath) => {
+    let filePath;
 
     imagePath = urlService.utils.urlFor('image', {image: imagePath}, true);
 
@@ -185,7 +186,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
 
     return storage.getStorage()
         .read({path: filePath})
-        .then(function readFile(buf) {
+        .then((buf) => {
             debug('Image fetched (storage):', filePath);
 
             return fetchDimensionsFromBuffer({
@@ -194,7 +195,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                 // value will be used as the URL for structured data
                 imagePath: imagePath
             });
-        }).catch({code: 'ENOENT'}, function (err) {
+        }).catch({code: 'ENOENT'}, (err) => {
             return Promise.reject(new common.errors.NotFoundError({
                 message: err.message,
                 code: 'IMAGE_SIZE_STORAGE',
@@ -205,7 +206,7 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
                     reqFilePath: filePath
                 }
             }));
-        }).catch(function (err) {
+        }).catch((err) => {
             if (common.errors.utils.isIgnitionError(err)) {
                 return Promise.reject(err);
             }
@@ -223,5 +224,46 @@ getImageSizeFromFilePath = function getImageSizeFromFilePath(imagePath) {
         });
 };
 
+/**
+ * Supported formats of https://github.com/image-size/image-size:
+ * BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG, ICO
+ * Get dimensions for a file from its real file storage path
+ * Always returns {object} getImageDimensions
+ * @param {string} path
+ * @returns {Promise<Object>} getImageDimensions
+ * @description Takes a file path and returns width and height.
+ */
+getImageSizeFromPath = (path) => {
+    return new Promise(function getSize(resolve, reject) {
+        let dimensions;
+
+        try {
+            dimensions = sizeOf(path);
+
+            if (dimensions.images) {
+                dimensions.width = _.maxBy(dimensions.images, (w) => {
+                    return w.width;
+                }).width;
+                dimensions.height = _.maxBy(dimensions.images, (h) => {
+                    return h.height;
+                }).height;
+            }
+
+            return resolve({
+                width: dimensions.width,
+                height: dimensions.height
+            });
+        } catch (err) {
+            return reject(new common.errors.ValidationError({
+                message: common.i18n.t('errors.utils.images.invalidDimensions', {
+                    file: path,
+                    error: err.message
+                })
+            }));
+        }
+    });
+};
+
 module.exports.getImageSizeFromUrl = getImageSizeFromUrl;
-module.exports.getImageSizeFromFilePath = getImageSizeFromFilePath;
+module.exports.getImageSizeFromStoragePath = getImageSizeFromStoragePath;
+module.exports.getImageSizeFromPath = getImageSizeFromPath;

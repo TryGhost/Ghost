@@ -3,7 +3,7 @@ const common = require('../../../lib/common'),
     PagesMapGenerator = require('./page-generator'),
     PostsMapGenerator = require('./post-generator'),
     UsersMapGenerator = require('./user-generator'),
-    TagsMapGenerator  = require('./tag-generator');
+    TagsMapGenerator = require('./tag-generator');
 
 class SiteMapManager {
     constructor(options) {
@@ -31,6 +31,13 @@ class SiteMapManager {
 
         common.events.on('url.removed', (obj) => {
             this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
+        });
+
+        common.events.on('routers.reset', () => {
+            this.pages && this.pages.reset();
+            this.posts && this.posts.reset();
+            this.users && this.users.reset();
+            this.tags && this.tags.reset();
         });
     }
 

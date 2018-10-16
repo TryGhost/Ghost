@@ -85,7 +85,7 @@ describe('Unit: services/url/Resources', function () {
                 options.event.should.eql('added');
                 const obj = _.find(resources.data.posts, {data: {slug: 'test-1234'}}).data;
 
-                Object.keys(obj).should.eql([
+                Object.keys(obj).sort().should.eql([
                     'id',
                     'uuid',
                     'slug',
@@ -105,18 +105,17 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url'
-                ]);
+                ].sort());
 
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
                 obj.tags.length.should.eql(1);
-                Object.keys(obj.tags[0]).should.eql(['id', 'slug']);
+                Object.keys(obj.tags[0]).sort().should.eql(['id', 'slug'].sort());
                 obj.authors.length.should.eql(1);
-                Object.keys(obj.authors[0]).should.eql(['id', 'slug']);
+                Object.keys(obj.authors[0]).sort().should.eql(['id', 'slug'].sort());
                 should.exist(obj.primary_author);
-                Object.keys(obj.primary_author).should.eql(['id', 'slug']);
+                Object.keys(obj.primary_author).sort().should.eql(['id', 'slug'].sort());
                 should.exist(obj.primary_tag);
-                Object.keys(obj.primary_tag).should.eql(['id', 'slug']);
+                Object.keys(obj.primary_tag).sort().should.eql(['id', 'slug'].sort());
                 done();
             });
 
@@ -184,7 +183,7 @@ describe('Unit: services/url/Resources', function () {
 
                 const obj = _.find(resources.data.posts, {data: {id: resourceToUpdate.data.id}}).data;
 
-                Object.keys(obj).should.eql([
+                Object.keys(obj).sort().should.eql([
                     'id',
                     'uuid',
                     'slug',
@@ -204,17 +203,16 @@ describe('Unit: services/url/Resources', function () {
                     'author',
                     'primary_author',
                     'primary_tag',
-                    'url'
-                ]);
+                ].sort());
 
                 should.exist(obj.tags);
-                Object.keys(obj.tags[0]).should.eql(['id', 'slug']);
+                Object.keys(obj.tags[0]).sort().should.eql(['id', 'slug'].sort());
                 should.exist(obj.authors);
-                Object.keys(obj.authors[0]).should.eql(['id', 'slug']);
+                Object.keys(obj.authors[0]).sort().should.eql(['id', 'slug'].sort());
                 should.exist(obj.primary_author);
-                Object.keys(obj.primary_author).should.eql(['id', 'slug']);
+                Object.keys(obj.primary_author).sort().should.eql(['id', 'slug'].sort());
                 should.exist(obj.primary_tag);
-                Object.keys(obj.primary_tag).should.eql(['id', 'slug']);
+                Object.keys(obj.primary_tag).sort().should.eql(['id', 'slug'].sort());
 
                 done();
             });

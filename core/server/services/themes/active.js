@@ -35,7 +35,7 @@ class ActiveTheme {
 
         // @TODO: get gscan to return validated, useful package.json fields for us!
         this._packageInfo = loadedTheme['package.json'];
-        this._partials =  checkedTheme.partials;
+        this._partials = checkedTheme.partials;
 
         // all custom .hbs templates (e.g. custom-about)
         this._customTemplates = checkedTheme.templates.custom;

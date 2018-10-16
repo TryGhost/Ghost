@@ -49,7 +49,6 @@ describe('Post Model', function () {
             firstPost.authors[0].should.eql(firstPost.author);
         }
 
-        firstPost.url.should.equal('/html-ipsum/');
         firstPost.tags.should.be.an.Array();
 
         firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
@@ -157,7 +156,7 @@ describe('Post Model', function () {
                         results.meta.pagination.page.should.equal(1);
                         results.meta.pagination.limit.should.equal(15);
                         results.meta.pagination.pages.should.equal(1);
-                        results.posts.length.should.equal(4);
+                        results.data.length.should.equal(4);
 
                         done();
                     }).catch(done);
@@ -171,26 +170,31 @@ describe('Post Model', function () {
                             results.meta.pagination.page.should.equal(1);
                             results.meta.pagination.limit.should.equal(15);
                             results.meta.pagination.pages.should.equal(1);
-                            results.posts.length.should.equal(4);
+                            results.data.length.should.equal(4);
 
-                            var firstPost = _.find(results.posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-                            checkFirstPostData(firstPost);
+                            var firstPost = _.find(results.data, {attributes:{title: testUtils.DataGenerator.Content.posts[0].title}});
+                            checkFirstPostData(firstPost.toJSON());
 
                             done();
                         }).catch(done);
                 });
 
                 it('returns computed fields when columns are asked for explicitly', function (done) {
-                    models.Post.findPage({columns: ['id', 'slug', 'url', 'mobiledoc']}).then(function (results) {
+                    const options = {
+                        columns: ['id', 'slug', 'primary_tag'],
+                        withRelated: 'tags'
+                    };
+
+                    models.Post.findPage(options).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
-                        post.url.should.equal('/html-ipsum/');
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON(options);
+                        post.primary_tag.slug.should.equal('kitchen-sink');
 
                         // If a computed property is inadvertently passed into a "fetch" operation,
                         // there's a bug in bookshelf where the model will come back with it as
                         // a column enclosed in quotes.
-                        should.not.exist(post['"url"']);
+                        should.not.exist(post['"primary_tag"']);
 
                         done();
                     }).catch(done);
@@ -200,7 +204,7 @@ describe('Post Model', function () {
                     models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
                         should.exist(results);
 
-                        var post = _.find(results.posts, {slug: testUtils.DataGenerator.Content.posts[0].slug});
+                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
                         post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                         post.slug.should.equal('html-ipsum');
                         should.not.exist(post.doesnotexist);
@@ -247,21 +251,21 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(2);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.posts.length.should.equal(15);
+                            paginationResult.data.length.should.equal(15);
 
                             return models.Post.findPage({page: 5});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(5);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.posts.length.should.equal(0);
+                            paginationResult.data.length.should.equal(0);
 
                             return models.Post.findPage({limit: 30});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(30);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(30);
+                            paginationResult.data.length.should.equal(30);
 
                             // Test both boolean formats
                             return models.Post.findPage({limit: 10, staticPages: true});
@@ -269,7 +273,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(1);
+                            paginationResult.data.length.should.equal(1);
 
                             // Test both boolean formats
                             return models.Post.findPage({limit: 10, staticPages: '1'});
@@ -277,7 +281,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(1);
+                            paginationResult.data.length.should.equal(1);
 
                             // Test featured pages
                             return models.Post.findPage({limit: 10, filter: 'featured:true'});
@@ -285,7 +289,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             // Test both boolean formats for featured pages
                             return models.Post.findPage({limit: 10, filter: 'featured:1'});
@@ -293,7 +297,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(10);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({limit: 10, page: 2, status: 'all'});
                         }).then(function (paginationResult) {
@@ -304,7 +308,7 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal('all');
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(108);
+                            paginationResult.data.length.should.equal(108);
 
                             done();
                         }).catch(done);
@@ -317,28 +321,28 @@ describe('Post Model', function () {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.posts.length.should.equal(2);
+                            paginationResult.data.length.should.equal(2);
 
                             return models.Post.findPage({page: 1, filter: 'tags:injection'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(1);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(15);
+                            paginationResult.data.length.should.equal(15);
 
                             return models.Post.findPage({page: 2, filter: 'tags:injection'});
                         }).then(function (paginationResult) {
                             paginationResult.meta.pagination.page.should.equal(2);
                             paginationResult.meta.pagination.limit.should.equal(15);
                             paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.posts.length.should.equal(10);
+                            paginationResult.data.length.should.equal(10);
 
                             done();
                         }).catch(done);
@@ -352,9 +356,9 @@ describe('Post Model', function () {
 
                     models.Post.findPage().then(function (results) {
                         should.exist(results);
-                        should.exist(results.posts);
-                        results.posts.length.should.be.above(0);
-                        firstPost = results.posts[0];
+                        should.exist(results.data);
+                        results.data.length.should.be.above(0);
+                        firstPost = results.data[0].toJSON();
 
                         return models.Post.findOne({slug: firstPost.slug});
                     }).then(function (found) {
@@ -374,33 +378,6 @@ describe('Post Model', function () {
                             firstPost = result.toJSON();
 
                             checkFirstPostData(firstPost);
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a slug only permalink', function (done) {
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-                            firstPost.url.should.equal('/html-ipsum/');
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findOne, returning a dated permalink', function (done) {
-                    urlService.getUrlByResourceId.withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/2015/01/01/html-ipsum/');
-
-                    models.Post.findOne({id: testUtils.DataGenerator.Content.posts[0].id})
-                        .then(function (result) {
-                            should.exist(result);
-                            var firstPost = result.toJSON();
-
-                            // published_at of post 1 is 2015-01-01 00:00:00
-                            // default blog TZ is UTC
-                            firstPost.url.should.equal('/2015/01/01/html-ipsum/');
 
                             done();
                         }).catch(done);
@@ -1703,6 +1680,119 @@ describe('Post Model', function () {
                     updated_at: moment().subtract(1, 'day').format()
                 }, _.extend({}, context, {id: postToUpdate.id}));
             });
+        });
+    });
+
+    describe('mobiledoc versioning', function () {
+        it('can create revisions', function () {
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+
+                    return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
+                })
+                .then((updatedPost) => {
+                    updatedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${updatedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
+        });
+
+        it('keeps only 10 last revisions in FIFO style', function () {
+            let revisionedPost;
+            const newPost = {
+                mobiledoc: markdownToMobiledoc('revision: 0')
+            };
+
+            return models.Post.add(newPost, context)
+                .then((createdPost) => {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                })
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    revisionedPost = createdPost;
+
+                    return sequence(_.times(11, (i) => {
+                        return () => {
+                            return models.Post.edit({
+                                mobiledoc: markdownToMobiledoc('revision: ' + (i + 1))
+                            }, _.extend({}, context, {id: createdPost.id}));
+                        };
+                    }));
+                })
+                .then(() => models.MobiledocRevision
+                    .findAll({
+                        filter: `post_id:${revisionedPost.id}`,
+                    })
+                )
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 10);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('revision: 11'));
+                    mobiledocRevisions.toJSON()[9].mobiledoc.should.equal(markdownToMobiledoc('revision: 2'));
+                });
+        });
+
+        it('creates 2 revisions after first edit for previously unversioned post', function () {
+            let unversionedPost;
+
+            const newPost = {
+                title: 'post title',
+                mobiledoc: markdownToMobiledoc('a')
+            };
+
+            // passing 'migrating' flag to simulate unversioned post
+            const options = Object.assign(_.clone(context), {migrating: true});
+
+            return models.Post.add(newPost, options)
+                .then((createdPost) => {
+                    should.exist(createdPost);
+                    unversionedPost = createdPost;
+                    createdPost.get('mobiledoc').should.equal(markdownToMobiledoc('a'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${createdPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 0);
+
+                    return models.Post.edit({
+                        mobiledoc: markdownToMobiledoc('b')
+                    }, _.extend({}, context, {id: unversionedPost.id}));
+                })
+                .then((editedPost) => {
+                    should.exist(editedPost);
+                    editedPost.get('mobiledoc').should.equal(markdownToMobiledoc('b'));
+
+                    return models.MobiledocRevision
+                        .findAll({
+                            filter: `post_id:${editedPost.id}`,
+                        });
+                })
+                .then((mobiledocRevisions) => {
+                    should.equal(mobiledocRevisions.length, 2);
+
+                    mobiledocRevisions.toJSON()[0].mobiledoc.should.equal(markdownToMobiledoc('b'));
+                    mobiledocRevisions.toJSON()[1].mobiledoc.should.equal(markdownToMobiledoc('a'));
+                });
         });
     });
 

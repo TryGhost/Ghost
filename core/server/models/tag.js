@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+
 let Tag, Tags;
 
 Tag = ghostBookshelf.Model.extend({
@@ -63,6 +64,7 @@ Tag = ghostBookshelf.Model.extend({
         var options = Tag.filterOptions(unfilteredOptions, 'toJSON'),
             attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
+        // @NOTE: this serialization should be moved into api layer, it's not being moved as it's not used
         attrs.parent = attrs.parent || attrs.parent_id;
         delete attrs.parent_id;
 
@@ -81,7 +83,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions(),
+        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.

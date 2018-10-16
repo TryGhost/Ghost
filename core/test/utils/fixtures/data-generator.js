@@ -37,8 +37,9 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             title: 'Ghostly Kitchen Sink',
             slug: 'ghostly-kitchen-sink',
-            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
-            published_at: new Date('2015-01-02')
+            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><img src="/content/images/lol.jpg"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
+            published_at: new Date('2015-01-02'),
+            feature_image: '/content/images/2018/hey.jpg'
         },
         {
             id: ObjectId.generate(),
@@ -287,6 +288,11 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Contributor',
             description: 'Contributors'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Admin Integration',
+            description: 'External Apps'
         }
     ],
 
@@ -366,25 +372,43 @@ DataGenerator.Content = {
             event: 'subscriber.removed',
             target_url: 'https://example.com/webhooks/subscriber-removed'
         }
+    ],
+
+    integrations: [
+        {
+            id: ObjectId.generate(),
+            name: 'Test Integration',
+            slug: 'test-integration'
+        }
+    ],
+
+    api_keys: [
+        {
+            id: ObjectId.generate(),
+            type: 'admin',
+            secret: _.repeat('a', 128)
+            // integration_id: DataGenerator.Content.integrations[0].id
+        },
+        {
+            id: ObjectId.generate(),
+            type: 'content',
+            secret: _.repeat('c', 128)
+            // integration_id: DataGenerator.Content.integrations[0].id
+        },
+        {
+            id: ObjectId.generate(),
+            type: 'admin',
+            integration_id: undefined // "internal"
+        }
     ]
 };
 
+// set up belongs_to relationships
 DataGenerator.Content.subscribers[0].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.api_keys[0].integration_id = DataGenerator.Content.integrations[0].id;
+DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integrations[0].id;
 
 DataGenerator.forKnex = (function () {
-    var posts,
-        tags,
-        posts_tags,
-        posts_authors,
-        apps,
-        app_fields,
-        roles,
-        users,
-        roles_users,
-        clients,
-        invites,
-        webhooks;
-
     function createBasic(overrides) {
         var newObj = _.cloneDeep(overrides);
 
@@ -647,7 +671,7 @@ DataGenerator.forKnex = (function () {
         });
     }
 
-    posts = [
+    const posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
         createPost(DataGenerator.Content.posts[2]),
@@ -658,7 +682,7 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[7])
     ];
 
-    tags = [
+    const tags = [
         createTag(DataGenerator.Content.tags[0]),
         createTag(DataGenerator.Content.tags[1]),
         createTag(DataGenerator.Content.tags[2]),
@@ -666,15 +690,16 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[4])
     ];
 
-    roles = [
+    const roles = [
         createBasic(DataGenerator.Content.roles[0]),
         createBasic(DataGenerator.Content.roles[1]),
         createBasic(DataGenerator.Content.roles[2]),
         createBasic(DataGenerator.Content.roles[3]),
-        createBasic(DataGenerator.Content.roles[4])
+        createBasic(DataGenerator.Content.roles[4]),
+        createBasic(DataGenerator.Content.roles[5])
     ];
 
-    users = [
+    const users = [
         createUser(DataGenerator.Content.users[0]),
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
@@ -682,14 +707,14 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[7])
     ];
 
-    clients = [
+    const clients = [
         createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
         createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'}),
         createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'}),
         createClient({name: 'Ghost Backup', slug: 'ghost-backup', type: 'web'})
     ];
 
-    roles_users = [
+    const roles_users = [
         {
             id: ObjectId.generate(),
             user_id: DataGenerator.Content.users[0].id,
@@ -719,7 +744,7 @@ DataGenerator.forKnex = (function () {
 
     // this is not pretty, but the fastest
     // it relies on the created posts/tags
-    posts_tags = [
+    const posts_tags = [
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[0].id,
@@ -758,7 +783,7 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
-    posts_authors = [
+    const posts_authors = [
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[0].id,
@@ -815,25 +840,35 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
-    apps = [
+    const apps = [
         createBasic(DataGenerator.Content.apps[0]),
         createBasic(DataGenerator.Content.apps[1]),
         createBasic(DataGenerator.Content.apps[2])
     ];
 
-    app_fields = [
+    const app_fields = [
         createAppField(DataGenerator.Content.app_fields[0]),
         createAppField(DataGenerator.Content.app_fields[1])
     ];
 
-    invites = [
+    const invites = [
         createInvite({email: 'test1@ghost.org', role_id: DataGenerator.Content.roles[0].id}),
         createInvite({email: 'test2@ghost.org', role_id: DataGenerator.Content.roles[2].id})
     ];
 
-    webhooks = [
+    const webhooks = [
         createWebhook(DataGenerator.Content.webhooks[0]),
         createWebhook(DataGenerator.Content.webhooks[1])
+    ];
+
+    const integrations = [
+        createBasic(DataGenerator.Content.integrations[0])
+    ];
+
+    const api_keys = [
+        createBasic(DataGenerator.Content.api_keys[0]),
+        createBasic(DataGenerator.Content.api_keys[1]),
+        createBasic(DataGenerator.Content.api_keys[2]),
     ];
 
     return {
@@ -870,7 +905,9 @@ DataGenerator.forKnex = (function () {
         users: users,
         roles_users: roles_users,
         clients: clients,
-        webhooks: webhooks
+        webhooks: webhooks,
+        integrations: integrations,
+        api_keys: api_keys
     };
 }());
 

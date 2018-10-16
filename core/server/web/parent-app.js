@@ -1,20 +1,14 @@
-var debug = require('ghost-ignition').debug('app'),
-    express = require('express'),
-
-    // App requires
-    config = require('../config'),
-
-    // middleware
-    compress = require('compression'),
-    netjet = require('netjet'),
-
-    // local middleware
-    ghostLocals = require('./middleware/ghost-locals'),
-    logRequest = require('./middleware/log-request');
+const debug = require('ghost-ignition').debug('web:parent');
+const express = require('express');
+const config = require('../config');
+const compress = require('compression');
+const netjet = require('netjet');
+const shared = require('./shared');
+const urlUtils = require('../services/url/utils');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
-    var parentApp = express();
+    const parentApp = express();
 
     // ## Global settings
 
@@ -22,7 +16,7 @@ module.exports = function setupParentApp(options = {}) {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
-    parentApp.use(logRequest);
+    parentApp.use(shared.middlewares.logRequest);
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
@@ -39,13 +33,15 @@ module.exports = function setupParentApp(options = {}) {
     }
 
     // This sets global res.locals which are needed everywhere
-    parentApp.use(ghostLocals);
+    parentApp.use(shared.middlewares.ghostLocals);
 
     // Mount the  apps on the parentApp
     // API
     // @TODO: finish refactoring the API app
     // @TODO: decide what to do with these paths - config defaults? config overrides?
-    parentApp.use('/ghost/api/v0.1/', require('./api/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'deprecated'}), require('./api/v0.1/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'active', type: 'content'}), require('./api/v2/content/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'active', type: 'admin'}), require('./api/v2/admin/app')());
 
     // ADMIN
     parentApp.use('/ghost', require('./admin')());
