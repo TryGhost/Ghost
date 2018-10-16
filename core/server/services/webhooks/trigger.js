@@ -3,6 +3,7 @@ const common = require('../../lib/common');
 const models = require('../../models');
 const pipeline = require('../../../server/lib/promise/pipeline');
 const request = require('../../../server/lib/request');
+const debug = require('ghost-ignition').debug('services:webhooks:trigger');
 
 function makeRequests(webhooksCollection, payload, options) {
     _.each(webhooksCollection.models, (webhook) => {
@@ -11,6 +12,10 @@ function makeRequests(webhooksCollection, payload, options) {
         const webhookId = webhook.get('id');
         const reqPayload = JSON.stringify(payload);
 
+        models.Webhook.edit({'last_triggered_at': Date.now()}, {id: webhookId}).catch((err) => {
+            debug('Unable to update webhooks last_triggered_at in db', err);
+            return Promise.reject(err);
+        });
         common.logging.info('webhook.trigger', event, targetUrl);
         request(targetUrl, {
             body: reqPayload,
