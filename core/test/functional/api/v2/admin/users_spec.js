@@ -337,11 +337,11 @@ describe('User API V2', function () {
                         modifiedUserData.users[0].created_by = ObjectId.generate();
                         modifiedUserData.users[0].updated_by = ObjectId.generate();
 
-                        delete jsonResponse.users[0].id;
+                        delete modifiedUserData.users[0].id;
 
                         request.put(localUtils.API.getApiQuery('users/me/'))
                             .set('Origin', config.get('url'))
-                            .send(jsonResponse)
+                            .send(modifiedUserData)
                             .expect(200)
                             .end(function (err, res) {
                                 if (err) {
