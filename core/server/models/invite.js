@@ -46,11 +46,17 @@ Invite = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options);
     },
 
-    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions /*hasUserPermission, hasAppPermission, result*/) {
+    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission /*result*/) {
         const isAdd = (action === 'add');
 
         if (!isAdd) {
-            return Promise.resolve();
+            if (hasUserPermission && hasAppPermission) {
+                return Promise.resolve();
+            }
+
+            return Promise.reject(new common.errors.NoPermissionError({
+                message: common.i18n.t('errors.models.invite.notEnoughPermission')
+            }));
         }
 
         // CASE: make sure user is allowed to add a user with this role
@@ -83,6 +89,14 @@ Invite = ghostBookshelf.Model.extend({
                         message: common.i18n.t('errors.api.invites.notAllowedToInvite')
                     });
                 }
+
+                if (hasUserPermission && hasAppPermission) {
+                    return Promise.resolve();
+                }
+
+                return Promise.reject(new common.errors.NoPermissionError({
+                    message: common.i18n.t('errors.models.invite.notEnoughPermission')
+                }));
             });
     }
 });

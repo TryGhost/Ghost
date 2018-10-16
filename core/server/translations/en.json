@@ -215,6 +215,9 @@
             "subscriber": {
                 "notEnoughPermission": "You do not have permission to perform this action"
             },
+            "invite": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
             "post": {
                 "postNotFound": "Post not found.",
                 "untitled": "(Untitled)",
