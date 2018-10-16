@@ -17,6 +17,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.enable('trust proxy');
 
     parentApp.use(shared.middlewares.logRequest);
+    parentApp.use(shared.middlewares.triggerWebhooks);
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
