@@ -32,7 +32,11 @@ const STAGES = {
     serialisation: {
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
-            return shared.serializers.handle.input(apiConfig, apiUtils.serializers.input, frame);
+            return shared.serializers.handle.input(
+                Object.assign({data: apiImpl.data}, apiConfig),
+                apiUtils.serializers.input,
+                frame
+            );
         },
         output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
