@@ -75,7 +75,7 @@ module.exports = {
         return require('./url-redirects');
     },
 
-    get triggerWebhooks() {
-        return require('./trigger-webhooks');
+    get emitEvents() {
+        return require('./emit-events');
     }
 };
