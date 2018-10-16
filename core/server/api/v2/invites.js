@@ -107,7 +107,18 @@ module.exports = {
             let invite;
             let emailData;
 
-            return models.Invite.add(frame.data.invites[0], frame.options)
+            // CASE: ensure we destroy the invite before
+            return models.Invite.findOne({email: frame.data.invites[0].email}, frame.options)
+                .then((invite) => {
+                    if (!invite) {
+                        return;
+                    }
+
+                    return invite.destroy(frame.options);
+                })
+                .then(() => {
+                    return models.Invite.add(frame.data.invites[0], frame.options);
+                })
                 .then((_invite) => {
                     invite = _invite;
 
