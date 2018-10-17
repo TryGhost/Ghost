@@ -30,29 +30,29 @@ function entryLookup(postUrl, routerOptions, locals) {
         isEditURL = true;
     }
 
+    let resourceType = routerOptions.resourceType;
+
+    // @NOTE: v0.1 does not have a pages controller.
+    // @TODO: remove me when we drop v0.1
+    if (!api[resourceType]) {
+        resourceType = 'posts';
+    }
+
     /**
-     * Query database to find post.
-     *
-     * @TODO:
-     *
-     * We actually need to differentiate here between pages and posts controller for v2.
-     * Currently this API call is without context object and it works out of the box, because the v2 serializer
-     * only forces `page:true|false` if you send a content key.
-     *
-     * It's also a little tricky, because the v0.1 has no pages controller.
-     *
+     * Query database to find entry.
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
-    return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
+    return api[resourceType]
+        .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
         .then(function then(result) {
-            const post = result.posts[0];
+            const entry = result[resourceType][0];
 
-            if (!post) {
+            if (!entry) {
                 return Promise.resolve();
             }
 
             return {
-                post: post,
+                entry: entry,
                 isEditURL: isEditURL,
                 isUnknownOption: isEditURL ? false : !!params.options
             };

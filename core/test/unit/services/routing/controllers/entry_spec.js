@@ -84,7 +84,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves({
-                post: post
+                entry: post
             });
 
         renderStub.callsFake(function () {
@@ -102,7 +102,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isUnknownOption: true,
-                    post: post
+                    entry: post
                 });
 
             controllers.entry(req, res, function (err) {
@@ -117,7 +117,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isEditURL: true,
-                    post: post
+                    entry: post
                 });
 
             urlService.utils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
@@ -141,7 +141,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
-                    post: post
+                    entry: post
                 });
 
             controllers.entry(req, res, function (err) {
@@ -165,7 +165,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
-                    post: post
+                    entry: post
                 });
 
             urlService.utils.redirect301.callsFake(function (res, postUrl) {
@@ -194,7 +194,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
-                    post: post
+                    entry: post
                 });
 
             urlService.utils.redirect301.callsFake(function (res, postUrl) {
