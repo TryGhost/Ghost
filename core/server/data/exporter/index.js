@@ -6,7 +6,7 @@ var _ = require('lodash'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
     models = require('../../models'),
-    EXCLUDED_TABLES = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains'],
+    EXCLUDED_TABLES = ['accesstokens', 'refreshtokens', 'clients', 'client_trusted_domains', 'sessions'],
     EXCLUDED_FIELDS_CONDITIONS = {
         settings: [{
             operator: 'whereNot',
