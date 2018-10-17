@@ -1,4 +1,8 @@
 module.exports = {
+    get integrations() {
+        return require('./integrations');
+    },
+
     get pages() {
         return require('./pages');
     },
