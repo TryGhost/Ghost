@@ -1,0 +1,35 @@
+<header class="modal-header" data-test-modal="new-integration">
+    <h1>New custom integration</h1>
+</header>
+<button class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}</button>
+
+<div class="modal-body">
+    <fieldset>
+        {{#gh-form-group errors=integration.errors hasValidated=integration.hasValidated property="name"}}
+            <label for="new-integration-name">Name</label>
+            <input type="text"
+                value={{integration.name}}
+                oninput={{action "updateName" value="target.value"}}
+                id="new-integration-name"
+                class="gh-input"
+                placeholder="Integration name..."
+                name="integration-name"
+                autofocus="autofocus"
+                autocapitalize="off"
+                autocorrect="off"
+                data-test-input="new-integration-name">
+            {{gh-error-message errors=integration.errors property="name" data-test-error="new-integration-name"}}
+        {{/gh-form-group}}
+    </fieldset>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-new-integration">
+        <span>Cancel</span>
+    </button>
+    {{gh-task-button "Create"
+        successText="Created"
+        task=createIntegration
+        class="gh-btn gh-btn-green gh-btn-icon"
+        data-test-button="create-integration"}}
+</div>

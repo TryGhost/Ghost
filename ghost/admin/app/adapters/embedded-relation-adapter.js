@@ -1,6 +1,7 @@
 import BaseAdapter from 'ghost-admin/adapters/base';
 import {get} from '@ember/object';
 import {isNone} from '@ember/utils';
+import {underscore} from '@ember/string';
 
 // EmbeddedRelationAdapter will augment the query object in calls made to
 // DS.Store#findRecord, findAll, query, and queryRecord with the correct "includes"
@@ -76,7 +77,7 @@ export default BaseAdapter.extend({
         let url = this.buildURL(modelName, id, snapshot, requestType, query);
 
         if (includes.length) {
-            url += `?include=${includes.join(',')}`;
+            url += `?include=${includes.map(underscore).join(',')}`;
         }
 
         return url;
@@ -92,7 +93,7 @@ export default BaseAdapter.extend({
             if (typeof options === 'string' || typeof options === 'number') {
                 query = {};
                 query.id = options;
-                query.include = toInclude.join(',');
+                query.include = toInclude.map(underscore).join(',');
             } else if (typeof options === 'object' || isNone(options)) {
                 // If this is a find all (no existing query object) build one and attach
                 // the includes.

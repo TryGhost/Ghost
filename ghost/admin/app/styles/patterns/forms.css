@@ -148,6 +148,7 @@ select {
 
 .gh-input.error,
 .error .gh-input,
+.error .gh-select select,
 .error .ember-power-select-multiple-trigger,
 .gh-select.error,
 select.error {

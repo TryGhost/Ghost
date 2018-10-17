@@ -1,0 +1,92 @@
+<header class="modal-header" data-test-modal="new-webhook">
+    <h1>New webhook</h1>
+</header>
+<button class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}</button>
+
+<div class="modal-body">
+    <fieldset>
+        {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="name"}}
+            <label for="new-webhook-name">Name</label>
+            {{gh-text-input
+                value=(readonly webhook.name)
+                input=(action (mut webhook.name) value="target.value")
+                focus-out=(action "validate" "name" target=webhook)
+                id="new-webhook-name"
+                name="name"
+                class="gh-input"
+                placeholder="Webhook name..."
+                autofocus="autofocus"
+                autocapitalize="off"
+                autocorrect="off"
+                data-test-input="new-webhook-name"}}
+            {{gh-error-message errors=webhook.errors property="name" data-test-error="new-webhook-name"}}
+        {{/gh-form-group}}
+    </fieldset>
+    <fieldset>
+        {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="event"}}
+            <label for="new-webhook-event">Event</label>
+            <span class="gh-select">
+                {{one-way-select webhook.event
+                    options=availableEvents
+                    optionValuePath="event"
+                    optionLabelPath="name"
+                    optionTargetPath="event"
+                    includeBlank=true
+                    prompt="Select an event:"
+                    update=(action "selectEvent")
+                    id="new-webhook-event"
+                    name="event"
+                    data-test-select="new-webhook-event"}}
+                {{svg-jar "arrow-down-small"}}
+            </span>
+            {{gh-error-message errors=webhook.errors property="event" data-test-error="new-webhook-event"}}
+        {{/gh-form-group}}
+    </fieldset>
+    <fieldset>
+        {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="targetUrl"}}
+            <label for="new-webhook-targetUrl">Target URL</label>
+            {{gh-text-input
+                value=(readonly webhook.targetUrl)
+                input=(action (mut webhook.targetUrl) value="target.value")
+                focus-out=(action "validate" "targetUrl" target=webhook)
+                id="new-webhook-targetUrl"
+                name="targetUrl"
+                class="gh-input"
+                placeholder="Webhook target URL..."
+                autofocus="autofocus"
+                autocapitalize="off"
+                autocorrect="off"
+                data-test-input="new-webhook-targetUrl"}}
+            {{gh-error-message errors=webhook.errors property="targetUrl" data-test-error="new-webhook-targetUrl"}}
+        {{/gh-form-group}}
+    </fieldset>
+    <fieldset>
+        {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="secret"}}
+            <label for="new-webhook-secret">Secret</label>
+            {{gh-text-input
+                value=(readonly webhook.secret)
+                oninput=(action (mut webhook.secret) value="target.value")
+                focus-out=(action "validate" "secret" target=webhook)
+                id="new-webhook-secret"
+                name="secret"
+                class="gh-input"
+                placeholder="Webhook secret..."
+                autofocus="autofocus"
+                autocapitalize="off"
+                autocorrect="off"
+                data-test-input="new-webhook-secret"}}
+            {{gh-error-message errors=webhook.errors property="secret" data-test-error="new-webhook-secret"}}
+        {{/gh-form-group}}
+    </fieldset>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-new-webhook">
+        <span>Cancel</span>
+    </button>
+    {{gh-task-button "Create"
+        successText="Created"
+        task=createWebhook
+        class="gh-btn gh-btn-green gh-btn-icon"
+        data-test-button="create-webhook"}}
+</div>

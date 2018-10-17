@@ -1,5 +1,7 @@
+import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
 import mockConfiguration from './config/configuration';
+import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
@@ -10,18 +12,22 @@ import mockTags from './config/tags';
 import mockThemes from './config/themes';
 import mockUploads from './config/uploads';
 import mockUsers from './config/users';
+import mockWebhooks from './config/webhooks';
 
 // import {versionMismatchResponse} from 'utils';
 
 export default function () {
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
-    this.namespace = '/ghost/api/v0.1'; // make this `api`, for example, if your API is namespaced
+    this.namespace = '/ghost/api/v2/admin'; // make this `api`, for example, if your API is namespaced
     this.timing = 400; // delay for each request, automatically set to 0 during testing
 
     // Mock endpoints here to override real API requests during development, eg...
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockTags(this);
     // this.loadFixtures('settings');
+    mockIntegrations(this);
+    mockApiKeys(this);
+    mockWebhooks(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();

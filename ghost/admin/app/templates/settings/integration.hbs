@@ -1,0 +1,155 @@
+<section class="gh-canvas">
+    <form {{action (perform "save") on="submit"}}>
+        <header class="gh-canvas-header">
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
+                <span>{{svg-jar "arrow-right"}}</span>
+                {{integration.name}}
+            </h2>
+            <section class="view-actions">
+                {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
+            </section>
+        </header>
+
+        <div class="flex flex-row">
+            <figure class="flex items-center" style={{integration-icon-style integration}}>
+                {{#unless integration.iconImage}}
+                    {{svg-jar "integration" class="w-100"}}
+                {{/unless}}
+            </figure>
+            <div class="flex flex-column w-100">
+                {{#gh-validation-status-container
+                    class="flex flex-column w-100 mr3"
+                    errors=integration.errors
+                    hasValidated=integration.hasValidated
+                    property="name"
+                }}
+                    <label for="integration_name">Name</label>
+                    {{gh-text-input
+                        id="integration_name"
+                        class="gh-input"
+                        type="text"
+                        value=(readonly integration.name)
+                        input=(action (mut integration.name) value="target.value")
+                        focus-out=(action "validate" "name" target=integration)
+                        data-test-input="name"
+                    }}
+                    {{gh-error-message errors=integration.errors property="name" data-test-error="name"}}
+                {{/gh-validation-status-container}}
+
+                {{#gh-validation-status-container
+                    class="flex flex-column w-100 mr3"
+                    errors=integration.errors
+                    hasValidated=integration.hasValidated
+                    property="decription"
+                }}
+                    <label for="integration_description">Description</label>
+                    {{gh-text-input
+                        id="integration_description"
+                        class="gh-input"
+                        type="text"
+                        value=(readonly integration.description)
+                        input=(action (mut integration.description) value="target.value")
+                        focus-out=(action "validate" "description" target=integration)
+                        data-test-input="description"
+                    }}
+                    {{gh-error-message errors=integration.errors property="description" data-test-error="description"}}
+                {{/gh-validation-status-container}}
+            </div>
+        </div>
+    </form>
+
+    <div class="gh-setting-header">API Keys</div>
+    <div class="flex flex-row">
+        {{#with integration.contentKey as |contentKey|}}
+            {{#gh-validation-status-container class="flex flex-column w-100 mr3"}}
+                <label for="content_key">Content API Key</label>
+                <div class="relative"
+                    onmouseenter={{action (mut showContentKeyActions) true}}
+                    onmouseleave={{action (mut showContentKeyActions) false}}
+                >
+                    <input id="content_key"
+                        class="gh-input"
+                        type="text"
+                        value={{contentKey.secret}}
+                        disabled="true"
+                        data-test-input="content_key">
+
+                    {{#if showContentKeyActions}}
+                        <div class="absolute top-2 right-2">
+                            <button type="button" {{action "copyContentKey"}}>Copy</button>
+                        </div>
+                    {{/if}}
+                </div>
+            {{/gh-validation-status-container}}
+        {{/with}}
+        {{#with integration.adminKey as |adminKey|}}
+            {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
+                <label for="admin_key">Admin API Key</label>
+                <div class="relative"
+                    onmouseenter={{action (mut showAdminKeyActions) true}}
+                    onmouseleave={{action (mut showAdminKeyActions) false}}
+                >
+                    <input id="admin_key"
+                        class="gh-input"
+                        type="text"
+                        value={{adminKey.secret}}
+                        disabled="true"
+                        data-test-input="admin_key">
+
+                    {{#if showAdminKeyActions}}
+                        <div class="absolute top-2 right-2">
+                            <button type="button" {{action "copyAdminKey"}}>Copy</button>
+                        </div>
+                    {{/if}}
+                </div>
+            {{/gh-validation-status-container}}
+        {{/with}}
+    </div>
+
+    <div class="gh-setting-header">Webhooks</div>
+    <div class="mb10 ba br3 b--lightgrey">
+        <table class="ma0">
+            <thead class="bb b--lightgrey">
+                <tr>
+                    <th class="pa3 br3 br--bottom br--right bg-lightgrey-l1">Name</th>
+                    <th class="pa3 bg-lightgrey-l1">Event</th>
+                    <th class="pa3 bg-lightgrey-l1">URL</th>
+                    <th class="pa3 br3 br--top br--left bg-lightgrey-l1">Last triggered</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each filteredWebhooks as |webhook|}}
+                    <tr>
+                        <td class="pa3">{{webhook.name}}</td>
+                        <td class="pa3">{{webhook.event}}</td>
+                        <td class="pa3">{{webhook.targetUrl}}</td>
+                        <td class="pa3">{{webhook.lastTriggeredAtUTC}}</td>
+                    </tr>
+                {{else}}
+                <tr>
+                    <td colspan="4" class="pa3">
+                        No webhooks configured
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+            <tfoot class="bt b--lightgrey">
+                <tr>
+                    <td colspan="4" class="pa3">
+                        {{#link-to "settings.integration.webhooks.new" integration}}+ Add webhook{{/link-to}}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>
+
+{{#if showUnsavedChangesModal}}
+    {{gh-fullscreen-modal "leave-settings"
+        confirm=(action "leaveScreen")
+        close=(action "toggleUnsavedChangesModal")
+        modifier="action wide"}}
+{{/if}}
+
+{{outlet}}
