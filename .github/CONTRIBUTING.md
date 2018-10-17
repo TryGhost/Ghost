@@ -2,8 +2,6 @@
 
 For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
 
-If you're [raising a bug](https://docs.ghost.org/docs/contributing#bugs) 🐛 please be sure to [include as much info as possible](https://docs.ghost.org/docs/contributing#bug-template) so that we can fix it!
-
 ---
 
 ## Where to Start
