@@ -51,7 +51,42 @@ module.exports = {
                 });
         }
     },
-    edit: {},
+    edit: {
+        permissions: true,
+        data: [
+            'name',
+            'icon_image',
+            'description',
+            'webhooks'
+        ],
+        options: [
+            'id',
+            'include'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                },
+                include: {
+                    values: ['api_keys', 'webhooks']
+                }
+            }
+        },
+        query({data, options}) {
+            return models.Integration.edit(data, Object.assign(options, {require: true}))
+                .catch(models.Integration.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Integration'
+                        })
+                    });
+                })
+                .then((model) => {
+                    return model.fetch(options);
+                });
+        }
+    },
     add: {
         permissions: true,
         data: [

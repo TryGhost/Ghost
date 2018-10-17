@@ -22,6 +22,13 @@ module.exports = {
         frame.response = {
             integrations: [model.toJSON()]
         };
+    },
+    edit(model, apiConfig, frame) {
+        debug('edit');
+
+        frame.response = {
+            integrations: [model.toJSON()]
+        };
     }
 };
 

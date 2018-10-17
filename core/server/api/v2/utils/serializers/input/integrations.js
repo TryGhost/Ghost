@@ -6,5 +6,10 @@ module.exports = {
         debug('add');
 
         frame.data = _.pick(frame.data.integrations[0], apiConfig.data);
+    },
+    edit(apiConfig, frame) {
+        debug('edit');
+
+        frame.data = _.pick(frame.data.integrations[0], apiConfig.data);
     }
 };
