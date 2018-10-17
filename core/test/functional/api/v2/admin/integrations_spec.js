@@ -335,4 +335,53 @@ describe('Integrations API', function () {
                 .end(done);
         });
     });
+
+    describe('DELETE /integrations/:id', function () {
+        it('Can succesfully delete a created integration', function (done) {
+            request.post(localUtils.API.getApiQuery('integrations/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    integrations: [{
+                        name: 'Short Lived Integration'
+                    }]
+                })
+                .expect(200)
+                .end(function (err, {body}) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const [createdIntegration] = body.integrations;
+
+                    request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                        .set('Origin', config.get('url'))
+                        .expect(200)
+                        .end(function (err) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                                .set('Origin', config.get('url'))
+                                .expect(404)
+                                .end(done);
+                        });
+                });
+        });
+
+        it('Will 404 if the integration does not exist', function (done) {
+            request.del(localUtils.API.getApiQuery(`integrations/012345678901234567890123/`))
+                .set('Origin', config.get('url'))
+                .expect(404)
+                .end(done);
+        });
+
+        it('Will delete the associated api_keys and webhooks', function () {
+            /**
+             * @TODO
+             *
+             * We do not have the /apikeys or /webhooks endpoints yet
+             * This will be manually tested by egg before merging
+             */
+        });
+    });
 });

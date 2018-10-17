@@ -39,6 +39,7 @@ module.exports = function apiRoutes() {
     router.get('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.read));
     router.post('/integrations', mw.authAdminAPI, apiv2.http(apiv2.integrations.add));
     router.put('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.edit));
+    router.del('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.destroy));
 
     // ## Schedules
     router.put('/schedules/posts/:id', [

@@ -125,5 +125,27 @@ module.exports = {
             });
         }
     },
-    destroy: {}
+    destroy: {
+        permissions: true,
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        query({options}) {
+            return models.Integration.destroy(Object.assign(options, {require: true}))
+                .catch(models.Integration.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Integration'
+                        })
+                    });
+                });
+        }
+    }
 };
