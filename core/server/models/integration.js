@@ -3,10 +3,11 @@ const ghostBookshelf = require('./base');
 const Integration = ghostBookshelf.Model.extend({
     tableName: 'integrations',
 
-    relationships: ['api_keys'],
+    relationships: ['api_keys', 'webhooks'],
 
     relationshipBelongsTo: {
-        api_keys: 'api_keys'
+        api_keys: 'api_keys',
+        webhooks: 'webhooks'
     },
 
     onSaving(newIntegration, attr, options) {
@@ -26,6 +27,10 @@ const Integration = ghostBookshelf.Model.extend({
 
     api_keys: function apiKeys() {
         return this.hasMany('ApiKey', 'integration_id');
+    },
+
+    webhooks: function webhooks() {
+        return this.hasMany('Webhook', 'integration_id');
     }
 });
 
