@@ -17,7 +17,7 @@ var proxy = require('./proxy'),
     get;
 
 // Endpoints that the helper is able to access
-resources = ['posts', 'tags', 'users'];
+resources = ['posts', 'tags', 'users', 'pages'];
 
 // Short forms of paths which we should understand
 pathAliases = {
