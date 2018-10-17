@@ -81,9 +81,6 @@ module.exports = {
                             resource: 'Integration'
                         })
                     });
-                })
-                .then((model) => {
-                    return model.fetch(options);
                 });
         }
     },
@@ -111,18 +108,13 @@ module.exports = {
             }
         },
         query({data, options}) {
-            return models.Base.transaction((transacting) => {
-                const optionsWithTransacting = Object.assign({transacting}, options);
-                const dataWithApiKeys = Object.assign({
-                    api_keys: [
-                        {type: 'content'},
-                        {type: 'admin'}
-                    ]
-                }, data);
-                return models.Integration.add(dataWithApiKeys, optionsWithTransacting);
-            }).then((model) => {
-                return model.fetch(options);
-            });
+            const dataWithApiKeys = Object.assign({
+                api_keys: [
+                    {type: 'content'},
+                    {type: 'admin'}
+                ]
+            }, data);
+            return models.Integration.add(dataWithApiKeys, options);
         }
     },
     destroy: {
