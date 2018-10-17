@@ -14,6 +14,7 @@
 var join = require('path').join,
     _ = require('lodash'),
     themeConfig = require('./config'),
+    themeEngines = require('./engines'),
     config = require('../../config'),
     engine = require('./engine'),
     // Current instance of ActiveTheme
@@ -45,6 +46,9 @@ class ActiveTheme {
 
         // Create a theme config object
         this._config = themeConfig.create(this._packageInfo);
+
+        // Create a theme engines object
+        this._engines = themeEngines.create(this._packageInfo);
     }
 
     get name() {
@@ -81,6 +85,10 @@ class ActiveTheme {
 
     config(key) {
         return this._config[key];
+    }
+
+    engine(key) {
+        return this._engines[key];
     }
 
     mount(siteApp) {
