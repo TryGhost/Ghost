@@ -34,5 +34,5 @@ module.exports.down = (options) => {
                 common.logging.info(printResult('Dropping', newColumnName));
                 return commands.dropColumn(table, newColumnName, connection);
             });
-    }, {concurrency: 100});
+    });
 };
