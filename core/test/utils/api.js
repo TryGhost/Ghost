@@ -57,7 +57,19 @@ var _ = require('lodash'),
         themes: ['themes'],
         invites: ['invites', 'meta'],
         invite: _(schema.invites).keys().without('token').value(),
-        webhook: _.keys(schema.webhooks)
+        webhook: {
+            default: _(schema.webhooks)
+                .keys()
+                .without(
+                    'name',
+                    'last_triggered_at',
+                    'last_triggered_error',
+                    'last_triggered_status',
+                    'secret',
+                    'integration_id'
+                )
+                .value()
+        }
     };
 
 function getURL() {
