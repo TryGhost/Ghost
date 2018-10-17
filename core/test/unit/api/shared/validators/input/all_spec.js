@@ -79,6 +79,34 @@ describe('Unit: api/shared/validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame);
         });
 
+        it('supports include being an array', function () {
+            const frame = {
+                options: {
+                    context: {},
+                    slug: 'slug',
+                    include: ['tags', 'authors'],
+                    page: 2
+                }
+            };
+
+            const apiConfig = {
+                options: {
+                    include: {
+                        values: ['tags', 'authors'],
+                        required: true
+                    }
+                }
+            };
+
+            return shared.validators.input.all.all(apiConfig, frame)
+                .then(() => {
+                    should.exist(frame.options.page);
+                    should.exist(frame.options.slug);
+                    should.exist(frame.options.include);
+                    should.exist(frame.options.context);
+                });
+        });
+
         it('default include array notation', function () {
             const frame = {
                 options: {
