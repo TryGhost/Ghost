@@ -349,6 +349,9 @@
             "posts": {
                 "postNotFound": "Post not found."
             },
+            "pages": {
+                "pageNotFound": "Page not found."
+            },
             "job": {
                 "notFound": "Job not found.",
                 "publishInThePast": "Use the force flag to publish a post in the past."
