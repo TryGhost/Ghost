@@ -48,7 +48,7 @@ module.exports = function collectionController(req, res, next) {
 
             // CASE: does this post belong to this collection?
             result.posts = _.filter(result.posts, (post) => {
-                if (urlService.owns(res.routerOptions.identifier, post.url)) {
+                if (urlService.owns(res.routerOptions.identifier, post.id)) {
                     return post;
                 }
             });

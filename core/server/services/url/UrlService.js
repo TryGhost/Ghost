@@ -181,8 +181,8 @@ class UrlService {
         return '/404/';
     }
 
-    owns(routerId, url) {
-        debug('owns', routerId, url);
+    owns(routerId, id) {
+        debug('owns', routerId, id);
 
         let urlGenerator;
 
@@ -199,7 +199,7 @@ class UrlService {
             return false;
         }
 
-        return urlGenerator.hasUrl(url);
+        return urlGenerator.hasId(id);
     }
 
     getPermalinkByUrl(url, options) {
