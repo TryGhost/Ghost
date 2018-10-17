@@ -1,16 +1,24 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    ghostLocals = require('../../../../server/web/shared/middlewares/ghost-locals'),
-
-    sandbox = sinon.sandbox.create();
+const should = require('should');
+const sinon = require('sinon');
+const ghostLocals = require('../../../../server/web/shared/middlewares/ghost-locals');
+const themeService = require('../../../../server/services/themes');
+const sandbox = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
-    var req, res, next;
+    let req, res, next;
 
     beforeEach(function () {
         req = sandbox.spy();
         res = sandbox.spy();
         next = sandbox.spy();
+
+        sandbox.stub(themeService, 'getActive').callsFake(() => {
+           return {
+               engine() {
+                   return 'v0.1';
+               }
+           };
+        });
     });
 
     afterEach(function () {
@@ -26,7 +34,9 @@ describe('Theme Handler', function () {
             res.locals.should.be.an.Object();
             should.exist(res.locals.version);
             should.exist(res.locals.safeVersion);
+            should.exist(res.locals.apiVersion);
             res.locals.relativeUrl.should.equal(req.path);
+            res.locals.apiVersion.should.equal('v0.1');
             next.called.should.be.true();
         });
     });

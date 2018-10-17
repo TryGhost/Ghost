@@ -1,4 +1,5 @@
 const ghostVersion = require('../../../lib/ghost-version');
+const themeService = require('../../../services/themes');
 
 // ### GhostLocals Middleware
 // Expose the standard locals that every request will need to have available
@@ -11,6 +12,8 @@ module.exports = function ghostLocals(req, res, next) {
     res.locals.safeVersion = ghostVersion.safe;
     // relative path from the URL
     res.locals.relativeUrl = req.path;
+    // make ghost api version available for the theme + routing
+    res.locals.apiVersion = themeService.getActive().engine('ghost-api');
 
     next();
 };
