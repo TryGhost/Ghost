@@ -19,7 +19,7 @@ module.exports.up = (options) => {
                 common.logging.info(printResult('Adding', newColumnName));
                 return commands.addColumn(table, newColumnName, connection);
             });
-    }, {concurrency: 100});
+    });
 };
 
 module.exports.down = (options) => {
