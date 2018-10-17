@@ -19,7 +19,7 @@ describe('Integrations API', function () {
             });
     });
 
-    const findKey = type => object => object.type === type;
+    const findBy = (prop, val) => object => object[prop] === val;
 
     describe('POST /integrations/', function () {
         it('Can successfully create a single integration with auto generated content and admin api key', function (done) {
@@ -45,10 +45,10 @@ describe('Integrations API', function () {
 
                     should.equal(integration.api_keys.length, 2);
 
-                    const contentApiKey = integration.api_keys.find(findKey('content'));
+                    const contentApiKey = integration.api_keys.find(findBy('type', 'content'));
                     should.equal(contentApiKey.integration_id, integration.id);
 
-                    const adminApiKey = integration.api_keys.find(findKey('admin'));
+                    const adminApiKey = integration.api_keys.find(findBy('type', 'admin'));
                     should.equal(adminApiKey.integration_id, integration.id);
 
                     done();
@@ -137,5 +137,58 @@ describe('Integrations API', function () {
                 .end(done);
         });
     });
-});
 
+    describe('GET /integrations/', function () {
+        it('Can successfully get *all* created integrations with api_keys', function (done) {
+            request.post(localUtils.API.getApiQuery('integrations/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    integrations: [{
+                        name: 'Integrate with this!'
+                    }]
+                })
+                .expect(200)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    request.post(localUtils.API.getApiQuery('integrations/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            integrations: [{
+                                name: 'Winter-(is)-great'
+                            }]
+                        })
+                        .expect(200)
+                        .end(function (err) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            request.get(localUtils.API.getApiQuery(`integrations/?include=api_keys&limit=all`))
+                                .set('Origin', config.get('url'))
+                                .expect('Content-Type', /json/)
+                                .expect('Cache-Control', testUtils.cacheRules.private)
+                                .expect(200)
+                                .end(function (err, {body}) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    // This is the only page
+                                    should.equal(body.meta.pagination.page, 1);
+                                    should.equal(body.meta.pagination.pages, 1);
+                                    should.equal(body.meta.pagination.next, null);
+                                    should.equal(body.meta.pagination.prev, null);
+
+                                    body.integrations.forEach(integration => {
+                                        should.exist(integration.api_keys);
+                                    });
+
+                                    done();
+                                });
+                        });
+                });
+        });
+    });
+});

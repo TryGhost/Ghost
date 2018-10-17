@@ -3,7 +3,23 @@ const models = require('../../models');
 
 module.exports = {
     docName: 'integrations',
-    browse: {},
+    browse: {
+        permissions: true,
+        options: [
+            'include',
+            'limit'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: ['api_keys', 'webhooks']
+                }
+            }
+        },
+        query({options}) {
+            return models.Integration.findPage(options);
+        }
+    },
     read: {
         permissions: true,
         data: [

@@ -35,6 +35,7 @@ module.exports = function apiRoutes() {
 
     // # Integrations
 
+    router.get('/integrations', mw.authAdminAPI, apiv2.http(apiv2.integrations.browse));
     router.get('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.read));
     router.post('/integrations', mw.authAdminAPI, apiv2.http(apiv2.integrations.add));
 
