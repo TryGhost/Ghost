@@ -33,6 +33,14 @@ function postLookup(postUrl, routerOptions, locals) {
     /**
      * Query database to find post.
      *
+     * @TODO:
+     *
+     * We actually need to differentiate here between pages and posts controller for v2.
+     * Currently this API call is without context object and it works out of the box, because the v2 serializer
+     * only forces `page:true|false` if you send a content key.
+     *
+     * It's also a little tricky, because the v0.1 has no pages controller.
+     *
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
     return api.posts.read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
