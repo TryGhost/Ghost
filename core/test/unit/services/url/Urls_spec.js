@@ -93,6 +93,8 @@ describe('Unit: services/url/Urls', function () {
 
     it('fn: getByResourceId', function () {
         urls.getByResourceId('object-id-2').url.should.eql('/something/');
+        should.exist(urls.getByResourceId('object-id-2').generatorId);
+        urls.getByResourceId('object-id-2').generatorId.should.eql(1);
     });
 
     it('fn: getByGeneratorId', function () {

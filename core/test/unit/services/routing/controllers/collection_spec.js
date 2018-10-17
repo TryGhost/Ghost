@@ -56,7 +56,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sandbox.stub(filters, 'doFilter');
 
         sandbox.stub(urlService, 'owns');
-        urlService.owns.withArgs('identifier', posts[0].url).returns(true);
+        urlService.owns.withArgs('identifier', posts[0].id).returns(true);
 
         req = {
             path: '/',
@@ -284,10 +284,10 @@ describe('Unit - services/routing/controllers/collection', function () {
         res.routerOptions.filter = 'featured:true';
 
         urlService.owns.reset();
-        urlService.owns.withArgs('identifier', posts[0].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[1].url).returns(true);
-        urlService.owns.withArgs('identifier', posts[2].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[3].url).returns(false);
+        urlService.owns.withArgs('identifier', posts[0].id).returns(false);
+        urlService.owns.withArgs('identifier', posts[1].id).returns(true);
+        urlService.owns.withArgs('identifier', posts[2].id).returns(false);
+        urlService.owns.withArgs('identifier', posts[3].id).returns(false);
 
         fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({

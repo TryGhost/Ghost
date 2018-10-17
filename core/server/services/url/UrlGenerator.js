@@ -171,10 +171,10 @@ class UrlGenerator {
         resource.addListener('removed', onRemoved.bind(this));
     }
 
-    hasUrl(url) {
-        const existingUrl = this.urls.getByUrl(url);
+    hasId(id) {
+        const existingUrl = this.urls.getByResourceId(id);
 
-        if (existingUrl.length && existingUrl[0].generatorId === this.uid) {
+        if (existingUrl && existingUrl.generatorId === this.uid) {
             return true;
         }
 
