@@ -46,7 +46,7 @@ describe('Webhooks API', function () {
                         should.exist(jsonResponse.webhooks);
 
                         testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook',
-                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'api_version']);
+                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'api_version', 'status']);
 
                         jsonResponse.webhooks[0].event.should.equal(newWebhook.event);
                         jsonResponse.webhooks[0].target_url.should.equal(newWebhook.target_url);
@@ -79,7 +79,7 @@ describe('Webhooks API', function () {
                         should.exist(jsonResponse.webhooks);
 
                         testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook',
-                            null, ['integration_id', 'last_triggered_at']);
+                            null, ['integration_id', 'last_triggered_at', 'status']);
 
                         jsonResponse.webhooks[0].event.should.equal(webhookData.event);
                         jsonResponse.webhooks[0].target_url.should.equal(webhookData.target_url);
@@ -117,7 +117,7 @@ describe('Webhooks API', function () {
 
                         should.exist(jsonResponse.webhooks);
                         testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook',
-                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'api_version']);
+                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'api_version', 'status']);
                         jsonResponse.webhooks[0].event.should.equal(newWebhook.event);
                         jsonResponse.webhooks[0].target_url.should.equal(newWebhook.target_url);
 
