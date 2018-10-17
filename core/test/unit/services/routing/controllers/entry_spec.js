@@ -9,7 +9,7 @@ const should = require('should'),
     EDITOR_URL = '/editor/';
 
 describe('Unit - services/routing/controllers/entry', function () {
-    let req, res, postLookUpStub, secureStub, renderStub, post, page;
+    let req, res, entryLookUpStub, secureStub, renderStub, post, page;
 
     beforeEach(function () {
         post = testUtils.DataGenerator.forKnex.createPost();
@@ -18,11 +18,11 @@ describe('Unit - services/routing/controllers/entry', function () {
         page = testUtils.DataGenerator.forKnex.createPost({page: 1});
 
         secureStub = sandbox.stub();
-        postLookUpStub = sandbox.stub();
+        entryLookUpStub = sandbox.stub();
         renderStub = sandbox.stub();
 
-        sandbox.stub(helpers, 'postLookup').get(function () {
-            return postLookUpStub;
+        sandbox.stub(helpers, 'entryLookup').get(function () {
+            return entryLookUpStub;
         });
 
         sandbox.stub(helpers, 'secure').get(function () {
@@ -59,7 +59,7 @@ describe('Unit - services/routing/controllers/entry', function () {
     it('resource not found', function (done) {
         req.path = '/does-not-exist/';
 
-        postLookUpStub.withArgs(req.path, res.routerOptions)
+        entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves(null);
 
         controllers.entry(req, res, function (err) {
@@ -82,7 +82,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             }
         });
 
-        postLookUpStub.withArgs(req.path, res.routerOptions)
+        entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves({
                 post: post
             });
@@ -99,7 +99,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         it('isUnknownOption: true', function (done) {
             req.path = post.url;
 
-            postLookUpStub.withArgs(req.path, res.routerOptions)
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isUnknownOption: true,
                     post: post
@@ -114,7 +114,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         it('isEditURL: true', function (done) {
             req.path = post.url;
 
-            postLookUpStub.withArgs(req.path, res.routerOptions)
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     isEditURL: true,
                     post: post
@@ -139,7 +139,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.routerOptions)
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });
@@ -163,7 +163,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.routerOptions)
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });
@@ -192,7 +192,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 }
             });
 
-            postLookUpStub.withArgs(req.path, res.routerOptions)
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     post: post
                 });
