@@ -66,6 +66,9 @@ module.exports = function entryController(req, res, next) {
              *
              * @NOTE:
              * This file is used for v0.1 and v2. v0.1 returns relative urls, v2 returns absolute urls.
+             *
+             * @TODO:
+             * Simplify if we drop v0.1.
              */
             if (urlService.utils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');
