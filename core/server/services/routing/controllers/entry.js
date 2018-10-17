@@ -63,12 +63,15 @@ module.exports = function entryController(req, res, next) {
              * @NOTE:
              *
              * Ensure we redirect to the correct post url including subdirectory.
+             *
+             * @NOTE:
+             * This file is used for v0.1 and v2. v0.1 returns relative urls, v2 returns absolute urls.
              */
-            if (post.url !== req.path) {
+            if (urlService.utils.absoluteToRelative(post.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');
 
                 return urlService.utils.redirect301(res, url.format({
-                    pathname: urlService.utils.createUrl(post.url, false, false, true),
+                    pathname: url.parse(post.url).pathname,
                     search: url.parse(req.originalUrl).search
                 }));
             }
