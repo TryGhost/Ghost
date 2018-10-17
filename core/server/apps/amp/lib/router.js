@@ -63,7 +63,7 @@ function getPostData(req, res, next) {
         }));
     }
 
-    helpers.postLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks})
+    helpers.postLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks}, res.locals)
         .then((result) => {
             if (result && result.post) {
                 req.body.post = result.post;

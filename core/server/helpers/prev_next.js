@@ -49,10 +49,11 @@ buildApiOptions = function buildApiOptions(options, post) {
 };
 
 fetch = function fetch(options, data) {
-    var self = this,
-        apiOptions = buildApiOptions(options, this);
+    const self = this;
+    const apiOptions = buildApiOptions(options, this);
+    const apiVersion = data.root._locals.apiVersion;
 
-    return api.posts
+    return api[apiVersion].posts
         .browse(apiOptions)
         .then(function handleSuccess(result) {
             var related = result.posts[0];

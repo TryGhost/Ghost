@@ -2,14 +2,14 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     url = require('url'),
     debug = require('ghost-ignition').debug('services:routing:helpers:post-lookup'),
-    routeMatch = require('path-match')(),
-    api = require('../../../api');
+    routeMatch = require('path-match')();
 
-function postLookup(postUrl, routerOptions) {
+function postLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
-    const targetPath = url.parse(postUrl).path,
-        permalinks = routerOptions.permalinks;
+    const api = require('../../../api')[locals.apiVersion];
+    const targetPath = url.parse(postUrl).path;
+    const permalinks = routerOptions.permalinks;
 
     let isEditURL = false;
 

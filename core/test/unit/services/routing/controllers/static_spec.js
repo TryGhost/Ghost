@@ -42,9 +42,10 @@ describe('Unit - services/routing/controllers/static', function () {
 
         sandbox.stub(themeService, 'getActive').returns({
             config: function (key) {
-               key.should.eql('posts_per_page');
-               return postsPerPage;
-           }
+                if (key === 'posts_per_page') {
+                    return postsPerPage;
+                }
+            }
         });
 
         sandbox.stub(helpers, 'renderer').get(function () {
@@ -64,7 +65,10 @@ describe('Unit - services/routing/controllers/static', function () {
         res = {
             routerOptions: {},
             render: sinon.spy(),
-            redirect: sinon.spy()
+            redirect: sinon.spy(),
+            locals: {
+                apiVersion: 'v0.1'
+            }
         };
     });
 

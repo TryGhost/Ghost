@@ -6,7 +6,7 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit - services/routing/helpers/fetch-data', function () {
-    let posts, tags, users;
+    let posts, tags, locals;
 
     beforeEach(function () {
         posts = [
@@ -34,6 +34,8 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             });
 
         sandbox.stub(api.tags, 'read').resolves({tags: tags});
+
+        locals = {apiVersion: 'v0.1'};
     });
 
     afterEach(function () {
@@ -41,7 +43,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
     });
 
     it('should handle no options', function (done) {
-        helpers.fetchData().then(function (result) {
+        helpers.fetchData(null, null, locals).then(function (result) {
             should.exist(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
@@ -56,7 +58,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
     });
 
     it('should handle path options with page/limit', function (done) {
-        helpers.fetchData({page: 2, limit: 10}).then(function (result) {
+        helpers.fetchData({page: 2, limit: 10}, null, locals).then(function (result) {
             should.exist(result);
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
@@ -89,7 +91,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             }
         };
 
-        helpers.fetchData(pathOptions, routerOptions).then(function (result) {
+        helpers.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             should.exist(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
@@ -123,7 +125,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             }
         };
 
-        helpers.fetchData(pathOptions, routerOptions).then(function (result) {
+        helpers.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             should.exist(result);
 
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
@@ -159,7 +161,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             }
         };
 
-        helpers.fetchData(pathOptions, routerOptions).then(function (result) {
+        helpers.fetchData(pathOptions, routerOptions, locals).then(function (result) {
             should.exist(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('tag');

@@ -1,10 +1,10 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('services:routing:controllers:static'),
-    api = require('../../../api'),
     helpers = require('../helpers');
 
-function processQuery(query) {
+function processQuery(query, locals) {
+    const api = require('../../../api')[locals.apiVersion];
     query = _.cloneDeep(query);
 
     // Return a promise for the api query
@@ -17,7 +17,7 @@ module.exports = function staticController(req, res, next) {
     let props = {};
 
     _.each(res.routerOptions.data, function (query, name) {
-        props[name] = processQuery(query);
+        props[name] = processQuery(query, res.locals);
     });
 
     return Promise.props(props)
