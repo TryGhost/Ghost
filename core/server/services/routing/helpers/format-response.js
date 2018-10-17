@@ -33,6 +33,11 @@ function formatPageResponse(result) {
 
 /**
  * similar to formatPageResponse, but for entries (post or page)
+ *
+ * @TODO
+ * In the future, we should return {page: entry} or {post:entry).
+ * But for now, we would break the themes if we just change it.
+ *
  * @return {Object} containing page variables
  */
 function formatResponse(post) {
