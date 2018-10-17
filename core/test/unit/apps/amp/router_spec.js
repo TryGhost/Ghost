@@ -123,8 +123,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).resolves({
-                post: post
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'}).resolves({
+                entry: post
             });
 
             ampController.getPostData(req, res, function () {
@@ -139,8 +139,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).resolves({
-                post: post
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'}).resolves({
+                entry: post
             });
 
             ampController.getPostData(req, res, function () {
@@ -154,7 +154,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).rejects(new common.errors.NotFoundError());
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'})
+                .rejects(new common.errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {
                 (err instanceof common.errors.NotFoundError).should.be.true();
