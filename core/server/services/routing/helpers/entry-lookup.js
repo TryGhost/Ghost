@@ -4,7 +4,7 @@ const _ = require('lodash'),
     debug = require('ghost-ignition').debug('services:routing:helpers:post-lookup'),
     routeMatch = require('path-match')();
 
-function postLookup(postUrl, routerOptions, locals) {
+function entryLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
     const api = require('../../../api')[locals.apiVersion];
@@ -59,4 +59,4 @@ function postLookup(postUrl, routerOptions, locals) {
         });
 }
 
-module.exports = postLookup;
+module.exports = entryLookup;
