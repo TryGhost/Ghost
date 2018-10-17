@@ -1,9 +1,40 @@
+const common = require('../../lib/common');
 const models = require('../../models');
 
 module.exports = {
     docName: 'integrations',
     browse: {},
-    read: {},
+    read: {
+        permissions: true,
+        data: [
+            'id'
+        ],
+        options: [
+            'include'
+        ],
+        validation: {
+            data: {
+                id: {
+                    required: true
+                }
+            },
+            options: {
+                include: {
+                    values: ['api_keys', 'webhooks']
+                }
+            }
+        },
+        query({data, options}) {
+            return models.Integration.findOne(data, Object.assign(options, {require: true}))
+                .catch(models.Integration.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Integration'
+                        })
+                    });
+                });
+        }
+    },
     edit: {},
     add: {
         permissions: true,

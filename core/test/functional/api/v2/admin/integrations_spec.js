@@ -89,5 +89,53 @@ describe('Integrations API', function () {
                 });
         });
     });
+
+    describe('GET /integrations/:id', function () {
+        it('Can successfully get a created integration', function (done) {
+            request.post(localUtils.API.getApiQuery('integrations/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    integrations: [{
+                        name: 'Interrogation Integration'
+                    }]
+                })
+                .expect(200)
+                .end(function (err, {body}) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const [createdIntegration] = body.integrations;
+
+                    request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                        .set('Origin', config.get('url'))
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, {body}) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            should.equal(body.integrations.length, 1);
+
+                            const [integration] = body.integrations;
+
+                            should.equal(integration.id, createdIntegration.id);
+                            should.equal(integration.name, createdIntegration.name);
+                            should.equal(integration.slug, createdIntegration.slug);
+                            should.equal(integration.description, createdIntegration.description);
+                            should.equal(integration.icon_image, createdIntegration.icon_image);
+                            done();
+                        });
+                });
+        });
+
+        it('Will 404 if the integration does not exist', function (done) {
+            request.get(localUtils.API.getApiQuery(`integrations/012345678901234567890123/`))
+                .set('Origin', config.get('url'))
+                .expect(404)
+                .end(done);
+        });
+    });
 });
 
