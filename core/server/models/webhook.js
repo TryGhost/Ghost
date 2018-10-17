@@ -7,6 +7,12 @@ let Webhook,
 Webhook = ghostBookshelf.Model.extend({
     tableName: 'webhooks',
 
+    defaults() {
+        return {
+            api_version: 'v2'
+        };
+    },
+
     integration() {
         return this.belongsTo('Integration');
     },
