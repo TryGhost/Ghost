@@ -32,7 +32,7 @@ describe('Integrations API', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -69,7 +69,7 @@ describe('Integrations API', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -99,7 +99,7 @@ describe('Integrations API', function () {
                         name: 'Interrogation Integration'
                     }]
                 })
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -147,7 +147,7 @@ describe('Integrations API', function () {
                         name: 'Integrate with this!'
                     }]
                 })
-                .expect(200)
+                .expect(201)
                 .end(function (err) {
                     if (err) {
                         return done(err);
@@ -159,7 +159,7 @@ describe('Integrations API', function () {
                                 name: 'Winter-(is)-great'
                             }]
                         })
-                        .expect(200)
+                        .expect(201)
                         .end(function (err) {
                             if (err) {
                                 return done(err);
@@ -201,7 +201,7 @@ describe('Integrations API', function () {
                         name: 'Rubbish Integration Name'
                     }]
                 })
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -250,7 +250,7 @@ describe('Integrations API', function () {
                         name: 'Webhook-less Integration',
                     }]
                 })
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -345,7 +345,7 @@ describe('Integrations API', function () {
                         name: 'Short Lived Integration'
                     }]
                 })
-                .expect(200)
+                .expect(201)
                 .end(function (err, {body}) {
                     if (err) {
                         return done(err);
@@ -354,7 +354,7 @@ describe('Integrations API', function () {
 
                     request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                         .set('Origin', config.get('url'))
-                        .expect(200)
+                        .expect(204)
                         .end(function (err) {
                             if (err) {
                                 return done(err);

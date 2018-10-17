@@ -85,6 +85,7 @@ module.exports = {
         }
     },
     add: {
+        statusCode: 201,
         permissions: true,
         data: [
             'name',
@@ -118,6 +119,7 @@ module.exports = {
         }
     },
     destroy: {
+        statusCode: 204,
         permissions: true,
         options: [
             'id'
