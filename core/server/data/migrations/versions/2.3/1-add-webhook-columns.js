@@ -1,7 +1,16 @@
 const common = require('../../../../lib/common');
 const commands = require('../../../schema').commands;
 const table = 'webhooks';
-const newColumnNames = ['name', 'integration_id', 'secret', 'last_triggered_at', 'api_version', 'status'];
+const newColumnNames = [
+    'name',
+    'secret',
+    'api_version',
+    'integration_id',
+    'status',
+    'last_triggered_at',
+    'last_triggered_status',
+    'last_triggered_error'
+];
 
 function printResult(operation, columnName) {
     return `${operation} column ${columnName} in ${table} table`;

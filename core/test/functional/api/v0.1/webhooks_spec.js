@@ -47,8 +47,7 @@ describe('Webhooks API', function () {
 
                         should.exist(jsonResponse.webhooks);
 
-                        testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook',
-                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'status']);
+                        testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
                         jsonResponse.webhooks[0].event.should.equal(newWebhook.event);
                         jsonResponse.webhooks[0].target_url.should.equal(newWebhook.target_url);
 
@@ -81,8 +80,7 @@ describe('Webhooks API', function () {
                         var jsonResponse = res.body;
 
                         should.exist(jsonResponse.webhooks);
-                        testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook',
-                            null, ['name', 'integration_id', 'secret', 'last_triggered_at', 'status']);
+                        testUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
 
                         jsonResponse.webhooks[0].event.should.equal(newWebhook.event);
                         jsonResponse.webhooks[0].target_url.should.equal(newWebhook.target_url);
