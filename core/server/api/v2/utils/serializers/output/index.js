@@ -53,5 +53,9 @@ module.exports = {
 
     get users() {
         return require('./users');
+    },
+
+    get preview() {
+        return require('./preview');
     }
 };
