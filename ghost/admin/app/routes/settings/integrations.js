@@ -14,5 +14,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
+    },
+
+    setupController(controller) {
+        // kick off the background fetch of integrations so that we can
+        // show the screen immediately
+        controller.fetchIntegrations.perform();
     }
 });

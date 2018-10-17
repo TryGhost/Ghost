@@ -100,6 +100,60 @@
             </div>
         </div>
     </section>
+
+    {{#if config.enableDeveloperExperiments}}
+        <section class="apps-grid-container pt6">
+            <div class="flex flex-row items-center pb2">
+                <span class="dib flex-grow-1 midgrey">Custom integrations</span>
+                {{#link-to "settings.integrations.new" class="gh-btn gh-btn-green" data-test-button="new-integration"}}
+                    <span>Add custom integration</span>
+                {{/link-to}}
+            </div>
+
+            <div class="apps-grid">
+                {{#each integrations as |integration|}}
+                    <div class="apps-grid-cell" data-test-custom-integration>
+                        {{#link-to "settings.integration" integration data-test-integration=integration.id}}
+                            <article class="apps-card-app">
+                                <div class="apps-card-left">
+                                    <figure class="apps-card-app-icon flex items-center" style={{integration-icon-style integration}}>
+                                        {{#unless integration.iconImage}}
+                                            {{svg-jar "integration" class="w-100"}}
+                                        {{/unless}}
+                                    </figure>
+                                    <div class="apps-card-meta">
+                                        <h3 class="apps-card-app-title" data-test-text="name">
+                                            {{integration.name}}
+                                        </h3>
+                                        <p class="apps-card-app-desc" data-test-text="description">
+                                            {{integration.description}}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="gh-card-right">
+                                    <div class="apps-configured">
+                                        <span>Configure</span>
+                                        {{svg-jar "arrow-right"}}
+                                    </div>
+                                </div>
+                            </article>
+                        {{/link-to}}
+                    </div>
+                {{else}}
+                    <div class="flex flex-column justify-center items-center mih40 miw-100" data-test-blank="custom-integrations">
+                        {{#if fetchIntegrations.isRunning}}
+                            <div class="gh-loading-spinner"></div>
+                        {{else}}
+                            <p class="ma0 pa0 tc midgrey">
+                                Use API keys and webhooks to create custom integrations.<br>
+                                No custom integrations.
+                            </p>
+                        {{/if}}
+                    </div>
+                {{/each}}
+            </div>
+        </section>
+    {{/if}}
 </section>
 
 {{outlet}}

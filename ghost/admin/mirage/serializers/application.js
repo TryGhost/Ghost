@@ -3,8 +3,20 @@ import {pluralize} from 'ember-cli-mirage/utils/inflector';
 import {underscore} from '@ember/string';
 
 export default RestSerializer.extend({
+    keyForCollection(collection) {
+        return underscore(pluralize(collection));
+    },
+
     keyForAttribute(attr) {
         return underscore(attr);
+    },
+
+    keyForRelationship(relationship) {
+        return underscore(relationship);
+    },
+
+    keyForEmbeddedRelationship(relationship) {
+        return underscore(relationship);
     },
 
     serialize(object, request) {
