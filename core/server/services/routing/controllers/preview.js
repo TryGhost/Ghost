@@ -14,6 +14,17 @@ module.exports = function previewController(req, res, next) {
         include: 'author,authors,tags'
     };
 
+    /**
+     * @TODO:
+     *
+     * We actually need to differentiate here between pages and posts controller for v2.
+     * Currently this API call is without context object and it works out of the box, because the v2 serializer
+     * only forces `page:true|false` if you send a content key.
+     *
+     * It's also a little tricky, because the v0.1 has no pages controller.
+     * Furthermore, the preview router is used for pages and posts and we just receive a uuid. How to know
+     * which controller to call? pages or posts?
+     */
     api.posts.read(params)
         .then(function then(result) {
             const post = result.posts[0];
