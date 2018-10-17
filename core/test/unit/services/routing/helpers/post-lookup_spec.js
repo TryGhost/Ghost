@@ -7,7 +7,7 @@ const should = require('should'),
     sandbox = sinon.sandbox.create();
 
 describe('Unit - services/routing/helpers/post-lookup', function () {
-    let posts;
+    let posts, locals;
 
     afterEach(function () {
         sandbox.restore();
@@ -15,6 +15,8 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
 
     beforeEach(function () {
         sandbox.stub(api.posts, 'read');
+
+        locals = {apiVersion: 'v0.1'};
     });
 
     describe('Permalinks: /:slug/', function () {
@@ -36,7 +38,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup absolute url: /:slug/', function (done) {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions).then(function (lookup) {
+            helpers.postLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 api.posts.read.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', posts[0].url);
@@ -49,7 +51,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup relative url: /:slug/', function (done) {
             const testUrl = posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions).then(function (lookup) {
+            helpers.postLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 api.posts.read.calledOnce.should.be.true();
                 should.exist(lookup.post);
                 lookup.post.should.have.property('url', posts[0].url);
@@ -62,7 +64,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup absolute url: /:year/:month/:day/:slug/', function (done) {
             const testUrl = 'http://127.0.0.1:2369/2016/01/01' + posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -74,7 +76,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup relative url: /:year/:month/:day/:slug/', function (done) {
             const testUrl = '/2016/01/01' + posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -103,7 +105,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup absolute url: /:slug/', function (done) {
             const testUrl = 'http://127.0.0.1:2369/' + posts[0].slug;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -115,7 +117,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup relative url using :slug', function (done) {
             const testUrl = posts[0].slug;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -127,7 +129,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup absolute url: /:year/:month/:day/:slug/', function (done) {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.true();
                     should.exist(lookup.post);
@@ -142,7 +144,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup relative url: /:year/:month/:day/:slug/', function (done) {
             const testUrl = posts[0].url;
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.true();
                     should.exist(lookup.post);
@@ -172,7 +174,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup absolute url: /:slug/edit/', function (done) {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url + 'edit/';
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.true();
                     lookup.post.should.have.property('url', posts[0].url);
@@ -185,7 +187,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('can lookup relative url: /:slug/edit/', function (done) {
             const testUrl = posts[0].url + 'edit/';
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.true();
                     lookup.post.should.have.property('url', posts[0].url);
@@ -198,7 +200,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup absolute url: /:year/:month/:day/:slug/edit/', function (done) {
             const testUrl = 'http://127.0.0.1:2369/2016/01/01' + posts[0].url + 'edit/';
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -210,7 +212,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('cannot lookup relative url: /:year/:month/:day/:slug/edit/', function (done) {
             const testUrl = '/2016/01/01' + posts[0].url + 'edit/';
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);
@@ -222,7 +224,7 @@ describe('Unit - services/routing/helpers/post-lookup', function () {
         it('unknown url option', function (done) {
             const testUrl = posts[0].url + 'not-edit/';
 
-            helpers.postLookup(testUrl, routerOptions)
+            helpers.postLookup(testUrl, routerOptions, locals)
                 .then(function (lookup) {
                     api.posts.read.calledOnce.should.be.false();
                     should.not.exist(lookup);

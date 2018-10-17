@@ -13,6 +13,7 @@ var should = require('should'),
 
 describe('{{#get}} helper', function () {
     var fn, inverse, labsStub;
+    let locals = {};
 
     before(function () {
         models.init();
@@ -22,6 +23,8 @@ describe('{{#get}} helper', function () {
         fn = sandbox.spy();
         inverse = sandbox.spy();
         labsStub = sandbox.stub(labs, 'isSet').returns(true);
+
+        locals = {root: {_locals: {apiVersion: 'v0.1'}}};
     });
 
     afterEach(function () {
@@ -63,10 +66,10 @@ describe('{{#get}} helper', function () {
             meta = {pagination: {}};
 
         beforeEach(function () {
-            browsePostsStub = sandbox.stub(api.posts, 'browse');
-            readPostsStub = sandbox.stub(api.posts, 'read');
-            readTagsStub = sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: []}));
-            readUsersStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
+            browsePostsStub = sandbox.stub(api["v0.1"].posts, 'browse');
+            readPostsStub = sandbox.stub(api["v0.1"].posts, 'read');
+            readTagsStub = sandbox.stub(api["v0.1"].tags, 'read').returns(new Promise.resolve({tags: []}));
+            readUsersStub = sandbox.stub(api["v0.1"].users, 'read').returns(new Promise.resolve({users: []}));
 
             browsePostsStub.returns(new Promise.resolve({posts: testPostsArr, meta: meta}));
             browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({
@@ -85,7 +88,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {}, fn: fn, inverse: inverse}
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 labsStub.calledOnce.should.be.true();
 
@@ -103,7 +106,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {}, fn: fn, inverse: inverse}
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.firstCall.args[0].pagination.should.be.an.Object();
                 fn.firstCall.args[0].meta.should.be.an.Object();
@@ -118,7 +121,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {limit: '1'}, fn: fn, inverse: inverse}
+                {hash: {limit: '1'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 should.not.exist(fn.firstCall.args[0].pagination);
                 should.not.exist(fn.firstCall.args[0].meta);
@@ -132,7 +135,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {limit: '3'}, fn: fn, inverse: inverse}
+                {hash: {limit: '3'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -148,7 +151,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {limit: '1'}, fn: fn, inverse: inverse}
+                {hash: {limit: '1'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -164,7 +167,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {limit: '1'}, fn: fn, inverse: inverse}
+                {hash: {limit: '1'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -180,7 +183,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {filter: 'tags:test'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:test'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -195,7 +198,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {filter: 'author:cameron'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'author:cameron'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -210,7 +213,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {filter: 'featured:true'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -225,7 +228,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {id: '2'}, fn: fn, inverse: inverse}
+                {hash: {id: '2'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -241,7 +244,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {filter: 'tags:none'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:none'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
@@ -258,7 +261,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'magic',
-                {hash: {}, fn: fn, inverse: inverse}
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.called.should.be.false();
                 inverse.calledOnce.should.be.true();
@@ -274,7 +277,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {status: 'thing!'}, fn: fn, inverse: inverse}
+                {hash: {status: 'thing!'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.called.should.be.false();
                 inverse.calledOnce.should.be.true();
@@ -289,7 +292,8 @@ describe('{{#get}} helper', function () {
         it('should show warning for call without any options', function (done) {
             helpers.get.call(
                 {},
-                'posts'
+                'posts',
+                {data: locals}
             ).then(function () {
                 fn.called.should.be.false();
                 inverse.called.should.be.false();
@@ -302,20 +306,20 @@ describe('{{#get}} helper', function () {
     describe('path resolution', function () {
         var browseStub, readStub,
             pubDate = new Date(),
-            data = {
+            resource = {
                 post: {id: 3, title: 'Test 3', author: {slug: 'cameron'}, tags: [{slug: 'test'}, {slug: 'magic'}], published_at: pubDate}
             };
 
         beforeEach(function () {
-            browseStub = sandbox.stub(api.posts, 'browse').returns(new Promise.resolve());
-            readStub = sandbox.stub(api.posts, 'read').returns(new Promise.resolve());
+            browseStub = sandbox.stub(api["v0.1"].posts, 'browse').returns(new Promise.resolve());
+            readStub = sandbox.stub(api["v0.1"].posts, 'read').returns(new Promise.resolve());
         });
 
         it('should resolve post.tags alias', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: 'tags:[{{post.tags}}]'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
@@ -327,9 +331,9 @@ describe('{{#get}} helper', function () {
 
         it('should resolve post.author alias', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: 'author:{{post.author}}'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
@@ -341,9 +345,9 @@ describe('{{#get}} helper', function () {
 
         it('should resolve basic path', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: 'id:-{{post.id}}'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
@@ -355,9 +359,9 @@ describe('{{#get}} helper', function () {
 
         it('should handle arrays the same as handlebars', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
@@ -369,9 +373,9 @@ describe('{{#get}} helper', function () {
 
         it('should handle dates', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: "published_at:<='{{post.published_at}}'"}, fn: fn, inverse: inverse}
+                {hash: {filter: "published_at:<='{{post.published_at}}'"}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
@@ -383,9 +387,9 @@ describe('{{#get}} helper', function () {
 
         it('should output nothing if path does not resolve', function (done) {
             helpers.get.call(
-                data,
+                resource,
                 'posts',
-                {hash: {filter: 'id:{{post.thing}}'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');

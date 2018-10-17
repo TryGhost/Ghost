@@ -7,6 +7,7 @@ const should = require('should'),
     filters = require('../../../../../server/filters'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
+    themes = require('../../../../../server/services/themes'),
     urlService = require('../../../../../server/services/url'),
     sandbox = sinon.sandbox.create(),
     EDITOR_URL = '/editor/';
@@ -43,7 +44,9 @@ describe('Unit - services/routing/controllers/preview', function () {
         };
 
         res = {
-            locals: {},
+            locals: {
+                apiVersion: 'v0.1'
+            },
             render: sinon.spy(),
             redirect: sinon.spy(),
             set: sinon.spy()
