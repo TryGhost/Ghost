@@ -1,6 +1,6 @@
 module.exports = {
-    get postLookup() {
-        return require('./post-lookup');
+    get entryLookup() {
+        return require('./entry-lookup');
     },
 
     get fetchData() {
