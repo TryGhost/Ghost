@@ -67,6 +67,7 @@
     },
     "api": {
         "versions": {
+            "all": ["v0.1", "v2"],
             "active": "v2",
             "stable": "",
             "deprecated": "v0.1",
