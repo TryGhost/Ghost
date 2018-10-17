@@ -301,6 +301,7 @@ module.exports = {
         api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
         integration_id: {type: 'string', maxlength: 24, nullable: true},
         last_triggered_at: {type: 'dateTime', nullable: true},
+        status: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
