@@ -16,6 +16,8 @@ module.exports = function apiRoutes() {
 
     // ## Pages
     router.get('/pages', mw.authenticatePublic, apiv2.http(apiv2.pages.browse));
+    router.get('/pages/:id', mw.authenticatePublic, apiv2.http(apiv2.pages.read));
+    router.get('/pages/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.pages.read));
 
     // ## Users
     router.get('/users', mw.authenticatePublic, apiv2.http(apiv2.users.browse));
