@@ -65,5 +65,9 @@ module.exports = {
 
     get users() {
         return shared.pipeline(require('./users'), localUtils);
+    },
+
+    get preview() {
+        return shared.pipeline(require('./preview'), localUtils);
     }
 };
