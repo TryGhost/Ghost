@@ -87,7 +87,7 @@ describe('DB API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
-                Object.keys(jsonResponse.db[0].data).length.should.eql(25);
+                Object.keys(jsonResponse.db[0].data).length.should.eql(24);
                 done();
             });
     });
@@ -105,7 +105,7 @@ describe('DB API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
-                Object.keys(jsonResponse.db[0].data).length.should.eql(27);
+                Object.keys(jsonResponse.db[0].data).length.should.eql(26);
                 done();
             });
     });

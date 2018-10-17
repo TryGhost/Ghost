@@ -49,7 +49,7 @@ describe('Exporter', function () {
             // Execute
             exporter.doExport().then(function (exportData) {
                 // No tables, less the number of excluded tables
-                var expectedCallCount = schemaTables.length - 4;
+                var expectedCallCount = schemaTables.length - exporter.EXCLUDED_TABLES.length;
 
                 should.exist(exportData);
 
@@ -94,8 +94,8 @@ describe('Exporter', function () {
 
             // Execute
             exporter.doExport({include: ['clients', 'client_trusted_domains']}).then(function (exportData) {
-                // all tables, except of the tokens
-                const expectedCallCount = schemaTables.length - 2;
+                // all tables, except of the tokes and sessions
+                const expectedCallCount = schemaTables.length - (exporter.EXCLUDED_TABLES.length - 2);
 
                 should.exist(exportData);
 
