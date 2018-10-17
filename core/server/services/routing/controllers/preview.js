@@ -1,11 +1,12 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:preview'),
-    api = require('../../../api'),
     urlService = require('../../url'),
     filters = require('../../../filters'),
     helpers = require('../helpers');
 
 module.exports = function previewController(req, res, next) {
     debug('previewController');
+
+    const api = require('../../../api')[res.locals.apiVersion];
 
     const params = {
         uuid: req.params.uuid,
