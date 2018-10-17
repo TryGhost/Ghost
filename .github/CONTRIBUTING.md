@@ -20,16 +20,16 @@ If you're going to work on Ghost core you'll need to go through a slightly more 
 First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.comc/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://docs.ghost.org/install/source/) setup guide.
 
 
-#### Branching Guide
+### Branching Guide
 
 `master` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/). 
 
 On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `master`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches. If you are working on something which you feel needs to go into a feature branch, let Hannah know and she will create this for you.
 
 
-#### Commit Messages
+### Commit Messages
 
-We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible!
+We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
 
 - **1st line:** Max 80 character summary written in past tense
 - **2nd line:** [Always blank]
@@ -45,7 +45,7 @@ If your change is **user-facing** please prepend the first line of your commit w
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
 
 
-#### Submitting Pull Requests
+### Submitting Pull Requests
 
 Before submitting a PR, first ensure that your code passes all tests by running `yarn test` from the root directory.
 
