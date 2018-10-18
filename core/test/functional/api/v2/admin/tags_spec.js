@@ -51,6 +51,18 @@ describe('Tag API V2', function () {
             });
     });
 
+    it('browse accepts the page parameter', function () {
+        return request
+            .get(localUtils.API.getApiQuery('tags/?page=2'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.equal(res.body.meta.pagination.page, 2);
+            });
+    });
+
     it('read', function () {
         return request
             .get(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}/?include=count.posts`))

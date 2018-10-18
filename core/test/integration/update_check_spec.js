@@ -1,23 +1,24 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    should = require('should'),
-    rewire = require('rewire'),
-    sinon = require('sinon'),
-    moment = require('moment'),
-    uuid = require('uuid'),
-    testUtils = require('../utils'),
-    configUtils = require('../utils/configUtils'),
-    packageInfo = require('../../../package'),
-    updateCheck = rewire('../../server/update-check'),
-    ghostVersion = rewire('../../server/lib/ghost-version'),
-    SettingsAPI = require('../../server/api/v0.1/settings'),
-    NotificationsAPI = rewire('../../server/api/v0.1/notifications'),
-    sandbox = sinon.sandbox.create();
+const _ = require('lodash');
+const Promise = require('bluebird');
+const should = require('should');
+const rewire = require('rewire');
+const sinon = require('sinon');
+const moment = require('moment');
+const uuid = require('uuid');
+const testUtils = require('../utils');
+const configUtils = require('../utils/configUtils');
+const packageInfo = require('../../../package');
+const api = require('../../server/api').active;
+
+const sandbox = sinon.sandbox.create();
+
+let updateCheck = rewire('../../server/update-check');
+let NotificationsAPI = rewire('../../server/api/v2/notifications');
 
 describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../server/update-check');
-        NotificationsAPI = rewire('../../server/api/v0.1/notifications');
+        NotificationsAPI = rewire('../../server/api/v2/notifications');
     });
 
     afterEach(function () {
@@ -43,14 +44,17 @@ describe('Update Check', function () {
             updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
             updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
             updateCheck.__set__('updateCheckError', updateCheckErrorSpy);
-            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql', 'testing-pg']);
+            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql']);
         });
 
         it('update check was never executed', function (done) {
-            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+            const readStub = sandbox.stub().resolves({
                 settings: [{
                     value: null
                 }]
+            });
+            sandbox.stub(api, 'settings').get(() => ({
+                read: readStub
             }));
 
             updateCheck()
@@ -64,10 +68,13 @@ describe('Update Check', function () {
         });
 
         it('update check won\'t happen if it\'s too early', function (done) {
-            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+            const readStub = sandbox.stub().resolves({
                 settings: [{
                     value: moment().add('10', 'minutes').unix()
                 }]
+            });
+            sandbox.stub(api, 'settings').get(() => ({
+                read: readStub
             }));
 
             updateCheck()
@@ -81,10 +88,13 @@ describe('Update Check', function () {
         });
 
         it('update check will happen if it\'s time to check', function (done) {
-            sandbox.stub(SettingsAPI, 'read').returns(Promise.resolve({
+            const readStub = sandbox.stub().resolves({
                 settings: [{
                     value: moment().subtract('10', 'minutes').unix()
                 }]
+            });
+            sandbox.stub(api, 'settings').get(() => ({
+                read: readStub
             }));
 
             updateCheck()
@@ -153,7 +163,7 @@ describe('Update Check', function () {
         beforeEach(testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
 
         beforeEach(function () {
-            return NotificationsAPI.destroyAll(testUtils.context.internal);
+            return api.notifications.destroyAll(testUtils.context.internal);
         });
 
         it('should create a release notification for target version', function (done) {
@@ -173,7 +183,7 @@ describe('Update Check', function () {
             NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
             createCustomNotification(notification).then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
+                return api.notifications.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -208,7 +218,7 @@ describe('Update Check', function () {
             NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
             createCustomNotification(notification).then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
+                return api.notifications.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -234,7 +244,7 @@ describe('Update Check', function () {
             NotificationsAPI.__set__('ghostVersion.full', '0.8');
 
             createCustomNotification(notification).then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
+                return api.notifications.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -259,7 +269,7 @@ describe('Update Check', function () {
                 };
 
             createCustomNotification(notification).then(function () {
-                return NotificationsAPI.browse(testUtils.context.internal);
+                return api.notifications.browse(testUtils.context.internal);
             }).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -291,7 +301,7 @@ describe('Update Check', function () {
 
             createCustomNotification(notification)
                 .then(function () {
-                    return NotificationsAPI.browse(testUtils.context.internal);
+                    return api.notifications.browse(testUtils.context.internal);
                 })
                 .then(function (results) {
                     should.exist(results);
@@ -302,7 +312,7 @@ describe('Update Check', function () {
                     return createCustomNotification(notification);
                 })
                 .then(function () {
-                    return NotificationsAPI.browse(testUtils.context.internal);
+                    return api.notifications.browse(testUtils.context.internal);
                 })
                 .then(function (results) {
                     should.exist(results);

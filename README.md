@@ -13,13 +13,13 @@
     <a href="https://ghost.org/features">Features</a> |
     <a href="https://ghost.org/customers">Showcase</a> |
     <a href="https://forum.ghost.org">Forum</a> |
-    <a href="https://docs.ghost.org/docs">Documentation</a> |
-    <a href="https://docs.ghost.org/docs/contributing">Contributing</a> |
+    <a href="https://docs.ghost.org/">Documentation</a> |
+    <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> |
     <a href="https://opencollective.com/ghost">Donate</a> |
     <a href="https://twitter.com/tryghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org">
-        <img src="https://img.shields.io/badge/downloads-1.3M-brightgreen.svg" alt="Downloads" />
+        <img src="https://img.shields.io/badge/downloads-1.4M-brightgreen.svg" alt="Downloads" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/releases/">
         <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
