@@ -357,6 +357,9 @@
                 "missingFile": "Please select a JSON file.",
                 "invalidFile": "Please select a valid JSON file to import."
             },
+            "resource": {
+                "resourceNotFound": "{resource} not found."
+            },
             "routes": {
                 "missingFile": "Please select a YAML file.",
                 "invalidFile": "Please select a valid YAML file to import."
