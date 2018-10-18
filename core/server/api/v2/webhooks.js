@@ -24,6 +24,36 @@ module.exports = {
             });
         }
     },
+    edit: {
+        permissions: true,
+        data: [
+            'name',
+            'event',
+            'target_url',
+            'secret',
+            'api_version'
+        ],
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        query({data, options}) {
+            return models.Webhook.edit(data, Object.assign(options, {require: true}))
+                .catch(models.Integration.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Integration'
+                        })
+                    });
+                });
+        }
+    },
     destroy: {
         statusCode: 204,
         headers: {},
