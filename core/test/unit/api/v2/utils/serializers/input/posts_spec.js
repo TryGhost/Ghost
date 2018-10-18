@@ -80,7 +80,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
     describe('Ensure relative urls are returned for standard image urls', function () {
         after(function () {
             configUtils.restore();
-        }),
+        });
 
         it('when blog url is without subdir', function () {
             configUtils.set({url: 'https://mysite.com'});
@@ -120,7 +120,6 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             postData.twitter_image.should.eql('https://mysite.com/blog/content/images/image.jpg');
             postData.tags[0].feature_image.should.eql('/content/images/image.jpg');
             postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/images/image.jpg');
-
         });
 
         it('when blog url is with subdir', function () {
@@ -161,7 +160,6 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             postData.twitter_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
             postData.tags[0].feature_image.should.eql('http://mysite.com/blog/mycustomstorage/content/images/image.jpg');
             postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/content/images/image.jpg');
-
         });
     });
 });
