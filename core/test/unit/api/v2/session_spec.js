@@ -49,8 +49,12 @@ describe('Session controller', function () {
             });
         });
 
-        it('it returns a function that sets req.user and calls createSession if the check works', function () {
-            const fakeReq = {};
+        it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function () {
+            const fakeReq = {
+                brute: {
+                    reset: sandbox.stub().callsArg(0)
+                }
+            };
             const fakeRes = {};
             const fakeNext = () => {};
             const fakeUser = models.User.forge({});
@@ -65,11 +69,40 @@ describe('Session controller', function () {
             }, {}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
+                should.equal(fakeReq.brute.reset.callCount, 1);
+
                 const createSessionStubCall = createSessionStub.getCall(0);
                 should.equal(fakeReq.user, fakeUser);
                 should.equal(createSessionStubCall.args[0], fakeReq);
                 should.equal(createSessionStubCall.args[1], fakeRes);
                 should.equal(createSessionStubCall.args[2], fakeNext);
+            });
+        });
+
+        it('it returns a function that calls req.brute.reset and calls next if reset errors', function () {
+            const resetError = new Error();
+            const fakeReq = {
+                brute: {
+                    reset: sandbox.stub().callsArgWith(0, resetError)
+                }
+            };
+            const fakeRes = {};
+            const fakeNext = sandbox.stub();
+            const fakeUser = models.User.forge({});
+            sandbox.stub(models.User, 'check')
+                .resolves(fakeUser);
+
+            const createSessionStub = sandbox.stub(sessionServiceMiddleware, 'createSession');
+
+            return sessionController.add({
+                username: 'freddy@vodafone.com',
+                password: 'qu33nRul35'
+            }, {}).then((fn) => {
+                fn(fakeReq, fakeRes, fakeNext);
+            }).then(function () {
+                should.equal(fakeReq.brute.reset.callCount, 1);
+                should.equal(fakeNext.callCount, 1);
+                should.equal(fakeNext.args[0][0], resetError);
             });
         });
     });
