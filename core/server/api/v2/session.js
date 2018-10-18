@@ -25,8 +25,13 @@ const session = {
             password: object.password
         }).then((user) => {
             return Promise.resolve((req, res, next) => {
-                req.user = user;
-                auth.session.createSession(req, res, next);
+                req.brute.reset(function (err) {
+                    if (err) {
+                        return next(err);
+                    }
+                    req.user = user;
+                    auth.session.createSession(req, res, next);
+                });
             });
         }).catch((err) => {
             throw new common.errors.UnauthorizedError({
