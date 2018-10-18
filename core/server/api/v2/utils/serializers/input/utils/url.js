@@ -1,6 +1,6 @@
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
-const handleImageUrl = function(imageUrl) {
+const handleImageUrl = (imageUrl) => {
     const blogUrl = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
     const imagePathRe = new RegExp(`^${blogUrl}/${STATIC_IMAGE_URL_PREFIX}`);
