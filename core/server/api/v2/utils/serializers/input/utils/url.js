@@ -1,9 +1,10 @@
-const {absoluteToRelative, getBlogUrl} = require('../../../../../../services/url/utils');
-const url = require('url');
+const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
 function handleImageUrl(imageUrl) {
-    let blogUrl = getBlogUrl();
-    if (url.parse(imageUrl).host === url.parse(blogUrl).host) {
+    let blogUrl = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    let imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
+    let imagePathRe = new RegExp(`^${blogUrl}/${STATIC_IMAGE_URL_PREFIX}`);
+    if (imagePathRe.test(imageUrlAbsolute)) {
         return absoluteToRelative(imageUrl);
     }
     return imageUrl;
