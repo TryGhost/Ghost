@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
+const url = require('./utils/url');
 
 module.exports = {
     all(apiConfig, frame) {
@@ -79,6 +80,8 @@ module.exports = {
                 });
             }
         }
+
+        frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
     },
 
     edit(apiConfig, frame) {

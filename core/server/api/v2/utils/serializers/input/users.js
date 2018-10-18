@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:users');
+const url = require('./utils/url');
 
 module.exports = {
     read(apiConfig, frame) {
@@ -19,5 +20,7 @@ module.exports = {
         if (frame.data.users[0].password) {
             delete frame.data.users[0].password;
         }
+
+        frame.data.users[0] = url.forUser(Object.assign({}, frame.data.users[0]));
     }
 };
