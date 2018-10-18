@@ -18,7 +18,7 @@ function makeRequests(webhooksCollection, payload, options) {
         const reqPayload = JSON.stringify(payload);
 
         common.logging.info('webhook.trigger', event, targetUrl);
-        let triggeredAt = Date.now();
+        const triggeredAt = Date.now();
         request(targetUrl, {
             body: reqPayload,
             headers: {
