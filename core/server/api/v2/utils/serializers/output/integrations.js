@@ -13,21 +13,21 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            integrations: [model.toJSON()]
+            integrations: [model.toJSON(frame.options)]
         };
     },
     add(model, apiConfig, frame) {
         debug('add');
 
         frame.response = {
-            integrations: [model.toJSON()]
+            integrations: [model.toJSON(frame.options)]
         };
     },
     edit(model, apiConfig, frame) {
         debug('edit');
 
         frame.response = {
-            integrations: [model.toJSON()]
+            integrations: [model.toJSON(frame.options)]
         };
     }
 };
