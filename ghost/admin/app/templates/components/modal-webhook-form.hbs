@@ -1,4 +1,4 @@
-<header class="modal-header" data-test-modal="new-webhook">
+<header class="modal-header" data-test-modal="webhook-form">
     <h1>New webhook</h1>
 </header>
 <button class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}</button>
@@ -84,9 +84,9 @@
     <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-new-webhook">
         <span>Cancel</span>
     </button>
-    {{gh-task-button "Create"
-        successText="Created"
-        task=createWebhook
+    {{gh-task-button buttonText
+        successText=successText
+        task=saveWebhook
         class="gh-btn gh-btn-green gh-btn-icon"
-        data-test-button="create-webhook"}}
+        data-test-button="save-webhook"}}
 </div>
