@@ -1,14 +1,14 @@
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
-function handleImageUrl(imageUrl) {
-    let blogUrl = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    let imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    let imagePathRe = new RegExp(`^${blogUrl}/${STATIC_IMAGE_URL_PREFIX}`);
+const handleImageUrl = function(imageUrl) {
+    const blogUrl = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
+    const imagePathRe = new RegExp(`^${blogUrl}/${STATIC_IMAGE_URL_PREFIX}`);
     if (imagePathRe.test(imageUrlAbsolute)) {
         return absoluteToRelative(imageUrl);
     }
     return imageUrl;
-}
+};
 
 const forPost = (attrs, options) => {
     if (attrs.feature_image) {
