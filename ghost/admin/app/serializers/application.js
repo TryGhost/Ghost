@@ -1,5 +1,5 @@
 import RESTSerializer from 'ember-data/serializers/rest';
-import {decamelize} from '@ember/string';
+import {camelize, decamelize, underscore} from '@ember/string';
 import {pluralize} from 'ember-inflector';
 
 export default RESTSerializer.extend({
@@ -27,5 +27,16 @@ export default RESTSerializer.extend({
 
     keyForAttribute(attr) {
         return decamelize(attr);
+    },
+
+    keyForRelationship(key, typeClass, method) {
+        let transform = method === 'serialize' ? underscore : camelize;
+
+        if (typeClass === 'belongsTo' && !key.match(/(Id|By)$/)) {
+            let transformed = `${transform(key)}_id`;
+            return transformed;
+        }
+
+        return transform(key);
     }
 });
