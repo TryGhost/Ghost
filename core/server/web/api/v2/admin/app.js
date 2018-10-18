@@ -28,6 +28,9 @@ module.exports = function setupApiApp() {
     // API shouldn't be cached
     apiApp.use(shared.middlewares.cacheControl('private'));
 
+    // Register event emmiter on req/res to trigger cache invalidation webhook event
+    apiApp.use(shared.middlewares.emitEvents);
+
     // Routing
     apiApp.use(routes());
 
