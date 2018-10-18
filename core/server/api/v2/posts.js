@@ -15,6 +15,7 @@ module.exports = {
             'status',
             'limit',
             'order',
+            'page',
             'debug'
         ],
         validation: {
