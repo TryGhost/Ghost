@@ -63,11 +63,19 @@
     <div class="flex flex-row">
         {{#with integration.contentKey as |contentKey|}}
             {{#gh-validation-status-container class="flex flex-column w-100 mr3"}}
-                <label for="content_key">Content API Key</label>
-                <div class="relative"
-                    onmouseenter={{action (mut showContentKeyActions) true}}
-                    onmouseleave={{action (mut showContentKeyActions) false}}
-                >
+                <div class="flex">
+                    <label for="content_key" class="flex-grow-1">
+                        Content API Key
+                    </label>
+                    <span class="db">
+                        {{#if copyContentKey.isRunning}}
+                            Copied to clipboard
+                        {{else}}
+                            {{contentKey.lastSeenAtUTC}}
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="relative hide-child">
                     <input id="content_key"
                         class="gh-input"
                         type="text"
@@ -75,21 +83,27 @@
                         disabled="true"
                         data-test-input="content_key">
 
-                    {{#if showContentKeyActions}}
-                        <div class="absolute top-2 right-2">
-                            <button type="button" {{action "copyContentKey"}}>Copy</button>
-                        </div>
-                    {{/if}}
+                    <div class="absolute top-1 right-1 pt1 pr2 pb1 pl2 bg-white child">
+                        <button type="button" {{action (perform copyContentKey)}}>Copy</button>
+                    </div>
                 </div>
             {{/gh-validation-status-container}}
         {{/with}}
         {{#with integration.adminKey as |adminKey|}}
             {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
-                <label for="admin_key">Admin API Key</label>
-                <div class="relative"
-                    onmouseenter={{action (mut showAdminKeyActions) true}}
-                    onmouseleave={{action (mut showAdminKeyActions) false}}
-                >
+                <div class="flex">
+                    <label for="admin_key" class="flex-grow-1">
+                        Admin API Key
+                    </label>
+                    <span class="db">
+                        {{#if copyAdminKey.isRunning}}
+                            Copied to clipboard
+                        {{else}}
+                            {{adminKey.lastSeenAtUTC}}
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="relative hide-child">
                     <input id="admin_key"
                         class="gh-input"
                         type="text"
@@ -97,11 +111,9 @@
                         disabled="true"
                         data-test-input="admin_key">
 
-                    {{#if showAdminKeyActions}}
-                        <div class="absolute top-2 right-2">
-                            <button type="button" {{action "copyAdminKey"}}>Copy</button>
-                        </div>
-                    {{/if}}
+                    <div class="absolute top-1 right-1 pt1 pr2 pb1 pl2 bg-white child">
+                        <button type="button" {{action (perform copyAdminKey)}}>Copy</button>
+                    </div>
                 </div>
             {{/gh-validation-status-container}}
         {{/with}}

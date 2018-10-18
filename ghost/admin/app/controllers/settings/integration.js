@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
     integration: alias('model'),
@@ -23,14 +23,6 @@ export default Controller.extend({
     actions: {
         save() {
             return this.save.perform();
-        },
-
-        copyContentKey() {
-            this._copyInputTextToClipboard('input#content_key');
-        },
-
-        copyAdminKey() {
-            this._copyInputTextToClipboard('input#admin_key');
         },
 
         toggleUnsavedChangesModal(transition) {
@@ -74,6 +66,16 @@ export default Controller.extend({
 
     save: task(function* () {
         return yield this.integration.save();
+    }),
+
+    copyContentKey: task(function* () {
+        this._copyInputTextToClipboard('input#content_key');
+        yield timeout(3000);
+    }),
+
+    copyAdminKey: task(function* () {
+        this._copyInputTextToClipboard('input#admin_key');
+        yield timeout(3000);
     }),
 
     _copyInputTextToClipboard(selector) {
