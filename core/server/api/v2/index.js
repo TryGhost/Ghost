@@ -6,6 +6,10 @@ module.exports = {
         return shared.http;
     },
 
+    get integrations() {
+        return shared.pipeline(require('./integrations'), localUtils);
+    },
+
     // @TODO: transform
     get session() {
         return require('./session');
