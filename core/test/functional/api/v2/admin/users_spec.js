@@ -113,6 +113,23 @@ describe('User API V2', function () {
                         done();
                     });
             });
+
+            it('supports usage of the page param', function (done) {
+                request.get(localUtils.API.getApiQuery('users/?page=2'))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        const jsonResponse = res.body;
+                        should.equal(jsonResponse.meta.pagination.page, 2);
+                        done();
+                    });
+            });
         });
 
         describe('Read', function () {
