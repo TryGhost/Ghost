@@ -465,6 +465,7 @@ module.exports.redirect301 = redirect301;
 module.exports.createUrl = createUrl;
 module.exports.deduplicateDoubleSlashes = deduplicateDoubleSlashes;
 module.exports.getApiPath = getApiPath;
+module.exports.getBlogUrl = getBlogUrl;
 
 /**
  * If you request **any** image in Ghost, it get's served via
