@@ -13,6 +13,7 @@ module.exports = {
             'fields',
             'limit',
             'order',
+            'page',
             'debug'
         ],
         validation: {
