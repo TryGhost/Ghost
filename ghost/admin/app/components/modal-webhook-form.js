@@ -10,6 +10,8 @@ export default ModalComponent.extend({
     router: service(),
 
     availableEvents: null,
+    buttonText: 'Save',
+    successText: 'Saved',
 
     confirm() {},
 
@@ -24,6 +26,13 @@ export default ModalComponent.extend({
         ];
     },
 
+    didReceiveAttrs() {
+        if (this.webhook.isNew) {
+            this.set('buttonText', 'Create');
+            this.set('successText', 'Created');
+        }
+    },
+
     actions: {
         selectEvent(value) {
             this.webhook.set('event', value);
@@ -31,11 +40,11 @@ export default ModalComponent.extend({
         },
 
         confirm() {
-            this.createWebhook.perform();
+            this.saveWebhook.perform();
         }
     },
 
-    createWebhook: task(function* () {
+    saveWebhook: task(function* () {
         try {
             let webhook = yield this.confirm();
             let integration = yield webhook.get('integration');

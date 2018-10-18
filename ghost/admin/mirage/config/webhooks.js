@@ -50,7 +50,7 @@ export default function mockWebhooks(server) {
         if (webhooks.findBy({targetUrl: attrs.targetUrl, event: attrs.event})) {
             errors.push({
                 errorType: 'ValidationError',
-                message: 'Target URL has already used for this event',
+                message: 'Target URL has already been used for this event',
                 property: 'target_url'
             });
         }
