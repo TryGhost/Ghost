@@ -15,7 +15,6 @@ function makeRequests(webhooksCollection, payload, options) {
         const event = webhook.get('event');
         const targetUrl = webhook.get('target_url');
         const webhookId = webhook.get('id');
-        const webhookSecret = webhook.get('secret') || '';
         const reqPayload = JSON.stringify(payload);
 
         common.logging.info('webhook.trigger', event, targetUrl);
@@ -24,8 +23,7 @@ function makeRequests(webhooksCollection, payload, options) {
             body: reqPayload,
             headers: {
                 'Content-Length': Buffer.byteLength(reqPayload),
-                'Content-Type': 'application/json',
-                'X-Ghost-Secret': webhookSecret
+                'Content-Type': 'application/json'
             },
             timeout: 2 * 1000,
             retries: 5
