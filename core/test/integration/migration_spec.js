@@ -167,32 +167,34 @@ describe('Database Migration (special functions)', function () {
             // Webhooks
             permissions[51].name.should.eql('Add webhooks');
             permissions[51].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[52].name.should.eql('Delete webhooks');
+            permissions[52].name.should.eql('Edit webhooks');
             permissions[52].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[53].name.should.eql('Delete webhooks');
+            permissions[53].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
 
             // Integrations
-            permissions[53].name.should.eql('Browse integrations');
-            permissions[53].should.be.AssignedToRoles(['Administrator']);
-            permissions[54].name.should.eql('Read integrations');
+            permissions[54].name.should.eql('Browse integrations');
             permissions[54].should.be.AssignedToRoles(['Administrator']);
-            permissions[55].name.should.eql('Edit integrations');
+            permissions[55].name.should.eql('Read integrations');
             permissions[55].should.be.AssignedToRoles(['Administrator']);
-            permissions[56].name.should.eql('Add integrations');
+            permissions[56].name.should.eql('Edit integrations');
             permissions[56].should.be.AssignedToRoles(['Administrator']);
-            permissions[57].name.should.eql('Delete integrations');
+            permissions[57].name.should.eql('Add integrations');
             permissions[57].should.be.AssignedToRoles(['Administrator']);
+            permissions[58].name.should.eql('Delete integrations');
+            permissions[58].should.be.AssignedToRoles(['Administrator']);
 
             // API Keys
-            permissions[58].name.should.eql('Browse API keys');
-            permissions[58].should.be.AssignedToRoles(['Administrator']);
-            permissions[59].name.should.eql('Read API keys');
+            permissions[59].name.should.eql('Browse API keys');
             permissions[59].should.be.AssignedToRoles(['Administrator']);
-            permissions[60].name.should.eql('Edit API keys');
+            permissions[60].name.should.eql('Read API keys');
             permissions[60].should.be.AssignedToRoles(['Administrator']);
-            permissions[61].name.should.eql('Add API keys');
+            permissions[61].name.should.eql('Edit API keys');
             permissions[61].should.be.AssignedToRoles(['Administrator']);
-            permissions[62].name.should.eql('Delete API keys');
+            permissions[62].name.should.eql('Add API keys');
             permissions[62].should.be.AssignedToRoles(['Administrator']);
+            permissions[63].name.should.eql('Delete API keys');
+            permissions[63].should.be.AssignedToRoles(['Administrator']);
         });
 
         describe('Populate', function () {
@@ -257,7 +259,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(5).get('name').should.eql('Admin Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(63);
+                    result.permissions.length.should.eql(64);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
