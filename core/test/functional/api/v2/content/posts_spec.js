@@ -476,4 +476,31 @@ describe('Posts', function () {
             })
             .catch(done);
     });
+
+    it('read posts', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?key=${validKey}`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+                should.not.exist(jsonResponse.meta);
+                jsonResponse.posts.should.have.length(1);
+                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                jsonResponse.posts[0].page.should.eql(false);
+            });
+    });
+
+    it('can\'t read page', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[5].id}/?key=${validKey}`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
+    });
 });
