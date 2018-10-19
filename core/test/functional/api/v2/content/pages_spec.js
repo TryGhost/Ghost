@@ -51,7 +51,7 @@ describe('Pages', function () {
 
     it('read page', function () {
         const key = localUtils.getValidKey();
-        return request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[4].id}/?key=${key}`))
+        return request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -65,11 +65,22 @@ describe('Pages', function () {
                 should.exist(jsonResponse.pages);
                 jsonResponse.pages.should.have.length(1);
 
-                res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[4].slug);
+                res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[5].slug);
 
                 const urlParts = url.parse(res.body.pages[0].url);
                 should.exist(urlParts.protocol);
                 should.exist(urlParts.host);
             });
+    });
+
+    it('can\'t read post', function () {
+        const key = localUtils.getValidKey();
+
+        return request
+            .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[0].id}/?key=${key}`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
     });
 });

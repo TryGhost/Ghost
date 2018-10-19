@@ -1,8 +1,8 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
 
 module.exports = {
-    all(apiConfig, frame) {
-        debug('all');
+    browse(apiConfig, frame) {
+        debug('browse');
 
         // CASE: the content api endpoints for pages forces the model layer to return static pages only.
         //       we have to enforce the filter.
@@ -19,6 +19,14 @@ module.exports = {
         } else {
             frame.options.filter = 'page:true';
         }
+
+        debug(frame.options);
+    },
+
+    read(apiConfig, frame) {
+        debug('read');
+
+        frame.data.page = true;
 
         debug(frame.options);
     }
