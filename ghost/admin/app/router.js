@@ -57,6 +57,7 @@ Router.map(function () {
     });
     this.route('settings.integration', {path: '/settings/integrations/:integration_id'}, function () {
         this.route('webhooks.new', {path: 'webhooks/new'});
+        this.route('webhooks.edit', {path: 'webhooks/:webhook_id'});
     });
     this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
     this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});

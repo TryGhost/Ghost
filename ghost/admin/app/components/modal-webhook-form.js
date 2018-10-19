@@ -1,5 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import Webhook from 'ghost-admin/models/webhook';
+import {AVAILABLE_EVENTS} from 'ghost-admin/helpers/event-name';
 import {alias} from '@ember/object/computed';
 import {camelize} from '@ember/string';
 import {isInvalidError} from 'ember-ajax/errors';
@@ -10,6 +11,7 @@ export default ModalComponent.extend({
     router: service(),
 
     availableEvents: null,
+    error: null,
     buttonText: 'Save',
     successText: 'Saved',
 
@@ -19,11 +21,7 @@ export default ModalComponent.extend({
 
     init() {
         this._super(...arguments);
-        this.availableEvents = [
-            {event: 'site.changed', name: 'Site Changed (rebuild)'},
-            {event: 'subscriber.added', name: 'Subscriber Added'},
-            {event: 'subscriber.deleted', name: 'Subscriber Deleted'}
-        ];
+        this.availableEvents = AVAILABLE_EVENTS;
     },
 
     didReceiveAttrs() {
@@ -45,6 +43,8 @@ export default ModalComponent.extend({
     },
 
     saveWebhook: task(function* () {
+        this.set('error', null);
+
         try {
             let webhook = yield this.confirm();
             let integration = yield webhook.get('integration');
@@ -62,6 +62,8 @@ export default ModalComponent.extend({
                     if (property && attrs.includes(property)) {
                         this.webhook.errors.add(property, message);
                         this.webhook.hasValidated.pushObject(property);
+                    } else {
+                        this.set('error', message);
                     }
                 });
 
