@@ -29,7 +29,9 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        frame.data.page = false;
+        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
+            frame.data.page = false;
+        }
 
         debug(frame.options);
     },
