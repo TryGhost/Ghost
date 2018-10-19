@@ -15,6 +15,7 @@ function makeRequests(webhooksCollection, payload, options) {
         const event = webhook.get('event');
         const targetUrl = webhook.get('target_url');
         const webhookId = webhook.get('id');
+        const webhookSecret = webhook.get('secret') || '';
         const reqPayload = JSON.stringify(payload);
 
         common.logging.info('webhook.trigger', event, targetUrl);
@@ -23,7 +24,8 @@ function makeRequests(webhooksCollection, payload, options) {
             body: reqPayload,
             headers: {
                 'Content-Length': Buffer.byteLength(reqPayload),
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Ghost-Secret': webhookSecret
             },
             timeout: 2 * 1000,
             retries: 5
@@ -40,9 +42,11 @@ function makeRequests(webhooksCollection, payload, options) {
                     common.logging.warn(`Unable to destroy webhook ${webhookId}`);
                 });
             }
+            let lastTriggeredError = err.statusCode ? '' : `Failed to send request to ${targetUrl}`;
             updateWebhookTriggerData(webhookId, {
                 last_triggered_at: triggeredAt,
-                last_triggered_status: err.statusCode
+                last_triggered_status: err.statusCode,
+                last_triggered_error: lastTriggeredError
             });
 
             common.logging.error(new common.errors.GhostError({
