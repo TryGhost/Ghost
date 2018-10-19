@@ -46,7 +46,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         willTransition(transition) {
             let {controller} = this;
 
-            if (controller.integration.hasDirtyAttributes) {
+            if (!controller.integration.isDeleted && controller.integration.hasDirtyAttributes) {
                 transition.abort();
                 controller.send('toggleUnsavedChangesModal', transition);
                 return;

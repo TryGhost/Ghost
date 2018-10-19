@@ -166,6 +166,9 @@
             </tfoot>
         </table>
     </div>
+    <button class="gh-btn gh-btn-red gh-btn-icon" {{action "confirmIntegrationDeletion"}}>
+        <span> Delete Integration </span>
+    </button>
 </section>
 
 {{#if showUnsavedChangesModal}}
@@ -175,6 +178,13 @@
         modifier="action wide"}}
 {{/if}}
 
+{{#if showDeleteIntegrationModal}}
+    {{gh-fullscreen-modal "delete-integration"
+        confirm=(action "deleteIntegration")
+        close=(action "cancelIntegrationDeletion")
+        modifier="action wide"}}
+{{/if}}
+        
 {{#if webhookToDelete}}
     {{gh-fullscreen-modal "delete-webhook"
         confirm=(action "deleteWebhook")

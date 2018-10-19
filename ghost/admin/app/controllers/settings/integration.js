@@ -63,6 +63,18 @@ export default Controller.extend({
             return transition.retry();
         },
 
+        deleteIntegration() {
+            this.integration.destroyRecord();
+        },
+
+        confirmIntegrationDeletion() {
+            this.set('showDeleteIntegrationModal', true);
+        },
+
+        cancelIntegrationDeletion() {
+            this.set('showDeleteIntegrationModal', false);
+        },
+      
         confirmWebhookDeletion(webhook) {
             this.set('webhookToDelete', webhook);
         },
@@ -74,6 +86,7 @@ export default Controller.extend({
         deleteWebhook() {
             return this.webhookToDelete.destroyRecord();
         }
+
     },
 
     save: task(function* () {
