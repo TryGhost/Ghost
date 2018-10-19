@@ -333,6 +333,11 @@
                     "object_type": "webhook"
                 },
                 {
+                    "name": "Edit webhooks",
+                    "action_type": "edit",
+                    "object_type": "webhook"
+                },
+                {
                     "name": "Delete webhooks",
                     "action_type": "destroy",
                     "object_type": "webhook"

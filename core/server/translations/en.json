@@ -447,7 +447,7 @@
                 "notAllowedToInvite": "Not allowed to invite this role."
             },
             "webhooks": {
-                "webhookAlreadyExists": "A webhook for requested event with supplied target_url already exists."
+                "webhookAlreadyExists": "Target URL has already been used for this event."
             },
             "oembed": {
                 "noUrlProvided": "No url provided.",
