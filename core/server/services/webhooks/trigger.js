@@ -40,9 +40,11 @@ function makeRequests(webhooksCollection, payload, options) {
                     common.logging.warn(`Unable to destroy webhook ${webhookId}`);
                 });
             }
+            let lastTriggeredError = err.statusCode ? '' : `Failed to send request to ${targetUrl}`;
             updateWebhookTriggerData(webhookId, {
                 last_triggered_at: triggeredAt,
-                last_triggered_status: err.statusCode
+                last_triggered_status: err.statusCode,
+                last_triggered_error: lastTriggeredError
             });
 
             common.logging.error(new common.errors.GhostError({

@@ -38,6 +38,7 @@ function listener(event, model, options) {
     if (model) {
         payload = generatePayload(event, model);
     }
+    payload.event = event;
 
     // avoid triggering webhooks when importing
     if (options && options.importing) {

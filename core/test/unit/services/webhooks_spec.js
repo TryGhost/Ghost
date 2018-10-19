@@ -49,7 +49,8 @@ describe('Webhooks', function () {
         triggerArgs = webhooksStub.trigger.getCall(0).args;
         triggerArgs[0].should.eql('subscriber.added');
         triggerArgs[1].should.deepEqual({
-            subscribers: [testSubscriber]
+            subscribers: [testSubscriber],
+            event: 'subscriber.added'
         });
 
         resetWebhooks();
@@ -74,7 +75,8 @@ describe('Webhooks', function () {
         triggerArgs = webhooksStub.trigger.getCall(0).args;
         triggerArgs[0].should.eql('subscriber.deleted');
         triggerArgs[1].should.deepEqual({
-            subscribers: [testSubscriber]
+            subscribers: [testSubscriber],
+            event: 'subscriber.deleted'
         });
 
         resetWebhooks();
@@ -94,7 +96,9 @@ describe('Webhooks', function () {
 
         triggerArgs = webhooksStub.trigger.getCall(0).args;
         triggerArgs[0].should.eql('site.changed');
-        triggerArgs[1].should.eql({});
+        triggerArgs[1].should.eql({
+            event: 'site.changed'
+        });
 
         resetWebhooks();
     });
