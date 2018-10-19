@@ -44,11 +44,11 @@ module.exports = {
             }
         },
         query({data, options}) {
-            return models.Webhook.edit(data, Object.assign(options, {require: true}))
-                .catch(models.Integration.NotFoundError, () => {
+            return models.Webhook.edit(data.webhooks[0], Object.assign(options, {require: true}))
+                .catch(models.Webhook.NotFoundError, () => {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.api.resource.resourceNotFound', {
-                            resource: 'Integration'
+                            resource: 'Webhook'
                         })
                     });
                 });
