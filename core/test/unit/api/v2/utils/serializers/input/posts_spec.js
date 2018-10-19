@@ -80,10 +80,15 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
     });
 
     describe('read', function () {
-        it('default', function () {
+        it('with api_key_id', function () {
             const apiConfig = {};
             const frame = {
-                options: {},
+                options: {
+                    context: {
+                        user: 0,
+                        api_key_id: 1
+                    }
+                },
                 data: {}
             };
 
@@ -91,10 +96,15 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             frame.data.page.should.eql(false);
         });
 
-        it('overrides page', function () {
+        it('with api_key_id: overrides page', function () {
             const apiConfig = {};
             const frame = {
-                options: {},
+                options: {
+                    context: {
+                        user: 0,
+                        api_key_id: 1
+                    }
+                },
                 data: {
                     status: 'all',
                     page: true
@@ -104,6 +114,40 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             serializers.input.posts.read(apiConfig, frame);
             frame.data.status.should.eql('all');
             frame.data.page.should.eql(false);
+        });
+
+        it('with user', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    context: {
+                        user: 1,
+                        api_key_id: 0
+                    }
+                },
+                data: {}
+            };
+
+            serializers.input.posts.read(apiConfig, frame);
+            should.not.exist(frame.data.page);
+        });
+
+        it('with user', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    context: {
+                        user: 1,
+                        api_key_id: 0
+                    }
+                },
+                data: {
+                    page: true
+                }
+            };
+
+            serializers.input.posts.read(apiConfig, frame);
+            frame.data.page.should.eql(true);
         });
     });
 
