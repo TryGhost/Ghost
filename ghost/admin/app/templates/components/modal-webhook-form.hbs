@@ -78,6 +78,9 @@
             {{gh-error-message errors=webhook.errors property="secret" data-test-error="new-webhook-secret"}}
         {{/gh-form-group}}
     </fieldset>
+    {{#if error}}
+        <p class="red">{{error}}</p>
+    {{/if}}
 </div>
 
 <div class="modal-footer">

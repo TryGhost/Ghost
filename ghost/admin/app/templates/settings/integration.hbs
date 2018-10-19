@@ -127,16 +127,27 @@
                     <th class="pa3 br3 br--bottom br--right bg-lightgrey-l1">Name</th>
                     <th class="pa3 bg-lightgrey-l1">Event</th>
                     <th class="pa3 bg-lightgrey-l1">URL</th>
-                    <th class="pa3 br3 br--top br--left bg-lightgrey-l1">Last triggered</th>
+                    <th class="pa3 bg-lightgrey-l1">Last triggered</th>
+                    <th class="pa3 br3 br--top br--left bg-lightgrey-l1"></th>
                 </tr>
             </thead>
             <tbody>
                 {{#each filteredWebhooks as |webhook|}}
-                    <tr>
+                    <tr class="hide-child">
                         <td class="pa3">{{webhook.name}}</td>
-                        <td class="pa3">{{webhook.event}}</td>
+                        <td class="pa3">{{event-name webhook.event}}</td>
                         <td class="pa3">{{webhook.targetUrl}}</td>
-                        <td class="pa3">{{webhook.lastTriggeredAtUTC}}</td>
+                        <td class="pa3">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
+                        <td class="w1 pa3 nowrap">
+                            <div class="child">
+                                {{#link-to "settings.integration.webhooks.edit" integration webhook}}
+                                    {{svg-jar "koenig/kg-thin-edit" class="w4 fill-black-80"}}
+                                {{/link-to}}
+                                <button {{action "confirmWebhookDeletion" webhook}}>
+                                    {{svg-jar "trash" class="w4 fill-red"}}
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                 {{else}}
                 <tr>
@@ -161,6 +172,13 @@
     {{gh-fullscreen-modal "leave-settings"
         confirm=(action "leaveScreen")
         close=(action "toggleUnsavedChangesModal")
+        modifier="action wide"}}
+{{/if}}
+
+{{#if webhookToDelete}}
+    {{gh-fullscreen-modal "delete-webhook"
+        confirm=(action "deleteWebhook")
+        close=(action "cancelWebhookDeletion")
         modifier="action wide"}}
 {{/if}}
 

@@ -61,6 +61,18 @@ export default Controller.extend({
             this.integration.rollbackAttributes();
 
             return transition.retry();
+        },
+
+        confirmWebhookDeletion(webhook) {
+            this.set('webhookToDelete', webhook);
+        },
+
+        cancelWebhookDeletion() {
+            this.set('webhookToDelete', null);
+        },
+
+        deleteWebhook() {
+            return this.webhookToDelete.destroyRecord();
         }
     },
 
