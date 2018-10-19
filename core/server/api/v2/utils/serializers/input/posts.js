@@ -3,8 +3,8 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:po
 const url = require('./utils/url');
 
 module.exports = {
-    all(apiConfig, frame) {
-        debug('all');
+    browse(apiConfig, frame) {
+        debug('browse');
 
         if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
             // CASE: the content api endpoints for posts should only return non page type resources
@@ -22,6 +22,14 @@ module.exports = {
                 frame.options.filter = 'page:false';
             }
         }
+
+        debug(frame.options);
+    },
+
+    read(apiConfig, frame) {
+        debug('read');
+
+        frame.data.page = false;
 
         debug(frame.options);
     },
