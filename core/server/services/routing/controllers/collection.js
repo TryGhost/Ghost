@@ -37,7 +37,7 @@ module.exports = function collectionController(req, res, next) {
         }
     }
 
-    return helpers.fetchData(pathOptions, res.routerOptions)
+    return helpers.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {
@@ -48,7 +48,7 @@ module.exports = function collectionController(req, res, next) {
 
             // CASE: does this post belong to this collection?
             result.posts = _.filter(result.posts, (post) => {
-                if (urlService.owns(res.routerOptions.identifier, post.url)) {
+                if (urlService.owns(res.routerOptions.identifier, post.id)) {
                     return post;
                 }
             });

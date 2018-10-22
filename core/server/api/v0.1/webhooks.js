@@ -7,51 +7,9 @@ const Promise = require('bluebird'),
     localUtils = require('./utils'),
     models = require('../../models'),
     common = require('../../lib/common'),
-    request = require('../../lib/request'),
     docName = 'webhooks';
 
 let webhooks;
-
-function makeRequest(webhook, payload, options) {
-    let event = webhook.get('event'),
-        targetUrl = webhook.get('target_url'),
-        webhookId = webhook.get('id'),
-        reqPayload = JSON.stringify(payload);
-
-    common.logging.info('webhook.trigger', event, targetUrl);
-
-    request(targetUrl, {
-        body: reqPayload,
-        headers: {
-            'Content-Length': Buffer.byteLength(reqPayload),
-            'Content-Type': 'application/json'
-        },
-        timeout: 2 * 1000,
-        retries: 5
-    }).catch((err) => {
-        // when a webhook responds with a 410 Gone response we should remove the hook
-        if (err.statusCode === 410) {
-            common.logging.info('webhook.destroy (410 response)', event, targetUrl);
-            return models.Webhook.destroy({id: webhookId}, options);
-        }
-
-        common.logging.error(new common.errors.GhostError({
-            err: err,
-            context: {
-                id: webhookId,
-                event: event,
-                target_url: targetUrl,
-                payload: payload
-            }
-        }));
-    });
-}
-
-function makeRequests(webhooksCollection, payload, options) {
-    _.each(webhooksCollection.models, (webhook) => {
-        makeRequest(webhook, payload, options);
-    });
-}
 
 /**
  * ## Webhook API Methods
@@ -130,21 +88,6 @@ webhooks = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options);
-    },
-
-    trigger(event, payload, options) {
-        let tasks;
-
-        function doQuery(options) {
-            return models.Webhook.findAllByEvent(event, options);
-        }
-
-        tasks = [
-            doQuery,
-            _.partialRight(makeRequests, payload, options)
-        ];
-
         return pipeline(tasks, options);
     }
 };

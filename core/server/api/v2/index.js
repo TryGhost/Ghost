@@ -6,6 +6,10 @@ module.exports = {
         return shared.http;
     },
 
+    get integrations() {
+        return shared.pipeline(require('./integrations'), localUtils);
+    },
+
     // @TODO: transform
     get session() {
         return require('./session');
@@ -61,5 +65,9 @@ module.exports = {
 
     get users() {
         return shared.pipeline(require('./users'), localUtils);
+    },
+
+    get preview() {
+        return shared.pipeline(require('./preview'), localUtils);
     }
 };

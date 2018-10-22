@@ -349,6 +349,9 @@
             "posts": {
                 "postNotFound": "Post not found."
             },
+            "pages": {
+                "pageNotFound": "Page not found."
+            },
             "job": {
                 "notFound": "Job not found.",
                 "publishInThePast": "Use the force flag to publish a post in the past."
@@ -356,6 +359,9 @@
             "redirects": {
                 "missingFile": "Please select a JSON file.",
                 "invalidFile": "Please select a valid JSON file to import."
+            },
+            "resource": {
+                "resourceNotFound": "{resource} not found."
             },
             "routes": {
                 "missingFile": "Please select a YAML file.",
@@ -441,7 +447,7 @@
                 "notAllowedToInvite": "Not allowed to invite this role."
             },
             "webhooks": {
-                "webhookAlreadyExists": "A webhook for requested event with supplied target_url already exists."
+                "webhookAlreadyExists": "Target URL has already been used for this event."
             },
             "oembed": {
                 "noUrlProvided": "No url provided.",

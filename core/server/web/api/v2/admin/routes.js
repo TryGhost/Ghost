@@ -33,6 +33,14 @@ module.exports = function apiRoutes() {
     router.put('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.edit));
     router.del('/posts/:id', mw.authAdminAPI, apiv2.http(apiv2.posts.destroy));
 
+    // # Integrations
+
+    router.get('/integrations', mw.authAdminAPI, apiv2.http(apiv2.integrations.browse));
+    router.get('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.read));
+    router.post('/integrations', mw.authAdminAPI, apiv2.http(apiv2.integrations.add));
+    router.put('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.edit));
+    router.del('/integrations/:id', mw.authAdminAPI, apiv2.http(apiv2.integrations.destroy));
+
     // ## Schedules
     router.put('/schedules/posts/:id', [
         auth.authenticate.authenticateClient,
@@ -214,6 +222,7 @@ module.exports = function apiRoutes() {
 
     // ## Webhooks (RESTHooks)
     router.post('/webhooks', mw.authAdminAPI, apiv2.http(apiv2.webhooks.add));
+    router.put('/webhooks/:id', mw.authAdminAPI, apiv2.http(apiv2.webhooks.edit));
     router.del('/webhooks/:id', mw.authAdminAPI, apiv2.http(apiv2.webhooks.destroy));
 
     // ## Oembed (fetch response from oembed provider)

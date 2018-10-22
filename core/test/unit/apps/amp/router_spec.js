@@ -94,7 +94,7 @@ describe('Unit - apps/amp/lib/router', function () {
     });
 
     describe('fn: getPostData', function () {
-        let res, req, postLookupStub, post;
+        let res, req, entryLookupStub, post;
 
         beforeEach(function () {
             post = testUtils.DataGenerator.forKnex.createPost({slug: 'welcome'});
@@ -105,10 +105,10 @@ describe('Unit - apps/amp/lib/router', function () {
 
             req = {};
 
-            postLookupStub = sandbox.stub();
+            entryLookupStub = sandbox.stub();
 
-            sandbox.stub(helpers, 'postLookup').get(function () {
-                return postLookupStub;
+            sandbox.stub(helpers, 'entryLookup').get(function () {
+                return entryLookupStub;
             });
 
             sandbox.stub(urlService, 'getPermalinkByUrl');
@@ -123,8 +123,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.postLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).resolves({
-                post: post
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'}).resolves({
+                entry: post
             });
 
             ampController.getPostData(req, res, function () {
@@ -139,8 +139,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.postLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).resolves({
-                post: post
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'}).resolves({
+                entry: post
             });
 
             ampController.getPostData(req, res, function () {
@@ -149,12 +149,13 @@ describe('Unit - apps/amp/lib/router', function () {
             });
         });
 
-        it('should return error if postlookup returns NotFoundError', function (done) {
+        it('should return error if entrylookup returns NotFoundError', function (done) {
             res.locals.relativeUrl = req.originalUrl = '/welcome/amp';
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.postLookup.withArgs('/welcome/', {permalinks: '/:slug/'}).rejects(new common.errors.NotFoundError());
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', resourceType: 'posts'})
+                .rejects(new common.errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {
                 (err instanceof common.errors.NotFoundError).should.be.true();

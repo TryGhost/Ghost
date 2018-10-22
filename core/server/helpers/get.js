@@ -17,7 +17,7 @@ var proxy = require('./proxy'),
     get;
 
 // Endpoints that the helper is able to access
-resources = ['posts', 'tags', 'users'];
+resources = ['posts', 'tags', 'users', 'pages'];
 
 // Short forms of paths which we should understand
 pathAliases = {
@@ -104,10 +104,11 @@ get = function get(resource, options) {
     options.hash = options.hash || {};
     options.data = options.data || {};
 
-    var self = this,
-        data = createFrame(options.data),
-        apiOptions = options.hash,
-        apiMethod;
+    const self = this;
+    const data = createFrame(options.data);
+    const apiVersion = data.root._locals.apiVersion;
+    let apiOptions = options.hash;
+    let apiMethod;
 
     if (!options.fn) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: 'get'});
@@ -122,7 +123,7 @@ get = function get(resource, options) {
     }
 
     // Determine if this is a read or browse
-    apiMethod = isBrowse(resource, apiOptions) ? api[resource].browse : api[resource].read;
+    apiMethod = isBrowse(resource, apiOptions) ? api[apiVersion][resource].browse : api[apiVersion][resource].read;
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(this, apiOptions);
 

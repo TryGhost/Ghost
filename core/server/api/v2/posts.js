@@ -39,7 +39,6 @@ module.exports = {
     read: {
         options: [
             'include',
-            'filter',
             'fields',
             'status',
             'formats',

@@ -1,4 +1,8 @@
 module.exports = {
+    get integrations() {
+        return require('./integrations');
+    },
+
     get pages() {
         return require('./pages');
     },
@@ -49,5 +53,9 @@ module.exports = {
 
     get users() {
         return require('./users');
+    },
+
+    get preview() {
+        return require('./preview');
     }
 };

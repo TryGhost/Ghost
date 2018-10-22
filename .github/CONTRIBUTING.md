@@ -15,7 +15,7 @@ After that, if you're looking for something a little more challenging to sink yo
 
 If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
 
-First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.comc/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://docs.ghost.org/install/source/) setup guide.
+First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.com/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://docs.ghost.org/install/source/) setup guide.
 
 
 ### Branching Guide

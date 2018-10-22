@@ -34,7 +34,7 @@ module.exports = function rssController(req, res, next) {
     // @TODO: this belongs to the rss service
     const baseUrl = getBaseUrlForRSSReq(req.originalUrl, pathOptions.page);
 
-    helpers.fetchData(pathOptions, res.routerOptions)
+    helpers.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function formatResult(result) {
             const response = _.pick(result, ['posts', 'meta']);
 
