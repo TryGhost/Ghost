@@ -56,11 +56,6 @@ export default Controller.extend({
             this.get('settings').set(image, '');
         },
 
-        updateImage(property, image, resetInput) {
-            this.get('settings').set(property, image);
-            resetInput();
-        },
-
         /**
          * Opens a file selection dialog - Triggered by "Upload Image" buttons,
          * searches for the hidden file input within the .gh-setting element
