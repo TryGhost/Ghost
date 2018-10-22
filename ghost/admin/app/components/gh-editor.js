@@ -3,10 +3,8 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {run} from '@ember/runloop';
+import {debounce, run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-
-const {debounce} = run;
 
 export default Component.extend({
     ui: service(),
