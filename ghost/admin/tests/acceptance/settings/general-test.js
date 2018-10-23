@@ -75,7 +75,7 @@ describe('Acceptance: Settings - General', function () {
             expect(document.title, 'page title').to.equal('Settings - General - Test Blog');
 
             // highlights nav menu
-            expect($('.gh-nav-settings-general').hasClass('active'), 'highlights nav menu item')
+            expect($('[data-test-nav="settings"]').hasClass('active'), 'highlights nav menu item')
                 .to.be.true;
 
             expect(

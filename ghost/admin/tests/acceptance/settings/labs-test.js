@@ -73,7 +73,7 @@ describe('Acceptance: Settings - Labs', function () {
             expect(document.title, 'page title').to.equal('Settings - Labs - Test Blog');
 
             // highlights nav menu
-            expect($('.gh-nav-settings-labs').hasClass('active'), 'highlights nav menu item')
+            expect($('[data-test-nav="labs"]').hasClass('active'), 'highlights nav menu item')
                 .to.be.true;
 
             await click('#settings-resetdb .js-delete');

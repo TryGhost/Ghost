@@ -77,7 +77,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
             expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
 
             // highlights nav menu
-            expect($('.gh-nav-settings-code-injection').hasClass('active'), 'highlights nav menu item')
+            expect($('[data-test-nav="code-injection"]').hasClass('active'), 'highlights nav menu item')
                 .to.be.true;
 
             expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Save');

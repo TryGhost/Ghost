@@ -245,7 +245,7 @@ describe('Acceptance: Settings - Design', function () {
             // theme upload displays modal
             await click('[data-test-upload-theme-button]');
             expect(
-                find('.fullscreen-modal .modal-content:contains("Upload a theme")').length,
+                find('[data-test-modal="upload-theme"]').length,
                 'theme upload modal displayed after button click'
             ).to.equal(1);
 
