@@ -21,7 +21,7 @@ const disposition = {
         return {
             'Content-Disposition': options.value,
             'Content-Type': 'application/json',
-            'Content-Length': JSON.stringify(result).length
+            'Content-Length': Buffer.byteLength(result)
         };
     },
 
@@ -29,7 +29,7 @@ const disposition = {
         return {
             'Content-Disposition': options.value,
             'Content-Type': 'application/yaml',
-            'Content-Length': JSON.stringify(result).length
+            'Content-Length': Buffer.byteLength(result)
         };
     }
 };

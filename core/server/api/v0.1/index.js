@@ -229,7 +229,7 @@ const addHeaders = (apiMethod, req, res, result) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'application/json',
-                    'Content-Length': JSON.stringify(result).length
+                    'Content-Length': Buffer.byteLength(result)
                 });
             });
     }
@@ -241,7 +241,7 @@ const addHeaders = (apiMethod, req, res, result) => {
                 res.set({
                     'Content-Disposition': header,
                     'Content-Type': 'application/yaml',
-                    'Content-Length': JSON.stringify(result).length
+                    'Content-Length': Buffer.byteLength(result)
                 });
             });
     }
