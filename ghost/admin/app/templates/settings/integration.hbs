@@ -12,12 +12,45 @@
         </header>
 
         <div class="flex flex-row">
-            <figure class="flex items-center" style={{integration-icon-style integration}}>
-                {{#unless integration.iconImage}}
-                    {{svg-jar "integration" class="w-100"}}
-                {{/unless}}
-            </figure>
-            <div class="flex flex-column w-100">
+            <div class="flex flex-column mr8">
+                <label>Icon</label>
+                <figure class="relative flex items-center h-100 ma0 br4 hide-child" style={{iconImageStyle}}>
+                    {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
+                        {{#unless integration.iconImage}}
+                            {{svg-jar "integration" class="w-100"}}
+                        {{/unless}}
+                    {{/aspect-ratio-box}}
+
+                    {{#gh-uploader
+                        extensions=imageExtensions
+                        onComplete=(action "setIconImage")
+                        as |uploader|
+                    }}
+                        {{#if uploader.isUploading}}
+                            <div class="absolute w-100 h-100 br4 bg-black-70 flex items-center">
+                                {{uploader.progressBar}}
+                                </div>
+                        {{else}}
+                            <button
+                                type="button"
+                                class="child absolute w-100 h-100 br4 b white text-center bg-black-70"
+                                {{action "triggerIconFileDialog"}}
+                            >
+                                Upload
+                            </button>
+                        {{/if}}
+                        <div style="display:none">
+                            {{gh-file-input
+                                name="iconImage"
+                                multiple=false
+                                action=uploader.setFiles
+                                accept=imageMimeTypes
+                                data-test-file-input="icon"}}
+                        </div>
+                    {{/gh-uploader}}
+                </figure>
+            </div>
+            <div class="flex flex-column flex-grow-1">
                 {{#gh-validation-status-container
                     class="flex flex-column w-100 mr3"
                     errors=integration.errors
@@ -184,7 +217,7 @@
         close=(action "cancelIntegrationDeletion")
         modifier="action wide"}}
 {{/if}}
-        
+
 {{#if webhookToDelete}}
     {{gh-fullscreen-modal "delete-webhook"
         confirm=(action "deleteWebhook")

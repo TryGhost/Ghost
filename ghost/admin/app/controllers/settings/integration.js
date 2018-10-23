@@ -1,9 +1,17 @@
 import Controller from '@ember/controller';
+import {
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
+} from 'ghost-admin/components/gh-image-uploader';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
 import {task, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
+    imageExtensions: IMAGE_EXTENSIONS,
+    imageMimeTypes: IMAGE_MIME_TYPES,
+
     integration: alias('model'),
 
     allWebhooks: computed(function () {
@@ -20,7 +28,29 @@ export default Controller.extend({
         });
     }),
 
+    iconImageStyle: computed('integration.iconImage', function () {
+        let url = this.integration.iconImage;
+        if (url) {
+            let styles = [
+                `background-image: url(${url})`,
+                'background-size: 100%',
+                'background-position: 50%',
+                'background-repeat: no-repeat'
+            ];
+            return htmlSafe(styles.join('; '));
+        }
+    }),
+
     actions: {
+        triggerIconFileDialog() {
+            let input = document.querySelector('input[type="file"][name="iconImage"]');
+            input.click();
+        },
+
+        setIconImage([image]) {
+            this.integration.set('iconImage', image.url);
+        },
+
         save() {
             return this.save.perform();
         },
@@ -74,7 +104,7 @@ export default Controller.extend({
         cancelIntegrationDeletion() {
             this.set('showDeleteIntegrationModal', false);
         },
-      
+
         confirmWebhookDeletion(webhook) {
             this.set('webhookToDelete', webhook);
         },
