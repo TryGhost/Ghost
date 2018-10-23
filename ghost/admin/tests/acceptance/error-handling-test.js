@@ -50,7 +50,7 @@ describe('Acceptance: Error Handling', function () {
                 expect(find('.gh-alert').text()).to.match(/refresh/);
 
                 // try navigating back to the content list
-                await click('.gh-nav-main-content');
+                await click('[data-test-link="stories"]');
 
                 expect(currentPath()).to.equal('editor.edit');
             });
@@ -61,7 +61,7 @@ describe('Acceptance: Error Handling', function () {
                 // mock the tags endpoint to return version mismatch
                 server.get('/tags/', versionMismatchResponse);
 
-                await click('.gh-nav-settings-tags');
+                await click('[data-test-nav="tags"]');
 
                 // navigation is blocked on loading screen
                 expect(currentPath()).to.equal('settings.tags_loading');
@@ -75,7 +75,7 @@ describe('Acceptance: Error Handling', function () {
                 server.get('/configuration/timezones/', versionMismatchResponse);
 
                 await visit('/settings/tags');
-                await click('.gh-nav-settings-general');
+                await click('[data-test-nav="settings"]');
 
                 // navigation is blocked
                 expect(currentPath()).to.equal('settings.general_loading');
@@ -89,7 +89,7 @@ describe('Acceptance: Error Handling', function () {
                 server.post('/subscribers/csv/', versionMismatchResponse);
 
                 await visit('/subscribers');
-                await click('.gh-btn:contains("Import CSV")');
+                await click('[data-test-link="import-csv"]');
                 await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
 
                 // alert is shown

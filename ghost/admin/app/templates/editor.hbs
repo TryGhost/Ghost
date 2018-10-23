@@ -9,7 +9,7 @@
             <div class="flex items-center pe-auto">
                 {{#if ui.isFullScreen}}
                     <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white"}}">
-                        {{#link-to "posts" classNames="blue link fw4 flex items-center"}}
+                        {{#link-to "posts" classNames="blue link fw4 flex items-center" data-test-link="stories"}}
                             {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
                             Stories
                         {{/link-to}}

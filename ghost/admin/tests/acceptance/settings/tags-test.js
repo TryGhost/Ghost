@@ -113,7 +113,7 @@ describe('Acceptance: Settings - Tags', function () {
             expect(document.title, 'page title').to.equal('Settings - Tags - Test Blog');
 
             // it highlights nav menu
-            expect($('.gh-nav-settings-tags').hasClass('active'), 'highlights nav menu item')
+            expect($('[data-test-nav="tags"]').hasClass('active'), 'highlights nav menu item')
                 .to.be.true;
 
             // it lists all tags

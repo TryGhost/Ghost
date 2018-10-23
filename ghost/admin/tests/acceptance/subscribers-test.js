@@ -30,7 +30,7 @@ describe('Acceptance: Subscribers', function () {
         await visit('/subscribers');
 
         expect(currentURL()).to.equal('/');
-        expect(find('.gh-nav-main a:contains("Subscribers")').length, 'sidebar link is visible')
+        expect(find('[data-test-nav="subscribers"]').length, 'sidebar link is visible')
             .to.equal(0);
     });
 
@@ -42,7 +42,7 @@ describe('Acceptance: Subscribers', function () {
         await visit('/subscribers');
 
         expect(currentURL()).to.equal('/');
-        expect(find('.gh-nav-main a:contains("Subscribers")').length, 'sidebar link is visible')
+        expect(find('[data-test-nav="subscribers"]').length, 'sidebar link is visible')
             .to.equal(0);
     });
 
@@ -54,7 +54,7 @@ describe('Acceptance: Subscribers', function () {
         await visit('/subscribers');
 
         expect(currentURL()).to.equal('/');
-        expect(find('.gh-nav-main a:contains("Subscribers")').length, 'sidebar link is visible')
+        expect(find('[data-test-nav="subscribers"]').length, 'sidebar link is visible')
             .to.equal(0);
     });
 
@@ -70,7 +70,7 @@ describe('Acceptance: Subscribers', function () {
             server.createList('subscriber', 40);
 
             await visit('/');
-            await click('.gh-nav-main a:contains("Subscribers")');
+            await click('[data-test-nav="subscribers"]');
 
             // it navigates to the correct page
             expect(currentPath()).to.equal('subscribers.index');
@@ -209,7 +209,7 @@ describe('Acceptance: Subscribers', function () {
                 .to.equal('(40)');
 
             // click the import subscribers button
-            await click('.gh-btn:contains("Import CSV")');
+            await click('[data-test-link="import-csv"]');
 
             // it displays the import subscribers modal
             expect(find('.fullscreen-modal').length, 'import subscribers modal displayed')
@@ -224,7 +224,7 @@ describe('Acceptance: Subscribers', function () {
             expect(find('.fullscreen-modal').length, 'import subscribers modal displayed after cancel')
                 .to.equal(0);
 
-            await click('.gh-btn:contains("Import CSV")');
+            await click('[data-test-link="import-csv"]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'test.csv'});
 
             // modal title changes
