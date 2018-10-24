@@ -214,12 +214,12 @@ module.exports = function apiRoutes() {
     router.del('/invites/:id', mw.authAdminApi, apiv2.http(apiv2.invites.destroy));
 
     // ## Redirects (JSON based)
-    router.get('/redirects/json', mw.authAdminApi, api.http(api.redirects.download));
+    router.get('/redirects/json', mw.authAdminApi, apiv2.http(apiv2.redirects.download));
     router.post('/redirects/json',
         mw.authAdminApi,
         upload.single('redirects'),
         shared.middlewares.validation.upload({type: 'redirects'}),
-        api.http(api.redirects.upload)
+        apiv2.http(apiv2.redirects.upload)
     );
 
     // ## Webhooks (RESTHooks)
