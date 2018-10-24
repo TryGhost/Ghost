@@ -38,63 +38,39 @@ describe('Migration Fixture Utils', function () {
 
         it('should match undefined with no args', function () {
             matchFunc()({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith(undefined).should.be.true();
         });
 
         it('should match key with match string', function () {
             matchFunc('foo', 'bar')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
-
             matchFunc('foo', 'buz')({get: getStub}).should.be.false();
-            getStub.calledTwice.should.be.true();
-            getStub.secondCall.calledWith('foo').should.be.true();
         });
 
         it('should match value when key is 0', function () {
             matchFunc('foo', 0, 'bar')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
-
             matchFunc('foo', 0, 'buz')({get: getStub}).should.be.false();
-            getStub.calledTwice.should.be.true();
-            getStub.secondCall.calledWith('foo').should.be.true();
         });
 
         it('should match key & value when match is array', function () {
             matchFunc(['foo', 'fun'], 'bar', 'baz')({get: getStub}).should.be.true();
-            getStub.calledTwice.should.be.true();
-            getStub.getCall(0).calledWith('fun').should.be.true();
-            getStub.getCall(1).calledWith('foo').should.be.true();
-
             matchFunc(['foo', 'fun'], 'baz', 'bar')({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(4);
-            getStub.getCall(2).calledWith('fun').should.be.true();
-            getStub.getCall(3).calledWith('foo').should.be.true();
         });
 
         it('should match key only when match is array, but value is all', function () {
             matchFunc(['foo', 'fun'], 'bar', 'all')({get: getStub}).should.be.true();
-            getStub.calledOnce.should.be.true();
-            getStub.calledWith('foo').should.be.true();
+        });
 
-            matchFunc(['foo', 'fun'], 'all', 'bar')({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(3);
-            getStub.getCall(1).calledWith('fun').should.be.true();
-            getStub.getCall(2).calledWith('foo').should.be.true();
+        it('should match anything when key and value is "all"', function () {
+            matchFunc(['whatever the wether!!', 'wooooohooo'], 'all', 'all')({get: getStub}).should.be.true();
+        });
+
+        it('should match any key when the key is "all"', function () {
+            matchFunc(['whatever the wether!!', 'fun'], 'all', 'baz')({get: getStub}).should.be.true();
+            matchFunc(['whatever the wether!!', 'woohoo'], 'all', 'baz')({get: getStub}).should.be.false();
         });
 
         it('should match key & value when match and value are arrays', function () {
             matchFunc(['foo', 'fun'], 'bar', ['baz', 'buz'])({get: getStub}).should.be.true();
-            getStub.calledTwice.should.be.true();
-            getStub.getCall(0).calledWith('fun').should.be.true();
-            getStub.getCall(1).calledWith('foo').should.be.true();
-
             matchFunc(['foo', 'fun'], 'bar', ['biz', 'buz'])({get: getStub}).should.be.false();
-            getStub.callCount.should.eql(4);
-            getStub.getCall(2).calledWith('fun').should.be.true();
-            getStub.getCall(3).calledWith('foo').should.be.true();
         });
     });
 
@@ -152,19 +128,19 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 59);
-                result.should.have.property('done', 59);
+                result.should.have.property('expected', 60);
+                result.should.have.property('done', 60);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(59);
-                dataMethodStub.find.callCount.should.eql(5);
-                baseUtilAttachStub.callCount.should.eql(59);
+                dataMethodStub.filter.callCount.should.eql(60);
+                dataMethodStub.find.callCount.should.eql(6);
+                baseUtilAttachStub.callCount.should.eql(60);
 
-                fromItem.related.callCount.should.eql(59);
-                fromItem.findWhere.callCount.should.eql(59);
-                toItem[0].get.callCount.should.eql(118);
+                fromItem.related.callCount.should.eql(60);
+                fromItem.findWhere.callCount.should.eql(60);
+                toItem[0].get.callCount.should.eql(120);
 
                 done();
             }).catch(done);

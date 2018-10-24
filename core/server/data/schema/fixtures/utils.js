@@ -48,6 +48,10 @@ matchFunc = function matchFunc(match, key, value) {
                 valueTest = item.get(match[1]) === value;
             }
 
+            if (key === 'all') {
+                return valueTest;
+            }
+
             return item.get(match[0]) === key && valueTest;
         };
     }

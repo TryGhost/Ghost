@@ -542,6 +542,9 @@
                 "match": ["object_type", "action_type"]
             },
             "entries": {
+                "Owner": {
+                    "all": "all"
+                },
                 "Administrator": {
                     "db": "all",
                     "mail": "all",
