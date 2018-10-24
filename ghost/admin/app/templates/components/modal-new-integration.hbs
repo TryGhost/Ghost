@@ -6,12 +6,12 @@
 <div class="modal-body">
     <fieldset>
         {{#gh-form-group errors=integration.errors hasValidated=integration.hasValidated property="name"}}
-            <label for="new-integration-name">Name</label>
+            <label for="new-integration-name" class="fw6">Name</label>
             <input type="text"
                 value={{integration.name}}
                 oninput={{action "updateName" value="target.value"}}
                 id="new-integration-name"
-                class="gh-input"
+                class="gh-input mt1"
                 placeholder="Integration name..."
                 name="integration-name"
                 autofocus="autofocus"

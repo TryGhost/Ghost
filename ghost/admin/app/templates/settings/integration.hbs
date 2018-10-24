@@ -11,13 +11,13 @@
             </section>
         </header>
 
-        <div class="flex flex-row">
-            <div class="flex flex-column mr8">
+        <div class="flex">
+            <div class="flex flex-column mr8 items-start">
                 <label>Icon</label>
-                <figure class="relative flex items-center h-100 ma0 br4 hide-child" style={{iconImageStyle}}>
+                <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 mt1" style={{iconImageStyle}}>
                     {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
                         {{#unless integration.iconImage}}
-                            {{svg-jar "integration" class="w-100"}}
+                            {{svg-jar "integration" class="w14 h-auto stroke-darkgrey"}}
                         {{/unless}}
                     {{/aspect-ratio-box}}
 
@@ -27,13 +27,13 @@
                         as |uploader|
                     }}
                         {{#if uploader.isUploading}}
-                            <div class="absolute w-100 h-100 br4 bg-black-70 flex items-center">
+                            <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
                                 {{uploader.progressBar}}
                                 </div>
                         {{else}}
                             <button
                                 type="button"
-                                class="child absolute w-100 h-100 br4 b white text-center bg-black-70"
+                                class="child absolute top-0 left-0 w-100 h-100 br4 b white text-center bg-black-70 f8"
                                 {{action "triggerIconFileDialog"}}
                             >
                                 Upload
@@ -50,7 +50,7 @@
                     {{/gh-uploader}}
                 </figure>
             </div>
-            <div class="flex flex-column flex-grow-1">
+            <div class="flex-auto">
                 {{#gh-validation-status-container
                     class="flex flex-column w-100 mr3"
                     errors=integration.errors
@@ -60,14 +60,14 @@
                     <label for="integration_name">Name</label>
                     {{gh-text-input
                         id="integration_name"
-                        class="gh-input"
+                        class="gh-input mt1 mb1"
                         type="text"
                         value=(readonly integration.name)
                         input=(action (mut integration.name) value="target.value")
                         focus-out=(action "validate" "name" target=integration)
                         data-test-input="name"
                     }}
-                    {{gh-error-message errors=integration.errors property="name" data-test-error="name"}}
+                    {{gh-error-message errors=integration.errors property="name" data-test-error="name" class="ma0"}}
                 {{/gh-validation-status-container}}
 
                 {{#gh-validation-status-container
@@ -76,31 +76,31 @@
                     hasValidated=integration.hasValidated
                     property="decription"
                 }}
-                    <label for="integration_description">Description</label>
+                    <label for="integration_description" class="mt3">Description</label>
                     {{gh-text-input
                         id="integration_description"
-                        class="gh-input"
+                        class="gh-input mt1"
                         type="text"
                         value=(readonly integration.description)
                         input=(action (mut integration.description) value="target.value")
                         focus-out=(action "validate" "description" target=integration)
                         data-test-input="description"
                     }}
-                    {{gh-error-message errors=integration.errors property="description" data-test-error="description"}}
+                    {{gh-error-message errors=integration.errors property="description" data-test-error="description" class="ma0"}}
                 {{/gh-validation-status-container}}
             </div>
         </div>
     </form>
 
-    <div class="gh-setting-header">API Keys</div>
-    <div class="flex flex-row">
+    <h4 class="mt15 midgrey f7 fw4 pb2 bb b--whitegrey">API Keys</h4>
+    <div class="flex flex-row mt5">
         {{#with integration.contentKey as |contentKey|}}
-            {{#gh-validation-status-container class="flex flex-column w-100 mr3"}}
+            {{#gh-validation-status-container class="flex flex-column w-100 mr5"}}
                 <div class="flex">
-                    <label for="content_key" class="flex-grow-1">
+                    <label for="content_key" class="flex-grow-1 darkgrey fw7 f8">
                         Content API Key
                     </label>
-                    <span class="db">
+                    <span class="db f8 midgrey">
                         {{#if copyContentKey.isRunning}}
                             Copied to clipboard
                         {{else}}
@@ -108,16 +108,18 @@
                         {{/if}}
                     </span>
                 </div>
-                <div class="relative hide-child">
+                <div class="relative hide-child mt1">
                     <input id="content_key"
-                        class="gh-input"
+                        class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
                         type="text"
                         value={{contentKey.secret}}
                         disabled="true"
                         data-test-input="content_key">
 
-                    <div class="absolute top-1 right-1 pt1 pr2 pb1 pl2 bg-white child">
-                        <button type="button" {{action (perform copyContentKey)}}>Copy</button>
+                    <div class="absolute top-0 right-1">
+                        <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                            <button type="button" {{action (perform copyContentKey)}} class="white fw4">Copy</button>
+                        </div>
                     </div>
                 </div>
             {{/gh-validation-status-container}}
@@ -125,10 +127,10 @@
         {{#with integration.adminKey as |adminKey|}}
             {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
                 <div class="flex">
-                    <label for="admin_key" class="flex-grow-1">
+                    <label for="admin_key" class="flex-grow-1 darkgrey fw7 f8">
                         Admin API Key
                     </label>
-                    <span class="db">
+                    <span class="db f8 midgrey">
                         {{#if copyAdminKey.isRunning}}
                             Copied to clipboard
                         {{else}}
@@ -136,70 +138,78 @@
                         {{/if}}
                     </span>
                 </div>
-                <div class="relative hide-child">
+                <div class="relative hide-child mt1">
                     <input id="admin_key"
-                        class="gh-input"
+                        class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
                         type="text"
                         value={{adminKey.secret}}
                         disabled="true"
                         data-test-input="admin_key">
 
-                    <div class="absolute top-1 right-1 pt1 pr2 pb1 pl2 bg-white child">
-                        <button type="button" {{action (perform copyAdminKey)}}>Copy</button>
+                    <div class="absolute top-0 right-1">
+                        <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                            <button type="button" {{action (perform copyAdminKey)}} class="white fw4">Copy</button>
+                        </div>
                     </div>
                 </div>
             {{/gh-validation-status-container}}
         {{/with}}
     </div>
 
-    <div class="gh-setting-header">Webhooks</div>
-    <div class="mb10 ba br3 b--lightgrey">
-        <table class="ma0">
-            <thead class="bb b--lightgrey">
+    <h4 class="mt15 midgrey f7 fw4">Webhooks</h4>
+    <div class="ba br3 b--lightgrey mt4">
+        <table class="ma0 w-100">
+            <thead>
                 <tr>
-                    <th class="pa3 br3 br--bottom br--right bg-lightgrey-l1">Name</th>
-                    <th class="pa3 bg-lightgrey-l1">Event</th>
-                    <th class="pa3 bg-lightgrey-l1">URL</th>
-                    <th class="pa3 bg-lightgrey-l1">Last triggered</th>
-                    <th class="pa3 br3 br--top br--left bg-lightgrey-l1"></th>
+                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 br--top br--left fw6">Name</th>
+                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">Event</th>
+                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">URL</th>
+                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">Last triggered</th>
+                    <th class="pa2 pl3 bg-whitegrey-l2 br3 br--top br--right"></th>
                 </tr>
             </thead>
             <tbody>
                 {{#each filteredWebhooks as |webhook|}}
-                    <tr class="hide-child">
-                        <td class="pa3">{{webhook.name}}</td>
-                        <td class="pa3">{{event-name webhook.event}}</td>
-                        <td class="pa3">{{webhook.targetUrl}}</td>
-                        <td class="pa3">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
-                        <td class="w1 pa3 nowrap">
-                            <div class="child">
+                    <tr class="hide-child bt b--whitegrey f7">
+                        <td class="pa2 pl3">{{webhook.name}}</td>
+                        <td class="pa2 pl3">{{event-name webhook.event}}</td>
+                        <td class="pa2 pl3">{{webhook.targetUrl}}</td>
+                        <td class="pa2 pl3">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
+                        <td class="w1 pa2 pl3 nowrap">
+                            <div class="child flex items-center">
                                 {{#link-to "settings.integration.webhooks.edit" integration webhook}}
-                                    {{svg-jar "koenig/kg-thin-edit" class="w4 fill-black-80"}}
+                                    {{svg-jar "pen" class="w6 h-auto fill-midgrey pa1 mr1"}}
                                 {{/link-to}}
                                 <button {{action "confirmWebhookDeletion" webhook}}>
-                                    {{svg-jar "trash" class="w4 fill-red"}}
+                                    {{svg-jar "trash" class="w6 fill-red pa1"}}
                                 </button>
                             </div>
                         </td>
                     </tr>
                 {{else}}
-                <tr>
-                    <td colspan="4" class="pa3">
-                        No webhooks configured
+                <tr class="bt b--whitegrey">
+                    <td colspan="5" class="pa5 pt15 pb15 tc midgrey f7">
+                        <span class="db">No webhooks configured</span>
+                        <span class="dib mt1">
+                            {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"}}{{svg-jar "add" class="w3 h-auto fill-blue mr1"}} Add webhook{{/link-to}}
+                        </span>
                     </td>
                 </tr>
                 {{/each}}
             </tbody>
+            {{#if filteredWebhooks}}
             <tfoot class="bt b--lightgrey">
                 <tr>
-                    <td colspan="4" class="pa3">
-                        {{#link-to "settings.integration.webhooks.new" integration}}+ Add webhook{{/link-to}}
+                    <td colspan="5" class="pa3 f7">
+                        {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"}}{{svg-jar "add" class="w3
+                        h-auto fill-blue mr1"}} Add webhook{{/link-to}}
                     </td>
                 </tr>
             </tfoot>
+            {{/if}}
         </table>
     </div>
-    <button class="gh-btn gh-btn-red gh-btn-icon" {{action "confirmIntegrationDeletion"}}>
+    <button class="gh-btn gh-btn-red gh-btn-icon mb15 mt15" {{action "confirmIntegrationDeletion"}}>
         <span> Delete Integration </span>
     </button>
 </section>
