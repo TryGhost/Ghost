@@ -33,7 +33,7 @@ export default Controller.extend({
         if (url) {
             let styles = [
                 `background-image: url(${url})`,
-                'background-size: 100%',
+                'background-size: 50%',
                 'background-position: 50%',
                 'background-repeat: no-repeat'
             ];

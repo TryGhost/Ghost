@@ -6,14 +6,14 @@
 <div class="modal-body">
     <fieldset>
         {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="name"}}
-            <label for="new-webhook-name">Name</label>
+            <label for="new-webhook-name" class="fw6">Name</label>
             {{gh-text-input
                 value=(readonly webhook.name)
                 input=(action (mut webhook.name) value="target.value")
                 focus-out=(action "validate" "name" target=webhook)
                 id="new-webhook-name"
                 name="name"
-                class="gh-input"
+                class="gh-input mt1"
                 placeholder="Webhook name..."
                 autofocus="autofocus"
                 autocapitalize="off"
@@ -24,15 +24,16 @@
     </fieldset>
     <fieldset>
         {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="event"}}
-            <label for="new-webhook-event">Event</label>
+            <label for="new-webhook-event" class="fw6">Event</label>
             <span class="gh-select">
                 {{one-way-select webhook.event
                     options=availableEvents
                     optionValuePath="event"
                     optionLabelPath="name"
                     optionTargetPath="event"
+                    class="mt1"
                     includeBlank=true
-                    prompt="Select an event:"
+                    prompt="Select an event"
                     update=(action "selectEvent")
                     id="new-webhook-event"
                     name="event"
@@ -44,14 +45,14 @@
     </fieldset>
     <fieldset>
         {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="targetUrl"}}
-            <label for="new-webhook-targetUrl">Target URL</label>
+            <label for="new-webhook-targetUrl" class="fw6">Target URL</label>
             {{gh-text-input
                 value=(readonly webhook.targetUrl)
                 input=(action (mut webhook.targetUrl) value="target.value")
                 focus-out=(action "validate" "targetUrl" target=webhook)
                 id="new-webhook-targetUrl"
                 name="targetUrl"
-                class="gh-input"
+                class="gh-input mt1"
                 placeholder="Webhook target URL..."
                 autofocus="autofocus"
                 autocapitalize="off"
@@ -62,14 +63,14 @@
     </fieldset>
     <fieldset>
         {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="secret"}}
-            <label for="new-webhook-secret">Secret</label>
+            <label for="new-webhook-secret" class="fw6">Secret</label>
             {{gh-text-input
                 value=(readonly webhook.secret)
                 oninput=(action (mut webhook.secret) value="target.value")
                 focus-out=(action "validate" "secret" target=webhook)
                 id="new-webhook-secret"
                 name="secret"
-                class="gh-input"
+                class="gh-input mt1"
                 placeholder="Webhook secret..."
                 autofocus="autofocus"
                 autocapitalize="off"
