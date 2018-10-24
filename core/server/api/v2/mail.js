@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const common = require('../../lib/common');
 const mailService = require('../../services/mail');
-const notificationsAPI = require('./notifications');
+const api = require('./');
 let mailer;
 let _private = {};
 
@@ -12,7 +12,7 @@ _private.sendMail = (object) => {
 
     return mailer.send(object.mail[0].message).catch((err) => {
         if (mailer.state.usingDirect) {
-            notificationsAPI.add(
+            api.notifications.add(
                 {
                     notifications: [{
                         type: 'warn',
