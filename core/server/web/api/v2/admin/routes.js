@@ -22,8 +22,13 @@ module.exports = function apiRoutes() {
     router.options('*', shared.middlewares.api.cors);
 
     // ## Configuration
+<<<<<<< HEAD
     router.get('/configuration', api.http(api.configuration.read));
     router.get('/configuration/:key', mw.authAdminApi, api.http(api.configuration.read));
+=======
+    router.get('/configuration', apiv2.http(apiv2.configuration.read));
+    router.get('/configuration/:key', mw.authAdminAPI, apiv2.http(apiv2.configuration.read));
+>>>>>>> Added configuration controller to v2 API
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, apiv2.http(apiv2.posts.browse));
