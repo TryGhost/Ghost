@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.1.0",
-    "amperize": "0.3.7",
+    "amperize": "0.3.8",
     "analytics-node": "2.4.1",
     "archiver": "1.3.0",
     "bcryptjs": "2.4.3",
