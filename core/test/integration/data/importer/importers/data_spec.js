@@ -1008,7 +1008,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import 2.0 Koenig post format', ()=> {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
