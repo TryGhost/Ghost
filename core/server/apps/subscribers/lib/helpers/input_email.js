@@ -20,6 +20,10 @@ module.exports = function input_email(options) { // eslint-disable-line camelcas
         extras += 'autofocus="autofocus"';
     }
 
+    if (options.hash.required) {
+        extras += ' required';
+    }
+
     if (options.hash.placeholder) {
         extras += ` placeholder="${options.hash.placeholder}"`;
     }
