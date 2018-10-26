@@ -164,6 +164,7 @@ class PostsImporter extends BaseImporter {
 
             // CASE 1: you are importing old editor posts
             // CASE 2: you are importing Koenig Beta posts
+            // CASE 3: you are importing Koenig 2.0 posts
             if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
                 let mobiledoc;
 
@@ -179,7 +180,8 @@ class PostsImporter extends BaseImporter {
                 }
 
                 mobiledoc.cards.forEach((card) => {
-                    if (card[0] === 'image') {
+                    // Koenig Beta = imageStyle, Ghost 2.0 Koenig = cardWidth
+                    if (card[0] === 'image' && card[1].imageStyle) {
                         card[1].cardWidth = card[1].imageStyle;
                         delete card[1].imageStyle;
                     }
