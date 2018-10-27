@@ -199,7 +199,7 @@ describe('Subscribers API', function () {
             .expect(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
-
+                res.headers['content-disposition'].should.match(/Attachment;\sfilename="subscribers/);
                 res.text.should.match(/id,email,created_at,deleted_at/);
                 res.text.should.match(/subscriber1@test.com/);
             });
