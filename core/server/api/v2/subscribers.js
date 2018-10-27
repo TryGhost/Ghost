@@ -140,7 +140,11 @@ const subscribers = {
     exportCSV: {
         headers: {
             disposition: {
-                type: 'csv'
+                type: 'csv',
+                value() {
+                    const datetime = (new Date()).toJSON().substring(0, 10);
+                    return `Attachment; filename="subscribers.${datetime}.csv"`;
+                }
             }
         },
         response: {
