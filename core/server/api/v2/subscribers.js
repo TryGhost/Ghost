@@ -12,7 +12,8 @@ const subscribers = {
             'fields',
             'filter',
             'order',
-            'debug'
+            'debug',
+            'page'
         ],
         permissions: true,
         validation: {},
