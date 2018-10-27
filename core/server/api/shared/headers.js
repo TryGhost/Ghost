@@ -11,8 +11,14 @@ const cacheInvalidate = (result, options = {}) => {
 
 const disposition = {
     csv(result, options = {}) {
+        let value = options.value;
+
+        if (typeof options.value === 'function') {
+            value = options.value();
+        }
+
         return {
-            'Content-Disposition': options.value,
+            'Content-Disposition': value,
             'Content-Type': 'text/csv'
         };
     },
