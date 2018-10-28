@@ -24,7 +24,7 @@
         "reserved": ["admin", "app", "apps", "categories",
             "category", "dashboard", "feed", "ghost-admin", "login", "logout",
             "page", "pages", "post", "posts", "public", "register", "setup",
-            "signin", "signout", "signup", "user", "users", "wp-login"],
+            "signin", "signout", "signup", "user", "users"],
         "protected": ["ghost", "rss", "amp"]
     },
     "uploads": {
