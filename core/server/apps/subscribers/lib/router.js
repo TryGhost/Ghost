@@ -35,6 +35,8 @@ function _renderer(req, res) {
  */
 function errorHandler(error, req, res, next) {
     req.body.email = '';
+    req.body.subscribed_url = santizeUrl(req.body.subscribed_url);
+    req.body.subscribed_referrer = santizeUrl(req.body.subscribed_referrer);
 
     if (error.statusCode !== 404) {
         res.locals.error = error;
