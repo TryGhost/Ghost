@@ -24,6 +24,10 @@ function controller(req, res) {
     }
 }
 
+function validateUrl(url) {
+    return validator.isEmptyOrURL(url || '') ? url : '';
+}
+
 /**
  * Takes care of sanitizing the email input.
  * XSS prevention.
@@ -33,6 +37,8 @@ function errorHandler(error, req, res, next) {
     /*jshint unused:false */
 
     req.body.email = '';
+    req.body.subscribed_url = validateUrl(req.body.subscribed_url);
+    req.body.subscribed_referrer = validateUrl(req.body.subscribed_referrer);
 
     if (error.statusCode !== 404) {
         res.locals.error = error;
@@ -50,10 +56,6 @@ function honeyPot(req, res, next) {
     // we don't need this anymore
     delete req.body.confirm;
     next();
-}
-
-function validateUrl(url) {
-    return validator.isEmptyOrURL(url || '') ? url : '';
 }
 
 function handleSource(req, res, next) {
