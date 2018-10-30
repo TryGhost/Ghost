@@ -49,7 +49,10 @@ const getSession = (req, res, next) => {
 };
 
 const createSession = (req, res, next) => {
-    getSession(req, res, function () {
+    getSession(req, res, function (err) {
+        if (err) {
+            return next(err);
+        }
         const origin = getOrigin(req);
         if (!origin) {
             return next(new common.errors.BadRequestError({

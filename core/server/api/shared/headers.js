@@ -11,8 +11,14 @@ const cacheInvalidate = (result, options = {}) => {
 
 const disposition = {
     csv(result, options = {}) {
+        let value = options.value;
+
+        if (typeof options.value === 'function') {
+            value = options.value();
+        }
+
         return {
-            'Content-Disposition': options.value,
+            'Content-Disposition': value,
             'Content-Type': 'text/csv'
         };
     },
@@ -21,7 +27,7 @@ const disposition = {
         return {
             'Content-Disposition': options.value,
             'Content-Type': 'application/json',
-            'Content-Length': JSON.stringify(result).length
+            'Content-Length': Buffer.byteLength(JSON.stringify(result))
         };
     },
 
@@ -29,7 +35,7 @@ const disposition = {
         return {
             'Content-Disposition': options.value,
             'Content-Type': 'application/yaml',
-            'Content-Length': JSON.stringify(result).length
+            'Content-Length': Buffer.byteLength(JSON.stringify(result))
         };
     }
 };
