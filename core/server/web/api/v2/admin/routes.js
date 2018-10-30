@@ -151,7 +151,7 @@ module.exports = function apiRoutes() {
     router.post('/mail/test', mw.authAdminAPI, apiv2.http(apiv2.mail.sendTest));
 
     // ## Slack
-    router.post('/slack/test', mw.authAdminAPI, api.http(api.slack.sendTest));
+    router.post('/slack/test', mw.authAdminAPI, apiv2.http(apiv2.slack.sendTest));
 
     // ## Sessions
     router.get('/session', mw.authAdminAPI, api.http(apiv2.session.read));
