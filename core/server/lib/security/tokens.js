@@ -11,7 +11,7 @@ module.exports.generateFromContent = function generateFromContent(options) {
     hash.update(content);
 
     text += [content, hash.digest('base64')].join('|');
-    return new Buffer(text).toString('base64');
+    return Buffer.from(text).toString('base64');
 };
 
 module.exports.generateFromEmail = function generateFromEmail(options) {
@@ -29,7 +29,7 @@ module.exports.generateFromEmail = function generateFromEmail(options) {
     hash.update(String(secret));
 
     text += [expires, email, hash.digest('base64')].join('|');
-    return new Buffer(text).toString('base64');
+    return Buffer.from(text).toString('base64');
 };
 
 module.exports.resetToken = {
@@ -49,13 +49,13 @@ module.exports.resetToken = {
         hash.update(String(dbHash));
 
         text += [expires, email, hash.digest('base64')].join('|');
-        return new Buffer(text).toString('base64');
+        return Buffer.from(text).toString('base64');
     },
     extract: function extract(options) {
         options = options || {};
 
         var token = options.token,
-            tokenText = new Buffer(token, 'base64').toString('ascii'),
+            tokenText = Buffer.from(token, 'base64').toString('ascii'),
             parts,
             expires,
             email;
