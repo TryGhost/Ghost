@@ -140,7 +140,10 @@ describe('Slack', function () {
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
             requestUrl.should.equal(slackObjWithUrl[0].url);
+            requestData.attachments[0].title.should.equal(post.title);
             requestData.attachments[0].title_link.should.equal('http://myblog.com/webhook-test/');
+            requestData.attachments[0].fields[0].value.should.equal('## markdown.');
+            requestData.attachments[0].should.not.have.property('author_name');
             requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
