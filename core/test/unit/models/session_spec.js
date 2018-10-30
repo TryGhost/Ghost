@@ -175,8 +175,7 @@ describe('Unit: models/session', function () {
                 should.equal(filterOptionsStub.args[0][1], 'upsert');
 
                 should.deepEqual(findOneStub.args[0][0], {
-                    session_id,
-                    user_id: data.session_data.user_id
+                    session_id
                 });
                 should.equal(findOneStub.args[0][1], filteredOptions);
 
@@ -215,8 +214,7 @@ describe('Unit: models/session', function () {
                 should.equal(filterOptionsStub.args[0][1], 'upsert');
 
                 should.deepEqual(findOneStub.args[0][0], {
-                    session_id,
-                    user_id: data.session_data.user_id
+                    session_id
                 });
                 should.equal(findOneStub.args[0][1], filteredOptions);
 

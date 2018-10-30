@@ -53,7 +53,7 @@ const Session = ghostBookshelf.Model.extend({
         const sessionId = options.session_id;
         const sessionData = data.session_data;
         const userId = sessionData.user_id;
-        return this.findOne({session_id: sessionId, user_id: userId}, options)
+        return this.findOne({session_id: sessionId}, options)
             .then((model) => {
                 if (model) {
                     return this.edit({
