@@ -1,6 +1,7 @@
 language: node_js
 # When changing node version also update it on lines 31 and 49.
 node_js:
+  - "10"
   - "8"
   - "6"
 
