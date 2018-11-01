@@ -381,23 +381,19 @@ function redirectToAdmin(status, res, adminPath) {
  * absolute urls. Returns an object. The html string can be accessed by calling `html()` on
  * the variable that takes the result of this function
  */
-function makeAbsoluteUrls(html, siteUrl, itemUrl) {
-    var htmlContent = cheerio.load(html, {decodeEntities: false});
+function makeAbsoluteUrls(html, siteUrl, itemUrl, options = {assetsOnly: false}) {
+    const htmlContent = cheerio.load(html, {decodeEntities: false});
 
     // convert relative resource urls to absolute
     ['href', 'src'].forEach(function forEach(attributeName) {
         htmlContent('[' + attributeName + ']').each(function each(ix, el) {
-            var baseUrl,
-                attributeValue,
-                parsed;
-
             el = htmlContent(el);
 
-            attributeValue = el.attr(attributeName);
+            let attributeValue = el.attr(attributeName);
 
             // if URL is absolute move on to the next element
             try {
-                parsed = url.parse(attributeValue);
+                const parsed = url.parse(attributeValue);
 
                 if (parsed.protocol) {
                     return;
@@ -415,11 +411,15 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl) {
             if (attributeValue[0] === '#') {
                 return;
             }
-            // compose an absolute URL
 
+            if (options.assetsOnly && !attributeValue.match(new RegExp(STATIC_IMAGE_URL_PREFIX))) {
+                return;
+            }
+
+            // compose an absolute URL
             // if the relative URL begins with a '/' use the blog URL (including sub-directory)
             // as the base URL, otherwise use the post's URL.
-            baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
+            const baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
             attributeValue = urlJoin(baseUrl, attributeValue);
             el.attr(attributeName, attributeValue);
         });
