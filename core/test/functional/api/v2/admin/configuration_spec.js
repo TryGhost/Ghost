@@ -6,9 +6,7 @@ const config = require('../../../../../../core/server/config');
 const ghost = testUtils.startGhost;
 
 let request;
-
 describe('Configuration API', function () {
-
     before(function () {
         return ghost()
             .then(function () {
