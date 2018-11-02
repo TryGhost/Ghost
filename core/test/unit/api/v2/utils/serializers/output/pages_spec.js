@@ -7,11 +7,11 @@ const serializers = require('../../../../../../../server/api/v2/utils/serializer
 
 const sandbox = sinon.sandbox.create();
 
-describe('Unit: v2/utils/serializers/output/posts', function () {
-    let postModel;
+describe('Unit: v2/utils/serializers/output/pages', function () {
+    let pageModel;
 
     beforeEach(function () {
-        postModel = (data) => {
+        pageModel = (data) => {
             return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
         };
 
@@ -35,9 +35,10 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
 
             const ctrlResponse = {
                 data: [
-                    postModel(testUtils.DataGenerator.forKnex.createPost({
+                    pageModel(testUtils.DataGenerator.forKnex.createPost({
                         id: 'id1',
                         feature_image: 'value',
+                        page: true,
                         tags: [{
                             id: 'id3',
                             feature_image: 'value'
@@ -47,21 +48,21 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
                             name: 'Ghosty'
                         }]
                     })),
-                    postModel(testUtils.DataGenerator.forKnex.createPost({
+                    pageModel(testUtils.DataGenerator.forKnex.createPost({
                         id: 'id2',
+                        page: true,
                         html: '<img href=/content/test.jpf'
-
                     }))
                 ],
                 meta: {}
             };
 
-            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+            serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
-            frame.response.posts[0].hasOwnProperty('url').should.be.true();
-            frame.response.posts[0].tags[0].hasOwnProperty('url').should.be.true();
-            frame.response.posts[0].authors[0].hasOwnProperty('url').should.be.true();
-            frame.response.posts[1].hasOwnProperty('url').should.be.true();
+            frame.response.pages[0].hasOwnProperty('url').should.be.true();
+            frame.response.pages[0].tags[0].hasOwnProperty('url').should.be.true();
+            frame.response.pages[0].authors[0].hasOwnProperty('url').should.be.true();
+            frame.response.pages[1].hasOwnProperty('url').should.be.true();
 
             urlService.utils.urlFor.callCount.should.eql(4);
             urlService.utils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
@@ -90,35 +91,6 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
             urlService.getUrlByResourceId.getCall(2).args.should.eql(['id4', {absolute: true}]);
             urlService.getUrlByResourceId.getCall(3).args.should.eql(['id2', {absolute: true}]);
         });
-
-        it('absolute_urls = true', function () {
-            const apiConfig = {};
-            const frame = {
-                options: {
-                    withRelated: ['tags', 'authors'],
-                    absolute_urls: true
-                }
-            };
-
-            const ctrlResponse = {
-                data: [
-                    postModel(testUtils.DataGenerator.forKnex.createPost({
-                        id: 'id2',
-                        html: '<img href=/content/test.jpf'
-                    }))
-                ],
-                meta: {}
-            };
-
-            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
-            urlService.utils.makeAbsoluteUrls.callCount.should.eql(1);
-            urlService.utils.makeAbsoluteUrls.getCall(0).args.should.eql([
-                '<img href=/content/test.jpf',
-                'urlFor',
-                'getUrlByResourceId',
-                {assetsOnly: false}
-            ]);
-        });
     });
 
     describe('Ensure date fields are being processed with date formatter', function () {
@@ -138,9 +110,11 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
                 }
             };
 
-            const ctrlResponse = postModel(testUtils.DataGenerator.forKnex.createPost());
+            const ctrlResponse = pageModel(testUtils.DataGenerator.forKnex.createPost({
+                page: true
+            }));
 
-            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+            serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
             dateStub.callCount.should.equal(3);
         });
@@ -157,18 +131,22 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
 
             const ctrlResponse = {
                 data: [
-                    postModel(testUtils.DataGenerator.forKnex.createPost()),
-                    postModel(testUtils.DataGenerator.forKnex.createPost())
+                    pageModel(testUtils.DataGenerator.forKnex.createPost({
+                        page: true
+                    })),
+                    pageModel(testUtils.DataGenerator.forKnex.createPost({
+                        page: true
+                    }))
                 ],
                 meta: {}
             };
 
-            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+            serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
             dateStub.callCount.should.equal(6);
         });
 
-        it('date formatter is being called in private context', function () {
+        it('date formatter is not being called in private context', function () {
             const apiConfig = {};
             const frame = {
                 options: {
@@ -180,12 +158,14 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
 
             const ctrlResponse = {
                 data: [
-                    postModel(testUtils.DataGenerator.forKnex.createPost())
+                    pageModel(testUtils.DataGenerator.forKnex.createPost({
+                        page: true
+                    }))
                 ],
                 meta: {}
             };
 
-            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+            serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
             dateStub.called.should.be.false;
         });
