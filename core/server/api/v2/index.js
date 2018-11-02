@@ -69,5 +69,9 @@ module.exports = {
 
     get preview() {
         return shared.pipeline(require('./preview'), localUtils);
+    },
+
+    get oembed() {
+        return shared.pipeline(require('./oembed'), localUtils);
     }
 };
