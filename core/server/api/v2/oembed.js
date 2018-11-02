@@ -70,8 +70,8 @@ module.exports = {
             if (provider) {
                 return knownProvider(url);
             }
-            // see if the URL is a redirect to cater for shortened urls
 
+            // see if the URL is a redirect to cater for shortened urls
             return request(url, {
                 method: 'GET',
                 timeout: 2 * 1000,
