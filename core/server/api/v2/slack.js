@@ -6,7 +6,6 @@ module.exports = {
         permissions: false,
         query() {
             common.events.emit('slack.test');
-            return Promise.resolve();
         }
     }
 };
