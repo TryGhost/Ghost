@@ -23,6 +23,9 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             const apiConfig = {};
             const frame = {
                 options: {
+                    context: {
+                        user: 1
+                    }
                 }
             };
 
