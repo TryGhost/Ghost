@@ -383,6 +383,7 @@ function redirectToAdmin(status, res, adminPath) {
  */
 function makeAbsoluteUrls(html, siteUrl, itemUrl, options = {assetsOnly: false}) {
     const htmlContent = cheerio.load(html, {decodeEntities: false});
+    const staticImageUrlPrefixRegex = new RegExp(STATIC_IMAGE_URL_PREFIX);
 
     // convert relative resource urls to absolute
     ['href', 'src'].forEach(function forEach(attributeName) {
@@ -412,7 +413,7 @@ function makeAbsoluteUrls(html, siteUrl, itemUrl, options = {assetsOnly: false})
                 return;
             }
 
-            if (options.assetsOnly && !attributeValue.match(new RegExp(STATIC_IMAGE_URL_PREFIX))) {
+            if (options.assetsOnly && !attributeValue.match(staticImageUrlPrefixRegex)) {
                 return;
             }
 
