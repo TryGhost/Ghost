@@ -124,7 +124,6 @@ function getAmperizeHTML(html, post) {
     amperize = amperize || new Amperize();
 
     // make relative URLs abolute
-    // @TODO: API v2 already makes the urls absolute. Remove if we drop v0.1.
     html = urlService.utils.makeAbsoluteUrls(html, urlService.utils.urlFor('home', true), post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {

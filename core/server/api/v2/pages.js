@@ -39,7 +39,8 @@ module.exports = {
             'fields',
             'status',
             'formats',
-            'debug'
+            'debug',
+            'absolute_urls'
         ],
         data: [
             'id',

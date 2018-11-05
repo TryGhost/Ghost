@@ -68,14 +68,54 @@ describe('Unit: v2/utils/serializers/output/posts', function () {
             urlService.utils.urlFor.getCall(3).args.should.eql(['home', true]);
 
             urlService.utils.makeAbsoluteUrls.callCount.should.eql(2);
-            urlService.utils.makeAbsoluteUrls.getCall(0).args.should.eql(['## markdown', 'urlFor', 'getUrlByResourceId']);
-            urlService.utils.makeAbsoluteUrls.getCall(1).args.should.eql(['<img href=/content/test.jpf', 'urlFor', 'getUrlByResourceId']);
+            urlService.utils.makeAbsoluteUrls.getCall(0).args.should.eql([
+                '## markdown',
+                'urlFor',
+                'getUrlByResourceId',
+                {assetsOnly: true}
+            ]);
+
+            urlService.utils.makeAbsoluteUrls.getCall(1).args.should.eql([
+                '<img href=/content/test.jpf',
+                'urlFor',
+                'getUrlByResourceId',
+                {assetsOnly: true}
+            ]);
 
             urlService.getUrlByResourceId.callCount.should.eql(4);
             urlService.getUrlByResourceId.getCall(0).args.should.eql(['id1', {absolute: true}]);
             urlService.getUrlByResourceId.getCall(1).args.should.eql(['id3', {absolute: true}]);
             urlService.getUrlByResourceId.getCall(2).args.should.eql(['id4', {absolute: true}]);
             urlService.getUrlByResourceId.getCall(3).args.should.eql(['id2', {absolute: true}]);
+        });
+
+        it('absolute_urls = true', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    withRelated: ['tags', 'authors'],
+                    absolute_urls: true
+                }
+            };
+
+            const ctrlResponse = {
+                data: [
+                    postModel(testUtils.DataGenerator.forKnex.createPost({
+                        id: 'id2',
+                        html: '<img href=/content/test.jpf'
+                    }))
+                ],
+                meta: {}
+            };
+
+            serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+            urlService.utils.makeAbsoluteUrls.callCount.should.eql(1);
+            urlService.utils.makeAbsoluteUrls.getCall(0).args.should.eql([
+                '<img href=/content/test.jpf',
+                'urlFor',
+                'getUrlByResourceId',
+                {assetsOnly: false}
+            ]);
         });
     });
 });
