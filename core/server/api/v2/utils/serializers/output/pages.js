@@ -7,7 +7,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                pages: models.data.map(model => mapper.mapPage(model, frame)),
+                pages: models.data.map(model => mapper.mapPost(model, frame)),
                 meta: models.meta
             };
 
@@ -15,7 +15,7 @@ module.exports = {
         }
 
         frame.response = {
-            pages: [mapper.mapPage(models, frame)]
+            pages: [mapper.mapPost(models, frame)]
         };
 
         debug(frame.response);
