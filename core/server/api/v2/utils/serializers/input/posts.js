@@ -2,6 +2,14 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 
+function removeMobiledocFormat(frame) {
+    if (_.get(frame, 'options.formats') && _.get(frame, 'options.formats').includes('mobiledoc')) {
+        frame.options.formats = frame.options.formats.filter((format) => {
+            return (format !== 'mobiledoc');
+        });
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -28,6 +36,8 @@ module.exports = {
             } else {
                 frame.options.filter = 'page:false';
             }
+            // CASE: the content api endpoint for posts should not return mobiledoc
+            removeMobiledocFormat(frame);
         }
 
         debug(frame.options);
@@ -45,6 +55,8 @@ module.exports = {
          */
         if (Object.keys(frame.options.context).length === 0 || (!frame.options.context.user && frame.options.context.api_key_id)) {
             frame.data.page = false;
+            // CASE: the content api endpoint for posts should not return mobiledoc
+            removeMobiledocFormat(frame);
         }
 
         debug(frame.options);
