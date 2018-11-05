@@ -16,21 +16,20 @@ const forPost = (id, attrs, options) => {
     }
 
     if (attrs.html) {
+        const urlOptions = {
+            assetsOnly: true
+        };
+
         if (options.absolute_urls) {
-            attrs.html = urlService.utils.makeAbsoluteUrls(
-                attrs.html,
-                urlService.utils.urlFor('home', true),
-                attrs.url,
-                {assetsOnly: false}
-            ).html();
-        } else {
-            attrs.html = urlService.utils.makeAbsoluteUrls(
-                attrs.html,
-                urlService.utils.urlFor('home', true),
-                attrs.url,
-                {assetsOnly: true}
-            ).html();
+            urlOptions.assetsOnly = false;
         }
+
+        attrs.html = urlService.utils.makeAbsoluteUrls(
+            attrs.html,
+            urlService.utils.urlFor('home', true),
+            attrs.url,
+            urlOptions
+        ).html();
     }
 
     if (options.columns && !options.columns.includes('url')) {
