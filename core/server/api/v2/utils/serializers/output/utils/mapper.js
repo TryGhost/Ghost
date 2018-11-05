@@ -18,6 +18,10 @@ const mapPost = (model, frame) => {
             // in the future, but is good enough for current use-case
             if (relation === 'tags' && jsonModel.tags) {
                 jsonModel.tags = jsonModel.tags.map(tag => url.forTag(tag.id, tag));
+
+                if (utils.isContentAPI(frame)) {
+                    jsonModel.tags = jsonModel.tags.map(tag => date.forTag(tag));
+                }
             }
 
             if (relation === 'author' && jsonModel.author) {
