@@ -6,7 +6,14 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
+        // @TODO: `api_key_id` does not work long term, because it can be either a content or an admin api key?
+        /**
+         * ## current cases:
+         * - context object is empty (functional call, content api access)
+         * - api_key_id exists? content api access
+         * - user exists? admin api access
+         */
+        if (Object.keys(frame.options.context).length === 0 || (!frame.options.context.user && frame.options.context.api_key_id)) {
             // CASE: the content api endpoints for posts should only return non page type resources
             if (frame.options.filter) {
                 if (frame.options.filter.match(/page:\w+\+?/)) {
@@ -29,7 +36,14 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
+        // @TODO: `api_key_id` does not work long term, because it can be either a content or an admin api key?
+        /**
+         * ## current cases:
+         * - context object is empty (functional call, content api access)
+         * - api_key_id exists? content api access
+         * - user exists? admin api access
+         */
+        if (Object.keys(frame.options.context).length === 0 || (!frame.options.context.user && frame.options.context.api_key_id)) {
             frame.data.page = false;
         }
 
