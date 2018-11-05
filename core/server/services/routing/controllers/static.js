@@ -8,7 +8,7 @@ function processQuery(query, locals) {
     query = _.cloneDeep(query);
 
     // Return a promise for the api query
-    return api[query.resource][query.type](query.options);
+    return (api[query.alias] || api[query.resource])[query.type](query.options);
 }
 
 module.exports = function staticController(req, res, next) {

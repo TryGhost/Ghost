@@ -39,6 +39,10 @@ class StaticPagesRouter extends ParentRouter {
             filter: this.filter,
             permalinks: this.permalinks.getValue(),
             resourceType: this.getResourceType(),
+            query: {
+                alias: 'pages',
+                resource: 'posts'
+            },
             context: ['page']
         };
 

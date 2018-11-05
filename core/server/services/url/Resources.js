@@ -109,7 +109,7 @@ const resourcesConfig = [
         }
     },
     {
-        type: 'users',
+        type: 'authors',
         modelOptions: {
             modelName: 'User',
             exclude: [

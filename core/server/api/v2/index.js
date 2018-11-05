@@ -77,5 +77,9 @@ module.exports = {
 
     get slack() {
         return shared.pipeline(require('./slack'), localUtils);
+    },
+
+    get authors() {
+        return shared.pipeline(require('./authors'), localUtils);
     }
 };

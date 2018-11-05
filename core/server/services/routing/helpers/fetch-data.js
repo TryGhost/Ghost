@@ -10,19 +10,23 @@ const _ = require('lodash'),
 const queryDefaults = {
     type: 'browse',
     resource: 'posts',
+    alias: 'posts',
     options: {}
 };
 
 /**
- * Default post query needs to always include author, authors & tags
- *
  * @deprecated: `author`, will be removed in Ghost 3.0
  */
-_.extend(defaultPostQuery, queryDefaults, {
+const defaultQueryOptions = {
     options: {
         include: 'author,authors,tags'
     }
-});
+};
+
+/**
+ * Default post query needs to always include author, authors & tags
+ */
+_.extend(defaultPostQuery, queryDefaults, defaultQueryOptions);
 
 /**
  * ## Process Query
@@ -40,7 +44,7 @@ function processQuery(query, slugParam, locals) {
     query = _.cloneDeep(query);
 
     // Ensure that all the properties are filled out
-    _.defaultsDeep(query, queryDefaults);
+    _.defaultsDeep(query, defaultQueryOptions);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option, name) {
@@ -48,7 +52,7 @@ function processQuery(query, slugParam, locals) {
     });
 
     // Return a promise for the api query
-    return api[query.resource][query.type](query.options);
+    return (api[query.alias] || api[query.resource])[query.type](query.options);
 }
 
 /**
@@ -100,7 +104,7 @@ function fetchData(pathOptions, routerOptions, locals) {
                     if (config.type === 'browse') {
                         response.data[name] = results[name];
                     } else {
-                        response.data[name] = results[name][config.resource];
+                        response.data[name] = results[name][config.alias] || results[name][config.resource];
                     }
                 });
             }

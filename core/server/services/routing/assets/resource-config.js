@@ -10,8 +10,7 @@ module.exports.QUERY = {
         }
     },
     author: {
-        internal: true,
-        alias: 'users',
+        alias: 'authors',
         type: 'read',
         resource: 'users',
         options: {
@@ -20,7 +19,7 @@ module.exports.QUERY = {
         }
     },
     user: {
-        alias: 'users',
+        alias: 'authors',
         type: 'read',
         resource: 'users',
         options: {

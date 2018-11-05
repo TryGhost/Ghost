@@ -68,7 +68,7 @@ describe('Unit: services/url/Resources', function () {
             created.tags.length.should.eql(testUtils.DataGenerator.forKnex.tags.length);
 
             // all mocked users are active
-            created.users.length.should.eql(testUtils.DataGenerator.forKnex.users.length);
+            created.authors.length.should.eql(testUtils.DataGenerator.forKnex.users.length);
             done();
         });
 
