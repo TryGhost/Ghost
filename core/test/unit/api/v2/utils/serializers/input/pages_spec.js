@@ -6,7 +6,9 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('default', function () {
             const apiConfig = {};
             const frame = {
-                options: {}
+                options: {
+                    context: {}
+                },
             };
 
             serializers.input.pages.browse(apiConfig, frame);
@@ -17,7 +19,8 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             const apiConfig = {};
             const frame = {
                 options: {
-                    filter: 'status:published+tag:eins'
+                    filter: 'status:published+tag:eins',
+                    context: {}
                 }
             };
 
@@ -29,7 +32,8 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             const apiConfig = {};
             const frame = {
                 options: {
-                    filter: 'page:false+tag:eins'
+                    filter: 'page:false+tag:eins',
+                    context: {}
                 }
             };
 
@@ -41,12 +45,28 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             const apiConfig = {};
             const frame = {
                 options: {
-                    filter: 'page:false'
+                    filter: 'page:false',
+                    context: {}
                 }
             };
 
             serializers.input.pages.browse(apiConfig, frame);
             frame.options.filter.should.eql('page:true');
+        });
+
+        it('remove mobiledoc option from formats', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    context: {}
+                }
+            };
+
+            serializers.input.pages.browse(apiConfig, frame);
+            frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.containEql('html');
+            frame.options.formats.should.containEql('plaintext');
         });
     });
 
@@ -54,7 +74,9 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('default', function () {
             const apiConfig = {};
             const frame = {
-                options: {},
+                options: {
+                    context: {}
+                },
                 data: {
                     status: 'all'
                 }
@@ -68,7 +90,9 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('overrides page', function () {
             const apiConfig = {};
             const frame = {
-                options: {},
+                options: {
+                    context: {}
+                },
                 data: {
                     status: 'all',
                     page: false
@@ -78,6 +102,25 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             serializers.input.pages.read(apiConfig, frame);
             frame.data.status.should.eql('all');
             frame.data.page.should.eql(true);
+        });
+
+        it('remove mobiledoc option from formats', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    context: {}
+                },
+                data: {
+                    status: 'all',
+                    page: false
+                }
+            };
+
+            serializers.input.pages.read(apiConfig, frame);
+            frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.containEql('html');
+            frame.options.formats.should.containEql('plaintext');
         });
     });
 });
