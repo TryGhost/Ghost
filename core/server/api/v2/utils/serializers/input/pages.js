@@ -42,7 +42,7 @@ module.exports = {
 
         frame.data.page = true;
 
-        if (!_.get(frame, 'options.context.user') && _.get(frame, 'options.context.api_key_id')) {
+        if (utils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
         }
