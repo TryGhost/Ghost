@@ -13,6 +13,8 @@ const forPost = (attrs) => {
             attrs[field] = format(attrs[field]);
         }
     });
+
+    return attrs;
 };
 
 const forTag = (attrs) => {
@@ -21,6 +23,8 @@ const forTag = (attrs) => {
             attrs[field] = format(attrs[field]);
         }
     });
+
+    return attrs;
 };
 
 module.exports.format = format;
