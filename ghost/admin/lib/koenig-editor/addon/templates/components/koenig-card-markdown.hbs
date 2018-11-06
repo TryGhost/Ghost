@@ -3,6 +3,7 @@
     class=(concat (kg-style "container-card") " koenig-card-markdown-rendered")
     headerOffset=headerOffset
     toolbar=toolbar
+    payload=payload
     isSelected=isSelected
     isEditing=isEditing
     onEnterEdit=(action "enterEditMode")
@@ -10,6 +11,7 @@
     selectCard=(action selectCard)
     deselectCard=(action deselectCard)
     editCard=(action editCard)
+    saveCard=(action saveCard)
     editor=editor
 }}
     {{#if isEditing}}

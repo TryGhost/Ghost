@@ -2,11 +2,13 @@
     class=(concat "ba b--white relative kg-card-hover miw-100 relative" (if isEditing "pt1 pb1 pl6 nl6 pr6 nr6"))
     headerOffset=headerOffset
     toolbar=toolbar
+    payload=payload
     isSelected=isSelected
     isEditing=isEditing
     selectCard=(action selectCard)
     deselectCard=(action deselectCard)
     editCard=(action editCard)
+    saveCard=(action saveCard)
     onLeaveEdit=(action "leaveEditMode")
     editor=editor
 }}

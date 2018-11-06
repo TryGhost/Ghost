@@ -17,6 +17,7 @@ export default Component.extend({
     layout,
 
     // attrs
+    editor: null,
     files: null,
     payload: null,
     isSelected: false,
@@ -145,7 +146,11 @@ export default Component.extend({
     actions: {
         updateSrc(images) {
             let [image] = images;
-            this._updatePayloadAttr('src', image.url);
+
+            // create undo snapshot when image finishes uploading
+            this.editor.run(() => {
+                this._updatePayloadAttr('src', image.url);
+            });
         },
 
         updateCaption(caption) {
@@ -177,7 +182,11 @@ export default Component.extend({
 
         resetSrcs() {
             this.set('previewSrc', null);
-            this._updatePayloadAttr('src', null);
+
+            // create undo snapshot when clearing
+            this.editor.run(() => {
+                this._updatePayloadAttr('src', null);
+            });
         },
 
         selectFromImageSelector({src, caption, alt}) {
@@ -188,7 +197,10 @@ export default Component.extend({
 
             this.send('closeImageSelector');
 
-            saveCard(payload, false);
+            // create undo snapshot when selecting an image
+            this.editor.run(() => {
+                saveCard(payload, false);
+            });
         },
 
         closeImageSelector() {
@@ -237,7 +249,10 @@ export default Component.extend({
     },
 
     _changeCardWidth(cardWidth) {
-        this._updatePayloadAttr('cardWidth', cardWidth);
+        // create undo snapshot when changing image size
+        this.editor.run(() => {
+            this._updatePayloadAttr('cardWidth', cardWidth);
+        });
     },
 
     _updatePayloadAttr(attr, value) {
