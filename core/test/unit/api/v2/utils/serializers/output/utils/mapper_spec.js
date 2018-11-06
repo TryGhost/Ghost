@@ -126,5 +126,24 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             urlUtil.forTag.getCall(0).args.should.eql(['id3', tag]);
             dateUtil.forTag.getCall(0).args.should.eql([tag]);
         });
+
+        it('does not call date formatter in private context', () => {
+            const frame = {
+                options: {
+                    context: {
+                        public: false
+                    }
+                },
+            };
+
+            const tag = tagModel(testUtils.DataGenerator.forKnex.createTag({
+                id: 'id3',
+                feature_image: 'value'
+            }));
+
+            mapper.mapTag(tag, frame);
+
+            dateUtil.forTag.callCount.should.equal(0);
+        });
     });
 });
