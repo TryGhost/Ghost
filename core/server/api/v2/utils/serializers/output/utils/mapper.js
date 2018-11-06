@@ -1,4 +1,4 @@
-const utils = require('../../../');
+const utils = require('../../../index');
 const url = require('./url');
 const date = require('./date');
 
@@ -25,11 +25,11 @@ const mapPost = (model, frame) => {
             }
 
             if (relation === 'author' && jsonModel.author) {
-                jsonModel.author = url.forUser(jsonModel.author.id, jsonModel.author, frame.options);
+                jsonModel.author = url.forUser(jsonModel.author.id, jsonModel.author);
             }
 
             if (relation === 'authors' && jsonModel.authors) {
-                jsonModel.authors = jsonModel.authors.map(author => url.forUser(author.id, author, frame.options));
+                jsonModel.authors = jsonModel.authors.map(author => url.forUser(author.id, author));
             }
         });
     }
@@ -47,7 +47,7 @@ const mapUser = (model, frame) => {
 
 const mapTag = (model, frame) => {
     const jsonModel = model.toJSON(frame.options);
-    url.forTag(model.id, jsonModel, frame.options);
+    url.forTag(model.id, jsonModel);
 
     if (utils.isContentAPI(frame)) {
         date.forTag(jsonModel);
