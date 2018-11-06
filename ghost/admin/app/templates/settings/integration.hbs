@@ -124,36 +124,38 @@
                 </div>
             {{/gh-validation-status-container}}
         {{/with}}
-        {{#with integration.adminKey as |adminKey|}}
-            {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
-                <div class="flex">
-                    <label for="admin_key" class="flex-grow-1 darkgrey fw7 f8">
-                        Admin API Key
-                    </label>
-                    <span class="db f8 midgrey">
-                        {{#if copyAdminKey.isRunning}}
-                            Copied to clipboard
-                        {{else}}
-                            {{adminKey.lastSeenAtUTC}}
-                        {{/if}}
-                    </span>
-                </div>
-                <div class="relative hide-child mt1">
-                    <input id="admin_key"
-                        class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
-                        type="text"
-                        value={{adminKey.secret}}
-                        disabled="true"
-                        data-test-input="admin_key">
+        {{#if config.enableDeveloperExperiments}}
+            {{#with integration.adminKey as |adminKey|}}
+                {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
+                    <div class="flex">
+                        <label for="admin_key" class="flex-grow-1 darkgrey fw7 f8">
+                            Admin API Key
+                        </label>
+                        <span class="db f8 midgrey">
+                            {{#if copyAdminKey.isRunning}}
+                                Copied to clipboard
+                            {{else}}
+                                {{adminKey.lastSeenAtUTC}}
+                            {{/if}}
+                        </span>
+                    </div>
+                    <div class="relative hide-child mt1">
+                        <input id="admin_key"
+                            class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
+                            type="text"
+                            value={{adminKey.secret}}
+                            disabled="true"
+                            data-test-input="admin_key">
 
-                    <div class="absolute top-0 right-1">
-                        <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                            <button type="button" {{action (perform copyAdminKey)}} class="white fw4">Copy</button>
+                        <div class="absolute top-0 right-1">
+                            <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                                <button type="button" {{action (perform copyAdminKey)}} class="white fw4">Copy</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {{/gh-validation-status-container}}
-        {{/with}}
+                {{/gh-validation-status-container}}
+            {{/with}}
+        {{/if}}
     </div>
 
     <h4 class="mt15 midgrey f7 fw4">Webhooks</h4>

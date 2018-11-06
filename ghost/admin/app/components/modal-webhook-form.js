@@ -8,6 +8,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    config: service(),
     router: service(),
 
     availableEvents: null,
