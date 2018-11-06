@@ -36,25 +36,6 @@ const forPost = (id, attrs, options) => {
         delete attrs.url;
     }
 
-    if (options && options.withRelated) {
-        options.withRelated.forEach((relation) => {
-            // @NOTE: this block also decorates primary_tag/primary_author objects as they
-            // are being passed by reference in tags/authors. Might be refactored into more explicit call
-            // in the future, but is good enough for current use-case
-            if (relation === 'tags' && attrs.tags) {
-                attrs.tags = attrs.tags.map(tag => forTag(tag.id, tag));
-            }
-
-            if (relation === 'author' && attrs.author) {
-                attrs.author = forUser(attrs.author.id, attrs.author, options);
-            }
-
-            if (relation === 'authors' && attrs.authors) {
-                attrs.authors = attrs.authors.map(author => forUser(author.id, author, options));
-            }
-        });
-    }
-
     return attrs;
 };
 
