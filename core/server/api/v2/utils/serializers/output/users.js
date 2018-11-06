@@ -1,13 +1,13 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:users');
 const common = require('../../../../../lib/common');
-const url = require('./utils/url');
+const mapper = require('./utils/mapper');
 
 module.exports = {
     browse(models, apiConfig, frame) {
         debug('browse');
 
         frame.response = {
-            users: models.data.map(model => url.forUser(model.id, model.toJSON(frame.options), frame.options)),
+            users: models.data.map(model => mapper.mapUser(model, frame)),
             meta: models.meta
         };
 
@@ -18,7 +18,7 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            users: [url.forUser(model.id, model.toJSON(frame.options), frame.options)]
+            users: [mapper.mapUser(model, frame)]
         };
 
         debug(frame.response);
