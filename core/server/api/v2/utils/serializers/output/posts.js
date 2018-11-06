@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:posts');
-const url = require('./utils/url');
+const mapper = require('./utils/mapper');
 
 module.exports = {
     all(models, apiConfig, frame) {
@@ -12,7 +12,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                posts: models.data.map(model => url.forPost(model.id, model.toJSON(frame.options), frame.options)),
+                posts: models.data.map(model => mapper.mapPost(model, frame)),
                 meta: models.meta
             };
 
@@ -21,7 +21,7 @@ module.exports = {
         }
 
         frame.response = {
-            posts: [url.forPost(models.id, models.toJSON(frame.options), frame.options)]
+            posts: [mapper.mapPost(models, frame)]
         };
 
         debug(frame.response);

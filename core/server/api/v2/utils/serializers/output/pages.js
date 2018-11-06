@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:pages');
-const url = require('./utils/url');
+const mapper = require('./utils/mapper');
 
 module.exports = {
     all(models, apiConfig, frame) {
@@ -7,7 +7,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                pages: models.data.map(model => url.forPost(model.id, model.toJSON(frame.options), frame.options)),
+                pages: models.data.map(model => mapper.mapPost(model, frame)),
                 meta: models.meta
             };
 
@@ -15,7 +15,7 @@ module.exports = {
         }
 
         frame.response = {
-            pages: [url.forPost(models.id, models.toJSON(frame.options), frame.options)]
+            pages: [mapper.mapPost(models, frame)]
         };
 
         debug(frame.response);
