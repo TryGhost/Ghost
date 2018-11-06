@@ -1,91 +1,65 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const dateUtil = require('../../../../../../../server/api/v2/utils/serializers/output/utils/date');
+const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
 const sandbox = sinon.sandbox.create();
 
-describe('Unit: v2/utils/serializers/output/tags', function () {
+describe('Unit: v2/utils/serializers/output/tags', () => {
     let tagModel;
 
-    beforeEach(function () {
+    beforeEach(() => {
         tagModel = (data) => {
             return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
         };
+
+        sandbox.stub(mapper, 'mapTag').returns({});
     });
 
-    afterEach(function () {
+    afterEach(() => {
         sandbox.restore();
     });
 
-    describe('Ensure date fields are being processed with date formatter', function () {
-        let dateStub;
-
-        beforeEach(() => {
-            dateStub = sandbox.stub(dateUtil, 'format');
-        });
-
-        it('date formatter is being called for single item in public context', function () {
-            const apiConfig = {};
-            const frame = {
-                options: {
-                    context: {
-                        public: true
-                    }
+    it('calls the mapper when single tag present', () => {
+        const apiConfig = {};
+        const frame = {
+            options: {
+                context: {
+                    public: true
                 }
-            };
+            }
+        };
 
-            const ctrlResponse = tagModel(testUtils.DataGenerator.forKnex.createTag());
+        const ctrlResponse = tagModel(testUtils.DataGenerator.forKnex.createTag());
 
-            serializers.output.tags.all(ctrlResponse, apiConfig, frame);
+        serializers.output.tags.all(ctrlResponse, apiConfig, frame);
 
-            dateStub.callCount.should.equal(2);
-        });
+        mapper.mapTag.callCount.should.equal(1);
+        mapper.mapTag.getCall(0).args.should.eql([ctrlResponse, frame]);
+    });
 
-        it('date formatter is being called in public context', function () {
-            const apiConfig = {};
-            const frame = {
-                options: {
-                    context: {
-                        public: true
-                    }
+    it('calls the mapper with multiple tags', () => {
+        const apiConfig = {};
+        const frame = {
+            options: {
+                context: {
+                    public: true
                 }
-            };
+            }
+        };
 
-            const ctrlResponse = {
-                data: [
-                    tagModel(testUtils.DataGenerator.forKnex.createTag()),
-                    tagModel(testUtils.DataGenerator.forKnex.createTag())
-                ],
-                meta: {}
-            };
-
-            serializers.output.tags.all(ctrlResponse, apiConfig, frame);
-
-            dateStub.callCount.should.equal(4);
+        const ctrlResponse = tagModel({
+            data: [
+                testUtils.DataGenerator.forKnex.createTag(),
+                testUtils.DataGenerator.forKnex.createTag()
+            ],
+            meta: {}
         });
 
-        it('date formatter is being called in private context', function () {
-            const apiConfig = {};
-            const frame = {
-                options: {
-                    context: {
-                        public: false
-                    }
-                }
-            };
+        serializers.output.tags.all(ctrlResponse, apiConfig, frame);
 
-            const ctrlResponse = {
-                data: [
-                    tagModel(testUtils.DataGenerator.forKnex.createTag())
-                ],
-                meta: {}
-            };
-
-            serializers.output.tags.all(ctrlResponse, apiConfig, frame);
-
-            dateStub.called.should.be.false;
-        });
+        mapper.mapTag.callCount.should.equal(2);
+        mapper.mapTag.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
     });
 });
