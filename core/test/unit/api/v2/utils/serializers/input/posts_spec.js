@@ -80,6 +80,20 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             serializers.input.posts.browse(apiConfig, frame);
             frame.options.filter.should.eql('page:false');
         });
+
+        it('remove mobiledoc option from formats', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    formats: ['html', 'mobiledoc', 'plaintext']
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.containEql('html');
+            frame.options.formats.should.containEql('plaintext');
+        });
     });
 
     describe('read', function () {
@@ -151,6 +165,20 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
 
             serializers.input.posts.read(apiConfig, frame);
             frame.data.page.should.eql(true);
+        });
+
+        it('remove mobiledoc option from formats', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    formats: ['html', 'mobiledoc', 'plaintext']
+                }
+            };
+
+            serializers.input.posts.read(apiConfig, frame);
+            frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.containEql('html');
+            frame.options.formats.should.containEql('plaintext');
         });
     });
 
