@@ -18,7 +18,7 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            users: [mapper.forUser(model, frame)]
+            users: [mapper.mapUser(model, frame)]
         };
 
         debug(frame.response);
