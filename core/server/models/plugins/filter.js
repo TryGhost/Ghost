@@ -190,6 +190,43 @@ filter = function filter(Bookshelf) {
             return this;
         },
 
+        // @TODO: remove me when NQL supports counting, it only serves one use case for now (content v2 serves no authors without posts)
+        applyCount(options) {
+            if (options.filter) {
+                const filterMatch = options.filter.match(/(authors|tags)\.posts:>0/i);
+
+                if (filterMatch && filterMatch.length === 2) {
+                    const countRegExp = /\+(authors|tags)\.posts:>0/g;
+                    if (options.filter.match(countRegExp)) {
+                        options.filter = options.filter.replace(countRegExp, '');
+                    } else {
+                        delete options.filter;
+                    }
+
+                    if (filterMatch[1] === 'authors') {
+                        this.query(function (qb) {
+                            qb.whereIn('users.id', function () {
+                                return this.select('pa.author_id')
+                                    .from('posts as p')
+                                    .join('posts_authors as pa', 'p.id', 'pa.post_id')
+                                    .whereRaw('pa.author_id = users.id')
+                                    .where('p.status', 'published')
+                                    .where('p.page', false);
+                            });
+                        });
+                    } else if (filterMatch[1] === 'tags') {
+                        this.query(function (qb) {
+                            qb.whereIn('tags.id', function () {
+                                return this.select('pt.tag_id')
+                                    .from('posts_tags as pt')
+                                    .where('pt.tag_id', '=', Bookshelf.knex.raw('tags.id'));
+                            });
+                        });
+                    }
+                }
+            }
+        },
+
         /**
          * ## Apply Filters
          * Method which makes the necessary query builder calls (through knex) for the filters set
@@ -197,8 +234,10 @@ filter = function filter(Bookshelf) {
          * @param {Object} options
          * @returns {Bookshelf.Model}
          */
-        applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
+        applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options = {}) {
             var self = this;
+
+            this.applyCount(options);
 
             // @TODO figure out a better place/way to trigger loading filters
             if (!this._filters) {

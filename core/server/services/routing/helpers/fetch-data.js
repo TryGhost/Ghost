@@ -17,7 +17,7 @@ const queryDefaults = {
 /**
  * @deprecated: `author`, will be removed in Ghost 3.0
  */
-const defaultQueryOptions = {
+const defaultPostQueryOptions = {
     options: {
         include: 'author,authors,tags'
     }
@@ -26,7 +26,7 @@ const defaultQueryOptions = {
 /**
  * Default post query needs to always include author, authors & tags
  */
-_.extend(defaultPostQuery, queryDefaults, defaultQueryOptions);
+_.extend(defaultPostQuery, queryDefaults, defaultPostQueryOptions);
 
 /**
  * ## Process Query
@@ -42,9 +42,6 @@ function processQuery(query, slugParam, locals) {
     const api = require('../../../api')[locals.apiVersion];
 
     query = _.cloneDeep(query);
-
-    // Ensure that all the properties are filled out
-    _.defaultsDeep(query, defaultQueryOptions);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option, name) {

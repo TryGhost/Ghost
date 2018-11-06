@@ -327,7 +327,7 @@ User = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['withRelated', 'status'],
+                findOne: ['withRelated', 'status', 'filter'],
                 setup: ['id'],
                 edit: ['withRelated', 'importPersistUser'],
                 add: ['importPersistUser'],
@@ -342,6 +342,7 @@ User = ghostBookshelf.Model.extend({
         // CASE: The `withRelated` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
         // @TODO: the target controller should define the allowed includes, but not the model layer O_O (https://github.com/TryGhost/Ghost/issues/10106)
+        // @TODO: we cant remove it till we drop v0.1
         if (options && options.context && options.context.public) {
             if (options.withRelated && options.withRelated.indexOf('roles') !== -1) {
                 options.withRelated.splice(options.withRelated.indexOf('roles'), 1);
@@ -391,11 +392,14 @@ User = ghostBookshelf.Model.extend({
             query = this.forge(data);
         }
 
+        // @TODO: use NQL if we switch to NQL
         if (status === 'active') {
             query.query('whereIn', 'status', activeStates);
         } else if (status !== 'all') {
             query.query('where', {status: status});
         }
+
+        query.applyCount(options);
 
         return query.fetch(options);
     },

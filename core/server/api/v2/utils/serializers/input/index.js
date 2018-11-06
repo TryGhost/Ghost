@@ -2,6 +2,7 @@ module.exports = {
     get integrations() {
         return require('./integrations');
     },
+
     get pages() {
         return require('./pages');
     },
@@ -20,5 +21,9 @@ module.exports = {
 
     get tags() {
         return require('./tags');
+    },
+
+    get authors() {
+        return require('./authors');
     }
 };
