@@ -32,7 +32,7 @@ describe('Tag API V2', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
-                jsonResponse.tags.should.have.length(6);
+                jsonResponse.tags.should.have.length(5);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
                 testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
@@ -41,7 +41,7 @@ describe('Tag API V2', function () {
                 jsonResponse.meta.pagination.should.have.property('page', 1);
                 jsonResponse.meta.pagination.should.have.property('limit', 15);
                 jsonResponse.meta.pagination.should.have.property('pages', 1);
-                jsonResponse.meta.pagination.should.have.property('total', 6);
+                jsonResponse.meta.pagination.should.have.property('total', 5);
                 jsonResponse.meta.pagination.should.have.property('next', null);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
