@@ -1,5 +1,4 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
-const utils = require('../../index');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -28,11 +27,7 @@ module.exports = {
         } else {
             frame.options.filter = 'page:true';
         }
-
-        if (utils.isContentAPI(frame)) {
-            // CASE: the content api endpoint for posts should not return mobiledoc
-            removeMobiledocFormat(frame);
-        }
+        removeMobiledocFormat(frame);
 
         debug(frame.options);
     },
@@ -41,11 +36,7 @@ module.exports = {
         debug('read');
 
         frame.data.page = true;
-
-        if (utils.isContentAPI(frame)) {
-            // CASE: the content api endpoint for posts should not return mobiledoc
-            removeMobiledocFormat(frame);
-        }
+        removeMobiledocFormat(frame);
 
         debug(frame.options);
     }
