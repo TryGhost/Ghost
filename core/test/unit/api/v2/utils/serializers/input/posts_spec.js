@@ -85,7 +85,8 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             const apiConfig = {};
             const frame = {
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext']
+                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    context: {}
                 }
             };
 
@@ -171,8 +172,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             const apiConfig = {};
             const frame = {
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext']
-                }
+                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    context: {}
+                },
+                data: {}
             };
 
             serializers.input.posts.read(apiConfig, frame);
