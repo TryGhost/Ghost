@@ -18,6 +18,7 @@ describe('Unit: v2/utils/index', function () {
             };
             should(utils.isContentAPI(frame)).equal(true);
         });
+
         it('is falsy when having api key and a user', function () {
             const frame = {
                 options: {
@@ -29,10 +30,22 @@ describe('Unit: v2/utils/index', function () {
             };
             should(utils.isContentAPI(frame)).equal(false);
         });
+
         it('is truthy when context is empty', function () {
             const frame = {
                 options: {
                     context: {
+                    }
+                }
+            };
+            should(utils.isContentAPI(frame)).equal(true);
+        });
+
+        it('is truthy when context is public', function () {
+            const frame = {
+                options: {
+                    context: {
+                        public: true
                     }
                 }
             };
