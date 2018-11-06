@@ -37,6 +37,14 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
+const mapUser = (model, frame) => {
+    const jsonModel = model.toJSON(frame.options);
+
+    url.forUser(model.id, jsonModel);
+
+    return jsonModel;
+};
+
 const mapTag = (model, frame) => {
     const jsonModel = model.toJSON(frame.options);
     url.forTag(model.id, jsonModel, frame.options);
@@ -49,4 +57,5 @@ const mapTag = (model, frame) => {
 };
 
 module.exports.mapPost = mapPost;
+module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
