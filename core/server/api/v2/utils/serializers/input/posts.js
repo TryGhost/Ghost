@@ -1,6 +1,15 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
+const utils = require('../../index');
+
+function removeMobiledocFormat(frame) {
+    if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
+        frame.options.formats = frame.options.formats.filter((format) => {
+            return (format !== 'mobiledoc');
+        });
+    }
+}
 
 module.exports = {
     browse(apiConfig, frame) {
@@ -13,7 +22,7 @@ module.exports = {
          * - api_key_id exists? content api access
          * - user exists? admin api access
          */
-        if (Object.keys(frame.options.context).length === 0 || (!frame.options.context.user && frame.options.context.api_key_id)) {
+        if (utils.isContentAPI(frame)) {
             // CASE: the content api endpoints for posts should only return non page type resources
             if (frame.options.filter) {
                 if (frame.options.filter.match(/page:\w+\+?/)) {
@@ -28,6 +37,8 @@ module.exports = {
             } else {
                 frame.options.filter = 'page:false';
             }
+            // CASE: the content api endpoint for posts should not return mobiledoc
+            removeMobiledocFormat(frame);
         }
 
         debug(frame.options);
@@ -43,8 +54,10 @@ module.exports = {
          * - api_key_id exists? content api access
          * - user exists? admin api access
          */
-        if (Object.keys(frame.options.context).length === 0 || (!frame.options.context.user && frame.options.context.api_key_id)) {
+        if (utils.isContentAPI(frame)) {
             frame.data.page = false;
+            // CASE: the content api endpoint for posts should not return mobiledoc
+            removeMobiledocFormat(frame);
         }
 
         debug(frame.options);
