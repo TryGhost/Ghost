@@ -46,7 +46,16 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         willTransition(transition) {
             let {controller} = this;
 
-            if (!controller.integration.isDeleted && controller.integration.hasDirtyAttributes) {
+            // check to see if we're navigating away from the custom integration
+            // route - we want to allow editing webhooks without showing the
+            // "unsaved changes" confirmation modal
+            let isExternalRoute =
+                // allow sub-routes of settings.integration
+                !transition.targetName.match(/^settings\.integration\./)
+                // do not allow changes in integration
+                || transition.params['settings.integration'].integration_id !== controller.integration.id;
+
+            if (isExternalRoute && !controller.integration.isDeleted && controller.integration.hasDirtyAttributes) {
                 transition.abort();
                 controller.send('toggleUnsavedChangesModal', transition);
                 return;

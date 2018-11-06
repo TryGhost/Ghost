@@ -61,24 +61,26 @@
             {{gh-error-message errors=webhook.errors property="targetUrl" data-test-error="new-webhook-targetUrl"}}
         {{/gh-form-group}}
     </fieldset>
-    <fieldset>
-        {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="secret"}}
-            <label for="new-webhook-secret" class="fw6">Secret</label>
-            {{gh-text-input
-                value=(readonly webhook.secret)
-                oninput=(action (mut webhook.secret) value="target.value")
-                focus-out=(action "validate" "secret" target=webhook)
-                id="new-webhook-secret"
-                name="secret"
-                class="gh-input mt1"
-                placeholder="Webhook secret..."
-                autofocus="autofocus"
-                autocapitalize="off"
-                autocorrect="off"
-                data-test-input="new-webhook-secret"}}
-            {{gh-error-message errors=webhook.errors property="secret" data-test-error="new-webhook-secret"}}
-        {{/gh-form-group}}
-    </fieldset>
+    {{#if config.enableDeveloperExperiments}}
+        <fieldset>
+            {{#gh-form-group errors=webhook.errors hasValidated=webhook.hasValidated property="secret"}}
+                <label for="new-webhook-secret" class="fw6">Secret</label>
+                {{gh-text-input
+                    value=(readonly webhook.secret)
+                    oninput=(action (mut webhook.secret) value="target.value")
+                    focus-out=(action "validate" "secret" target=webhook)
+                    id="new-webhook-secret"
+                    name="secret"
+                    class="gh-input mt1"
+                    placeholder="Webhook secret..."
+                    autofocus="autofocus"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    data-test-input="new-webhook-secret"}}
+                {{gh-error-message errors=webhook.errors property="secret" data-test-error="new-webhook-secret"}}
+            {{/gh-form-group}}
+        </fieldset>
+    {{/if}}
     {{#if error}}
         <p class="red">{{error}}</p>
     {{/if}}
