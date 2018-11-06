@@ -13,6 +13,7 @@ export default Component.extend({
     classNameBindings: ['selectedClass'],
 
     // attrs
+    editor: null,
     icon: null,
     iconClass: 'ih5 absolute stroke-midgrey-l2 mt1 nl16 kg-icon',
     toolbar: null,
@@ -200,11 +201,26 @@ export default Component.extend({
     _onEnterEdit() {
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
+
+        // store a copy of the payload for later comparison
+        this._snapshotPayload = JSON.stringify(this.payload);
+
         this.onEnterEdit();
     },
 
     _onLeaveEdit() {
         window.removeEventListener('keydown', this._onKeydownHandler);
+
+        // if the payload has changed since entering edit mode then store a snapshot
+        let newPayload = JSON.stringify(this.payload);
+        if (newPayload !== this._snapshotPayload) {
+            this.editor.run(() => {
+                this.saveCard(this.payload);
+            });
+        }
+
+        delete this._snapshotPayload;
+
         this.onLeaveEdit();
     },
 
