@@ -2,9 +2,8 @@
  * # Fetch Data
  * Dynamically build and execute queries on the API
  */
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    defaultPostQuery = {};
+const _ = require('lodash');
+const Promise = require('bluebird');
 
 // The default settings for a default post query
 const queryDefaults = {
@@ -26,7 +25,8 @@ const defaultQueryOptions = {
 /**
  * Default post query needs to always include author, authors & tags
  */
-_.extend(defaultPostQuery, queryDefaults, defaultQueryOptions);
+const defaultPostQuery = _.cloneDeep(queryDefaults);
+defaultPostQuery.options = defaultQueryOptions.options;
 
 /**
  * ## Process Query
@@ -43,8 +43,7 @@ function processQuery(query, slugParam, locals) {
 
     query = _.cloneDeep(query);
 
-    // Ensure that all the properties are filled out
-    _.defaultsDeep(query, defaultQueryOptions);
+    _.defaultsDeep(query, queryDefaults);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option, name) {
