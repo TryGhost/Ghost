@@ -29,7 +29,7 @@ function verifySessionHash(salt, hash) {
 }
 
 function getRedirectUrl(query) {
-    var redirect = decodeURIComponent(query ? query.r : '/');
+    var redirect = decodeURIComponent(query.r || '/');
     try {
         return url.parse(redirect, config.urlFor('home', true)).pathname;
     } catch (e) {
