@@ -154,6 +154,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             filter: 'tags:%s',
             data: {
                 tag: {
+                    alias: 'tags',
                     type: 'read',
                     resource: 'tags',
                     options: {slug: '%s'}
