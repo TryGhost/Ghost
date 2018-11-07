@@ -31,10 +31,10 @@
             }
         },
         "logo": {
-            "defaultValue": "https://casper.ghost.org/v1.0.0/images/ghost-logo.svg"
+            "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg"
         },
         "cover_image": {
-            "defaultValue": "https://casper.ghost.org/v1.0.0/images/blog-cover.jpg"
+            "defaultValue": "https://static.ghost.org/v1.0.0/images/blog-cover.jpg"
         },
         "icon": {
             "defaultValue": ""
