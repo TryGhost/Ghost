@@ -31,7 +31,7 @@ module.exports = function staticController(req, res, next) {
                     if (config.type === 'browse') {
                         response.data[name] = result[name];
                     } else {
-                        response.data[name] = result[name][config.resource];
+                        response.data[name] = result[name][config.alias] || result[name][config.resource];
                     }
                 });
             }
