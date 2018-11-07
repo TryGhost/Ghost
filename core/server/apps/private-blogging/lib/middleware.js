@@ -1,5 +1,6 @@
 var _           = require('lodash'),
     fs          = require('fs'),
+    url         = require('url'),
     config      = require('../../../config'),
     crypto      = require('crypto'),
     path        = require('path'),
@@ -25,6 +26,15 @@ function verifySessionHash(salt, hash) {
 
         return hasher.digest('hex') === hash;
     });
+}
+
+function getRedirectUrl(query) {
+    var redirect = decodeURIComponent(query ? query.r : '/');
+    try {
+        return url.parse(redirect, config.urlFor('home', true)).pathname;
+    } catch (e) {
+        return '/';
+    }
 }
 
 privateBlogging = {
@@ -120,14 +130,14 @@ privateBlogging = {
             var pass = response.settings[0],
                 hasher = crypto.createHash('sha256'),
                 salt = Date.now().toString(),
-                forward = req.query && req.query.r ? req.query.r : '/';
+                forward = getRedirectUrl(req.query);
 
             if (pass.value === bodyPass) {
                 hasher.update(bodyPass + salt, 'utf8');
                 req.session.token = hasher.digest('hex');
                 req.session.salt = salt;
 
-                return res.redirect(config.urlFor({relativeUrl: decodeURIComponent(forward)}));
+                return res.redirect(config.urlFor({relativeUrl: forward}));
             } else {
                 res.error = {
                     message: i18n.t('errors.middleware.privateblogging.wrongPassword')
