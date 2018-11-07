@@ -69,5 +69,17 @@ module.exports = {
 
     get preview() {
         return shared.pipeline(require('./preview'), localUtils);
+    },
+
+    get oembed() {
+        return shared.pipeline(require('./oembed'), localUtils);
+    },
+
+    get slack() {
+        return shared.pipeline(require('./slack'), localUtils);
+    },
+
+    get authors() {
+        return shared.pipeline(require('./authors'), localUtils);
     }
 };

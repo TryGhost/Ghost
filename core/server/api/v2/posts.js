@@ -16,7 +16,8 @@ module.exports = {
             'limit',
             'order',
             'page',
-            'debug'
+            'debug',
+            'absolute_urls'
         ],
         validation: {
             options: {
@@ -42,7 +43,8 @@ module.exports = {
             'fields',
             'status',
             'formats',
-            'debug'
+            'debug',
+            'absolute_urls'
         ],
         data: [
             'id',

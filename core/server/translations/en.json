@@ -349,6 +349,9 @@
             "posts": {
                 "postNotFound": "Post not found."
             },
+            "authors": {
+                "notFound": "Author not found."
+            },
             "pages": {
                 "pageNotFound": "Page not found."
             },

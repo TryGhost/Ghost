@@ -57,5 +57,13 @@ module.exports = {
 
     get preview() {
         return require('./preview');
+    },
+
+    get oembed() {
+        return require('./oembed');
+    },
+
+    get authors() {
+        return require('./authors');
     }
 };

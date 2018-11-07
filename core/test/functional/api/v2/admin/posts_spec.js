@@ -387,7 +387,6 @@ describe('Posts API V2', function () {
                         res.body.posts[0].title.should.eql(post.title);
                         res.body.posts[0].status.should.eql(post.status);
                         res.body.posts[0].published_at.should.eql('2016-05-30T07:00:00.000Z');
-                        res.body.posts[0].published_at = '2016-05-30T09:00:00.000Z';
                         res.body.posts[0].created_at.should.not.eql(post.created_at.toISOString());
                         res.body.posts[0].updated_at.should.not.eql(post.updated_at.toISOString());
                         res.body.posts[0].updated_by.should.not.eql(post.updated_by);
@@ -395,10 +394,13 @@ describe('Posts API V2', function () {
                     });
             });
 
-            it('published post', function () {
+            it('published post with response timestamps in UTC format respecting original UTC offset', function () {
                 const post = {
                     posts: [{
-                        status: 'published'
+                        status: 'published',
+                        published_at: '2016-05-31T07:00:00.000+06:00',
+                        created_at: '2016-05-30T03:00:00.000Z',
+                        updated_at: '2016-05-30T07:00:00.000'
                     }]
                 };
 
@@ -413,6 +415,10 @@ describe('Posts API V2', function () {
                         testUtils.API.checkResponse(res.body.posts[0], 'post');
                         res.body.posts[0].status.should.eql('published');
                         res.headers['x-cache-invalidate'].should.eql('/*');
+
+                        res.body.posts[0].published_at.should.eql('2016-05-31T01:00:00.000Z');
+                        res.body.posts[0].created_at.should.eql('2016-05-30T03:00:00.000Z');
+                        res.body.posts[0].updated_at.should.eql('2016-05-30T07:00:00.000Z');
                     });
             });
         });

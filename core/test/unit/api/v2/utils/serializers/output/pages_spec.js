@@ -6,11 +6,11 @@ const serializers = require('../../../../../../../server/api/v2/utils/serializer
 
 const sandbox = sinon.sandbox.create();
 
-describe('Unit: v2/utils/serializers/output/posts', () => {
-    let postModel;
+describe('Unit: v2/utils/serializers/output/pages', () => {
+    let pageModel;
 
     beforeEach(() => {
-        postModel = (data) => {
+        pageModel = (data) => {
             return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
         };
 
@@ -34,8 +34,14 @@ describe('Unit: v2/utils/serializers/output/posts', () => {
 
         const ctrlResponse = {
             data: [
-                postModel(testUtils.DataGenerator.forKnex.createPost({})),
-                postModel(testUtils.DataGenerator.forKnex.createPost({}))
+                pageModel(testUtils.DataGenerator.forKnex.createPost({
+                    id: 'id1',
+                    page: true
+                })),
+                pageModel(testUtils.DataGenerator.forKnex.createPost({
+                    id: 'id2',
+                    page: true
+                }))
             ],
             meta: {}
         };

@@ -56,7 +56,7 @@ describe('{{#get}} helper', function () {
         }).catch(done);
     });
 
-    describe('posts', function () {
+    describe('posts v0.1', function () {
         var browsePostsStub, readPostsStub, readTagsStub, readUsersStub, testPostsArr = [
                 {id: 1, title: 'Test Post 1', author: {slug: 'cameron'}},
                 {id: 2, title: 'Test Post 2', author: {slug: 'cameron'}, featured: true},
@@ -249,6 +249,120 @@ describe('{{#get}} helper', function () {
                 fn.calledOnce.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.have.lengthOf(0);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('users v0.1', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            browseUsersStub = sandbox.stub(api["v0.1"].users, 'browse');
+            browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
+        });
+
+        it('browse users v0.1', function (done) {
+            helpers.get.call(
+                {},
+                'users',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                labsStub.calledOnce.should.be.true();
+
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('users');
+                fn.firstCall.args[0].users.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('authors v0.1', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            browseUsersStub = sandbox.stub(api["v0.1"].users, 'browse');
+            browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
+        });
+
+        it('browse users v0.1', function (done) {
+            helpers.get.call(
+                {},
+                'authors',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                inverse.calledOnce.should.be.true();
+                should.exist(inverse.args[0][1].data.error);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('users v2', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {apiVersion: 'v2'}}};
+
+            browseUsersStub = sandbox.stub(api["v2"], 'authors').get(() => {
+                return {
+                    browse: sandbox.stub().resolves({authors: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse users', function (done) {
+            helpers.get.call(
+                {},
+                'users',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                labsStub.calledOnce.should.be.true();
+
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
+                fn.firstCall.args[0].authors.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('authors v2', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {apiVersion: 'v2'}}};
+
+            browseUsersStub = sandbox.stub(api["v2"], 'authors').get(() => {
+                return {
+                    browse: sandbox.stub().resolves({authors: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse users', function (done) {
+            helpers.get.call(
+                {},
+                'authors',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                labsStub.calledOnce.should.be.true();
+
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
+                fn.firstCall.args[0].authors.should.eql([]);
                 inverse.called.should.be.false();
 
                 done();

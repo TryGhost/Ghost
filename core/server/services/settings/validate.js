@@ -48,7 +48,6 @@ _private.validateData = function validateData(object) {
 
         let [resourceKey, slug] = shortForm.split('.');
 
-        // @NOTE: `data: author.foo` is not allowed currently, because this will make {{author}} available in the theme, which is deprecated (single author usage)
         if (!RESOURCE_CONFIG.QUERY[resourceKey] ||
             (RESOURCE_CONFIG.QUERY[resourceKey].hasOwnProperty('internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
             throw new common.errors.ValidationError({
@@ -58,7 +57,7 @@ _private.validateData = function validateData(object) {
         }
 
         longForm.query[options.resourceKey || resourceKey] = {};
-        longForm.query[options.resourceKey || resourceKey] = _.omit(_.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]), 'alias');
+        longForm.query[options.resourceKey || resourceKey] = _.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]);
 
         // redirect is enabled by default when using the short form
         longForm.router = {
@@ -148,6 +147,7 @@ _private.validateData = function validateData(object) {
             });
 
             const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+            data.query[key] = _.defaults(data.query[key], _.omit(DEFAULT_RESOURCE, 'options'));
 
             data.query[key].options = _.pick(object.data[key], allowedQueryOptions);
             if (data.query[key].type === 'read') {
