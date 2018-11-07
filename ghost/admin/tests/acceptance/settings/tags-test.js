@@ -180,8 +180,12 @@ describe('Acceptance: Settings - Tags', function () {
             await fillIn('.tag-settings-pane input[name="name"]', 'New Name');
             await triggerEvent('.tag-settings-pane input[name="name"]', 'blur');
 
+            // extra timeout needed for Travis - sometimes it doesn't update
+            // quick enough and an extra wait() call doesn't help
+            await timeout(100);
+
             // check we update with the data returned from the server
-            expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'tag list updates on save')
+            expect(find('.settings-tag')[0].querySelector('.tag-title').textContent.trim(), 'tag list updates on save')
                 .to.equal('New Name');
             expect(find('.tag-settings-pane input[name="name"]').val(), 'settings form updates on save')
                 .to.equal('New Name');
@@ -217,7 +221,8 @@ describe('Acceptance: Settings - Tags', function () {
             // it adds the tag to the list and selects
             expect(find('.settings-tags .settings-tag').length, 'tag list count after creation')
                 .to.equal(3);
-            expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'new tag list item title')
+            // new tag will be second in the list due to alphabetical sorting
+            expect(find('.settings-tags .settings-tag')[1].querySelector('.tag-title').textContent.trim(), 'new tag list item title')
                 .to.equal('New Tag');
             expect(find('a[href="/ghost/settings/tags/new-tag"]').hasClass('active'), 'highlights new tag')
                 .to.be.true;
@@ -311,6 +316,23 @@ describe('Acceptance: Settings - Tags', function () {
             errorReset();
             expect(currentPath()).to.equal('error404');
             expect(currentURL()).to.equal('/settings/tags/unknown');
+        });
+
+        it('sorts tags correctly', async function () {
+            server.create('tag', {name: 'B - Second', slug: 'second'});
+            server.create('tag', {name: 'Z - Last', slug: 'last'});
+            server.create('tag', {name: 'A - First', slug: 'first'});
+
+            await visit('settings/tags');
+
+            // second wait is needed for the vertical-collection to settle
+            await wait();
+
+            let tags = find('[data-test-tag]');
+
+            expect(tags[0].querySelector('[data-test-name]').textContent.trim()).to.equal('A - First');
+            expect(tags[1].querySelector('[data-test-name]').textContent.trim()).to.equal('B - Second');
+            expect(tags[2].querySelector('[data-test-name]').textContent.trim()).to.equal('Z - Last');
         });
     });
 });

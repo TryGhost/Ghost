@@ -5,6 +5,7 @@ import {
     authenticateSession,
     invalidateSession
 } from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {clickTrigger} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 
 describe('Acceptance: Content', function () {
@@ -123,6 +124,22 @@ describe('Acceptance: Content', function () {
             await triggerEvent(`[data-test-post-id="${authorPost.id}"]`, 'dblclick');
 
             expect(currentURL(), 'url after double-click').to.equal(`/editor/${authorPost.id}`);
+        });
+
+        it('sorts tags filter alphabetically', async function () {
+            server.create('tag', {name: 'B - Second', slug: 'second'});
+            server.create('tag', {name: 'Z - Last', slug: 'last'});
+            server.create('tag', {name: 'A - First', slug: 'first'});
+
+            await visit('/');
+            await clickTrigger('[data-test-tag-select]');
+
+            let options = find('.ember-power-select-option');
+
+            expect(options[0].textContent.trim()).to.equal('All tags');
+            expect(options[1].textContent.trim()).to.equal('A - First');
+            expect(options[2].textContent.trim()).to.equal('B - Second');
+            expect(options[3].textContent.trim()).to.equal('Z - Last');
         });
     });
 

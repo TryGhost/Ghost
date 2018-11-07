@@ -14,21 +14,12 @@ export default Controller.extend({
     tagContentFocused: equal('keyboardFocus', 'tagContent'),
 
     filteredTags: computed('tags.@each.isNew', function () {
-        return this.get('tags').filterBy('isNew', false);
+        return this.tags.filterBy('isNew', false);
     }),
 
-    // TODO: replace with ordering by page count once supported by the API
-    sortedTags: sort('filteredTags', function (a, b) {
-        let idA = +a.get('id');
-        let idB = +b.get('id');
-
-        if (idA > idB) {
-            return 1;
-        } else if (idA < idB) {
-            return -1;
-        }
-
-        return 0;
+    // tags are sorted by name
+    sortedTags: sort('filteredTags', function (tagA, tagB) {
+        return tagA.name.localeCompare(tagB.name);
     }),
 
     actions: {

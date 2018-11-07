@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {sort} from '@ember/object/computed';
 
 export default Component.extend({
 
@@ -11,10 +12,14 @@ export default Component.extend({
     tagName: '',
 
     // internal attrs
-    availableTags: null,
+    _availableTags: null,
+
+    availableTags: sort('_availableTags.[]', function (tagA, tagB) {
+        return tagA.name.localeCompare(tagB.name);
+    }),
 
     availableTagNames: computed('availableTags.@each.name', function () {
-        return this.get('availableTags').map(tag => tag.get('name').toLowerCase());
+        return this.availableTags.map(tag => tag.name.toLowerCase());
     }),
 
     init() {
@@ -23,7 +28,7 @@ export default Component.extend({
         // to a live-query that will be immediately populated with what's in the
         // store and be updated when the above query returns
         this.store.query('tag', {limit: 'all'});
-        this.set('availableTags', this.store.peekAll('tag'));
+        this.set('_availableTags', this.store.peekAll('tag'));
     },
 
     actions: {
