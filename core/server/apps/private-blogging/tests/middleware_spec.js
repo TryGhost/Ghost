@@ -34,7 +34,9 @@ describe('Private Blogging', function () {
         var req, res, next;
 
         beforeEach(function () {
-            req = {};
+            req = {
+                query: {}
+            };
             res = {};
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             next = sinon.spy();
