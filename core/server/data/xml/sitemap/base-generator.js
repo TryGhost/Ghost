@@ -21,7 +21,7 @@ class BaseSiteMapGenerator {
         this.lastModified = 0;
     }
 
-    generateXmlFromNodes() {
+    generateXmlFromNodes(apiVersion) {
         var self = this,
             // Get a mapping of node to timestamp
             timedNodes = _.map(this.nodeLookup, function (node, id) {
@@ -83,7 +83,10 @@ class BaseSiteMapGenerator {
             url: [
                 {loc: url},
                 {lastmod: moment(this.getLastModifiedForDatum(datum)).toISOString()}
-            ]
+            ],
+            datum: {
+                count: datum['count.posts']
+            }
         };
 
         imgNode = this.createImageNodeFromDatum(datum);
@@ -129,13 +132,18 @@ class BaseSiteMapGenerator {
         return !!imageUrl;
     }
 
-    getXml() {
-        if (this.siteMapContent) {
-            return this.siteMapContent;
+    getXml(apiVersion) {
+        if (this.siteMapContent && this.siteMapContent[apiVersion]) {
+            return this.siteMapContent[apiVersion];
         }
 
-        const content = this.generateXmlFromNodes();
-        this.siteMapContent = content;
+        const content = this.generateXmlFromNodes(apiVersion);
+
+        if (!this.siteMapContent) {
+            this.siteMapContent = {};
+        }
+
+        this.siteMapContent[apiVersion] = content;
         return content;
     }
 

@@ -30,6 +30,8 @@ module.exports = function handler(siteApp) {
             'Content-Type': 'text/xml'
         });
 
-        res.send(manager.getSiteMapXml(type, page));
+        console.log(res.locals);
+
+        res.send(manager.getSiteMapXml(type, page, res.locals.apiVersion));
     });
 };

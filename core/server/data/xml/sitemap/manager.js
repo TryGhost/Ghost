@@ -72,8 +72,8 @@ class SiteMapManager {
         return this.index.getXml();
     }
 
-    getSiteMapXml(type) {
-        return this[type].getXml();
+    getSiteMapXml(type, page, apiVersion) {
+        return this[type].getXml(apiVersion);
     }
 }
 

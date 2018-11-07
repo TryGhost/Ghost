@@ -1058,6 +1058,27 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     whereIn: 'posts_authors.post_id',
                     whereInKey: 'post_id',
                     orderBy: 'sort_order'
+                },
+                'count.posts': function countPosts(props, objects) {
+                    props['count.posts'] = (() => {
+                        return Promise.map(objects, (user) => {
+                            return db.knex
+                                .count('posts.id as count')
+                                .from('posts')
+                                .join('posts_authors', 'posts.id', 'posts_authors.post_id')
+                                .whereRaw(`posts_authors.author_id = '${user.id}'`)
+                                .andWhere('posts.page', '=', false)
+                                .andWhere('posts.status', '=', 'published')
+                                .then((result) => {
+                                    return {userId: user.id, count: result[0].count};
+                                });
+                        }).then((results) => {
+                            return results.reduce((obj, item) => {
+                                obj[item.userId] = item.count;
+                                return obj;
+                            }, {});
+                        });
+                    })();
                 }
             };
 
@@ -1117,6 +1138,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 _.each(withRelated, (withRelatedKey) => {
                     const relation = relations[withRelatedKey];
 
+                    if (typeof relation === 'function') {
+                        return relation(props, objects);
+                    }
+
                     props[relation.name] = (() => {
                         debug('fetch withRelated', relation.name);
 
@@ -1165,7 +1190,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                         objects = _.map(objects, (object) => {
                             _.each(Object.keys(relations), (relation) => {
-                                if (!relations[relation][object.id]) {
+                                if (!relations[relation].hasOwnProperty(object.id)) {
                                     object[relation] = [];
                                     return;
                                 }

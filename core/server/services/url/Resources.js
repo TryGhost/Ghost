@@ -123,7 +123,8 @@ const resourcesConfig = [
                 'meta_description',
                 'tour'
             ],
-            filter: 'visibility:public'
+            filter: 'visibility:public',
+            withRelated: ['count.posts']
         },
         events: {
             add: 'user.activated',
