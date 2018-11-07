@@ -243,6 +243,20 @@ describe('Private Blogging', function () {
                     }).catch(done);
                 });
 
+                it('authenticateProtection should redirect to "/" if r param is a full url', function () {
+                    req.body = {password: 'rightpassword'};
+                    req.session = {};
+                    req.query = {
+                        r: encodeURIComponent('http://britney.com')
+                    };
+                    res.redirect = sandbox.spy();
+
+                    privateBlogging.authenticateProtection(req, res, next).then(function () {
+                        res.redirect.called.should.be.true();
+                        res.redirect.args[0][0].should.be.equal('/');
+                    });
+                });
+
                 it('authenticateProtection should return next if password is incorrect', function (done) {
                     req.body = {password: 'wrongpassword'};
 
