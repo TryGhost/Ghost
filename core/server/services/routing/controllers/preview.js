@@ -14,20 +14,10 @@ module.exports = function previewController(req, res, next) {
         include: 'author,authors,tags'
     };
 
-    let resourceType = res.routerOptions.resourceType;
-
-    /**
-     * @TODO:
-     * Remove fallback to posts if we drop v0.1.
-     */
-    if (!api[resourceType]) {
-        resourceType = 'posts';
-    }
-
-    api[resourceType]
+    (api[res.routerOptions.query.alias] || api[res.routerOptions.query.resource])
         .read(params)
         .then(function then(result) {
-            const post = result[resourceType][0];
+            const post = (result[res.routerOptions.query.alias] || result[res.routerOptions.query.resource])[0];
 
             if (!post) {
                 return next();

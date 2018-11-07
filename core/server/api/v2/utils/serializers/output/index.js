@@ -61,5 +61,9 @@ module.exports = {
 
     get oembed() {
         return require('./oembed');
+    },
+
+    get authors() {
+        return require('./authors');
     }
 };

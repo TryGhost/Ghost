@@ -2,27 +2,31 @@
  * # Fetch Data
  * Dynamically build and execute queries on the API
  */
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    defaultPostQuery = {};
+const _ = require('lodash');
+const Promise = require('bluebird');
 
 // The default settings for a default post query
 const queryDefaults = {
     type: 'browse',
     resource: 'posts',
+    alias: 'posts',
     options: {}
 };
 
 /**
- * Default post query needs to always include author, authors & tags
- *
  * @deprecated: `author`, will be removed in Ghost 3.0
  */
-_.extend(defaultPostQuery, queryDefaults, {
+const defaultQueryOptions = {
     options: {
         include: 'author,authors,tags'
     }
-});
+};
+
+/**
+ * Default post query needs to always include author, authors & tags
+ */
+const defaultPostQuery = _.cloneDeep(queryDefaults);
+defaultPostQuery.options = defaultQueryOptions.options;
 
 /**
  * ## Process Query
@@ -39,7 +43,6 @@ function processQuery(query, slugParam, locals) {
 
     query = _.cloneDeep(query);
 
-    // Ensure that all the properties are filled out
     _.defaultsDeep(query, queryDefaults);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
@@ -48,7 +51,7 @@ function processQuery(query, slugParam, locals) {
     });
 
     // Return a promise for the api query
-    return api[query.resource][query.type](query.options);
+    return (api[query.alias] || api[query.resource])[query.type](query.options);
 }
 
 /**
@@ -100,7 +103,7 @@ function fetchData(pathOptions, routerOptions, locals) {
                     if (config.type === 'browse') {
                         response.data[name] = results[name];
                     } else {
-                        response.data[name] = results[name][config.resource];
+                        response.data[name] = results[name][config.alias] || results[name][config.resource];
                     }
                 });
             }

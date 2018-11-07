@@ -20,7 +20,10 @@ class PreviewRouter extends ParentRouter {
     _prepareContext(req, res, next) {
         res.routerOptions = {
             type: 'entry',
-            resourceType: 'preview'
+            query: {
+                alias: 'preview',
+                resource: 'posts'
+            }
         };
 
         next();

@@ -54,7 +54,7 @@ class TaxonomyRouter extends ParentRouter {
             type: 'channel',
             name: this.taxonomyKey,
             permalinks: this.permalinks.getValue(),
-            data: {[this.taxonomyKey]: _.omit(RESOURCE_CONFIG.QUERY[this.taxonomyKey], ['alias', 'internal'])},
+            data: {[this.taxonomyKey]: _.omit(RESOURCE_CONFIG.QUERY[this.taxonomyKey], ['internal'])},
             filter: RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
             resourceType: this.getResourceType(),
             context: [this.taxonomyKey],
@@ -70,7 +70,7 @@ class TaxonomyRouter extends ParentRouter {
     }
 
     getResourceType() {
-        return RESOURCE_CONFIG.QUERY[this.taxonomyKey].resource;
+        return RESOURCE_CONFIG.QUERY[this.taxonomyKey].alias;
     }
 
     getRoute() {

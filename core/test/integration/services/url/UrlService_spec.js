@@ -79,7 +79,7 @@ describe('Integration: services/url/UrlService', function () {
             });
 
             router2.getFilter.returns(false);
-            router2.getResourceType.returns('users');
+            router2.getResourceType.returns('authors');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/author/:slug/';
@@ -147,7 +147,7 @@ describe('Integration: services/url/UrlService', function () {
                     generator.getUrls().length.should.eql(5);
                 }
 
-                if (generator.router.getResourceType() === 'users') {
+                if (generator.router.getResourceType() === 'authors') {
                     generator.getUrls().length.should.eql(5);
                 }
             });
@@ -377,7 +377,7 @@ describe('Integration: services/url/UrlService', function () {
             });
 
             router3.getFilter.returns(false);
-            router3.getResourceType.returns('users');
+            router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';
@@ -451,7 +451,7 @@ describe('Integration: services/url/UrlService', function () {
                     generator.getUrls().length.should.eql(5);
                 }
 
-                if (generator.router.getResourceType() === 'users') {
+                if (generator.router.getResourceType() === 'authors') {
                     generator.getUrls().length.should.eql(5);
                 }
             });
@@ -616,7 +616,7 @@ describe('Integration: services/url/UrlService', function () {
             });
 
             router3.getFilter.returns(false);
-            router3.getResourceType.returns('users');
+            router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';

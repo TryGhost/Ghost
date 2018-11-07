@@ -349,6 +349,9 @@ describe('UNIT: services/settings/validate', function () {
                             bed: 'tag.bed',
                             dream: 'tag.dream'
                         }
+                    },
+                    '/lala/': {
+                        data: 'author.carsten'
                     }
                 },
                 collections: {
@@ -378,6 +381,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 tag: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -396,6 +400,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 user: {
+                                    alias: 'authors',
                                     resource: 'users',
                                     type: 'read',
                                     options: {
@@ -405,7 +410,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                users: [{redirect: true, slug: 'ghost'}]
+                                authors: [{redirect: true, slug: 'ghost'}]
                             }
                         },
                         templates: []
@@ -414,6 +419,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 tag: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -432,6 +438,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 bed: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -440,6 +447,7 @@ describe('UNIT: services/settings/validate', function () {
                                     }
                                 },
                                 dream: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -453,6 +461,25 @@ describe('UNIT: services/settings/validate', function () {
                             }
                         },
                         templates: []
+                    },
+                    '/lala/': {
+                        data: {
+                            query: {
+                                author: {
+                                    alias: 'authors',
+                                    resource: 'users',
+                                    type: 'read',
+                                    options: {
+                                        slug: 'carsten',
+                                        visibility: 'public'
+                                    }
+                                }
+                            },
+                            router: {
+                                authors: [{redirect: true, slug: 'carsten'}]
+                            }
+                        },
+                        templates: []
                     }
                 },
                 collections: {
@@ -461,6 +488,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 home: {
+                                    alias: 'pages',
                                     resource: 'posts',
                                     type: 'read',
                                     options: {
@@ -481,6 +509,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 something: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -500,6 +529,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 tag: {
+                                    alias: 'tags',
                                     resource: 'tags',
                                     type: 'read',
                                     options: {
@@ -540,7 +570,7 @@ describe('UNIT: services/settings/validate', function () {
                     },
                     '/partyparty/': {
                         data: {
-                            posts: {
+                            people: {
                                 resource: 'users',
                                 type: 'read',
                                 slug: 'djgutelaune',
@@ -571,6 +601,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 food: {
+                                    alias: 'posts',
                                     resource: 'posts',
                                     type: 'browse',
                                     options: {}
@@ -586,6 +617,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 posts: {
+                                    alias: 'posts',
                                     resource: 'posts',
                                     type: 'read',
                                     options: {
@@ -604,7 +636,8 @@ describe('UNIT: services/settings/validate', function () {
                     '/partyparty/': {
                         data: {
                             query: {
-                                posts: {
+                                people: {
+                                    alias: 'authors',
                                     resource: 'users',
                                     type: 'read',
                                     options: {
@@ -614,7 +647,7 @@ describe('UNIT: services/settings/validate', function () {
                                 }
                             },
                             router: {
-                                users: [{redirect: true, slug: 'djgutelaune'}]
+                                authors: [{redirect: true, slug: 'djgutelaune'}]
                             }
                         },
                         templates: []
@@ -626,6 +659,7 @@ describe('UNIT: services/settings/validate', function () {
                         data: {
                             query: {
                                 gym: {
+                                    alias: 'posts',
                                     resource: 'posts',
                                     type: 'read',
                                     options: {
@@ -692,24 +726,6 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 resource: 'subscribers'
                             }
-                        }
-                    }
-                });
-            } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
-                return;
-            }
-
-            throw new Error('should fail');
-        });
-
-        it('errors: data shortform author is not allowed', function () {
-            try {
-                validate({
-                    collections: {
-                        '/magic/': {
-                            permalink: '/{slug}/',
-                            data: 'author.food'
                         }
                     }
                 });

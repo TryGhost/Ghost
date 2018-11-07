@@ -91,6 +91,10 @@ class CollectionRouter extends ParentRouter {
             order: this.order,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             resourceType: this.getResourceType(),
+            query: {
+                alias: 'posts',
+                resource: 'posts'
+            },
             context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,

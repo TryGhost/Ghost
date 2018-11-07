@@ -37,6 +37,9 @@ const RESOURCES = {
     pages: {
         alias: 'pages',
         resource: 'posts'
+    },
+    authors: {
+        alias: 'authors'
     }
 };
 
@@ -144,6 +147,13 @@ get = function get(resource, options) {
 
     const controller = api[apiVersion][RESOURCES[resource].alias] ? RESOURCES[resource].alias : RESOURCES[resource].resource;
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
+
+    // CASE: no fallback defined e.g. v0.1 tries to fetch "authors"
+    if (!controller) {
+        data.error = i18n.t('warnings.helpers.get.invalidResource');
+        logging.warn(data.error);
+        return Promise.resolve(options.inverse(self, {data: data}));
+    }
 
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(this, apiOptions);

@@ -72,7 +72,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             name: 'tag',
             permalinks: '/tag/:slug/',
             resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
-            data: {tag: _.omit(RESOURCE_CONFIG.QUERY.tag, 'alias')},
+            data: {tag: RESOURCE_CONFIG.QUERY.tag},
             filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,

@@ -341,6 +341,7 @@ User = ghostBookshelf.Model.extend({
 
         // CASE: The `withRelated` parameter is allowed when using the public API, but not the `roles` value.
         // Otherwise we expose too much information.
+        // @TODO: the target controller should define the allowed includes, but not the model layer O_O (https://github.com/TryGhost/Ghost/issues/10106)
         if (options && options.context && options.context.public) {
             if (options.withRelated && options.withRelated.indexOf('roles') !== -1) {
                 options.withRelated.splice(options.withRelated.indexOf('roles'), 1);

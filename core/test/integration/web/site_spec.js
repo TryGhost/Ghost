@@ -897,6 +897,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     tag: {
+                                        alias: 'tags',
                                         resource: 'tags',
                                         type: 'read',
                                         options: {
@@ -915,6 +916,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     apollo: {
+                                        alias: 'tags',
                                         resource: 'tags',
                                         type: 'read',
                                         options: {
@@ -1225,6 +1227,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     tag: {
+                                        alias: 'tags',
                                         resource: 'tags',
                                         type: 'read',
                                         options: {
@@ -1244,6 +1247,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     tag: {
+                                        alias: 'tags',
                                         resource: 'tags',
                                         type: 'read',
                                         options: {
@@ -1264,6 +1268,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     tag: {
+                                        alias: 'authors',
                                         resource: 'users',
                                         type: 'read',
                                         options: {
@@ -1288,6 +1293,7 @@ describe('Integration - Web - Site', function () {
                             data: {
                                 query: {
                                     tag: {
+                                        alias: 'authors',
                                         resource: 'users',
                                         type: 'read',
                                         options: {

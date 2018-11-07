@@ -30,22 +30,14 @@ function entryLookup(postUrl, routerOptions, locals) {
         isEditURL = true;
     }
 
-    let resourceType = routerOptions.resourceType;
-
-    // @NOTE: v0.1 does not have a pages controller.
-    // @TODO: remove me when we drop v0.1
-    if (!api[resourceType]) {
-        resourceType = 'posts';
-    }
-
     /**
      * Query database to find entry.
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
-    return api[resourceType]
+    return (api[routerOptions.query.alias] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
         .then(function then(result) {
-            const entry = result[resourceType][0];
+            const entry = (result[routerOptions.query.alias] || result[routerOptions.query.resource])[0];
 
             if (!entry) {
                 return Promise.resolve();
