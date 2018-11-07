@@ -4,8 +4,12 @@ import {Response} from 'ember-cli-mirage';
 export function paginatedResponse(modelName) {
     return function (schema, request) {
         let page = +request.queryParams.page || 1;
-        let limit = +request.queryParams.limit || 15;
+        let limit = request.queryParams.limit;
         let collection = schema[modelName].all();
+
+        if (limit !== 'all') {
+            limit = +request.queryParams.limit || 15;
+        }
 
         return paginateModelCollection(modelName, collection, page, limit);
     };
