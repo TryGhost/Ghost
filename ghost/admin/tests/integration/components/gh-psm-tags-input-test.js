@@ -69,7 +69,7 @@ describe.skip('Integration: Component: gh-psm-tags-input', function () {
         expect(selected[1].textContent).to.have.string('Tag Three');
     });
 
-    it('exposes all tags as options', async function () {
+    it('exposes all tags as options sorted alphabetically', async function () {
         run(() => {
             this.set('post', this.get('store').findRecord('post', 1));
         });
@@ -81,8 +81,8 @@ describe.skip('Integration: Component: gh-psm-tags-input', function () {
         let options = findAll('.ember-power-select-option');
         expect(options.length).to.equal(4);
         expect(options[0].textContent).to.have.string('Tag One');
-        expect(options[1].textContent).to.have.string('Tag Two');
-        expect(options[2].textContent).to.have.string('Tag Three');
+        expect(options[1].textContent).to.have.string('Tag Three');
+        expect(options[2].textContent).to.have.string('Tag Two');
         expect(options[3].textContent).to.have.string('#Internal Tag');
     });
 

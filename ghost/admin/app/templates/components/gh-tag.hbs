@@ -1,14 +1,14 @@
-<div class="settings-tag" id="gh-tag-{{tag.id}}">
+<div class="settings-tag" id="gh-tag-{{tag.id}}" data-test-tag="{{tag.id}}">
     {{#link-to 'settings.tags.tag' tag class="tag-edit-button"}}
-        <span class="tag-title">{{tag.name}}</span>
-        <span class="label label-default">/{{tag.slug}}</span>
+        <span class="tag-title" data-test-name>{{tag.name}}</span>
+        <span class="label label-default" data-test-slug>/{{tag.slug}}</span>
 
         {{#if tag.isInternal}}
-            <span class="label label-blue">internal</span>
+            <span class="label label-blue" data-test-internal>internal</span>
         {{/if}}
 
-        <p class="tag-description">{{tag.description}}</p>
-        <span class="tags-count">
+        <p class="tag-description" data-test-description>{{tag.description}}</p>
+        <span class="tags-count" data-test-post-count>
             {{#link-to "posts" (query-params type=null author=null tag=tag.slug order=null)}}
                 {{tag.count.posts}}
             {{/link-to}}
