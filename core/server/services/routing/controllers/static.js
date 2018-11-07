@@ -8,7 +8,7 @@ function processQuery(query, locals) {
     query = _.cloneDeep(query);
 
     // Return a promise for the api query
-    return api[query.resource][query.type](query.options);
+    return (api[query.alias] || api[query.resource])[query.type](query.options);
 }
 
 module.exports = function staticController(req, res, next) {
@@ -31,7 +31,7 @@ module.exports = function staticController(req, res, next) {
                     if (config.type === 'browse') {
                         response.data[name] = result[name];
                     } else {
-                        response.data[name] = result[name][config.resource];
+                        response.data[name] = result[name][config.alias] || result[name][config.resource];
                     }
                 });
             }

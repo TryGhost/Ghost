@@ -14,6 +14,7 @@ var _ = require('lodash'),
         posts: ['posts', 'meta'],
         tags: ['tags', 'meta'],
         users: ['users', 'meta'],
+        authors: ['authors', 'meta'],
         settings: ['settings', 'meta'],
         subscribers: ['subscribers', 'meta'],
         roles: ['roles'],
@@ -45,6 +46,22 @@ var _ = require('lodash'),
                 )
                 .value()
         },
+        author: _(schema.users)
+            .keys()
+            .without(
+                'password',
+                'email',
+                'ghost_auth_access_token',
+                'ghost_auth_id',
+                'created_at',
+                'created_by',
+                'updated_at',
+                'updated_by',
+                'last_seen',
+                'status'
+            )
+            .value()
+        ,
         // Tag API swaps parent_id to parent
         tag: _(schema.tags).keys().without('parent_id').concat('parent').value(),
         setting: _.keys(schema.settings),
