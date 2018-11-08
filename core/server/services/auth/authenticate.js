@@ -4,6 +4,7 @@ const models = require('../../models');
 const common = require('../../lib/common');
 const session = require('./session');
 const apiKeyAuth = require('./api-key');
+const members = require('./members');
 
 const authenticate = {
     // ### Authenticate Client Middleware
@@ -103,7 +104,7 @@ const authenticate = {
 
     // ### v2 API auth middleware
     authenticateAdminAPI: [session.safeGetSession, session.getUser],
-    authenticateContentApi: apiKeyAuth.content.authenticateContentApiKey
+    authenticateContentApi: [apiKeyAuth.content.authenticateContentApiKey, members.authenticateMembersToken]
 };
 
 module.exports = authenticate;
