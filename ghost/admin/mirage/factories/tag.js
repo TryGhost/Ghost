@@ -14,8 +14,7 @@ export default Factory.extend({
     updatedAt: '2015-10-19T16:25:07.756Z',
     updatedBy: 1,
     count() {
-        return {
-            posts: 1
-        };
+        // this gets updated automatically by the tag serializer
+        return {posts: 0};
     }
 });
