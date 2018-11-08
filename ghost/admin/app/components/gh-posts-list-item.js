@@ -34,7 +34,7 @@ export default Component.extend({
     // HACK: this is intentionally awful due to time constraints
     // TODO: find a better way to get an excerpt! :)
     subText: computed('post.{plaintext,metaDescription}', function () {
-        let text = this.get('post.plaintext');
+        let text = this.get('post.plaintext') || '';
         let metaDescription = this.get('post.metaDescription');
 
         if (!isBlank(metaDescription)) {
