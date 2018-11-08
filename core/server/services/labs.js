@@ -1,11 +1,16 @@
-var settingsCache = require('./settings/cache'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    SafeString = require('./themes/engine').SafeString,
-    common = require('../lib/common'),
-    labs = module.exports = {};
+const settingsCache = require('./settings/cache');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const SafeString = require('./themes/engine').SafeString;
+const common = require('../lib/common');
+const config = require('../config');
+let labs = module.exports = {};
+
 
 labs.isSet = function isSet(flag) {
+    if (flag === 'members' && config.get('enableDeveloperExperiments')) {
+        return true;
+    }
     var labsConfig = settingsCache.get('labs');
     return labsConfig && labsConfig[flag] && labsConfig[flag] === true;
 };
