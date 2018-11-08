@@ -1,0 +1,25 @@
+{
+  "name": "@tryghost/members-layer1",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/members/layer1",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "5.2.0",
+    "should": "13.2.3",
+    "sinon": "7.0.0"
+  },
+  "dependencies": {
+    "ghost-ignition": "^2.9.6"
+  }
+}
