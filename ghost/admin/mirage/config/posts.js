@@ -36,19 +36,31 @@ function extractFilterParam(param, filter) {
     return normalizeBooleanParams(match);
 }
 
+// NOTE: mirage requires Model objects when saving relationships, however the
+// `attrs` on POST/PUT requests will contain POJOs for authors and tags so we
+// need to replace them
+function extractAuthors(postAttrs, users) {
+    return postAttrs.authors.map(author => users.find(author.id));
+}
+
+function extractTags(postAttrs, tags) {
+    return postAttrs.tags.map((requestTag) => {
+        let tag = tags.find(requestTag.id);
+
+        if (!tag) {
+            tag = tag.create(requestTag);
+        }
+
+        return tag;
+    });
+}
+
 export default function mockPosts(server) {
-    server.post('/posts', function ({posts, users}) {
+    server.post('/posts', function ({posts, users, tags}) {
         let attrs = this.normalizedRequestAttrs();
-        let authors = [];
 
-        // NOTE: this is necessary so that ember-cli-mirage has a valid user
-        // schema object rather than a plain object
-        // TODO: should ember-cli-mirage be handling this automatically?
-        attrs.authors.forEach((author) => {
-            authors.push(users.find(author.id));
-        });
-
-        attrs.authors = authors;
+        attrs.authors = extractAuthors(attrs, users);
+        attrs.tags = extractTags(attrs, tags);
 
         if (isBlank(attrs.slug) && !isBlank(attrs.title)) {
             attrs.slug = dasherize(attrs.title);
@@ -97,19 +109,12 @@ export default function mockPosts(server) {
         });
     });
 
-    server.put('/posts/:id/', function ({posts, users}, {params}) {
+    server.put('/posts/:id/', function ({posts, users, tags}, {params}) {
         let attrs = this.normalizedRequestAttrs();
         let post = posts.find(params.id);
-        let authors = [];
 
-        // NOTE: this is necessary so that ember-cli-mirage has a valid user
-        // schema object rather than a plain object
-        // TODO: should ember-cli-mirage be handling this automatically?
-        attrs.authors.forEach((author) => {
-            authors.push(users.find(author.id));
-        });
-
-        attrs.authors = authors;
+        attrs.authors = extractAuthors(attrs, users);
+        attrs.tags = extractTags(attrs, tags);
 
         attrs.updatedAt = moment.utc().toDate();
 
