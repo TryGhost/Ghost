@@ -6,8 +6,10 @@ const common = require('../lib/common');
 const config = require('../config');
 let labs = module.exports = {};
 
-
 labs.isSet = function isSet(flag) {
+    /**
+     * TODO: Uses hard-check for members prototype, removed here when added to settings
+     */
     if (flag === 'members' && config.get('enableDeveloperExperiments')) {
         return true;
     }
