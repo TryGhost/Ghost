@@ -60,6 +60,15 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
         labsData = _.cloneDeep(settingsCache.get('labs')),
         themeData = {};
 
+    /**
+     * TODO: Uses hard-check for members prototype, removed here when added to settings
+    */
+    if (config.get('enableDeveloperExperiments')) {
+        Object.assign(labsData, {
+            members: true
+        });
+    }
+
     if (activeTheme.get()) {
         themeData.posts_per_page = activeTheme.get().config('posts_per_page');
     }
