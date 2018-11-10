@@ -6,7 +6,7 @@ const moment = require('moment-timezone'),
     cheerio = require('cheerio'),
     config = require('../../config'),
     settingsCache = require('../settings/cache'),
-    BASE_API_PATH = '/ghost/api/',
+    BASE_API_PATH = '/ghost/api',
     STATIC_IMAGE_URL_PREFIX = 'content/images';
 
 /**
@@ -16,6 +16,17 @@ const moment = require('moment-timezone'),
  * @return {string} API Path for version
  */
 function getApiPath(options) {
+    const versionPath = getVersionPath(options);
+    return `${BASE_API_PATH}${versionPath}/`;
+}
+
+/**
+ * Returns path containing only the path for the specific version asked or deprecated by default
+ * @param {Object} options {version} for which to get the path(stable, actice, deprecated),
+ * {type} admin|content: defaults to {version: deprecated, type: content}
+ * @return {string} API version path
+ */
+function getVersionPath(options) {
     const apiVersions = config.get('api:versions');
     let requestedVersion = options.version || 'deprecated';
     let requestedVersionType = options.type || 'content';
@@ -24,7 +35,7 @@ function getApiPath(options) {
         versionData = apiVersions[versionData];
     }
     let versionPath = versionData[requestedVersionType];
-    return `${BASE_API_PATH}${versionPath}/`;
+    return `/${versionPath}`;
 }
 
 /**
@@ -466,6 +477,7 @@ module.exports.redirect301 = redirect301;
 module.exports.createUrl = createUrl;
 module.exports.deduplicateDoubleSlashes = deduplicateDoubleSlashes;
 module.exports.getApiPath = getApiPath;
+module.exports.getVersionPath = getVersionPath;
 module.exports.getBlogUrl = getBlogUrl;
 
 /**
