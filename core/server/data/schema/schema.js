@@ -378,5 +378,24 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    custom_fields: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            validations: {isIn: [['Text', 'Number', 'Boolean']]}
+        },
+        name: {type: 'string', maxlength: 191, nullable: false}
+    },
+    custom_field_values: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        field_id: {type: 'string', maxlength: 24, nullable: false, references: 'custom_fields.id'},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        value: {type: 'string', maxlength: 2000, nullable: false}
     }
 };
