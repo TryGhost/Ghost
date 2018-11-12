@@ -92,17 +92,16 @@ function getMetaData(data, root) {
 
         // pick the first non empty value
         metaData.excerpt = _.compact([
-          customExcerpt,
-          metaDescription,
-          fallbackExcerpt
+            customExcerpt,
+            metaDescription,
+            fallbackExcerpt
         ])[0];
 
-        let authorName = _.get(contextObject, 'primary_author.name')
+        let authorName = _.get(contextObject, 'primary_author.name');
         if (authorName) {
-            metaData.authorName = authorName
+            metaData.authorName = authorName;
         }
     }
-
 
     return Promise.props(getImageDimensions(metaData)).then(function () {
         metaData.structuredData = getStructuredData(metaData);

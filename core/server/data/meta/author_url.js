@@ -1,5 +1,5 @@
 const _ = require('lodash'),
-      urlService = require('../../services/url');
+    urlService = require('../../services/url');
 
 function getAuthorUrl(data, absolute) {
     let context = data.context ? data.context[0] : null;
@@ -12,9 +12,9 @@ function getAuthorUrl(data, absolute) {
     // [page] for posts converted to pages
     // [{post.slug}, page] for posts converted to pages accessing via dynamic route
     if (_.includes(data.context, 'page') && data.page) {
-      context = 'page'
+        context = 'page';
     } else {
-      context = context === 'amp' ? 'post' : context;
+        context = context === 'amp' ? 'post' : context;
     }
 
     if (data.author) {

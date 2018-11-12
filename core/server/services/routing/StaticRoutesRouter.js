@@ -58,7 +58,7 @@ class StaticRoutesRouter extends ParentRouter {
         res.routerOptions = {
             type: this.controller,
             name: this.routerName,
-            context: resourceType !== null ? [this.routerName, resourceType] : [this.routerName],
+            context: [this.routerName],
             filter: this.filter,
             limit: this.limit,
             order: this.order,
