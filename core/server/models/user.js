@@ -259,6 +259,11 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    updateLastSeen: function updateLastSeen() {
+        this.set({last_seen: new Date()});
+        return this.save();
+    },
+
     enforcedFilters: function enforcedFilters(options) {
         if (options.context && options.context.internal) {
             return null;
