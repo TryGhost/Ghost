@@ -1,4 +1,4 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
     _ = require('lodash'),
     imageLib = require('../../lib/image');
 
@@ -10,7 +10,7 @@ var Promise = require('bluebird'),
  * called to receive image width and height
  */
 function getImageDimensions(metaData) {
-    var fetch = {
+    let fetch = {
         coverImage: imageLib.imageSizeCache(metaData.coverImage.url),
         authorImage: imageLib.imageSizeCache(metaData.authorImage.url),
         ogImage: imageLib.imageSizeCache(metaData.ogImage.url),

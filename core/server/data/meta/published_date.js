@@ -1,10 +1,13 @@
+const _ = require('lodash'),
+    getContextObject = require('./context_object.js');
+
 function getPublishedDate(data) {
-    var context = data.context ? data.context[0] : null;
+    let context = data.context ? data.context : null,
+        contextObject = getContextObject(data, context),
+        pubDate = _.get(contextObject, 'published_at');
 
-    context = context === 'amp' ? 'post' : context;
-
-    if (data[context] && data[context].published_at) {
-        return new Date(data[context].published_at).toISOString();
+    if (pubDate) {
+        return new Date(pubDate).toISOString();
     }
     return null;
 }

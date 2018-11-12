@@ -1,8 +1,13 @@
-const models = require('../../models');
+const models = require('../../models'),
+    getContextObject = require('./context_object.js'),
+    _ = require('lodash');
 
 function getKeywords(data) {
-    if (data.post && data.post.tags && data.post.tags.length > 0) {
-        return models.Base.Model.filterByVisibility(data.post.tags, ['public'], false, function processItem(item) {
+    let context = data.context ? data.context : null,
+        contextObject = getContextObject(data, context),
+        tags = _.get(contextObject, 'tags');
+    if (_.isArray(tags) && tags.length) {
+        return models.Base.Model.filterByVisibility(tags, ['public'], false, function processItem(item) {
             return item.name;
         });
     }

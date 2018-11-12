@@ -1,8 +1,8 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     settingsCache = require('../../services/settings/cache');
 
 function getDescription(data, root, options) {
-    var description = '',
+    let description = '',
         postSdDescription,
         context = root ? root.context : null,
         blogDescription = settingsCache.get('description');
@@ -24,12 +24,14 @@ function getDescription(data, root, options) {
         description = data.author.meta_description || '';
     } else if (_.includes(context, 'tag') && data.tag) {
         description = data.tag.meta_description || '';
-    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
+    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && (data.post || data.page)) {
+        // Post title for static served pages
+        let post = data.page ? data.page : data.post;
         if (options && options.property) {
             postSdDescription = options.property + '_description';
-            description = data.post[postSdDescription] || '';
+            description = post[postSdDescription] || '';
         } else {
-            description = data.post.meta_description || '';
+            description = post.meta_description || '';
         }
     }
 

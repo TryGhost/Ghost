@@ -20,7 +20,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
         classes.push('post-template');
     } else if (_.includes(context, 'page') && page) {
         classes.push('page-template');
-        classes.push('page-' + this.post.slug);
+        classes.push('page-' + page.slug);
     } else if (_.includes(context, 'tag') && this.tag) {
         classes.push('tag-template');
         classes.push('tag-' + this.tag.slug);
@@ -33,7 +33,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
 
     if (tags) {
         classes = classes.concat(tags.map(function (tag) {
-            return 'tag-' + tag.slug; 
+            return 'tag-' + tag.slug;
         }));
     }
 
@@ -42,7 +42,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
     }
 
     classes = _.reduce(classes, function (memo, item) {
-        return memo + ' ' + item; 
+        return memo + ' ' + item;
     }, '');
     return new SafeString(classes.trim());
 };

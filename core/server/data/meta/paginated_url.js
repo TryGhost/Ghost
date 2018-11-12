@@ -1,4 +1,4 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     urlService = require('../../services/url');
 
 function getPaginatedUrl(page, data, absolute) {
@@ -7,7 +7,7 @@ function getPaginatedUrl(page, data, absolute) {
         return null;
     }
     // routeKeywords.page: 'page'
-    var pagePath = urlService.utils.urlJoin('/page/'),
+    let pagePath = urlService.utils.urlJoin('/page/'),
         // Try to match the base url, as whatever precedes the pagePath
         // routeKeywords.page: 'page'
         baseUrlPattern = new RegExp('(.+)?(/page/\\d+/)'),

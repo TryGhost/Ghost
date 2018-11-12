@@ -1,4 +1,5 @@
-var Promise = require('bluebird'),
+const Promise = require('bluebird'),
+    _ = require('lodash'),
     settingsCache = require('../../services/settings/cache'),
     urlService = require('../../services/url'),
     common = require('../../lib/common'),
@@ -24,7 +25,8 @@ var Promise = require('bluebird'),
     getTwitterImage = require('./twitter_image'),
     getStructuredData = require('./structured_data'),
     getSchema = require('./schema'),
-    getExcerpt = require('./excerpt');
+    getExcerpt = require('./excerpt'),
+    getContextObject = require('./context_object.js');
 
 function getMetaData(data, root) {
     var metaData = {
@@ -77,22 +79,30 @@ function getMetaData(data, root) {
         fallbackExcerpt;
 
     // TODO: cleanup these if statements
-    if (data.post) {
+    if (data.post || (data.page && _.includes(data.context, 'page'))) {
+        let contextObject = getContextObject(data, data.context);
         // There's a specific order for description fields (not <meta name="description" /> !!) in structured data
         // and schema.org which is used the description fields (see https://github.com/TryGhost/Ghost/issues/8793):
         // 1. CASE: custom_excerpt is populated via the UI
         // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
         // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
-        customExcerpt = data.post.custom_excerpt;
-        metaDescription = data.post.meta_description;
-        fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
+        customExcerpt = contextObject.custom_excerpt;
+        metaDescription = contextObject.meta_description;
+        fallbackExcerpt = contextObject.html ? getExcerpt(contextObject.html, {words: 50}) : '';
 
-        metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
+        // pick the first non empty value
+        metaData.excerpt = _.compact([
+          customExcerpt,
+          metaDescription,
+          fallbackExcerpt
+        ])[0];
+
+        let authorName = _.get(contextObject, 'primary_author.name')
+        if (authorName) {
+            metaData.authorName = authorName
+        }
     }
 
-    if (data.post && data.post.primary_author && data.post.primary_author.name) {
-        metaData.authorName = data.post.primary_author.name;
-    }
 
     return Promise.props(getImageDimensions(metaData)).then(function () {
         metaData.structuredData = getStructuredData(metaData);

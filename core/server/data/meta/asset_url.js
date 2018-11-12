@@ -21,7 +21,7 @@ function getAssetUrl(path, hasMinFile) {
 
     // CASE: Build the output URL
     // Add subdirectory...
-    var output = urlService.utils.urlJoin(urlService.utils.getSubdir(), '/');
+    let output = urlService.utils.urlJoin(urlService.utils.getSubdir(), '/');
 
     // Optionally add /assets/
     if (!path.match(/^public/) && !path.match(/^asset/)) {

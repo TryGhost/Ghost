@@ -1,10 +1,10 @@
-var config = require('../../config'),
+const config = require('../../config'),
     escapeExpression = require('../../services/themes/engine').escapeExpression,
     social = require('../../lib/social'),
     _ = require('lodash');
 
 function schemaImageObject(metaDataVal) {
-    var imageObject;
+    let imageObject;
     if (!metaDataVal) {
         return null;
     }
@@ -24,7 +24,7 @@ function schemaImageObject(metaDataVal) {
 
 // Creates the final schema object with values that are not null
 function trimSchema(schema) {
-    var schemaObject = {};
+    let schemaObject = {};
 
     _.each(schema, function (value, key) {
         if (value !== null && typeof value !== 'undefined') {
@@ -36,17 +36,18 @@ function trimSchema(schema) {
 }
 
 function trimSameAs(data, context) {
-    var sameAs = [];
+    let sameAs = [];
 
-    if (context === 'post') {
-        if (data.post.primary_author.website) {
-            sameAs.push(escapeExpression(data.post.primary_author.website));
+    if (context === 'post' || context === 'page') {
+        let post = context === 'page' ? data.page : data.post;
+        if (post.primary_author.website) {
+            sameAs.push(escapeExpression(post.primary_author.website));
         }
-        if (data.post.primary_author.facebook) {
-            sameAs.push(social.urls.facebook(data.post.primary_author.facebook));
+        if (post.primary_author.facebook) {
+            sameAs.push(social.urls.facebook(post.primary_author.facebook));
         }
-        if (data.post.primary_author.twitter) {
-            sameAs.push(social.urls.twitter(data.post.primary_author.twitter));
+        if (post.primary_author.twitter) {
+            sameAs.push(social.urls.twitter(post.primary_author.twitter));
         }
     } else if (context === 'author') {
         if (data.author.website) {
@@ -66,7 +67,9 @@ function trimSameAs(data, context) {
 function getPostSchema(metaData, data) {
     // CASE: metaData.excerpt for post context is populated by either the custom excerpt, the meta description,
     // or the automated excerpt of 50 words. It is empty for any other context.
-    var description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null,
+    let description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null,
+        isPage = data.page ? true : false,
+        post = isPage ? data.page : data.post,
         schema;
 
     schema = {
@@ -79,12 +82,12 @@ function getPostSchema(metaData, data) {
         },
         author: {
             '@type': 'Person',
-            name: escapeExpression(data.post.primary_author.name),
+            name: escapeExpression(post.primary_author.name),
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
-            sameAs: trimSameAs(data, 'post'),
-            description: data.post.primary_author.metaDescription ?
-                escapeExpression(data.post.primary_author.metaDescription) :
+            sameAs: trimSameAs(data, isPage ? 'page' : 'post'),
+            description: post.primary_author.metaDescription ?
+                escapeExpression(post.primary_author.metaDescription) :
                 null
         },
         headline: escapeExpression(metaData.metaTitle),
@@ -105,7 +108,7 @@ function getPostSchema(metaData, data) {
 }
 
 function getHomeSchema(metaData) {
-    var schema = {
+    let schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         publisher: {
@@ -127,7 +130,7 @@ function getHomeSchema(metaData) {
 }
 
 function getTagSchema(metaData, data) {
-    var schema = {
+    let schema = {
         '@context': 'https://schema.org',
         '@type': 'Series',
         publisher: {
@@ -151,7 +154,7 @@ function getTagSchema(metaData, data) {
 }
 
 function getAuthorSchema(metaData, data) {
-    var schema = {
+    let schema = {
         '@context': 'https://schema.org',
         '@type': 'Person',
         sameAs: trimSameAs(data, 'author'),
@@ -172,7 +175,7 @@ function getAuthorSchema(metaData, data) {
 
 function getSchema(metaData, data) {
     if (!config.isPrivacyDisabled('useStructuredData')) {
-        var context = data.context ? data.context : null;
+        let context = data.context ? data.context : null;
         if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
             return getPostSchema(metaData, data);
         } else if (_.includes(context, 'home')) {

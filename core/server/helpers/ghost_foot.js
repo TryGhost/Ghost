@@ -2,7 +2,7 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-var proxy = require('./proxy'),
+const proxy = require('./proxy'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
     filters = proxy.filters,
@@ -10,9 +10,13 @@ var proxy = require('./proxy'),
 
 // We use the name ghost_foot to match the helper for consistency:
 module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
-    var foot = [],
+    let foot = [],
         globalCodeinjection = settingsCache.get('ghost_foot'),
-        postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
+        postCodeinjection =
+          _.get(options, 'data.root.post.codeinjection_foot')
+          // in case of dynamic page route
+          || _.get(options, 'data.root.page.codeinjection_foot')
+          || null;
 
     if (!_.isEmpty(globalCodeinjection)) {
         foot.push(globalCodeinjection);

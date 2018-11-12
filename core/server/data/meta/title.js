@@ -1,8 +1,8 @@
-var _ = require('lodash'),
+const _ = require('lodash'),
     settingsCache = require('../../services/settings/cache');
 
 function getTitle(data, root, options) {
-    var title = '',
+    let title = '',
         context = root ? root.context : null,
         postSdTitle,
         blogTitle = settingsCache.get('title'),
@@ -34,12 +34,14 @@ function getTitle(data, root, options) {
     } else if (_.includes(context, 'tag') && data.tag) {
         title = data.tag.meta_title || data.tag.name + ' - ' + blogTitle;
     // Post title
-    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
+    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && (data.post || data.page)) {
+        // Post title for static served pages
+        let post = data.page ? data.page : data.post;
         if (options && options.property) {
             postSdTitle = options.property + '_title';
-            title = data.post[postSdTitle] || '';
+            title = post[postSdTitle] || '';
         } else {
-            title = data.post.meta_title || data.post.title;
+            title = post.meta_title || post.title;
         }
     // Fallback
     } else {

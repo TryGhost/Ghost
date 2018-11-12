@@ -1,7 +1,7 @@
-var social = require('../../lib/social');
+const social = require('../../lib/social');
 
 function getStructuredData(metaData) {
-    var structuredData,
+    let structuredData,
         card = 'summary';
 
     if (metaData.coverImage.url) {
@@ -46,7 +46,7 @@ function getStructuredData(metaData) {
 
     // return structured data removing null or undefined keys
     return Object.keys(structuredData).reduce(function (data, key) {
-        var content = structuredData[key];
+        let content = structuredData[key];
         if (content !== null && typeof content !== 'undefined') {
             data[key] = content;
         }

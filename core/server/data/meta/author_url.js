@@ -1,9 +1,21 @@
-var urlService = require('../../services/url');
+const _ = require('lodash'),
+      urlService = require('../../services/url');
 
 function getAuthorUrl(data, absolute) {
-    var context = data.context ? data.context[0] : null;
+    let context = data.context ? data.context[0] : null;
 
-    context = context === 'amp' ? 'post' : context;
+    // Here data.context can be:
+    // [tag] in case of tag url
+    // [author] in case of author url
+    // [post] in case of normal post
+    // [amp, post] for /{post.slug}/amp/
+    // [page] for posts converted to pages
+    // [{post.slug}, page] for posts converted to pages accessing via dynamic route
+    if (_.includes(data.context, 'page') && data.page) {
+      context = 'page'
+    } else {
+      context = context === 'amp' ? 'post' : context;
+    }
 
     if (data.author) {
         return urlService.getUrlByResourceId(data.author.id, {absolute: absolute, secure: data.author.secure, withSubdirectory: true});

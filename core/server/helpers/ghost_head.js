@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-var proxy = require('./proxy'),
+const proxy = require('./proxy'),
     _ = require('lodash'),
     debug = require('ghost-ignition').debug('ghost_head'),
 
@@ -22,7 +22,7 @@ function writeMetaTag(property, content, type) {
 }
 
 function finaliseStructuredData(metaData) {
-    var head = [];
+    let head = [];
 
     _.each(metaData.structuredData, function (content, property) {
         if (property === 'article:tag') {
@@ -98,17 +98,21 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
         return;
     }
 
-    var head = [],
+    let head = [],
         dataRoot = options.data.root,
         context = dataRoot._locals.context ? dataRoot._locals.context : null,
         client = dataRoot._locals.client,
         safeVersion = dataRoot._locals.safeVersion,
-        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
         globalCodeinjection = settingsCache.get('ghost_head'),
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
-        iconType = blogIconUtils.getIconType(favicon);
+        iconType = blogIconUtils.getIconType(favicon),
+        postCodeInjection =
+          _.get(dataRoot, 'post.codeinjection_head')
+          // in case of dynamic page route
+          || _.get(dataRoot, 'page.codeinjection_head')
+          || null;
 
     debug('preparation complete, begin fetch');
 
