@@ -172,28 +172,30 @@
             </thead>
             <tbody>
                 {{#each filteredWebhooks as |webhook|}}
-                    <tr class="hide-child bt b--whitegrey f7">
-                        <td class="pa2 pl3">{{webhook.name}}</td>
-                        <td class="pa2 pl3">{{event-name webhook.event}}</td>
-                        <td class="pa2 pl3">{{webhook.targetUrl}}</td>
-                        <td class="pa2 pl3">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
+                    <tr class="hide-child bt b--whitegrey f7" data-test-webhook-row="{{webhook.id}}">
+                        <td class="pa2 pl3" data-test-text="name">{{webhook.name}}</td>
+                        <td class="pa2 pl3" data-test-text="event">{{event-name webhook.event}}</td>
+                        <td class="pa2 pl3" data-test-text="targetUrl">{{webhook.targetUrl}}</td>
+                        <td class="pa2 pl3" data-test-text="last-triggered">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
                         <td class="w1 pa2 pl3 nowrap">
                             <div class="child flex items-center">
-                                {{#link-to "settings.integration.webhooks.edit" integration webhook}}
+                                {{#link-to "settings.integration.webhooks.edit" integration webhook data-test-link="edit-webhook"}}
                                     {{svg-jar "pen" class="w6 h-auto fill-midgrey pa1 mr1"}}
                                 {{/link-to}}
-                                <button {{action "confirmWebhookDeletion" webhook}}>
+                                <button {{action "confirmWebhookDeletion" webhook}} data-test-button="delete-webhook">
                                     {{svg-jar "trash" class="w6 fill-red pa1"}}
                                 </button>
                             </div>
                         </td>
                     </tr>
                 {{else}}
-                <tr class="bt b--whitegrey">
+                <tr class="bt b--whitegrey" data-test-webhooks-blank-slate>
                     <td colspan="5" class="pa5 pt15 pb15 tc midgrey f7">
                         <span class="db">No webhooks configured</span>
                         <span class="dib mt1">
-                            {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"}}{{svg-jar "add" class="w3 h-auto fill-blue mr1"}} Add webhook{{/link-to}}
+                            {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center" data-test-link="add-webhook"}}
+                                {{svg-jar "add" class="w3 h-auto fill-blue mr1"}} Add webhook
+                            {{/link-to}}
                         </span>
                     </td>
                 </tr>
@@ -203,8 +205,9 @@
             <tfoot class="bt b--lightgrey">
                 <tr>
                     <td colspan="5" class="pa3 f7">
-                        {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"}}{{svg-jar "add" class="w3
-                        h-auto fill-blue mr1"}} Add webhook{{/link-to}}
+                        {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center" data-test-link="add-webhook"}}
+                            {{svg-jar "add" class="w3h-auto fill-blue mr1"}} Add webhook
+                        {{/link-to}}
                     </td>
                 </tr>
             </tfoot>

@@ -25,9 +25,6 @@ export default function () {
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockTags(this);
     // this.loadFixtures('settings');
-    mockIntegrations(this);
-    mockApiKeys(this);
-    mockWebhooks(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();
@@ -45,8 +42,10 @@ export function testConfig() {
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
     // this.logging = true;
 
+    mockApiKeys(this);
     mockAuthentication(this);
     mockConfiguration(this);
+    mockIntegrations(this);
     mockInvites(this);
     mockPosts(this);
     mockRoles(this);
@@ -57,6 +56,7 @@ export function testConfig() {
     mockThemes(this);
     mockUploads(this);
     mockUsers(this);
+    mockWebhooks(this);
 
     /* Notifications -------------------------------------------------------- */
 
