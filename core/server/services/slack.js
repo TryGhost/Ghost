@@ -4,6 +4,8 @@ var common = require('../lib/common'),
     urlService = require('../services/url'),
     settingsCache = require('./settings/cache'),
     schema = require('../data/schema').checks,
+    moment = require('moment'),
+
     defaultPostSlugs = [
         'welcome',
         'the-editor',
@@ -22,13 +24,18 @@ function getSlackSettings() {
 }
 
 function ping(post) {
-    var message,
+    let message,
+        title,
+        author,
         slackData = {},
-        slackSettings = getSlackSettings();
+        slackSettings = getSlackSettings(),
+        blogTitle = settingsCache.get('title');
 
     // If this is a post, we want to send the link of the post
     if (schema.isPost(post)) {
         message = urlService.getUrlByResourceId(post.id, {absolute: true});
+        title = post.title ? post.title : null;
+        author = post.authors ? post.authors[0] : null;
     } else {
         message = post.message;
     }
@@ -48,12 +55,56 @@ function ping(post) {
             return;
         }
 
-        slackData = {
-            text: message,
-            unfurl_links: true,
-            icon_url: imageLib.blogIcon.getIconUrl(true),
-            username: 'Ghost'
-        };
+        if (schema.isPost(post)) {
+            slackData = {
+                // We are handling the case of test notification here by checking
+                // if it is a post or a test message to check webhook working.
+                text: `Notification from *${blogTitle}* :ghost:`,
+                unfurl_links: true,
+                icon_url: imageLib.blogIcon.getIconUrl(true),
+                username: 'Ghost',
+                // We don't want to send attachment if it is a test notification.
+                attachments: [
+                    {
+                        fallback: 'Sorry, content cannot be shown.',
+                        title: title,
+                        title_link: message,
+                        author_name: blogTitle,
+                        image_url: post ? urlService.utils.urlFor('image', {image: post.feature_image}, true) : null,
+                        color: '#008952',
+                        fields: [
+                            {
+                                title: 'Description',
+                                value: post.custom_excerpt ? post.custom_excerpt : `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`,
+                                short: false
+                            }
+                        ]
+                    },
+                    {
+                        fallback: 'Sorry, content cannot be shown.',
+                        color: '#008952',
+                        thumb_url: author ? urlService.utils.urlFor('image', {image: author.profile_image}, true) : null,
+                        fields: [
+                            {
+                                title: 'Author',
+                                value: author ? `<${urlService.getUrlByResourceId(author.id, {absolute: true})} | ${author.name}>` : null,
+                                short: true
+                            }
+                        ],
+                        footer: blogTitle,
+                        footer_icon: imageLib.blogIcon.getIconUrl(true),
+                        ts: moment().unix()
+                    }
+                ]
+            };
+        } else {
+            slackData = {
+                text: message,
+                unfurl_links: true,
+                icon_url: imageLib.blogIcon.getIconUrl(true),
+                username: 'Ghost'
+            };
+        }
 
         return request(slackSettings.url, {
             body: JSON.stringify(slackData),
