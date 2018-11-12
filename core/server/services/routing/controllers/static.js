@@ -7,6 +7,13 @@ function processQuery(query, locals) {
     const api = require('../../../api')[locals.apiVersion];
     query = _.cloneDeep(query);
 
+    // Include tags and authors as well in case the resource is a `post`
+    if (_.get(query, 'resource') === 'posts') {
+        _.extend(query.options, {
+            include: 'author,authors,tags'
+        });
+    }
+
     // Return a promise for the api query
     return (api[query.alias] || api[query.resource])[query.type](query.options);
 }
