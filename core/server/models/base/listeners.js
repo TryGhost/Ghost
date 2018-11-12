@@ -8,7 +8,10 @@ var moment = require('moment-timezone'),
  * WHEN access token is created we will update last_seen for user.
  */
 common.events.on('token.added', function (tokenModel) {
-    models.User.edit({last_seen: moment().toDate()}, {id: tokenModel.get('user_id')})
+    models.User.findOne({id: tokenModel.get('user_id')})
+        .then(function (user) {
+            return user.updateLastSeen();
+        })
         .catch(function (err) {
             common.logging.error(new common.errors.GhostError({err: err, level: 'critical'}));
         });

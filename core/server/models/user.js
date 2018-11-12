@@ -782,8 +782,7 @@ User = ghostBookshelf.Model.extend({
 
                 return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
                     .then(function then() {
-                        user.set({status: 'active', last_seen: new Date()});
-                        return user.save();
+                        return user.updateLastSeen();
                     });
             })
             .catch(function (err) {
