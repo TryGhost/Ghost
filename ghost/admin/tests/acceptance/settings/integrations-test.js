@@ -422,6 +422,52 @@ describe('Acceptance: Settings - Integrations', function () {
             ).to.equal('Test Integration');
         });
 
+        it('can manage an integration\'s webhooks', async function () {
+            server.create('integration');
+
+            await visit('/settings/integrations/1');
+
+            expect(find('[data-test-webhooks-blank-slate]').length).to.equal(1);
+
+            // open new webhook modal
+            await click('[data-test-link="add-webhook"]');
+            expect(find('[data-test-modal="webhook-form"]').length).to.equal(1);
+            expect(find('[data-test-modal="webhook-form"] [data-test-text="title"]').text())
+                .to.have.string('New webhook');
+
+            // can cancel new webhook
+            await click('[data-test-button="cancel-webhook"]');
+            expect(find('[data-test-modal="webhook-form"]').length).to.equal(0);
+
+            // create new webhook
+            await click('[data-test-link="add-webhook"]');
+            await fillIn('[data-test-input="webhook-name"]', 'First webhook');
+            await fillIn('[data-test-select="webhook-event"]', 'site.changed');
+            await fillIn('[data-test-input="webhook-targetUrl"]', 'https://example.com/first-webhook');
+            await click('[data-test-button="save-webhook"]');
+
+            // modal closed and 1 webhook listed with correct details
+            expect(find('[data-test-modal="webhook-form"]').length).to.equal(0);
+            expect(find('[data-test-webhook-row]').length).to.equal(1);
+            let row = find('[data-test-webhook-row="1"]');
+            expect(row.find('[data-test-text="name"]').text())
+                .to.have.string('First webhook');
+            expect(row.find('[data-test-text="event"]').text())
+                .to.have.string('Site Changed (rebuild)');
+            expect(row.find('[data-test-text="targetUrl"]').text())
+                .to.have.string('https://example.com/first-webhook');
+            expect(row.find('[data-test-text="last-triggered"]').text())
+                .to.have.string('Not triggered');
+
+            // click edit webhook link
+            await click('[data-test-webhook-row="1"] [data-test-link="edit-webhook"]');
+
+            // modal appears and has correct title
+            expect(find('[data-test-modal="webhook-form"]').length).to.equal(1);
+            expect(find('[data-test-modal="webhook-form"] [data-test-text="title"]').text())
+                .to.have.string('Edit webhook');
+        });
+
         // test to ensure the `value=description` passed to `gh-text-input` is `readonly`
         it('doesn\'t show unsaved changes modal after placing focus on description field', async function () {
             server.create('integration');

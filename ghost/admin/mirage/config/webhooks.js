@@ -7,11 +7,6 @@ export default function mockWebhooks(server) {
 
     server.post('/webhooks/', function ({webhooks}) {
         let attrs = this.normalizedRequestAttrs();
-
-        // TODO: should mirage be handling this?
-        attrs.integrationId = attrs.integration;
-        delete attrs.integration;
-
         let errors = [];
 
         if (!attrs.name) {
