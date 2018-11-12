@@ -20,6 +20,7 @@
     "sinon": "7.0.0"
   },
   "dependencies": {
-    "ghost-ignition": "^2.9.6"
+    "ghost-ignition": "^2.9.6",
+    "jsonwebtoken": "^8.3.0"
   }
 }
