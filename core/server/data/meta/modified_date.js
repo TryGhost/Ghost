@@ -2,7 +2,7 @@ const _ = require('lodash'),
     getContextObject = require('./context_object.js');
 
 function getModifiedDate(data) {
-    let context = data.context ? data.context : null,
+    const context = data.context ? data.context : null,
         contextObject = getContextObject(data, context),
         modDate = _.get(contextObject, 'updated_at');
 

@@ -5,14 +5,12 @@ function getContextObject(data, context) {
     /**
      * If the data object does not contain the requested context, we return the fallback object.
      */
-    let blog = {
+    const blog = {
             cover_image: settingsCache.get('cover_image'),
             twitter: settingsCache.get('twitter'),
             facebook: settingsCache.get('facebook')
         },
-        contextObject;
-
-    let containsPageCtx = _.includes(context, 'page');
+        containsPageCtx = _.includes(context, 'page');
 
     context = containsPageCtx || _.includes(context, 'amp') ? 'post' : context;
 
@@ -21,8 +19,7 @@ function getContextObject(data, context) {
         context = 'page';
     }
 
-    contextObject = data[context] || blog;
-    return contextObject;
+    return data[context] || blog;
 }
 
 module.exports = getContextObject;

@@ -1,8 +1,8 @@
-const urlService = require('../../services/url'),
+var urlService = require('../../services/url'),
     getUrl = require('./url');
 
 function getCanonicalUrl(data) {
-    let url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));
+    var url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));
 
     if (url.indexOf('/amp/')) {
         url = url.replace(/\/amp\/$/i, '/');

@@ -1,9 +1,9 @@
-const urlService = require('../../services/url'),
+var urlService = require('../../services/url'),
     settingsCache = require('../../services/settings/cache'),
     imageLib = require('../../lib/image');
 
 function getBlogLogo() {
-    let logo = {};
+    var logo = {};
 
     if (settingsCache.get('logo')) {
         logo.url = urlService.utils.urlFor('image', {image: settingsCache.get('logo')}, true);

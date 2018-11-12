@@ -1,5 +1,5 @@
 function getOgType(data) {
-    let context = data.context ? data.context[0] : null;
+    var context = data.context ? data.context[0] : null;
 
     context = context === 'amp' ? 'post' : context;
 

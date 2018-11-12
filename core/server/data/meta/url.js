@@ -1,4 +1,4 @@
-const schema = require('../schema').checks,
+var schema = require('../schema').checks,
     urlService = require('../../services/url');
 
 // This cleans the url from any `/amp` postfixes, so we'll never

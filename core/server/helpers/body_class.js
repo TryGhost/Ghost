@@ -15,12 +15,13 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
         page = this.post && this.post.page ? this.post : this.page || false;
 
     // for dynamic page route post is available as `.page`
-    if (!tags && page && _.isArray(page.tags)) {
-        tags = page.tags;
-    } else {
-        tags = []
+    if (!tags) {
+        if (page && _.isArray(page.tags)) {
+            tags = page.tags;
+        } else {
+            tags = [];
+        }
     }
-
 
     if (_.includes(context, 'home')) {
         classes.push('home-template');

@@ -3,7 +3,7 @@ const models = require('../../models'),
     _ = require('lodash');
 
 function getKeywords(data) {
-    let context = data.context ? data.context : null,
+    const context = data.context ? data.context : null,
         contextObject = getContextObject(data, context),
         tags = _.get(contextObject, 'tags');
     if (_.isArray(tags) && tags.length) {

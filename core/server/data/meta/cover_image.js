@@ -1,9 +1,9 @@
-const urlService = require('../../services/url'),
+var urlService = require('../../services/url'),
     getContextObject = require('./context_object.js'),
     _ = require('lodash');
 
 function getCoverImage(data) {
-    let context = data.context ? data.context : null,
+    var context = data.context ? data.context : null,
         contextObject = getContextObject(data, context);
 
     if (_.includes(context, 'home') || _.includes(context, 'author')) {
