@@ -121,7 +121,7 @@ describe('Slack', function () {
         it('makes a request for a post if url is provided', function () {
             var requestUrl, requestData;
 
-            const post = testUtils.DataGenerator.forKnex.createPost({slug: 'test'});
+            const post = testUtils.DataGenerator.forKnex.createPost({slug: 'webhook-test'});
             urlService.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
 
             isPostStub.returns(true);
@@ -132,7 +132,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.true();
-            isPostStub.calledOnce.should.be.true();
+            isPostStub.calledTwice.should.be.true();
             urlService.getUrlByResourceId.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack').should.be.true();
 
@@ -140,7 +140,10 @@ describe('Slack', function () {
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
             requestUrl.should.equal(slackObjWithUrl[0].url);
-            requestData.text.should.eql('http://myblog.com/test/');
+            requestData.attachments[0].title.should.equal(post.title);
+            requestData.attachments[0].title_link.should.equal('http://myblog.com/webhook-test/');
+            requestData.attachments[0].fields[0].value.should.equal('## markdown.');
+            requestData.attachments[0].should.not.have.property('author_name');
             requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
@@ -159,7 +162,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.true();
-            isPostStub.calledOnce.should.be.true();
+            isPostStub.calledTwice.should.be.true();
             urlService.getUrlByResourceId.called.should.be.false();
             settingsCacheStub.calledWith('slack').should.be.true();
 
@@ -167,7 +170,7 @@ describe('Slack', function () {
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
             requestUrl.should.equal(slackObjWithUrl[0].url);
-            requestData.text.should.eql('Hi!');
+            requestData.text.should.equal('Hi!');
             requestData.icon_url.should.equal('https://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
