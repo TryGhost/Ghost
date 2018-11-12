@@ -77,7 +77,7 @@ _private.validateData = function validateData(object) {
             type: ['read', 'browse'],
             resource: _.map(RESOURCE_CONFIG.QUERY, 'resource')
         };
-        const allowedQueryOptions = ['limit', 'filter', 'include', 'slug', 'visibility', 'status'];
+        const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status'];
         const allowedRouterOptions = ['redirect', 'slug'];
         const defaultRouterOptions = {
             redirect: true
