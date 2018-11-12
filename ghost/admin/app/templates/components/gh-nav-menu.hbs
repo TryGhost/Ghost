@@ -64,7 +64,7 @@
             <li>{{#link-to "settings.design" data-test-nav="design"}}{{svg-jar "compass"}}Design{{/link-to}}</li>
             <li>{{#link-to "settings.tags" data-test-nav="tags"}}{{svg-jar "tag"}}Tags{{/link-to}}</li>
             <li>{{#link-to "settings.code-injection" data-test-nav="code-injection"}}{{svg-jar "brackets"}}Code injection{{/link-to}}</li>
-            <li>{{#link-to "settings.integrations" data-test-nav="integrations"}}{{svg-jar "box"}}Integrations{{/link-to}}</li>
+            <li>{{#link-to "settings.integrations" current-when=isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "box"}}Integrations{{/link-to}}</li>
             <li>{{#link-to "settings.labs" data-test-nav="labs"}}{{svg-jar "wrench-double"}}Labs{{/link-to}}</li>
         </ul>
     {{/if}}

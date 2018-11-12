@@ -31,6 +31,11 @@ export default Component.extend({
         return this.get('config.clientExtensions.script') && this.get('session.user.isOwner');
     }),
 
+    isIntegrationRoute: computed('router.currentRouteName', function () {
+        let re = /^settings\.integration/;
+        return re.test(this.router.currentRouteName);
+    }),
+
     // the menu has a rendering issue (#8307) when the the world is reloaded
     // during an import which we have worked around by not binding the icon
     // style directly. However we still need to keep track of changing icons
