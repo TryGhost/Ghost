@@ -53,18 +53,18 @@ export default ModalComponent.extend({
         } catch (error) {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
-            if (error && isInvalidError(error)) {
+            if (error && error.payload && error.payload.errors) {
                 let attrs = Array.from(Webhook.attributes.keys());
 
                 error.payload.errors.forEach((error) => {
-                    let {message, property} = error;
+                    let {message, property = ''} = error;
                     property = camelize(property);
 
                     if (property && attrs.includes(property)) {
                         this.webhook.errors.add(property, message);
                         this.webhook.hasValidated.pushObject(property);
                     } else {
-                        this.set('error', message);
+                        this.set('error', `Error: ${message}`);
                     }
                 });
 
