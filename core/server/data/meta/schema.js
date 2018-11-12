@@ -66,8 +66,15 @@ function trimSameAs(data, context) {
 function getPostSchema(metaData, data) {
     // CASE: metaData.excerpt for post context is populated by either the custom excerpt, the meta description,
     // or the automated excerpt of 50 words. It is empty for any other context.
-    var description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null,
+    let description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null,
         schema;
+
+    let post = data.page ? data.page : data.post
+
+    
+  console.log('meta', metaData)
+  console.log('aaa', data)
+  process.exit()
 
     schema = {
         '@context': 'https://schema.org',
@@ -127,6 +134,8 @@ function getHomeSchema(metaData) {
 }
 
 function getTagSchema(metaData, data) {
+  console.log('aaa', metaData, data)
+  process.exit()
     var schema = {
         '@context': 'https://schema.org',
         '@type': 'Series',

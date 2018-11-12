@@ -79,6 +79,10 @@ class Queue extends EventEmitter {
         }
 
         // CASE: nobody has initialised the queue event yet
+         // auto fix for nodejs 11
+          options.tolerance = 0
+
+
         if (!this.queue.hasOwnProperty(options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance,
