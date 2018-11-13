@@ -15,5 +15,10 @@ export default Controller.extend({
                 this.transitionToRoute('settings.integration', integration);
             });
         }
+    },
+
+    reset() {
+        this.webhook.rollbackAttributes();
+        this.webhook.errors.clear();
     }
 });
