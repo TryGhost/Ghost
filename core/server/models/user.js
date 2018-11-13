@@ -761,7 +761,7 @@ User = ghostBookshelf.Model.extend({
         var self = this;
 
         return this.getByEmail(object.email)
-            .then(function then(user) {
+            .then((user) => {
                 if (!user) {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
@@ -781,15 +781,15 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
-                    .then(function then() {
+                    .then(() => {
                         return user.updateLastSeen();
                     })
-                    .then(function then() {
+                    .then(() => {
                         user.set({status: 'active'});
                         return user.save();
                     });
             })
-            .catch(function (err) {
+            .catch((err) => {
                 if (err.message === 'NotFound' || err.message === 'EmptyResponse') {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')

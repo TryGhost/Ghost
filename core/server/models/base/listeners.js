@@ -5,6 +5,7 @@ var moment = require('moment-timezone'),
     sequence = require('../../lib/promise/sequence');
 
 /**
+ * @TODO REMOVE WHEN v0.1 IS DROPPED
  * WHEN access token is created we will update last_seen for user.
  */
 common.events.on('token.added', function (tokenModel) {
