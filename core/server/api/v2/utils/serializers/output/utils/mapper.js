@@ -11,6 +11,9 @@ const mapPost = (model, frame) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
+        if (!frame.original.query.include.includes('tags')) {
+            delete jsonModel.tags;
+        }
     }
 
     if (frame.options && frame.options.withRelated) {

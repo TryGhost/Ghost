@@ -11,6 +11,14 @@ function removeMobiledocFormat(frame) {
     }
 }
 
+function includeTags(frame) {
+    if (!frame.options.include) {
+        frame.options.include = ['tags'];
+    } else if (!frame.options.include.includes('tags')) {
+        frame.options.include.push('tags');
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -39,6 +47,7 @@ module.exports = {
             }
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+            includeTags(frame);
         }
 
         debug(frame.options);
@@ -58,6 +67,7 @@ module.exports = {
             frame.data.page = false;
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+            includeTags(frame);
         }
 
         debug(frame.options);
