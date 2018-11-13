@@ -9,6 +9,6 @@ export default Route.extend({
 
     deactivate() {
         this._super(...arguments);
-        this.controller.webhook.rollbackAttributes();
+        this.controller.reset();
     }
 });
