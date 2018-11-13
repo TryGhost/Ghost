@@ -34,7 +34,10 @@ We have a handful of simple standards for commit messages which help us to gener
 - **3rd line:** `refs/closes #000` or `no issue`
 - **4th line:** Whatever you want. Any extra details can be included from here
 
-If your change is **user-facing** please prepend the first line of your commit with one of the following emoji keys, which are used in the changelog:
+If your change is **user-facing** please prepend the first line of your commit with **an emoji key**.
+We are following [gitmoji](https://gitmoji.carloscuesta.me/).
+
+**Main emojis we are using:**
 
 - ✨ Feature
 - 🎨 Improvement

@@ -7,6 +7,7 @@ const shared = require('../../../shared');
 module.exports.authAdminAPI = [
     auth.authenticate.authenticateAdminAPI,
     auth.authorize.authorizeAdminAPI,
+    shared.middlewares.updateUserLastSeen,
     shared.middlewares.api.cors,
     shared.middlewares.urlRedirects.adminRedirect,
     shared.middlewares.prettyUrls
