@@ -56,6 +56,7 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
         // Load relative modules with their own sandbox
         if (firstTwo === './' || firstTwo === '..') {
             // Get the path relative to the modules directory
+            moduleDir = path.dirname(modulePath);
             resolvedPath = path.resolve(moduleDir, module);
 
             // Check relative path from the appRoot for outside requires
