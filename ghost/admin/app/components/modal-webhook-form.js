@@ -3,7 +3,6 @@ import Webhook from 'ghost-admin/models/webhook';
 import {AVAILABLE_EVENTS} from 'ghost-admin/helpers/event-name';
 import {alias} from '@ember/object/computed';
 import {camelize} from '@ember/string';
-import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
