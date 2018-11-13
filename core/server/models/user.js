@@ -259,6 +259,11 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    updateLastSeen: function updateLastSeen() {
+        this.set({last_seen: new Date()});
+        return this.save();
+    },
+
     enforcedFilters: function enforcedFilters(options) {
         if (options.context && options.context.internal) {
             return null;
@@ -756,7 +761,7 @@ User = ghostBookshelf.Model.extend({
         var self = this;
 
         return this.getByEmail(object.email)
-            .then(function then(user) {
+            .then((user) => {
                 if (!user) {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
@@ -776,12 +781,15 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
-                    .then(function then() {
-                        user.set({status: 'active', last_seen: new Date()});
+                    .then(() => {
+                        return user.updateLastSeen();
+                    })
+                    .then(() => {
+                        user.set({status: 'active'});
                         return user.save();
                     });
             })
-            .catch(function (err) {
+            .catch((err) => {
                 if (err.message === 'NotFound' || err.message === 'EmptyResponse') {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.models.user.noUserWithEnteredEmailAddr')

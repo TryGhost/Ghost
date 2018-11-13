@@ -8,6 +8,7 @@ var should = require('should'),
 
 describe('Models: listeners', function () {
     var eventsToRemember = {};
+    const emit = (event, data) => eventsToRemember[event](data);
 
     before(function () {
         sandbox.stub(common.events, 'on').callsFake(function (name, callback) {
@@ -23,22 +24,20 @@ describe('Models: listeners', function () {
     });
 
     describe('on token added', function () {
-        it('calls User edit when event is emitted', function (done) {
-            var userModelSpy = sandbox.spy(Models.User, 'edit');
-
-            eventsToRemember['token.added']({
-                get: function () {
-                    return 1;
-                }
+        it('calls updateLastSeen on the user when the token.added event is emited', function (done) {
+            const userId = 1;
+            const user = Models.User.forge({id: 1});
+            sandbox.stub(Models.User, 'findOne').withArgs({id: userId}).resolves(user);
+            const updateLastSeenSpy = sandbox.stub(user, 'updateLastSeen').callsFake(function () {
+                updateLastSeenSpy.calledOnce.should.be.true();
+                done();
             });
 
-            userModelSpy.calledOnce.should.be.true();
-            userModelSpy.calledWith(
-                sinon.match.has('last_seen'),
-                sinon.match.has('id')
-            );
+            const fakeToken = {
+                get: sandbox.stub().withArgs('user_id').returns(userId)
+            };
 
-            done();
+            emit('token.added', fakeToken);
         });
     });
 });

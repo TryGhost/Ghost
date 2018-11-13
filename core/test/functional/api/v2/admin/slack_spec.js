@@ -43,7 +43,6 @@ describe('Slack API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
-                eventSpy.calledOnce.should.be.true();
                 eventSpy.calledWith('slack.test').should.be.true();
                 done();
             });

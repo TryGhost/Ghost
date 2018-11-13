@@ -24,6 +24,32 @@ describe('Unit: models/user', function () {
         sandbox.restore();
     });
 
+    describe('updateLastSeen method', function () {
+        it('exists', function () {
+            should.equal(typeof models.User.prototype.updateLastSeen, 'function');
+        });
+
+        it('sets the last_seen property to new Date and returns a call to save', function () {
+            const instance = {
+                set: sandbox.spy(),
+                save: sandbox.stub().resolves()
+            };
+
+            const now = new Date();
+            const clock = sinon.useFakeTimers(now.getTime());
+
+            const returnVal = models.User.prototype.updateLastSeen.call(instance);
+
+            should.deepEqual(instance.set.args[0][0], {
+                last_seen: now
+            });
+
+            should.equal(returnVal, instance.save.returnValues[0]);
+
+            clock.restore();
+        });
+    });
+
     describe('validation', function () {
         beforeEach(function () {
             sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
