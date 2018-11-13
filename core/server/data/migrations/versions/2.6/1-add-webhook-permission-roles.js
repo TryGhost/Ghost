@@ -6,10 +6,6 @@ const logging = require('../../../../lib/common/logging');
 const resources = ['webhook'];
 const _private = {};
 
-_private.getPermissions = function getPermissions(resource) {
-    return utils.findModelFixtures('Permission', {object_type: resource});
-};
-
 _private.getRelations = function getRelations(resource) {
     return utils.findPermissionRelationsForObject(resource);
 };
