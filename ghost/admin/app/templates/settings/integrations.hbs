@@ -3,10 +3,82 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Integrations</h2>
     </header>
 
+    <div class="integrations-directory">
+        <a class="id-item" href="https://docs.ghost.org/integrations/disqus/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/disqus.svg" alt="Disqus Icon" />
+            </div>
+            <div class="f8 mt1">Disqus</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/google-analytics/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/google-analytics.png" alt="Google Analytics Icon" />
+            </div>
+            <div class="f8 mt1">Analytics</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/mailchimp/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/mailchimp.png" alt="Mailchimp Icon" />
+            </div>
+            <div class="f8 mt1">Mailchimp</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/typeform/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/typeform.svg" alt="Typeform Icon" />
+            </div>
+            <div class="f8 mt1">Typeform</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/youtube/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/youtube.png" alt="YouTube Icon" />
+            </div>
+            <div class="f8 mt1">YouTube</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/buffer/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/buffer.png" alt="Buffer Icon" />
+            </div>
+            <div class="f8 mt1">Buffer</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/revue/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/revue.svg" alt="Revue Icon" />
+            </div>
+            <div class="f8 mt1">Revue</div>
+        </a>
+        <a class="id-item" href="https://docs.ghost.org/integrations/" target="_blank" rel="noopener noreferrer">
+            <div class="id-item-logo">
+                <img class="w-100 h-100" style="object-fit:contain;padding:0 8px;" src="assets/img/more.png" alt="Three dots" />
+            </div>
+            <div class="f8 mt1">More</div>
+        </a>
+    </div>
+
     <section class="apps-grid-container">
+
         {{!-- TODO: move fully to spirit and normalize spacing --}}
         <span class="apps-grid-title pb2">Built-in integrations</span>
         <div class="apps-grid">
+            <div class="apps-grid-cell" data-test-app="zapier">
+                {{#link-to "settings.integrations.zapier" data-test-link="zapier"}}
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:45px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Zapier</h3>
+                            <p class="apps-card-app-desc">Automation for your favourite apps</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            <span data-test-app-status>Configure</span>
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                {{/link-to}}
+            </div>
+
             <div class="apps-grid-cell" data-test-app="slack">
                 {{#link-to "settings.integrations.slack" data-test-link="slack"}}
                 <article class="apps-card-app">
@@ -79,25 +151,7 @@
                 {{/link-to}}
             </div>
 
-            <div class="apps-grid-cell" data-test-app="zapier">
-                {{#link-to "settings.integrations.zapier" data-test-link="zapier"}}
-                <article class="apps-card-app">
-                    <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:45px;"></figure>
-                        <div class="apps-card-meta">
-                            <h3 class="apps-card-app-title">Zapier</h3>
-                            <p class="apps-card-app-desc">Automation for your favourite apps</p>
-                        </div>
-                    </div>
-                    <div class="gh-card-right">
-                        <div class="apps-configured">
-                            <span data-test-app-status>Configure</span>
-                            {{svg-jar "arrow-right"}}
-                        </div>
-                    </div>
-                </article>
-                {{/link-to}}
-            </div>
+
         </div>
     </section>
 
@@ -143,9 +197,9 @@
                     {{#if fetchIntegrations.isRunning}}
                         <div class="gh-loading-spinner"></div>
                     {{else}}
-                        <p class="ma0 pa0 tc midgrey">
-                            Use API keys and webhooks to create custom integrations.<br>
-                            No custom integrations.
+                        <p class="ma0 pa0 tc midgrey lh-title">
+                            Create your own custom Ghost integrations<br>
+                            with dedicated API keys & webhooks
                         </p>
                     {{/if}}
                 </div>
