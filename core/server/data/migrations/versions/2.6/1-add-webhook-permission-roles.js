@@ -39,17 +39,3 @@ module.exports.up = (options) => {
             .then(() => permissions.init(localOptions));
     });
 };
-
-module.exports.down = (options) => {
-    const localOptions = _.merge({
-        context: {internal: true}
-    }, options);
-
-    return Promise.map(resources, (resource) => {
-        const modelToRemove = _private.getPermissions(resource);
-
-        // permission model automatically cleans up permissions_roles on .destroy()
-        return utils.removeFixturesForModel(modelToRemove, localOptions)
-            .then(result => _private.printResult(result, `Removing permissions and permissions_roles fixtures for ${resource}s`));
-    });
-};
