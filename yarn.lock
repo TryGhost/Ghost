@@ -2,21 +2,22 @@
 # yarn lockfile v1
 
 
-"@nexes/mongo-knex@0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.0.1.tgz#141c8ca380e95c1460fe2abcd777d7fd2bb14e8f"
+"@nexes/mongo-knex@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.1.1.tgz#ef2d184f225126b160c84e9659e52d5b83b7cbc4"
   dependencies:
+    debug "^4.1.0"
     lodash "^4.17.10"
 
 "@nexes/nql-lang@0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
 
-"@nexes/nql@0.1.0":
+"@nexes/nql@https://github.com/NexesJS/NQL/tarball/c826d0e60ddf081d2b17934da259ae12d666f12d":
   version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.1.0.tgz#b63614d5874bebb387b58d3f1b9fb9602115cf62"
+  resolved "https://github.com/NexesJS/NQL/tarball/c826d0e60ddf081d2b17934da259ae12d666f12d#4c77725bec36a8aedb985260bde48fde358e2465"
   dependencies:
-    "@nexes/mongo-knex" "0.0.1"
+    "@nexes/mongo-knex" "0.1.1"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
@@ -1330,6 +1331,12 @@ debug@3.1.0:
 debug@^3.1.0:
   version "3.2.6"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.2.6.tgz#e83d17de16d8a7efb7717edbe5fb10135eee629b"
+  dependencies:
+    ms "^2.1.1"
+
+debug@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.0.tgz#373687bffa678b38b1cd91f861b63850035ddc87"
   dependencies:
     ms "^2.1.1"
 
