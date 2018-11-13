@@ -98,8 +98,8 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts with basic filters', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=tag:kitchen-sink,featured:true&include=tags`))
+    it.only('browse posts with basic filters', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=tags.slug:kitchen-sink,featured:true&include=tags`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)

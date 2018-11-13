@@ -1,8 +1,10 @@
-var _ = require('lodash'),
-    gql = require('ghost-gql'),
-    common = require('../../lib/common'),
-    filter,
-    filterUtils;
+const _ = require('lodash');
+const gql = require('ghost-gql');
+const debug = require('ghost-ignition').debug('models:plugins:filter');
+const common = require('../../lib/common');
+
+let filter;
+let filterUtils;
 
 filterUtils = {
     /**
@@ -175,36 +177,33 @@ filter = function filter(Bookshelf) {
         },
 
         /**
-         * ## Apply Filters
-         * Method which makes the necessary query builder calls (through knex) for the filters set
-         * on this model instance
-         * @param {Object} options
-         * @returns {Bookshelf.Model}
+         * @TODO:
+         *
+         * - release nql with latest mongo-knex
+         * - NQL must forward options to mongo-knex
          */
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
-            var self = this;
+            const nql = require('@nexes/nql');
 
-            // @TODO figure out a better place/way to trigger loading filters
-            if (!this._filters) {
-                this.fetchAndCombineFilters(options);
-            }
+            const customFilter = options.filter;
+            const defaultFilters = this.enforcedFilters(options);
+            const enforcedFilters = this.enforcedFilters(options);
 
-            if (this._filters) {
-                if (this.debug) {
-                    gql.json.printStatements(this._filters.statements);
-                }
+            debug('custom', customFilter);
+            debug('default', defaultFilters);
+            debug('enforced', enforcedFilters);
 
-                this.preProcessFilters(options);
-
-                this.query(function (qb) {
-                    gql.knexify(qb, self._filters);
+            if (customFilter) {
+                this.query((qb) => {
+                    nql(customFilter, {relations: {tags: {
+                        tableName: 'tags',
+                        type: 'manyToMany',
+                        join_table: 'posts_tags',
+                        join_from: 'post_id',
+                        join_to: 'tag_id'
+                    }}}).querySQL(qb);
                 });
-
-                // Replaces processGQLResult
-                this.postProcessFilters(options);
             }
-
-            return this;
         }
     });
 
