@@ -1,6 +1,7 @@
 const labsUtil = require('../../../../../../services/labs');
 const MEMBER_TAG = '#members';
 
+// Checks if request should hide memnbers only content
 function hideMembersOnlyContent(attrs, frame) {
     let hasMemberTag = false;
     if (labsUtil.isSet('members') && !frame.original.context.member && attrs.tags) {
