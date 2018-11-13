@@ -12,8 +12,8 @@ function hideMembersOnlyContent(attrs, frame) {
 }
 
 const forPost = (attrs, frame) => {
-    const hideMemberOnlyContent = hideMembersOnlyContent(attrs, frame);
-    if (hideMemberOnlyContent) {
+    const hideFormatsData = hideMembersOnlyContent(attrs, frame);
+    if (hideFormatsData) {
         ['plaintext', 'html'].forEach((field) => {
             attrs[field] = '';
         });
