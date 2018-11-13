@@ -177,10 +177,8 @@ filter = function filter(Bookshelf) {
         },
 
         /**
-         * @TODO:
-         *
-         * - release nql with latest mongo-knex
-         * - NQL must forward options to mongo-knex
+         * Method which makes the necessary query builder calls (through knex) for the filters set on this model
+         * instance.
          */
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
