@@ -9,7 +9,7 @@ const create = (options) => {
         },
 
         login() {
-            let token = jwt.sign({}, null, {algorithms: ['none']});
+            let token = jwt.sign({}, null, {algorithm: 'none'});
             store.setItem('members-token', token);
             return Promise.resolve(!!token);
         },
