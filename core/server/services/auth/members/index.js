@@ -19,18 +19,16 @@ const authenticateMembersToken = (req, res, next) => {
 };
 
 const getCredentials = (req) => {
-    if (!req.get('authorization')) {
-        return null;
+    if (req.get('authorization')) {
+        const [scheme, credentials] = req.get('authorization').split(/\s+/);
+
+        if (scheme === 'GhostMembers') {
+            return credentials;
+        }
     }
 
-    const [scheme, credentials] = req.get('authorization').split(/\s+/);
-
-    if (scheme !== 'GhostMembers') {
-        return null;
-    }
-
-    return credentials;
-}
+    return null;
+};
 
 module.exports = {
     authenticateMembersToken
