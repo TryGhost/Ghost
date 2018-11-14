@@ -2,12 +2,21 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 const utils = require('../../index');
+const labs = require('../../../../../services/labs');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return (format !== 'mobiledoc');
         });
+    }
+}
+
+function includeTags(frame) {
+    if (!frame.options.withRelated) {
+        frame.options.withRelated = ['tags'];
+    } else if (!frame.options.withRelated.includes('tags')) {
+        frame.options.withRelated.push('tags');
     }
 }
 
@@ -39,6 +48,10 @@ module.exports = {
             }
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+            if (labs.isSet('members')) {
+                // CASE: Members needs to have the tags to check if its allowed access
+                includeTags(frame);
+            }
         }
 
         debug(frame.options);
@@ -58,6 +71,10 @@ module.exports = {
             frame.data.page = false;
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+            if (labs.isSet('members')) {
+                // CASE: Members needs to have the tags to check if its allowed access
+                includeTags(frame);
+            }
         }
 
         debug(frame.options);

@@ -1,6 +1,7 @@
 const utils = require('../../../index');
 const url = require('./url');
 const date = require('./date');
+const members = require('./members');
 
 const mapPost = (model, frame) => {
     const jsonModel = model.toJSON(frame.options);
@@ -9,6 +10,7 @@ const mapPost = (model, frame) => {
 
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
+        members.forPost(jsonModel, frame);
     }
 
     if (frame.options && frame.options.withRelated) {
