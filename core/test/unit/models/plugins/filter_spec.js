@@ -233,6 +233,201 @@ describe('Filter', function () {
     });
 
     describe('Utils', function () {
+        describe('Merge filters', () => {
+            let mergeFilters;
+
+            beforeEach(function () {
+                mergeFilters = filter.__get__('filterUtils').mergeFilters;
+            });
+
+            it('should return empty statement object when there are no filters', function () {
+                mergeFilters().should.equal('');
+            });
+
+            describe('single filters', () => {
+                it('should return only enforced filter when it is passed', () => {
+                    mergeFilters({enforced: 'status:published'}).should.equal('status:published');
+                });
+
+                it('should return only default filter when it is passed', () => {
+                    mergeFilters({defaults: 'status:published'}).should.equal('status:published');
+                });
+
+                it('should return only custom filter when it is passed', () => {
+                    mergeFilters({custom: 'status:published'}).should.equal('status:published');
+                });
+
+                it('should return only extra filter when it is passed', () => {
+                    mergeFilters({extra: 'status:published'}).should.equal('status:published');
+                });
+            });
+
+            describe('combination of filters', () => {
+                it('should merge enforced and default filters if both are provided', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        defaults: 'page:false'
+                    };
+                    const output = 'status:published+page:false';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should merge extra filter if provided', () => {
+                    const input = {
+                        custom: 'tag:photo',
+                        extra: 'featured:true',
+                    };
+                    const output = 'tag:photo+featured:true';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should combine custom and enforced filters', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        custom: 'tag:photo',
+                    };
+                    const output = 'status:published+tag:photo';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should remove custom filters if matches enforced', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        custom: 'status:draft',
+                    };
+                    const output = 'status:published';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should reduce custom filters if any matches enforced', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        custom: 'tag:photo,status:draft',
+                    };
+                    const output = 'status:published+tag:photo';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should combine default filters if default and custom are provided', () => {
+                    const input = {
+                        defaults: 'page:false',
+                        custom: 'tag:photo',
+                    };
+                    const output = 'tag:photo+page:false';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should reduce default filters if default and custom are same', () => {
+                    const input = {
+                        defaults: 'page:false',
+                        custom: 'page:true',
+                    };
+                    const output = 'page:true';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should reduce default filters if default and custom overlap', () => {
+                    const input = {
+                        defaults: 'page:false,author:cameron',
+                        custom: 'tag:photo+page:true',
+                    };
+                    const output = 'tag:photo+page:true+author:cameron';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should return a merger of enforced and defaults plus custom filters if provided', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        defaults: 'page:false',
+                        custom: 'tag:photo',
+                    };
+                    const output = 'status:published+tag:photo+page:false';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('should handle getting enforced, default and multiple custom filters', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        defaults: 'page:true',
+                        custom: 'tag:[photo,video],author:cameron',
+                        extra: 'status:draft,page:false'
+                    };
+                    const output = 'status:published+tag:[photo,video],author:cameron+page:false';
+
+                    mergeFilters(input).should.equal(output);
+                });
+
+                it('combination of all filters', () => {
+                    const input = {
+                        enforced: 'featured:true',
+                        defaults: 'page:false',
+                        custom: 'page:true',
+                        extra: `status:['draft']`
+                    };
+                    const output = `featured:true+page:true+status:['draft']`;
+
+                    mergeFilters(input).should.equal(output);
+                });
+            });
+        });
+
+        describe('Reduce filters', () => {
+            let reduceFilters;
+
+            beforeEach(function () {
+                reduceFilters = filter.__get__('filterUtils').reduceFilters;
+            });
+
+            it('returns secondary filter if primary is empty', () => {
+                reduceFilters('', 'featured:true').should.equal('featured:true');
+            });
+
+            it('returns secondary intact if it is empty', () => {
+                reduceFilters('featured:true', '').should.equal('');
+            });
+
+            it('does NOT reduce secondary filter if no key matches in primary filter', () => {
+                reduceFilters('featured:true', 'status:published').should.equal('status:published');
+            });
+
+            it('reduces secondary filter if key matches in primary filter', () => {
+                reduceFilters('featured:true', 'featured:false').should.equal('');
+            });
+
+            it('reduces secondary part of filter if key matches in primary filter', () => {
+                reduceFilters('featured:true', 'featured:false,status:published').should.equal('status:published');
+            });
+        });
+
+        describe('Get filter keys', () => {
+            let getFilterKeys;
+
+            beforeEach(function () {
+                getFilterKeys = filter.__get__('filterUtils').getFilterKeys;
+            });
+
+            it('returns filter key from single filter', () => {
+                getFilterKeys('featured:true').should.eql(['featured:']);
+            });
+
+            it('returns a key for in expression', () => {
+                getFilterKeys('status:[inactive, locked]').should.eql(['status:']);
+            });
+
+            it('returns a key for in expression', () => {
+                getFilterKeys('page:false+status:published').should.eql(['page:', 'status:']);
+            });
+        });
+
         describe('Combine Filters', function () {
             var gql, combineFilters, parseSpy, mergeSpy, findSpy, rejectSpy;
 
