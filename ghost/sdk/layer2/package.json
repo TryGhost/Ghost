@@ -9,8 +9,8 @@
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
-    "build:lib": "browserify -t varify -t es6ify -s Members index.js > build/members-layer2.lib.js",
-    "build:drop-in": "browserify -t varify -t es6ify -s Members drop-in.js > build/members-layer2.dropin.js",
+    "build:lib": "browserify -s Members index.js > build/members-layer2.lib.js",
+    "build:drop-in": "browserify drop-in.js > build/members-layer2.dropin.js",
     "prebuild": "rm -rf build && mkdir build",
     "build": "npm run build:lib && npm run build:drop-in",
     "posttest": "yarn lint"
@@ -20,12 +20,10 @@
   },
   "devDependencies": {
     "browserify": "^16.2.3",
-    "es6ify": "^1.6.0",
     "eslint": "^5.9.0",
     "mocha": "5.2.0",
     "should": "13.2.3",
-    "sinon": "7.1.1",
-    "varify": "^0.2.0"
+    "sinon": "7.1.1"
   },
   "dependencies": {
     "@tryghost/members-layer1": "file:../layer1",
