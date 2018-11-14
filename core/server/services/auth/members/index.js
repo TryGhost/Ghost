@@ -27,6 +27,13 @@ const getCredentials = (req) => {
         }
     }
 
+    if (req.get('cookie')) {
+        const memberTokenMatch = req.get('cookie').match(/member=([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]*)/);
+        if (memberTokenMatch) {
+            return memberTokenMatch[1];
+        }
+    }
+
     return null;
 };
 
