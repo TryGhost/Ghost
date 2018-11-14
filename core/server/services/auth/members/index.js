@@ -2,13 +2,8 @@ const jwt = require('jsonwebtoken');
 const common = require('../../../lib/common');
 
 const authenticateMembersToken = (req, res, next) => {
-    if (!req.get('authorization')) {
-        return next();
-    }
-
-    const [scheme, credentials] = req.get('authorization').split(/\s+/);
-
-    if (scheme !== 'GhostMembers') {
+    const credentials = getCredentials(req);
+    if (!credentials) {
         return next();
     }
 
@@ -22,6 +17,20 @@ const authenticateMembersToken = (req, res, next) => {
         return next();
     });
 };
+
+const getCredentials = (req) => {
+    if (!req.get('authorization')) {
+        return null;
+    }
+
+    const [scheme, credentials] = req.get('authorization').split(/\s+/);
+
+    if (scheme !== 'GhostMembers') {
+        return null;
+    }
+
+    return credentials;
+}
 
 module.exports = {
     authenticateMembersToken
