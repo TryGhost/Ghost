@@ -2,7 +2,7 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 const utils = require('../../index');
-const labsUtil = require('../../../../../../services/labs');
+const labs = require('../../../../../../services/labs');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -48,7 +48,7 @@ module.exports = {
             }
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
-            if (labsUtil.isSet('members')) {
+            if (labs.isSet('members')) {
                 includeTags(frame);
             }
         }
@@ -70,7 +70,7 @@ module.exports = {
             frame.data.page = false;
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
-            if (labsUtil.isSet('members')) {
+            if (labs.isSet('members')) {
                 includeTags(frame);
             }
         }

@@ -1,13 +1,13 @@
-const labsUtil = require('../../../../../../services/labs');
+const labs = require('../../../../../../services/labs');
 const MEMBER_TAG = '#members';
 
 // Checks if request should hide memnbers only content
 function hideMembersOnlyContent(attrs, frame) {
     let hasMemberTag = false;
-    if (labsUtil.isSet('members') && !frame.original.context.member && attrs.tags) {
+    if (labs.isSet('members') && !frame.original.context.member && attrs.tags) {
         hasMemberTag = attrs.tags.find((tag) => {
             return (tag.name === MEMBER_TAG);
-        }).length > 0;
+        });
     }
     return hasMemberTag;
 }
@@ -19,7 +19,7 @@ const forPost = (attrs, frame) => {
             attrs[field] = '';
         });
     }
-    if (labsUtil.isSet('members')) {
+    if (labs.isSet('members')) {
         const origQuery = frame.original.query || {};
         if (!origQuery.include || !origQuery.include.includes('tags')) {
             delete attrs.tags;
