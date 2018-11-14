@@ -49,6 +49,7 @@ module.exports = {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
             if (labs.isSet('members')) {
+                // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
             }
         }
@@ -71,6 +72,7 @@ module.exports = {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
             if (labs.isSet('members')) {
+                // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
             }
         }
