@@ -19,6 +19,12 @@ const forPost = (attrs, frame) => {
             attrs[field] = '';
         });
     }
+    if (labsUtil.isSet('members')) {
+        const origQuery = frame.original.query || {};
+        if (!origQuery.include || !origQuery.include.includes('tags')) {
+            delete attrs.tags;
+        }
+    }
 
     return attrs;
 };
