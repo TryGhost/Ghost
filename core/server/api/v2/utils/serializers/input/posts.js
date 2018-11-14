@@ -2,7 +2,7 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 const utils = require('../../index');
-const labs = require('../../../../../../services/labs');
+const labs = require('../../../../../services/labs');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
