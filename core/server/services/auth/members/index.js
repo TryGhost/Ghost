@@ -26,6 +26,13 @@ module.exports = {
                 algorithm: 'RS512',
                 secret: membersService.api.publicKey,
                 getToken(req) {
+                    if (req.get('cookie')) {
+                        const memberTokenMatch = req.get('cookie').match(/member=([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]*)/);
+                        if (memberTokenMatch) {
+                            return memberTokenMatch[1];
+                        }
+                    }
+
                     if (!req.get('authorization')) {
                         return null;
                     }
