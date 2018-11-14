@@ -17,7 +17,7 @@ const moment = require('moment-timezone'),
  */
 function getApiPath(options) {
     const versionPath = getVersionPath(options);
-    return `${BASE_API_PATH}${versionPath}/`;
+    return `${BASE_API_PATH}${versionPath}`;
 }
 
 /**
@@ -35,7 +35,7 @@ function getVersionPath(options) {
         versionData = apiVersions[versionData];
     }
     let versionPath = versionData[requestedVersionType];
-    return `/${versionPath}`;
+    return `/${versionPath}/`;
 }
 
 /**
