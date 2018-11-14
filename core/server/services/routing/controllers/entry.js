@@ -12,6 +12,8 @@ const debug = require('ghost-ignition').debug('services:routing:controllers:entr
 module.exports = function entryController(req, res, next) {
     debug('entryController', res.routerOptions);
 
+    res.locals.member = req.member;
+
     return helpers.entryLookup(req.path, res.routerOptions, res.locals)
         .then(function then(lookup) {
             // Format data 1
