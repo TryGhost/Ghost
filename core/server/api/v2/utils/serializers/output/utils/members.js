@@ -21,8 +21,10 @@ const forPost = (attrs, frame) => {
     }
     if (labs.isSet('members')) {
         // CASE: Members always adds tags, remove if the user didn't originally ask for them
-        const origQuery = frame.original.query || {};
-        if (!origQuery.include || !origQuery.include.includes('tags')) {
+        const origQueryOrOptions = frame.original.query || frame.original.options || {};
+        const origInclude = origQueryOrOptions.include;
+
+        if (!origInclude || !origInclude.includes('tags')) {
             delete attrs.tags;
         }
     }
