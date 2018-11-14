@@ -8,7 +8,7 @@ function hide (el) {
 }
 
 module.exports = {
-    init: function init(options) {
+    init: function init() {
         var members = Members.create();
 
         var signin = document.querySelector('[data-members-signin]');
