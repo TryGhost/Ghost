@@ -8,6 +8,7 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
+const members = require('../../services/auth/members');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
 const siteRoutes = require('./routes');
@@ -110,6 +111,9 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Fetch the frontend client into res.locals
     siteApp.use(shared.middlewares.frontendClient);
+
+    // Set req.member if a cookie is set
+    siteApp.use(members.authenticateMembersToken);
 
     debug('General middleware done');
 
