@@ -12,10 +12,10 @@ function removeMobiledocFormat(frame) {
 }
 
 function includeTags(frame) {
-    if (!frame.options.include) {
-        frame.options.include = ['tags'];
-    } else if (!frame.options.include.includes('tags')) {
-        frame.options.include.push('tags');
+    if (!frame.options.withRelated) {
+        frame.options.withRelated = ['tags'];
+    } else if (!frame.options.withRelated.includes('tags')) {
+        frame.options.withRelated.push('tags');
     }
 }
 
