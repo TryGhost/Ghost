@@ -1,6 +1,4 @@
-const Members = require('./');
-const ready = require('document-ready');
+var Members = require('./');
+var ready = require('document-ready');
 
 ready(Members.init);
-
-module.exports = Members;

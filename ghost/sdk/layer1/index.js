@@ -1,24 +1,24 @@
-const jwt = require('jsonwebtoken');
-const store = window.localStorage;
+var jwt = require('jsonwebtoken');
+var store = window.localStorage;
 
-const create = (options) => {
+function create(options) {
     return {
-        getToken() {
-            let token = store.getItem('members-token') || null;
+        getToken: function getToken() {
+            var token = store.getItem('members-token') || null;
             return Promise.resolve(token);
         },
 
-        login() {
-            let token = jwt.sign({}, null, {algorithm: 'none'});
+        login: function login() {
+            var token = jwt.sign({}, null, {algorithm: 'none'});
             store.setItem('members-token', token);
             return Promise.resolve(!!token);
         },
 
-        logout() {
+        logout: function logout() {
             store.removeItem('members-token');
             return Promise.resolve(true);
         }
-    }
-};
+    };
+}
 
 module.exports.create = create;
