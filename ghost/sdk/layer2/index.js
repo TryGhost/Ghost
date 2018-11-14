@@ -1,7 +1,5 @@
 var Members = require('@tryghost/members-layer1');
 
-var members = Members.create();
-
 function show (el) {
     el.style.display = 'block';
 }
@@ -9,21 +7,10 @@ function hide (el) {
     el.style.display = 'none';
 }
 
-function reload() {
-    location.reload();
-}
-
-function setCookie(token) {
-    if (!token) {
-        document.cookie = 'member=null;path=/;samesite;max-age=0';
-    } else {
-        document.cookie = ['member=', token, ';path=/;samesite;'].join('');
-    }
-    return token;
-}
-
 module.exports = {
-    init: function init() {
+    init: function init(options) {
+        var members = Members.create();
+
         var signin = document.querySelector('[data-members-signin]');
         var signout = document.querySelector('[data-members-signout]');
 
@@ -42,20 +29,22 @@ module.exports = {
             event.preventDefault();
             members.login()
                 .then(members.getToken)
-                .then(setCookie)
-                .then(reload);
+                .then(render);
         });
 
         signout.addEventListener('click', function (event) {
             event.preventDefault();
             members.logout()
                 .then(members.getToken)
-                .then(setCookie)
-                .then(reload);
+                .then(render);
         });
 
         return members.getToken()
-            .then(setCookie)
-            .then(render);
+            .then(render)
+            .then(function () {
+                return {
+                    getToken: members.getToken
+                };
+            });
     }
 };

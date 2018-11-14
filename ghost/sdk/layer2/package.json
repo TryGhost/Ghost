@@ -10,7 +10,6 @@
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
     "build:lib": "browserify -s Members index.js > build/members-layer2.lib.js",
-    "build:drop-in": "browserify drop-in.js > build/members-layer2.dropin.js",
     "prebuild": "rm -rf build && mkdir build",
     "build": "npm run build:lib && npm run build:drop-in",
     "posttest": "yarn lint"
