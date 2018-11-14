@@ -15,7 +15,7 @@ const create = (options) => {
         },
 
         logout() {
-            store.setItem('members-token', null);
+            store.removeItem('members-token');
             return Promise.resolve(true);
         }
     }
