@@ -3,10 +3,7 @@ const gql = require('ghost-gql');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
-let filter;
-let filterUtils;
-
-filterUtils = {
+const filterUtils = {
     /**
      * ## Get filter keys
      *
@@ -105,19 +102,16 @@ filterUtils = {
     }
 };
 
-filter = function filter(Bookshelf) {
-    var Model = Bookshelf.Model.extend({
+const filter = function filter(Bookshelf) {
+    const Model = Bookshelf.Model.extend({
         // Cached copy of the filters setup for this model instance
         _filters: null,
         // Override these on the various models
-        enforcedFilters: function enforcedFilters() {
-        },
-        defaultFilters: function defaultFilters() {
-        },
-        extraFilters: function extraFilters() {
-        },
+        enforcedFilters() {},
+        defaultFilters() {},
+        extraFilters() {},
 
-        preProcessFilters: function preProcessFilters() {
+        preProcessFilters() {
             this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
                 statement.prop = 'tags.slug';
                 return {
@@ -147,7 +141,7 @@ filter = function filter(Bookshelf) {
          * @TODO refactor this
          * @param {object} options
          */
-        postProcessFilters: function postProcessFilters(options) {
+        postProcessFilters(options) {
             var joinTables = this._filters.joins;
 
             if (joinTables && joinTables.indexOf('tags') > -1) {
