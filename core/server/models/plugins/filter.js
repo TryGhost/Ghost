@@ -183,17 +183,23 @@ const filter = function filter(Bookshelf) {
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
 
-            const customFilter = options.filter;
-            const defaultFilters = this.enforcedFilters(options);
-            const enforcedFilters = this.enforcedFilters(options);
+            const custom = options.filter;
+            const defaults = this.defaultFilters(options);
+            const enforced = this.enforcedFilters(options);
+            const extra = this.extraFilters(options);
 
-            debug('custom', customFilter);
-            debug('default', defaultFilters);
-            debug('enforced', enforcedFilters);
+            debug('custom', custom);
+            debug('extra', extra);
+            debug('default', defaults);
+            debug('enforced', enforced);
 
-            if (customFilter) {
+            const filter = filterUtils.mergeFilters({enforced, defaults, custom, extra});
+
+            debug('filter', filter);
+
+            if (filter) {
                 this.query((qb) => {
-                    nql(customFilter, {relations: {tags: {
+                    nql(filter, {relations: {tags: {
                         tableName: 'tags',
                         type: 'manyToMany',
                         join_table: 'posts_tags',
