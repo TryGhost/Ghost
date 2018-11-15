@@ -654,7 +654,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
         if (this.orderDefaultRaw && !options.migrating) {
             itemCollection.query((qb) => {
-                qb.orderByRaw(this.orderDefaultRaw());
+                qb.orderByRaw(this.orderDefaultRaw(options));
             });
         }
 
@@ -722,7 +722,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (options.order) {
             options.order = this.parseOrderOption(options.order, options.withRelated);
         } else if (this.orderDefaultRaw) {
-            options.orderRaw = this.orderDefaultRaw();
+            options.orderRaw = this.orderDefaultRaw(options);
         } else if (this.orderDefaultOptions) {
             options.order = this.orderDefaultOptions();
         }
