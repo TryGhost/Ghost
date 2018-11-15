@@ -2,7 +2,6 @@ const _ = require('lodash');
 const gql = require('ghost-gql');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
-const common = require('../../lib/common');
 
 let filter;
 let filterUtils;
@@ -103,74 +102,6 @@ filterUtils = {
         }
 
         return merged;
-    },
-
-    /**
-     * ## Combine Filters
-     * Util to combine the enforced, default and custom filters such that they behave accordingly
-     * @param {String|Object} enforced - filters which must ALWAYS be applied
-     * @param {String|Object} defaults - filters which must be applied if a matching filter isn't provided
-     * @param {...String|Object} [custom] - custom filters which are additional
-     * @returns {*}
-     */
-    combineFilters: function combineFilters(enforced, defaults, custom /* ...custom */) {
-        custom = Array.prototype.slice.call(arguments, 2);
-
-        // Ensure everything has been run through the gql parser
-        try {
-            enforced = enforced ? (_.isString(enforced) ? gql.parse(enforced) : enforced) : null;
-            defaults = defaults ? (_.isString(defaults) ? gql.parse(defaults) : defaults) : null;
-            custom = _.map(custom, function (arg) {
-                return _.isString(arg) ? gql.parse(arg) : arg;
-            });
-        } catch (err) {
-            throw new common.errors.ValidationError({
-                err: err,
-                property: 'filter',
-                context: common.i18n.t('errors.models.plugins.filter.errorParsing'),
-                help: common.i18n.t('errors.models.plugins.filter.forInformationRead', {url: 'https://api.ghost.org/docs/filter'})
-            });
-        }
-
-        // Merge custom filter options into a single set of statements
-        custom = gql.json.mergeStatements.apply(this, custom);
-
-        // if there is no enforced or default statements, return just the custom statements;
-        if (!enforced && !defaults) {
-            return custom;
-        }
-
-        // Reduce custom filters based on enforced filters
-        if (custom && !_.isEmpty(custom.statements) && enforced && !_.isEmpty(enforced.statements)) {
-            custom.statements = gql.json.rejectStatements(custom.statements, function (customStatement) {
-                return gql.json.findStatement(enforced.statements, customStatement, 'prop');
-            });
-        }
-
-        // Reduce default filters based on custom filters
-        if (defaults && !_.isEmpty(defaults.statements) && custom && !_.isEmpty(custom.statements)) {
-            defaults.statements = gql.json.rejectStatements(defaults.statements, function (defaultStatement) {
-                return gql.json.findStatement(custom.statements, defaultStatement, 'prop');
-            });
-        }
-
-        // Merge enforced and defaults
-        enforced = gql.json.mergeStatements(enforced, defaults);
-
-        if (_.isEmpty(custom.statements)) {
-            return enforced;
-        }
-
-        if (_.isEmpty(enforced.statements)) {
-            return custom;
-        }
-
-        return {
-            statements: [
-                {group: enforced.statements},
-                {group: custom.statements, func: 'and'}
-            ]
-        };
     }
 };
 
@@ -252,26 +183,6 @@ filter = function filter(Bookshelf) {
                 this
                     .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
             }
-        },
-
-        /**
-         * ## fetchAndCombineFilters
-         * Helper method, uses the combineFilters util to apply filters to the current model instance
-         * based on options and the set enforced/default filters for this resource
-         * @param {Object} options
-         * @returns {Bookshelf.Model}
-         */
-        fetchAndCombineFilters: function fetchAndCombineFilters(options) {
-            options = options || {};
-
-            this._filters = filterUtils.combineFilters(
-                this.enforcedFilters(options),
-                this.defaultFilters(options),
-                options.filter,
-                this.extraFilters(options)
-            );
-
-            return this;
         },
 
         /**
