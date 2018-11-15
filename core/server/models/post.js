@@ -530,7 +530,7 @@ Post = ghostBookshelf.Model.extend({
 
         let filter = null;
 
-        // CASE: staticPages is passed
+        // CASE: "staticPages" is passed
         if (options.staticPages && options.staticPages !== 'all') {
             // CASE: convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
@@ -542,7 +542,7 @@ Post = ghostBookshelf.Model.extend({
             filter = `page:${[true, false]}`;
         }
 
-        // CASE: ststus is passed, combinef ilters
+        // CASE: "status" is passed, combine filters
         if (options.status && options.status !== 'all') {
             options.status = _.includes(['published', 'draft', 'scheduled'], options.status) ? options.status : 'published';
 
