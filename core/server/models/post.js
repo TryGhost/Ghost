@@ -11,6 +11,7 @@ const config = require('../config');
 const converters = require('../lib/mobiledoc/converters');
 const relations = require('./relations');
 const MOBILEDOC_REVISIONS_COUNT = 10;
+const ALL_STATUSES = ['published', 'draft', 'scheduled'];
 
 let Post;
 let Posts;
@@ -544,7 +545,7 @@ Post = ghostBookshelf.Model.extend({
 
         // CASE: "status" is passed, combine filters
         if (options.status && options.status !== 'all') {
-            options.status = _.includes(['published', 'draft', 'scheduled'], options.status) ? options.status : 'published';
+            options.status = _.includes(ALL_STATUSES, options.status) ? options.status : 'published';
 
             if (!filter) {
                 filter = `status:${options.status}`;
@@ -553,9 +554,9 @@ Post = ghostBookshelf.Model.extend({
             }
         } else if (options.status === 'all') {
             if (!filter) {
-                filter = `status:[${['published', 'draft', 'scheduled']}]`;
+                filter = `status:[${ALL_STATUSES}]`;
             } else {
-                filter = `${filter}+status:[${['published', 'draft', 'scheduled']}]`;
+                filter = `${filter}+status:[${ALL_STATUSES}]`;
             }
         }
 
