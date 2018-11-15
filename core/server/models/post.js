@@ -540,7 +540,7 @@ Post = ghostBookshelf.Model.extend({
 
             filter = `page:${options.staticPages}`;
         } else if (options.staticPages === 'all') {
-            filter = `page:${[true, false]}`;
+            filter = 'page:[true, false]';
         }
 
         // CASE: "status" is passed, combine filters
