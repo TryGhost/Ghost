@@ -109,9 +109,9 @@ describe('Filter', function () {
             });
 
             it('should call combineFilters with old-style custom filters if set', function () {
-                var result = ghostBookshelf.Model.prototype.fetchAndCombineFilters({
-                    where: 'author:cameron'
-                });
+                sandbox.stub(ghostBookshelf.Model.prototype, 'extraFilters').returns('author:cameron');
+
+                const result = ghostBookshelf.Model.prototype.fetchAndCombineFilters({});
 
                 filterUtils.combineFilters.calledOnce.should.be.true();
                 filterUtils.combineFilters.firstCall.args.should.eql([undefined, undefined, undefined, 'author:cameron']);
@@ -135,19 +135,17 @@ describe('Filter', function () {
             });
 
             it('should call combineFilters with all values if set', function () {
-                var filterSpy = sandbox.stub(ghostBookshelf.Model.prototype, 'enforcedFilters')
-                        .returns('status:published'),
-                    filterSpy2 = sandbox.stub(ghostBookshelf.Model.prototype, 'defaultFilters')
-                        .returns('page:false'),
-                    result;
+                sandbox.stub(ghostBookshelf.Model.prototype, 'defaultFilters').returns('page:false');
+                sandbox.stub(ghostBookshelf.Model.prototype, 'enforcedFilters').returns('status:published');
+                sandbox.stub(ghostBookshelf.Model.prototype, 'extraFilters').returns('author:cameron');
 
-                result = ghostBookshelf.Model.prototype.fetchAndCombineFilters({
-                    filter: 'tag:photo',
-                    where: 'author:cameron'
+                const result = ghostBookshelf.Model.prototype.fetchAndCombineFilters({
+                    filter: 'tag:photo'
                 });
 
-                filterSpy.calledOnce.should.be.true();
-                filterSpy2.calledOnce.should.be.true();
+                ghostBookshelf.Model.prototype.enforcedFilters.calledOnce.should.be.true();
+                ghostBookshelf.Model.prototype.defaultFilters.calledOnce.should.be.true();
+
                 filterUtils.combineFilters.calledOnce.should.be.true();
                 filterUtils.combineFilters.firstCall.args
                     .should.eql(['status:published', 'page:false', 'tag:photo', 'author:cameron']);

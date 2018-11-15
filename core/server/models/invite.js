@@ -24,10 +24,6 @@ Invite = ghostBookshelf.Model.extend({
         return {};
     },
 
-    processOptions: function processOptions(options) {
-        return options;
-    },
-
     add: function add(data, unfilteredOptions) {
         const options = Invite.filterOptions(unfilteredOptions, 'add');
         data = data || {};
