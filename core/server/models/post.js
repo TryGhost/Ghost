@@ -590,6 +590,11 @@ Post = ghostBookshelf.Model.extend({
             order = `count(tags.id) DESC, ${order}`;
         }
 
+        // CASE: if the filter contains an `IN` operator, we should return the posts first, which match both authors
+        if (options.filter && options.filter.match(/(authors|author):\s?\[.*\]/)) {
+            order = `count(authors.id) DESC, ${order}`;
+        }
+
         return order;
     },
 
