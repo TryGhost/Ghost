@@ -190,13 +190,16 @@ class Base {
             // CASE: you import null, fallback to owner
             if (!obj[key]) {
                 // Exception: If the imported post is a draft published_by will be null. Not a userReferenceProblem.
-                if (key !== 'published_by' && obj.status !== 'draft') {
-                    if (!userReferenceProblems[obj.id]) {
-                        userReferenceProblems[obj.id] = {obj: _.cloneDeep(obj), keys: []};
-                    }
-                    userReferenceProblems[obj.id].keys.push(key);
-                    obj[key] = ownerUserId;
+                if (key === 'published_by' && obj.status === 'draft') {
+                    return;
                 }
+
+                if (!userReferenceProblems[obj.id]) {
+                    userReferenceProblems[obj.id] = {obj: _.cloneDeep(obj), keys: []};
+                }
+
+                userReferenceProblems[obj.id].keys.push(key);
+                obj[key] = ownerUserId;
                 return;
             }
 
