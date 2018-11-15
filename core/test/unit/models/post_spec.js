@@ -46,12 +46,12 @@ describe('Unit: models/post', function () {
             });
 
             return models.Post.findPage({
-                filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
+                filter: 'tags:[photo, video]+id:-' + testUtils.filterData.data.posts[3].id,
                 limit: 3,
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) order by count(tags.id) DESC');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?)');
                 queries[0].bindings.should.eql([
                     false,
                     'published',

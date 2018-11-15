@@ -530,14 +530,21 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    orderDefaultRaw: function () {
-        return '' +
+    orderDefaultRaw: function (options) {
+        let order = '' +
             'CASE WHEN posts.status = \'scheduled\' THEN 1 ' +
             'WHEN posts.status = \'draft\' THEN 2 ' +
             'ELSE 3 END ASC,' +
             'CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,' +
             'posts.updated_at DESC,' +
             'posts.id DESC';
+
+        // CASE: if the filter contains an `IN` operator, we should return the posts first, which match both tags
+        if (options.filter && options.filter.match(/(tags|tag):\s?\[.*\]/)) {
+            order = `count(tags.id) DESC, ${order}`;
+        }
+
+        return order;
     },
 
     /**
