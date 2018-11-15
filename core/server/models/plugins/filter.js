@@ -3,6 +3,7 @@ const gql = require('ghost-gql');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
+// @TODO: The filter utility lives here temporary.
 const filterUtils = {
     /**
      * ## Get filter keys
