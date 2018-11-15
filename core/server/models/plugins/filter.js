@@ -111,6 +111,7 @@ const filter = function filter(Bookshelf) {
         defaultFilters() {},
         extraFilters() {},
 
+        // @TODO: remove when we are sure that we dont need this fn anymore (for lookup)
         preProcessFilters() {
             this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
                 statement.prop = 'tags.slug';
@@ -135,12 +136,7 @@ const filter = function filter(Bookshelf) {
             });
         },
 
-        /**
-         * ## Post process Filters
-         * Post Process filters looking for joins etc
-         * @TODO refactor this
-         * @param {object} options
-         */
+        // @TODO: remove when we are sure that we dont need this fn anymore (for lookup)
         postProcessFilters(options) {
             var joinTables = this._filters.joins;
 
