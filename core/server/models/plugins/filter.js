@@ -139,15 +139,6 @@ filter = function filter(Bookshelf) {
                     .query('leftOuterJoin', 'posts_authors', 'posts_authors.post_id', '=', 'posts.id')
                     .query('leftOuterJoin', 'users as authors', 'posts_authors.author_id', '=', 'authors.id');
 
-                // The order override should ONLY happen if we are doing an "IN" query
-                // TODO move the order handling to the query building that is currently inside pagination
-                // TODO make the order handling in pagination handle orderByRaw
-                // TODO extend this handling to all joins
-                if (gql.json.findStatement(this._filters.statements, {prop: /^authors/, op: 'IN'})) {
-                    // TODO make this count the number of MATCHING authors, not just the number of authors
-                    this.query('orderByRaw', 'count(authors.id) DESC');
-                }
-
                 // We need to add a group by to counter the double left outer join
                 // TODO improve on the group by handling
                 options.groups = options.groups || [];
