@@ -272,7 +272,7 @@ describe('Unit: models/post', function () {
         });
     });
 
-    describe('processOptions', function () {
+    describe('extraFilters', function () {
         it('generates correct where statement when filter contains unpermitted values', function () {
             const options = {
                 filter: 'status:[published,draft]',
@@ -280,14 +280,8 @@ describe('Unit: models/post', function () {
                 status: 'published'
             };
 
-            models.Post.processOptions(options);
-
-            options.where.statements.should.be.an.Array().with.lengthOf(1);
-            options.where.statements[0].should.deepEqual({
-                prop: 'status',
-                op: '=',
-                value: 'published'
-            });
+            const filter = new models.Post().extraFilters(options);
+            filter.should.eql('status:published');
         });
     });
 

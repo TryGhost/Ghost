@@ -83,6 +83,8 @@ filter = function filter(Bookshelf) {
         },
         defaultFilters: function defaultFilters() {
         },
+        extraFilters: function extraFilters() {
+        },
 
         preProcessFilters: function preProcessFilters() {
             this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
@@ -175,7 +177,7 @@ filter = function filter(Bookshelf) {
                 this.enforcedFilters(options),
                 this.defaultFilters(options),
                 options.filter,
-                options.where
+                this.extraFilters(options)
             );
 
             return this;
