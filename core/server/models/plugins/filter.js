@@ -15,6 +15,16 @@ const RELATIONS = {
     }
 };
 
+const ALIASES = [{
+    key: 'primary_tag',
+    replacement: 'tags.slug',
+    filter: 'posts_tags.sort_order:0+visibility:public'
+}, {
+    key: 'primary_author',
+    replacement: 'users.slug',
+    filter: 'posts_authors.sort_order:0+visibility:public'
+}];
+
 // @TODO: The filter utility lives here temporary.
 const filterUtils = {
     /**
@@ -243,16 +253,7 @@ const filter = function filter(Bookshelf) {
 
             debug('filter', filter);
 
-            const aliases = [{
-                key: 'primary_tag',
-                replacement: 'tags.slug',
-                filter: 'posts_tags.sort_order:0'
-            }, {
-                key: 'primary_author',
-                replacement: 'users.slug',
-                filter: 'posts_authors.sort_order:0'
-            }];
-            const processedFilter = filterUtils.processFilters(filter, aliases);
+            const processedFilter = filterUtils.processFilters(filter, ALIASES);
 
             if (processedFilter !== filter) {
                 debug('pre processed filter', filter);
