@@ -212,7 +212,7 @@ const filter = function filter(Bookshelf) {
             const processedFilter = filterUtils.processFilters(filter, ALIASES);
 
             if (processedFilter !== filter) {
-                debug('pre processed filter', filter);
+                debug('processed filter', processedFilter);
             }
 
             if (filter) {
