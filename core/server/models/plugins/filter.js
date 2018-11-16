@@ -3,6 +3,18 @@ const gql = require('ghost-gql');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
+const RELATIONS = {
+    relations: {
+        tags: {
+            tableName: 'tags',
+            type: 'manyToMany',
+            join_table: 'posts_tags',
+            join_from: 'post_id',
+            join_to: 'tag_id'
+        }
+    }
+};
+
 // @TODO: The filter utility lives here temporary.
 const filterUtils = {
     /**
@@ -248,13 +260,7 @@ const filter = function filter(Bookshelf) {
 
             if (filter) {
                 this.query((qb) => {
-                    nql(processedFilter, {relations: {tags: {
-                        tableName: 'tags',
-                        type: 'manyToMany',
-                        join_table: 'posts_tags',
-                        join_from: 'post_id',
-                        join_to: 'tag_id'
-                    }}}).querySQL(qb);
+                    nql(processedFilter, RELATIONS).querySQL(qb);
                 });
             }
         }
