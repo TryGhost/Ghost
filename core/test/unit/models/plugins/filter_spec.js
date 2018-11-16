@@ -854,5 +854,69 @@ describe('Filter', function () {
                 });
             });
         });
+
+        describe.only('Process filters', () => {
+            let processFilters;
+
+            beforeEach(function () {
+                processFilters = filter.__get__('filterUtils').processFilters;
+            });
+
+            it('should return unchanged filter when no aliases match', function () {
+                processFilters('status:published', []).should.equal('status:published');
+            });
+
+            it('should substitute single alias', function () {
+                const filter = 'primary_tag:en';
+                const aliases = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = '(tags.slug:en+posts_tags.sort_order:0)';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+
+            it('should substitute IN notation single alias', function () {
+                const filter = 'primary_tag:[en,es]';
+                const aliases = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = '(tags.slug:[en,es]+posts_tags.sort_order:0)';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+
+            it('should substitute single alias in complex', function () {
+                const filter = 'status:published+featured:true+primary_tag:[en,es]';
+                const aliases = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = 'status:published+featured:true+(tags.slug:[en,es]+posts_tags.sort_order:0)';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+
+            it('should substitute multiple occurrences of the filter with aliases', function () {
+                const filter = 'status:published+primary_tag:de+featured:true+primary_tag:en';
+                const aliases = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = 'status:published+(tags.slug:de+posts_tags.sort_order:0)+featured:true+(tags.slug:en+posts_tags.sort_order:0)';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+        });
     });
 });

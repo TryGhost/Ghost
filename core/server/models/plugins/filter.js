@@ -100,6 +100,40 @@ const filterUtils = {
         }
 
         return merged;
+    },
+
+    /**
+     * ## Process Filters
+     * Util that substitutes aliases and expands expressions with custom filters
+     *
+     */
+    processFilters: (filters, aliases) => {
+        let processed = filters;
+
+        aliases.forEach((alias) => {
+            const {key, replacement, filter} = alias;
+            if (processed.match(key)) {
+                // matches:
+                // - 'key:customFilter'
+                // - 'key:[customFilter]'
+                // - 'key:[custom,filter]'
+                const keyGroupMatch = `${key}:\\s?(\\w+|\\[(\\w+|,)+\\])`;
+                const re = new RegExp(keyGroupMatch,'g');
+                const matches = processed.match(re);
+
+                matches.forEach((match) => {
+                    let replaced = match.replace(key, replacement);
+
+                    if (filter) {
+                        replaced = `(${replaced}+${filter})`;
+                    }
+
+                    processed = processed.replace(match, replaced);
+                });
+            }
+        });
+
+        return processed;
     }
 };
 
@@ -197,9 +231,24 @@ const filter = function filter(Bookshelf) {
 
             debug('filter', filter);
 
+            const aliases = [{
+                key: 'primary_tag',
+                replacement: 'tags.slug',
+                filter: 'posts_tags.sort_order:0'
+            }, {
+                key: 'primary_author',
+                replacement: 'users.slug',
+                filter: 'posts_authors.sort_order:0'
+            }];
+            const processedFilter = filterUtils.processFilters(filter, aliases);
+
+            if (processedFilter !== filter) {
+                debug('pre processed filter', filter);
+            }
+
             if (filter) {
                 this.query((qb) => {
-                    nql(filter, {relations: {tags: {
+                    nql(processedFilter, {relations: {tags: {
                         tableName: 'tags',
                         type: 'manyToMany',
                         join_table: 'posts_tags',
