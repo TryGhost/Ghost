@@ -1,5 +1,3 @@
-const _ = require('lodash');
-const gql = require('ghost-gql');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
@@ -168,6 +166,7 @@ const filterUtils = {
                     let replaced = match.replace(alias.key, alias.replacement);
 
                     if (alias.filter) {
+                        // NOTE: we need () grouping here because it makes sure
                         replaced = `(${replaced}+${alias.filter})`;
                     }
 
@@ -188,70 +187,6 @@ const filter = function filter(Bookshelf) {
         enforcedFilters() {},
         defaultFilters() {},
         extraFilters() {},
-
-        // @TODO: remove when we are sure that we dont need this fn anymore (for lookup)
-        preProcessFilters() {
-            this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_tag/}, function (statement) {
-                statement.prop = 'tags.slug';
-                return {
-                    group: [
-                        statement,
-                        {prop: 'posts_tags.sort_order', op: '=', value: 0},
-                        {prop: 'tags.visibility', op: '=', value: 'public'}
-                    ]
-                };
-            });
-
-            this._filters.statements = gql.json.replaceStatements(this._filters.statements, {prop: /primary_author/}, function (statement) {
-                statement.prop = 'authors.slug';
-                return {
-                    group: [
-                        statement,
-                        {prop: 'posts_authors.sort_order', op: '=', value: 0},
-                        {prop: 'authors.visibility', op: '=', value: 'public'}
-                    ]
-                };
-            });
-        },
-
-        // @TODO: remove when we are sure that we dont need this fn anymore (for lookup)
-        postProcessFilters(options) {
-            var joinTables = this._filters.joins;
-
-            if (joinTables && joinTables.indexOf('tags') > -1) {
-                // We need to use leftOuterJoin to insure we still include posts which don't have tags in the result
-                // The where clause should restrict which items are returned
-                this
-                    .query('leftOuterJoin', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
-                    .query('leftOuterJoin', 'tags', 'posts_tags.tag_id', '=', 'tags.id');
-
-                // We need to add a group by to counter the double left outer join
-                // TODO improve on the group by handling
-                options.groups = options.groups || [];
-                options.groups.push('posts.id');
-            }
-
-            if (joinTables && joinTables.indexOf('authors') > -1) {
-                // We need to use leftOuterJoin to insure we still include posts which don't have tags in the result
-                // The where clause should restrict which items are returned
-                this
-                    .query('leftOuterJoin', 'posts_authors', 'posts_authors.post_id', '=', 'posts.id')
-                    .query('leftOuterJoin', 'users as authors', 'posts_authors.author_id', '=', 'authors.id');
-
-                // We need to add a group by to counter the double left outer join
-                // TODO improve on the group by handling
-                options.groups = options.groups || [];
-                options.groups.push('posts.id');
-            }
-
-            /**
-             * @deprecated: `author`, will be removed in Ghost 3.0
-             */
-            if (joinTables && joinTables.indexOf('author') > -1) {
-                this
-                    .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
-            }
-        },
 
         /**
          * Method which makes the necessary query builder calls (through knex) for the filters set on this model
