@@ -883,6 +883,19 @@ describe('Filter', function () {
                 processFilters(filter, aliases).should.equal(processed);
             });
 
+            it('should NOT match similarly named filter keys', function () {
+                const filter = 'tags:hello';
+                const aliases = [{
+                    key: 'tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = 'tags:hello';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+
             it('should substitute IN notation single alias', function () {
                 const filter = 'primary_tag:[en,es]';
                 const aliases = [{

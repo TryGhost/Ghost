@@ -133,7 +133,7 @@ const filterUtils = {
         let processed = filter;
 
         aliases.forEach((alias) => {
-            if (processed.match(alias.key)) {
+            if (processed.match(`${alias.key}:`)) {
                 // matches:
                 // - 'key:customFilter'
                 // - 'key:[customFilter]'
