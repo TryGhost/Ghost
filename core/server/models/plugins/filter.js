@@ -166,7 +166,8 @@ const filterUtils = {
                     let replaced = match.replace(alias.key, alias.replacement);
 
                     if (alias.filter) {
-                        // NOTE: we need () grouping here because it makes sure
+                        // NOTE: we need () grouping here because it makes sure subqueries work
+                        // in filters using $or conjunction e.g: '(posts_tags.sort_order:0+tags.slug:cat),tags.visibility:true'
                         replaced = `(${replaced}+${alias.filter})`;
                     }
 
