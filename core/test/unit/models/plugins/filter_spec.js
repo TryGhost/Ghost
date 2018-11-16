@@ -859,7 +859,7 @@ describe('Filter', function () {
             });
         });
 
-        describe.only('Process filters', () => {
+        describe('Process filters', () => {
             let processFilters;
 
             beforeEach(function () {
