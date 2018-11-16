@@ -31,6 +31,18 @@ const ALIASES = [{
     key: 'primary_author',
     replacement: 'users.slug',
     filter: 'posts_authors.sort_order:0+visibility:public'
+}, {
+    key: 'authors',
+    replacement: 'authors.slug'
+}, {
+    key: 'author',
+    replacement: 'authors.slug'
+}, {
+    key: 'tag',
+    replacement: 'tags.slug'
+}, {
+    key: 'tags',
+    replacement: 'tags.slug'
 }];
 
 // @TODO: The filter utility lives here temporary.
