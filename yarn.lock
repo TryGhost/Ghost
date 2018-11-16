@@ -2,9 +2,10 @@
 # yarn lockfile v1
 
 
-"@nexes/mongo-knex@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.1.1.tgz#ef2d184f225126b160c84e9659e52d5b83b7cbc4"
+"@nexes/mongo-knex@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.1.2.tgz#550487995e0ad93fe1a3f7843658cadc4a2b919a"
+  integrity sha512-opZmLw4rqFcmrOFfbnuoivTThKZPKLG1GSIHmuZsmS3HqpKVFGBBvJ402AdU03jwXkBR/JLpUWQOnla/E93IFg==
   dependencies:
     debug "^4.1.0"
     lodash "^4.17.10"
@@ -13,11 +14,11 @@
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
 
-"@nexes/nql@https://github.com/NexesJS/NQL/tarball/c826d0e60ddf081d2b17934da259ae12d666f12d":
+"@nexes/nql@https://github.com/NexesJS/NQL/tarball/ef9ba3ec77a528bcd5d19bb7dad0cd6524c18848":
   version "0.1.0"
-  resolved "https://github.com/NexesJS/NQL/tarball/c826d0e60ddf081d2b17934da259ae12d666f12d#4c77725bec36a8aedb985260bde48fde358e2465"
+  resolved "https://github.com/NexesJS/NQL/tarball/ef9ba3ec77a528bcd5d19bb7dad0cd6524c18848#7ad10c8862957bf0996e210222181aef620a285e"
   dependencies:
-    "@nexes/mongo-knex" "0.1.1"
+    "@nexes/mongo-knex" "0.1.2"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
