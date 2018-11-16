@@ -11,6 +11,14 @@ const RELATIONS = {
             join_table: 'posts_tags',
             join_from: 'post_id',
             join_to: 'tag_id'
+        },
+        authors: {
+            tableName: 'users',
+            tableNameAs: 'authors',
+            type: 'manyToMany',
+            join_table: 'posts_authors',
+            join_from: 'post_id',
+            join_to: 'author_id'
         }
     }
 };
