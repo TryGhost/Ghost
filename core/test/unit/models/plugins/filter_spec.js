@@ -406,6 +406,10 @@ describe('Filter', function () {
             it('reduces secondary part of filter if key matches in primary filter', () => {
                 reduceFilters('featured:true', 'featured:false,status:published').should.equal('status:published');
             });
+
+            it('reduces secondary filter if key matches in primary filter ALLOWS white space before value', () => {
+                reduceFilters('featured: true', 'featured: false').should.equal('');
+            });
         });
 
         describe('Get filter keys', () => {

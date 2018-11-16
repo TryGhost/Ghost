@@ -44,7 +44,7 @@ const filterUtils = {
                 // - 'key:customFilter'
                 // - 'key:customFilter,'
                 // - 'key:customFilter+'
-                const replace = `${key}\\w*(\\,|\\+)?`;
+                const replace = `${key}\\s?\\w*(\\,|\\+)?`;
                 const re = new RegExp(replace,'g');
                 reducedFilter = reducedFilter.replace(re, '');
             }
