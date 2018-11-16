@@ -129,25 +129,24 @@ const filterUtils = {
      * Util that substitutes aliases and expands expressions with custom filters
      *
      */
-    processFilters: (filters, aliases) => {
-        let processed = filters;
+    processFilters: (filter, aliases) => {
+        let processed = filter;
 
         aliases.forEach((alias) => {
-            const {key, replacement, filter} = alias;
-            if (processed.match(key)) {
+            if (processed.match(alias.key)) {
                 // matches:
                 // - 'key:customFilter'
                 // - 'key:[customFilter]'
                 // - 'key:[custom,filter]'
-                const keyGroupMatch = `${key}:\\s?(\\w+|\\[(\\w+|,)+\\])`;
+                const keyGroupMatch = `${alias.key}:\\s?(\\w+|\\[(\\w+|,)+\\])`;
                 const re = new RegExp(keyGroupMatch,'g');
                 const matches = processed.match(re);
 
                 matches.forEach((match) => {
-                    let replaced = match.replace(key, replacement);
+                    let replaced = match.replace(alias.key, alias.replacement);
 
-                    if (filter) {
-                        replaced = `(${replaced}+${filter})`;
+                    if (alias.filter) {
+                        replaced = `(${replaced}+${alias.filter})`;
                     }
 
                     processed = processed.replace(match, replaced);
