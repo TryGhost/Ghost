@@ -277,7 +277,7 @@ describe('Post API', function () {
             });
 
             it('can retrieve just published pages', function (done) {
-                request.get(localUtils.API.getApiQuery(`posts/?filter=tags.slug:kitchen-sink`))
+                request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
