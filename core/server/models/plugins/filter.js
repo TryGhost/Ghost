@@ -156,9 +156,11 @@ const filterUtils = {
             if (processed.match(`${alias.key}:`)) {
                 // matches:
                 // - 'key:customFilter'
+                // - 'key:-custom-filter'
                 // - 'key:[customFilter]'
                 // - 'key:[custom,filter]'
-                const keyGroupMatch = `${alias.key}:\\s?(\\w+|\\[(\\w+|,)+\\])`;
+                const keyGroupMatch = `${alias.key}:\\s?([a-zA-Z\\-]+|\\[([a-zA-Z\\-]|,)+\\])`;
+
                 const re = new RegExp(keyGroupMatch,'g');
                 const matches = processed.match(re);
 

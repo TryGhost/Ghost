@@ -883,6 +883,19 @@ describe('Filter', function () {
                 processFilters(filter, aliases).should.equal(processed);
             });
 
+            it('should substitute filter with negation and - sign', function () {
+                const filter = 'primary_tag:-great-movies';
+                const aliases = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    filter: 'posts_tags.sort_order:0'
+                }];
+
+                const processed = '(tags.slug:-great-movies+posts_tags.sort_order:0)';
+
+                processFilters(filter, aliases).should.equal(processed);
+            });
+
             it('should NOT match similarly named filter keys', function () {
                 const filter = 'tags:hello';
                 const aliases = [{
@@ -909,7 +922,7 @@ describe('Filter', function () {
                 processFilters(filter, aliases).should.equal(processed);
             });
 
-            it('should substitute single alias in complex', function () {
+            it('should substitute single alias in complex filter', function () {
                 const filter = 'status:published+featured:true+primary_tag:[en,es]';
                 const aliases = [{
                     key: 'primary_tag',
