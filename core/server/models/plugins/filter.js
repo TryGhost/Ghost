@@ -168,6 +168,8 @@ const filterUtils = {
                     if (alias.filter) {
                         // NOTE: we need () grouping here because it makes sure subqueries work
                         // in filters using $or conjunction e.g: '(posts_tags.sort_order:0+tags.slug:cat),tags.visibility:true'
+                        // if the grouping wasn't used statements would end up in single $or group (one subquery with single where)
+                        // and would return wrong results
                         replaced = `(${replaced}+${alias.filter})`;
                     }
 
