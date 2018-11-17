@@ -35,12 +35,6 @@ Subscriber = ghostBookshelf.Model.extend({
     orderDefaultOptions: function orderDefaultOptions() {
         return {};
     },
-    /**
-     * @deprecated in favour of filter
-     */
-    processOptions: function processOptions(options) {
-        return options;
-    },
 
     permittedOptions: function permittedOptions(methodName) {
         var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
