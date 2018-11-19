@@ -1,15 +1,24 @@
 const Promise = require('bluebird');
 const common = require('../common');
 const fs = require('fs-extra');
-
+const imagemin = require('imagemin');
+const imageminJpegtran = require('imagemin-jpegtran');
+const imageminOptipng = require('imagemin-optipng');
 /**
  * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
  *
  * We currently can't enable compression or having more config options, because of
  * https://github.com/lovell/sharp/issues/1360.
  */
+
+
+const optimizeAndWrite = ((path, buffer) => imagemin.buffer(buffer, 
+    {plugins: [imageminJpegtran(), imageminOptipng()]})
+    .then(optBuff => fs.writeFile(path, optBuff)).then(() => true)
+);
+
 const process = (options = {}) => {
-    let sharp, img, originalData, originalSize;
+    let sharp, img, originalData, originalWidth;
 
     try {
         sharp = require('sharp');
@@ -20,36 +29,37 @@ const process = (options = {}) => {
             err: err
         }));
     }
-
     // @NOTE: workaround for Windows as libvips keeps a reference to the input file
     //        which makes it impossible to fs.unlink() it on cleanup stage
-    sharp.cache(false);
-
+    //        **Added check if it's not in windows, to use cache for the operations and enhance the file size reduction.**
+    if (process.platform === 'win32'){
+        sharp.cache(false);
+    }
     return fs.readFile(options.in)
         .then((data) => {
             originalData = data;
-
-            // @NOTE: have to use constructor with Buffer for sharp to be able to expose size property
+            // @NOTE: have to use constructor with Buffer for sharp to be able to expose width property
             img = sharp(data);
         })
         .then(() => img.metadata())
         .then((metadata) => {
-            originalSize = metadata.size;
-
-            if (metadata.width > options.width) {
-                img.resize(options.width);
-            }
-
+            originalWidth = metadata.width;
+            // CASE: kernel: nearest -> the file size doesn't increase at all with this algorithm. And does 
+            //       the best compression sizes. withoutEnlargement: true -> sharp detects if options.width is bigger
+            //       than the original image and discards the resize operation.
+            img.resize({width: options.width, kernel: sharp.kernel.nearest, withoutEnlargement: true});
             // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
             //       based on the orientation. It does not rotate if no orientation is set.
             img.rotate();
-            return img.toBuffer({resolveWithObject: true});
+            return img.toBuffer();
         })
-        .then(({data, info}) => {
-            if (info.size > originalSize) {
-                return fs.writeFile(options.out, originalData);
+        .then((data) => {
+            if (data.length > originalData.length && options.width === 2000) {
+                return optimizeAndWrite(options.out, originalData);
+            } else if (options.width !== 2000 && originalWidth <= options.width) {
+                return Promise.resolve(false);
             } else {
-                return fs.writeFile(options.out, data);
+                return optimizeAndWrite(options.out, data);
             }
         })
         .catch((err) => {
