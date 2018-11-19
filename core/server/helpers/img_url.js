@@ -38,21 +38,21 @@ module.exports = function imgUrl(attr, options) {
     // in this case we don't show a warning
 };
 
-function getImageWithSize(imageName, requestedSize) {
-    if (!imageName) {
-        return imageName;
+function getImageWithSize(imagePath, requestedSize) {
+    if (!imagePath) {
+        return imagePath;
     }
     if (!requestedSize) {
-        return imageName;
+        return imagePath;
     }
 
     const themeImageSizes = activeTheme.get().config(IMAGE_SIZES_CONFIG);
 
     if (!themeImageSizes || !themeImageSizes[requestedSize]) {
-        return imageName;
+        return imagePath;
     }
 
-    const imageNameParts = imageName.split('.');
-    imageNameParts.splice(-1, 0, requestedSize);
-    return imageNameParts.join('.');
+    const imagePathParts = imagePath.split('.');
+    imagePathParts.splice(-1, 0, requestedSize);
+    return imagePathParts.join('.');
 }
