@@ -21,15 +21,17 @@ module.exports = function imgUrl(attr, options) {
 
     const absolute = options && options.hash && options.hash.absolute;
 
+    const image = getImageWithSize(attr, options && options.hash && options.hash.size);
+
     // CASE: if attribute is passed, but it is undefined, then the attribute was
     // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
-    if (attr === undefined) {
+    if (image === undefined) {
         proxy.logging.warn(proxy.i18n.t('warnings.helpers.img_url.attrIsRequired'));
         return;
     }
 
-    if (attr) {
-        return urlService.utils.urlFor('image', {image: attr}, absolute);
+    if (image) {
+        return urlService.utils.urlFor('image', {image}, absolute);
     }
 
     // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
