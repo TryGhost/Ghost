@@ -12,6 +12,7 @@ const proxy = require('./proxy');
 const urlService = proxy.urlService;
 const activeTheme = proxy.activeTheme;
 const IMAGE_SIZES_CONFIG = 'image_sizes';
+const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function imgUrl(attr, options) {
     // CASE: if no attribute is passed, e.g. `{{img_url}}` we show a warning
@@ -53,8 +54,7 @@ function getImageWithSize(imagePath, requestedSize) {
         return imagePath;
     }
 
-    const imageDir = path.dirname(imagePath);
-    const imageName = path.basename(imagePath);
+    const imageName = path.relative(STATIC_IMAGE_URL_PREFIX, imagePath);
 
-    return path.join(imageDir, requestedSize, imageName);
+    return path.join(STATIC_IMAGE_URL_PREFIX, `/sizes/${requestedSize}/`, imageName);
 }
