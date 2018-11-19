@@ -182,7 +182,7 @@ module.exports = function apiRoutes() {
         mw.authAdminAPI,
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'images'}),
-        shared.middlewares.image.normalize,
+        shared.middlewares.image.responsivize,
         apiv2.http(apiv2.upload.image)
     );
 
@@ -191,7 +191,7 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.validation.profileImage,
-        shared.middlewares.image.normalize,
+        shared.middlewares.image.responsivize,
         apiv2.http(apiv2.upload.image)
     );
 
