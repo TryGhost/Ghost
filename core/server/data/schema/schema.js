@@ -1,3 +1,11 @@
+/* String Column Sizes Information
+ *
+ * Small strings = length 50
+ * Medium strings = length 191
+ * Large strings = length 1000-2000
+ * Text = length 65535 (64 KiB)
+ * Long text = length 1,000,000,000
+ */
 module.exports = {
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
