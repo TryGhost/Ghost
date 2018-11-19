@@ -1,4 +1,5 @@
 /* String Column Sizes Information
+ * (From: https://github.com/TryGhost/Ghost/pull/7932)
  *
  * Small strings = length 50
  * Medium strings = length 191
