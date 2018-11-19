@@ -11,7 +11,6 @@ const imageminOptipng = require('imagemin-optipng');
  * https://github.com/lovell/sharp/issues/1360.
  */
 
-
 const optimizeAndWrite = ((path, buffer) => imagemin.buffer(buffer, 
     {plugins: [imageminJpegtran(), imageminOptipng()]})
     .then(optBuff => fs.writeFile(path, optBuff)).then(() => true)
