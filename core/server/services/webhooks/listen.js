@@ -36,6 +36,7 @@ function generatePayload(event, model) {
 function listener(event, model, options) {
     let payload = {};
     if (model) {
+        options = [];
         payload = generatePayload(event, model);
     }
     payload.event = event;
@@ -51,6 +52,9 @@ function listener(event, model, options) {
 // TODO: use a wildcard with the new event emitter or use the webhooks API to
 // register listeners only for events that have webhooks
 function listen() {
+    common.events.on('post.published', _.partial(listener, 'post.published'));
+    common.events.on('post.published.edited', _.partial(listener, 'post.published.edited'));
+    common.events.on('post.unpublished', _.partial(listener, 'post.unpublished'));
     common.events.on('subscriber.added', _.partial(listener, 'subscriber.added'));
     common.events.on('subscriber.deleted', _.partial(listener, 'subscriber.deleted'));
     common.events.on('site.changed', _.partial(listener, 'site.changed'));

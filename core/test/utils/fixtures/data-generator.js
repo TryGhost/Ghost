@@ -371,6 +371,21 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             event: 'subscriber.removed',
             target_url: 'https://example.com/webhooks/subscriber-removed'
+        },
+        {
+            id: ObjectId.generate(),
+            event: 'post.published',
+            target_url: 'https://example.com/webhooks/post-published'
+        },
+        {
+            id: ObjectId.generate(),
+            event: 'post.unpublished',
+            target_url: 'https://example.com/webhooks/subscriber-removed'
+        },
+        {
+            id: ObjectId.generate(),
+            event: 'post.published.edited',
+            target_url: 'https://example.com/webhooks/post-published-edited'
         }
     ],
 

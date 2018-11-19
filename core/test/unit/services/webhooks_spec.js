@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const should = require('should');
+const assert = require('assert');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const testUtils = require('../../utils');
@@ -25,7 +26,7 @@ describe('Webhooks', function () {
 
     it('listen() should initialise events correctly', function () {
         webhooks.listen();
-        eventStub.calledThrice.should.be.true();
+        assert.equal(eventStub.callCount, 6);
     });
 
     it('listener() with "subscriber.added" event calls webhooks.trigger with toJSONified model', function () {
@@ -98,6 +99,90 @@ describe('Webhooks', function () {
         triggerArgs[0].should.eql('site.changed');
         triggerArgs[1].should.eql({
             event: 'site.changed'
+        });
+
+        resetWebhooks();
+    });
+
+    it('listener() with "post.published" event calls webhooks.trigger with toJSONified model', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[1]),
+            testModel = {
+                toJSON: function () {
+                    return testPost;
+                }
+            },
+            webhooksStub = {
+                trigger: sandbox.stub()
+            },
+            resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub),
+            listener = webhooks.listen.__get__('listener'),
+            triggerArgs;
+
+        listener('post.published', testModel);
+
+        webhooksStub.trigger.calledOnce.should.be.true();
+
+        triggerArgs = webhooksStub.trigger.getCall(0).args;
+        triggerArgs[0].should.eql('post.published');
+        triggerArgs[1].should.deepEqual({
+            posts: [testPost],
+            event: 'post.published'
+        });
+
+        resetWebhooks();
+    });
+
+    it('listener() with "post.unpublished" event calls webhooks.trigger with toJSONified model', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[1]),
+            testModel = {
+                toJSON: function () {
+                    return testPost;
+                }
+            },
+            webhooksStub = {
+                trigger: sandbox.stub()
+            },
+            resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub),
+            listener = webhooks.listen.__get__('listener'),
+            triggerArgs;
+
+        listener('post.unpublished', testModel);
+
+        webhooksStub.trigger.calledOnce.should.be.true();
+
+        triggerArgs = webhooksStub.trigger.getCall(0).args;
+        triggerArgs[0].should.eql('post.unpublished');
+        triggerArgs[1].should.deepEqual({
+            posts: [testPost],
+            event: 'post.unpublished'
+        });
+
+        resetWebhooks();
+    });
+
+    it('listener() with "post.published.edited" event calls webhooks.trigger with toJSONified model', function () {
+        var testPost = _.clone(testUtils.DataGenerator.Content.posts[1]),
+            testModel = {
+                toJSON: function () {
+                    return testPost;
+                }
+            },
+            webhooksStub = {
+                trigger: sandbox.stub()
+            },
+            resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub),
+            listener = webhooks.listen.__get__('listener'),
+            triggerArgs;
+
+        listener('post.published.edited', testModel);
+
+        webhooksStub.trigger.calledOnce.should.be.true();
+
+        triggerArgs = webhooksStub.trigger.getCall(0).args;
+        triggerArgs[0].should.eql('post.published.edited');
+        triggerArgs[1].should.deepEqual({
+            posts: [testPost],
+            event: 'post.published.edited'
         });
 
         resetWebhooks();

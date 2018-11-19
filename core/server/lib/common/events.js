@@ -16,6 +16,6 @@ EventRegistry.prototype.onMany = function (arr, onEvent) {
 };
 
 EventRegistryInstance = new EventRegistry();
-EventRegistryInstance.setMaxListeners(100);
+EventRegistryInstance.setMaxListeners(101);
 
 module.exports = EventRegistryInstance;
