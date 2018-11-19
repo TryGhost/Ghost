@@ -4,6 +4,7 @@ const Promise = require('bluebird'),
     _ = require('lodash'),
     permissions = require('../../services/permissions'),
     validation = require('../../data/validation'),
+    sharedUtils = require('../shared/utils'),
     common = require('../../lib/common');
 
 let utils;
@@ -246,16 +247,7 @@ utils = {
         };
     },
 
-    trimAndLowerCase(params) {
-        params = params || '';
-        if (_.isString(params)) {
-            params = params.split(',');
-        }
-
-        return params.map((item) => {
-            return item.trim().toLowerCase();
-        });
-    },
+    trimAndLowerCase: sharedUtils.options.trimAndLowerCase,
 
     prepareInclude(include, allowedIncludes) {
         return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
