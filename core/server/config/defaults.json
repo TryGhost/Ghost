@@ -80,7 +80,16 @@
         }
     },
     "imageOptimization": {
-        "resize": true
+        "resize": true,
+        "responsive": {
+            "enabled": false,
+            "widths": {
+                "large": 1080,
+                "medium": 720,
+                "thumb": 150
+            }
+        },
+        "deleteOriginal": false
     },
     "compress": true,
     "preloadHeaders": false
