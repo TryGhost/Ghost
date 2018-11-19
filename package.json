@@ -102,7 +102,10 @@
   },
   "optionalDependencies": {
     "sharp": "0.21.0",
-    "sqlite3": "4.0.3"
+    "sqlite3": "4.0.3",
+    "imagemin": "^6.0.0",
+    "imagemin-jpegtran": "^6.0.0",
+    "imagemin-optipng": "^6.0.0"
   },
   "devDependencies": {
     "eslint": "4.19.1",
