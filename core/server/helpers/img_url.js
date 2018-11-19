@@ -7,8 +7,8 @@
 // Returns the URL for the current object scope i.e. If inside a post scope will return image permalink
 // `absolute` flag outputs absolute URL, else URL is relative.
 
-var proxy = require('./proxy'),
-    urlService = proxy.urlService;
+const proxy = require('./proxy');
+const urlService = proxy.urlService;
 
 module.exports = function imgUrl(attr, options) {
     // CASE: if no attribute is passed, e.g. `{{img_url}}` we show a warning
@@ -17,7 +17,7 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
-    var absolute = options && options.hash && options.hash.absolute;
+    const absolute = options && options.hash && options.hash.absolute;
 
     // CASE: if attribute is passed, but it is undefined, then the attribute was
     // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
