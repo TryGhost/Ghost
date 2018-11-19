@@ -9,6 +9,8 @@
 
 const proxy = require('./proxy');
 const urlService = proxy.urlService;
+const activeTheme = proxy.activeTheme;
+const IMAGE_SIZES_CONFIG = 'image_sizes';
 
 module.exports = function imgUrl(attr, options) {
     // CASE: if no attribute is passed, e.g. `{{img_url}}` we show a warning
@@ -33,3 +35,22 @@ module.exports = function imgUrl(attr, options) {
     // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
     // in this case we don't show a warning
 };
+
+function getImageWithSize(imageName, requestedSize) {
+    if (!imageName) {
+        return imageName;
+    }
+    if (!requestedSize) {
+        return imageName;
+    }
+
+    const themeImageSizes = activeTheme.get().config(IMAGE_SIZES_CONFIG);
+
+    if (!themeImageSizes || !themeImageSizes[requestedSize]) {
+        return imageName;
+    }
+
+    const imageNameParts = imageName.split('.');
+    imageNameParts.splice(-1, 0, requestedSize);
+    return imageNameParts.join('.');
+}
