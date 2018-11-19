@@ -20,6 +20,31 @@ class LocalFileStore extends StorageBase {
     }
 
     /**
+     * Saves a buffer in the targetPath
+     * - buffer is an instance of Buffer
+     * - returns a Promise with returns the full URL to retrieve the data
+     */
+    saveRaw(buffer, targetPath) {
+        const storagePath = path.join(this.storagePath, targetPath);
+        const targetDir = path.dirname(storagePath);
+
+        return fs.mkdirs(targetDir)
+            .then(() => {
+                return fs.writeFile(storagePath, buffer);
+            })
+            .then(() => {
+                // For local file system storage can use relative path so add a slash
+                const fullUrl = (
+                    urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
+                        urlService.utils.STATIC_IMAGE_URL_PREFIX,
+                        targetPath)
+                ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+
+                return fullUrl;
+            });
+    }
+
+    /**
      * Saves the image to storage (the file system)
      * - image is the express image object
      * - returns a promise which ultimately returns the full url to the uploaded image
