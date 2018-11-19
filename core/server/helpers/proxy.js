@@ -40,6 +40,8 @@ module.exports = {
         isPrivacyDisabled: config.isPrivacyDisabled.bind(config)
     },
 
+    activeTheme: require('../services/themes/active'),
+
     // Labs utils for enabling/disabling helpers
     labs: require('../services/labs'),
 
