@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
+const imagemin = require('imagemin');
 const common = require('../../../../server/lib/common');
 const manipulator = require('../../../../server/lib/image/manipulator');
 const testUtils = require('../../../utils');
 const sandbox = sinon.sandbox.create();
-
 describe('lib/image: manipulator', function () {
     afterEach(function () {
         sandbox.restore();
@@ -18,6 +18,7 @@ describe('lib/image: manipulator', function () {
         beforeEach(function () {
             sandbox.stub(fs, 'readFile').resolves('original');
             sandbox.stub(fs, 'writeFile').resolves();
+            sandbox.stub(imagemin, 'buffer').resolves(new ArrayBuffer(1));
 
             sharpInstance = {
                 metadata: sandbox.stub(),
@@ -29,7 +30,7 @@ describe('lib/image: manipulator', function () {
             sharp = sandbox.stub().callsFake(() => {
                 return sharpInstance;
             });
-
+            sharp.kernel = sandbox.stub();
             sharp.cache = sandbox.stub();
             testUtils.mockNotExistingModule('sharp', sharp);
         });
@@ -45,7 +46,9 @@ describe('lib/image: manipulator', function () {
 
             return manipulator.process({width: 1000})
                 .then(() => {
-                    sharp.cache.calledOnce.should.be.true();
+                    if (process.platform === 'win32') {
+                        sharp.cache.calledOnce.should.be.true();
+                    }
                     sharpInstance.metadata.calledOnce.should.be.true();
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -65,13 +68,15 @@ describe('lib/image: manipulator', function () {
             });
 
             return manipulator.process({width: 1000})
-                .then(() => {
-                    sharp.cache.calledOnce.should.be.true();
+                .then((check) => {
+                    if (process.platform === 'win32') {
+                        sharp.cache.calledOnce.should.be.true();
+                    }
                     sharpInstance.metadata.calledOnce.should.be.true();
-                    sharpInstance.resize.calledOnce.should.be.false();
+                    sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
-
-                    fs.writeFile.calledOnce.should.be.true();
+                    should(check).be.exactly(false);
+                    fs.writeFile.calledOnce.should.be.false();
                     fs.writeFile.calledWith('manipulated');
                 });
         });
@@ -91,7 +96,9 @@ describe('lib/image: manipulator', function () {
 
             return manipulator.process({width: 1000})
                 .then(() => {
-                    sharp.cache.calledOnce.should.be.true();
+                    if (process.platform === 'win32') {
+                        sharp.cache.calledOnce.should.be.true();
+                    }
                     sharpInstance.metadata.calledOnce.should.be.true();
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -120,9 +127,11 @@ describe('lib/image: manipulator', function () {
                 .catch((err) => {
                     (err instanceof common.errors.InternalServerError).should.be.true;
                     err.code.should.eql('IMAGE_PROCESSING');
-                    sharp.cache.calledOnce.should.be.true;
+                    if (process.platform === 'win32') {
+                        sharp.cache.calledOnce.should.be.true();
+                    }
                     sharpInstance.metadata.calledOnce.should.be.true();
-                    sharpInstance.resize.calledOnce.should.be.false();
+                    sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
 
                     fs.writeFile.calledOnce.should.be.true();
