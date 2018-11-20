@@ -27,10 +27,6 @@ _private.createHbsEngine = () => {
 _private.prepareError = (err, req, res, next) => {
     debug(err);
 
-    if (req.file && req.file.path) {
-        require('fs-extra').unlink(req.file.path);
-    }
-
     if (Array.isArray(err)) {
         err = err[0];
     }
