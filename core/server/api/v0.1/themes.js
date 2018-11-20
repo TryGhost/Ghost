@@ -141,23 +141,16 @@ themes = {
             })
             .finally(() => {
                 // @TODO we should probably do this as part of saving the theme
-                // remove zip upload from multer
-                // happens in background
-                try {
-                    fs.remove(zip.path);
-                    fs.remove(zip.unZippedPath);
-                } catch (err) {
-                    common.logging.error(new common.errors.GhostError({err: err}));
-                }
-
                 // @TODO we should probably do this as part of saving the theme
-                // remove extracted dir from gscan
+                // remove extracted dir from gscan on success or failure
                 // happens in background
                 if (checkedTheme) {
                     fs.remove(checkedTheme.path)
                         .catch((err) => {
                             common.logging.error(new common.errors.GhostError({err: err}));
                         });
+                } else {
+                    fs.remove(zip.unZippedPath);
                 }
             });
     },
