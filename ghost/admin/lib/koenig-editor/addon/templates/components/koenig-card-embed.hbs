@@ -1,5 +1,5 @@
 {{#koenig-card
-    class="flex flex-column nl2 nr2"
+    class="flex flex-column"
     isSelected=isSelected
     isEditing=isEditing
     selectCard=(action selectCard)
@@ -50,7 +50,7 @@
                 value={{payload.url}}
                 name="url"
                 placeholder="Paste URL to add embedded content..."
-                class="miw-100 pa2 ba br2 b--lightgrey-d2 f7 form-text lh-title tracked-2 h10"
+                class="miw-100 pa2 ba br2 b--lightgrey-d2 f7 form-text lh-title tracked-2 h10 nl2 nr2"
                 oninput={{action "updateUrl"}}
                 onkeydown={{action "urlKeydown"}}>
         {{/if}}
