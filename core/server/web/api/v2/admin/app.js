@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const shared = require('../../../shared');
 const routes = require('./routes');
-const autoReap  = require('multer-autoreap');
+const autoReap = require('multer-autoreap');
 
 module.exports = function setupApiApp() {
     debug('Admin API v2 setup start');
