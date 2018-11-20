@@ -2,7 +2,7 @@
 const debug = require('ghost-ignition').debug('web:api:v0.1:app');
 const boolParser = require('express-query-boolean');
 const express = require('express');
-const autoReap  = require('multer-autoreap');
+const autoReap = require('multer-autoreap');
 
 // routes
 const routes = require('./routes');
