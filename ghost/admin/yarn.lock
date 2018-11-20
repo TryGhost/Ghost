@@ -73,10 +73,10 @@
   dependencies:
     samsam "1.3.0"
 
-"@tryghost/mobiledoc-kit@0.11.1-ghost.3":
-  version "0.11.1-ghost.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.3.tgz#1c2ad39c432e20102c98260219048a38dca61efc"
-  integrity sha512-imoL+rRqckgIv/bdlfaft6brsVEh1wjwV04ViY6Cv49TNyU4Zqw8824sHQMIvn9fsQBUweCjpFAp3EiH6LoEOg==
+"@tryghost/mobiledoc-kit@0.11.1-ghost.4":
+  version "0.11.1-ghost.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.4.tgz#580324be637ddafa84a95cf163239e3a1b1698a5"
+  integrity sha512-DfqXkQAHDvnF/CjmGQXEtZTDXORmI97tw8BQS1AJLUbeKjplrBFiq/rR3kpdqv2qfgij9Wn9xYVM1ZiBHzoTwA==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
