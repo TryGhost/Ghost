@@ -21,14 +21,13 @@ checkTheme = function checkTheme(theme, isZip) {
             checkedTheme = gscan.format(checkedTheme, {
                 onlyFatalErrors: config.get('env') === 'production'
             });
-
+            theme.unZippedPath = checkedTheme.path;
             // CASE: production and no fatal errors
             // CASE: development returns fatal and none fatal errors, theme is only invalid if fatal errors
             if (!checkedTheme.results.error.length ||
                 config.get('env') === 'development' && !checkedTheme.results.hasFatalErrors) {
                 return checkedTheme;
             }
-
             return Promise.reject(new common.errors.ThemeValidationError({
                 message: common.i18n.t('errors.api.themes.invalidTheme'),
                 errorDetails: checkedTheme.results.error,
