@@ -646,15 +646,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         var options = this.filterOptions(unfilteredOptions, 'findAll'),
             itemCollection = this.forge();
 
-        // transforms fictive keywords like 'all' (status:all) into correct allowed values
-        if (this.processOptions) {
-            this.processOptions(options);
-        }
-
         // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
         if (this.orderDefaultRaw && !options.migrating) {
             itemCollection.query((qb) => {
-                qb.orderByRaw(this.orderDefaultRaw());
+                qb.orderByRaw(this.orderDefaultRaw(options));
             });
         }
 
@@ -702,13 +697,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && config.get('env') !== 'production';
 
-        // This applies default properties like 'staticPages' and 'status'
-        // And then converts them to 'where' options... this behaviour is effectively deprecated in favour
-        // of using filter - it's only be being kept here so that we can transition cleanly.
-        if (this.processOptions) {
-            this.processOptions(options);
-        }
-
         // Add Filter behaviour
         itemCollection.applyDefaultAndCustomFilters(options);
 
@@ -722,7 +710,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (options.order) {
             options.order = this.parseOrderOption(options.order, options.withRelated);
         } else if (this.orderDefaultRaw) {
-            options.orderRaw = this.orderDefaultRaw();
+            options.orderRaw = this.orderDefaultRaw(options);
         } else if (this.orderDefaultOptions) {
             options.order = this.orderDefaultOptions();
         }

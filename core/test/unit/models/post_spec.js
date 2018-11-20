@@ -46,12 +46,12 @@ describe('Unit: models/post', function () {
             });
 
             return models.Post.findPage({
-                filter: 'tags: [photo, video] + id: -' + testUtils.filterData.data.posts[3].id,
+                filter: 'tags:[photo, video]+id:-' + testUtils.filterData.data.posts[3].id,
                 limit: 3,
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) order by count(tags.id) DESC');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?)');
                 queries[0].bindings.should.eql([
                     false,
                     'published',
@@ -86,7 +86,7 @@ describe('Unit: models/post', function () {
                 withRelated: ['authors', 'tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) order by count(authors.id) DESC');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null))');
                 queries[0].bindings.should.eql([
                     false,
                     'published',
@@ -272,7 +272,7 @@ describe('Unit: models/post', function () {
         });
     });
 
-    describe('processOptions', function () {
+    describe('extraFilters', function () {
         it('generates correct where statement when filter contains unpermitted values', function () {
             const options = {
                 filter: 'status:[published,draft]',
@@ -280,14 +280,8 @@ describe('Unit: models/post', function () {
                 status: 'published'
             };
 
-            models.Post.processOptions(options);
-
-            options.where.statements.should.be.an.Array().with.lengthOf(1);
-            options.where.statements[0].should.deepEqual({
-                prop: 'status',
-                op: '=',
-                value: 'published'
-            });
+            const filter = new models.Post().extraFilters(options);
+            filter.should.eql('status:published');
         });
     });
 

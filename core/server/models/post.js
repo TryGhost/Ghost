@@ -11,6 +11,7 @@ const config = require('../config');
 const converters = require('../lib/mobiledoc/converters');
 const relations = require('./relations');
 const MOBILEDOC_REVISIONS_COUNT = 10;
+const ALL_STATUSES = ['published', 'draft', 'scheduled'];
 
 let Post;
 let Posts;
@@ -517,6 +518,51 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
+    },
+
+    /**
+     * You can pass an extra `status=VALUES` or "staticPages" field.
+     * Long-Term: We should deprecate these short cuts and force users to use the filter param.
+     */
+    extraFilters: function extraFilters(options) {
+        if (!options.staticPages && !options.status) {
+            return null;
+        }
+
+        let filter = null;
+
+        // CASE: "staticPages" is passed
+        if (options.staticPages && options.staticPages !== 'all') {
+            // CASE: convert string true/false to boolean
+            if (!_.isBoolean(options.staticPages)) {
+                options.staticPages = _.includes(['true', '1'], options.staticPages);
+            }
+
+            filter = `page:${options.staticPages}`;
+        } else if (options.staticPages === 'all') {
+            filter = 'page:[true, false]';
+        }
+
+        // CASE: "status" is passed, combine filters
+        if (options.status && options.status !== 'all') {
+            options.status = _.includes(ALL_STATUSES, options.status) ? options.status : 'published';
+
+            if (!filter) {
+                filter = `status:${options.status}`;
+            } else {
+                filter = `${filter}+status:${options.status}`;
+            }
+        } else if (options.status === 'all') {
+            if (!filter) {
+                filter = `status:[${ALL_STATUSES}]`;
+            } else {
+                filter = `${filter}+status:[${ALL_STATUSES}]`;
+            }
+        }
+
+        delete options.status;
+        delete options.staticPages;
+        return filter;
     }
 }, {
     allowedFormats: ['mobiledoc', 'html', 'plaintext'],
@@ -530,53 +576,26 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    orderDefaultRaw: function () {
-        return '' +
+    orderDefaultRaw: function (options) {
+        let order = '' +
             'CASE WHEN posts.status = \'scheduled\' THEN 1 ' +
             'WHEN posts.status = \'draft\' THEN 2 ' +
             'ELSE 3 END ASC,' +
             'CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,' +
             'posts.updated_at DESC,' +
             'posts.id DESC';
-    },
 
-    /**
-     * @deprecated in favour of filter
-     */
-    processOptions: function processOptions(options) {
-        if (!options.staticPages && !options.status) {
-            return options;
+        // CASE: if the filter contains an `IN` operator, we should return the posts first, which match both tags
+        if (options.filter && options.filter.match(/(tags|tag):\s?\[.*\]/)) {
+            order = `count(tags.id) DESC, ${order}`;
         }
 
-        // This is the only place that 'options.where' is set now
-        options.where = {statements: []};
-
-        // Step 4: Setup filters (where clauses)
-        if (options.staticPages && options.staticPages !== 'all') {
-            // convert string true/false to boolean
-            if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = _.includes(['true', '1'], options.staticPages);
-            }
-            options.where.statements.push({prop: 'page', op: '=', value: options.staticPages});
-            delete options.staticPages;
-        } else if (options.staticPages === 'all') {
-            options.where.statements.push({prop: 'page', op: 'IN', value: [true, false]});
-            delete options.staticPages;
+        // CASE: if the filter contains an `IN` operator, we should return the posts first, which match both authors
+        if (options.filter && options.filter.match(/(authors|author):\s?\[.*\]/)) {
+            order = `count(authors.id) DESC, ${order}`;
         }
 
-        // Unless `all` is passed as an option, filter on
-        // the status provided.
-        if (options.status && options.status !== 'all') {
-            // make sure that status is valid
-            options.status = _.includes(['published', 'draft', 'scheduled'], options.status) ? options.status : 'published';
-            options.where.statements.push({prop: 'status', op: '=', value: options.status});
-            delete options.status;
-        } else if (options.status === 'all') {
-            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft', 'scheduled']});
-            delete options.status;
-        }
-
-        return options;
+        return order;
     },
 
     /**

@@ -75,13 +75,6 @@ Tag = ghostBookshelf.Model.extend({
         return {};
     },
 
-    /**
-     * @deprecated in favour of filter
-     */
-    processOptions: function processOptions(options) {
-        return options;
-    },
-
     permittedOptions: function permittedOptions(methodName) {
         var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
 
