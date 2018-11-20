@@ -1614,6 +1614,11 @@ error@^7.0.0:
     string-template "~0.2.1"
     xtend "~4.0.0"
 
+es6-object-assign@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/es6-object-assign/-/es6-object-assign-1.1.0.tgz#c2c3582656247c39ea107cb1e6652b6f9f24523c"
+  integrity sha1-wsNYJlYkfDnqEHyx5mUrb58kUjw=
+
 escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
@@ -4131,6 +4136,15 @@ ms@2.0.0:
 ms@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.1.tgz#30a5864eb3ebb0a66f2ebe6d727af06a09d86e0a"
+
+multer-autoreap@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/multer-autoreap/-/multer-autoreap-1.0.3.tgz#a50aaeb713fa9407ac940807f6c112c6ce9df280"
+  integrity sha512-g0wISfylN2bchQglyAgQTIHoiLUcYQTXKmQh+fKJpheGay9aDqHmcMYRwWRNJ+tK95j9/NZ5QNFkqRytrgw34g==
+  dependencies:
+    debug "^3.1.0"
+    es6-object-assign "^1.1.0"
+    on-finished "^2.3.0"
 
 multer@1.4.1, multer@^1.1.0:
   version "1.4.1"
