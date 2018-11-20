@@ -1,10 +1,8 @@
 const MembersApi = require('../../lib/members');
 
-let membersApi;
-
 module.exports = {
     activate(ghost) {
-        membersApi = MembersApi();
+        const membersApi = MembersApi();
         ghost.routeService.registerRouter('/app/members/', membersApi);
     }
 };
