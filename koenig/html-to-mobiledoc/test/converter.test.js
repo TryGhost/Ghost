@@ -41,7 +41,7 @@ describe('Minimal examples', function () {
     });
 });
 
-describe.skip('Nested examples', function () {
+describe('Nested examples', function () {
     it('Can convert <div><p>Hello</p><p>World</p></div>', function () {
         const mobiledoc = converter.toMobiledoc('<div><p>Hello</p><p>World</p></div>', {plugins: []});
 
