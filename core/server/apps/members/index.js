@@ -1,8 +1,10 @@
 const MembersApi = require('../../lib/members');
 
 module.exports = {
-    activate(ghost) {
+    activate() {},
+
+    setupMiddleware(router) {
         const membersApi = MembersApi();
-        ghost.routeService.registerRouter('/app/members/', membersApi);
+        router.use('/members', membersApi.staticRouter);
     }
 };
