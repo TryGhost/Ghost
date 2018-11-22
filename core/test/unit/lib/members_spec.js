@@ -29,8 +29,8 @@ describe('MembersApi lib', function () {
                 });
             });
 
-            it('handles POST /secure/token and returns jwt', function () {
-                return got(`${apiUrl}/secure/token`, {method: 'post'})
+            it('handles POST /api/token and returns jwt', function () {
+                return got(`${apiUrl}/api/token`, {method: 'post'})
                     .then(response => {
                         should.exist(response.body);
                         should.exist(jwt.decode(response.body));
