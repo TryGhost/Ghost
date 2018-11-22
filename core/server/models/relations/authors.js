@@ -315,7 +315,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             function isCurrentOwner() {
-                return context.user === postModel.related('authors').models[0].id;
+                return postModel.related('authors').models.map(author => author.id).includes(context.user)
             }
 
             if (isContributor && isEdit) {
