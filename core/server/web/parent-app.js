@@ -5,6 +5,7 @@ const compress = require('compression');
 const netjet = require('netjet');
 const shared = require('./shared');
 const urlUtils = require('../services/url/utils');
+const MembersApi = require('../lib/members');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -41,6 +42,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use(urlUtils.getApiPath({version: 'v0.1'}), require('./api/v0.1/app')());
     parentApp.use(urlUtils.getApiPath({version: 'v2', type: 'content'}), require('./api/v2/content/app')());
     parentApp.use(urlUtils.getApiPath({version: 'v2', type: 'admin'}), require('./api/v2/admin/app')());
+    parentApp.use(urlUtils.getApiPath({version: 'v2', type: 'members'}), MembersApi().apiRouter);
 
     // ADMIN
     parentApp.use('/ghost', require('./admin')());
