@@ -74,7 +74,8 @@
             "deprecated": "v0.1",
             "v2": {
                 "admin": "v2/admin",
-                "content": "v2/content"
+                "content": "v2/content",
+                "members": "v2/members"
             },
             "v0.1": {
                 "admin": "v0.1",
