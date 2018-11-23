@@ -11,6 +11,20 @@ module.exports = function MembersApi() {
         return res.end(token);
     });
 
+    apiRouter.post('/signin', (req, res) => {
+        res.writeHead(200, {
+            'Set-Cookie': `signedin=true;HttpOnly;Max-Age=180;Path=/ghost/api/v2/members/token`
+        });
+        res.end();
+    });
+
+    apiRouter.post('/signout', (req, res) => {
+        res.writeHead(200, {
+            'Set-Cookie': `signedin=false;HttpOnly;Max-Age=-1;Path=/ghost/api/v2/members/token`
+        });
+        res.end();
+    });
+
     const staticRouter = Router();
 
     staticRouter.use(static(require('path').join(__dirname, './static')));

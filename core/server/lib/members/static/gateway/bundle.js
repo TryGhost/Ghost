@@ -27,6 +27,22 @@
         });
     });
 
+    addMethod('signin', function signin(/*options*/) {
+        return fetch(`${membersApi}/signin`, {
+            method: 'POST'
+        }).then((res) => {
+            return res.ok;
+        });
+    });
+
+    addMethod('signout', function signout(/*options*/) {
+        return fetch(`${membersApi}/signout`, {
+            method: 'POST'
+        }).then((res) => {
+            return res.ok;
+        });
+    });
+
     window.addEventListener('message', function (event) {
         if (event.origin !== origin) {
             return;
