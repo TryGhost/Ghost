@@ -24,7 +24,10 @@ const fetchAndLoadContent = (hostUrl, postId, token) => {
 
 const init = (blogUrl, postId) => {
     let hostUrl = `${blogUrl}/ghost`;
-    GhostMembersLayer2.init({reload: true}).then(({ getToken }) => {
+    GhostMembersLayer2.init({
+        reload: true,
+        blogUrl
+    }).then(({getToken}) => {
         getToken().then((token) => {
             if (token) {
                 fetchAndLoadContent(hostUrl, postId, token);
@@ -40,7 +43,7 @@ DomReady(function () {
     if (blogUrl && postId) {
         init(blogUrl, postId);
     } else {
-        GhostMembersLayer2.init({reload: true});
+        GhostMembersLayer2.init({reload: true, blogUrl});
     }
 });
 

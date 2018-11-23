@@ -1,7 +1,7 @@
 {
-  "name": "@tryghost/members-layer1",
+  "name": "@tryghost/members-layer0",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/members/layer1",
+  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/layer0",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
@@ -17,11 +17,11 @@
   "devDependencies": {
     "mocha": "5.2.0",
     "should": "13.2.3",
-    "sinon": "7.0.0"
+    "sinon": "7.1.1"
   },
   "dependencies": {
-    "@tryghost/members-layer0": "file:../layer0",
+    "bluebird": "^3.5.3",
     "ghost-ignition": "^2.9.6",
-    "jsonwebtoken": "^8.3.0"
+    "lodash": "^4.17.11"
   }
 }

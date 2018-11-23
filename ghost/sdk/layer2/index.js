@@ -9,7 +9,9 @@ function hide (el) {
 
 module.exports = {
     init: function init(options) {
-        var members = Members.create();
+        var members = Members.create({
+            blogUrl: options.blogUrl
+        });
 
         var signin = document.querySelector('[data-members-signin]');
         var signinCta = document.querySelector('[data-members-signin-cta]');
