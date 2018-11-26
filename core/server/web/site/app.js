@@ -13,6 +13,8 @@ const themeMiddleware = require('../../services/themes').middleware;
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 
+const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
+
 let router;
 
 function SiteRouter(req, res, next) {
@@ -58,7 +60,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.servePublicFile('public/404-ghost.png', 'png', constants.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
-    siteApp.use('/' + urlService.utils.STATIC_IMAGE_URL_PREFIX, storage.getStorage().serve());
+    siteApp.use(STATIC_IMAGE_URL_PREFIX, shared.middlewares.image.handleImageSizes, storage.getStorage().serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.
