@@ -30,6 +30,9 @@ const ORDERS = [{
 }, {
     name: 'Oldest',
     value: 'published_at asc'
+}, {
+    name: 'Recently updated',
+    value: 'updated_at desc'
 }];
 
 export default Controller.extend({
