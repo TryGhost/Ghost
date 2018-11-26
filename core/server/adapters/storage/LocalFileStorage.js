@@ -135,8 +135,8 @@ class LocalFileStore extends StorageBase {
      * Not implemented.
      * @returns {Promise.<*>}
      */
-    delete() {
-        return Promise.reject('not implemented');
+    delete(fileName) {
+        return fs.remove(path.join(this.storagePath, fileName));
     }
 
     /**
