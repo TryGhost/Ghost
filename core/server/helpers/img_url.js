@@ -48,6 +48,10 @@ function getImageWithSize(imagePath, requestedSize) {
         return imagePath;
     }
 
+    if (/https?:\/\//.test(imagePath)) {
+        return imagePath;
+    }
+
     const themeImageSizes = activeTheme.get().config(IMAGE_SIZES_CONFIG);
 
     if (!themeImageSizes || !themeImageSizes[requestedSize]) {
