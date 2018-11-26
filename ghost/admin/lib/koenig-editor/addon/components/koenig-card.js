@@ -15,7 +15,7 @@ export default Component.extend({
     // attrs
     editor: null,
     icon: null,
-    iconClass: 'ih5 absolute stroke-midgrey-l2 mt1 nl16 kg-icon',
+    iconClass: 'ih5 absolute stroke-midgrey-l2 mt1 nl15 kg-icon',
     toolbar: null,
     isSelected: false,
     isEditing: false,
