@@ -38,7 +38,9 @@ module.exports = function (req, res, next) {
         return storageInstance.read({path: originalImagePath})
             .then((originalImageBuffer) => {
                 return sharp(originalImageBuffer)
-                    .resize(imageSizeConfig.width, imageSizeConfig.height)
+                    .resize(imageSizeConfig.width, imageSizeConfig.height, {
+                        withoutEnlargement: true
+                    })
                     .toBuffer();
             })
             .then((resizedImageBuffer) => {
