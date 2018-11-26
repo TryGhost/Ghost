@@ -7,6 +7,8 @@ var debug = require('ghost-ignition').debug('themes'),
     settingsCache = require('../settings/cache'),
     themeStorage;
 
+const ImageStorage = require('../../adapters/storage');
+
 // @TODO: reduce the amount of things we expose to the outside world
 // Make this a nice clean sensible API we can all understand!
 module.exports = {
@@ -85,6 +87,7 @@ module.exports = {
         try {
             active.set(loadedTheme, checkedTheme, error);
             common.events.emit('services.themes.activated');
+            ImageStorage.getStorage().delete('sizes');
         } catch (err) {
             common.logging.error(new common.errors.InternalServerError({
                 message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),
