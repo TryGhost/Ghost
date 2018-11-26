@@ -54,6 +54,12 @@ function getImageWithSize(imagePath, requestedSize) {
         return imagePath;
     }
 
+    const imageSizeConfig = themeImageSizes[requestedSize];
+
+    if (!imageSizeConfig.width && !imageSizeConfig.height) {
+        return imagePath;
+    }
+
     const imageName = path.relative(STATIC_IMAGE_URL_PREFIX, imagePath);
 
     return path.join(STATIC_IMAGE_URL_PREFIX, `/sizes/${requestedSize}/`, imageName);
