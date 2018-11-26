@@ -3,6 +3,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
+const common = require('../../../../server/lib/common');
 const Queue = require('../../../../server/services/url/Queue');
 const sandbox = sinon.sandbox.create();
 
@@ -13,6 +14,7 @@ describe('Unit: services/url/Queue', function () {
         queue = new Queue();
 
         sandbox.spy(queue, 'run');
+        sandbox.stub(common.logging, 'error');
     });
 
     afterEach(function () {
@@ -130,31 +132,19 @@ describe('Unit: services/url/Queue', function () {
             });
         });
 
-        it('subscriber throws error', function (done) {
-            let i = 0;
-            let notified = 0;
-
-            queue.addListener('ended', function (event) {
-                event.should.eql('nachos');
-                queue.run.callCount.should.eql(3);
-                notified.should.eql(1);
-                done();
-            });
-
+        it('subscriber throws error', function () {
             queue.register({
                 event: 'nachos'
             }, function () {
-                if (i === 0) {
-                    i = i + 1;
-                    throw new Error('oops');
-                }
-
-                notified = notified + 1;
+                throw new Error('oops');
             });
 
             queue.start({
                 event: 'nachos'
             });
+
+            common.logging.error.calledOnce.should.be.true();
+            queue.toNotify['nachos'].notified.length.should.eql(0);
         });
     });
 

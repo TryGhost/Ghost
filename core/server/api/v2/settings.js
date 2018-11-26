@@ -126,18 +126,49 @@ module.exports = {
                 .then(() => {
                     const siteApp = require('../../web/site/app');
 
-                    try {
-                        return siteApp.reload();
-                    } catch (err) {
-                        // bring back backup, otherwise your Ghost blog is broken
+                    const bringBackValidRoutes = () => {
+                        urlService.resetGenerators({releaseResourcesOnly: true});
+
                         return fs.copy(backupRoutesPath, `${config.getContentPath('settings')}/routes.yaml`)
                             .then(() => {
                                 return siteApp.reload();
-                            })
-                            .then(() => {
+                            });
+                    };
+
+                    try {
+                        siteApp.reload();
+                    } catch (err) {
+                        return bringBackValidRoutes()
+                            .finally(() => {
                                 throw err;
                             });
                     }
+
+                    let tries = 0;
+
+                    function isBlogRunning() {
+                        return Promise.delay(1000)
+                            .then(() => {
+                                if (!urlService.hasFinished()) {
+                                    if (tries > 5) {
+                                        throw new common.errors.InternalServerError({
+                                            message: 'Could not load routes.yaml file.'
+                                        });
+                                    }
+
+                                    tries = tries + 1;
+                                    return isBlogRunning();
+                                }
+                            });
+                    }
+
+                    return isBlogRunning()
+                        .catch((err) => {
+                            return bringBackValidRoutes()
+                                .finally(() => {
+                                    throw err;
+                                });
+                        });
                 });
         }
     },

@@ -126,8 +126,7 @@ class Queue extends EventEmitter {
                     err: err
                 }));
 
-                // just try again
-                this.run(options);
+                // @NOTE: The url service stays in maintenance mode. There is nothing we can do if an url generator fails.
             }
         } else {
             // CASE 1: zero tolerance, kill run fn
