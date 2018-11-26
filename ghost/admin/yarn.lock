@@ -6002,10 +6002,10 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.42:
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.42.tgz#31e04c03bd4889be21a714f11031eb6cdaf1e739"
-  integrity sha512-ywcpaiz1OpzJiFY45jbbGmMkjAMG/dgpw9Phn03xNCRf1fTk1y04uRt5ZVjFAwSBGkCTlMEKIie+nXNU9JZZfg==
+ghost-spirit@0.0.48:
+  version "0.0.48"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.48.tgz#fc686f0830dcb6af0733b1b72a154774c25d566f"
+  integrity sha512-+K6oguMAlef3LbNDrIrXP+l9ogouQ4O1HKSWGcm2VzS/mPius2Nyu4DbpjULo4DoWC5JNE3B2g7kEXVDO4FeEA==
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"
