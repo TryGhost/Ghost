@@ -31,15 +31,17 @@ export default Component.extend({
         return authors.map(author => author.get('name') || author.get('email')).join(', ');
     }),
 
-    // HACK: this is intentionally awful due to time constraints
-    // TODO: find a better way to get an excerpt! :)
-    subText: computed('post.{plaintext,metaDescription}', function () {
+    subText: computed('post.{plaintext,customExcerpt,metaDescription}', function () {
         let text = this.get('post.plaintext') || '';
+        let customExcerpt = this.get('post.customExcerpt');
         let metaDescription = this.get('post.metaDescription');
 
-        if (!isBlank(metaDescription)) {
+        if (!isBlank(customExcerpt)) {
+            text = customExcerpt;
+        } else if (!isBlank(metaDescription)) {
             text = metaDescription;
         }
+
         return `${text.slice(0, 80)}...`;
     }),
 
