@@ -55,10 +55,6 @@ class ThemeStorage extends LocalFileStorage {
                 });
         };
     }
-
-    delete(fileName) {
-        return fs.remove(path.join(this.storagePath, fileName));
-    }
 }
 
 module.exports = ThemeStorage;
