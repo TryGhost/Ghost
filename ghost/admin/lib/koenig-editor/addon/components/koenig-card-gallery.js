@@ -167,8 +167,12 @@ export default Component.extend({
             this.images.removeObject(image);
 
             this._buildAndSaveImagesPayload();
-
-            this.set('errorMessage', 'Some images failed to upload');
+            let fileName = (uploadResult.fileName.length > 20) ? `${uploadResult.fileName.substr(0, 20)}...` : uploadResult.fileName;
+            this.set('errorMessage', `${fileName} failed to upload`);
+        },
+        handleErrors(errors) {
+            let errorMssg = ((errors[0] && errors[0].message)) || 'Some images failed to upload';
+            this.set('errorMessage', errorMssg);
         },
 
         clearErrorMessage() {

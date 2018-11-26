@@ -21,6 +21,7 @@
         onUploadStart=(action "addImage")
         onUploadSuccess=(action "setImageSrc")
         onUploadFailure=(action "uploadFailed")
+        onFailed=(action "handleErrors")
         as |uploader|
     }}
         <div class="relative{{unless images " bg-whitegrey-l2"}}">
