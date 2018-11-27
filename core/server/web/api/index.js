@@ -12,7 +12,7 @@ module.exports = function setupApiApp() {
     apiApp.use(urlUtils.getVersionPath({version: 'v0.1'}), require('./v0.1/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
-    apiApp.use(urlUtils.getApiPath({version: 'v2', type: 'members'}), MembersApi().apiRouter);
+    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'members'}), MembersApi().apiRouter);
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
