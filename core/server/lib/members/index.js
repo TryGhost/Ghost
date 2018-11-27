@@ -1,5 +1,6 @@
 const {Router, static} = require('express');
 const cookie = require('cookie');
+const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
 module.exports = function MembersApi() {
@@ -17,7 +18,15 @@ module.exports = function MembersApi() {
         return res.end(token);
     });
 
-    apiRouter.post('/signin', (req, res) => {
+    apiRouter.post('/signin', body.json(), (req, res) => {
+        if (!req.body || !req.body.username || !req.body.password) {
+            res.writeHead(400);
+            return res.end();
+        }
+        if (req.body.username !== 'member@member.com' || req.body.password !== 'hunter2') {
+            res.writeHead(401);
+            return res.end();
+        }
         res.writeHead(200, {
             'Set-Cookie': cookie.serialize('signedin', true, {
                 maxAge: 180,
