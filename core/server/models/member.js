@@ -15,7 +15,7 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'tag' + '.' + event;
+        const eventToTrigger = 'member' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 

@@ -9,7 +9,7 @@ const Credential = ghostBookshelf.Model.extend({
     },
 
     emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'tag' + '.' + event;
+        const eventToTrigger = 'credential' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
