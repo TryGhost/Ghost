@@ -1,10 +1,9 @@
-const MembersApi = require('../../lib/members');
+const membersService = require('../../services/members');
 
 module.exports = {
     activate() {},
 
     setupMiddleware(router) {
-        const membersApi = MembersApi();
-        router.use('/members', membersApi.staticRouter);
+        router.use('/members', membersService.api.staticRouter);
     }
 };
