@@ -1,4 +1,4 @@
-const MembersApi = require('@tryghost/members-api');
+const MembersApi = require('../../lib/members');
 
 const api = MembersApi();
 
