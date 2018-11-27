@@ -7,6 +7,12 @@ module.exports = function MembersApi() {
     const apiRouter = Router();
 
     apiRouter.post('/token', (req, res) => {
+        const cookie = req.headers.cookie;
+        const signedin = /signedin=true;/.test(cookie);
+        if (!signedin) {
+            res.writeHead(401);
+            return res.end();
+        }
         const token = jwt.sign({}, null, {algorithm: 'none'});
         return res.end(token);
     });
