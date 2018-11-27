@@ -29,7 +29,7 @@ describe('MembersApi lib', function () {
                 });
             });
 
-            it('handles POST /api/token and returns jwt', function () {
+            it.skip('handles POST /api/token and returns jwt', function () {
                 return got(`${apiUrl}/api/token`, {method: 'post'})
                     .then(response => {
                         should.exist(response.body);
