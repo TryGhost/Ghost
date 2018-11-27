@@ -23,7 +23,10 @@
         });
     }
 
-    document.querySelector('button.signin').addEventListener('click', function () {
-        signin();
+    document.querySelector('form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const username = event.target.elements.username.value;
+        const password = event.target.elements.password.value;
+        signin(username, password);
     });
 })();
