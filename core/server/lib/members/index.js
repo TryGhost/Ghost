@@ -1,4 +1,5 @@
 const {Router, static} = require('express');
+const cookie = require('cookie');
 const jwt = require('jsonwebtoken');
 
 module.exports = function MembersApi() {
@@ -7,8 +8,7 @@ module.exports = function MembersApi() {
     const apiRouter = Router();
 
     apiRouter.post('/token', (req, res) => {
-        const cookie = req.headers.cookie;
-        const signedin = /signedin=true;/.test(cookie);
+        const {signedin} = cookie.parse(req.headers.cookie);
         if (!signedin) {
             res.writeHead(401);
             return res.end();
@@ -19,14 +19,24 @@ module.exports = function MembersApi() {
 
     apiRouter.post('/signin', (req, res) => {
         res.writeHead(200, {
-            'Set-Cookie': `signedin=true;HttpOnly;Max-Age=180;Path=/ghost/api/v2/members/token`
+            'Set-Cookie': cookie.serialize('signedin', true, {
+                maxAge: 180,
+                path: '/ghost/api/v2/members/token',
+                sameSite: 'strict',
+                httpOnly: true
+            })
         });
         res.end();
     });
 
     apiRouter.post('/signout', (req, res) => {
         res.writeHead(200, {
-            'Set-Cookie': `signedin=false;HttpOnly;Max-Age=-1;Path=/ghost/api/v2/members/token`
+            'Set-Cookie': cookie.serialize('signedin', false, {
+                maxAge: 0,
+                path: '/ghost/api/v2/members/token',
+                sameSite: 'strict',
+                httpOnly: true
+            })
         });
         res.end();
     });
