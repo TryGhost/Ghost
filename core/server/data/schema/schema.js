@@ -384,12 +384,12 @@ module.exports = {
     },
     members_passwords: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false},
-        credential_id: {type: 'string', maxlength: 24, nullable: false}
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: true},
+        credential_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
     },
     members_tokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false},
-        credential_id: {type: 'string', maxlength: 24, nullable: false}
+        credential_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
     }
 };
