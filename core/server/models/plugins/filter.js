@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
@@ -24,11 +25,23 @@ const RELATIONS = {
 const ALIASES = [{
     key: 'primary_tag',
     replacement: 'tags.slug',
-    filter: 'posts_tags.sort_order:0+visibility:public'
+    filter: {
+        $and: [{
+            'posts_tags.sort_order': 0
+        }, {
+            'tags.visibility': 'public'
+        }]
+    }
 }, {
     key: 'primary_author',
     replacement: 'users.slug',
-    filter: 'posts_authors.sort_order:0+visibility:public'
+    filter: {
+        $and: [{
+            'posts_authors.sort_order': 0
+        }, {
+            'users.visibility': 'public'
+        }]
+    }
 }, {
     key: 'authors',
     replacement: 'authors.slug'
@@ -45,6 +58,46 @@ const ALIASES = [{
 
 // @TODO: The filter utility lives here temporary.
 const filterUtils = {
+    /**
+     * Combines two filters with $and conjunction
+     */
+    combineFilters: (primary, secondary) => {
+        if (_.isEmpty(primary)) {
+            return secondary;
+        }
+
+        if (_.isEmpty(secondary)) {
+            return primary;
+        }
+
+        return {
+            $and: [primary, secondary]
+        };
+    },
+
+    reduceFilters: (primary, secondary) => {
+        if (!primary || !secondary) {
+            return secondary;
+        }
+
+        Object.keys(secondary).forEach((key) => {
+            if (primary.hasOwnProperty(key)) {
+                delete secondary[key];
+            }
+
+            if (['$and', '$or'].includes(key)) {
+                // @TODO: add cleanup of empty array
+                secondary[key] = secondary[key]
+                    .map((statement) => {
+                        return filterUtils.reduceFilters(primary, statement);
+                    })
+                    .filter(statement => (!_.isEmpty(statement)));
+            }
+        });
+
+        return secondary;
+    },
+
     /**
      * ## Get filter keys
      *
@@ -70,7 +123,7 @@ const filterUtils = {
      * ('featured:true', 'featured:false') => ''
      * ('featured:true', 'featured:false,status:published') => 'status:published'
      */
-    reduceFilters: (primary, secondary) => {
+    xreduceFilters: (primary, secondary) => {
         if (!primary || !secondary) {
             return secondary;
         }
@@ -105,9 +158,8 @@ const filterUtils = {
      */
     mergeFilters: ({enforced, defaults, custom, extra} = {}) => {
         if (extra) {
-            // NOTE: check if custom and extra are treated as 'and'?
             if (custom) {
-                custom += `+${extra}`;
+                custom = filterUtils.combineFilters(custom, extra);
             } else {
                 custom = extra;
             }
@@ -117,25 +169,25 @@ const filterUtils = {
             return custom;
         }
 
-        let merged = '';
+        let merged = {};
 
         if (enforced) {
-            merged += enforced;
+            merged = enforced;
         }
 
         if (custom) {
             custom = filterUtils.reduceFilters(merged, custom);
 
-            if (custom) {
-                merged = merged ? `${merged}+${custom}` : custom;
+            if (!_.isEmpty(custom)) {
+                merged = merged ? filterUtils.combineFilters(merged, custom) : custom;
             }
         }
 
         if (defaults) {
             defaults = filterUtils.reduceFilters(merged, defaults);
 
-            if (defaults) {
-                merged = merged ? `${merged}+${defaults}` : defaults;
+            if (!_.isEmpty(defaults)) {
+                merged = merged ? filterUtils.combineFilters(merged, defaults) : defaults;
             }
         }
 
@@ -145,9 +197,9 @@ const filterUtils = {
     /**
      * ## Process Filters
      * Util that substitutes aliases and expands expressions with custom filters
-     *
      */
     processFilters: (filter, aliases) => {
+        // @TODO: needs to be replaced with mongo json util
         let processed = filter;
 
         aliases.forEach((alias) => {
@@ -198,10 +250,10 @@ const filter = function filter(Bookshelf) {
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
 
-            const custom = options.filter;
-            const defaults = this.defaultFilters(options);
-            const enforced = this.enforcedFilters(options);
-            const extra = this.extraFilters(options);
+            const custom = options.filter ? nql(options.filter).parse() : null;
+            const defaults = this.defaultFilters(options) ? nql(this.defaultFilters(options)) : null;
+            const enforced = this.enforcedFilters(options) ? nql(this.enforcedFilters(options)) : null;
+            const extra = this.extraFilters(options) ? nql(this.extraFilters(options)) : null;
 
             debug('custom', custom);
             debug('extra', extra);
@@ -220,6 +272,7 @@ const filter = function filter(Bookshelf) {
 
             if (filter) {
                 this.query((qb) => {
+                    // @TODO: change NQL api to accept mongo json instead of nql string
                     nql(processedFilter, RELATIONS).querySQL(qb);
                 });
             }
