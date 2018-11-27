@@ -39,8 +39,25 @@
         return fetch(`${membersApi}/signout`, {
             method: 'POST'
         }).then((res) => {
+            window.localStorage.removeItem('signedin');
             return res.ok;
         });
+    });
+
+    window.addEventListener('storage', function (event) {
+        if (event.storageArea !== window.localStorage) {
+            return;
+        }
+        const newValue = event.newValue;
+        const oldValue = event.oldValue;
+        if (event.key === 'signedin') {
+            if (newValue && !oldValue) {
+                return window.parent.postMessage({event: 'signedin'}, origin);
+            }
+            if (!newValue && oldValue) {
+                return window.parent.postMessage({event: 'signedout'}, origin);
+            }
+        }
     });
 
     window.addEventListener('message', function (event) {
