@@ -23,6 +23,10 @@
         return fetch(`${membersApi}/token`, {
             method: 'POST'
         }).then((res) => {
+            if (!res.ok) {
+                window.localStorage.removeItem('signedin');
+                return null;
+            }
             return res.text();
         });
     });
