@@ -1,5 +1,9 @@
 const ghostBookshelf = require('./base');
 
+ghostBookshelf.model('MemberPassword', ghostBookshelf.Model.extend({
+    tableName: 'members_passwords'
+}));
+
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
@@ -39,7 +43,7 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     password: function password() {
-        return this.belongsToMany('Credential', 'members_passwords');
+        return this.hasOne('Credential').through('MemberPassword', 'id');
     },
 
     tokens: function tokens() {
