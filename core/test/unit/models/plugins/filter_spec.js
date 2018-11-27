@@ -370,12 +370,31 @@ describe('Filter', function () {
                     const input = {
                         enforced: 'featured:true',
                         defaults: 'page:false',
-                        custom: 'page:true',
-                        extra: `status:['draft']`
+                        custom: 'status:[draft,published]',
                     };
-                    const output = `featured:true+page:true+status:['draft']`;
+                    const output = `featured:true+page:true+status:[draft]`;
 
                     mergeFilters(input).should.equal(output);
+                });
+
+                it('does not match incorrect custom filters', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        defaults: 'page:false',
+                        custom: 'page:true,statusstatus::5Bdraft%2Cpublished%5D'
+                    };
+
+                    should.throws(() => (mergeFilters(input)));
+                });
+
+                it('should throw when custom filter is invalid NQL', () => {
+                    const input = {
+                        enforced: 'status:published',
+                        defaults: 'page:false',
+                        custom: 'statusstatus::[draft,published]'
+                    };
+
+                    should.throws(() => (mergeFilters(input)));
                 });
             });
         });
