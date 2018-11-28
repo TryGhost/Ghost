@@ -33,10 +33,7 @@ module.exports = function MembersApi({createMember, validateMember}) {
                 'Set-Cookie': setCookie(member)
             });
             res.end();
-        }).catch((err) => {
-            res.writeHead(400);
-            res.end(err.message);
-        });
+        }).catch(handleError(400, res));
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {
@@ -53,10 +50,7 @@ module.exports = function MembersApi({createMember, validateMember}) {
                 'Set-Cookie': setCookie(member)
             });
             res.end();
-        }).catch((err) => {
-            res.writeHead(401);
-            res.end(err.message);
-        });
+        }).catch(handleError(401, res));
     });
 
     function setCookie(member) {
@@ -118,4 +112,11 @@ function getData(req, res, ...props) {
         return {};
     }
     return data;
+}
+
+function handleError(status, res) {
+    return function (err) {
+        res.writeHead(status);
+        res.end(err.message);
+    };
 }
