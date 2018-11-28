@@ -1,9 +1,10 @@
+const crypto = require('crypto');
 const {Router, static} = require('express');
 const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi() {
+module.exports = function MembersApi({createMember, validateMember, updateMember, sendEmail}) {
     const router = Router();
 
     const apiRouter = Router();
@@ -18,24 +19,74 @@ module.exports = function MembersApi() {
         return res.end(token);
     });
 
+    apiRouter.post('/reset-password', body.json(), (req, res) => {
+        const {email} = getData(req, res, 'email');
+        if (res.ended) {
+            return;
+        }
+
+        const token = crypto.randomBytes(16).toString('hex');
+
+        updateMember({email}, {token}).then((member) => {
+            return sendEmail(member, {token});
+        }).then(() => {
+            res.writeHead(200);
+            res.end();
+        }).catch(handleError(400, res));
+    });
+
+    apiRouter.post('/verify', body.json(), (req, res) => {
+        const {
+            token,
+            password
+        } = getData(req, res, 'token', 'password');
+        if (res.ended) {
+            return;
+        }
+
+        validateMember({token}).then((member) => {
+            return updateMember(member, {password});
+        }).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch(handleError(401, res));
+    });
+
+    apiRouter.post('/signup', body.json(), (req, res) => {
+        const {
+            name,
+            email,
+            password
+        } = getData(req, res, 'name', 'email', 'password');
+        if (res.ended) {
+            return;
+        }
+
+        createMember({name, email, password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch(handleError(400, res));
+    });
+
     apiRouter.post('/signin', body.json(), (req, res) => {
-        if (!req.body || !req.body.username || !req.body.password) {
-            res.writeHead(400);
-            return res.end();
+        const {
+            email,
+            password
+        } = getData(req, res, 'email', 'password');
+        if (res.ended) {
+            return;
         }
-        if (req.body.username !== 'member@member.com' || req.body.password !== 'hunter2') {
-            res.writeHead(401);
-            return res.end();
-        }
-        res.writeHead(200, {
-            'Set-Cookie': cookie.serialize('signedin', true, {
-                maxAge: 180,
-                path: '/ghost/api/v2/members/token',
-                sameSite: 'strict',
-                httpOnly: true
-            })
-        });
-        res.end();
+
+        validateMember({email, password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch(handleError(401, res));
     });
 
     apiRouter.post('/signout', (req, res) => {
@@ -66,3 +117,42 @@ module.exports = function MembersApi() {
 
     return httpHandler;
 };
+
+function getData(req, res, ...props) {
+    if (!req.body) {
+        res.writeHead(400);
+        return res.end();
+    }
+
+    const data = props.reduce((data, prop) => {
+        if (!data || !req.body[prop]) {
+            return null;
+        }
+        return Object.assign(data, {
+            [prop]: req.body[prop]
+        });
+    }, {});
+
+    if (!data) {
+        res.writeHead(400);
+        res.end(`Expected {${props.join(', ')}}`);
+        return {};
+    }
+    return data;
+}
+
+function handleError(status, res) {
+    return function (err) {
+        res.writeHead(status);
+        res.end(err.message);
+    };
+}
+
+function setCookie(member) {
+    return cookie.serialize('signedin', member.id, {
+        maxAge: 180,
+        path: '/ghost/api/v2/members/token',
+        sameSite: 'strict',
+        httpOnly: true
+    });
+}

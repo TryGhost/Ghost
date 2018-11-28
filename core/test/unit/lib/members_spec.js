@@ -11,13 +11,13 @@ describe('MembersApi lib', function () {
 
     describe('MembersApi()', function () {
         it('returns a function', function () {
-            should.equal(typeof MembersApi(), 'function');
+            should.equal(typeof MembersApi({}), 'function');
         });
 
         describe('HTTP requests', function () {
             let apiUrl;
             before(function (done) {
-                const api = MembersApi();
+                const api = MembersApi({});
                 const server = http.createServer(api);
                 server.listen(0, '0.0.0.0', () => {
                     const {address, port} = server.address();
