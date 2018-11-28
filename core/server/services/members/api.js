@@ -24,7 +24,7 @@ function validateMember({email, password}) {
     if (db[email].password !== password) {
         return Promise.reject('Incorrect password');
     }
-    return Promise.resolve();
+    return Promise.resolve(db[email]);
 }
 
 const api = MembersApi({createMember, validateMember});
