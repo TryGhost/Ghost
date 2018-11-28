@@ -1,17 +1,12 @@
 const ghostBookshelf = require('./base');
 
-ghostBookshelf.model('MemberPassword', ghostBookshelf.Model.extend({
-    tableName: 'members_passwords'
-}));
-
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
     relationships: ['tokens', 'password'],
-
     relationshipBelongsTo: {
-        tokens: 'tokens',
-        password: 'password'
+        tokens: 'credentials',
+        password: 'credentials'
     },
 
     emitChange: function emitChange(event, options) {
@@ -43,11 +38,11 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     password: function password() {
-        return this.hasOne('Credential').through('MemberPassword', 'id');
+        return this.belongsToMany('Credential', 'members_passwords', 'member_id', 'credential_id');
     },
 
     tokens: function tokens() {
-        return this.belongsToMany('Credential', 'members_tokens');
+        return this.belongsToMany('Credential', 'members_tokens', 'member_id', 'credential_id');
     },
 
     permittedAttributes(...args) {

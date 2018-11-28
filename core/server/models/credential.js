@@ -4,8 +4,18 @@ const security = require('../lib/security');
 const Credential = ghostBookshelf.Model.extend({
     tableName: 'credentials',
 
-    member() {
-        return this.belongsTo('Member');
+    relationships: ['passwordFor', 'tokenFor'],
+    relationshipBelongsTo: {
+        passwordFor: 'members',
+        tokenFor: 'members'
+    },
+
+    passwordFor() {
+        return this.belongsToMany('Member', 'members_passwords', 'credential_id', 'member_id').first();
+    },
+
+    tokenFor() {
+        return this.belongsToMany('Member', 'members_tokens', 'credential_id', 'member_id').first();
     },
 
     emitChange: function emitChange(event, options) {
