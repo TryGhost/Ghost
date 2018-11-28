@@ -35,6 +35,25 @@ module.exports = function MembersApi({createMember, validateMember, updateMember
         }).catch(handleError(400, res));
     });
 
+    apiRouter.post('/verify', body.json(), (req, res) => {
+        const {
+            token,
+            password
+        } = getData(req, res, 'token', 'password');
+        if (res.ended) {
+            return;
+        }
+
+        validateMember({token}).then((member) => {
+            return updateMember(member, {password});
+        }).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch(handleError(401, res));
+    });
+
     apiRouter.post('/signup', body.json(), (req, res) => {
         const {
             name,
