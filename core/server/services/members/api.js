@@ -65,6 +65,7 @@ function updateMember({email}, data) {
 }
 
 function sendEmail(member, {token}) {
+    /* eslint-disable */
     console.log(`
   From: members@ghost.com
   To: ${member.email}
@@ -76,6 +77,7 @@ function sendEmail(member, {token}) {
   The token is
       ${token}
 `);
+    /* eslint-enable */
     return Promise.resolve();
 }
 
