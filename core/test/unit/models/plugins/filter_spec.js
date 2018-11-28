@@ -386,14 +386,29 @@ describe('Filter', function () {
                     mergeFilters(input).should.eql(output);
                 });
 
-                xit('should reduce default filters if default and custom overlap', () => {
+                it('should reduce default filters if default and custom overlap', () => {
                     const input = {
-                        defaults: 'page:false,author:cameron',
-                        custom: 'tag:photo+page:true',
+                        defaults: {$or:[
+                            {page:false},
+                            {author:'cameron'}
+                        ]},
+                        custom: {$and: [
+                            {tag: 'photo'},
+                            {page: true}
+                        ]}
                     };
-                    const output = 'tag:photo+page:true+author:cameron';
 
-                    mergeFilters(input).should.equal(output);
+                    const output = {$and:[
+                        {$and: [
+                            {tag:'photo'},
+                            {page:true},
+                        ]},
+                        {$or: [
+                            {author:"cameron"}
+                        ]}
+                    ]};
+
+                    mergeFilters(input).should.eql(output);
                 });
 
                 xit('should return a merger of enforced and defaults plus custom filters if provided', () => {
@@ -506,6 +521,24 @@ describe('Filter', function () {
                 const output = {$or: [{
                     status: 'published'
                 }]};
+
+                rejectFilters(secondary, testFunction(primary)).should.eql(output);
+            });
+
+            it.only('reduces secondary part of filter if key matches in primary filter in a group', () => {
+                const primary = {$and: [
+                    {tag: 'photo'},
+                    {page: true}
+                ]};
+
+                const secondary = {$or:[
+                    {page:false},
+                    {author:'cameron'}
+                ]};
+
+                const output = {$or: [
+                    {author:"cameron"}
+                ]};
 
                 rejectFilters(secondary, testFunction(primary)).should.eql(output);
             });

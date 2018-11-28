@@ -83,7 +83,9 @@ const filterUtils = {
             } else if (key === '$or') {
                 return filterUtils.findStatement(obj.$or, match);
             } else {
-                if (_.isObject(match)) {
+                if (_.isObject(value)) {
+                    return filterUtils.findStatement(value, match);
+                } else if (_.isObject(match)) {
                     return _.has(match, key);
                 } else {
                     return key === match;
