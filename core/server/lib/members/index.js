@@ -19,15 +19,13 @@ module.exports = function MembersApi({createMember, validateMember}) {
     });
 
     apiRouter.post('/signup', body.json(), (req, res) => {
-        if (!req.body) {
-            res.writeHead(400);
-            return res.end();
-        }
-        const {name, email, password} = req.body;
-
-        if (!name || !email || !password) {
-            res.writeHead(400);
-            return res.end('/signup expects {name, email, password}');
+        const {
+            name,
+            email,
+            password
+        } = getData(req, res, 'name', 'email', 'password');
+        if (res.ended) {
+            return;
         }
 
         createMember({name, email, password}).then((member) => {
@@ -42,15 +40,12 @@ module.exports = function MembersApi({createMember, validateMember}) {
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {
-        if (!req.body) {
-            res.writeHead(400);
-            return res.end();
-        }
-        const {email, password} = req.body;
-
-        if (!email || !password) {
-            res.writeHead(400);
-            return res.end('/signin expects {email, password}');
+        const {
+            email,
+            password
+        } = getData(req, res, 'email', 'password');
+        if (res.ended) {
+            return;
         }
 
         validateMember({email, password}).then((member) => {
@@ -101,3 +96,26 @@ module.exports = function MembersApi({createMember, validateMember}) {
 
     return httpHandler;
 };
+
+function getData(req, res, ...props) {
+    if (!req.body) {
+        res.writeHead(400);
+        return res.end();
+    }
+
+    const data = props.reduce((data, prop) => {
+        if (!data || !req.body[prop]) {
+            return null;
+        }
+        return Object.assign(data, {
+            [prop]: req.body[prop]
+        });
+    }, {});
+
+    if (!data) {
+        res.writeHead(400);
+        res.end(`Expected {${props.join(', ')}}`);
+        return {};
+    }
+    return data;
+}
