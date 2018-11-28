@@ -377,19 +377,15 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
-    credentials: {
+    member_passwords: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        secret: {type: 'string', maxlength: 191, nullable: false},
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
+    },
+    member_tokens: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        secret: {type: 'string', maxlength: 191, nullable: false},
         expires: {type: 'bigInteger', nullable: false},
-        secret: {type: 'string', maxlength: 191, nullable: false}
-    },
-    members_passwords: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, unique: true},
-        credential_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
-    },
-    members_tokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false},
-        credential_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
+        member_id: {type: 'string', maxlength: 24, nullable: false}
     }
 };

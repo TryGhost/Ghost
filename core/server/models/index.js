@@ -34,7 +34,10 @@ models = [
     'webhook',
     'integration',
     'api-key',
-    'mobiledoc-revision'
+    'mobiledoc-revision',
+    'member',
+    'member-password',
+    'member-token'
 ];
 
 function init() {
