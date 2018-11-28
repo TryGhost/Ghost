@@ -4,6 +4,8 @@ const emailIdx = {
     'member@member.com': 'id-0'
 };
 
+const tokenIdx = {};
+
 const db = {
     'id-0': {
         email: 'member@member.com',
@@ -38,7 +40,11 @@ function updateMember({email}, data) {
     if (!id) {
         return Promise.reject('Could not find user');
     }
-    db[id] = Object.assign(db[email], data);
+    if (data.token) {
+        tokenIdx[data.token] = id;
+        delete data.token;
+    }
+    db[id] = Object.assign(db[id], data);
     if (data.email) {
         delete emailIdx[email];
         emailIdx[db[id].email] = id;
