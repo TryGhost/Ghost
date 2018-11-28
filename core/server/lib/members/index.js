@@ -19,11 +19,11 @@ module.exports = function MembersApi() {
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {
-        if (!req.body || !req.body.username || !req.body.password) {
+        if (!req.body || !req.body.email || !req.body.password) {
             res.writeHead(400);
             return res.end();
         }
-        if (req.body.username !== 'member@member.com' || req.body.password !== 'hunter2') {
+        if (req.body.email !== 'member@member.com' || req.body.password !== 'hunter2') {
             res.writeHead(401);
             return res.end();
         }

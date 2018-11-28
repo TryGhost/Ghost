@@ -6,14 +6,14 @@
     const storage = window.localStorage;
     const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
 
-    function signin(username, password) {
+    function signin(email, password) {
         fetch(`${membersApi}/signin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username, password
+                email, password
             })
         }).then((res) => {
             if (!res.ok) {
@@ -25,8 +25,8 @@
 
     document.querySelector('form').addEventListener('submit', function (event) {
         event.preventDefault();
-        const username = event.target.elements.username.value;
+        const email = event.target.elements.email.value;
         const password = event.target.elements.password.value;
-        signin(username, password);
+        signin(email, password);
     });
 })();
