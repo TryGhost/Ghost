@@ -71,7 +71,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
 
                     return existing.updatePivot({
                         sort_order: index
-                    }, _.extend({}, options, queryOptions));
+                    }, _.extend({}, options, queryOptions)).catch(function () {});
                 });
             },
             beforeRelationCreation: function onCreatingRelation(model, data) {
