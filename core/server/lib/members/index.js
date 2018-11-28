@@ -3,7 +3,7 @@ const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi() {
+module.exports = function MembersApi({validateMember}) {
     const router = Router();
 
     const apiRouter = Router();
@@ -19,24 +19,36 @@ module.exports = function MembersApi() {
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {
-        if (!req.body || !req.body.username || !req.body.password) {
+        if (!req.body) {
             res.writeHead(400);
             return res.end();
         }
-        if (req.body.username !== 'member@member.com' || req.body.password !== 'hunter2') {
-            res.writeHead(401);
-            return res.end();
+        const {email, password} = req.body;
+
+        if (!email || !password) {
+            res.writeHead(400);
+            return res.end('/signin expects {email, password}');
         }
-        res.writeHead(200, {
-            'Set-Cookie': cookie.serialize('signedin', true, {
-                maxAge: 180,
-                path: '/ghost/api/v2/members/token',
-                sameSite: 'strict',
-                httpOnly: true
-            })
+
+        validateMember({email, password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch((err) => {
+            res.writeHead(401);
+            res.end(err.message);
         });
-        res.end();
     });
+
+    function setCookie(member) {
+        return cookie.serialize('signedin', member.id, {
+            maxAge: 180,
+            path: '/ghost/api/v2/members/token',
+            sameSite: 'strict',
+            httpOnly: true
+        });
+    }
 
     apiRouter.post('/signout', (req, res) => {
         res.writeHead(200, {
