@@ -344,7 +344,7 @@ describe('Filter', function () {
                     mergeFilters(input).should.eql(output);
                 });
 
-                it.skip('should reduce custom filters if any matches enforced', () => {
+                it('should reduce custom filters if any matches enforced', () => {
                     const input = {
                         enforced: {status:'published'},
                         custom: {$or: [
@@ -354,30 +354,36 @@ describe('Filter', function () {
                     };
                     const output = {$and:[
                         {status:'published'},
-                        {tag:'photo'}
+                        {$or: [
+                            {tag:'photo'}
+                        ]}
                     ]};
 
-                    mergeFilters(input).should.equal(output);
+                    mergeFilters(input).should.eql(output);
                 });
 
-                xit('should combine default filters if default and custom are provided', () => {
+                it('should combine default filters if default and custom are provided', () => {
                     const input = {
-                        defaults: 'page:false',
-                        custom: 'tag:photo',
+                        defaults: {page:false},
+                        custom: {tag:'photo'},
                     };
-                    const output = 'tag:photo+page:false';
 
-                    mergeFilters(input).should.equal(output);
+                    const output = {$and:[
+                        {tag:'photo'},
+                        {page:false}
+                    ]};
+
+                    mergeFilters(input).should.eql(output);
                 });
 
-                xit('should reduce default filters if default and custom are same', () => {
+                it('should reduce default filters if default and custom are same', () => {
                     const input = {
-                        defaults: 'page:false',
-                        custom: 'page:true',
+                        defaults: {page:false},
+                        custom: {page:true},
                     };
-                    const output = 'page:true';
+                    const output = {page:true};
 
-                    mergeFilters(input).should.equal(output);
+                    mergeFilters(input).should.eql(output);
                 });
 
                 xit('should reduce default filters if default and custom overlap', () => {
@@ -448,25 +454,41 @@ describe('Filter', function () {
 
         describe('Reject filters', () => {
             let rejectFilters;
+            let testFunction;
 
             beforeEach(function () {
                 rejectFilters = filter.__get__('filterUtils').rejectFilters;
+                const findStatement = filter.__get__('filterUtils').findStatement;
+
+                testFunction = (statements) => {
+                    return (match) => {
+                        return findStatement(statements, match);
+                        // return lodashStmt.matchStatement(statement, fields ? _.pick(match, fields) : match);
+                    };
+                };
             });
 
-            it('returns secondary filter if primary is empty', () => {
-                rejectFilters(null, {featured: true}).should.eql({featured: true});
+            it('should reject from a simple object', () => {
+                const statements = {featured: true};
+
+                rejectFilters(statements, testFunction({featured: false}))
+                    .should.eql({});
+            });
+
+            it('should NOT reject from a simple object when not matching', () => {
+                const statements = {featured: true};
+
+                rejectFilters(statements, testFunction({status: 'published'}))
+                    .should.eql({featured: true});
             });
 
             it('returns secondary intact if it is empty', () => {
-                should.equal(rejectFilters({featured: true}, null), null);
+                should.equal(rejectFilters(null, testFunction({featured: true})), null);
             });
 
             it('does NOT reduce secondary filter if no key matches in primary filter', () => {
-                rejectFilters({featured: true}, {status: 'published'}).should.eql({status: 'published'});
-            });
-
-            it('reduces secondary filter if key matches in primary filter', () => {
-                rejectFilters({featured: true}, {featured: false}).should.eql({});
+                rejectFilters({status: 'published'}, testFunction({featured: true}))
+                    .should.eql({status: 'published'});
             });
 
             it('reduces secondary part of filter if key matches in primary filter', () => {
@@ -485,7 +507,7 @@ describe('Filter', function () {
                     status: 'published'
                 }]};
 
-                rejectFilters(primary, secondary).should.eql(output);
+                rejectFilters(secondary, testFunction(primary)).should.eql(output);
             });
         });
 

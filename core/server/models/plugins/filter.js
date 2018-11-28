@@ -1,3 +1,4 @@
+const util = require('util');
 const _ = require('lodash');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
@@ -75,6 +76,22 @@ const filterUtils = {
         };
     },
 
+    findStatement: (statements, match) => {
+        return _.some(statements, (value, key, obj) => {
+            if (key === '$and') {
+                return filterUtils.findStatement(obj.$and, match);
+            } else if (key === '$or') {
+                return filterUtils.findStatement(obj.$or, match);
+            } else {
+                if (_.isObject(match)) {
+                    return _.has(match, key);
+                } else {
+                    return key === match;
+                }
+            }
+        });
+    },
+
     /**
      * ## Reject filters
      *
@@ -85,27 +102,33 @@ const filterUtils = {
      * ('featured:true', 'featured:false') => ''
      * ('featured:true', 'featured:false,status:published') => 'status:published'
      */
-    rejectFilters: (primary, secondary) => {
-        if (!primary || !secondary) {
-            return secondary;
+    rejectFilters: (statements, func) => {
+        if (!statements) {
+            return statements;
         }
 
-        Object.keys(secondary).forEach((key) => {
-            if (primary.hasOwnProperty(key)) {
-                delete secondary[key];
-            }
+        if (_.has(statements, '$and')) {
+            statements.$and = filterUtils.rejectFilters(statements.$and, func);
+        }
 
-            if (['$and', '$or'].includes(key)) {
-                // @TODO: add cleanup of empty array
-                secondary[key] = secondary[key]
-                    .map((statement) => {
-                        return filterUtils.rejectFilters(primary, statement);
-                    })
-                    .filter(statement => (!_.isEmpty(statement)));
-            }
-        });
+        if (_.has(statements, '$or')) {
+            statements.$or = filterUtils.rejectFilters(statements.$or, func);
+        }
 
-        return secondary;
+        if (_.isArray(statements)) {
+            statements = _.reject(statements, (statement) => {
+                return func(statement);
+            });
+        } else {
+            // @TODO: could be optimized with a check for keys other than $and/$or
+            Object.keys(statements).forEach((key) => {
+                if (func(key)) {
+                    delete statements[key];
+                }
+            });
+        }
+
+        return statements;
     },
 
     /**
@@ -187,7 +210,15 @@ const filterUtils = {
         }
 
         if (custom) {
-            custom = filterUtils.rejectFilters(merged, custom);
+            debug('rejecting custom:', util.inspect(merged), util.inspect(custom));
+
+            custom = filterUtils.rejectFilters(custom, (statement) => {
+                debug('statements', util.inspect(merged));
+                debug('match', util.inspect(statement));
+                return filterUtils.findStatement(merged, statement);
+            });
+
+            debug('rejected custom:', util.inspect(custom));
 
             if (!_.isEmpty(custom)) {
                 merged = merged ? filterUtils.combineFilters(merged, custom) : custom;
@@ -195,7 +226,15 @@ const filterUtils = {
         }
 
         if (defaults) {
-            defaults = filterUtils.rejectFilters(merged, defaults);
+            debug('rejecting defaults:', util.inspect(merged), util.inspect(defaults));
+
+            defaults = filterUtils.rejectFilters(defaults, (statement) => {
+                debug('statements', util.inspect(merged));
+                debug('match', util.inspect(statement));
+                return filterUtils.findStatement(merged, statement);
+            });
+
+            debug('rejected defaults:', util.inspect(defaults));
 
             if (!_.isEmpty(defaults)) {
                 merged = merged ? filterUtils.combineFilters(merged, defaults) : defaults;
