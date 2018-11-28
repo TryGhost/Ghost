@@ -33,6 +33,19 @@ function validateMember({email, password}) {
     return Promise.resolve(db[id]);
 }
 
+function updateMember({email}, data) {
+    const id = emailIdx[email];
+    if (!id) {
+        return Promise.reject('Could not find user');
+    }
+    db[id] = Object.assign(db[email], data);
+    if (data.email) {
+        delete emailIdx[email];
+        emailIdx[db[id].email] = id;
+    }
+    return Promise.resolve(db[id]);
+}
+
 const api = MembersApi({createMember, validateMember});
 
 module.exports = api;
