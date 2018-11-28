@@ -379,7 +379,7 @@ module.exports = {
     },
     credentials: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        expires: {type: 'bigInteger', nullable: false},
+        expires: {type: 'bigInteger', nullable: true},
         secret: {type: 'string', maxlength: 191, nullable: false}
     },
     members_passwords: {
