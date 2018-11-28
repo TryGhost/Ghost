@@ -75,7 +75,17 @@ const filterUtils = {
         };
     },
 
-    reduceFilters: (primary, secondary) => {
+    /**
+     * ## Reject filters
+     *
+     * Removes filter keys from secondary filter if they are present
+     * in the primary filter, e.g.:
+     *
+     * In NQL results equivalent to:
+     * ('featured:true', 'featured:false') => ''
+     * ('featured:true', 'featured:false,status:published') => 'status:published'
+     */
+    rejectFilters: (primary, secondary) => {
         if (!primary || !secondary) {
             return secondary;
         }
@@ -89,7 +99,7 @@ const filterUtils = {
                 // @TODO: add cleanup of empty array
                 secondary[key] = secondary[key]
                     .map((statement) => {
-                        return filterUtils.reduceFilters(primary, statement);
+                        return filterUtils.rejectFilters(primary, statement);
                     })
                     .filter(statement => (!_.isEmpty(statement)));
             }
@@ -177,7 +187,7 @@ const filterUtils = {
         }
 
         if (custom) {
-            custom = filterUtils.reduceFilters(merged, custom);
+            custom = filterUtils.rejectFilters(merged, custom);
 
             if (!_.isEmpty(custom)) {
                 merged = merged ? filterUtils.combineFilters(merged, custom) : custom;
@@ -185,7 +195,7 @@ const filterUtils = {
         }
 
         if (defaults) {
-            defaults = filterUtils.reduceFilters(merged, defaults);
+            defaults = filterUtils.rejectFilters(merged, defaults);
 
             if (!_.isEmpty(defaults)) {
                 merged = merged ? filterUtils.combineFilters(merged, defaults) : defaults;

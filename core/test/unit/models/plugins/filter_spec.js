@@ -446,27 +446,27 @@ describe('Filter', function () {
             });
         });
 
-        describe('Reduce filters', () => {
-            let reduceFilters;
+        describe('Reject filters', () => {
+            let rejectFilters;
 
             beforeEach(function () {
-                reduceFilters = filter.__get__('filterUtils').reduceFilters;
+                rejectFilters = filter.__get__('filterUtils').rejectFilters;
             });
 
             it('returns secondary filter if primary is empty', () => {
-                reduceFilters(null, {featured: true}).should.eql({featured: true});
+                rejectFilters(null, {featured: true}).should.eql({featured: true});
             });
 
             it('returns secondary intact if it is empty', () => {
-                should.equal(reduceFilters({featured: true}, null), null);
+                should.equal(rejectFilters({featured: true}, null), null);
             });
 
             it('does NOT reduce secondary filter if no key matches in primary filter', () => {
-                reduceFilters({featured: true}, {status: 'published'}).should.eql({status: 'published'});
+                rejectFilters({featured: true}, {status: 'published'}).should.eql({status: 'published'});
             });
 
             it('reduces secondary filter if key matches in primary filter', () => {
-                reduceFilters({featured: true}, {featured: false}).should.eql({});
+                rejectFilters({featured: true}, {featured: false}).should.eql({});
             });
 
             it('reduces secondary part of filter if key matches in primary filter', () => {
@@ -485,7 +485,7 @@ describe('Filter', function () {
                     status: 'published'
                 }]};
 
-                reduceFilters(primary, secondary).should.eql(output);
+                rejectFilters(primary, secondary).should.eql(output);
             });
         });
 
