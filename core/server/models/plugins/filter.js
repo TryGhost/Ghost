@@ -149,7 +149,8 @@ const filterUtils = {
 
     /**
      * ## Merge Filters
-     * Util to combine the enforced, default and custom filters such that they behave accordingly
+     * Util to combine the enforced, default and custom filters such that they behave accordingly.
+     * The hierarchy of these filters: enforced -> (custom + extra) -> defaults
      *
      * enforced - filters which must ALWAYS be applied
      * defaults - filters which must be applied if a matching filter isn't provided
