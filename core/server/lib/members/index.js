@@ -3,7 +3,7 @@ const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi({validateMember}) {
+module.exports = function MembersApi({createMember, validateMember}) {
     const router = Router();
 
     const apiRouter = Router();
@@ -16,6 +16,29 @@ module.exports = function MembersApi({validateMember}) {
         }
         const token = jwt.sign({}, null, {algorithm: 'none'});
         return res.end(token);
+    });
+
+    apiRouter.post('/signup', body.json(), (req, res) => {
+        if (!req.body) {
+            res.writeHead(400);
+            return res.end();
+        }
+        const {name, email, password} = req.body;
+
+        if (!name || !email || !password) {
+            res.writeHead(400);
+            return res.end('/signup expects {name, email, password}');
+        }
+
+        createMember({name, email, password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch((err) => {
+            res.writeHead(400);
+            res.end(err.message);
+        });
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {

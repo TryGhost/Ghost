@@ -9,6 +9,14 @@ const db = {
     }
 };
 
+function createMember({name, email, password}) {
+    if (db[email]) {
+        return Promise.reject(new Error('Email already exists'));
+    }
+    db[email] = {name, email, password, id: 'id-' + Object.keys(db).length};
+    return Promise.resolve(db[email]);
+}
+
 function validateMember({email, password}) {
     if (!db[email]) {
         return Promise.reject('Incorrect email');
@@ -19,6 +27,6 @@ function validateMember({email, password}) {
     return Promise.resolve();
 }
 
-const api = MembersApi({validateMember});
+const api = MembersApi({createMember, validateMember});
 
 module.exports = api;
