@@ -24,7 +24,19 @@ function createMember({name, email, password}) {
     return Promise.resolve(db[id]);
 }
 
-function validateMember({email, password}) {
+function validateToken({token}) {
+    const id = tokenIdx[token];
+    if (!id) {
+        Promise.reject('Unknown token');
+    }
+    delete tokenIdx[token];
+    return Promise.resolve(db[id]);
+}
+
+function validateMember({email, password, token}) {
+    if (token) {
+        return validateToken({token});
+    }
     const id = emailIdx[email];
     if (!id) {
         return Promise.reject('Incorrect email');
