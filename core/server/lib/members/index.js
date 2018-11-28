@@ -3,7 +3,7 @@ const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi() {
+module.exports = function MembersApi({createMember}) {
     const router = Router();
 
     const apiRouter = Router();
@@ -16,6 +16,20 @@ module.exports = function MembersApi() {
         }
         const token = jwt.sign({}, null, {algorithm: 'none'});
         return res.end(token);
+    });
+
+    apiRouter.post('/signup', body.json(), (req, res) => {
+        if (!req.body || !req.body.email || !req.body.password) {
+            res.writeHead(400);
+            return res.end();
+        }
+        const {email, password} = req.body;
+        createMember(email, password)
+            .then((model) => {
+                res.json(model);
+            }).catch((err) => {
+                res.json(err);
+            });
     });
 
     apiRouter.post('/signin', body.json(), (req, res) => {
