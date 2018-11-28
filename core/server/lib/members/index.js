@@ -1,9 +1,10 @@
+const crypto = require('crypto');
 const {Router, static} = require('express');
 const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi({createMember, validateMember}) {
+module.exports = function MembersApi({createMember, validateMember, updateMember, sendEmail}) {
     const router = Router();
 
     const apiRouter = Router();
@@ -16,6 +17,22 @@ module.exports = function MembersApi({createMember, validateMember}) {
         }
         const token = jwt.sign({}, null, {algorithm: 'none'});
         return res.end(token);
+    });
+
+    apiRouter.post('/reset-password', body.json(), (req, res) => {
+        const {email} = getData(req, res, 'email');
+        if (res.ended) {
+            return;
+        }
+
+        const token = crypto.randomBytes(16).toString('hex');
+
+        updateMember({email}, {token}).then((member) => {
+            return sendEmail(member, {token});
+        }).then(() => {
+            res.writeHead(200);
+            res.end();
+        }).catch(handleError(400, res));
     });
 
     apiRouter.post('/signup', body.json(), (req, res) => {
