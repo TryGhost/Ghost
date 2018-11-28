@@ -52,6 +52,21 @@ function updateMember({email}, data) {
     return Promise.resolve(db[id]);
 }
 
-const api = MembersApi({createMember, validateMember});
+function sendEmail(member, {token}) {
+    console.log(`
+  From: members@ghost.com
+  To: ${member.email}
+
+  Subject: ${member.password ? 'Password reset' : 'Confirm email address'}
+
+  Hi ${member.name},
+
+  The token is
+      ${token}
+`);
+    return Promise.resolve();
+}
+
+const api = MembersApi({createMember, validateMember, updateMember, sendEmail});
 
 module.exports = api;
