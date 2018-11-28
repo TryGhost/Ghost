@@ -53,15 +53,6 @@ module.exports = function MembersApi({createMember, validateMember}) {
         }).catch(handleError(401, res));
     });
 
-    function setCookie(member) {
-        return cookie.serialize('signedin', member.id, {
-            maxAge: 180,
-            path: '/ghost/api/v2/members/token',
-            sameSite: 'strict',
-            httpOnly: true
-        });
-    }
-
     apiRouter.post('/signout', (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': cookie.serialize('signedin', false, {
@@ -119,4 +110,13 @@ function handleError(status, res) {
         res.writeHead(status);
         res.end(err.message);
     };
+}
+
+function setCookie(member) {
+    return cookie.serialize('signedin', member.id, {
+        maxAge: 180,
+        path: '/ghost/api/v2/members/token',
+        sameSite: 'strict',
+        httpOnly: true
+    });
 }
