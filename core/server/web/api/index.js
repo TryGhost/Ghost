@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('web:api:default:app');
 const express = require('express');
 const urlUtils = require('../../services/url/utils');
 const errorHandler = require('../shared/middlewares/error-handler');
-const MembersApi = require('../../lib/members');
+const membersService = require('../../services/members');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
@@ -12,7 +12,7 @@ module.exports = function setupApiApp() {
     apiApp.use(urlUtils.getVersionPath({version: 'v0.1'}), require('./v0.1/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'members'}), MembersApi().apiRouter);
+    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'members'}), membersService.api.apiRouter);
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
