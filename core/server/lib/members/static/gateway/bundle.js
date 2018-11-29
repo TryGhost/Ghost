@@ -19,9 +19,16 @@
 
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
 
-    addMethod('getToken', function getToken(/*options*/) {
+    addMethod('getToken', function getToken({audience}) {
         return fetch(`${membersApi}/token`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                audience: audience || origin
+            })
         }).then((res) => {
             if (!res.ok) {
                 window.localStorage.removeItem('signedin');
