@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const prettyCLI = require('../pretty-cli');
+const prettyCLI = require('../lib/pretty-cli');
 
 // Check the API is as we depend on in other modules;
 describe('API', function () {
