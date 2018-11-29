@@ -49,7 +49,10 @@ module.exports = function MembersApi({
     const apiRouter = Router();
 
     apiRouter.use(function waitForKeyStore(req, res, next) {
-        keyStoreReady.then(() => next());
+        keyStoreReady.then((jwk) => {
+            req.jwk = jwk;
+            next();
+        });
     });
 
     apiRouter.post('/token', (req, res) => {
@@ -61,8 +64,11 @@ module.exports = function MembersApi({
             return res.end();
         }
         const token = jwt.sign({
-            sub: signedin
-        }, null, {algorithm: 'none'});
+            sub: signedin,
+            kid: req.jwk.kid
+        }, privateKey, {
+            algorithm: 'RS512'
+        });
         return res.end(token);
     });
 
