@@ -95,7 +95,7 @@ const filterUtils = {
     },
 
     /**
-     * ## Reject filters
+     * ## Reject statements
      *
      * Removes filter keys from secondary filter if they are present
      * in the primary filter, e.g.:
@@ -104,17 +104,17 @@ const filterUtils = {
      * ('featured:true', 'featured:false') => ''
      * ('featured:true', 'featured:false,status:published') => 'status:published'
      */
-    rejectFilters: (statements, func) => {
+    rejectStatements: (statements, func) => {
         if (!statements) {
             return statements;
         }
 
         if (_.has(statements, '$and')) {
-            statements.$and = filterUtils.rejectFilters(statements.$and, func);
+            statements.$and = filterUtils.rejectStatements(statements.$and, func);
         }
 
         if (_.has(statements, '$or')) {
-            statements.$or = filterUtils.rejectFilters(statements.$or, func);
+            statements.$or = filterUtils.rejectStatements(statements.$or, func);
         }
 
         if (_.isArray(statements)) {
@@ -214,7 +214,7 @@ const filterUtils = {
         if (custom) {
             debug('rejecting custom:', util.inspect(merged), util.inspect(custom));
 
-            custom = filterUtils.rejectFilters(custom, (statement) => {
+            custom = filterUtils.rejectStatements(custom, (statement) => {
                 debug('statements', util.inspect(merged));
                 debug('match', util.inspect(statement));
                 return filterUtils.findStatement(merged, statement);
@@ -230,7 +230,7 @@ const filterUtils = {
         if (defaults) {
             debug('rejecting defaults:', util.inspect(merged), util.inspect(defaults));
 
-            defaults = filterUtils.rejectFilters(defaults, (statement) => {
+            defaults = filterUtils.rejectStatements(defaults, (statement) => {
                 debug('statements', util.inspect(merged));
                 debug('match', util.inspect(statement));
                 return filterUtils.findStatement(merged, statement);

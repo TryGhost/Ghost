@@ -513,80 +513,81 @@ describe('Filter', function () {
             });
         });
 
-        describe('Reject filters', () => {
-            let rejectFilters;
+        describe('Reject statements', () => {
+            let rejectStatements;
             let testFunction;
 
             beforeEach(function () {
-                rejectFilters = filter.__get__('filterUtils').rejectFilters;
+                rejectStatements = filter.__get__('filterUtils').rejectStatements;
                 const findStatement = filter.__get__('filterUtils').findStatement;
 
                 testFunction = (statements) => {
                     return (match) => {
                         return findStatement(statements, match);
-                        // return lodashStmt.matchStatement(statement, fields ? _.pick(match, fields) : match);
                     };
                 };
             });
 
             it('should reject from a simple object', () => {
                 const statements = {featured: true};
+                const filter = {featured: false};
 
-                rejectFilters(statements, testFunction({featured: false}))
+                rejectStatements(statements, testFunction(filter))
                     .should.eql({});
             });
 
             it('should NOT reject from a simple object when not matching', () => {
                 const statements = {featured: true};
+                const filter = {status: 'published'};
 
-                rejectFilters(statements, testFunction({status: 'published'}))
+                rejectStatements(statements, testFunction(filter))
                     .should.eql({featured: true});
             });
 
-            it('returns secondary intact if it is empty', () => {
-                should.equal(rejectFilters(null, testFunction({featured: true})), null);
+            it('returns filter intact if it is empty', () => {
+                const statements = null;
+                const filter = {featured: true};
+
+                const output = rejectStatements(statements, testFunction(filter));
+
+                should.equal(output, null);
             });
 
-            it('does NOT reduce secondary filter if no key matches in primary filter', () => {
-                rejectFilters({status: 'published'}, testFunction({featured: true}))
-                    .should.eql({status: 'published'});
-            });
-
-            it('reduces secondary part of filter if key matches in primary filter', () => {
-                const primary = {
-                    featured:true
-                };
-
-                const secondary = {$or: [{
+            it('rejects statements that match in filter in $or group', () => {
+                const statements = {$or: [{
                         featured: false
                     }, {
                         status: 'published'
                     }
                 ]};
 
+                const filter = {
+                    featured:true
+                };
+
                 const output = {$or: [{
                     status: 'published'
                 }]};
 
-                rejectFilters(secondary, testFunction(primary)).should.eql(output);
+                rejectStatements(statements, testFunction(filter)).should.eql(output);
             });
 
-            it.only('reduces secondary part of filter if key matches in primary filter in a group', () => {
-                const primary = {$and: [
-                    {tag: 'photo'},
-                    {page: true}
-                ]};
-
-                const secondary = {$or:[
+            it('reduces statements if key matches with any keys in $and group', () => {
+                const statements = {$or:[
                     {page:false},
                     {author:'cameron'}
+                ]};
+
+                const filter = {$and: [
+                    {tag: 'photo'},
+                    {page: true}
                 ]};
 
                 const output = {$or: [
                     {author:"cameron"}
                 ]};
 
-                rejectFilters(secondary, testFunction(primary)).should.eql(output);
+                rejectStatements(statements, testFunction(filter)).should.eql(output);
             });
         });
 
