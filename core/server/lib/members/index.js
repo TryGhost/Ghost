@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function MembersApi({
     config: {
+        issuer,
         privateKey,
         sessionSecret
     },
@@ -67,7 +68,8 @@ module.exports = function MembersApi({
             sub: signedin,
             kid: req.jwk.kid
         }, privateKey, {
-            algorithm: 'RS512'
+            algorithm: 'RS512',
+            issuer
         });
         return res.end(token);
     });
