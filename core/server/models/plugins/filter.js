@@ -1,6 +1,5 @@
 const util = require('util');
 const _ = require('lodash');
-const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
 const RELATIONS = {
@@ -136,55 +135,6 @@ const filterUtils = {
         }
 
         return statements;
-    },
-
-    /**
-     * ## Get filter keys
-     *
-     * Returns keys used in a query string, e.g.:
-     *
-     * ('featured:true') => ['featured:']
-     * ('page:false+status:published') => ['page:', 'status:']
-     */
-    getFilterKeys: (query) => {
-        const tokens = nql(query).lex();
-
-        return tokens
-            .filter(t => t.token === 'PROP')
-            .map(t => t.matched);
-    },
-
-    /**
-     * ## Reduce filters
-     *
-     * Removes filter keys from secondary filter if they are present
-     * in the primary filter, e.g.:
-     *
-     * ('featured:true', 'featured:false') => ''
-     * ('featured:true', 'featured:false,status:published') => 'status:published'
-     */
-    xreduceFilters: (primary, secondary) => {
-        if (!primary || !secondary) {
-            return secondary;
-        }
-
-        const primaryKeys = filterUtils.getFilterKeys(primary);
-        let reducedFilter = secondary;
-
-        primaryKeys.forEach((key) => {
-            if (reducedFilter.match(key)) {
-                // matches:
-                // - 'key:customFilter'
-                // - 'key:customFilter,'
-                // - 'key:customFilter+'
-                const replace = `${key}\\s?\\w*(\\,|\\+)?`;
-                const re = new RegExp(replace,'g');
-                reducedFilter = reducedFilter.replace(re, '');
-            }
-        });
-
-        const conjunctionEnding = /(,|\+)$/;
-        return reducedFilter.replace(conjunctionEnding, '');
     },
 
     /**

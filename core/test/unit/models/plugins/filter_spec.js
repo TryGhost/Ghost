@@ -232,7 +232,7 @@ describe('Filter', function () {
         });
     });
 
-    describe.only('Utils', function () {
+    describe('Utils', function () {
         describe('Merge filters', () => {
             let mergeFilters;
 
@@ -701,26 +701,6 @@ describe('Filter', function () {
                 ]};
 
                 rejectStatements(statements, testFunction(filter)).should.eql(output);
-            });
-        });
-
-        xdescribe('Get filter keys', () => {
-            let getFilterKeys;
-
-            beforeEach(function () {
-                getFilterKeys = filter.__get__('filterUtils').getFilterKeys;
-            });
-
-            it('returns filter key from single filter', () => {
-                getFilterKeys('featured:true').should.eql(['featured:']);
-            });
-
-            it('returns a key for in expression', () => {
-                getFilterKeys('status:[inactive, locked]').should.eql(['status:']);
-            });
-
-            it('returns a key for in expression', () => {
-                getFilterKeys('page:false+status:published').should.eql(['page:', 'status:']);
             });
         });
 
