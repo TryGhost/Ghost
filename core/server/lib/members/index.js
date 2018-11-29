@@ -56,7 +56,15 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/token', (req, res) => {
+    apiRouter.post('/token', body.json(), (req, res) => {
+        const {audience, origin} = getData(req, res, 'audience', 'origin');
+        if (res.ended) {
+            return;
+        }
+        if (audience !== origin) {
+            res.writeHead(403);
+            return res.end();
+        }
         const {signedin} = cookie.parse(req.headers.cookie || '', {
             decode: decodeCookie
         });
@@ -69,6 +77,7 @@ module.exports = function MembersApi({
             kid: req.jwk.kid
         }, privateKey, {
             algorithm: 'RS512',
+            audience,
             issuer
         });
         return res.end(token);
