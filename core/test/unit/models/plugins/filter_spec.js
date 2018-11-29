@@ -513,6 +513,73 @@ describe('Filter', function () {
             });
         });
 
+        describe('Find statement', () => {
+            let findStatement;
+
+            beforeEach(function () {
+                findStatement = filter.__get__('filterUtils').findStatement;
+            });
+
+            it('should match with object statement by key', function () {
+                const statements = {status: 'published'};
+
+                findStatement(statements, 'page').should.eql(false);
+                findStatement(statements, 'status').should.eql(true);
+                findStatement(statements, 'tags').should.eql(false);
+                findStatement(statements, 'published').should.eql(false);
+            });
+
+            it('should match in object statement array by key', function () {
+                const statements = [
+                    {page: false},
+                    {status: 'published'}
+                ];
+
+                findStatement(statements, 'page').should.eql(true);
+                findStatement(statements, 'status').should.eql(true);
+                findStatement(statements, 'tags').should.eql(false);
+                findStatement(statements, 'published').should.eql(false);
+            });
+
+            it('should match in object statement array by key', function () {
+                const statements = [
+                    {page: false},
+                    {status: 'published'}
+                ];
+
+                findStatement(statements, 'page').should.eql(true);
+                findStatement(statements, 'status').should.eql(true);
+                findStatement(statements, 'tags').should.eql(false);
+                findStatement(statements, 'published').should.eql(false);
+            });
+
+            describe('nested $and/$or groups', function () {
+                it('should match inside nested $and group', function () {
+                    const statements = {$and:[
+                        {page: false},
+                        {status: 'published'}
+                    ]};
+
+                    findStatement(statements, 'page').should.eql(true);
+                    findStatement(statements, 'status').should.eql(true);
+                    findStatement(statements, 'tags').should.eql(false);
+                    findStatement(statements, 'published').should.eql(false);
+                });
+
+                it('should match inside nested $or group', function () {
+                    const statements = {$or:[
+                        {page: false},
+                        {status: 'published'}
+                    ]};
+
+                    findStatement(statements, 'page').should.eql(true);
+                    findStatement(statements, 'status').should.eql(true);
+                    findStatement(statements, 'tags').should.eql(false);
+                    findStatement(statements, 'published').should.eql(false);
+                });
+            });
+        });
+
         describe('Reject statements', () => {
             let rejectStatements;
             let testFunction;
