@@ -351,7 +351,8 @@ var config = require('./core/server/config'),
                 },
 
                 prod: {
-                    'core/client': 'shell:ember:prod'
+                    'core/client': 'shell:ember:prod',
+                    'core/server/lib/members/static/preact': 'shell:preact:prod'
                 },
 
                 watch: {

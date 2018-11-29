@@ -1,0 +1,123 @@
+html, body {
+    font: 14px/1.21 'Helvetica Neue', arial, sans-serif;
+    font-weight: 400;
+}
+
+h1 {
+    text-align: center;
+    color: red;
+}
+
+input {
+    border-radius: 4px;
+    height: 38px;
+    margin-right: 12px;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    box-shadow: none;
+    color: rgba(0,0,0,.65);
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #d9d9d9;
+    margin-bottom: 21px;
+    width: 100%;
+    outline: none;
+    padding: 4px 11px;
+    font-size: 12px;
+}
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #bfbfbf;
+  }
+  ::-moz-placeholder { /* Firefox 19+ */
+    color: #bfbfbf;
+  }
+  :-ms-input-placeholder { /* IE 10+ */
+    color: #bfbfbf;
+  }
+  :-moz-placeholder { /* Firefox 18- */
+    color: #bfbfbf;
+  }
+
+button {
+    width: 150px;
+    height: 38px;
+    border: 1px solid green;
+    background-color: #5b7b86;
+    border-color: #5b7b86;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    background-image: none;
+    white-space: nowrap;
+    padding: 0 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    outline: none;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.member-auth-page {
+    border: 2px solid grey;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.member-auth-page .auth-form-container {
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+}
+
+.member-auth-page .auth-form-elements {
+    display: flex;
+    border: 2px solid brown;
+    border-radius: 4px;
+    padding: 40px 52px;
+}
+
+.member-auth-page .auth-form-headers {
+    display: flex;
+    flex-direction: row;
+    padding: 12px 0;
+}
+
+.member-auth-page .auth-form-headers .headers-main-title {
+    flex-grow: 1;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.member-auth-page .auth-form-headers .headers-cta {
+    display: flex;
+    align-items: center;
+}
+
+.member-auth-page .headers-cta .cta-title {
+    font-size: 12px;
+    padding-right: 9px;
+}
+
+.member-auth-page .headers-cta .cta-title {
+    font-size: 12px;
+    padding-right: 9px;
+}
+
+.member-auth-page .headers-cta .cta-label {
+    border: 2px solid #00a8ee;
+    padding: 4px 12px;
+    background-color: #00a8ee;
+    border-radius: 22px;
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+}
