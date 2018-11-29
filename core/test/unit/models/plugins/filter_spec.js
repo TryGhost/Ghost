@@ -638,6 +638,21 @@ describe('Filter', function () {
                 rejectStatements(statements, testFunction(filter)).should.eql(output);
             });
 
+            it('should remove group if all statements are removed', () => {
+                const statements = {$or: [{
+                        featured: false
+                    }
+                ]};
+
+                const filter = {
+                    featured:true
+                };
+
+                const output = {};
+
+                rejectStatements(statements, testFunction(filter)).should.eql(output);
+            });
+
             it('reduces statements if key matches with any keys in $and group', () => {
                 const statements = {$or:[
                     {page:false},

@@ -109,10 +109,18 @@ const filterUtils = {
 
         if (_.has(statements, '$and')) {
             statements.$and = filterUtils.rejectStatements(statements.$and, func);
+
+            if (statements.$and.length === 0) {
+                delete statements.$and;
+            }
         }
 
         if (_.has(statements, '$or')) {
             statements.$or = filterUtils.rejectStatements(statements.$or, func);
+
+            if (statements.$or.length === 0) {
+                delete statements.$or;
+            }
         }
 
         if (_.isArray(statements)) {
