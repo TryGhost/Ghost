@@ -124,7 +124,9 @@ const filterUtils = {
                 .map((statement) => {
                     return filterUtils.rejectStatements(statement, func);
                 })
-                .filter(statement => !(_.isEmpty(statement)));
+                .filter((statement) => {
+                    return !(_.isEmpty(statement));
+                });
         } else {
             Object.keys(statements).forEach((key) => {
                 if (!GROUPS.includes(key) && func(key)) {
