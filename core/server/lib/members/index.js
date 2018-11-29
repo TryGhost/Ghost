@@ -17,6 +17,24 @@ module.exports = function MembersApi({
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
+    function encodeCookie(data) {
+        return encodeURIComponent(data);
+    }
+
+    function decodeCookie(cookie) {
+        return decodeURIComponent(cookie);
+    }
+
+    function setCookie(member) {
+        return cookie.serialize('signedin', member.id, {
+            maxAge: 180,
+            path: '/ghost/api/v2/members/token',
+            sameSite: 'strict',
+            httpOnly: true,
+            encode: encodeCookie
+        });
+    }
+
     const router = Router();
 
     const apiRouter = Router();
@@ -26,7 +44,9 @@ module.exports = function MembersApi({
     });
 
     apiRouter.post('/token', (req, res) => {
-        const {signedin} = cookie.parse(req.headers.cookie);
+        const {signedin} = cookie.parse(req.headers.cookie, {
+            decode: decodeCookie
+        });
         if (!signedin) {
             res.writeHead(401);
             return res.end();
@@ -163,13 +183,4 @@ function handleError(status, res) {
         res.writeHead(status);
         res.end(err.message);
     };
-}
-
-function setCookie(member) {
-    return cookie.serialize('signedin', member.id, {
-        maxAge: 180,
-        path: '/ghost/api/v2/members/token',
-        sameSite: 'strict',
-        httpOnly: true
-    });
 }
