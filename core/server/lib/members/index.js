@@ -60,7 +60,9 @@ module.exports = function MembersApi({
             res.writeHead(401);
             return res.end();
         }
-        const token = jwt.sign({}, null, {algorithm: 'none'});
+        const token = jwt.sign({
+            sub: signedin
+        }, null, {algorithm: 'none'});
         return res.end(token);
     });
 
