@@ -442,7 +442,6 @@ describe('Filter', function () {
                         ]}
                     };
 
-                    // TODO: review this output
                     const output = {$and: [
                         {status: 'published'},
                         {$and: [
@@ -451,7 +450,6 @@ describe('Filter', function () {
                                 {author:'cameron'}
                             ]},
                             {$or: [
-                                {status: 'draft'},  // this should be gone?
                                 {page: false}
                             ]}
                         ]}
@@ -501,7 +499,8 @@ describe('Filter', function () {
                     mergeFilters(input).should.eql(output);
                 });
 
-                xit('should throw when custom filter is invalid NQL', () => {
+                // TODO: this should be moved into applyDefaultAndCustomFilters test suite
+                it.skip('should throw when custom filter is invalid NQL', () => {
                     const input = {
                         enforced: 'status:published',
                         defaults: 'page:false',
@@ -652,6 +651,38 @@ describe('Filter', function () {
 
                 const output = {$or: [
                     {author:"cameron"}
+                ]};
+
+                rejectStatements(statements, testFunction(filter)).should.eql(output);
+            });
+
+            it('should reject statements that are nested multiple levels', function () {
+                const statements = {$and:[
+                    {$or:[
+                        {tag: {
+                            $in:['photo','video']
+                        }},
+                        {author:'cameron'},
+                        {status: 'draft'}
+                    ]},
+                    {$and: [
+                        {status: 'draft'},
+                        {page: true}
+                    ]},
+                ]};
+
+                const filter = {status:'published'};
+
+                const output = {$and:[
+                    {$or:[
+                        {tag: {
+                            $in:['photo','video']
+                        }},
+                        {author:'cameron'}
+                    ]},
+                    {$and: [
+                        {page: true}
+                    ]},
                 ]};
 
                 rejectStatements(statements, testFunction(filter)).should.eql(output);

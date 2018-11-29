@@ -85,10 +85,8 @@ const filterUtils = {
             } else {
                 if (_.isObject(value)) {
                     return filterUtils.findStatement(value, match);
-                } else if (_.isObject(match)) {
-                    return _.has(match, key);
                 } else {
-                    return key === match;
+                    return (key === match);
                 }
             }
         });
@@ -97,7 +95,7 @@ const filterUtils = {
     /**
      * ## Reject statements
      *
-     * Removes filter keys from secondary filter if they are present
+     * Removes statements keys if when matching `func` returns true
      * in the primary filter, e.g.:
      *
      * In NQL results equivalent to:
@@ -118,13 +116,14 @@ const filterUtils = {
         }
 
         if (_.isArray(statements)) {
-            statements = _.reject(statements, (statement) => {
-                return func(statement);
-            });
+            statements = statements
+                .map((statement) => {
+                    return filterUtils.rejectStatements(statement, func);
+                })
+                .filter(statement => !(_.isEmpty(statement)));
         } else {
-            // @TODO: could be optimized with a check for keys other than $and/$or
             Object.keys(statements).forEach((key) => {
-                if (func(key)) {
+                if (!['$and', '$or'].includes(key) && func(key)) {
                     delete statements[key];
                 }
             });
