@@ -206,11 +206,19 @@ const filterUtils = {
      * Util that expands Mongo JSON statements with custom statements
      */
     expandFilters: (statements, expansions) => {
-        // @TODO: needs to be replaced with mongo json util
-        let processed = filter;
+        let processed = {};
 
-        expansions.forEach((expansion) => {
+        Object.keys(statements).forEach((key) => {
+            const expansion = _.find(expansions, {key});
 
+            if (expansion) {
+                const replaced = {};
+                replaced[expansion.replacement] = statements[key];
+                const expanded = expansion.expand(replaced);
+                processed - _.merge(processed, expanded);
+            } else {
+                processed = _.merge(processed, _.pick(statements, key));
+            }
         });
 
         return processed;

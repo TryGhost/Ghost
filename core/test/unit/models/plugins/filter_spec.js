@@ -1138,16 +1138,21 @@ describe('Filter', function () {
                 expandFilters = filter.__get__('filterUtils').expandFilters;
             });
 
-            it('should return unchanged filter when no expansions match', function () {
-                expandFilters({status: 'published'}, []).should.equal({status: 'published'});
+            it.only('should return unchanged filter when no expansions match', function () {
+                expandFilters({status: 'published'}, []).should.eql({status: 'published'});
             });
 
-            it('should substitute single alias', function () {
+            it.only('should substitute single alias', function () {
                 const filter = {primary_tag: 'en'};
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: {'posts_tags.sort_order':0}
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
                 const processed = {$and: [
@@ -1155,7 +1160,7 @@ describe('Filter', function () {
                     {'posts_tags.sort_order': 0}
                 ]};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
 
             it('should substitute filter with negation and - sign', function () {
