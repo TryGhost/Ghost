@@ -1,27 +1,28 @@
-const jwt = require('jsonwebtoken');
-const common = require('../../../lib/common');
+const jwt = require('express-jwt');
+const membersService = require('../../members');
+const config = require('../../../config');
 
-const authenticateMembersToken = (req, res, next) => {
-    if (!req.get('authorization')) {
-        return next();
-    }
-
-    const [scheme, credentials] = req.get('authorization').split(/\s+/);
-
-    if (scheme !== 'GhostMembers') {
-        return next();
-    }
-
-    return jwt.verify(credentials, null, {
-        algorithms: ['none']
-    }, function (err, claims) {
-        if (err) {
-            return next(new common.errors.UnauthorizedError({err}));
+const authenticateMembersToken = jwt({
+    credentialsRequired: false,
+    requestProperty: 'member',
+    audience: config.get('url'),
+    issuer: config.get('url'),
+    algorithm: 'RS512',
+    secret: membersService.api.publicKey,
+    getToken(req) {
+        if (!req.get('authorization')) {
+            return null;
         }
-        req.member = claims;
-        return next();
-    });
-};
+
+        const [scheme, credentials] = req.get('authorization').split(/\s+/);
+
+        if (scheme !== 'GhostMembers') {
+            return null;
+        }
+
+        return credentials;
+    }
+});
 
 module.exports = {
     authenticateMembersToken
