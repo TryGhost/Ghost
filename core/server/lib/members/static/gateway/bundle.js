@@ -84,6 +84,6 @@
                 error: 'Unknown method'
             }, origin);
         }
-        handlers[event.data.method](event.data.options || {});
+        handlers[event.data.method](event.data);
     });
 })();
