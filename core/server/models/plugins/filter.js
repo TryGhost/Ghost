@@ -22,7 +22,7 @@ const RELATIONS = {
     }
 };
 
-const ALIASES = [{
+const EXPANSIONS = [{
     key: 'primary_tag',
     replacement: 'tags.slug',
     filter: {
@@ -202,39 +202,15 @@ const filterUtils = {
     },
 
     /**
-     * ## Process Filters
-     * Util that substitutes aliases and expands expressions with custom filters
+     * ## Expand Filters
+     * Util that expands Mongo JSON statements with custom statements
      */
-    processFilters: (filter, aliases) => {
+    expandFilters: (statements, expansions) => {
         // @TODO: needs to be replaced with mongo json util
         let processed = filter;
 
-        aliases.forEach((alias) => {
-            if (processed.match(`${alias.key}:`)) {
-                // matches:
-                // - 'key:customFilter'
-                // - 'key:-custom-filter'
-                // - 'key:[customFilter]'
-                // - 'key:[custom,filter]'
-                const keyGroupMatch = `${alias.key}:\\s?([a-zA-Z\\-]+|\\[([a-zA-Z\\-]|,)+\\])`;
+        expansions.forEach((expansion) => {
 
-                const re = new RegExp(keyGroupMatch,'g');
-                const matches = processed.match(re);
-
-                matches.forEach((match) => {
-                    let replaced = match.replace(alias.key, alias.replacement);
-
-                    if (alias.filter) {
-                        // NOTE: we need () grouping here because it makes sure subqueries work
-                        // in filters using $or conjunction e.g: '(posts_tags.sort_order:0+tags.slug:cat),tags.visibility:true'
-                        // if the grouping wasn't used statements would end up in single $or group (one subquery with single where)
-                        // and would return wrong results
-                        replaced = `(${replaced}+${alias.filter})`;
-                    }
-
-                    processed = processed.replace(match, replaced);
-                });
-            }
         });
 
         return processed;
@@ -271,16 +247,16 @@ const filter = function filter(Bookshelf) {
 
             debug('filter', filter);
 
-            const processedFilter = filterUtils.processFilters(filter, ALIASES);
+            const expandedFilter = filterUtils.expandFilters(filter, EXPANSIONS);
 
-            if (processedFilter !== filter) {
-                debug('processed filter', processedFilter);
+            if (expandedFilter !== filter) {
+                debug('processed filter', expandedFilter);
             }
 
             if (filter) {
                 this.query((qb) => {
                     // @TODO: change NQL api to accept mongo json instead of nql string
-                    nql(processedFilter, RELATIONS).querySQL(qb);
+                    nql(expandedFilter, RELATIONS).querySQL(qb);
                 });
             }
         }
