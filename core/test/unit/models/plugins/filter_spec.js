@@ -1131,46 +1131,58 @@ describe('Filter', function () {
             });
         });
 
-        describe('Process filters', () => {
-            let processFilters;
+        describe.only('Expand filters', () => {
+            let expandFilters;
 
             beforeEach(function () {
-                processFilters = filter.__get__('filterUtils').processFilters;
+                expandFilters = filter.__get__('filterUtils').expandFilters;
             });
 
-            it('should return unchanged filter when no aliases match', function () {
-                processFilters('status:published', []).should.equal('status:published');
+            it('should return unchanged filter when no expansions match', function () {
+                expandFilters({status: 'published'}, []).should.equal({status: 'published'});
             });
 
             it('should substitute single alias', function () {
-                const filter = 'primary_tag:en';
-                const aliases = [{
+                const filter = {primary_tag: 'en'};
+                const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    filter: {'posts_tags.sort_order':0}
                 }];
 
-                const processed = '(tags.slug:en+posts_tags.sort_order:0)';
+                const processed = {$and: [
+                    {'tags.slug': 'en'},
+                    {'posts_tags.sort_order': 0}
+                ]};
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
 
             it('should substitute filter with negation and - sign', function () {
-                const filter = 'primary_tag:-great-movies';
-                const aliases = [{
+                const filter = {
+                    primary_tag: {
+                        $ne: 'great-movies'
+                    }
+                };
+                const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    filter: {'posts_tags.sort_order': 0}
                 }];
 
-                const processed = '(tags.slug:-great-movies+posts_tags.sort_order:0)';
+                const processed = {$and: [
+                    {'tags.slug': {
+                        $ne: 'great-movies'
+                    }},
+                    {'posts_tags.sort_order': 0}
+                ]};
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
 
             it('should NOT match similarly named filter keys', function () {
-                const filter = 'tags:hello';
-                const aliases = [{
+                const filter = {tags:'hello'};
+                const expansions = [{
                     key: 'tag',
                     replacement: 'tags.slug',
                     filter: 'posts_tags.sort_order:0'
@@ -1178,46 +1190,77 @@ describe('Filter', function () {
 
                 const processed = 'tags:hello';
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
 
             it('should substitute IN notation single alias', function () {
-                const filter = 'primary_tag:[en,es]';
-                const aliases = [{
+                const filter = {primary_tag: {
+                    $in: ['en', 'es']
+                }};
+                const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    filter: {'posts_tags.sort_order': 0}
                 }];
 
-                const processed = '(tags.slug:[en,es]+posts_tags.sort_order:0)';
+                const processed = {$and: [
+                    {'tags.slug': {$in: ['en', 'es']}},
+                    {'posts_tags.sort_order': 0}
+                ]};
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
 
             it('should substitute single alias in complex filter', function () {
-                const filter = 'status:published+featured:true+primary_tag:[en,es]';
-                const aliases = [{
+                const filter = {$and: [
+                    {status: 'published'},
+                    {featured: true},
+                    {primary_tag: {$in: ['en', 'es']}}
+                ]};
+                const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    filter: {'posts_tags.sort_order':0}
                 }];
 
-                const processed = 'status:published+featured:true+(tags.slug:[en,es]+posts_tags.sort_order:0)';
+                const processed = {$and: [
+                    {status: 'published'},
+                    {featured: true},
+                    {$and: [
+                        {'tags.slug': {$in: [ 'en', 'es' ]}},
+                        {'posts_tags.sort_order': 0}]}
+                ]};
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
 
-            it('should substitute multiple occurrences of the filter with aliases', function () {
-                const filter = 'status:published+primary_tag:de+featured:true+primary_tag:en';
-                const aliases = [{
+            it('should substitute multiple occurrences of the filter with expansions', function () {
+                const filter = {$and: [
+                    {status: 'published'},
+                    {primary_tag: 'de'},
+                    {featured: true},
+                    {primary_tag: 'en'}
+                ]};
+                const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    filter: {'posts_tags.sort_order': 0}
                 }];
 
-                const processed = 'status:published+(tags.slug:de+posts_tags.sort_order:0)+featured:true+(tags.slug:en+posts_tags.sort_order:0)';
+                const processed = {$and: [
+                    {status: 'published'},
+                    {$and: [
+                        {'tags.slug': 'de'},
+                        {'posts_tags.sort_order': 0}
+                    ]},
+                    {featured: true},
+                    {$and: [
+                        {'tags.slug': 'en'},
+                        {'posts_tags.sort_order': 0}
+                    ]}
+                ]};
 
-                processFilters(filter, aliases).should.equal(processed);
+                expandFilters(filter, expansions).should.equal(processed);
             });
         });
     });
