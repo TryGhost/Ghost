@@ -94,7 +94,7 @@ const filterUtils = {
     /**
      * ## Reject statements
      *
-     * Removes statements keys if when matching `func` returns true
+     * Removes statements keys when matching `func` returns true
      * in the primary filter, e.g.:
      *
      * In NQL results equivalent to:
