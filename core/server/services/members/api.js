@@ -1,4 +1,5 @@
 const settingsCache = require('../settings/cache');
+const config = require('../../config');
 const MembersApi = require('../../lib/members');
 
 const emailIdx = {
@@ -87,9 +88,11 @@ function sendEmail(member, {token}) {
 const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
+const issuer = config.get('url');
 
 const api = MembersApi({
     config: {
+        issuer,
         publicKey,
         privateKey,
         sessionSecret
