@@ -1,13 +1,29 @@
 const crypto = require('crypto');
+const jose = require('node-jose');
 const {Router, static} = require('express');
 const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 
-module.exports = function MembersApi({createMember, validateMember, updateMember, sendEmail}) {
+module.exports = function MembersApi({
+    config: {
+        privateKey
+    },
+    createMember,
+    validateMember,
+    updateMember,
+    sendEmail
+}) {
+    const keyStore = jose.JWK.createKeyStore();
+    const keyStoreReady = keyStore.add(privateKey, 'pem');
+
     const router = Router();
 
     const apiRouter = Router();
+
+    apiRouter.use(function waitForKeyStore(req, res, next) {
+        keyStoreReady.then(() => next());
+    });
 
     apiRouter.post('/token', (req, res) => {
         const {signedin} = cookie.parse(req.headers.cookie);
@@ -114,6 +130,7 @@ module.exports = function MembersApi({createMember, validateMember, updateMember
 
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
+    httpHandler.keyStore = keyStore;
 
     return httpHandler;
 };
