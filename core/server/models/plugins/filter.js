@@ -103,25 +103,21 @@ const filterUtils = {
      * ('featured:true', 'featured:false,status:published') => 'status:published'
      */
     rejectStatements: (statements, func) => {
+        const GROUPS = ['$and', '$or'];
+
         if (!statements) {
             return statements;
         }
 
-        if (_.has(statements, '$and')) {
-            statements.$and = filterUtils.rejectStatements(statements.$and, func);
+        GROUPS.forEach((group) => {
+            if (_.has(statements, group)) {
+                statements[group] = filterUtils.rejectStatements(statements[group], func);
 
-            if (statements.$and.length === 0) {
-                delete statements.$and;
+                if (statements[group].length === 0) {
+                    delete statements[group];
+                }
             }
-        }
-
-        if (_.has(statements, '$or')) {
-            statements.$or = filterUtils.rejectStatements(statements.$or, func);
-
-            if (statements.$or.length === 0) {
-                delete statements.$or;
-            }
-        }
+        });
 
         if (_.isArray(statements)) {
             statements = statements
@@ -131,7 +127,7 @@ const filterUtils = {
                 .filter(statement => !(_.isEmpty(statement)));
         } else {
             Object.keys(statements).forEach((key) => {
-                if (!['$and', '$or'].includes(key) && func(key)) {
+                if (!GROUPS.includes(key) && func(key)) {
                     delete statements[key];
                 }
             });
