@@ -44,7 +44,7 @@ module.exports = function MembersApi({
     });
 
     apiRouter.post('/token', (req, res) => {
-        const {signedin} = cookie.parse(req.headers.cookie, {
+        const {signedin} = cookie.parse(req.headers.cookie || '', {
             decode: decodeCookie
         });
         if (!signedin) {
