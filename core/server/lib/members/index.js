@@ -7,7 +7,8 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function MembersApi({
     config: {
-        privateKey
+        privateKey,
+        sessionSecret
     },
     createMember,
     validateMember,
@@ -18,11 +19,19 @@ module.exports = function MembersApi({
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
     function encodeCookie(data) {
-        return encodeURIComponent(data);
+        const encodedData = encodeURIComponent(data);
+        const hmac = crypto.createHmac('sha256', sessionSecret);
+        hmac.update(encodedData);
+        return `${hmac.digest('hex')}~${encodedData}`;
     }
 
-    function decodeCookie(cookie) {
-        return decodeURIComponent(cookie);
+    function decodeCookie(data) {
+        const hmac = crypto.createHmac('sha256', sessionSecret);
+        const [sentHmac, sentData] = data.split('~');
+        if (hmac.update(sentData).digest('hex') !== sentHmac) {
+            return null;
+        }
+        return decodeURIComponent(sentData);
     }
 
     function setCookie(member) {
