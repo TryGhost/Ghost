@@ -1,3 +1,4 @@
+const settingsCache = require('../settings/cache');
 const MembersApi = require('../../lib/members');
 
 const emailIdx = {
@@ -81,6 +82,20 @@ function sendEmail(member, {token}) {
     return Promise.resolve();
 }
 
-const api = MembersApi({createMember, validateMember, updateMember, sendEmail});
+const publicKey = settingsCache.get('members_public_key');
+const privateKey = settingsCache.get('members_private_key');
+const sessionSecret = settingsCache.get('members_session_secret');
+
+const api = MembersApi({
+    config: {
+        publicKey,
+        privateKey,
+        sessionSecret
+    },
+    createMember,
+    validateMember,
+    updateMember,
+    sendEmail
+});
 
 module.exports = api;
