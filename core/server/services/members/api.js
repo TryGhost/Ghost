@@ -104,3 +104,4 @@ const api = MembersApi({
 });
 
 module.exports = api;
+module.exports.publicKey = publicKey;
