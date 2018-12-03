@@ -11,11 +11,14 @@ module.exports = function (req, res, next) {
     }
 
     const [sizeImageDir, requestedDimension] = req.url.match(SIZE_PATH_REGEX);
+    const redirectToOriginal = () => {
+        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
+        return res.redirect(url);
+    };
 
     const imageSizes = activeTheme.get().config('image_sizes');
     if (!imageSizes) {
-        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
-        return res.redirect(url);
+        return redirectToOriginal();
     }
 
     const imageDimensions = Object.keys(imageSizes).reduce((dimensions, size) => {
@@ -29,15 +32,13 @@ module.exports = function (req, res, next) {
     // CASE: unknown size or missing size config
     const imageDimensionConfig = imageDimensions[requestedDimension];
     if (!imageDimensionConfig || (!imageDimensionConfig.width && !imageDimensionConfig.height)) {
-        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
-        return res.redirect(url);
+        return redirectToOriginal();
     }
 
     const storageInstance = storage.getStorage();
     // CASE: unsupported storage adapter but theme is using custom image_sizes
     if (typeof storageInstance.saveRaw !== 'function') {
-        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
-        return res.redirect(url);
+        return redirectToOriginal();
     }
 
     storageInstance.exists(req.url).then((exists) => {
