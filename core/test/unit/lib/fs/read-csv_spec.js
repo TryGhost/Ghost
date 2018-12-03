@@ -10,10 +10,9 @@ describe('lib/fs: read csv', function () {
             columnsToExtract: [{name: 'email', lookup: /email/i}]
         }).then(function (result) {
             should.exist(result);
-            result.length.should.eql(3);
-            result[0].email.should.eql('email');
-            result[1].email.should.eql('jbloggs@example.com');
-            result[2].email.should.eql('test@example.com');
+            result.length.should.eql(2);
+            result[0].email.should.eql('jbloggs@example.com');
+            result[1].email.should.eql('test@example.com');
             done();
         }).catch(done);
     });

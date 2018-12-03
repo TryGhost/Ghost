@@ -229,7 +229,7 @@ describe('Subscribers API', function () {
 
                 jsonResponse.meta.stats.imported.should.equal(2);
                 jsonResponse.meta.stats.duplicates.should.equal(0);
-                jsonResponse.meta.stats.invalid.should.equal(1);    // TODO: should return 0
+                jsonResponse.meta.stats.invalid.should.equal(0);
             });
     });
 });
