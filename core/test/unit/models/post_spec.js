@@ -708,7 +708,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
                 })
                 .then((post) => {
-                    post.updated('title').should.eql(testUtils.DataGenerator.forKnex.posts[3].title);
+                    post.previous('title').should.eql(testUtils.DataGenerator.forKnex.posts[3].title);
                     post.get('title').should.eql('change');
 
                     events.post.should.eql(['edited']);
@@ -742,7 +742,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id}, testUtils.context.editor));
                 })
                 .then((post) => {
-                    post.updated('title').should.eql('change');
+                    post.previous('title').should.eql('change');
                     post.get('title').should.eql('change');
 
                     events.post.should.eql(['edited']);

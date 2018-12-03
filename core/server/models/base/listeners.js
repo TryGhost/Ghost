@@ -57,7 +57,7 @@ common.events.on('settings.active_timezone.edited', function (settingModel, opti
     options = _.merge({}, options, {context: {internal: true}});
 
     var newTimezone = settingModel.attributes.value,
-        previousTimezone = settingModel._updatedAttributes.value,
+        previousTimezone = settingModel._previousAttributes.value,
         timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
 
     // CASE: TZ was updated, but did not change
