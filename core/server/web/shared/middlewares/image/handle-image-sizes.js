@@ -10,7 +10,14 @@ module.exports = function (req, res, next) {
         return next();
     }
 
+    const [sizeImageDir, requestedDimension] = req.url.match(SIZE_PATH_REGEX);
+
     const imageSizes = activeTheme.get().config('image_sizes');
+    if (!imageSizes) {
+        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
+        return res.redirect(url);
+    }
+
     const imageDimensions = Object.keys(imageSizes).reduce((dimensions, size) => {
         const {width, height} = imageSizes[size];
         const dimension = (width ? 'w' + width : '') + (height ? 'h' + height : '');
@@ -18,8 +25,6 @@ module.exports = function (req, res, next) {
             [dimension]: imageSizes[size]
         }, dimensions);
     }, {});
-
-    const [sizeImageDir, requestedDimension] = req.url.match(SIZE_PATH_REGEX);
 
     // CASE: unknown size or missing size config
     const imageDimensionConfig = imageDimensions[requestedDimension];
