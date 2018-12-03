@@ -75,9 +75,9 @@ _private.validateData = function validateData(object) {
         const requiredQueryFields = ['type', 'resource'];
         const allowedQueryValues = {
             type: ['read', 'browse'],
-            resource: _.map(RESOURCE_CONFIG.QUERY, 'resource')
+            resource: _.union(_.map(RESOURCE_CONFIG.QUERY, 'resource'), _.map(RESOURCE_CONFIG.QUERY, 'alias'))
         };
-        const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status'];
+        const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status', 'page'];
         const allowedRouterOptions = ['redirect', 'slug'];
         const defaultRouterOptions = {
             redirect: true
@@ -146,7 +146,12 @@ _private.validateData = function validateData(object) {
                 data.query[key][option] = object.data[key][option];
             });
 
-            const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+            const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {alias: data.query[key].resource}) || _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+
+            // CASE: you define resource:pages and the alias is "pages". We need to load the internal alias/resource structure, otherwise we break api versions.
+            data.query[key].alias = DEFAULT_RESOURCE.alias;
+            data.query[key].resource = DEFAULT_RESOURCE.resource;
+
             data.query[key] = _.defaults(data.query[key], _.omit(DEFAULT_RESOURCE, 'options'));
 
             data.query[key].options = _.pick(object.data[key], allowedQueryOptions);

@@ -73,6 +73,9 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: context middleware for entries
         this.router().use(this._prepareEntryContext.bind(this));
 
+        // REGISTER: page/post resource redirects
+        this.router().param('slug', this._respectDominantRouter.bind(this));
+
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 

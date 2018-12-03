@@ -1306,10 +1306,52 @@ describe('Integration - Web - Site', function () {
                                     users: [{redirect: false, slug: 'joe-bloggs'}]
                                 }
                             }
+                        },
+
+                        '/channel6/': {
+                            controller: 'channel',
+                            data: {
+                                query: {
+                                    post: {
+                                        resource: 'posts',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'html-ipsum',
+                                            redirect: true
+                                        }
+                                    }
+                                },
+                                router: {
+                                    posts: [{redirect: true, slug: 'html-ipsum'}]
+                                }
+                            }
+                        },
+
+                        '/channel7/': {
+                            controller: 'channel',
+                            data: {
+                                query: {
+                                    post: {
+                                        resource: 'posts',
+                                        type: 'read',
+                                        options: {
+                                            slug: 'static-page-test',
+                                            redirect: true
+                                        }
+                                    }
+                                },
+                                router: {
+                                    posts: [{redirect: true, slug: 'static-page-test'}]
+                                }
+                            }
                         }
                     },
 
-                    collections: {},
+                    collections: {
+                        '/': {
+                            permalink: '/:slug/'
+                        }
+                    },
 
                     taxonomies: {
                         tag: '/tag/:slug/',
@@ -1447,7 +1489,45 @@ describe('Integration - Web - Site', function () {
                     });
             });
 
-            it('serve kitching-sink', function () {
+            it('serve channel 6', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/channel6/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+
+                        $('.post-card').length.should.equal(4);
+                    });
+            });
+
+            it('serve channel 7', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/channel7/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.body);
+
+                        response.statusCode.should.eql(200);
+                        response.template.should.eql('index');
+
+                        $('.post-card').length.should.equal(4);
+                    });
+            });
+
+            it('serve kitching-sink: redirect', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
@@ -1459,6 +1539,36 @@ describe('Integration - Web - Site', function () {
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('/channel1/');
+                    });
+            });
+
+            it('serve html-ipsum: redirect', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/html-ipsum/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                        response.headers.location.should.eql('/channel6/');
+                    });
+            });
+
+            it('serve html-ipsum: redirect', function () {
+                const req = {
+                    secure: true,
+                    method: 'GET',
+                    url: '/static-page-test/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(301);
+                        response.headers.location.should.eql('/channel7/');
                     });
             });
 
