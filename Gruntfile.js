@@ -357,7 +357,8 @@ var config = require('./core/server/config'),
 
                 watch: {
                     projects: {
-                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"']
+                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"'],
+                        'core/server/lib/members/static/preact': ['shell:preact:dev']
                     }
                 }
             },
