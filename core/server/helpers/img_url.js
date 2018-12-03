@@ -65,5 +65,5 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
 
     const imageName = path.relative(STATIC_IMAGE_URL_PREFIX, imagePath);
 
-    return path.join(STATIC_IMAGE_URL_PREFIX, `/sizes/${requestedSize}/`, imageName);
+    return path.join(STATIC_IMAGE_URL_PREFIX, `/size/${requestedSize}/`, imageName);
 }
