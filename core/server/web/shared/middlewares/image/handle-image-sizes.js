@@ -10,7 +10,6 @@ module.exports = function (req, res, next) {
         return next();
     }
 
-    const storageInstance = storage.getStorage();
     const imageSizes = activeTheme.get().config('image_sizes');
 
     const [sizeImageDir, requestedSize] = req.url.match(SIZE_PATH_REGEX);
@@ -22,6 +21,7 @@ module.exports = function (req, res, next) {
         return res.redirect(url);
     }
 
+    const storageInstance = storage.getStorage();
     // CASE: unsupported storage adapter but theme is using custom image_sizes
     if (typeof storageInstance.saveRaw !== 'function') {
         const url = req.originalUrl.replace(`/size/${requestedSize}`, '');
