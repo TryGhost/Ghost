@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const storage = require('../../../../adapters/storage');
 const activeTheme = require('../../../../services/themes/active');
 
-const SIZE_PATH_REGEX = /^\/sizes\/([^/]+)\//;
+const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 
 module.exports = function (req, res, next) {
     const storageInstance = storage.getStorage();
@@ -18,13 +18,13 @@ module.exports = function (req, res, next) {
     // CASE: unknown size or missing size config
     const imageSizeConfig = imageSizes[requestedSize];
     if (!imageSizeConfig || (!imageSizeConfig.width && !imageSizeConfig.height)) {
-        const url = req.originalUrl.replace(`/sizes/${requestedSize}`, '');
+        const url = req.originalUrl.replace(`/size/${requestedSize}`, '');
         return res.redirect(url);
     }
 
     // CASE: unsupported storage adapter but theme is using custom image_sizes
     if (typeof storageInstance.saveRaw !== 'function') {
-        const url = req.originalUrl.replace(`/sizes/${requestedSize}`, '');
+        const url = req.originalUrl.replace(`/size/${requestedSize}`, '');
         return res.redirect(url);
     }
 
