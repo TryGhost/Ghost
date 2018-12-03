@@ -57,9 +57,9 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
         return imagePath;
     }
 
-    const imageSizeConfig = imageSizes[requestedSize];
+    const {width, height} = imageSizes[requestedSize];
 
-    if (!imageSizeConfig.width && !imageSizeConfig.height) {
+    if (!width && !height) {
         return imagePath;
     }
 
