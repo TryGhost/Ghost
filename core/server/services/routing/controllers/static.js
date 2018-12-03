@@ -7,7 +7,10 @@ function processQuery(query, locals) {
     const api = require('../../../api')[locals.apiVersion];
     query = _.cloneDeep(query);
 
-    // Include tags and authors as well in case the resource is a `post`
+    // CASE: If you define a single data key for a static route (e.g. data: page.team), this static route will represent
+    //       the target resource. That means this static route has to behave the same way than the original resource url.
+    //       e.g. the meta data package needs access to the full resource including relations.
+    //       We override the `include` property for now, because the full data set is required anyway.
     if (_.get(query, 'resource') === 'posts') {
         _.extend(query.options, {
             include: 'author,authors,tags'
