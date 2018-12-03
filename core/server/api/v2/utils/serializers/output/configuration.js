@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:mail');
+const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:configuration');
 
 module.exports = {
     all(configuration, apiConfig, frame) {
