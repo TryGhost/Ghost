@@ -25,22 +25,22 @@ const RELATIONS = {
 const EXPANSIONS = [{
     key: 'primary_tag',
     replacement: 'tags.slug',
-    filter: {
-        $and: [{
-            'posts_tags.sort_order': 0
-        }, {
-            'tags.visibility': 'public'
-        }]
+    expand: (mongoJSON) => {
+        return {$and: [
+            mongoJSON,
+            {'posts_tags.sort_order': 0},
+            {'tags.visibility': 'public'}
+        ]};
     }
 }, {
     key: 'primary_author',
     replacement: 'users.slug',
-    filter: {
-        $and: [{
-            'posts_authors.sort_order': 0
-        }, {
-            'users.visibility': 'public'
-        }]
+    expand: (mongoJSON) => {
+        return {$and: [
+            mongoJSON,
+            {'posts_authors.sort_order': 0},
+            {'users.visibility': 'public'}
+        ]};
     }
 }, {
     key: 'authors',
@@ -210,7 +210,7 @@ const filterUtils = {
 
         Object.keys(statements).forEach((key) => {
             const expansion = _.find(expansions, {key});
-
+            // @TODO: recurse into $and/$or groups
             if (expansion) {
                 const replaced = {};
                 replaced[expansion.replacement] = statements[key];
