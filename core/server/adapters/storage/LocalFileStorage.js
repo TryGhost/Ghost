@@ -22,7 +22,7 @@ class LocalFileStore extends StorageBase {
     /**
      * Saves a buffer in the targetPath
      * - buffer is an instance of Buffer
-     * - returns a Promise with returns the full URL to retrieve the data
+     * - returns a Promise which returns the full URL to retrieve the data
      */
     saveRaw(buffer, targetPath) {
         const storagePath = path.join(this.storagePath, targetPath);
