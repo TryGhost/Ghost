@@ -10,8 +10,6 @@
 const path = require('path');
 const proxy = require('./proxy');
 const urlService = proxy.urlService;
-const activeTheme = proxy.activeTheme;
-const IMAGE_SIZES_CONFIG = 'image_sizes';
 const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function imgUrl(attr, options) {
@@ -23,7 +21,10 @@ module.exports = function imgUrl(attr, options) {
 
     const absolute = options && options.hash && options.hash.absolute;
 
-    const image = getImageWithSize(attr, options && options.hash && options.hash.size);
+    const size = options && options.hash && options.hash.size;
+    const imageSizes = options && options.data && options.data.config && options.data.config.image_sizes;
+
+    const image = getImageWithSize(attr, size, imageSizes);
 
     // CASE: if attribute is passed, but it is undefined, then the attribute was
     // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
@@ -40,7 +41,7 @@ module.exports = function imgUrl(attr, options) {
     // in this case we don't show a warning
 };
 
-function getImageWithSize(imagePath, requestedSize) {
+function getImageWithSize(imagePath, requestedSize, imageSizes) {
     if (!imagePath) {
         return imagePath;
     }
@@ -52,13 +53,11 @@ function getImageWithSize(imagePath, requestedSize) {
         return imagePath;
     }
 
-    const themeImageSizes = activeTheme.get().config(IMAGE_SIZES_CONFIG);
-
-    if (!themeImageSizes || !themeImageSizes[requestedSize]) {
+    if (!imageSizes || !imageSizes[requestedSize]) {
         return imagePath;
     }
 
-    const imageSizeConfig = themeImageSizes[requestedSize];
+    const imageSizeConfig = imageSizes[requestedSize];
 
     if (!imageSizeConfig.width && !imageSizeConfig.height) {
         return imagePath;
