@@ -23,7 +23,7 @@ module.exports = function apiRoutes() {
 
     // ## Configuration
     router.get('/configuration', apiv2.http(apiv2.configuration.read));
-    router.get('/configuration/:key', mw.authAdminAPI, apiv2.http(apiv2.configuration.read));
+    router.get('/configuration/:key', mw.authAdminApi, apiv2.http(apiv2.configuration.read));
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, apiv2.http(apiv2.posts.browse));
