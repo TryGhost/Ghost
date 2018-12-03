@@ -11,20 +11,27 @@ module.exports = function (req, res, next) {
     }
 
     const imageSizes = activeTheme.get().config('image_sizes');
+    const imageDimensions = Object.keys(imageSizes).reduce((dimensions, size) => {
+        const {width, height} = imageSizes[size];
+        const dimension = (width ? 'w' + width : '') + (height ? 'h' + height : '');
+        return Object.assign({
+            [dimension]: imageSizes[size]
+        }, dimensions);
+    }, {});
 
-    const [sizeImageDir, requestedSize] = req.url.match(SIZE_PATH_REGEX);
+    const [sizeImageDir, requestedDimension] = req.url.match(SIZE_PATH_REGEX);
 
     // CASE: unknown size or missing size config
-    const imageSizeConfig = imageSizes[requestedSize];
-    if (!imageSizeConfig || (!imageSizeConfig.width && !imageSizeConfig.height)) {
-        const url = req.originalUrl.replace(`/size/${requestedSize}`, '');
+    const imageDimensionConfig = imageDimensions[requestedDimension];
+    if (!imageDimensionConfig || (!imageDimensionConfig.width && !imageDimensionConfig.height)) {
+        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
         return res.redirect(url);
     }
 
     const storageInstance = storage.getStorage();
     // CASE: unsupported storage adapter but theme is using custom image_sizes
     if (typeof storageInstance.saveRaw !== 'function') {
-        const url = req.originalUrl.replace(`/size/${requestedSize}`, '');
+        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
         return res.redirect(url);
     }
 
@@ -38,7 +45,7 @@ module.exports = function (req, res, next) {
         return storageInstance.read({path: originalImagePath})
             .then((originalImageBuffer) => {
                 return sharp(originalImageBuffer)
-                    .resize(imageSizeConfig.width, imageSizeConfig.height, {
+                    .resize(imageDimensionConfig.width, imageDimensionConfig.height, {
                         withoutEnlargement: true
                     })
                     .toBuffer();
