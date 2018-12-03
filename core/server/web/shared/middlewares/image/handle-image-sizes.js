@@ -6,12 +6,12 @@ const activeTheme = require('../../../../services/themes/active');
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 
 module.exports = function (req, res, next) {
-    const storageInstance = storage.getStorage();
-    const imageSizes = activeTheme.get().config('image_sizes');
-
     if (!SIZE_PATH_REGEX.test(req.url)) {
         return next();
     }
+
+    const storageInstance = storage.getStorage();
+    const imageSizes = activeTheme.get().config('image_sizes');
 
     const [sizeImageDir, requestedSize] = req.url.match(SIZE_PATH_REGEX);
 
