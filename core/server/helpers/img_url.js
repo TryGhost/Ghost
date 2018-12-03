@@ -65,5 +65,11 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
 
     const imageName = path.relative(STATIC_IMAGE_URL_PREFIX, imagePath);
 
-    return path.join(STATIC_IMAGE_URL_PREFIX, `/size/${requestedSize}/`, imageName);
+    const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
+
+    return path.join(STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}/`, imageName);
+}
+
+function prefixIfPresent(prefix, string) {
+    return string ? prefix + string : '';
 }
