@@ -17,6 +17,7 @@ module.exports = function (req, res, next) {
     };
 
     const imageSizes = activeTheme.get().config('image_sizes');
+    // CASE: no image_sizes config
     if (!imageSizes) {
         return redirectToOriginal();
     }
@@ -29,8 +30,8 @@ module.exports = function (req, res, next) {
         }, dimensions);
     }, {});
 
-    // CASE: unknown size or missing size config
     const imageDimensionConfig = imageDimensions[requestedDimension];
+    // CASE: unknown dimension
     if (!imageDimensionConfig || (!imageDimensionConfig.width && !imageDimensionConfig.height)) {
         return redirectToOriginal();
     }
