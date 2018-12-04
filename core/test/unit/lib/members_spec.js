@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const should = require('should');
 const MembersApi = require('../../../server/lib/members');
 
-describe('MembersApi lib', function () {
+describe.skip('MembersApi lib', function () {
     it('exports a function', function () {
         should.equal(typeof MembersApi, 'function');
     });
