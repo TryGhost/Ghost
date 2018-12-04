@@ -34,7 +34,6 @@
     text-decoration: none;
     color: var(--darkgrey);
     border: var(--lightgrey) 1px solid;
-    background: #fff;
     border-radius: 6px;
     transition: all .8s ease;
 }
