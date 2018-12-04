@@ -54,6 +54,23 @@
         });
     });
 
+    addMethod('signup', function signin({name, email, password}) {
+        return fetch(`${membersApi}/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                name,
+                email,
+                password
+            })
+        }).then((res) => {
+            return res.ok;
+        });
+    });
+
     addMethod('signout', function signout(/*options*/) {
         return fetch(`${membersApi}/signout`, {
             method: 'POST',
