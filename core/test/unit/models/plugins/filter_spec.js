@@ -1131,18 +1131,18 @@ describe('Filter', function () {
             });
         });
 
-        describe.only('Expand filters', () => {
+        describe('Expand filters', () => {
             let expandFilters;
 
             beforeEach(function () {
                 expandFilters = filter.__get__('filterUtils').expandFilters;
             });
 
-            it.only('should return unchanged filter when no expansions match', function () {
+            it('should return unchanged filter when no expansions match', function () {
                 expandFilters({status: 'published'}, []).should.eql({status: 'published'});
             });
 
-            it.only('should substitute single alias', function () {
+            it('should substitute single alias', function () {
                 const filter = {primary_tag: 'en'};
                 const expansions = [{
                     key: 'primary_tag',
@@ -1172,7 +1172,12 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: {'posts_tags.sort_order': 0}
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
                 const processed = {$and: [
@@ -1182,7 +1187,7 @@ describe('Filter', function () {
                     {'posts_tags.sort_order': 0}
                 ]};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
 
             it('should NOT match similarly named filter keys', function () {
@@ -1190,12 +1195,17 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'tag',
                     replacement: 'tags.slug',
-                    filter: 'posts_tags.sort_order:0'
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
-                const processed = 'tags:hello';
+                const processed = {tags:'hello'};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
 
             it('should substitute IN notation single alias', function () {
@@ -1205,7 +1215,12 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: {'posts_tags.sort_order': 0}
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
                 const processed = {$and: [
@@ -1213,10 +1228,10 @@ describe('Filter', function () {
                     {'posts_tags.sort_order': 0}
                 ]};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
 
-            it('should substitute single alias in complex filter', function () {
+            it('should substitute single alias nested in $and statement', function () {
                 const filter = {$and: [
                     {status: 'published'},
                     {featured: true},
@@ -1225,7 +1240,12 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: {'posts_tags.sort_order':0}
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
                 const processed = {$and: [
@@ -1236,7 +1256,7 @@ describe('Filter', function () {
                         {'posts_tags.sort_order': 0}]}
                 ]};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
 
             it('should substitute multiple occurrences of the filter with expansions', function () {
@@ -1249,7 +1269,12 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    filter: {'posts_tags.sort_order': 0}
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
                 }];
 
                 const processed = {$and: [
@@ -1265,7 +1290,7 @@ describe('Filter', function () {
                     ]}
                 ]};
 
-                expandFilters(filter, expansions).should.equal(processed);
+                expandFilters(filter, expansions).should.eql(processed);
             });
         });
     });

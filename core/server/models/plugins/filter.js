@@ -57,6 +57,7 @@ const EXPANSIONS = [{
 }];
 
 // @TODO: The filter utility lives here temporary.
+const GROUPS = ['$and', '$or'];
 const filterUtils = {
     /**
      * Combines two filters with $and conjunction
@@ -102,8 +103,6 @@ const filterUtils = {
      * ('featured:true', 'featured:false,status:published') => 'status:published'
      */
     rejectStatements: (statements, func) => {
-        const GROUPS = ['$and', '$or'];
-
         if (!statements) {
             return statements;
         }
@@ -209,15 +208,20 @@ const filterUtils = {
         let processed = {};
 
         Object.keys(statements).forEach((key) => {
-            const expansion = _.find(expansions, {key});
-            // @TODO: recurse into $and/$or groups
-            if (expansion) {
-                const replaced = {};
-                replaced[expansion.replacement] = statements[key];
-                const expanded = expansion.expand(replaced);
-                processed - _.merge(processed, expanded);
+            if (GROUPS.includes(key)) {
+                processed[key] = statements[key]
+                    .map(statement => filterUtils.expandFilters(statement, expansions));
             } else {
-                processed = _.merge(processed, _.pick(statements, key));
+                const expansion = _.find(expansions, {key});
+
+                if (expansion) {
+                    const replaced = {};
+                    replaced[expansion.replacement] = statements[key];
+                    const expanded = expansion.expand(replaced);
+                    processed - _.merge(processed, expanded);
+                } else {
+                    processed = _.merge(processed, _.pick(statements, key));
+                }
             }
         });
 
