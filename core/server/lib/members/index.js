@@ -60,7 +60,7 @@ module.exports = function MembersApi({
 
     apiRouter.post('/token', body.json(), (req, res) => {
         const {audience, origin} = getData(req, res, 'audience', 'origin');
-        if (res.ended) {
+        if (res.finished) {
             return;
         }
         if (audience !== origin) {
@@ -87,7 +87,7 @@ module.exports = function MembersApi({
 
     apiRouter.post('/reset-password', body.json(), (req, res) => {
         const {email} = getData(req, res, 'email');
-        if (res.ended) {
+        if (res.finished) {
             return;
         }
 
@@ -106,7 +106,7 @@ module.exports = function MembersApi({
             token,
             password
         } = getData(req, res, 'token', 'password');
-        if (res.ended) {
+        if (res.finished) {
             return;
         }
 
@@ -126,7 +126,7 @@ module.exports = function MembersApi({
             email,
             password
         } = getData(req, res, 'name', 'email', 'password');
-        if (res.ended) {
+        if (res.finished) {
             return;
         }
 
@@ -143,7 +143,7 @@ module.exports = function MembersApi({
             email,
             password
         } = getData(req, res, 'email', 'password');
-        if (res.ended) {
+        if (res.finished) {
             return;
         }
 
