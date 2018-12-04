@@ -180,7 +180,7 @@
                         <td class="w1 pa2 pl3 nowrap">
                             <div class="child flex items-center">
                                 {{#link-to "settings.integration.webhooks.edit" integration webhook data-test-link="edit-webhook"}}
-                                    {{svg-jar "pen" class="w6 h-3 fill-midgrey pa1 mr1"}}
+                                    {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
                                 {{/link-to}}
                                 <button {{action "confirmWebhookDeletion" webhook}} data-test-button="delete-webhook">
                                     {{svg-jar "trash" class="w6 fill-red pa1"}}
@@ -194,7 +194,7 @@
                         <span class="db">No webhooks configured</span>
                         <span class="dib mt1">
                             {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center" data-test-link="add-webhook"}}
-                                {{svg-jar "add" class="w3 h-3 fill-blue mr1"}} Add webhook
+                                {{svg-jar "add" class="w3 h3 fill-blue mr1"}} Add webhook
                             {{/link-to}}
                         </span>
                     </td>
