@@ -48,6 +48,12 @@ module.exports = function MembersApi({
         });
     }
 
+    function getCookie(req) {
+        return cookie.parse(req.headers.cookie || '', {
+            decode: decodeCookie
+        });
+    }
+
     const router = Router();
 
     const apiRouter = Router();
@@ -65,9 +71,8 @@ module.exports = function MembersApi({
             res.writeHead(403);
             return res.end();
         }
-        const {signedin} = cookie.parse(req.headers.cookie || '', {
-            decode: decodeCookie
-        });
+
+        const {signedin} = getCookie(req);
         if (!signedin) {
             res.writeHead(401);
             return res.end();
