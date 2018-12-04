@@ -1,5 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
+    express = require('express'),
     settingsCache = require('../../../../server/services/settings/cache'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
@@ -16,6 +17,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         sandbox.spy(CollectionRouter.prototype, 'mountRoute');
         sandbox.spy(CollectionRouter.prototype, 'mountRouter');
         sandbox.spy(CollectionRouter.prototype, 'unmountRoute');
+        sandbox.spy(express.Router, 'param');
 
         req = sandbox.stub();
         res = sandbox.stub();
@@ -45,6 +47,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             common.events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
+            express.Router.param.callCount.should.eql(3);
 
             // parent route
             collectionRouter.mountRoute.args[0][0].should.eql('/');

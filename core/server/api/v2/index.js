@@ -81,5 +81,9 @@ module.exports = {
 
     get authors() {
         return shared.pipeline(require('./authors'), localUtils);
+    },
+
+    get configuration() {
+        return shared.pipeline(require('./configuration'), localUtils);
     }
 };
