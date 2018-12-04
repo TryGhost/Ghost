@@ -83,6 +83,14 @@ module.exports = function MembersApi({
         return res.end(token);
     });
 
+    function ssoOriginCheck(req, res, next) {
+        if (!req.data.origin || req.data.origin !== ssoOrigin) {
+            res.writeHead(403);
+            return res.end();
+        }
+        next();
+    }
+
     apiRouter.post('/reset-password', body.json(), getData('email'), (req, res) => {
         const {email} = req.data;
 
@@ -96,13 +104,8 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/verify', body.json(), getData('token', 'password', 'origin'), (req, res) => {
-        const {token, password, origin} = req.data;
-
-        if (origin !== ssoOrigin) {
-            res.writeHead(403);
-            return res.end();
-        }
+    apiRouter.post('/verify', body.json(), getData('token', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+        const {token, password} = req.data;
 
         validateMember({token}).then((member) => {
             return updateMember(member, {password});
@@ -114,13 +117,8 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password', 'origin'), (req, res) => {
-        const {name, email, password, origin} = req.data;
-
-        if (origin !== ssoOrigin) {
-            res.writeHead(403);
-            return res.end();
-        }
+    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+        const {name, email, password} = req.data;
 
         createMember({name, email, password}).then((member) => {
             res.writeHead(200, {
@@ -130,13 +128,8 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/signin', body.json(), getData('email', 'password', 'origin'), (req, res) => {
-        const {email, password, origin} = req.data;
-
-        if (origin !== ssoOrigin) {
-            res.writeHead(403);
-            return res.end();
-        }
+    apiRouter.post('/signin', body.json(), getData('email', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+        const {email, password} = req.data;
 
         validateMember({email, password}).then((member) => {
             res.writeHead(200, {
@@ -146,13 +139,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', body.json(), getData('origin'), (req, res) => {
-        const {origin} = req.data;
-
-        if (origin !== ssoOrigin) {
-            res.writeHead(403);
-            return res.end();
-        }
+    apiRouter.post('/signout', body.json(), getData('origin'), ssoOriginCheck, (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': cookie.serialize('signedin', false, {
                 maxAge: 0,
