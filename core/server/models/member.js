@@ -1,17 +1,13 @@
 const ghostBookshelf = require('./base');
 
-ghostBookshelf.model('MemberPassword', ghostBookshelf.Model.extend({
-    tableName: 'members_passwords'
-}));
-
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
     relationships: ['tokens', 'password'],
 
     relationshipBelongsTo: {
-        tokens: 'tokens',
-        password: 'password'
+        tokens: 'member_tokens',
+        password: 'member_passwords'
     },
 
     emitChange: function emitChange(event, options) {
@@ -42,12 +38,50 @@ const Member = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    add(data, options) {
+        const addMember = () => {
+            return ghostBookshelf.Model.add.call(this, data, options)
+                .then(({id}) => {
+                    return this.findOne({id}, options);
+                });
+        };
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+
+                return addMember();
+            });
+        }
+
+        return addMember();
+    },
+
+    edit(data, options) {
+        const editMember = () => {
+            return ghostBookshelf.Model.edit.call(this, data, options)
+                .then(({id}) => {
+                    return this.findOne({id}, options);
+                });
+        };
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+
+                return editMember();
+            });
+        }
+
+        return editMember();
+    },
+
     password: function password() {
-        return this.hasOne('Credential').through('MemberPassword', 'id');
+        return this.hasOne('MemberPassword', 'member_id');
     },
 
     tokens: function tokens() {
-        return this.belongsToMany('Credential', 'members_tokens');
+        return this.hasMany('MemberToken', 'member_id');
     },
 
     permittedAttributes(...args) {
