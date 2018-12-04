@@ -1292,6 +1292,56 @@ describe('Filter', function () {
 
                 expandFilters(filter, expansions).should.eql(processed);
             });
+
+            it('should substitute multiple nested on different levels occurrences', function () {
+                const filter = {$and: [
+                    {status: 'published'},
+                    {primary_tag: 'de'},
+                    {featured: true},
+                    {$or: [
+                        {primary_tag: 'us'},
+                        {primary_tag: 'es'}
+                    ]}
+                ], $or: [
+                    {primary_tag: 'pl'}
+                ]};
+                const expansions = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    expand: (original) => {
+                        return {$and: [
+                            original,
+                            {'posts_tags.sort_order': 0}
+                        ]};
+                    }
+                }];
+
+                const processed = {$and: [
+                    {status: 'published'},
+                    {$and: [
+                        {'tags.slug': 'de'},
+                        {'posts_tags.sort_order': 0}
+                    ]},
+                    {featured: true},
+                    {$or: [
+                        {$and: [
+                            {'tags.slug': 'us'},
+                            {'posts_tags.sort_order': 0}
+                        ]},
+                        {$and: [
+                            {'tags.slug': 'es'},
+                            {'posts_tags.sort_order': 0}
+                        ]}
+                    ]}
+                ], $or: [
+                    {$and: [
+                        {'tags.slug': 'pl'},
+                        {'posts_tags.sort_order': 0}
+                    ]}
+                ]};
+
+                expandFilters(filter, expansions).should.eql(processed);
+            });
         });
     });
 });
