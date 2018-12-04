@@ -96,7 +96,7 @@ module.exports = function MembersApi({
         next();
     }
 
-    apiRouter.post('/reset-password', body.json(), getData('email'), (req, res) => {
+    apiRouter.post('/reset-password', body.json(), getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
         const token = crypto.randomBytes(16).toString('hex');
