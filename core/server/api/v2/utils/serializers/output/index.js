@@ -65,5 +65,9 @@ module.exports = {
 
     get authors() {
         return require('./authors');
+    },
+
+    get configuration() {
+        return require('./configuration');
     }
 };
