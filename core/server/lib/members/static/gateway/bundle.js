@@ -17,6 +17,7 @@
         };
     }
 
+    // @TODO this needs to be configurable
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
 
     addMethod('getToken', function getToken({audience}) {
