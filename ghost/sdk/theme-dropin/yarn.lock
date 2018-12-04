@@ -556,7 +556,7 @@
 "@tryghost/members-layer1@../layer1", "@tryghost/members-layer1@file:../layer1":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer0" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer0"
+    "@tryghost/members-layer0" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer1-0.0.0-3b35669c-5dbf-420b-af92-00b60c36ccfb-1543947793099/node_modules/@tryghost/layer0"
     ghost-ignition "^2.9.6"
     jsonwebtoken "^8.3.0"
     minivents "^2.2.0"
@@ -564,7 +564,7 @@
 "@tryghost/members-layer2@file:../layer2":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer1" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer1"
+    "@tryghost/members-layer1" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer2-0.0.0-b1e9e07e-e4a6-4997-9af3-1c83d8d5b22f-1543947793093/node_modules/@tryghost/layer1"
     bluebird "^3.5.3"
     document-ready "^2.0.1"
     ghost-ignition "^2.9.6"
@@ -1701,6 +1701,7 @@ minimist@^1.1.0, minimist@^1.1.1, minimist@^1.2.0:
 minivents@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/minivents/-/minivents-2.2.0.tgz#559492edc04bc00b62168850af5b8ca06d5e088b"
+  integrity sha1-VZSS7cBLwAtiFohQr1uMoG1eCIs=
 
 mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
