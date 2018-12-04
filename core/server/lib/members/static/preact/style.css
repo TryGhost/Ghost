@@ -65,7 +65,6 @@ form {
 }
 
 .member-auth-page {
-    border: 2px solid grey;
     padding: 20px 24px;
     display: flex;
     justify-content: center;
@@ -83,6 +82,7 @@ form {
     border: 2px solid brown;
     border-radius: 4px;
     padding: 40px 52px;
+    background: #efecec;
 }
 
 .member-auth-page .auth-form-headers {
