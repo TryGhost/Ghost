@@ -15,6 +15,7 @@ module.exports = function MembersApi({
         sessionSecret,
         ssoOrigin
     },
+    validateAudience,
     createMember,
     validateMember,
     updateMember,
@@ -44,20 +45,18 @@ module.exports = function MembersApi({
         }
 
         const {audience, origin} = req.data;
-        if (audience !== origin) {
-            res.writeHead(403);
-            return res.end();
-        }
 
-        const token = jwt.sign({
-            sub: signedin,
-            kid: req.jwk.kid
-        }, privateKey, {
-            algorithm: 'RS512',
-            audience,
-            issuer
-        });
-        return res.end(token);
+        validateAudience({audience, origin, id: signedin}).then(() => {
+            const token = jwt.sign({
+                sub: signedin,
+                kid: req.jwk.kid
+            }, privateKey, {
+                algorithm: 'RS512',
+                audience,
+                issuer
+            });
+            return res.end(token);
+        }).catch(handleError(403, res));
     });
 
     function ssoOriginCheck(req, res, next) {
