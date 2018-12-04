@@ -59,11 +59,8 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/token', body.json(), (req, res) => {
-        const {audience, origin} = getData(req, res, 'audience', 'origin');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/token', body.json(), getData('audience', 'origin'), (req, res) => {
+        const {audience, origin} = req.data;
         if (audience !== origin) {
             res.writeHead(403);
             return res.end();
@@ -86,11 +83,8 @@ module.exports = function MembersApi({
         return res.end(token);
     });
 
-    apiRouter.post('/reset-password', body.json(), (req, res) => {
-        const {email} = getData(req, res, 'email');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/reset-password', body.json(), getData('email'), (req, res) => {
+        const {email} = req.data;
 
         const token = crypto.randomBytes(16).toString('hex');
 
@@ -102,15 +96,8 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/verify', body.json(), (req, res) => {
-        const {
-            token,
-            password,
-            origin
-        } = getData(req, res, 'token', 'password', 'origin');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/verify', body.json(), getData('token', 'password', 'origin'), (req, res) => {
+        const {token, password, origin} = req.data;
 
         if (origin !== ssoOrigin) {
             res.writeHead(403);
@@ -127,16 +114,8 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signup', body.json(), (req, res) => {
-        const {
-            name,
-            email,
-            password,
-            origin
-        } = getData(req, res, 'name', 'email', 'password', 'origin');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password', 'origin'), (req, res) => {
+        const {name, email, password, origin} = req.data;
 
         if (origin !== ssoOrigin) {
             res.writeHead(403);
@@ -151,15 +130,8 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/signin', body.json(), (req, res) => {
-        const {
-            email,
-            password,
-            origin
-        } = getData(req, res, 'email', 'password', 'origin');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/signin', body.json(), getData('email', 'password', 'origin'), (req, res) => {
+        const {email, password, origin} = req.data;
 
         if (origin !== ssoOrigin) {
             res.writeHead(403);
@@ -174,13 +146,8 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', body.json(), (req, res) => {
-        const {
-            origin
-        } = getData(req, res, 'origin');
-        if (res.finished) {
-            return;
-        }
+    apiRouter.post('/signout', body.json(), getData('origin'), (req, res) => {
+        const {origin} = req.data;
 
         if (origin !== ssoOrigin) {
             res.writeHead(403);
@@ -223,27 +190,29 @@ module.exports = function MembersApi({
     return httpHandler;
 };
 
-function getData(req, res, ...props) {
-    if (!req.body) {
-        res.writeHead(400);
-        return res.end();
-    }
-
-    const data = props.reduce((data, prop) => {
-        if (!data || !req.body[prop]) {
-            return null;
+function getData(...props) {
+    return function (req, res, next) {
+        if (!req.body) {
+            res.writeHead(400);
+            return res.end();
         }
-        return Object.assign(data, {
-            [prop]: req.body[prop]
-        });
-    }, {});
 
-    if (!data) {
-        res.writeHead(400);
-        res.end(`Expected {${props.join(', ')}}`);
-        return {};
-    }
-    return data;
+        const data = props.reduce((data, prop) => {
+            if (!data || !req.body[prop]) {
+                return null;
+            }
+            return Object.assign(data, {
+                [prop]: req.body[prop]
+            });
+        }, {});
+
+        if (!data) {
+            res.writeHead(400);
+            res.end(`Expected {${props.join(', ')}}`);
+        }
+        req.data = data;
+        next();
+    };
 }
 
 function handleError(status, res) {
