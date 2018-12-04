@@ -222,7 +222,7 @@ const filterUtils = {
                         replaced = expansion.expand(replaced);
                     }
 
-                    processed - _.merge(processed, replaced);
+                    processed = _.merge(processed, replaced);
                 } else {
                     processed = _.merge(processed, _.pick(statements, key));
                 }
