@@ -65,7 +65,7 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/token', body.json(), getData('audience', 'origin'), (req, res) => {
+    apiRouter.post('/token', body.json(), getData('audience'), (req, res) => {
         const {audience, origin} = req.data;
         if (audience !== origin) {
             res.writeHead(403);
@@ -109,7 +109,7 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/verify', body.json(), getData('token', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/verify', body.json(), getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
         validateMember({token}).then((member) => {
@@ -122,7 +122,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
         createMember({name, email, password}).then((member) => {
@@ -133,7 +133,7 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/signin', body.json(), getData('email', 'password', 'origin'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signin', body.json(), getData('email', 'password'), ssoOriginCheck, (req, res) => {
         const {email, password} = req.data;
 
         validateMember({email, password}).then((member) => {
@@ -144,7 +144,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', body.json(), getData('origin'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signout', body.json(), getData(), ssoOriginCheck, (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': cookie.serialize('signedin', false, {
                 maxAge: 0,
@@ -189,7 +189,7 @@ function getData(...props) {
             return res.end();
         }
 
-        const data = props.reduce((data, prop) => {
+        const data = props.concat('origin').reduce((data, prop) => {
             if (!data || !req.body[prop]) {
                 return null;
             }
