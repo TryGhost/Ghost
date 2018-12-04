@@ -34,12 +34,12 @@ const EXPANSIONS = [{
     }
 }, {
     key: 'primary_author',
-    replacement: 'users.slug',
+    replacement: 'authors.slug',
     expand: (mongoJSON) => {
         return {$and: [
             mongoJSON,
             {'posts_authors.sort_order': 0},
-            {'users.visibility': 'public'}
+            {'authors.visibility': 'public'}
         ]};
     }
 }, {
