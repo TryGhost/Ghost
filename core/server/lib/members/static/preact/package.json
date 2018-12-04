@@ -1,0 +1,22 @@
+{
+  "name": "ghost-member",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "preact build --src=index.js --dest=dist  --service-worker=false --no-prerender",
+    "dev": "yarn build --no-production && preact watch --port=8080",
+    "lint": "eslint src"
+  },
+  "eslintIgnore": [
+    "build/*"
+  ],
+  "devDependencies": {
+    "preact-cli": "^2.0.0",
+    "grunt": "1.0.3",
+    "grunt-shell": "2.1.0"
+  },
+  "dependencies": {
+    "preact": "^8.2.1",
+    "preact-compat": "^3.17.0"
+  }
+}

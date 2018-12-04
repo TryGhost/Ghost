@@ -4,6 +4,8 @@ const {Router, static} = require('express');
 const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
+const config = require('../../config');
+const urlService = require('../../services/url');
 
 module.exports = function MembersApi({
     config: {
@@ -166,8 +168,10 @@ module.exports = function MembersApi({
     });
 
     const staticRouter = Router();
-
-    staticRouter.use(static(require('path').join(__dirname, './static')));
+    staticRouter.use('/static', static(require('path').join(__dirname, './static/preact/dist')));
+    staticRouter.get('/*', (req, res) => {
+        res.sendFile(require('path').join(__dirname, './static/preact/dist/index.html'));
+    });
 
     router.use('/api', apiRouter);
     router.use('/static', staticRouter);
