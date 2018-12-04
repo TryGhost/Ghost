@@ -314,22 +314,26 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 return isCorrectOwner;
             }
 
-            function isCurrentOwner() {
+            function isPrimaryAuthor() {
+                return (context.user === postModel.related('authors').models[0].id);
+            }
+
+            function isCoAuthor() {
                 return postModel.related('authors').models.map(author => author.id).includes(context.user);
             }
 
             if (isContributor && isEdit) {
-                hasUserPermission = !isChanging('author_id') && !isChangingAuthors() && isCurrentOwner();
+                hasUserPermission = !isChanging('author_id') && !isChangingAuthors() && isCoAuthor();
             } else if (isContributor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (isContributor && isDestroy) {
-                hasUserPermission = isCurrentOwner();
+                hasUserPermission = isPrimaryAuthor();
             } else if (isAuthor && isEdit) {
-                hasUserPermission = isCurrentOwner() && !isChanging('author_id') && !isChangingAuthors();
+                hasUserPermission = isCoAuthor() && !isChanging('author_id') && !isChangingAuthors();
             } else if (isAuthor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (postModel) {
-                hasUserPermission = hasUserPermission || isCurrentOwner();
+                hasUserPermission = hasUserPermission || isPrimaryAuthor();
             }
 
             if (hasUserPermission && hasAppPermission) {
