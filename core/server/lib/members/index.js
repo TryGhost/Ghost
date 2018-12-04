@@ -48,6 +48,15 @@ module.exports = function MembersApi({
         });
     }
 
+    function removeCookie() {
+        return cookie.serialize('signedin', false, {
+            maxAge: 0,
+            path: '/ghost/api/v2/members/token',
+            sameSite: 'strict',
+            httpOnly: true
+        });
+    }
+
     function getCookie(req) {
         return cookie.parse(req.headers.cookie || '', {
             decode: decodeCookie
@@ -146,12 +155,7 @@ module.exports = function MembersApi({
 
     apiRouter.post('/signout', body.json(), getData(), ssoOriginCheck, (req, res) => {
         res.writeHead(200, {
-            'Set-Cookie': cookie.serialize('signedin', false, {
-                maxAge: 0,
-                path: '/ghost/api/v2/members/token',
-                sameSite: 'strict',
-                httpOnly: true
-            })
+            'Set-Cookie': removeCookie()
         });
         res.end();
     });
