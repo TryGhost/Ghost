@@ -1,11 +1,12 @@
 const crypto = require('crypto');
 const jose = require('node-jose');
 const {Router, static} = require('express');
-const cookie = require('cookie');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
 const urlService = require('../../services/url');
+
+const cookies = require('./cookies');
 
 module.exports = function MembersApi({
     config: {
@@ -22,47 +23,6 @@ module.exports = function MembersApi({
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
-    function encodeCookie(data) {
-        const encodedData = encodeURIComponent(data);
-        const hmac = crypto.createHmac('sha256', sessionSecret);
-        hmac.update(encodedData);
-        return `${hmac.digest('hex')}~${encodedData}`;
-    }
-
-    function decodeCookie(data) {
-        const hmac = crypto.createHmac('sha256', sessionSecret);
-        const [sentHmac, sentData] = data.split('~');
-        if (hmac.update(sentData).digest('hex') !== sentHmac) {
-            return null;
-        }
-        return decodeURIComponent(sentData);
-    }
-
-    function setCookie(member) {
-        return cookie.serialize('signedin', member.id, {
-            maxAge: 180,
-            path: '/ghost/api/v2/members/token',
-            sameSite: 'strict',
-            httpOnly: true,
-            encode: encodeCookie
-        });
-    }
-
-    function removeCookie() {
-        return cookie.serialize('signedin', false, {
-            maxAge: 0,
-            path: '/ghost/api/v2/members/token',
-            sameSite: 'strict',
-            httpOnly: true
-        });
-    }
-
-    function getCookie(req) {
-        return cookie.parse(req.headers.cookie || '', {
-            decode: decodeCookie
-        });
-    }
-
     const router = Router();
 
     const apiRouter = Router();
@@ -73,6 +33,8 @@ module.exports = function MembersApi({
             next();
         });
     });
+
+    const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
 
     apiRouter.post('/token', body.json(), getData('audience'), (req, res) => {
         const {audience, origin} = req.data;
