@@ -339,3 +339,10 @@ input,
 .subscribers-table table .gh-btn svg {
     fill: var(--darkgrey);
 }
+
+.id-mailchimp img,
+.id-typeform img,
+.id-buffer img,
+.id-more img {
+    filter: invert(100%);
+}
