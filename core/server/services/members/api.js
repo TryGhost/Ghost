@@ -1,6 +1,7 @@
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
 const MembersApi = require('../../lib/members');
+const URL = require('url').URL;
 
 const emailIdx = {
     'member@member.com': 'id-0'
