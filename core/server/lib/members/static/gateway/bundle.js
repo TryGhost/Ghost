@@ -51,6 +51,9 @@
                 password
             })
         }).then((res) => {
+            if (res.ok) {
+                window.localStorage.setItem('signedin', true);
+            }
             return res.ok;
         });
     });
@@ -68,6 +71,9 @@
                 password
             })
         }).then((res) => {
+            if (res.ok) {
+                window.localStorage.setItem('signedin', true);
+            }
             return res.ok;
         });
     });
@@ -82,7 +88,9 @@
                 origin
             })
         }).then((res) => {
-            window.localStorage.removeItem('signedin');
+            if (res.ok) {
+                window.localStorage.removeItem('signedin');
+            }
             return res.ok;
         });
     });
