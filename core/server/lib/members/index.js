@@ -176,6 +176,11 @@ module.exports = function MembersApi({
 
     router.use('/api', apiRouter);
     router.use('/static', staticRouter);
+    router.get('/.well-known/jwks.json', (req, res) => {
+        keyStoreReady.then(() => {
+            res.json(keyStore.toJSON());
+        });
+    });
 
     function httpHandler(req, res, next) {
         return router.handle(req, res, next);
