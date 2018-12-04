@@ -26,6 +26,7 @@ function create(options) {
         frame.style.width = '100%';
         frame.style.height = '100%';
         frame.style.background = 'transparent';
+        frame.style.top = '0';
         frame.style['z-index'] = '9999';
         frame.src = `${options.blogUrl}/members/auth`;
         frame.onload = function () {
