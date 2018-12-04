@@ -553,12 +553,13 @@
     ghost-ignition "^2.9.6"
     lodash "^4.17.11"
 
-"@tryghost/members-layer1@file:../layer1":
+"@tryghost/members-layer1@../layer1", "@tryghost/members-layer1@file:../layer1":
   version "0.0.0"
   dependencies:
     "@tryghost/members-layer0" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer0"
     ghost-ignition "^2.9.6"
     jsonwebtoken "^8.3.0"
+    minivents "^2.2.0"
 
 "@tryghost/members-layer2@file:../layer2":
   version "0.0.0"
@@ -1696,6 +1697,10 @@ minimist@0.0.8:
 minimist@^1.1.0, minimist@^1.1.1, minimist@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
+
+minivents@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/minivents/-/minivents-2.2.0.tgz#559492edc04bc00b62168850af5b8ca06d5e088b"
 
 mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@~0.5.1:
   version "0.5.1"

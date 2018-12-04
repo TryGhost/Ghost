@@ -38,8 +38,8 @@ const init = (blogUrl, postId) => {
 
 DomReady(function () {
     let postDataObject = document.querySelector("[data-members-resource-type='post']");
-    let blogUrl = postDataObject && postDataObject.getAttribute('data-members-blog-url');
     let postId = postDataObject && postDataObject.getAttribute('data-members-resource-id');
+    const blogUrl = window.blogUrl;
     if (blogUrl && postId) {
         init(blogUrl, postId);
     } else {

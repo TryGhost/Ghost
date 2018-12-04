@@ -19,13 +19,13 @@
     "access": "public"
   },
   "dependencies": {
-    "ghost-ignition": "^2.9.6",
-    "domready": "^1.0.8",
-    "jsonwebtoken": "^8.3.0",
-    "superagent": "^4.0.0-beta.5",
-    "@tryghost/members-layer1": "file:../layer1",
+    "@tryghost/content-api": "file:../../content-api",
+    "@tryghost/members-layer1": "../layer1",
     "@tryghost/members-layer2": "file:../layer2",
-    "@tryghost/content-api": "file:../../content-api"
+    "domready": "^1.0.8",
+    "ghost-ignition": "^2.9.6",
+    "jsonwebtoken": "^8.3.0",
+    "superagent": "^4.0.0-beta.5"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

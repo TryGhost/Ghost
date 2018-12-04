@@ -14,12 +14,11 @@ module.exports = function layer0(frame) {
             return;
         }
         if (!event.data || !event.data.uid) {
+            if (event.data.event) {
+                return listener(event.data);
+            }
             return;
         }
-        if (event.data.event) {
-            return listener(event.data);
-        }
-
         var handler = handlers[event.data.uid];
         if (!handler) {
             return;
