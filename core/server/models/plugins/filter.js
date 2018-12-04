@@ -215,10 +215,14 @@ const filterUtils = {
                 const expansion = _.find(expansions, {key});
 
                 if (expansion) {
-                    const replaced = {};
+                    let replaced = {};
                     replaced[expansion.replacement] = statements[key];
-                    const expanded = expansion.expand(replaced);
-                    processed - _.merge(processed, expanded);
+
+                    if (expansion.expand) {
+                        replaced = expansion.expand(replaced);
+                    }
+
+                    processed - _.merge(processed, replaced);
                 } else {
                     processed = _.merge(processed, _.pick(statements, key));
                 }

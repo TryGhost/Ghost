@@ -1142,6 +1142,18 @@ describe('Filter', function () {
                 expandFilters({status: 'published'}, []).should.eql({status: 'published'});
             });
 
+            it('should substitute single alias without expansion', function () {
+                const filter = {primary_tag: 'en'};
+                const expansions = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                }];
+
+                const processed = {'tags.slug': 'en'};
+
+                expandFilters(filter, expansions).should.eql(processed);
+            });
+
             it('should substitute single alias', function () {
                 const filter = {primary_tag: 'en'};
                 const expansions = [{
