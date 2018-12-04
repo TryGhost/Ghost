@@ -254,6 +254,11 @@ const filter = function filter(Bookshelf) {
             let enforced = this.enforcedFilters(options);
             let extra = this.extraFilters(options);
 
+            debug('custom', custom);
+            debug('extra', extra);
+            debug('default', defaults);
+            debug('enforced', enforced);
+
             if (custom) {
                 custom = nql(options.filter).parse();
             }
@@ -270,22 +275,17 @@ const filter = function filter(Bookshelf) {
                 extra = nql(extra).parse();
             }
 
-            debug('custom', custom);
-            debug('extra', extra);
-            debug('default', defaults);
-            debug('enforced', enforced);
-
             const filter = filterUtils.mergeFilters({enforced, defaults, custom, extra});
 
-            debug('filter', filter);
+            debug('filter', JSON.stringify(filter));
 
             const expandedFilter = filterUtils.expandFilters(filter, EXPANSIONS);
 
             if (expandedFilter !== filter) {
-                debug('processed filter', expandedFilter);
+                debug('expanded filter', JSON.stringify(expandedFilter));
             }
 
-            if (filter) {
+            if (expandedFilter) {
                 this.query((qb) => {
                     // @TODO: change NQL api to accept mongo json instead of nql string
                     nql(expandedFilter, RELATIONS).querySQL(qb);
