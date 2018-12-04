@@ -38,9 +38,17 @@
         });
     });
 
-    addMethod('signin', function signin(/*options*/) {
+    addMethod('signin', function signin({email, password}) {
         return fetch(`${membersApi}/signin`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                email,
+                password
+            })
         }).then((res) => {
             return res.ok;
         });
@@ -48,7 +56,13 @@
 
     addMethod('signout', function signout(/*options*/) {
         return fetch(`${membersApi}/signout`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin
+            })
         }).then((res) => {
             window.localStorage.removeItem('signedin');
             return res.ok;
