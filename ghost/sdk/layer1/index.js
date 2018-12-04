@@ -23,13 +23,10 @@ function create(options) {
         const frame = document.createElement('iframe');
         frame.style.position = 'fixed';
         frame.style.display = 'none';
-        frame.style.width = '400px';
-        frame.style.height = '600px';
-        frame.style.background = 'lightgray';
-        frame.style.top = '20vw';
-        frame.style.margin = '0 -200px 0';
-        frame.style.left = '50%';
-        frame.style['z-index'] = '9000';
+        frame.style.width = '100%';
+        frame.style.height = '100%';
+        frame.style.background = 'transparent';
+        frame.style['z-index'] = '9999';
         frame.src = `${options.blogUrl}/members/auth`;
         frame.onload = function () {
             resolve(frame);
