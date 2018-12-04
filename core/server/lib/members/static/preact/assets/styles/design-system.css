@@ -1,0 +1,46 @@
+/* Type Scale */
+/* --------------------------------------------- */
+:root {
+    --text-xs:      .75rem;
+    --text-s:       .875rem;
+    --text-base:    1rem;
+    --text-l:       1.125rem;
+    --text-xl:      1.25rem;
+    --text-2xl:     1.5rem;
+    --text-3xl:     1.875rem;
+    --text-4xl:     2.25rem;
+    --text-5xl:     3rem;
+}
+
+
+/* Colors */
+/* --------------------------------------------- */
+:root {
+    /* Base colors */
+    --blue:         #3eb0ef;
+    --green:        #a4d037;
+    --red:          #f05230;
+    --white:        #ffffff;
+    --black:        #22292F;
+
+    /* Greys - d: darker, l: lighter */
+    --grey:         #B8C2CC;
+    --grey-d1:      #8795A1;
+    --grey-d2:      #606F7B;
+    --grey-d3:      #3D4852;
+    --grey-d4:      #22292F;
+    --grey-l1:      #DAE1E7;
+    --grey-l2:      #F1F5F8;
+    --grey-l3:      #F8FAFC;
+    --grey-l4:      #FFFFFF;
+}
+
+
+/* Shadows */
+/* --------------------------------------------- */
+
+
+/* Visual elements */
+/* --------------------------------------------- */
+
+/* Border radius */

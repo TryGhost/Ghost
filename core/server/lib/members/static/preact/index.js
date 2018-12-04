@@ -1,4 +1,4 @@
-import './style.css';
+import './assets/styles/members.css';
 import { Component } from 'preact';
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
 const storage = window.localStorage;
@@ -90,27 +90,30 @@ export default class App extends Component {
         let hash = '';
         switch (formType) {
             case 'signup':
-                mainTitle = 'Signup';
+                mainTitle = 'Sign Up';
                 ctaTitle = 'Already a member?';
-                ctaLabel = 'Sign in';
+                ctaLabel = 'Log in';
                 hash = 'signin';
                 break;
             case 'signin':
-                mainTitle = 'Signin';
-                ctaTitle = 'Not a member yet?';
+                mainTitle = 'Log In';
+                ctaTitle = 'Not a member?';
                 ctaLabel = 'Sign up';
                 hash = 'signup';
                 break;
         }
         return (
-            <div className='auth-form-headers'>
-                <div className='headers-main-title'> {mainTitle} </div>
-                <div className='headers-cta'>
-                    <div className='cta-title'> {ctaTitle} </div>
-                    <div className='cta-label'
-                        onClick={(e) => {window.location.hash = hash}}
-                    >
-                        {ctaLabel}
+            <div className="flex flex-column">
+                <div className="gm-logo"></div>
+                <div className="flex justify-between items-end mt2 gm-form-headers">
+                    <h1>{ mainTitle }</h1>
+                    <div className="flex gm-headers-cta">
+                        <h4 className="gm-cta-title">{ ctaTitle }</h4>
+                        <div className="gm-cta-label"
+                            onClick={(e) => {window.location.hash = hash}}
+                        >
+                            {ctaLabel}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,6 +130,7 @@ export default class App extends Component {
                 placeholder={placeholder}
                 value={value || ''}
                 onChange={(e) => this.onInputChange(e, name)}
+                className="mt3"
             />
         )
     }
@@ -152,7 +156,7 @@ export default class App extends Component {
         switch (formType) {
             case 'signin':
                 formElements = [emailInput, passwordInput];
-                buttonLabel = 'Sign in';
+                buttonLabel = 'Log in';
                 break;
             case 'signup':
                 formElements = [nameInput, emailInput, passwordInput];
@@ -164,10 +168,10 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="auth-form-elements">
-                <form className={formType} onSubmit={(e) => this.submitForm(e)}>
-                    {formElements}
-                    <button type="submit" name={formType} >{buttonLabel} </button>
+            <div className="flex flex-column items-start gm-form-elements">
+                <form className={ formType } onSubmit={(e) => this.submitForm(e)}>
+                    { formElements }
+                    <button type="submit" name={ formType } className="mt5">{ buttonLabel }</button>
                 </form>
             </div>
         )
@@ -175,7 +179,7 @@ export default class App extends Component {
 
     renderFormComponent(formType = this.state.formType) {
         return (
-            <div className="auth-form-container">
+            <div className="gm-modal">
                 {this.renderFormHeaders(formType)}
                 {this.renderFormSection(formType)}
             </div>
@@ -184,7 +188,7 @@ export default class App extends Component {
 
     render() {
         return (
-            <div className='member-auth-page'>
+            <div className="gm-auth-page">
                 {this.renderFormComponent()}
             </div>
         );
