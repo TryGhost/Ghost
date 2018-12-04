@@ -11,7 +11,8 @@ module.exports = function MembersApi({
     config: {
         issuer,
         privateKey,
-        sessionSecret
+        sessionSecret,
+        ssoOrigin
     },
     createMember,
     validateMember,
@@ -141,10 +142,16 @@ module.exports = function MembersApi({
     apiRouter.post('/signin', body.json(), (req, res) => {
         const {
             email,
-            password
-        } = getData(req, res, 'email', 'password');
+            password,
+            origin
+        } = getData(req, res, 'email', 'password', 'origin');
         if (res.finished) {
             return;
+        }
+
+        if (origin !== ssoOrigin) {
+            res.writeHead(403);
+            return res.end();
         }
 
         validateMember({email, password}).then((member) => {
