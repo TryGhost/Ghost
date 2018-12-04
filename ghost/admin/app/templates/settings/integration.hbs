@@ -17,7 +17,7 @@
                 <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 mt1" style={{iconImageStyle}}>
                     {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
                         {{#unless integration.iconImage}}
-                            {{svg-jar "integration" class="w14 h-auto stroke-darkgrey"}}
+                            {{svg-jar "integration" class="w14 h14 stroke-darkgrey"}}
                         {{/unless}}
                     {{/aspect-ratio-box}}
 
@@ -180,7 +180,7 @@
                         <td class="w1 pa2 pl3 nowrap">
                             <div class="child flex items-center">
                                 {{#link-to "settings.integration.webhooks.edit" integration webhook data-test-link="edit-webhook"}}
-                                    {{svg-jar "pen" class="w6 h-auto fill-midgrey pa1 mr1"}}
+                                    {{svg-jar "pen" class="w6 h-3 fill-midgrey pa1 mr1"}}
                                 {{/link-to}}
                                 <button {{action "confirmWebhookDeletion" webhook}} data-test-button="delete-webhook">
                                     {{svg-jar "trash" class="w6 fill-red pa1"}}
@@ -194,7 +194,7 @@
                         <span class="db">No webhooks configured</span>
                         <span class="dib mt1">
                             {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center" data-test-link="add-webhook"}}
-                                {{svg-jar "add" class="w3 h-auto fill-blue mr1"}} Add webhook
+                                {{svg-jar "add" class="w3 h-3 fill-blue mr1"}} Add webhook
                             {{/link-to}}
                         </span>
                     </td>
@@ -206,7 +206,7 @@
                 <tr>
                     <td colspan="5" class="pa3 f7">
                         {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center" data-test-link="add-webhook"}}
-                            {{svg-jar "add" class="w3h-auto fill-blue mr1"}} Add webhook
+                            {{svg-jar "add" class="w3 h3 fill-blue mr1"}} Add webhook
                         {{/link-to}}
                     </td>
                 </tr>
