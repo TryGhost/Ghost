@@ -85,6 +85,13 @@ function sendEmail(member, {token}) {
     return Promise.resolve();
 }
 
+function validateAudience({audience, origin}) {
+    if (audience === origin) {
+        return Promise.resolve();
+    }
+    return Promise.reject();
+}
+
 const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
@@ -99,6 +106,7 @@ const api = MembersApi({
         sessionSecret,
         ssoOrigin
     },
+    validateAudience,
     createMember,
     validateMember,
     updateMember,
