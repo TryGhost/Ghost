@@ -37,17 +37,18 @@ module.exports = function MembersApi({
     const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
 
     apiRouter.post('/token', body.json(), getData('audience'), (req, res) => {
+        const {signedin} = getCookie(req);
+        if (!signedin) {
+            res.writeHead(401);
+            return res.end();
+        }
+
         const {audience, origin} = req.data;
         if (audience !== origin) {
             res.writeHead(403);
             return res.end();
         }
 
-        const {signedin} = getCookie(req);
-        if (!signedin) {
-            res.writeHead(401);
-            return res.end();
-        }
         const token = jwt.sign({
             sub: signedin,
             kid: req.jwk.kid
