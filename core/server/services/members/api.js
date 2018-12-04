@@ -89,13 +89,15 @@ const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
 const issuer = config.get('url');
+const ssoOrigin = new URL(config.get('url')).origin;
 
 const api = MembersApi({
     config: {
         issuer,
         publicKey,
         privateKey,
-        sessionSecret
+        sessionSecret,
+        ssoOrigin
     },
     createMember,
     validateMember,
