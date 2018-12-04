@@ -249,10 +249,26 @@ const filter = function filter(Bookshelf) {
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
 
-            const custom = options.filter ? nql(options.filter).parse() : null;
-            const defaults = this.defaultFilters(options) ? nql(this.defaultFilters(options)) : null;
-            const enforced = this.enforcedFilters(options) ? nql(this.enforcedFilters(options)) : null;
-            const extra = this.extraFilters(options) ? nql(this.extraFilters(options)) : null;
+            let custom = options.filter;
+            let defaults = this.defaultFilters(options);
+            let enforced = this.enforcedFilters(options);
+            let extra = this.extraFilters(options);
+
+            if (custom) {
+                custom = nql(options.filter).parse();
+            }
+
+            if (defaults) {
+                defaults = nql(defaults).parse();
+            }
+
+            if (enforced) {
+                enforced = nql(enforced).parse();
+            }
+
+            if (extra) {
+                extra = nql(extra).parse();
+            }
 
             debug('custom', custom);
             debug('extra', extra);
