@@ -556,7 +556,7 @@
 "@tryghost/members-layer1@../layer1", "@tryghost/members-layer1@file:../layer1":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer0" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer1-0.0.0-3b35669c-5dbf-420b-af92-00b60c36ccfb-1543947793099/node_modules/@tryghost/layer0"
+    "@tryghost/members-layer0" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer1-0.0.0-0d37ce78-17c3-4a6a-ad21-b8de0e2e41de-1543948924228/node_modules/@tryghost/layer0"
     ghost-ignition "^2.9.6"
     jsonwebtoken "^8.3.0"
     minivents "^2.2.0"
@@ -564,7 +564,7 @@
 "@tryghost/members-layer2@file:../layer2":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer1" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer2-0.0.0-b1e9e07e-e4a6-4997-9af3-1c83d8d5b22f-1543947793093/node_modules/@tryghost/layer1"
+    "@tryghost/members-layer1" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer2-0.0.0-4cb09098-60ce-4c40-9320-e7e125528431-1543948924243/node_modules/@tryghost/layer1"
     bluebird "^3.5.3"
     document-ready "^2.0.1"
     ghost-ignition "^2.9.6"
