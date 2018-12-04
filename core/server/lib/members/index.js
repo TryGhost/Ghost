@@ -105,10 +105,16 @@ module.exports = function MembersApi({
     apiRouter.post('/verify', body.json(), (req, res) => {
         const {
             token,
-            password
-        } = getData(req, res, 'token', 'password');
+            password,
+            origin
+        } = getData(req, res, 'token', 'password', 'origin');
         if (res.finished) {
             return;
+        }
+
+        if (origin !== ssoOrigin) {
+            res.writeHead(403);
+            return res.end();
         }
 
         validateMember({token}).then((member) => {
@@ -125,10 +131,16 @@ module.exports = function MembersApi({
         const {
             name,
             email,
-            password
-        } = getData(req, res, 'name', 'email', 'password');
+            password,
+            origin
+        } = getData(req, res, 'name', 'email', 'password', 'origin');
         if (res.finished) {
             return;
+        }
+
+        if (origin !== ssoOrigin) {
+            res.writeHead(403);
+            return res.end();
         }
 
         createMember({name, email, password}).then((member) => {
@@ -162,7 +174,18 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', (req, res) => {
+    apiRouter.post('/signout', body.json(), (req, res) => {
+        const {
+            origin
+        } = getData(req, res, 'origin');
+        if (res.finished) {
+            return;
+        }
+
+        if (origin !== ssoOrigin) {
+            res.writeHead(403);
+            return res.end();
+        }
         res.writeHead(200, {
             'Set-Cookie': cookie.serialize('signedin', false, {
                 maxAge: 0,
