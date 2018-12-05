@@ -3,6 +3,7 @@ import { Component } from 'preact';
 const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
 const storage = window.localStorage;
+var layer0 = require('./layer0');
 
 export default class App extends Component {
     constructor() {
@@ -11,10 +12,24 @@ export default class App extends Component {
             formData: {},
             formType: window.location.hash.replace(/^#/, '')
         };
+        this.gatewayFrame = '';
         window.addEventListener("hashchange", () => this.onHashChange(), false);
     }
 
+    loadGateway() {
+        const blogUrl = window.location.href.substring(0, window.location.href.indexOf('/members/auth'));
+        const frame = window.document.createElement('iframe');
+        frame.id = 'member-gateway';
+        frame.style.display = 'none';
+        frame.src = `${blogUrl}/members/gateway`;
+        frame.onload =  () => {
+            this.gatewayFrame = layer0(frame);
+        };
+        document.body.appendChild(frame);
+    }
+
     componentDidMount() {
+        this.loadGateway();
         if (!window.location.hash.replace(/^#/, '')) {
             window.location.hash = 'signin';
         }
@@ -51,36 +66,20 @@ export default class App extends Component {
     }
 
     signin({ email, password }) {
-        fetch(`${membersApi}/signin`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email, password, origin
-            })
-        }).then((res) => {
-            if (!res.ok) {
-                throw new Error(res.statusCode);
+        this.gatewayFrame.call('signin', {email, password}, function (err, successful) {
+            if (err) {
+                console.log("Unable to login", err);
             }
-            storage.setItem('signedin', true);
+            console.log("Successfully logged in");
         });
     }
 
     signup({ name, email, password }) {
-        fetch(`${membersApi}/signup`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name, email, password, origin
-            })
-        }).then((res) => {
-            if (!res.ok) {
-                throw new Error(res.statusCode);
+        this.gatewayFrame.call('signup', { name, email, password }, function (err, successful) {
+            if (err) {
+                console.log("Unable to signup", err);
             }
-            storage.setItem('signedin', true);
+            console.log("Successfully signed up");
         });
     }
 
