@@ -590,6 +590,23 @@ describe('Filter', function () {
                 expandFilters(filter, expansions).should.eql(processed);
             });
 
+            it('should substitute single alias with multiple expansions', function () {
+                const filter = {primary_tag: 'en'};
+                const expansions = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+                }];
+
+                const processed = {$and: [
+                    {'tags.slug': 'en'},
+                    {'posts_tags.sort_order': 0},
+                    {'tags.visibility': 'public'}
+                ]};
+
+                expandFilters(filter, expansions).should.eql(processed);
+            });
+
             it('should substitute filter with negation and - sign', function () {
                 const filter = {
                     primary_tag: {

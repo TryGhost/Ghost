@@ -193,6 +193,22 @@ const filterUtils = {
      * Util that expands Mongo JSON statements with custom statements
      */
     expandFilters: (statements, expansions) => {
+        const expand = (primary, secondary) => {
+            // CASE: we don't want to have separate $and groups when expanding
+            //       all statements should be withing the same group
+            if (secondary.$and) {
+                return {$and: [
+                    primary,
+                    ...secondary.$and
+                ]};
+            }
+
+            return {$and: [
+                primary,
+                secondary
+            ]};
+        };
+
         let processed = {};
 
         Object.keys(statements).forEach((key) => {
@@ -208,7 +224,7 @@ const filterUtils = {
 
                     if (expansion.expansion) {
                         const nql = require('@nexes/nql');
-                        replaced = filterUtils.combineFilters(replaced, nql(expansion.expansion).parse());
+                        replaced = expand(replaced, nql(expansion.expansion).parse());
                     }
 
                     processed = _.merge(processed, replaced);
