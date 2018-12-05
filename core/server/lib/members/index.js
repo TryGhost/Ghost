@@ -2,8 +2,6 @@ const jose = require('node-jose');
 const {Router, static} = require('express');
 const body = require('body-parser');
 const jwt = require('jsonwebtoken');
-const config = require('../../config');
-const urlService = require('../../services/url');
 
 const cookies = require('./cookies');
 
