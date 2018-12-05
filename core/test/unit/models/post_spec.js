@@ -1,21 +1,16 @@
 /* eslint no-invalid-this:0 */
-
-const should = require('should'),
-    url = require('url'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    testUtils = require('../../utils'),
-    knex = require('../../../server/data/db').knex,
-    db = require('../../../server/data/db'),
-    urlService = require('../../../server/services/url'),
-    schema = require('../../../server/data/schema'),
-    models = require('../../../server/models'),
-    common = require('../../../server/lib/common'),
-    security = require('../../../server/lib/security'),
-    sandbox = sinon.sandbox.create(),
-    userIdFor = testUtils.users.ids,
-    context = testUtils.context;
+const _ = require('lodash');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const testUtils = require('../../utils');
+const knex = require('../../../server/data/db').knex;
+const urlService = require('../../../server/services/url');
+const schema = require('../../../server/data/schema');
+const models = require('../../../server/models');
+const common = require('../../../server/lib/common');
+const security = require('../../../server/lib/security');
+const sandbox = sinon.sandbox.create();
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
@@ -35,8 +30,7 @@ describe('Unit: models/post', function () {
         mockDb.unmock(knex);
     });
 
-    // @NOTE: need to be regenerated once functional tests are passing
-    describe.skip('filter', function () {
+    describe('filter', function () {
         it('generates correct query for - filter: tags: [photo, video] + id: -{id},limit of: 3, with related: tags', function () {
             const queries = [];
             tracker.install();
@@ -52,22 +46,22 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?)');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`page` = ? and `posts`.`status` = ?))');
                 queries[0].bindings.should.eql([
-                    false,
-                    'published',
+                    testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
-                    testUtils.filterData.data.posts[3].id
+                    false,
+                    'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`tags`.`slug` in (?, ?) and `posts`.`id` != ?) group by `posts`.`id` order by count(tags.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`page` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 queries[1].bindings.should.eql([
-                    false,
-                    'published',
+                    testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
-                    testUtils.filterData.data.posts[3].id,
+                    false,
+                    'published',
                     3
                 ]);
             });
@@ -87,22 +81,22 @@ describe('Unit: models/post', function () {
                 withRelated: ['authors', 'tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null))');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?))) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`page` = ? and `posts`.`status` = ?))');
                 queries[0].bindings.should.eql([
-                    false,
-                    'published',
+                    'hash-audio',
                     'leslie',
                     'pat',
-                    'hash-audio'
+                    false,
+                    'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`authors`.`slug` in (?, ?) and (`tags`.`slug` = ? or `posts`.`feature_image` is not null)) group by `posts`.`id`, `posts`.`id` order by count(authors.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].sql.should.eql('select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?))) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`page` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 queries[1].bindings.should.eql([
-                    false,
-                    'published',
+                    'hash-audio',
                     'leslie',
                     'pat',
-                    'hash-audio',
+                    false,
+                    'published',
                     15
                 ]);
             });
@@ -123,18 +117,18 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?)');
+                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`page` = ? and `posts`.`status` = ?))');
                 queries[0].bindings.should.eql([
+                    '2015-07-20',
                     false,
-                    'published',
-                    '2015-07-20'
+                    'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ? and `posts`.`status` = ?) and (`posts`.`published_at` > ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`page` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 queries[1].bindings.should.eql([
+                    '2015-07-20',
                     false,
                     'published',
-                    '2015-07-20',
                     5
                 ]);
             });
@@ -155,22 +149,20 @@ describe('Unit: models/post', function () {
                     withRelated: ['tags']
                 }).then(() => {
                     queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?))');
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` in (?) and `tags`.`visibility` in (?))) and (`posts`.`page` = ? and `posts`.`status` = ?))');
                     queries[0].bindings.should.eql([
-                        false,
-                        'published',
                         'photo',
-                        0,
-                        'public'
+                        'public',
+                        false,
+                        'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_tags` on `posts_tags`.`post_id` = `posts`.`id` left outer join `tags` on `posts_tags`.`tag_id` = `tags`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`tags`.`slug` = ? and `posts_tags`.`sort_order` = ? and `tags`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` in (?) and `tags`.`visibility` in (?))) and (`posts`.`page` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                     queries[1].bindings.should.eql([
+                        'photo',
+                        'public',
                         false,
                         'published',
-                        'photo',
-                        0,
-                        'public',
                         15
                     ]);
                 });
@@ -190,22 +182,20 @@ describe('Unit: models/post', function () {
                     withRelated: ['authors']
                 }).then(() => {
                     queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?))');
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` in (?) and `authors`.`visibility` in (?))) and (`posts`.`page` = ? and `posts`.`status` = ?))');
                     queries[0].bindings.should.eql([
-                        false,
-                        'published',
                         'leslie',
-                        0,
-                        'public'
+                        'public',
+                        false,
+                        'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` left outer join `posts_authors` on `posts_authors`.`post_id` = `posts`.`id` left outer join `users` as `authors` on `posts_authors`.`author_id` = `authors`.`id` where (`posts`.`page` = ? and `posts`.`status` = ?) and ((`authors`.`slug` = ? and `posts_authors`.`sort_order` = ? and `authors`.`visibility` = ?)) group by `posts`.`id` order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` in (?) and `authors`.`visibility` in (?))) and (`posts`.`page` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                     queries[1].bindings.should.eql([
+                        'leslie',
+                        'public',
                         false,
                         'published',
-                        'leslie',
-                        0,
-                        'public',
                         15
                     ]);
                 });
@@ -235,20 +225,20 @@ describe('Unit: models/post', function () {
                     }
                 }).then(() => {
                     queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?)');
+                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`page` = ?))');
                     queries[0].bindings.should.eql([
-                        false,
                         'published',
                         'draft',
-                        'published'
+                        'published',
+                        false,
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`page` = ?) and (`posts`.`status` in (?, ?) and `posts`.`status` = ?) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`page` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
                     queries[1].bindings.should.eql([
-                        false,
                         'published',
                         'draft',
-                        'published'
+                        'published',
+                        false,
                     ]);
                 });
             });
