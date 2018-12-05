@@ -126,7 +126,11 @@ module.exports = {
                 return Promise.all([
                     models.Accesstoken.destroyByUser(frame.options),
                     models.Refreshtoken.destroyByUser(frame.options),
-                    models.Post.destroyByAuthor(frame.options)
+                    models.Post.destroyByAuthor(frame.options),
+                    frame.options.transacting('roles_users')
+                        .where('user_id', frame.options.id)
+                        .del()
+                        .return(null)
                 ]).then(() => {
                     return models.User.destroy(Object.assign({status: 'all'}, frame.options));
                 }).return(null);
