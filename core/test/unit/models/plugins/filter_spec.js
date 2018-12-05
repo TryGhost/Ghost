@@ -385,6 +385,32 @@ describe('Filter', function () {
                     mergeFilters(input).should.eql(output);
                 });
 
+                it('should match nested $and with a key inside primary filter', function () {
+                    const input = {
+                        defaults: {
+                            $and:[
+                                {page:false},
+                                {status: 'published'}
+                            ]
+                        },
+                        custom: {
+                            page: {
+                                $in:[false,true]
+                            }
+                        }
+                    };
+                    const output = {$and: [
+                        {page: {
+                            $in:[false,true]
+                        }},
+                        {$and:[
+                            {status: 'published'},
+                        ]}
+                    ]};
+
+                    mergeFilters(input).should.eql(output);
+                });
+
                 it('should reduce default filters if default and custom overlap', () => {
                     const input = {
                         defaults: {$or:[
