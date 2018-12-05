@@ -33,6 +33,20 @@ h4 {
     font-size: var(--text-base);
 }
 
+a {
+    color: var(--blue);
+    transition: color 0.2s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--blue-d2);
+}
+
+
+/* Buttons */
+
 button {
     width: 100%;
     height: 48px;
@@ -99,7 +113,7 @@ input {
 }
 
 input:hover {
-    border-bottom: 1px solid var(--grey-d1);
+    border-bottom: 1px solid var(--grey);
 }
 
 input:focus {
@@ -167,13 +181,13 @@ input.gm-error {
     padding: 12px 0;
 }
 
-.gm-cta-title {
-    font-weight: normal;
-    font-size: var(--text-s);
-}
-
 .gm-headers-cta {
     padding: 0 0 3px;
+}
+
+.gm-headers-cta h4 {
+    font-weight: normal;
+    font-size: var(--text-s);
 }
 
 .gm-headers-cta .gm-cta-label {
@@ -221,11 +235,9 @@ input.gm-error {
 }
 
 .gm-cta-forgot {
-    color: var(--blue);
     position: absolute;
     top: 14px;
     right: 0;
     z-index: 9999;
-    cursor: pointer;
     font-size: var(--text-s);
 }

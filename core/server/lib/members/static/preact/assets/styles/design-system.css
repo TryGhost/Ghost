@@ -17,6 +17,9 @@
 :root {
     /* Base colors */
     --blue:         #3eb0ef;
+    --blue-d1:      #2CA0DE;
+    --blue-d2:      #1a97d9;
+    
     --green:        #a4d037;
     --red:          #f05230;
     --white:        #ffffff;

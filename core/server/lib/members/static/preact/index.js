@@ -110,12 +110,14 @@ export default class App extends Component {
                 <div className="gm-logo"></div>
                 <div className="flex justify-between items-end mt2 gm-form-headers">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex gm-headers-cta">
-                        <h4 className="gm-cta-title">{ ctaTitle }</h4>
-                        <div className="gm-cta-label"
-                            onClick={(e) => {window.location.hash = hash}}
-                        >
-                            {ctaLabel}
+                    <div className="flex items-center gm-headers-cta">
+                        <h4 className="mr1">{ ctaTitle }</h4>
+                        <div>
+                            <a href="javascript:;"
+                                onClick={(e) => {window.location.hash = hash}}
+                            >
+                                {ctaLabel}
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -132,7 +134,7 @@ export default class App extends Component {
         
         return (
             <div className="mt9 gm-form-element">
-                {(forgot ? <div className="gm-cta-forgot">Forgot</div> : "")}
+                {(forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "")}
                 <input
                     type={ type }
                     name={ name }
