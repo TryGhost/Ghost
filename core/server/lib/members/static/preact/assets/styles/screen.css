@@ -107,7 +107,7 @@ input {
     box-sizing: border-box;
     box-shadow: none;
     background: var(--white);
-    height: 48px;
+    height: 44px;
     width: 100%;
     outline: none;
     transition: all 0.15s ease-in-out;
@@ -235,11 +235,11 @@ input.gm-error {
 }
 
 .gm-form-element input.gm-input-filled + label {
-    top: -14px;
+    top: -12px;
 }
 
 .gm-form-element input:focus + label {
-    top: -14px;
+    top: -12px;
 }
 
 .gm-form-element .gm-password-forgot {

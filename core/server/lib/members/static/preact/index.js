@@ -188,7 +188,7 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column nt3">
+            <div className="flex flex-column nt4">
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)}>
                     { formElements }
                     <button type="submit" name={ formType } className="mt8 btn-blue">{ buttonLabel }</button>
