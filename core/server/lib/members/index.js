@@ -27,6 +27,7 @@ module.exports = function MembersApi({
 
     const apiRouter = Router();
 
+    apiRouter.use(body.json());
     apiRouter.use(function waitForKeyStore(req, res, next) {
         keyStoreReady.then((jwk) => {
             req.jwk = jwk;
@@ -36,7 +37,7 @@ module.exports = function MembersApi({
 
     const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
 
-    apiRouter.post('/token', body.json(), getData('audience'), (req, res) => {
+    apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
             res.writeHead(401);
@@ -66,7 +67,7 @@ module.exports = function MembersApi({
         next();
     }
 
-    apiRouter.post('/reset-password', body.json(), getData('email'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/reset-password', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
         getMember({email}).then((member) => {
@@ -87,7 +88,7 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/verify', body.json(), getData('token', 'password'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/verify', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
         try {
@@ -110,7 +111,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signup', body.json(), getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signup', getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
         createMember({name, email, password}).then((member) => {
@@ -121,7 +122,7 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
-    apiRouter.post('/signin', body.json(), getData('email', 'password'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signin', getData('email', 'password'), ssoOriginCheck, (req, res) => {
         const {email, password} = req.data;
 
         validateMember({email, password}).then((member) => {
@@ -132,7 +133,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', body.json(), getData(), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signout', getData(), ssoOriginCheck, (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': removeCookie()
         });
