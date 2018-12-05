@@ -25,23 +25,11 @@ const RELATIONS = {
 const EXPANSIONS = [{
     key: 'primary_tag',
     replacement: 'tags.slug',
-    expand: (mongoJSON) => {
-        return {$and: [
-            mongoJSON,
-            {'posts_tags.sort_order': 0},
-            {'tags.visibility': 'public'}
-        ]};
-    }
+    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
 }, {
     key: 'primary_author',
     replacement: 'authors.slug',
-    expand: (mongoJSON) => {
-        return {$and: [
-            mongoJSON,
-            {'posts_authors.sort_order': 0},
-            {'authors.visibility': 'public'}
-        ]};
-    }
+    expansion: 'posts_tags.sort_order:0+authors.visibility:public'
 }, {
     key: 'authors',
     replacement: 'authors.slug'
@@ -218,9 +206,9 @@ const filterUtils = {
                     let replaced = {};
                     replaced[expansion.replacement] = statements[key];
 
-                    if (expansion.expand) {
+                    if (expansion.expansion) {
                         const nql = require('@nexes/nql');
-                        replaced = filterUtils.combineFilters(replaced, nql(expansion.expand).parse());
+                        replaced = filterUtils.combineFilters(replaced, nql(expansion.expansion).parse());
                     }
 
                     processed = _.merge(processed, replaced);
