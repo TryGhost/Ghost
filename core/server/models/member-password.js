@@ -8,16 +8,6 @@ const MemberPassword = ghostBookshelf.Model.extend({
         return this.belongsTo('Member');
     },
 
-    onCreating() {
-        ghostBookshelf.Model.prototype.onCreating.apply(this, arguments);
-        if (this.has('secret')) {
-            return security.password.hash(String(this.get('secret')))
-                .then((hash) => {
-                    this.set('secret', hash);
-                });
-        }
-    },
-
     onSaving() {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
