@@ -1,15 +1,14 @@
 /* Type Scale */
 /* --------------------------------------------- */
 :root {
-    --text-xs:      .75rem;
-    --text-s:       .875rem;
-    --text-base:    1rem;
-    --text-l:       1.125rem;
-    --text-xl:      1.25rem;
-    --text-2xl:     1.5rem;
-    --text-3xl:     1.875rem;
-    --text-4xl:     2.25rem;
-    --text-5xl:     3rem;
+    --text-xs:      1.15rem;
+    --text-s:       1.4rem;
+    --text-base:    1.5rem;
+    --text-l:       1.8rem;
+    --text-xl:      2.3rem;
+    --text-2xl:     3.0rem;
+    --text-3xl:     3.6rem;
+    --text-4xl:     4.5rem;
 }
 
 

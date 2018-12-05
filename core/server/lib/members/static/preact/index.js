@@ -44,6 +44,9 @@ export default class App extends Component {
 
     onInputChange(e, name) {
         let value = e.target.value;
+        if (value) {
+            
+        }
         this.setState({
             formData: {
                 ...this.state.formData,
@@ -120,20 +123,23 @@ export default class App extends Component {
         )
     }
 
-    renderFormInput({type, name, placeholder}) {
+    renderFormInput({type, name, label, placeholder}) {
         let value = this.state.formData[name];
         let className = "mt3";
         className += value ? " active" : "";
         return (
-            <input
-                type={type}
-                name={name}
-                key={name}
-                placeholder={placeholder}
-                value={value || ''}
-                onInput={(e) => this.onInputChange(e, name)}
-                className={className}
-            />
+            <div className="mt9 gm-form-element">
+                <input
+                    type={ type }
+                    name={ name }
+                    key={ name }
+                    placeholder={ placeholder }
+                    value={ value || '' }
+                    onInput={ (e) => this.onInputChange(e, name) }
+                    className={ className }
+                />
+                <label for={ name }>{ label }</label>
+            </div>
         )
     }
 
@@ -141,16 +147,19 @@ export default class App extends Component {
         const emailInput = this.renderFormInput({
             type: 'email',
             name: 'email',
+            label: 'Email:',
             placeholder: 'Email...'
         });
         const passwordInput = this.renderFormInput({
             type: 'password',
             name: 'password',
+            label: 'Password:',
             placeholder: 'Password...'
         });
         const nameInput = this.renderFormInput({
             type: 'text',
             name: 'name',
+            label: 'Name:',
             placeholder: 'Name...'
         });
         let formElements = [];
@@ -170,10 +179,10 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column items-start gm-form-elements">
-                <form className={ formType } onSubmit={(e) => this.submitForm(e)}>
+            <div className="flex flex-column nt3">
+                <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)}>
                     { formElements }
-                    <button type="submit" name={ formType } className="mt5">{ buttonLabel }</button>
+                    <button type="submit" name={ formType } className="mt8 btn-blue">{ buttonLabel }</button>
                 </form>
             </div>
         )

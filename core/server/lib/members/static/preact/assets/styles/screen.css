@@ -1,4 +1,7 @@
 /* Global styles */
+html {
+    font-size: 62.5%;
+}
 
 html, body {
     font-family: -apple-system, BlinkMacSystemFont,
@@ -9,6 +12,9 @@ html, body {
                 'segoe ui', arial,
                 sans-serif;
     color: var(--black);
+}
+
+body {
     font-size: var(--text-base);
 }
 
@@ -16,7 +22,7 @@ h1 {
     margin: 0;
     padding: 0;
     color: var(--grey-d3);
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
     font-weight: 700;
 }
 
@@ -30,18 +36,48 @@ h4 {
 button {
     width: 100%;
     height: 48px;
-    font-size: var(--text-base);
     font-weight: 500;
-    color: var(--white);
-    border: none;
-    background: rgb(62,176,239);
-    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
+    border: 1px solid var(--grey);
+    color: var(--grey-d3);
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
     padding: 0 15px;
     border-radius: 4px;
     outline: none;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+}
+
+button:hover {
+    color: var(--blue);
+}
+
+.btn-blue {
+    background: rgb(62,176,239);
+    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
+    color: var(--white);
+    border: none;
+}
+
+.btn-blue:hover {
+    color: var(--white);
+}
+
+.btn-blue:hover:before {
+    opacity: 0.8;
+}
+
+.btn-blue:before {
+    content: "";
+    transition: all .4s ease;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
+    opacity: 0;
 }
 
 input {
@@ -58,24 +94,32 @@ input {
     height: 48px;
     width: 100%;
     outline: none;
+    transition: all 0.15s ease-in-out;
+}
+
+input:hover {
+    border-bottom: 1px solid var(--grey);
+}
+
+input:focus {
+    border-bottom: 2px solid var(--blue);
 }
 
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-    color: var(--grey);
+    color: var(--white);
 }
 ::-moz-placeholder { /* Firefox 19+ */
-    color: var(--grey);
+    color: var(--white);
 }
 :-ms-input-placeholder { /* IE 10+ */
-    color: var(--grey);
+    color: var(--white);
 }
 :-moz-placeholder { /* Firefox 18- */
-    color: var(--grey);
+    color: var(--white);
 }
 
 
 /* Styles */
-
 .gm-auth-page {
     width: 100%;
     height: 100vh;
@@ -85,13 +129,25 @@ input {
 
 .gm-modal {
     position: relative;
-    top: 200px;
+    top: 20vh;
     background: white;
     margin: 0 auto;
     width: 332px;
     border-radius: 4px;
     padding: 44px 44px 48px;
     box-shadow: 0 0 1px rgba(0,0,0,.12), 0 16px 24px -12px rgba(0,0,0,.2);
+    -webkit-animation: openModal 0.3s ease-in-out;
+}
+
+@-webkit-keyframes openModal { /* Safari and Chrome */
+    from { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.9);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0px) scale(1.0);
+    }
 }
 
 .gm-logo {
@@ -110,6 +166,10 @@ input {
     font-size: var(--text-s);
 }
 
+.gm-headers-cta {
+    padding: 0 0 3px;
+}
+
 .gm-headers-cta .gm-cta-label {
     padding: 8px;
     margin: -8px -8px -8px 0;
@@ -122,4 +182,30 @@ input {
 .member-auth-page .headers-cta .cta-title {
     font-size: 12px;
     padding-right: 9px;
+}
+
+/* Forms */
+.gm-form-element {
+    position: relative;
+}
+
+.gm-form-element label {
+    position: absolute;
+    font-size: var(--text-s);
+    /* background: var(--white); */
+    padding: 0 0 2px 0;
+    width: 100%;
+    top: 14px;
+    left: 0;
+    color: var(--grey);
+    transition: all 0.15s ease-in-out;
+    pointer-events: none;
+}
+
+.gm-form-element .gm-label-fixed {
+    top: 14px;
+}
+
+.gm-form-element input:focus + label {
+    top: -14px;
 }
