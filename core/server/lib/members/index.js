@@ -188,8 +188,8 @@ function getData(...props) {
 }
 
 function handleError(status, res) {
-    return function (err) {
+    return function () {
         res.writeHead(status);
-        res.end(err.message);
+        res.end();
     };
 }
