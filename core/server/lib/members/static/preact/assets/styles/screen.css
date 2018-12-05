@@ -194,19 +194,13 @@ input.gm-error {
     letter-spacing: 0.4px;
 }
 
-.gm-headers-cta .gm-cta-label {
+.gm-headers-cta a {
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
     padding: 8px;
     margin: -8px -8px -8px -2px;
     cursor: pointer;
     color: var(--blue);
-    font-weight: 500;
-    font-size: var(--text-s);
-    letter-spacing: 0.4px;
-}
-
-.gm-headers-cta a {
-    font-size: var(--text-s);
-    letter-spacing: 0.4px;
 }
 
 .member-auth-page .headers-cta .cta-title {
@@ -219,7 +213,7 @@ input.gm-error {
     position: relative;
 }
 
-.gm-form-element input + label {
+.gm-form-element label {
     position: absolute;
     font-size: var(--text-xs);
     background: var(--white);
@@ -233,6 +227,11 @@ input.gm-error {
     text-transform: uppercase;
     letter-spacing: 0.6px;
     font-weight: 500;
+}
+
+.gm-form-element label img {
+    width: 16px;
+    height: 16px;
 }
 
 .gm-form-element input.gm-input-filled + label {

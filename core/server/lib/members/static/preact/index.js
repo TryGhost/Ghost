@@ -1,4 +1,7 @@
 import './assets/styles/members.css';
+import IconEmail from './assets/images/icon-email.svg'
+import IconLock from './assets/images/icon-lock.svg'
+import IconName from './assets/images/icon-name.svg'
 import { Component } from 'preact';
 const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
@@ -114,7 +117,6 @@ export default class App extends Component {
                         <h4>{ ctaTitle }</h4>
                         <div>
                             <a href="javascript:;"
-                                className="gm-cta-label"
                                 onClick={(e) => {window.location.hash = hash}}
                             >
                                 {ctaLabel}
@@ -126,7 +128,7 @@ export default class App extends Component {
         )
     }
 
-    renderFormInput({type, name, label, placeholder, formType}) {
+    renderFormInput({type, name, label, icon, placeholder, formType}) {
         let value = this.state.formData[name];
         let className = "";
         let forgot = (type === 'password' && formType === 'signin');
@@ -144,7 +146,7 @@ export default class App extends Component {
                     onInput={ (e) => this.onInputChange(e, name) }
                     className={ className }
                 />
-                <label for={ name }>{ label }</label>
+                <label for={ name } className="flex items-center"><img src={icon} className="mr2" /> { label }</label>
                 { (forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "") }
             </div>
         )
@@ -155,6 +157,7 @@ export default class App extends Component {
             type: 'email',
             name: 'email',
             label: 'Email',
+            icon: IconEmail,
             placeholder: 'Email...',
             formType: formType
         });
@@ -162,6 +165,7 @@ export default class App extends Component {
             type: 'password',
             name: 'password',
             label: 'Password',
+            icon: IconLock,
             placeholder: 'Password...',
             formType: formType
         });
@@ -169,6 +173,7 @@ export default class App extends Component {
             type: 'text',
             name: 'name',
             label: 'Name',
+            icon: IconName,
             placeholder: 'Name...',
             formType: formType
         });
