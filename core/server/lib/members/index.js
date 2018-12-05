@@ -77,11 +77,14 @@ module.exports = function MembersApi({
                 algorithm: 'RS512',
                 issuer
             });
-            return sendEmail(member, {token});
+            return sendEmail(member, {token})
+                .catch(handleError(500, res));
+        }).catch(() => {
+            return;
         }).then(() => {
             res.writeHead(200);
             res.end();
-        }).catch(handleError(400, res));
+        });
     });
 
     apiRouter.post('/verify', body.json(), getData('token', 'password'), ssoOriginCheck, (req, res) => {
