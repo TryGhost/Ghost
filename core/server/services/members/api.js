@@ -1,72 +1,50 @@
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
 const MembersApi = require('../../lib/members');
+const models = require('../../models');
 const URL = require('url').URL;
 
-const emailIdx = {
-    'member@member.com': 'id-0'
-};
-
-const tokenIdx = {};
-
-const db = {
-    'id-0': {
-        id: 'id-0',
-        email: 'member@member.com',
-        name: 'John Member',
-        password: 'hunter2'
-    }
-};
-
 function createMember({name, email, password}) {
-    if (emailIdx[email]) {
-        return Promise.reject(new Error('Email already exists'));
-    }
-    const id = 'id-' + Object.keys(db).length;
-    db[id] = {name, email, password, id};
-    emailIdx[email] = id;
-    return Promise.resolve(db[id]);
+    return models.Member.add({
+        name,
+        email,
+        password: {
+            secret: password
+        }
+    }, {
+        withRelated: ['password']
+    });
 }
 
-function validateToken({token}) {
-    const id = tokenIdx[token];
-    if (!id) {
-        Promise.reject('Unknown token');
-    }
-    delete tokenIdx[token];
-    return Promise.resolve(db[id]);
+function updateMember(member, {name, email, password}) {
+    return models.Member.findOne(member, {
+        require: true
+    }).then(({id}) => {
+        return models.Member.edit({
+            name,
+            email,
+            password: {
+                secret: password
+            }
+        }, {
+            id,
+            withRelated: ['password']
+        });
+    });
 }
 
-function validateMember({email, password, token}) {
-    if (token) {
-        return validateToken({token});
-    }
-    const id = emailIdx[email];
-    if (!id) {
-        return Promise.reject('Incorrect email');
-    }
-    if (db[id].password !== password) {
-        return Promise.reject('Incorrect password');
-    }
-    return Promise.resolve(db[id]);
-}
-
-function updateMember({email}, data) {
-    delete data.id;
-    const id = emailIdx[email];
-    if (!id) {
-        return Promise.reject('Could not find user');
-    }
-    if (data.token) {
-        tokenIdx[data.token] = id;
-        delete data.token;
-    }
-    db[id] = Object.assign(db[id], data);
-    if (data.email) {
-        delete emailIdx[email];
-        emailIdx[db[id].email] = id;
-    }
-    return Promise.resolve(db[id]);
+function validateMember({email, password}) {
+    return models.Member.findOne({email}, {
+        withRelated: ['password'],
+        require: true
+    }).then((member) => {
+        return member.related('password').compare(password).then((res) => {
+            if (!res) {
+                throw new Error('Password is incorrect');
+            }
+            return member;
+        });
+    });
 }
 
 function sendEmail(member, {token}) {
