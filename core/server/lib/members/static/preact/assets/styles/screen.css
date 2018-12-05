@@ -16,6 +16,7 @@ html, body {
 
 body {
     font-size: var(--text-base);
+    letter-spacing: 0.2px;
 }
 
 h1 {
@@ -61,6 +62,7 @@ button {
     outline: none;
     transition: all 0.15s ease-in-out;
     position: relative;
+    letter-spacing: 0.2px;
 }
 
 button:hover {
@@ -110,6 +112,7 @@ input {
     outline: none;
     transition: all 0.15s ease-in-out;
     padding: 0 0 1px; /* Fixes jump because of the border change */
+    letter-spacing: 0.2px;
 }
 
 input:hover {
@@ -188,6 +191,7 @@ input.gm-error {
 .gm-headers-cta h4 {
     font-weight: normal;
     font-size: var(--text-s);
+    letter-spacing: 0.4px;
 }
 
 .gm-headers-cta .gm-cta-label {
@@ -197,6 +201,7 @@ input.gm-error {
     color: var(--blue);
     font-weight: 500;
     font-size: var(--text-s);
+    letter-spacing: 0.4px;
 }
 
 .member-auth-page .headers-cta .cta-title {
@@ -240,4 +245,5 @@ input.gm-error {
     right: 0;
     z-index: 9999;
     font-size: var(--text-s);
+    letter-spacing: 0.4px;
 }

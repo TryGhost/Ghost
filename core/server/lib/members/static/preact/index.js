@@ -134,7 +134,6 @@ export default class App extends Component {
         
         return (
             <div className="mt9 gm-form-element">
-                {(forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "")}
                 <input
                     type={ type }
                     name={ name }
@@ -145,6 +144,7 @@ export default class App extends Component {
                     className={ className }
                 />
                 <label for={ name }>{ label }</label>
+                { (forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "") }
             </div>
         )
     }
