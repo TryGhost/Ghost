@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const jose = require('node-jose');
 const {Router, static} = require('express');
 const body = require('body-parser');
@@ -12,6 +11,7 @@ module.exports = function MembersApi({
     config: {
         issuer,
         privateKey,
+        publicKey,
         sessionSecret,
         ssoOrigin
     },
@@ -19,6 +19,7 @@ module.exports = function MembersApi({
     createMember,
     validateMember,
     updateMember,
+    getMember,
     sendEmail
 }) {
     const keyStore = jose.JWK.createKeyStore();
@@ -70,9 +71,14 @@ module.exports = function MembersApi({
     apiRouter.post('/reset-password', body.json(), getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
-        const token = crypto.randomBytes(16).toString('hex');
-
-        updateMember({email}, {token}).then((member) => {
+        getMember({email}).then((member) => {
+            const token = jwt.sign({
+                sub: member.id,
+                kid: req.jwk.kid
+            }, privateKey, {
+                algorithm: 'RS512',
+                issuer
+            });
             return sendEmail(member, {token});
         }).then(() => {
             res.writeHead(200);
@@ -83,9 +89,19 @@ module.exports = function MembersApi({
     apiRouter.post('/verify', body.json(), getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
-        validateMember({token}).then((member) => {
-            return updateMember(member, {password});
-        }).then((member) => {
+        try {
+            jwt.verify(token, publicKey, {
+                algorithm: 'RS515',
+                issuer
+            });
+        } catch (err) {
+            res.writeHead(401);
+            return res.end();
+        }
+
+        const id = jwt.decode(token).sub;
+
+        updateMember({id}, {password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
