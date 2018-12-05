@@ -228,30 +228,22 @@ export default Component.extend({
     },
 
     _readDataFromImageFile(file) {
-        let reader = new FileReader();
+        let url = URL.createObjectURL(file);
         let image = EmberObject.create({
-            fileName: file.name
+            fileName: file.name,
+            previewSrc: url
         });
 
-        reader.onload = (e) => {
-            let imgElement = new Image();
-            let previewSrc = htmlSafe(e.target.result);
+        let imageElem = new Image();
+        imageElem.onload = () => {
+            // update current display images
+            image.set('width', imageElem.naturalWidth);
+            image.set('height', imageElem.naturalHeight);
 
-            image.set('previewSrc', previewSrc);
-
-            imgElement.onload = () => {
-                // update current display images
-                image.set('width', imgElement.width);
-                image.set('height', imgElement.height);
-
-                // ensure width/height makes it into the payload images
-                this._buildAndSaveImagesPayload();
-            };
-
-            imgElement.src = previewSrc;
+            // ensure width/height makes it into the payload images
+            this._buildAndSaveImagesPayload();
         };
-
-        reader.readAsDataURL(file);
+        imageElem.src = url;
 
         return image;
     },
