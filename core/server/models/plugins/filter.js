@@ -219,7 +219,8 @@ const filterUtils = {
                     replaced[expansion.replacement] = statements[key];
 
                     if (expansion.expand) {
-                        replaced = expansion.expand(replaced);
+                        const nql = require('@nexes/nql');
+                        replaced = filterUtils.combineFilters(replaced, nql(expansion.expand).parse());
                     }
 
                     processed = _.merge(processed, replaced);

@@ -579,12 +579,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: `posts_tags.sort_order:0`
                 }];
 
                 const processed = {$and: [
@@ -604,12 +599,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: `posts_tags.sort_order:0`
                 }];
 
                 const processed = {$and: [
@@ -627,12 +617,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: 'posts_tags.sort_order:0'
                 }];
 
                 const processed = {tags:'hello'};
@@ -647,12 +632,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: 'posts_tags.sort_order:0'
                 }];
 
                 const processed = {$and: [
@@ -672,12 +652,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: 'posts_tags.sort_order:0'
                 }];
 
                 const processed = {$and: [
@@ -701,12 +676,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: 'posts_tags.sort_order:0'
                 }];
 
                 const processed = {$and: [
@@ -740,12 +710,7 @@ describe('Filter', function () {
                 const expansions = [{
                     key: 'primary_tag',
                     replacement: 'tags.slug',
-                    expand: (original) => {
-                        return {$and: [
-                            original,
-                            {'posts_tags.sort_order': 0}
-                        ]};
-                    }
+                    expand: 'posts_tags.sort_order:0'
                 }];
 
                 const processed = {$and: [
