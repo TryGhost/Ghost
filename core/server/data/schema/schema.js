@@ -382,11 +382,5 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         secret: {type: 'string', maxlength: 191, nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
-    },
-    member_tokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        secret: {type: 'string', maxlength: 191, nullable: false},
-        expires: {type: 'bigInteger', nullable: false},
-        member_id: {type: 'string', maxlength: 24, nullable: false}
     }
 };
