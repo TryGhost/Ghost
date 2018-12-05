@@ -1,5 +1,6 @@
 import './assets/styles/members.css';
 import { Component } from 'preact';
+const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
 const storage = window.localStorage;
 
@@ -56,7 +57,7 @@ export default class App extends Component {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email, password
+                email, password, origin
             })
         }).then((res) => {
             if (!res.ok) {
@@ -73,7 +74,7 @@ export default class App extends Component {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name, email, password
+                name, email, password, origin
             })
         }).then((res) => {
             if (!res.ok) {
