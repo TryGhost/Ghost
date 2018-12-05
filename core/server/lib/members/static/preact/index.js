@@ -110,10 +110,11 @@ export default class App extends Component {
                 <div className="gm-logo"></div>
                 <div className="flex justify-between items-end mt2 gm-form-headers">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex items-center gm-headers-cta">
-                        <h4 className="mr1">{ ctaTitle }</h4>
+                    <div className="flex items-baseline gm-headers-cta">
+                        <h4>{ ctaTitle }</h4>
                         <div>
                             <a href="javascript:;"
+                                className="gm-cta-label"
                                 onClick={(e) => {window.location.hash = hash}}
                             >
                                 {ctaLabel}

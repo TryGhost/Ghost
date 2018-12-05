@@ -196,7 +196,7 @@ input.gm-error {
 
 .gm-headers-cta .gm-cta-label {
     padding: 8px;
-    margin: -8px -8px -8px 0;
+    margin: -8px -8px -8px -2px;
     cursor: pointer;
     color: var(--blue);
     font-weight: 500;
