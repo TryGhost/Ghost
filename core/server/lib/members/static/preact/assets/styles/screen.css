@@ -150,9 +150,14 @@ input.gm-error {
     background: rgba(10, 17, 23, 0.9);
 }
 
+.gm-modal-container {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .gm-modal {
     position: relative;
-    top: 20vh;
     background: white;
     margin: 0 auto;
     width: 332px;

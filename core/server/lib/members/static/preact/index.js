@@ -205,9 +205,11 @@ export default class App extends Component {
 
     renderFormComponent(formType = this.state.formType) {
         return (
-            <div className="gm-modal">
-                {this.renderFormHeaders(formType)}
-                {this.renderFormSection(formType)}
+            <div className="gm-modal-container">
+                <div className="gm-modal">
+                    {this.renderFormHeaders(formType)}
+                    {this.renderFormSection(formType)}
+                </div>
             </div>
         );
     }
