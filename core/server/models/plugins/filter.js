@@ -29,7 +29,7 @@ const EXPANSIONS = [{
 }, {
     key: 'primary_author',
     replacement: 'authors.slug',
-    expansion: 'posts_tags.sort_order:0+authors.visibility:public'
+    expansion: 'posts_authors.sort_order:0+authors.visibility:public'
 }, {
     key: 'authors',
     replacement: 'authors.slug'
