@@ -35,6 +35,7 @@
                 window.localStorage.removeItem('signedin');
                 return null;
             }
+            window.localStorage.setItem('signedin', true);
             return res.text();
         });
     });
