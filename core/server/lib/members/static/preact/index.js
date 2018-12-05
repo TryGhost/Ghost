@@ -153,21 +153,21 @@ export default class App extends Component {
         const emailInput = this.renderFormInput({
             type: 'email',
             name: 'email',
-            label: 'Email:',
+            label: 'Email',
             placeholder: 'Email...',
             formType: formType
         });
         const passwordInput = this.renderFormInput({
             type: 'password',
             name: 'password',
-            label: 'Password:',
+            label: 'Password',
             placeholder: 'Password...',
             formType: formType
         });
         const nameInput = this.renderFormInput({
             type: 'text',
             name: 'name',
-            label: 'Name:',
+            label: 'Name',
             placeholder: 'Name...',
             formType: formType
         });

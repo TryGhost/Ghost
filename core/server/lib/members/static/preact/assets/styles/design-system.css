@@ -1,7 +1,8 @@
 /* Type Scale */
 /* --------------------------------------------- */
 :root {
-    --text-xs:      1.15rem;
+    --text-2xs:     1.15rem;
+    --text-xs:      1.3rem;
     --text-s:       1.4rem;
     --text-base:    1.5rem;
     --text-l:       1.8rem;

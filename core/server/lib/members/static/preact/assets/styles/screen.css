@@ -216,7 +216,7 @@ input.gm-error {
 
 .gm-form-element input + label {
     position: absolute;
-    font-size: var(--text-s);
+    font-size: var(--text-xs);
     background: var(--white);
     padding: 0 0 2px 0;
     width: 100%;
@@ -225,6 +225,8 @@ input.gm-error {
     color: var(--grey);
     transition: all 0.15s ease-in-out;
     pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
 }
 
 .gm-form-element input.gm-input-filled + label {
