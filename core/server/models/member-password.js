@@ -20,7 +20,7 @@ const MemberPassword = ghostBookshelf.Model.extend({
     },
 
     compare(rawPassword) {
-        return security.password.compare(this.get('secret'), rawPassword);
+        return security.password.compare(rawPassword, this.get('secret'));
     }
 });
 
