@@ -180,9 +180,9 @@ function getData(...props) {
 
         if (!data) {
             res.writeHead(400);
-            res.end(`Expected {${props.join(', ')}}`);
+            return res.end(`Expected {${props.join(', ')}}`);
         }
-        req.data = data;
+        req.data = data || {};
         next();
     };
 }
