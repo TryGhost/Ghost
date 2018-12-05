@@ -95,6 +95,40 @@
         });
     });
 
+    addMethod('reset-password', function signout({email}) {
+        return fetch(`${membersApi}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                email
+            })
+        }).then((res) => {
+            return res.ok;
+        });
+    });
+
+    addMethod('verify', function signout({token, password}) {
+        return fetch(`${membersApi}/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                token,
+                password
+            })
+        }).then((res) => {
+            if (res.ok) {
+                window.localStorage.setItem('signedin', true);
+            }
+            return res.ok;
+        });
+    });
+
     window.addEventListener('storage', function (event) {
         if (event.storageArea !== window.localStorage) {
             return;
