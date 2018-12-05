@@ -122,6 +122,8 @@ export default class App extends Component {
 
     renderFormInput({type, name, placeholder}) {
         let value = this.state.formData[name];
+        let className = "mt3";
+        className += value ? " active" : "";
         return (
             <input
                 type={type}
@@ -130,7 +132,7 @@ export default class App extends Component {
                 placeholder={placeholder}
                 value={value || ''}
                 onChange={(e) => this.onInputChange(e, name)}
-                className="mt3"
+                className={className}
             />
         )
     }
