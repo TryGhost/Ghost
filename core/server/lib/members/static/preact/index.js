@@ -123,12 +123,16 @@ export default class App extends Component {
         )
     }
 
-    renderFormInput({type, name, label, placeholder}) {
+    renderFormInput({type, name, label, placeholder, formType}) {
         let value = this.state.formData[name];
-        let className = "mt3";
-        className += value ? " active" : "";
+        let className = "";
+        let forgot = (type === 'password' && formType === 'signin');
+        
+        className += (value ? "gm-input-filled" : "") + (forgot ? " gm-password-forgot" : "");
+        
         return (
             <div className="mt9 gm-form-element">
+                {(forgot ? <div className="gm-cta-forgot">Forgot</div> : "")}
                 <input
                     type={ type }
                     name={ name }
@@ -148,19 +152,22 @@ export default class App extends Component {
             type: 'email',
             name: 'email',
             label: 'Email:',
-            placeholder: 'Email...'
+            placeholder: 'Email...',
+            formType: formType
         });
         const passwordInput = this.renderFormInput({
             type: 'password',
             name: 'password',
             label: 'Password:',
-            placeholder: 'Password...'
+            placeholder: 'Password...',
+            formType: formType
         });
         const nameInput = this.renderFormInput({
             type: 'text',
             name: 'name',
             label: 'Name:',
-            placeholder: 'Name...'
+            placeholder: 'Name...',
+            formType: formType
         });
         let formElements = [];
         let buttonLabel = '';

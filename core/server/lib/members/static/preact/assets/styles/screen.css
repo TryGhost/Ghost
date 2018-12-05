@@ -95,14 +95,20 @@ input {
     width: 100%;
     outline: none;
     transition: all 0.15s ease-in-out;
+    padding: 0 0 1px; /* Fixes jump because of the border change */
 }
 
 input:hover {
-    border-bottom: 1px solid var(--grey);
+    border-bottom: 1px solid var(--grey-d1);
 }
 
 input:focus {
     border-bottom: 2px solid var(--blue);
+    padding: 0px;
+}
+
+input.gm-error {
+    border-bottom: 1px solid var(--red);
 }
 
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
@@ -189,10 +195,10 @@ input:focus {
     position: relative;
 }
 
-.gm-form-element label {
+.gm-form-element input + label {
     position: absolute;
     font-size: var(--text-s);
-    /* background: var(--white); */
+    background: var(--white);
     padding: 0 0 2px 0;
     width: 100%;
     top: 14px;
@@ -202,10 +208,24 @@ input:focus {
     pointer-events: none;
 }
 
-.gm-form-element .gm-label-fixed {
-    top: 14px;
+.gm-form-element input.gm-input-filled + label {
+    top: -14px;
 }
 
 .gm-form-element input:focus + label {
     top: -14px;
+}
+
+.gm-form-element .gm-password-forgot {
+    padding-right: 60px;
+}
+
+.gm-cta-forgot {
+    color: var(--blue);
+    position: absolute;
+    top: 14px;
+    right: 0;
+    z-index: 9999;
+    cursor: pointer;
+    font-size: var(--text-s);
 }
