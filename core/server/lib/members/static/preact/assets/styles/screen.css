@@ -232,6 +232,7 @@ input.gm-error {
     pointer-events: none;
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    font-weight: 500;
 }
 
 .gm-form-element input.gm-input-filled + label {
