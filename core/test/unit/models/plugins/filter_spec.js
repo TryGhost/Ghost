@@ -739,6 +739,47 @@ describe('Filter', function () {
 
                 expandFilters(filter, expansions).should.eql(processed);
             });
+
+            it('combine multiple expansions', function () {
+                const filter = {$and:[{primary_tag:"yalla"},{primary_author:"hulk"}]};
+
+                const expansions = [{
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    expansion: `posts_tags.sort_order:0`
+                }, {
+                    key: 'primary_author',
+                    replacement: 'authors.slug',
+                    expansion: `posts_authors.sort_order:0`
+                }];
+
+                const processed = {
+                    $and: [
+                        {
+                            $and: [
+                                {
+                                    'tags.slug': 'yalla'
+                                },
+                                {
+                                    'posts_tags.sort_order': 0
+                                }
+                            ]
+                        },
+                        {
+                            $and: [
+                                {
+                                    'authors.slug': 'hulk'
+                                },
+                                {
+                                    'posts_authors.sort_order': 0
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                expandFilters(filter, expansions).should.eql(processed);
+            });
         });
     });
 });
