@@ -114,6 +114,7 @@ module.exports = function MembersApi({
     apiRouter.post('/signup', getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
+        // @TODO this should attempt to reset password before creating member
         createMember({name, email, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
