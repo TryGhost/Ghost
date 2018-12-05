@@ -131,7 +131,7 @@ export default class App extends Component {
                 key={name}
                 placeholder={placeholder}
                 value={value || ''}
-                onChange={(e) => this.onInputChange(e, name)}
+                onInput={(e) => this.onInputChange(e, name)}
                 className={className}
             />
         )
