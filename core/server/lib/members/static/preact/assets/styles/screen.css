@@ -204,6 +204,11 @@ input.gm-error {
     letter-spacing: 0.4px;
 }
 
+.gm-headers-cta a {
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+}
+
 .member-auth-page .headers-cta .cta-title {
     font-size: 12px;
     padding-right: 9px;
