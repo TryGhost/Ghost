@@ -1,7 +1,5 @@
 import './styles/members.css';
-import IconEmail from './assets/images/icon-email.svg'
-import IconLock from './assets/images/icon-lock.svg'
-import IconName from './assets/images/icon-name.svg'
+import {IconEmail, IconLock, IconName} from './components/icons';
 import { Component } from 'preact';
 const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
@@ -146,7 +144,7 @@ export default class App extends Component {
                     onInput={ (e) => this.onInputChange(e, name) }
                     className={ className }
                 />
-                <label for={ name } className="flex items-center"><img src={icon} className="mr2" /> { label }</label>
+                <label for={ name } className="flex items-center"><span className="mr2">{icon}</span> { label }</label>
                 { (forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "") }
             </div>
         )
