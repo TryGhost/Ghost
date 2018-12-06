@@ -39,6 +39,17 @@
         });
     }
 
+    addMethod('init', function init() {
+        if (window.localStorage.getItem('signedin')) {
+            window.parent.postMessage({event: 'signedin'}, origin);
+        } else {
+            window.parent.postMessage({event: 'signedout'}, origin);
+        }
+
+        getToken({audience: origin});
+        return Promise.resolve();
+    });
+
     addMethod('getToken', getToken);
 
     addMethod('signin', function signin({email, password}) {
