@@ -30,7 +30,7 @@ import {guidFor} from '@ember/object/internals';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 
-const UNDO_DEPTH = 50;
+const UNDO_DEPTH = 100;
 
 export const ADD_CARD_HOOK = 'addComponent';
 export const REMOVE_CARD_HOOK = 'removeComponent';
