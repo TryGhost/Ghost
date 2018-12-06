@@ -17,7 +17,7 @@ describe('Unit: models/tag', function () {
     });
 
     // @NOTE: need to be regenerated once functional tests are passing
-    describe.skip('SQL', function () {
+    describe('SQL', function () {
         const mockDb = require('mock-knex');
         let tracker;
 
