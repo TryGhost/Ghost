@@ -173,12 +173,12 @@ input.gm-error {
 }
 
 @-webkit-keyframes openModal { /* Safari and Chrome */
-    from { 
-        opacity: 0; 
+    from {
+        opacity: 0;
         transform: translateY(20px) scale(0.9);
     }
-    to { 
-        opacity: 1; 
+    to {
+        opacity: 1;
         transform: translateY(0px) scale(1.0);
     }
 }
@@ -187,7 +187,7 @@ input.gm-error {
     width: 52px;
     height: 52px;
     border-radius: 4px;
-    background: #343F44 url('../images/ghost-logo.svg') center center no-repeat;
+    background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
 }
 
 .gm-auth-page .gm-form-headers {
