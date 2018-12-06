@@ -48,7 +48,7 @@ export default class App extends Component {
     onInputChange(e, name) {
         let value = e.target.value;
         if (value) {
-            
+
         }
         this.setState({
             formData: {
@@ -132,9 +132,9 @@ export default class App extends Component {
         let value = this.state.formData[name];
         let className = "";
         let forgot = (type === 'password' && formType === 'signin');
-        
+
         className += (value ? "gm-input-filled" : "") + (forgot ? " gm-password-forgot" : "");
-        
+
         return (
             <div className="mt9 gm-form-element">
                 <input
