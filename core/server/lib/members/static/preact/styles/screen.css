@@ -1,16 +1,11 @@
 /* Global styles */
+/* ------------------------------------------------------------ */
 html {
     font-size: 62.5%;
 }
 
 html, body {
-    font-family: -apple-system, BlinkMacSystemFont,
-                'avenir next', avenir,
-                'helvetica neue', helvetica,
-                ubuntu,
-                roboto, noto,
-                'segoe ui', arial,
-                sans-serif;
+    font-family: var(--default-font);
     color: var(--black);
 }
 
@@ -42,112 +37,12 @@ a {
 }
 
 a:hover {
-    color: var(--blue-d2);
+    color: var(--blue-d3);
 }
 
 
-/* Buttons */
-
-button {
-    width: 100%;
-    height: 48px;
-    font-weight: 500;
-    border: 1px solid var(--grey);
-    color: var(--grey-d3);
-    text-align: center;
-    cursor: pointer;
-    white-space: nowrap;
-    padding: 0 15px;
-    border-radius: 4px;
-    outline: none;
-    transition: all 0.15s ease-in-out;
-    position: relative;
-    letter-spacing: 0.2px;
-}
-
-button:hover {
-    color: var(--blue);
-}
-
-.btn-blue {
-    background: rgb(62,176,239);
-    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
-    color: var(--white);
-    border: none;
-}
-
-.btn-blue:active {
-    background: rgb(62,176,239);
-    background: linear-gradient(to bottom, rgb(22, 147, 214) 0%,rgb(0, 118, 182) 100%);
-}
-
-.btn-blue:hover {
-    color: var(--white);
-}
-
-.btn-blue:hover:before {
-    opacity: 0.8;
-}
-
-.btn-blue:before {
-    content: "";
-    transition: all .4s ease;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
-    opacity: 0;
-}
-
-input {
-    font-size: var(--text-base);
-    color: var(--grey-d3);
-    border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid var(--grey-l1);
-    height: 38px;
-    -webkit-appearance: none;
-    box-sizing: border-box;
-    box-shadow: none;
-    background: var(--white);
-    height: 44px;
-    width: 100%;
-    outline: none;
-    transition: all 0.15s ease-in-out;
-    padding: 0 0 1px; /* Fixes jump because of the border change */
-    letter-spacing: 0.2px;
-}
-
-input:hover {
-    border-bottom: 1px solid var(--grey);
-}
-
-input:focus {
-    border-bottom: 2px solid var(--blue);
-    padding: 0px;
-}
-
-input.gm-error {
-    border-bottom: 1px solid var(--red);
-}
-
-::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-    color: var(--white);
-}
-::-moz-placeholder { /* Firefox 19+ */
-    color: var(--white);
-}
-:-ms-input-placeholder { /* IE 10+ */
-    color: var(--white);
-}
-:-moz-placeholder { /* Firefox 18- */
-    color: var(--white);
-}
-
-
-/* Styles */
+/* Layout */
+/* ------------------------------------------------------------ */
 .gm-auth-page {
     width: 100%;
     height: 100vh;
@@ -155,34 +50,9 @@ input.gm-error {
     background: rgba(10, 17, 23, 0.9);
 }
 
-.gm-modal-container {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-}
 
-.gm-modal {
-    position: relative;
-    background: white;
-    margin: 0 auto;
-    width: 332px;
-    border-radius: 4px;
-    padding: 44px 44px 48px;
-    box-shadow: 0 0 1px rgba(0,0,0,.12), 0 16px 24px -12px rgba(0,0,0,.2);
-    -webkit-animation: openModal 0.3s ease-in-out;
-}
-
-@-webkit-keyframes openModal { /* Safari and Chrome */
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0px) scale(1.0);
-    }
-}
-
+/* Auth Modal */
+/* --------------------------------------------- */
 .gm-logo {
     width: 52px;
     height: 52px;
@@ -190,21 +60,26 @@ input.gm-error {
     background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
 }
 
-.gm-auth-page .gm-form-headers {
-    padding: 12px 0;
+.gm-auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 16px 0 0;
+    padding: 12px 0 0;
 }
 
-.gm-headers-cta {
+.gm-auth-header -cta {
     padding: 0 0 3px;
 }
 
-.gm-headers-cta h4 {
+.gm-auth-header h4 {
     font-weight: normal;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
 }
 
-.gm-headers-cta a {
+.gm-auth-header a {
+    display: block;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
     padding: 8px;
@@ -214,54 +89,19 @@ input.gm-error {
     white-space: nowrap;
 }
 
-.member-auth-page .headers-cta .cta-title {
-    font-size: 12px;
-    padding-right: 9px;
+.gm-auth-header a:hover {
+    color: var(--blue-d3);
 }
 
-/* Forms */
-.gm-form-element {
-    position: relative;
-}
-
-.gm-form-element label {
-    position: absolute;
-    font-size: var(--text-xs);
-    background: var(--white);
-    padding: 0 0 2px 0;
-    width: 100%;
-    top: 14px;
-    left: 0;
-    color: var(--grey);
-    transition: all 0.15s ease-in-out;
-    pointer-events: none;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    font-weight: 500;
-}
-
-.gm-form-element label img {
-    width: 16px;
-    height: 16px;
-}
-
-.gm-form-element input.gm-input-filled + label {
-    top: -12px;
-}
-
-.gm-form-element input:focus + label {
-    top: -12px;
-}
-
-.gm-form-element .gm-password-forgot {
-    padding-right: 60px;
-}
-
-.gm-cta-forgot {
+.gm-forgot-link {
     position: absolute;
     top: 14px;
     right: 0;
     z-index: 9999;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
+}
+
+.gm-floating-input .gm-forgot-input {
+    padding-right: 60px;
 }

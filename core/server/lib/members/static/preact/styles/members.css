@@ -1,4 +1,5 @@
 @import './normalize.css';
 @import './utils.css';
 @import './design-system.css';
+@import './components.css';
 @import './screen.css';

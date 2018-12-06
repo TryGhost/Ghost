@@ -1,0 +1,184 @@
+/* Reusable components */
+/* ------------------------------------------------------------ 
+
+
+*/
+
+
+/* Modal */
+/* ------------------------------------------------------------ */
+.gm-modal-container {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.gm-modal {
+    position: relative;
+    background: white;
+    margin: 0 auto;
+    width: 332px;
+    border-radius: 4px;
+    padding: 44px 44px 48px;
+    box-shadow: var(--box-shadow-base);
+    animation: openModal 0.3s ease-in-out;
+}
+
+@keyframes openModal { /* Safari and Chrome */
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0px) scale(1.0);
+    }
+}
+
+/* Buttons */
+/* ------------------------------------------------------------ */
+button {
+    width: 100%;
+    height: 48px;
+    font-weight: 500;
+    border: 1px solid var(--grey);
+    color: var(--grey-d3);
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 0 15px;
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+    letter-spacing: 0.2px;
+}
+
+button:hover {
+    color: var(--blue-l1);
+}
+
+.gm-btn-blue {
+    background: var(--blue);
+    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
+    color: var(--white);
+    border: none;
+}
+
+.gm-btn-blue:active {
+    background: var(--blue-d1);
+    background: linear-gradient(to bottom, rgb(22, 147, 214) 0%,rgb(0, 118, 182) 100%);
+}
+
+.gm-btn-blue:hover {
+    color: var(--white);
+}
+
+.gm-btn-blue:hover:before {
+    opacity: 0.8;
+}
+
+.gm-btn-blue:before {
+    content: "";
+    transition: all .4s ease;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
+    opacity: 0;
+}
+
+
+/* Forms inputs */
+/* ------------------------------------------------------------ */
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--white);
+}
+::-moz-placeholder { /* Firefox 19+ */
+    color: var(--white);
+}
+:-ms-input-placeholder { /* IE 10+ */
+    color: var(--white);
+}
+:-moz-placeholder { /* Firefox 18- */
+    color: var(--white);
+}
+
+.gm-floating-input {
+    position: relative;
+}
+
+.gm-floating-input input {
+    font-size: var(--text-base);
+    color: var(--grey-d3);
+    border: none;
+    border-radius: 0px;
+    border-bottom: 1px solid var(--grey-l1);
+    height: 38px;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    box-shadow: none;
+    background: var(--white);
+    height: 44px;
+    width: 100%;
+    outline: none;
+    transition: all 0.15s ease-in-out;
+    padding: 0 0 1px; /* Fixes jump because of the border change */
+    letter-spacing: 0.2px;
+}
+
+.gm-floating-input input:hover {
+    border-bottom: 1px solid var(--grey);
+}
+
+.gm-floating-input input:focus {
+    border-bottom: 2px solid var(--blue);
+    padding: 0px;
+}
+
+.gm-floating-input input.gm-error {
+    border-bottom: 1px solid var(--red);
+}
+
+.gm-floating-input label {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    font-size: var(--text-xs);
+    background: var(--white);
+    padding: 0 0 2px 0;
+    width: 100%;
+    top: 14px;
+    left: 0;
+    color: var(--grey);
+    transition: all 0.15s ease-in-out;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+}
+
+.gm-floating-input label i svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gm-floating-input label i svg path {
+    stroke: var(--grey);
+}
+
+.gm-floating-input label i {
+    font-style: normal;
+    display: inline-block;
+    margin: 0 8px 0 0;
+}
+
+.gm-floating-input input.gm-input-filled + label {
+    top: -12px;
+}
+
+.gm-floating-input input:focus + label {
+    top: -12px;
+}

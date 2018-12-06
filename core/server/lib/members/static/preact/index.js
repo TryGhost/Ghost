@@ -109,17 +109,15 @@ export default class App extends Component {
         return (
             <div className="flex flex-column">
                 <div className="gm-logo"></div>
-                <div className="flex justify-between items-end mt2 gm-form-headers">
+                <div className="gm-auth-header">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex items-baseline gm-headers-cta">
+                    <div className="flex items-baseline">
                         <h4>{ ctaTitle }</h4>
-                        <div>
-                            <a href="javascript:;"
-                                onClick={(e) => {window.location.hash = hash}}
-                            >
-                                {ctaLabel}
-                            </a>
-                        </div>
+                        <a href="javascript:;"
+                            onClick={(e) => {window.location.hash = hash}}
+                        >
+                            {ctaLabel}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -131,21 +129,23 @@ export default class App extends Component {
         let className = "";
         let forgot = (type === 'password' && formType === 'signin');
 
-        className += (value ? "gm-input-filled" : "") + (forgot ? " gm-password-forgot" : "");
+        className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "");
 
         return (
-            <div className="mt9 gm-form-element">
-                <input
-                    type={ type }
-                    name={ name }
-                    key={ name }
-                    placeholder={ placeholder }
-                    value={ value || '' }
-                    onInput={ (e) => this.onInputChange(e, name) }
-                    className={ className }
-                />
-                <label for={ name } className="flex items-center"><span className="mr2">{icon}</span> { label }</label>
-                { (forgot ? <a href="javascript:;" className="gm-cta-forgot">Forgot</a> : "") }
+            <div className="mt10">
+                <div className="gm-floating-input">
+                    <input
+                        type={ type }
+                        name={ name }
+                        key={ name }
+                        placeholder={ placeholder }
+                        value={ value || '' }
+                        onInput={ (e) => this.onInputChange(e, name) }
+                        className={ className }
+                    />
+                    <label for={ name }><i>{icon}</i> { label }</label>
+                    { (forgot ? <a href="javascript:;" className="gm-forgot-link">Forgot</a> : "") }
+                </div>
             </div>
         )
     }
@@ -192,10 +192,12 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column nt4">
+            <div className="flex flex-column nt1">
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)}>
                     { formElements }
-                    <button type="submit" name={ formType } className="mt8 btn-blue">{ buttonLabel }</button>
+                    <div className="mt8">
+                        <button type="submit" name={ formType } className="gm-btn-blue">{ buttonLabel }</button>
+                    </div>
                 </form>
             </div>
         )
@@ -204,7 +206,7 @@ export default class App extends Component {
     renderFormComponent(formType = this.state.formType) {
         return (
             <div className="gm-modal-container">
-                <div className="gm-modal">
+                <div className="gm-modal gm-auth-modal">
                     {this.renderFormHeaders(formType)}
                     {this.renderFormSection(formType)}
                 </div>
