@@ -8,13 +8,19 @@ const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/
 const storage = window.localStorage;
 var layer0 = require('./layer0');
 
+function getFreshState() {
+    const [hash, formType, query] = window.location.hash.match(/^#(\w+)\??(.*)$/) || ['#signin?', 'signin', ''];
+    console.log({hash, formType, query})
+    return {
+        formData: {},
+        formType
+    };
+}
+
 export default class App extends Component {
     constructor() {
         super();
-        this.state = {
-            formData: {},
-            formType: window.location.hash.replace(/^#/, '')
-        };
+        this.state = getFreshState();
         this.gatewayFrame = '';
         window.addEventListener("hashchange", () => this.onHashChange(), false);
     }
@@ -33,16 +39,10 @@ export default class App extends Component {
 
     componentDidMount() {
         this.loadGateway();
-        if (!window.location.hash.replace(/^#/, '')) {
-            window.location.hash = 'signin';
-        }
     }
 
     onHashChange() {
-        this.setState({
-            formData: {},
-            formType: window.location.hash.replace(/^#/, '')
-        });
+        this.setState(getFreshState());
     }
 
     onInputChange(e, name) {
