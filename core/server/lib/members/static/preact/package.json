@@ -11,9 +11,14 @@
     "build/*"
   ],
   "devDependencies": {
-    "preact-cli": "^2.0.0",
+    "autoprefixer": "^9.4.2",
+    "cssnano": "^4.1.7",
     "grunt": "1.0.3",
-    "grunt-shell": "2.1.0"
+    "grunt-shell": "2.1.0",
+    "postcss-color-mod-function": "^3.0.3",
+    "postcss-css-variables": "^0.11.0",
+    "postcss-custom-properties": "^8.0.9",
+    "preact-cli": "^2.0.0"
   },
   "dependencies": {
     "preact": "^8.2.1",

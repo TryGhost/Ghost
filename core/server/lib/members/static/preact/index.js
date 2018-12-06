@@ -1,4 +1,4 @@
-import './assets/styles/members.css';
+import './styles/members.css';
 import IconEmail from './assets/images/icon-email.svg'
 import IconLock from './assets/images/icon-lock.svg'
 import IconName from './assets/images/icon-name.svg'
