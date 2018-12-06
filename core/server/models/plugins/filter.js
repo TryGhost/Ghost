@@ -1,22 +1,20 @@
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
 const RELATIONS = {
-    relations: {
-        tags: {
-            tableName: 'tags',
-            type: 'manyToMany',
-            join_table: 'posts_tags',
-            join_from: 'post_id',
-            join_to: 'tag_id'
-        },
-        authors: {
-            tableName: 'users',
-            tableNameAs: 'authors',
-            type: 'manyToMany',
-            join_table: 'posts_authors',
-            join_from: 'post_id',
-            join_to: 'author_id'
-        }
+    tags: {
+        tableName: 'tags',
+        type: 'manyToMany',
+        join_table: 'posts_tags',
+        join_from: 'post_id',
+        join_to: 'tag_id'
+    },
+    authors: {
+        tableName: 'users',
+        tableNameAs: 'authors',
+        type: 'manyToMany',
+        join_table: 'posts_authors',
+        join_from: 'post_id',
+        join_to: 'author_id'
     }
 };
 
@@ -69,19 +67,21 @@ const filter = function filter(Bookshelf) {
             debug('default', defaults);
 
             if (extra) {
-                custom = `${custom}+${extra}`;
+                if (custom) {
+                    custom = `${custom}+${extra}`;
+                } else {
+                    custom = extra;
+                }
             }
 
-            if (custom) {
-                this.query((qb) => {
-                    nql(custom, {
-                        relations: RELATIONS,
-                        expansions: EXPANSIONS,
-                        overrides: overrides,
-                        defaults: defaults
-                    }).querySQL(qb);
-                });
-            }
+            this.query((qb) => {
+                nql(custom, {
+                    relations: RELATIONS,
+                    expansions: EXPANSIONS,
+                    overrides: overrides,
+                    defaults: defaults
+                }).querySQL(qb);
+            });
         }
     });
 
