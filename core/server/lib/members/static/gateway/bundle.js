@@ -19,8 +19,7 @@
 
     // @TODO this needs to be configurable
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
-
-    addMethod('getToken', function getToken({audience}) {
+    function getToken({audience}) {
         return fetch(`${membersApi}/token`, {
             method: 'POST',
             headers: {
@@ -38,7 +37,9 @@
             window.localStorage.setItem('signedin', true);
             return res.text();
         });
-    });
+    }
+
+    addMethod('getToken', getToken);
 
     addMethod('signin', function signin({email, password}) {
         return fetch(`${membersApi}/signin`, {
