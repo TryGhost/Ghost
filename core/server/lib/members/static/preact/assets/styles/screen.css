@@ -76,6 +76,11 @@ button:hover {
     border: none;
 }
 
+.btn-blue:active {
+    background: rgb(62,176,239);
+    background: linear-gradient(to bottom, rgb(22, 147, 214) 0%,rgb(0, 118, 182) 100%);
+}
+
 .btn-blue:hover {
     color: var(--white);
 }
@@ -206,6 +211,7 @@ input.gm-error {
     margin: -8px -8px -8px -2px;
     cursor: pointer;
     color: var(--blue);
+    white-space: nowrap;
 }
 
 .member-auth-page .headers-cta .cta-title {
