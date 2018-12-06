@@ -35,6 +35,13 @@
     }
 }
 
+@media (max-width: 440px) {
+    .gm-modal {
+        width: calc(100% - 60px);
+        padding: 24px;
+    }
+}
+
 /* Buttons */
 /* ------------------------------------------------------------ */
 button {

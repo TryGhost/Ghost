@@ -40,6 +40,12 @@ a:hover {
     color: var(--blue-d3);
 }
 
+@media (max-width: 500px) {
+    h1 {
+        font-size: var(--text-xl);
+    }
+}
+
 
 /* Layout */
 /* ------------------------------------------------------------ */
@@ -105,4 +111,10 @@ a:hover {
 
 .gm-floating-input .gm-forgot-input {
     padding-right: 60px;
+}
+
+@media (max-width: 440px) {
+    h4 {
+        display: none;
+    }
 }
