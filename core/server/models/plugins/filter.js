@@ -1,5 +1,3 @@
-const util = require('util');
-const _ = require('lodash');
 const debug = require('ghost-ignition').debug('models:plugins:filter');
 
 const RELATIONS = {
@@ -44,200 +42,6 @@ const EXPANSIONS = [{
     replacement: 'tags.slug'
 }];
 
-// @TODO: The filter utility lives here temporary.
-const GROUPS = ['$and', '$or'];
-const filterUtils = {
-    /**
-     * Combines two filters with $and conjunction
-     */
-    combineFilters: (primary, secondary) => {
-        if (_.isEmpty(primary)) {
-            return secondary;
-        }
-
-        if (_.isEmpty(secondary)) {
-            return primary;
-        }
-
-        return {
-            $and: [primary, secondary]
-        };
-    },
-
-    findStatement: (statements, match) => {
-        return _.some(statements, (value, key, obj) => {
-            if (key === '$and') {
-                return filterUtils.findStatement(obj.$and, match);
-            } else if (key === '$or') {
-                return filterUtils.findStatement(obj.$or, match);
-            } else {
-                if ((key !== match) && _.isObject(value)) {
-                    return filterUtils.findStatement(value, match);
-                } else {
-                    return (key === match);
-                }
-            }
-        });
-    },
-
-    /**
-     * ## Reject statements
-     *
-     * Removes statements keys when matching `func` returns true
-     * in the primary filter, e.g.:
-     *
-     * In NQL results equivalent to:
-     * ('featured:true', 'featured:false') => ''
-     * ('featured:true', 'featured:false,status:published') => 'status:published'
-     */
-    rejectStatements: (statements, func) => {
-        if (!statements) {
-            return statements;
-        }
-
-        GROUPS.forEach((group) => {
-            if (_.has(statements, group)) {
-                statements[group] = filterUtils.rejectStatements(statements[group], func);
-
-                if (statements[group].length === 0) {
-                    delete statements[group];
-                }
-            }
-        });
-
-        if (_.isArray(statements)) {
-            statements = statements
-                .map((statement) => {
-                    return filterUtils.rejectStatements(statement, func);
-                })
-                .filter((statement) => {
-                    return !(_.isEmpty(statement));
-                });
-        } else {
-            Object.keys(statements).forEach((key) => {
-                if (!GROUPS.includes(key) && func(key)) {
-                    delete statements[key];
-                }
-            });
-        }
-
-        return statements;
-    },
-
-    /**
-     * ## Merge Filters
-     * Util to combine enforced, default and custom filters based on
-     * following hierarchy: enforced -> (custom + extra) -> defaults
-     *
-     * enforced - filters which must ALWAYS be applied
-     * defaults - filters which must be applied if a matching filter isn't provided
-     * custom - custom filters which are additional
-     * extra - filters coming from model filter aliases
-     */
-    mergeFilters: ({enforced, defaults, custom, extra} = {}) => {
-        if (extra) {
-            if (custom) {
-                custom = filterUtils.combineFilters(custom, extra);
-            } else {
-                custom = extra;
-            }
-        }
-
-        if (custom && !enforced && !defaults) {
-            return custom;
-        }
-
-        let merged = {};
-
-        if (enforced) {
-            merged = enforced;
-        }
-
-        if (custom) {
-            debug('rejecting custom:', util.inspect(merged), util.inspect(custom));
-
-            custom = filterUtils.rejectStatements(custom, (statement) => {
-                debug('statements', util.inspect(merged));
-                debug('match', util.inspect(statement));
-                return filterUtils.findStatement(merged, statement);
-            });
-
-            debug('rejected custom:', util.inspect(custom));
-
-            if (!_.isEmpty(custom)) {
-                merged = merged ? filterUtils.combineFilters(merged, custom) : custom;
-            }
-        }
-
-        if (defaults) {
-            debug('rejecting defaults:', util.inspect(merged), util.inspect(defaults));
-
-            defaults = filterUtils.rejectStatements(defaults, (statement) => {
-                debug('statements', util.inspect(merged));
-                debug('match', util.inspect(statement));
-                return filterUtils.findStatement(merged, statement);
-            });
-
-            debug('rejected defaults:', util.inspect(defaults));
-
-            if (!_.isEmpty(defaults)) {
-                merged = merged ? filterUtils.combineFilters(merged, defaults) : defaults;
-            }
-        }
-
-        return merged;
-    },
-
-    /**
-     * ## Expand Filters
-     * Util that expands Mongo JSON statements with custom statements
-     */
-    expandFilters: (statements, expansions) => {
-        const expand = (primary, secondary) => {
-            // CASE: we don't want to have separate $and groups when expanding
-            //       all statements should be withing the same group
-            if (secondary.$and) {
-                return {$and: [
-                    primary,
-                    ...secondary.$and
-                ]};
-            }
-
-            return {$and: [
-                primary,
-                secondary
-            ]};
-        };
-
-        let processed = {};
-
-        Object.keys(statements).forEach((key) => {
-            if (GROUPS.includes(key)) {
-                processed[key] = statements[key]
-                    .map(statement => filterUtils.expandFilters(statement, expansions));
-            } else {
-                const expansion = _.find(expansions, {key});
-
-                if (expansion) {
-                    let replaced = {};
-                    replaced[expansion.replacement] = statements[key];
-
-                    if (expansion.expansion) {
-                        const nql = require('@nexes/nql');
-                        replaced = expand(replaced, nql(expansion.expansion).parse());
-                    }
-
-                    processed = _.merge(processed, replaced);
-                } else {
-                    processed = _.merge(processed, _.pick(statements, key));
-                }
-            }
-        });
-
-        return processed;
-    }
-};
-
 const filter = function filter(Bookshelf) {
     const Model = Bookshelf.Model.extend({
         // Cached copy of the filters setup for this model instance
@@ -255,45 +59,27 @@ const filter = function filter(Bookshelf) {
             const nql = require('@nexes/nql');
 
             let custom = options.filter;
-            let defaults = this.defaultFilters(options);
-            let enforced = this.enforcedFilters(options);
             let extra = this.extraFilters(options);
+            let overrides = this.enforcedFilters(options);
+            let defaults = this.defaultFilters(options);
 
             debug('custom', custom);
             debug('extra', extra);
+            debug('enforced', overrides);
             debug('default', defaults);
-            debug('enforced', enforced);
-
-            if (custom) {
-                custom = nql(options.filter).parse();
-            }
-
-            if (defaults) {
-                defaults = nql(defaults).parse();
-            }
-
-            if (enforced) {
-                enforced = nql(enforced).parse();
-            }
 
             if (extra) {
-                extra = nql(extra).parse();
+                custom = `${custom}+${extra}`;
             }
 
-            const filter = filterUtils.mergeFilters({enforced, defaults, custom, extra});
-
-            debug('filter', JSON.stringify(filter));
-
-            const expandedFilter = filterUtils.expandFilters(filter, EXPANSIONS);
-
-            if (expandedFilter !== filter) {
-                debug('expanded filter', JSON.stringify(expandedFilter));
-            }
-
-            if (expandedFilter) {
+            if (custom) {
                 this.query((qb) => {
-                    // @TODO: change NQL api to accept mongo json instead of nql string
-                    nql(expandedFilter, RELATIONS).querySQL(qb);
+                    nql(custom, {
+                        relations: RELATIONS,
+                        expansions: EXPANSIONS,
+                        overrides: overrides,
+                        defaults: defaults
+                    }).querySQL(qb);
                 });
             }
         }
