@@ -771,12 +771,23 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             model.hasTimestamps = false;
         }
 
-        return model.fetch(options).then(function then(object) {
-            if (object) {
-                options.method = 'update';
-                return object.save(data, options);
-            }
-        });
+        const editSave = () => model
+            .fetch(options)
+            .then((object) => {
+                if (object) {
+                    options.method = 'update';
+                    return object.save(data, options);
+                }
+            });
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+                return editSave();
+            });
+        }
+
+        return editSave();
     },
 
     /**
