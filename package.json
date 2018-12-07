@@ -1,13 +1,16 @@
 {
   "name": "ghost",
-  "version": "2.6.2",
+  "version": "2.7.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
   "keywords": [
     "ghost",
     "blog",
-    "cms"
+    "cms",
+    "headless",
+    "content",
+    "markdown"
   ],
   "repository": {
     "type": "git",

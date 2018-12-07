@@ -250,6 +250,36 @@ describe('UNIT - services/routing/ParentRouter', function () {
             next.called.should.eql(true);
             urlService.utils.redirect301.called.should.be.false();
         });
+
+        it('redirect primary tag permalink', function () {
+            const parentRouter = new ParentRouter('index');
+            parentRouter.getResourceType = sandbox.stub().returns('posts');
+            parentRouter.permalinks = {
+                getValue: sandbox.stub().returns('/:primary_tag/:slug/')
+            };
+
+            req.url = '/bacon/welcome/';
+            req.originalUrl = `${req.url}?x=y`;
+
+            req.app._router.stack = [{
+                name: 'SiteRouter',
+                handle: {
+                    stack: [{
+                        name: 'StaticRoutesRouter',
+                        handle: {
+                            parent: {
+                                isRedirectEnabled: sandbox.stub().returns(true),
+                                getRoute: sandbox.stub().returns('/route/')
+                            }
+                        }
+                    }]
+                }
+            }];
+
+            parentRouter._respectDominantRouter(req, res, next, 'welcome');
+            next.called.should.eql(false);
+            urlService.utils.redirect301.withArgs(res, '/route/?x=y').calledOnce.should.be.true();
+        });
     });
 
     describe('fn: isRedirectEnabled', function () {

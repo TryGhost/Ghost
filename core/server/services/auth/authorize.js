@@ -37,7 +37,7 @@ const authorize = {
         };
     },
 
-    authorizeAdminAPI: [session.ensureUser],
+    authorizeAdminApi: [session.ensureUser],
     authorizeContentApi(req, res, next) {
         const hasApiKey = req.api_key && req.api_key.id;
         const hasMember = req.member;
