@@ -40,7 +40,9 @@ module.exports = function MembersApi({
     apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
-            res.writeHead(401);
+            res.writeHead(401, {
+                'Set-Cookie': removeCookie()
+            });
             return res.end();
         }
 
@@ -67,7 +69,7 @@ module.exports = function MembersApi({
         next();
     }
 
-    apiRouter.post('/reset-password', getData('email'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
         getMember({email}).then((member) => {
@@ -88,7 +90,7 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/verify', getData('token', 'password'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
         try {
@@ -104,6 +106,29 @@ module.exports = function MembersApi({
         const id = jwt.decode(token).sub;
 
         updateMember({id}, {password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
+            });
+            res.end();
+        }).catch(handleError(401, res));
+    });
+
+    apiRouter.post('/verify-email', getData('token'), ssoOriginCheck, (req, res) => {
+        const {token} = req.data;
+
+        try {
+            jwt.verify(token, publicKey, {
+                algorithm: 'RS515',
+                issuer
+            });
+        } catch (err) {
+            res.writeHead(401);
+            return res.end();
+        }
+
+        const id = jwt.decode(token).sub;
+
+        getMember({id}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });

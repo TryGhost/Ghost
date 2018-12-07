@@ -19,8 +19,7 @@
 
     // @TODO this needs to be configurable
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
-
-    addMethod('getToken', function getToken({audience}) {
+    function getToken({audience}) {
         return fetch(`${membersApi}/token`, {
             method: 'POST',
             headers: {
@@ -32,13 +31,28 @@
             })
         }).then((res) => {
             if (!res.ok) {
-                window.localStorage.removeItem('signedin');
+                if (res.status === 401) {
+                    window.localStorage.removeItem('signedin');
+                }
                 return null;
             }
             window.localStorage.setItem('signedin', true);
             return res.text();
         });
+    }
+
+    addMethod('init', function init() {
+        if (window.localStorage.getItem('signedin')) {
+            window.parent.postMessage({event: 'signedin'}, origin);
+        } else {
+            window.parent.postMessage({event: 'signedout'}, origin);
+        }
+
+        getToken({audience: origin});
+        return Promise.resolve();
     });
+
+    addMethod('getToken', getToken);
 
     addMethod('signin', function signin({email, password}) {
         return fetch(`${membersApi}/signin`, {
@@ -96,8 +110,8 @@
         });
     });
 
-    addMethod('reset-password', function signout({email}) {
-        return fetch(`${membersApi}/reset-password`, {
+    addMethod('request-password-reset', function signout({email}) {
+        return fetch(`${membersApi}/request-password-reset`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -111,8 +125,8 @@
         });
     });
 
-    addMethod('verify', function signout({token, password}) {
-        return fetch(`${membersApi}/verify`, {
+    addMethod('reset-password', function signout({token, password}) {
+        return fetch(`${membersApi}/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
