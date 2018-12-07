@@ -373,14 +373,10 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         name: {type: 'string', maxlength: 191, nullable: false},
+        password: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    member_passwords: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        secret: {type: 'string', maxlength: 191, nullable: false},
-        member_id: {type: 'string', maxlength: 24, nullable: false, unique: true}
     }
 };
