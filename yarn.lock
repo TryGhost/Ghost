@@ -2282,12 +2282,6 @@ getsetdeep@~2.0.0:
   dependencies:
     typechecker "~2.0.1"
 
-ghost-gql@0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/ghost-gql/-/ghost-gql-0.0.11.tgz#f0bc85305d0be80e5131011bf48b0ffd7c058b6b"
-  dependencies:
-    lodash "^4.17.4"
-
 ghost-ignition@2.9.2:
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.2.tgz#e68de88fa4a20fc09c833fe3278bdc20dca6d525"
