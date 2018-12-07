@@ -354,6 +354,14 @@ describe('Unit: models/post', function () {
             filter.should.equal('page:false+status:published');
         });
     });
+
+    describe('removeInvisibleUnicode', function () {
+        it('removes unicode backspace from string', function () {
+            const stringWithBackspace = 'abc\u0008';
+            const string = models.Post.removeInvisibleUnicode(stringWithBackspace);
+            should(string).eql('abc');
+        });
+    });
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
