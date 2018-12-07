@@ -36,9 +36,18 @@
 }
 
 @media (max-width: 440px) {
+    .gm-modal-container {
+        margin: 0;
+        padding: 0;
+        top: 0;
+        transform: none;
+        height: 100vh;
+    }
     .gm-modal {
-        width: calc(100% - 60px);
+        width: calc(100% - 48px);
+        height: calc(100vh - 48px);
         padding: 24px;
+        border-radius: 0;
     }
 }
 

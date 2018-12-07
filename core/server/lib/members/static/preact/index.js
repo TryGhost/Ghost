@@ -256,7 +256,7 @@ export default class App extends Component {
                         required = {required}
                         className={ className }
                     />
-                    <label for={ name }><i>{icon}</i> { label }</label>
+                    <label for={ name }> { label }</label>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
                 <div class="gm-input-errortext">{ inputError }</div>
