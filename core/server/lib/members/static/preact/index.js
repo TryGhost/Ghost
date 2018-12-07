@@ -45,9 +45,6 @@ export default class App extends Component {
 
     onInputChange(e, name) {
         let value = e.target.value;
-        if (value) {
-
-        }
         this.setState({
             formData: {
                 ...this.state.formData,
@@ -65,13 +62,19 @@ export default class App extends Component {
             case 'signup':
                 this.signup(this.state.formData);
                 break;
+            case 'request-password-reset':
+                this.requestPasswordReset(this.state.formData);
+                break;
+            case 'password-reset-sent':
+                this.resendPasswordResetEmail(this.state.formData)
+                break;
         }
         return false;
     }
 
     signin({ email, password }) {
         this.gatewayFrame.call('signin', {email, password}, function (err, successful) {
-            if (err) {
+            if (err || successful) {
                 console.log("Unable to login", err);
             }
             console.log("Successfully logged in");
@@ -80,11 +83,30 @@ export default class App extends Component {
 
     signup({ name, email, password }) {
         this.gatewayFrame.call('signup', { name, email, password }, function (err, successful) {
-            if (err) {
+            if (err || successful) {
                 console.log("Unable to signup", err);
             }
             console.log("Successfully signed up");
         });
+    }
+
+    requestPasswordReset({ email }) {
+        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
+        //     if (err || successful) {
+        //         console.log("Unable to send email", err);
+        //     }
+        //     console.log("Email sent");
+        // });
+        window.location.hash = 'password-reset-sent';
+    }
+
+    resendPasswordResetEmail({ email }) {
+        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
+        //     if (err || successful) {
+        //         console.log("Unable to send email", err);
+        //     }
+        //     console.log("Email sent");
+        // });
     }
 
     renderFormHeaders(formType) {
@@ -105,6 +127,18 @@ export default class App extends Component {
                 ctaLabel = 'Sign up';
                 hash = 'signup';
                 break;
+            case 'request-password-reset':
+                mainTitle = 'Reset password';
+                ctaTitle = '';
+                ctaLabel = 'Log in';
+                hash = 'signin';
+                break;
+            case 'password-reset-sent':
+                mainTitle = 'Reset password';
+                ctaTitle = '';
+                ctaLabel = 'Log in';
+                hash = 'signin';
+                break;
         }
         return (
             <div className="flex flex-column">
@@ -124,7 +158,7 @@ export default class App extends Component {
         )
     }
 
-    renderFormInput({type, name, label, icon, placeholder, formType}) {
+    renderFormInput({type, name, label, icon, placeholder, required, formType}) {
         let value = this.state.formData[name];
         let className = "";
         let forgot = (type === 'password' && formType === 'signin');
@@ -141,11 +175,28 @@ export default class App extends Component {
                         placeholder={ placeholder }
                         value={ value || '' }
                         onInput={ (e) => this.onInputChange(e, name) }
+                        required = {required}
                         className={ className }
                     />
                     <label for={ name }><i>{icon}</i> { label }</label>
-                    { (forgot ? <a href="javascript:;" className="gm-forgot-link">Forgot</a> : "") }
+                    { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
+            </div>
+        )
+    }
+
+    renderFormText({formType}) {
+        return (
+            <div className="mt9">
+                <span> Please check your inbox! </span>
+            </div>
+        )
+    }
+
+    renderFormSubmit({buttonLabel, formType}) {
+        return (
+            <div className="mt8">
+                <button type="submit" name={ formType } className="gm-btn-blue">{ buttonLabel }</button>
             </div>
         )
     }
@@ -157,6 +208,7 @@ export default class App extends Component {
             label: 'Email',
             icon: IconEmail,
             placeholder: 'Email...',
+            required: true,
             formType: formType
         });
         const passwordInput = this.renderFormInput({
@@ -165,6 +217,7 @@ export default class App extends Component {
             label: 'Password',
             icon: IconLock,
             placeholder: 'Password...',
+            required: true,
             formType: formType
         });
         const nameInput = this.renderFormInput({
@@ -173,31 +226,35 @@ export default class App extends Component {
             label: 'Name',
             icon: IconName,
             placeholder: 'Name...',
+            required: true,
             formType: formType
         });
+        const formText = this.renderFormText({formType});
+
         let formElements = [];
         let buttonLabel = '';
         switch (formType) {
             case 'signin':
-                formElements = [emailInput, passwordInput];
                 buttonLabel = 'Log in';
+                formElements = [emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
                 break;
             case 'signup':
-                formElements = [nameInput, emailInput, passwordInput];
                 buttonLabel = 'Sign up';
+                formElements = [nameInput, emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
                 break;
-            case 'reset':
-                formElements = [emailInput];
+            case 'request-password-reset':
                 buttonLabel = 'Send reset password instructions';
+                formElements = [emailInput, this.renderFormSubmit({formType, buttonLabel})];
+                break;
+            case 'password-reset-sent':
+                buttonLabel = 'Resend email';
+                formElements = [formText, this.renderFormSubmit({formType, buttonLabel})];
                 break;
         }
         return (
             <div className="flex flex-column nt1">
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)}>
                     { formElements }
-                    <div className="mt8">
-                        <button type="submit" name={ formType } className="gm-btn-blue">{ buttonLabel }</button>
-                    </div>
                 </form>
             </div>
         )
