@@ -2,78 +2,81 @@
 var layer0 = require('@tryghost/members-layer0');
 var events = require('minivents');
 
-function create(options) {
-    var bus = new events();
-    var loadGateway = new Promise(function (resolve) {
-        const frame = document.createElement('iframe');
-        frame.style.display = 'none';
-        frame.src = `${options.blogUrl}/members/gateway`;
-        frame.onload = function () {
-            resolve(layer0(frame));
-        };
-        document.body.appendChild(frame);
-    }).then(function (gateway) {
+module.exports = function layer1(options) {
+    var members = {
+        getToken,
+        signout,
+        signin,
+        signup,
+        requestPasswordReset,
+        resetPassword,
+        verifyEmail,
+        bus: new events()
+    };
+
+    var loadGateway = loadFrame(options.gatewayUrl, options.container).then(function (frame) {
+        var gateway = layer0(frame);
+        var init = gatewayFn('init');
         gateway.listen(function (data) {
-            bus.emit(data.event, data.payload);
+            members.bus.emit(data.event, data.payload);
         });
-        return gateway;
+        return init(gateway).then(function () {
+            return gateway;
+        })
     });
 
-    var loadAuth = new Promise(function (resolve) {
+    function getToken({audience}) {
+        return loadGateway.then(gatewayFn('getToken', {audience}));
+    }
+
+    function signout() {
+        return loadGateway.then(gatewayFn('signout'));
+    }
+
+    function signin({email, password}) {
+        return loadGateway.then(gatewayFn('signin', {email, password}));
+    }
+
+    function signup({name, email, password}) {
+        return loadGateway.then(gatewayFn('signin', {name, email, password}));
+    }
+
+    function requestPasswordReset({email}) {
+        return loadGateway.then(gatewayFn('request-password-reset', {email}));
+    }
+
+    function resetPassword({token, password}) {
+        return loadGateway.then(gatewayFn('reset-password', {token, password}));
+    }
+
+    function verifyEmail({token}) {
+        return loadGateway.then(gatewayFn('verify-email', {token}));
+    }
+
+    return members;
+}
+
+function gatewayFn(method, opts = {}) {
+    return function (gateway) {
+        return new Promise(function (resolve, reject) {
+            gateway.call(method, opts, function (err, res) {
+                if (err) {
+                    reject(err);
+                }
+                resolve(res);
+            });
+        });
+    }
+}
+
+function loadFrame(src, container = document.body) {
+    return new Promise(function (resolve) {
         const frame = document.createElement('iframe');
-        frame.style.position = 'fixed';
         frame.style.display = 'none';
-        frame.style.width = '100%';
-        frame.style.height = '100%';
-        frame.style.background = 'transparent';
-        frame.style.top = '0';
-        frame.style['z-index'] = '9999';
-        frame.src = `${options.blogUrl}/members/auth`;
+        frame.src = src;
         frame.onload = function () {
             resolve(frame);
         };
-        document.body.appendChild(frame);
+        container.appendChild(frame);
     });
-
-    return {
-        getToken: function getToken() {
-            return loadGateway.then(function (gateway) {
-                return new Promise(function (resolve, reject) {
-                    gateway.call('getToken', {}, function (err, token) {
-                        if (err) {
-                            reject(err);
-                        }
-                        resolve(token);
-                    });
-                });
-            });
-        },
-
-        login: function login() {
-            return loadAuth.then(function (frame) {
-                frame.style.display = 'block';
-                return new Promise(function (resolve) {
-                    bus.on('signedin', function self() {
-                        bus.off('signedin', self);
-                        resolve(true);
-                    });
-                });
-            });
-        },
-
-        logout: function logout() {
-            return loadGateway.then(function (gateway) {
-                return new Promise(function (resolve, reject) {
-                    gateway.call('signout', {}, function (err, successful) {
-                        if (err) {
-                            reject(err);
-                        }
-                        resolve(successful);
-                    });
-                });
-            });
-        }
-    };
 }
-
-module.exports.create = create;
