@@ -822,6 +822,12 @@ DataGenerator.forKnex = (function () {
         },
         {
             id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[4].id,
+            author_id: _.find(DataGenerator.Content.users, {slug: 'slimer-mcectoplasm'}).id,
+            sort_order: 1
+        },
+        {
+            id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[5].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0

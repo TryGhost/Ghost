@@ -836,7 +836,7 @@ describe('Public API', function () {
                 // Each user should have the correct count
                 _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
                 _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
                 _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
@@ -850,8 +850,8 @@ describe('Public API', function () {
                 ids.should.eql([
                     testUtils.DataGenerator.Content.users[1].id,
                     testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[7].id,
+                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[0].id
                 ]);
 

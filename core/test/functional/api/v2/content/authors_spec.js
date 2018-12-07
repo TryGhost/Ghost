@@ -147,7 +147,7 @@ describe('Authors Content API V2', function () {
                 // Each user should have the correct count
                 _.find(jsonResponse.authors, {slug:'joe-bloggs'}).count.posts.should.eql(4);
                 _.find(jsonResponse.authors, {slug:'contributor'}).count.posts.should.eql(0);
-                _.find(jsonResponse.authors, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
+                _.find(jsonResponse.authors, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
                 _.find(jsonResponse.authors, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug:'ghost'}).count.posts.should.eql(7);
@@ -161,8 +161,8 @@ describe('Authors Content API V2', function () {
                 ids.should.eql([
                     testUtils.DataGenerator.Content.users[1].id,
                     testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[7].id,
+                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[0].id
                 ]);
 
