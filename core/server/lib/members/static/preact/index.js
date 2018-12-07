@@ -69,6 +69,9 @@ export default class App extends Component {
             case 'password-reset-sent':
                 this.resendPasswordResetEmail(this.state.formData)
                 break;
+            case 'reset-password':
+                this.resetPassword(this.state.formData)
+                break;
         }
         return false;
     }
@@ -102,6 +105,15 @@ export default class App extends Component {
     }
 
     resendPasswordResetEmail({ email }) {
+        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
+        //     if (err || successful) {
+        //         console.log("Unable to send email", err);
+        //     }
+        //     console.log("Email sent");
+        // });
+    }
+
+    resetPassword({ password }) {
         // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
         //     if (err || successful) {
         //         console.log("Unable to send email", err);
@@ -189,6 +201,12 @@ export default class App extends Component {
                 hash = 'signin';
                 break;
             case 'password-reset-sent':
+                mainTitle = 'Reset password';
+                ctaTitle = '';
+                ctaLabel = 'Log in';
+                hash = 'signin';
+                break;
+            case 'reset-password':
                 mainTitle = 'Reset password';
                 ctaTitle = '';
                 ctaLabel = 'Log in';
@@ -311,6 +329,10 @@ export default class App extends Component {
             case 'password-reset-sent':
                 buttonLabel = 'Resend email';
                 formElements = [formText, this.renderFormSubmit({formType, buttonLabel})];
+                break;
+            case 'reset-password':
+                buttonLabel = 'Set password';
+                formElements = [passwordInput, this.renderFormSubmit({formType, buttonLabel})];
                 break;
         }
         return (
