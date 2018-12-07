@@ -40,7 +40,9 @@ module.exports = function MembersApi({
     apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
-            res.writeHead(401);
+            res.writeHead(401, {
+                'Set-Cookie': removeCookie()
+            });
             return res.end();
         }
 

@@ -31,7 +31,9 @@
             })
         }).then((res) => {
             if (!res.ok) {
-                window.localStorage.removeItem('signedin');
+                if (res.status === 401) {
+                    window.localStorage.removeItem('signedin');
+                }
                 return null;
             }
             window.localStorage.setItem('signedin', true);
