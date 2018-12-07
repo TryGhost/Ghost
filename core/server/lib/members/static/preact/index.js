@@ -11,7 +11,8 @@ function getFreshState() {
     console.log({hash, formType, query})
     return {
         formData: {},
-        formType
+        formType,
+        showError: false
     };
 }
 
@@ -109,6 +110,60 @@ export default class App extends Component {
         // });
     }
 
+    showErrorType(errorType) {
+        if (!this.state.showError) {
+            return false;
+        }
+        let value = '';
+        switch(errorType) {
+            case 'email-not-found':
+                return false;
+            case 'no-password':
+                value = this.state.formData['password'];
+                return (!value);
+            case 'no-email':
+                value = this.state.formData['email'];
+                return (!value);
+            case 'no-name':
+                value = this.state.formData['name'];
+                return (!value);
+            case 'invalid-credentials':
+                return false;
+            case 'email-exists':
+                return false;
+        }
+    }
+
+    renderError({errorType, formType}) {
+        if (this.showErrorType(errorType)) {
+            let errorLabel = '';
+            switch(errorType) {
+                case 'email-not-found':
+                    errorLabel = "We couldn't find user with this email";
+                    break;
+                case 'no-password':
+                    errorLabel = "Enter password";
+                    break;
+                case 'no-email':
+                    errorLabel = "Enter email";
+                    break;
+                case 'no-name':
+                    errorLabel = "Enter name";
+                    break;
+                case 'invalid-credentials':
+                    errorLabel = "Invalid credentials";
+                    break;
+                case 'email-exists':
+                    errorLabel = "Email already exists";
+                    break;
+            }
+            return (
+                <span style={{color: 'red'}}> {errorLabel} </span>
+            )
+        }
+        return null;
+    }
+
     renderFormHeaders(formType) {
         let mainTitle = '';
         let ctaTitle = '';
@@ -181,6 +236,7 @@ export default class App extends Component {
                     <label for={ name }><i>{icon}</i> { label }</label>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
+                <span> {this.renderError({errorType: `no-${name}`, formType})} </span>
             </div>
         )
     }
@@ -193,10 +249,16 @@ export default class App extends Component {
         )
     }
 
+    onSubmitClick(e) {
+        this.setState({
+            showError: true
+        });
+    }
+
     renderFormSubmit({buttonLabel, formType}) {
         return (
             <div className="mt8">
-                <button type="submit" name={ formType } className="gm-btn-blue">{ buttonLabel }</button>
+                <button type="submit" name={ formType } className="gm-btn-blue" onClick={(e) => this.onSubmitClick(e)}>{ buttonLabel }</button>
             </div>
         )
     }
