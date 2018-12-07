@@ -8,30 +8,17 @@ function createMember({name, email, password}) {
     return models.Member.add({
         name,
         email,
-        password: {
-            secret: password
-        }
-    }, {
-        withRelated: ['password']
+        password
     }).then((member) => {
         return member.toJSON();
     });
 }
 
-function updateMember(member, {name, email, password}) {
+function updateMember(member, newData) {
     return models.Member.findOne(member, {
         require: true
     }).then(({id}) => {
-        return models.Member.edit({
-            name,
-            email,
-            password: {
-                secret: password
-            }
-        }, {
-            id,
-            withRelated: ['password']
-        });
+        return models.Member.edit(newData, {id});
     }).then((member) => {
         return member.toJSON();
     });
@@ -47,10 +34,9 @@ function getMember(member) {
 
 function validateMember({email, password}) {
     return models.Member.findOne({email}, {
-        withRelated: ['password'],
         require: true
     }).then((member) => {
-        return member.related('password').compare(password).then((res) => {
+        return member.comparePassword(password).then((res) => {
             if (!res) {
                 throw new Error('Password is incorrect');
             }
