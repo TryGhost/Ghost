@@ -7,6 +7,15 @@
 
 /* Modal */
 /* ------------------------------------------------------------ */
+.gm-page-overlay {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    overflow-y: scroll;
+    background: rgba(10, 17, 23, 0.9);
+    animation: fadeInOverlay 0.2s ease;
+}
+
 .gm-modal-container {
     position: relative;
     top: 50%;
@@ -22,6 +31,11 @@
     padding: 44px 44px 48px;
     box-shadow: var(--box-shadow-base);
     animation: openModal 0.6s ease;
+}
+
+@keyframes fadeInOverlay {
+    from {opacity: 0;}
+    to {opacity: 1;}
 }
 
 @keyframes openModal { /* Safari and Chrome */

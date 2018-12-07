@@ -363,7 +363,7 @@ export default class App extends Component {
 
     render() {
         return (
-            <div className="gm-auth-page">
+            <div className="gm-page-overlay">
                 {this.renderFormComponent()}
             </div>
         );
