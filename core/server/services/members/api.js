@@ -33,6 +33,12 @@ function updateMember(member, {name, email, password}) {
     });
 }
 
+function getMember(member) {
+    return models.Member.findOne(member, {
+        require: true
+    })
+}
+
 function validateMember({email, password}) {
     return models.Member.findOne({email}, {
         withRelated: ['password'],
@@ -87,6 +93,7 @@ const api = MembersApi({
     },
     validateAudience,
     createMember,
+    getMember,
     validateMember,
     updateMember,
     sendEmail
