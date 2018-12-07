@@ -1,54 +1,91 @@
 const DomReady = require('domready');
 const GhostContentApi = require('@tryghost/content-api');
-const GhostMembersLayer2 = require('@tryghost/members-layer2');
+const layer2 = require('@tryghost/members-layer2');
 
-const fetchAndLoadContent = (hostUrl, postId, token) => {
-    const postContentDiv = document.querySelector("[data-members-resource-type='post']");
-    if (!postContentDiv) {
-        return;
-    }
-    const api = GhostContentApi.create({
-        host: hostUrl,
-        version: 'v2',
-        key: ''
-    });
-
-    api.posts.read({ id: postId }, {}, token).then((post) => {
-        postContentDiv.innerHTML = post.html;
-        console.info('Inserted post data from content API', post);
-    }).catch((err) => {
-        console.error("Failed to fetch data from content API", err);
-    });
-};
-
-
-const init = (blogUrl, postId) => {
-    let hostUrl = `${blogUrl}/ghost`;
-    GhostMembersLayer2.init({
-        reload: true,
-        blogUrl
-    }).then(({getToken}) => {
-        getToken().then((token) => {
-            if (token) {
-                fetchAndLoadContent(hostUrl, postId, token);
-            }
-        })
-    });
+function reload() {
+    window.location.reload();
 }
 
+function show (el) {
+    el.style.display = 'block';
+}
+function hide (el) {
+    el.style.display = 'none';
+}
+
+const version = 'v2';
+
 DomReady(function () {
-    let postDataObject = document.querySelector("[data-members-resource-type='post']");
-    let postId = postDataObject && postDataObject.getAttribute('data-members-resource-id');
-    const blogUrl = window.blogUrl;
-    if (blogUrl && postId) {
-        init(blogUrl, postId);
-    } else {
-        GhostMembersLayer2.init({reload: true, blogUrl});
+    const members = layer2({membersUrl: window.membersUrl});
+
+    const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
+
+    if (hashMatch && hash === 'reset-password') {
+        const [tokenMatch, token] = query.match(/token=([a-zA-z-_]+.[a-zA-Z-_]+.[a-zA-Z-_]+)/) || [];
+        if (tokenMatch) {
+            return members.resetPassword({token})
+                .then(reload);
+        }
     }
+
+    const membersContentElements = Array.from(document.querySelectorAll("[data-members]")) // TODO use data-members-content;
+
+    var signinBtn = document.querySelector('[data-members-signin]');
+    var signinCta = document.querySelector('[data-members-signin-cta]');
+    var signoutBtn = document.querySelector('[data-members-signout]');
+
+    members.on('signedin', function () {
+        show(signoutBtn);
+        hide(signinBtn);
+    });
+
+    members.on('signedout', function () {
+        show(signinBtn);
+        hide(signoutBtn);
+    });
+
+    function signout(event) {
+        event.preventDefault();
+        members.signout()
+            .then(reload);
+    }
+
+    function signin(event) {
+        event.preventDefault();
+        members.signin()
+            .then(reload);
+    }
+
+    signoutBtn.addEventListener('click', signout);
+    signinBtn.addEventListener('click', signin);
+    signinCta.addEventListener('click', signin);
+
+    membersContentElements.forEach(function (element) {
+        console.log(element);
+        const resourceType = element.getAttribute('data-members-resource-type');
+        const resourceId = element.getAttribute('data-members-resource-id');
+        const host = element.getAttribute('data-members-content-host');
+
+        const api = GhostContentApi.create({
+            host,
+            version
+        });
+
+        const audience = new URL(host).origin
+        console.log(audience);
+        members.getToken({audience}).then((token) => {
+            console.log(token);
+            if (!token) {
+                return;
+            }
+
+            console.log({resourceType, resourceId});
+
+            api[resourceType].read({ id: resourceId }, {}, token).then(({html}) => {
+                element.innerHTML = html;
+            }).catch((err) => {
+                element.innerHTML = err.message;
+            });
+        });
+    });
 });
-
-console.info("Initialized members script...");
-
-module.exports = {
-    init: init
-};
