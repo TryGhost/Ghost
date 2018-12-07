@@ -115,6 +115,9 @@ export default class App extends Component {
     }
 
     resetPassword({ password }) {
+        const [hash, formType, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || ['#signin?', 'signin', ''];
+        const queryParams = new URLSearchParams(query);
+        const token = queryParams.get('token') || '';
         this.gatewayFrame.call('reset-password', {password, token}, function (err, successful) {
              if (err || successful) {
                  console.log("Unable to send email", err);
