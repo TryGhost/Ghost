@@ -95,7 +95,7 @@ module.exports = function MembersApi({
 
         try {
             jwt.verify(token, publicKey, {
-                algorithm: 'RS515',
+                algorithm: 'RS512',
                 issuer
             });
         } catch (err) {
@@ -118,7 +118,7 @@ module.exports = function MembersApi({
 
         try {
             jwt.verify(token, publicKey, {
-                algorithm: 'RS515',
+                algorithm: 'RS512',
                 issuer
             });
         } catch (err) {
