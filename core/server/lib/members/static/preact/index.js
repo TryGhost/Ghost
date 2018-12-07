@@ -119,10 +119,10 @@ export default class App extends Component {
         const queryParams = new URLSearchParams(this.state.query);
         const token = queryParams.get('token') || '';
         this.gatewayFrame.call('reset-password', {password, token}, function (err, successful) {
-             if (err || successful) {
-                 console.log("Unable to send email", err);
-             }
-             console.log("Email sent");
+            if (err || successful) {
+                console.log("Unable to send email", err);
+            }
+            console.log("Email sent");
         });
     }
 

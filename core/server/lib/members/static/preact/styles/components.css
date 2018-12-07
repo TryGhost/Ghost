@@ -100,16 +100,27 @@ button:hover {
 
 /* Forms inputs */
 /* ------------------------------------------------------------ */
-::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-    color: var(--white);
+
+/* Change Autocomplete styles in Chrome*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 40px #FFF inset;
 }
-::-moz-placeholder { /* Firefox 19+ */
-    color: var(--white);
-}
-:-ms-input-placeholder { /* IE 10+ */
-    color: var(--white);
-}
-:-moz-placeholder { /* Firefox 18- */
+
+::-webkit-input-placeholder,
+::-moz-placeholder,
+:-ms-input-placeholder,
+:-moz-placeholder {
     color: var(--white);
 }
 
@@ -126,12 +137,11 @@ button:hover {
     height: 38px;
     -webkit-appearance: none;
     box-sizing: border-box;
-    box-shadow: none;
     background: var(--white);
     height: 44px;
     width: 100%;
     outline: none;
-    transition: all 0.15s ease-in-out;
+    transition: border 0.15s ease-in-out;
     padding: 0 0 1px; /* Fixes jump because of the border change */
     letter-spacing: 0.2px;
 }
