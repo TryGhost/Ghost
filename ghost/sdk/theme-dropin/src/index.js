@@ -24,6 +24,9 @@ DomReady(function () {
         const [tokenMatch, token] = query.match(/token=([a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+)/) || [];
         if (tokenMatch) {
             return members.resetPassword({token})
+                .then(() => {
+                    window.location.hash = '';
+                })
                 .then(reload);
         }
     }
