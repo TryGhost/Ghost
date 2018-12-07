@@ -7,7 +7,7 @@ const storage = window.localStorage;
 var layer0 = require('./layer0');
 
 function getFreshState() {
-    const [hash, formType, query] = window.location.hash.match(/^#(\w[\w']*(?:-\w+)*)\??(.*)$/) || ['#signin?', 'signin', ''];
+    const [hash, formType, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || ['#signin?', 'signin', ''];
     console.log({hash, formType, query})
     return {
         formData: {},
