@@ -199,3 +199,11 @@ select:-webkit-autofill:active {
 .gm-floating-input input:focus + label {
     top: -12px;
 }
+
+.gm-input-errortext {
+    color: var(--red);
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+    text-align: right;
+    margin: 4px 0 0;
+}

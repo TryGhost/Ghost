@@ -174,7 +174,7 @@ export default class App extends Component {
                     break;
             }
             return (
-                <span style={{color: 'red'}}> {errorLabel} </span>
+                <span>{ errorLabel }</span>
             )
         }
         return null;
@@ -239,8 +239,9 @@ export default class App extends Component {
         let value = this.state.formData[name];
         let className = "";
         let forgot = (type === 'password' && formType === 'signin');
+        let inputError = this.renderError({ errorType: `no-${name}`, formType });
 
-        className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "");
+        className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "") + (inputError ? " gm-error" : "");
 
         return (
             <div className="mt10">
@@ -258,7 +259,7 @@ export default class App extends Component {
                     <label for={ name }><i>{icon}</i> { label }</label>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
-                <span> {this.renderError({errorType: `no-${name}`, formType})} </span>
+                <div class="gm-input-errortext">{ inputError }</div>
             </div>
         )
     }
@@ -341,7 +342,7 @@ export default class App extends Component {
         }
         return (
             <div className="flex flex-column nt1">
-                <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)}>
+                <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)} noValidate>
                     { formElements }
                 </form>
             </div>
