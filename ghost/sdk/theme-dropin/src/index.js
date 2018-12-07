@@ -21,7 +21,7 @@ DomReady(function () {
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
     if (hashMatch && hash === 'reset-password') {
-        const [tokenMatch, token] = query.match(/token=([a-zA-z-_]+.[a-zA-Z-_]+.[a-zA-Z-_]+)/) || [];
+        const [tokenMatch, token] = query.match(/token=([a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+)/) || [];
         if (tokenMatch) {
             return members.resetPassword({token})
                 .then(reload);
