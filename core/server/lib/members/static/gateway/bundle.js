@@ -108,8 +108,8 @@
         });
     });
 
-    addMethod('reset-password', function signout({email}) {
-        return fetch(`${membersApi}/reset-password`, {
+    addMethod('request-password-reset', function signout({email}) {
+        return fetch(`${membersApi}/request-password-reset`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -123,8 +123,8 @@
         });
     });
 
-    addMethod('verify', function signout({token, password}) {
-        return fetch(`${membersApi}/verify`, {
+    addMethod('reset-password', function signout({token, password}) {
+        return fetch(`${membersApi}/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -67,7 +67,7 @@ module.exports = function MembersApi({
         next();
     }
 
-    apiRouter.post('/reset-password', getData('email'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
         getMember({email}).then((member) => {
@@ -88,7 +88,7 @@ module.exports = function MembersApi({
         });
     });
 
-    apiRouter.post('/verify', getData('token', 'password'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
         try {
