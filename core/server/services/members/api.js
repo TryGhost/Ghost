@@ -13,6 +13,8 @@ function createMember({name, email, password}) {
         }
     }, {
         withRelated: ['password']
+    }).then((member) => {
+        return member.toJSON();
     });
 }
 
@@ -30,13 +32,17 @@ function updateMember(member, {name, email, password}) {
             id,
             withRelated: ['password']
         });
+    }).then((member) => {
+        return member.toJSON();
     });
 }
 
 function getMember(member) {
     return models.Member.findOne(member, {
         require: true
-    })
+    }).then((member) => {
+        return member.toJSON();
+    });
 }
 
 function validateMember({email, password}) {
@@ -50,6 +56,8 @@ function validateMember({email, password}) {
             }
             return member;
         });
+    }).then((member) => {
+        return member.toJSON();
     });
 }
 
