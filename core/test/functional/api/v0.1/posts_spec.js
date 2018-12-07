@@ -298,7 +298,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve pages filtered by related tag', function (done) {
+            it('can retrieve posts filtered by related tag', function (done) {
                 request.get(localUtils.API.getApiQuery(`posts/?filter=tags.slug:[kitchen-sink]`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -321,8 +321,8 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve pages filtered by related author', function (done) {
-                request.get(localUtils.API.getApiQuery(`posts/?filter=authors.slug:[joe-bloggs]`))
+            it('can retrieve posts filtered by related author', function (done) {
+                request.get(localUtils.API.getApiQuery(`posts/?filter=authors.slug:joe-bloggs`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -344,7 +344,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve pages filtered by primary_tag', function (done) {
+            it('can retrieve posts filtered by primary_tag', function (done) {
                 request.get(localUtils.API.getApiQuery(`posts/?filter=primary_tag:kitchen-sink`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
@@ -367,7 +367,7 @@ describe('Post API', function () {
                     });
             });
 
-            it('can retrieve pages filtered by primary_author', function (done) {
+            it('can retrieve posts filtered by primary_author', function (done) {
                 request.get(localUtils.API.getApiQuery(`posts/?filter=primary_author:joe-bloggs`))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)
                     .expect('Content-Type', /json/)
