@@ -113,29 +113,6 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/verify-email', getData('token'), ssoOriginCheck, (req, res) => {
-        const {token} = req.data;
-
-        try {
-            jwt.verify(token, publicKey, {
-                algorithm: 'RS512',
-                issuer
-            });
-        } catch (err) {
-            res.writeHead(401);
-            return res.end();
-        }
-
-        const id = jwt.decode(token).sub;
-
-        getMember({id}).then((member) => {
-            res.writeHead(200, {
-                'Set-Cookie': setCookie(member)
-            });
-            res.end();
-        }).catch(handleError(401, res));
-    });
-
     apiRouter.post('/signup', getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
