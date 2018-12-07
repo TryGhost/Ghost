@@ -61,23 +61,6 @@ function validateMember({email, password}) {
     });
 }
 
-function sendEmail(member, {token}) {
-    /* eslint-disable */
-    console.log(`
-  From: members@ghost.com
-  To: ${member.email}
-
-  Subject: ${member.password ? 'Password reset' : 'Confirm email address'}
-
-  Hi ${member.name},
-
-  The token is
-      ${token}
-`);
-    /* eslint-enable */
-    return Promise.resolve();
-}
-
 function validateAudience({audience, origin}) {
     if (audience === origin) {
         return Promise.resolve();
@@ -88,8 +71,27 @@ function validateAudience({audience, origin}) {
 const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
+const passwordResetUrl = config.get('url');
 const issuer = config.get('url');
 const ssoOrigin = new URL(config.get('url')).origin;
+
+function sendEmail(member, {token}) {
+    /* eslint-disable */
+    console.log(`
+  From: members@ghost.com
+  To: ${member.email}
+
+  Subject: ${member.password ? 'Password reset' : 'Confirm email address'}
+
+  Hi ${member.name},
+
+  The link to reset your password is:
+
+      ${passwordResetUrl}#reset-password?token=${token}
+`);
+    /* eslint-enable */
+    return Promise.resolve();
+}
 
 const api = MembersApi({
     config: {
