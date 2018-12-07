@@ -78,7 +78,7 @@ export default class App extends Component {
 
     signin({ email, password }) {
         this.gatewayFrame.call('signin', {email, password}, function (err, successful) {
-            if (err || successful) {
+            if (err || !successful) {
                 console.log("Unable to login", err);
             }
             console.log("Successfully logged in");
@@ -87,7 +87,7 @@ export default class App extends Component {
 
     signup({ name, email, password }) {
         this.gatewayFrame.call('signup', { name, email, password }, function (err, successful) {
-            if (err || successful) {
+            if (err || !successful) {
                 console.log("Unable to signup", err);
             }
             console.log("Successfully signed up");
@@ -95,31 +95,32 @@ export default class App extends Component {
     }
 
     requestPasswordReset({ email }) {
-        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
-        //     if (err || successful) {
-        //         console.log("Unable to send email", err);
-        //     }
-        //     console.log("Email sent");
-        // });
-        window.location.hash = 'password-reset-sent';
+        this.gatewayFrame.call('request-password-reset', {email}, function (err, successful) {
+            if (err || !successful) {
+                console.log("Unable to send email", err);
+            }
+            window.location.hash = 'password-reset-sent';
+            console.log("Email sent");
+        });
     }
 
     resendPasswordResetEmail({ email }) {
-        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
-        //     if (err || successful) {
-        //         console.log("Unable to send email", err);
-        //     }
-        //     console.log("Email sent");
-        // });
+        this.gatewayFrame.call('request-password-reset', {email}, function (err, successful) {
+            if (err || !successful) {
+                console.log("Unable to send email", err);
+            }
+            window.location.hash = 'password-reset-sent';
+            console.log("Email sent");
+        });
     }
 
     resetPassword({ password }) {
-        // this.gatewayFrame.call('requestPasswordReset', {email}, function (err, successful) {
-        //     if (err || successful) {
-        //         console.log("Unable to send email", err);
-        //     }
-        //     console.log("Email sent");
-        // });
+        this.gatewayFrame.call('reset-password', {password, token}, function (err, successful) {
+             if (err || successful) {
+                 console.log("Unable to send email", err);
+             }
+             console.log("Email sent");
+        });
     }
 
     showErrorType(errorType) {
