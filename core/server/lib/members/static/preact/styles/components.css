@@ -21,17 +21,22 @@
     border-radius: 4px;
     padding: 44px 44px 48px;
     box-shadow: var(--box-shadow-base);
-    animation: openModal 0.3s ease-in-out;
+    animation: openModal 0.6s ease;
 }
 
 @keyframes openModal { /* Safari and Chrome */
-    from {
+    0% {
         opacity: 0;
-        transform: translateY(20px) scale(0.9);
+        transform: translateY(25px) scale(0.85);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0px) scale(1.0);
+
+    40% {
+        opacity: 1.0;
+        transform: translateY(-8px) scale(1.04);
+    }
+
+    100% {
+        transform: translateY(0) scale(1.0);
     }
 }
 
@@ -65,7 +70,7 @@ button {
     padding: 0 15px;
     border-radius: 4px;
     outline: none;
-    transition: all 0.15s ease-in-out;
+    transition: all var(--animation-speed-f1) ease-in-out;
     position: relative;
     letter-spacing: 0.2px;
 }
@@ -96,7 +101,7 @@ button:hover {
 
 .gm-btn-blue:before {
     content: "";
-    transition: all .4s ease;
+    transition: all var(--animation-speed-s1) ease;
     position: absolute;
     top: 0;
     right: 0;
@@ -150,8 +155,8 @@ select:-webkit-autofill:active {
     height: 44px;
     width: 100%;
     outline: none;
-    transition: border 0.15s ease-in-out;
-    padding: 0 0 1px; /* Fixes jump because of the border change */
+    transition: border var(--animation-speed-f1) ease-in-out;
+    padding: 0 0 1px 26px; /* 1px bottom padding fixes jump that's caused by the border change */
     letter-spacing: 0.2px;
 }
 
@@ -161,7 +166,7 @@ select:-webkit-autofill:active {
 
 .gm-floating-input input:focus {
     border-bottom: 2px solid var(--blue);
-    padding: 0px;
+    padding: 0 0 0 26px;
 }
 
 .gm-floating-input input.gm-error {
@@ -179,11 +184,18 @@ select:-webkit-autofill:active {
     top: 14px;
     left: 0;
     color: var(--grey);
-    transition: all 0.15s ease-in-out;
+    transition: all var(--animation-speed-base) ease-in-out;
+    transition-delay: 0.15s;
     pointer-events: none;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     font-weight: 500;
+}
+
+.gm-floating-input input.gm-input-filled + label,
+.gm-floating-input input:focus + label {
+    top: -12px;
+    transition-delay: 0s;
 }
 
 .gm-floating-input label i svg {
@@ -191,22 +203,32 @@ select:-webkit-autofill:active {
     height: 16px;
 }
 
-.gm-floating-input label i svg path {
+.gm-floating-input label i svg path,
+.gm-floating-input i svg path {
     stroke: var(--grey);
+}
+
+.gm-floating-input i {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    opacity: 0;
+    transition: all var(--animation-speed-base) ease-in-out;
+    transition-delay: 0s;
+    transform: translateX(-6px);
+}
+
+.gm-floating-input input.gm-input-filled + label + i,
+.gm-floating-input input:focus + label + i {
+    opacity: 1.0;
+    transform: translateX(0px);
+    transition-delay: 0.15s;
 }
 
 .gm-floating-input label i {
     font-style: normal;
     display: inline-block;
     margin: 0 8px 0 0;
-}
-
-.gm-floating-input input.gm-input-filled + label {
-    top: -12px;
-}
-
-.gm-floating-input input:focus + label {
-    top: -12px;
 }
 
 .gm-input-errortext {

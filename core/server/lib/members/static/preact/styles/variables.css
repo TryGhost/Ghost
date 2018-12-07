@@ -104,9 +104,7 @@ Layout use a 4px grid.
 /* Animations */
 :root {
     /* Speed (f: faster, s: slower) */
-    --animation-speed-f1: 0.15s;
-    --animation-speed-base: 0.3s;
+    --animation-speed-f1: 0.18s;
+    --animation-speed-base: 0.25s;
     --animation-speed-s1: 0.45s;
-
-    --animation-easing: ease-in-out;
 }

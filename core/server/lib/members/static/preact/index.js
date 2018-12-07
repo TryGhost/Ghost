@@ -257,6 +257,7 @@ export default class App extends Component {
                         className={ className }
                     />
                     <label for={ name }> { label }</label>
+                    <i>{ icon }</i>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
                 <div class="gm-input-errortext">{ inputError }</div>
@@ -266,8 +267,8 @@ export default class App extends Component {
 
     renderFormText({formType}) {
         return (
-            <div className="mt9">
-                <span> Please check your inbox! </span>
+            <div className="mt8">
+                <p>We’ve sent a recovery email to your inbox. Follow the link in the email to reset your password.</p>
             </div>
         )
     }
@@ -332,7 +333,7 @@ export default class App extends Component {
                 formElements = [emailInput, this.renderFormSubmit({formType, buttonLabel})];
                 break;
             case 'password-reset-sent':
-                buttonLabel = 'Resend email';
+                buttonLabel = 'Resend instructions';
                 formElements = [formText, this.renderFormSubmit({formType, buttonLabel})];
                 break;
             case 'reset-password':

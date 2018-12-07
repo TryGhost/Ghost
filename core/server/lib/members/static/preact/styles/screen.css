@@ -14,6 +14,11 @@ body {
     letter-spacing: 0.2px;
 }
 
+p {
+    margin: 0;
+    line-height: 1.5em;
+}
+
 h1 {
     margin: 0;
     padding: 0;
@@ -31,7 +36,7 @@ h4 {
 
 a {
     color: var(--blue);
-    transition: color 0.2s ease-in-out;
+    transition: color var(--animation-speed-f1) ease-in-out;
     cursor: pointer;
     text-decoration: none;
 }
@@ -83,6 +88,7 @@ a:hover {
     font-weight: normal;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
+    color: var(--grey-d1);
 }
 
 .gm-auth-header a {
