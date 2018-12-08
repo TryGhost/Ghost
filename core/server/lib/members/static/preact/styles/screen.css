@@ -52,17 +52,6 @@ a:hover {
 }
 
 
-/* Layout */
-/* ------------------------------------------------------------ */
-.gm-auth-page {
-    width: 100%;
-    height: 100vh;
-    position: fixed;
-    overflow-y: scroll;
-    background: rgba(10, 17, 23, 0.9);
-}
-
-
 /* Auth Modal */
 /* --------------------------------------------- */
 .gm-logo {
