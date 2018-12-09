@@ -116,7 +116,8 @@ var config = require('./core/server/config'),
                         'core/*.js',
                         'core/server/*.js',
                         'core/server/**/*.js',
-                        '!core/server/public/**/*.js'
+                        '!core/server/public/**/*.js',
+                        '!core/server/lib/members/static/preact/**/*.js'
                     ]
                 },
                 test: {
