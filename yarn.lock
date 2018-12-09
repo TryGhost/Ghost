@@ -9,9 +9,9 @@
     debug "^4.1.0"
     lodash "^4.17.10"
 
-"@nexes/mongo-utils@https://github.com/NexesJS/mongo-utils/tarball/673637067f342edee343c57b4ff13afb12a5c7f6":
-  version "0.0.0"
-  resolved "https://github.com/NexesJS/mongo-utils/tarball/673637067f342edee343c57b4ff13afb12a5c7f6#5ed9702c1fd1679eded87f8d93cd518cf96c347d"
+"@nexes/mongo-utils@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.2.0.tgz#28b483e88f2433ee269aa6b91f7339b7ab1e7d45"
   dependencies:
     bluebird "^3.5.3"
     ghost-ignition "^2.9.6"
@@ -21,14 +21,13 @@
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
 
-"@nexes/nql@https://github.com/gargol/NQL/tarball/9589236996a6f58b385628e02063f230b97b4119":
-  version "0.1.0"
-  resolved "https://github.com/gargol/NQL/tarball/9589236996a6f58b385628e02063f230b97b4119#ac71c5a61c50ff6b15288e9a1c3afceac2497a8c"
+"@nexes/nql@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.2.0.tgz#885620a0c8298897874db6f30d8736eb3e66323b"
   dependencies:
     "@nexes/mongo-knex" "0.2.0"
-    "@nexes/mongo-utils" "https://github.com/NexesJS/mongo-utils/tarball/673637067f342edee343c57b4ff13afb12a5c7f6"
+    "@nexes/mongo-utils" "0.2.0"
     "@nexes/nql-lang" "0.0.1"
-    lodash.clonedeep "4.5.0"
     mingo "2.2.2"
 
 "@segment/loosely-validate-event@^1.1.2":
@@ -3672,7 +3671,7 @@ lodash.clone@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.clone/-/lodash.clone-4.5.0.tgz#195870450f5a13192478df4bc3d23d2dea1907b6"
 
-lodash.clonedeep@4.5.0, lodash.clonedeep@^4.5.0:
+lodash.clonedeep@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
 

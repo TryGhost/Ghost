@@ -32,7 +32,7 @@
     "cli": "^1.9.0"
   },
   "dependencies": {
-    "@nexes/nql": "https://github.com/gargol/NQL/tarball/9589236996a6f58b385628e02063f230b97b4119",
+    "@nexes/nql": "0.2.0",
     "amperize": "0.3.8",
     "analytics-node": "2.4.1",
     "archiver": "1.3.0",
