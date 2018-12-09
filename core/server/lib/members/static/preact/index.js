@@ -368,4 +368,8 @@ export default class App extends Component {
             </div>
         );
     }
+
+    close(event) {
+        window.parent.postMessage('pls-close-auth-popup', '*');
+    }
 }
