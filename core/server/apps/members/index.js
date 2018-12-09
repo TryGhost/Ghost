@@ -1,9 +1,12 @@
 const membersService = require('../../services/members');
+const labs = require('../../services/labs');
 
 module.exports = {
     activate() {},
 
     setupMiddleware(router) {
-        router.use('/members', membersService.api.staticRouter);
+        if (labs.isSet('members')) {
+            router.use('/members', membersService.api.staticRouter);
+        }
     }
 };
