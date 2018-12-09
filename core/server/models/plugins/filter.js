@@ -87,7 +87,7 @@ const filter = function filter(Bookshelf) {
             } catch (err) {
                 throw new common.errors.BadRequestError({
                     message: common.i18n.t('errors.models.plugins.filter.errorParsing'),
-                    context: err.message
+                    err: err
                 });
             }
         }

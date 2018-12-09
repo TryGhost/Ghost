@@ -199,6 +199,16 @@ pagination = function pagination(bookshelf) {
 
                         throw err;
                     });
+            }).catch((err) => {
+                // CASE: SQL syntax is incorrect
+                if (err.errno === 1054 || err.errno === 1) {
+                    throw new common.errors.BadRequestError({
+                        message: common.i18n.t('errors.models.general.sql'),
+                        err: err
+                    });
+                }
+
+                throw err;
             });
         }
     });
