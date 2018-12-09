@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('models:plugins:filter');
+const common = require('../../lib/common');
 
 const RELATIONS = {
     tags: {
@@ -74,14 +75,21 @@ const filter = function filter(Bookshelf) {
                 }
             }
 
-            this.query((qb) => {
-                nql(custom, {
-                    relations: RELATIONS,
-                    expansions: EXPANSIONS,
-                    overrides: overrides,
-                    defaults: defaults
-                }).querySQL(qb);
-            });
+            try {
+                this.query((qb) => {
+                    nql(custom, {
+                        relations: RELATIONS,
+                        expansions: EXPANSIONS,
+                        overrides: overrides,
+                        defaults: defaults
+                    }).querySQL(qb);
+                });
+            } catch (err) {
+                throw new common.errors.BadRequestError({
+                    message: common.i18n.t('errors.models.plugins.filter.errorParsing'),
+                    context: err.message
+                });
+            }
         }
     });
 
