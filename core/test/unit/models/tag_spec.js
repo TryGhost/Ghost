@@ -16,7 +16,6 @@ describe('Unit: models/tag', function () {
         sandbox.restore();
     });
 
-    // @NOTE: need to be regenerated once functional tests are passing
     describe('SQL', function () {
         const mockDb = require('mock-knex');
         let tracker;
