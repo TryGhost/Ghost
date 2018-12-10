@@ -1,5 +1,5 @@
 import './styles/members.css';
-import {IconEmail, IconLock, IconName} from './components/icons';
+import {IconEmail, IconLock, IconName, IconClose} from './components/icons';
 import { Component } from 'preact';
 const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
@@ -157,10 +157,10 @@ export default class App extends Component {
                 case 'form-submit':
                     switch(formType) {
                         case 'signin':
-                            errorLabel = "Invalid credentials";
+                            errorLabel = "Wrong email or password";
                             break;
                         case 'signup':
-                            errorLabel = "Email already exists!"
+                            errorLabel = "Email already exists"
                             break;
                     }
             }
@@ -223,7 +223,7 @@ export default class App extends Component {
                         </a>
                     </div>
                 </div>
-                <div class="gm-input-errortext">{ formError }</div>
+                {(formError ? <div class="gm-form-errortext">{ formError }</div> : "")}
             </div>
         )
     }
@@ -236,7 +236,7 @@ export default class App extends Component {
         className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "") + (inputError ? " gm-error" : "");
 
         return (
-            <div className="mt10">
+            <div className="mt8">
                 <div className="gm-floating-input">
                     <input
                         type={ type }
@@ -347,6 +347,7 @@ export default class App extends Component {
         return (
             <div className="gm-modal-container">
                 <div className="gm-modal gm-auth-modal" onClick={(e) => e.stopPropagation()}>
+                    <a className="gm-modal-close" onClick={ (e) => this.close(e)}>{ IconClose }</a>
                     {this.renderFormHeaders(formType)}
                     {this.renderFormSection(formType)}
                 </div>

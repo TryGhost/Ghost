@@ -73,6 +73,10 @@ a:hover {
     padding: 0 0 3px;
 }
 
+.gm-auth-header h1 {
+    font-size: var(--text-xl);
+}
+
 .gm-auth-header h4 {
     font-weight: normal;
     font-size: var(--text-s);
