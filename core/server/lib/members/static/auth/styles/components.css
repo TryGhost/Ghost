@@ -1,0 +1,254 @@
+/* Reusable components */
+/* ------------------------------------------------------------ 
+
+
+*/
+
+
+/* Modal */
+/* ------------------------------------------------------------ */
+.gm-page-overlay {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    overflow-y: scroll;
+    background: rgba(10, 17, 23, 0.9);
+    animation: fadeInOverlay 0.2s ease;
+}
+
+.gm-modal-container {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.gm-modal {
+    position: relative;
+    background: white;
+    margin: 0 auto;
+    width: 332px;
+    border-radius: 4px;
+    padding: 44px 44px 48px;
+    box-shadow: var(--box-shadow-base);
+    animation: openModal 0.6s ease;
+}
+
+@keyframes fadeInOverlay {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes openModal { /* Safari and Chrome */
+    0% {
+        opacity: 0;
+        transform: translateY(25px) scale(0.85);
+    }
+
+    40% {
+        opacity: 1.0;
+        transform: translateY(-8px) scale(1.04);
+    }
+
+    100% {
+        transform: translateY(0) scale(1.0);
+    }
+}
+
+@media (max-width: 440px) {
+    .gm-modal-container {
+        margin: 0;
+        padding: 0;
+        top: 0;
+        transform: none;
+        height: 100vh;
+    }
+    .gm-modal {
+        width: calc(100% - 48px);
+        height: calc(100vh - 48px);
+        padding: 24px;
+        border-radius: 0;
+    }
+}
+
+/* Buttons */
+/* ------------------------------------------------------------ */
+button {
+    width: 100%;
+    height: 48px;
+    font-weight: 500;
+    border: 1px solid var(--grey);
+    color: var(--grey-d3);
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 0 15px;
+    border-radius: 4px;
+    outline: none;
+    transition: all var(--animation-speed-f1) ease-in-out;
+    position: relative;
+    letter-spacing: 0.2px;
+}
+
+button:hover {
+    color: var(--blue-l1);
+}
+
+.gm-btn-blue {
+    background: var(--blue);
+    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
+    color: var(--white);
+    border: none;
+}
+
+.gm-btn-blue:active {
+    background: var(--blue-d1);
+    background: linear-gradient(to bottom, rgb(22, 147, 214) 0%,rgb(0, 118, 182) 100%);
+}
+
+.gm-btn-blue:hover {
+    color: var(--white);
+}
+
+.gm-btn-blue:hover:before {
+    opacity: 0.8;
+}
+
+.gm-btn-blue:before {
+    content: "";
+    transition: all var(--animation-speed-s1) ease;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
+    opacity: 0;
+}
+
+
+/* Forms inputs */
+/* ------------------------------------------------------------ */
+
+/* Change Autocomplete styles in Chrome*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 40px #FFF inset;
+}
+
+::-webkit-input-placeholder,
+::-moz-placeholder,
+:-ms-input-placeholder,
+:-moz-placeholder {
+    color: var(--white);
+}
+
+.gm-floating-input {
+    position: relative;
+}
+
+.gm-floating-input input {
+    font-size: var(--text-base);
+    color: var(--grey-d3);
+    border: none;
+    border-radius: 0px;
+    border-bottom: 1px solid var(--grey-l1);
+    height: 38px;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    background: var(--white);
+    height: 44px;
+    width: 100%;
+    outline: none;
+    transition: border var(--animation-speed-f1) ease-in-out;
+    padding: 0 0 1px 26px; /* 1px bottom padding fixes jump that's caused by the border change */
+    letter-spacing: 0.2px;
+}
+
+.gm-floating-input input:hover {
+    border-bottom: 1px solid var(--grey);
+}
+
+.gm-floating-input input:focus {
+    border-bottom: 2px solid var(--blue);
+    padding: 0 0 0 26px;
+}
+
+.gm-floating-input input.gm-error {
+    border-bottom: 1px solid var(--red);
+}
+
+.gm-floating-input label {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    font-size: var(--text-xs);
+    background: var(--white);
+    padding: 0 0 2px 0;
+    width: 100%;
+    top: 14px;
+    left: 0;
+    color: var(--grey);
+    transition: all var(--animation-speed-base) ease-in-out;
+    transition-delay: 0.15s;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+}
+
+.gm-floating-input input.gm-input-filled + label,
+.gm-floating-input input:focus + label {
+    top: -12px;
+    transition-delay: 0s;
+}
+
+.gm-floating-input label i svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gm-floating-input label i svg path,
+.gm-floating-input i svg path {
+    stroke: var(--grey);
+}
+
+.gm-floating-input i {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    opacity: 0;
+    transition: all var(--animation-speed-base) ease-in-out;
+    transition-delay: 0s;
+    transform: translateX(-6px);
+}
+
+.gm-floating-input input.gm-input-filled + label + i,
+.gm-floating-input input:focus + label + i {
+    opacity: 1.0;
+    transform: translateX(0px);
+    transition-delay: 0.15s;
+}
+
+.gm-floating-input label i {
+    font-style: normal;
+    display: inline-block;
+    margin: 0 8px 0 0;
+}
+
+.gm-input-errortext {
+    color: var(--red);
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+    text-align: right;
+    margin: 4px 0 0;
+}

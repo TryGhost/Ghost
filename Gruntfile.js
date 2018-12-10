@@ -116,7 +116,8 @@ var config = require('./core/server/config'),
                         'core/*.js',
                         'core/server/*.js',
                         'core/server/**/*.js',
-                        '!core/server/public/**/*.js'
+                        '!core/server/public/**/*.js',
+                        '!core/server/lib/members/static/auth/**/*.js'
                     ]
                 },
                 test: {
@@ -351,12 +352,14 @@ var config = require('./core/server/config'),
                 },
 
                 prod: {
-                    'core/client': 'shell:ember:prod'
+                    'core/client': 'shell:ember:prod',
+                    'core/server/lib/members/static/auth': 'shell:preact:prod'
                 },
 
                 watch: {
                     projects: {
-                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"']
+                        'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"'],
+                        'core/server/lib/members/static/auth': ['shell:preact:dev']
                     }
                 }
             },

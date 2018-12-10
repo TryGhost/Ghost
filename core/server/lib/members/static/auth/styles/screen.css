@@ -1,0 +1,115 @@
+/* Global styles */
+/* ------------------------------------------------------------ */
+html {
+    font-size: 62.5%;
+}
+
+html, body {
+    font-family: var(--default-font);
+    color: var(--black);
+}
+
+body {
+    font-size: var(--text-base);
+    letter-spacing: 0.2px;
+}
+
+p {
+    margin: 0;
+    line-height: 1.5em;
+}
+
+h1 {
+    margin: 0;
+    padding: 0;
+    color: var(--grey-d3);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+}
+
+h4 {
+    margin: 0;
+    padding: 0;
+    color: var(--grey-d3);
+    font-size: var(--text-base);
+}
+
+a {
+    color: var(--blue);
+    transition: color var(--animation-speed-f1) ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--blue-d3);
+}
+
+@media (max-width: 500px) {
+    h1 {
+        font-size: var(--text-xl);
+    }
+}
+
+
+/* Auth Modal */
+/* --------------------------------------------- */
+.gm-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 4px;
+    background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
+}
+
+.gm-auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 16px 0 0;
+    padding: 12px 0 0;
+}
+
+.gm-auth-header -cta {
+    padding: 0 0 3px;
+}
+
+.gm-auth-header h4 {
+    font-weight: normal;
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+    color: var(--grey-d1);
+}
+
+.gm-auth-header a {
+    display: block;
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+    padding: 8px;
+    margin: -8px -8px -8px -2px;
+    cursor: pointer;
+    color: var(--blue);
+    white-space: nowrap;
+}
+
+.gm-auth-header a:hover {
+    color: var(--blue-d3);
+}
+
+.gm-forgot-link {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    z-index: 9999;
+    font-size: var(--text-s);
+    letter-spacing: 0.4px;
+}
+
+.gm-floating-input .gm-forgot-input {
+    padding-right: 60px;
+}
+
+@media (max-width: 440px) {
+    h4 {
+        display: none;
+    }
+}
