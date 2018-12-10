@@ -343,7 +343,8 @@ var config = require('./core/server/config'),
                         npmInstall: true
                     },
                     projects: {
-                        'core/client': 'init'
+                        'core/client': 'init',
+                        'core/server/lib/members/static/auth': 'init'
                     }
                 },
 
