@@ -57,6 +57,9 @@ export default class App extends Component {
 
     submitForm(e) {
         e.preventDefault();
+        if (this.hasFrontendError(this.state.formType)) {
+            return false;
+        }
         switch (this.state.formType) {
             case 'signin':
                 this.signin(this.state.formData);
@@ -131,6 +134,23 @@ export default class App extends Component {
                 });
             }
         });
+    }
+
+    hasFrontendError(formType = this.state.formType) {
+        switch(formType) {
+            case 'signin':
+                return (
+                    this.hasError({errorType: 'no-input', data: 'email'}) ||
+                    this.hasError({errorType: 'no-input', data: 'password'})
+                );
+            case 'signup':
+                return (
+                    this.hasError({errorType: 'no-input', data: 'email'}) ||
+                    this.hasError({errorType: 'no-input', data: 'password'}) ||
+                    this.hasError({errorType: 'no-input', data: 'name'})
+                );
+        }
+        return false;
     }
 
     hasError({errorType, data}) {
