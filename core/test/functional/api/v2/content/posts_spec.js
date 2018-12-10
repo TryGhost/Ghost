@@ -168,6 +168,27 @@ describe('Posts', function () {
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                jsonResponse.posts.should.have.length(0);
+
+                done();
+            });
+    });
+
+    it('browse posts with basic page filter should not return pages', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=(page:true,page:false)`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 jsonResponse.posts.should.have.length(11);
 
                 jsonResponse.posts.forEach((post) => {

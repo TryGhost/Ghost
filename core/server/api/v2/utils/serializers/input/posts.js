@@ -34,22 +34,16 @@ module.exports = {
         if (utils.isContentAPI(frame)) {
             // CASE: the content api endpoints for posts should only return non page type resources
             if (frame.options.filter) {
-                if (frame.options.filter.match(/page:\w+\+?/)) {
-                    frame.options.filter = frame.options.filter.replace(/page:\w+\+?/, '');
-                }
-
-                if (frame.options.filter) {
-                    frame.options.filter = frame.options.filter + '+page:false';
-                } else {
-                    frame.options.filter = 'page:false';
-                }
+                frame.options.filter = `${frame.options.filter}+page:false`;
             } else {
                 frame.options.filter = 'page:false';
             }
+
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+
+            // CASE: Members needs to have the tags to check if its allowed access
             if (labs.isSet('members')) {
-                // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
             }
         }
