@@ -118,5 +118,16 @@
         "public_hash": {
             "defaultValue": null
         }
+    },
+    "members": {
+        "members_public_key": {
+            "defaultValue": null
+        },
+        "members_private_key": {
+            "defaultValue": null
+        },
+        "members_session_secret": {
+            "defaultValue": null
+        }
     }
 }

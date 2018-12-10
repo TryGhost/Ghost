@@ -2,6 +2,7 @@ const Promise = require('bluebird'),
     _ = require('lodash'),
     uuid = require('uuid'),
     crypto = require('crypto'),
+    keypair = require('keypair'),
     ghostBookshelf = require('./base'),
     common = require('../lib/common'),
     validation = require('../data/validation'),
@@ -18,8 +19,16 @@ function parseDefaultSettings() {
         dynamicDefault = {
             db_hash: uuid.v4(),
             public_hash: crypto.randomBytes(15).toString('hex'),
-            session_secret: crypto.randomBytes(32).toString('hex')
+            session_secret: crypto.randomBytes(32).toString('hex'),
+            members_session_secret: crypto.randomBytes(32).toString('hex')
         };
+
+    const membersKeypair = keypair({
+        bits: 1024
+    });
+
+    dynamicDefault.members_public_key = membersKeypair.public;
+    dynamicDefault.members_private_key = membersKeypair.private;
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
         _.each(settings, function each(setting, settingName) {
