@@ -122,10 +122,13 @@ module.exports = {
 
         if (apiConfig.data) {
             const missedDataProperties = [];
+            const nilDataProperties = [];
 
             _.each(apiConfig.data, (value, key) => {
                 if (jsonpath.query(frame.data[apiConfig.docName][0], key).length === 0) {
                     missedDataProperties.push(key);
+                } else if (_.isNil(frame.data[apiConfig.docName][0][key])) {
+                    nilDataProperties.push(key);
                 }
             });
 
@@ -134,6 +137,15 @@ module.exports = {
                     message: common.i18n.t('notices.data.validation.index.validationFailed', {
                         validationName: 'FieldIsRequired',
                         key: JSON.stringify(missedDataProperties)
+                    })
+                }));
+            }
+
+            if (nilDataProperties.length) {
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                        validationName: 'FieldIsInvalid',
+                        key: JSON.stringify(nilDataProperties)
                     })
                 }));
             }
