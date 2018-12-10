@@ -8,7 +8,6 @@ var layer0 = require('./layer0');
 
 function getFreshState() {
     const [hash, formType, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || ['#signin?', 'signin', ''];
-    console.log({hash, formType, query})
     return {
         formData: {},
         query,
@@ -80,11 +79,10 @@ export default class App extends Component {
 
     signin({ email, password }) {
         this.gatewayFrame.call('signin', {email, password}, (err, successful) => {
-            console.log("Signin values", err, successful);
             if (err || !successful) {
                 this.setState({
                     submitFail: true
-                })
+                });
             }
         });
     }
@@ -94,7 +92,7 @@ export default class App extends Component {
             if (err || !successful) {
                 this.setState({
                     submitFail: true
-                })
+                });
             }
         });
     }
@@ -104,7 +102,7 @@ export default class App extends Component {
             if (err || !successful) {
                 this.setState({
                     submitFail: true
-                })
+                });
             } else {
                 window.location.hash = 'password-reset-sent';
             }
@@ -114,7 +112,9 @@ export default class App extends Component {
     resendPasswordResetEmail({ email }) {
         this.gatewayFrame.call('request-password-reset', {email}, (err, successful) => {
             if (err || !successful) {
-                console.log("Unable to send email", err);
+                this.setState({
+                    submitFail: true
+                });
             } else {
                 window.location.hash = 'password-reset-sent';
             }
@@ -125,10 +125,11 @@ export default class App extends Component {
         const queryParams = new URLSearchParams(this.state.query);
         const token = queryParams.get('token') || '';
         this.gatewayFrame.call('reset-password', {password, token}, (err, successful) => {
-            if (err || successful) {
-                console.log("Unable to send email", err);
+            if (err || !successful) {
+                this.setState({
+                    submitFail: true
+                });
             }
-            console.log("Email sent");
         });
     }
 
