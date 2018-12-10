@@ -168,6 +168,7 @@ describe('Posts', function () {
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                jsonResponse.posts.should.have.length(11);
 
                 jsonResponse.posts.forEach((post) => {
                     post.page.should.be.false();
