@@ -2,8 +2,10 @@ const DomReady = require('domready');
 const GhostContentApi = require('@tryghost/content-api');
 const layer2 = require('@tryghost/members-layer2');
 
-function reload() {
-    window.location.reload();
+function reload(success) {
+    if (success) {
+        window.location.reload();
+    }
 }
 
 function show (el) {
@@ -24,8 +26,9 @@ DomReady(function () {
         const [tokenMatch, token] = query.match(/token=([a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+.[a-zA-Z0-9-_]+)/) || [];
         if (tokenMatch) {
             return members.resetPassword({token})
-                .then(() => {
+                .then((success) => {
                     window.location.hash = '';
+                    return success;
                 })
                 .then(reload);
         }
