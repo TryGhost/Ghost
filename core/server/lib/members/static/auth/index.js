@@ -182,6 +182,12 @@ export default class App extends Component {
                         case 'signup':
                             errorLabel = "Email already registered"
                             break;
+                        case 'request-password-reset':
+                            errorLabel = "Unable to send email"
+                            break;
+                        case 'password-reset-sent':
+                            errorLabel = "Unable to send email"
+                            break;
                     }
             }
             return (
