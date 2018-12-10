@@ -118,14 +118,19 @@ module.exports = {
         const jsonpath = require('jsonpath');
 
         if (apiConfig.data) {
-            const missedDataProperties = _.filter(apiConfig.data, (value, key) => {
-                return jsonpath.query(frame.data[apiConfig.docName][0], key).length === 0;
+            const missedDataProperties = [];
+
+            _.each(apiConfig.data, (value, key) => {
+                if (jsonpath.query(frame.data[apiConfig.docName][0], key).length === 0) {
+                    missedDataProperties.push(key);
+                }
             });
 
             if (missedDataProperties.length) {
                 return Promise.reject(new common.errors.ValidationError({
                     message: common.i18n.t('notices.data.validation.index.validationFailed', {
-                        validationName: 'FieldIsRequired'
+                        validationName: 'FieldIsRequired',
+                        key: JSON.stringify(missedDataProperties)
                     })
                 }));
             }
