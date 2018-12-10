@@ -93,10 +93,10 @@ module.exports = {
             },
             data: {
                 role_id: {
-                    require: true
+                    required: true
                 },
                 email: {
-                    require: true
+                    required: true
                 }
             }
         },
