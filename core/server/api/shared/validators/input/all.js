@@ -30,7 +30,10 @@ const validate = (config, attrs) => {
     _.each(config, (value, key) => {
         if (value.required && !attrs[key]) {
             errors.push(new common.errors.ValidationError({
-                message: `${key} is required.`
+                message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                    validationName: 'FieldIsRequired',
+                    key: key
+                })
             }));
         }
     });
