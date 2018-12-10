@@ -26,7 +26,8 @@
             {{gh-error-message errors=errors property="email"}}
         {{/gh-form-group}}
 
-        <div class="form-group for-select">
+
+        {{#gh-form-group class="for-select" errors=errors hasValidated=hasValidated property="role"}}
             <label for="new-user-role">Role</label>
             <span class="gh-select">
                 {{one-way-select
@@ -40,10 +41,15 @@
                 }}
                 {{svg-jar "arrow-down-small"}}
             </span>
-        </div>
+            {{gh-error-message errors=errors property="role"}}
+        {{/gh-form-group}}
     </fieldset>
 </div>
 
 <div class="modal-footer">
-    {{gh-task-button "Send invitation now" successText="Sent" task=sendInvitation class="gh-btn gh-btn-green gh-btn-icon"}}
+    {{gh-task-button "Send invitation now"
+        successText="Sent"
+        task=sendInvitation
+        class="gh-btn gh-btn-green gh-btn-icon"
+        disabled=fetchRoles.isRunning}}
 </div>
