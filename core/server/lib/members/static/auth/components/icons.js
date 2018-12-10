@@ -13,3 +13,8 @@ export const IconName = (
 export const IconClose = (
     <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><title>icon-close</title><g fill="none" fill-rule="evenodd"><path d="M2.25 2.25l11.5 11.5M13.75 2.25l-11.5 11.5" stroke="#9BAEB8" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
 );
+
+
+export const IconError = (
+    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><title>icon-error</title><g fill="none" fill-rule="evenodd"><path d="M15 7.88c.005 1.944-.674 3.61-2.038 4.997C11.6 14.263 9.945 14.97 8 14.999c-1.921.029-3.567-.63-4.937-1.976S1.005 10.043 1 8.123c-.005-1.946.674-3.612 2.037-4.999C4.401 1.737 6.055 1.029 8 1.001c1.921-.029 3.567.63 4.938 1.977 1.37 1.347 2.057 2.98 2.062 4.902zM7.933 9.337V4.67" stroke="#F05230" stroke-linecap="round" stroke-linejoin="round" /><path d="M7.927 11.67c-.046 0-.084.018-.116.051-.031.033-.046.073-.044.119.004.109.06.163.168.163.046 0 .085-.018.116-.051.032-.033.047-.073.045-.119-.003-.105-.057-.16-.163-.163H7.93" stroke="#F05230" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
+);

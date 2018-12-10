@@ -1,5 +1,5 @@
 import './styles/members.css';
-import {IconEmail, IconLock, IconName, IconClose} from './components/icons';
+import {IconEmail, IconLock, IconName, IconClose, IconError} from './components/icons';
 import { Component } from 'preact';
 const origin = new URL(window.location).origin;
 const membersApi = location.pathname.replace(/\/members\/auth\/?$/, '/ghost/api/v2/members');
@@ -223,7 +223,7 @@ export default class App extends Component {
                         </a>
                     </div>
                 </div>
-                {(formError ? <div class="gm-form-errortext">{ formError }</div> : "")}
+                {(formError ? <div class="gm-form-errortext"><i>{ IconError }</i> { formError }</div> : "")}
             </div>
         )
     }
