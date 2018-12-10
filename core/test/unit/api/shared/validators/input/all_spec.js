@@ -328,6 +328,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
+                    err.message.should.eql('Validation (FieldIsRequired) failed for ["b"]');
                 });
         });
 
