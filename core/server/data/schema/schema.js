@@ -142,7 +142,7 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'core',
-            validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private']]}
+            validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private', 'members']]}
         },
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
@@ -368,5 +368,15 @@ module.exports = {
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at_ts: {type: 'bigInteger', nullable: false},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    members: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        password: {type: 'string', maxlength: 60, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
     }
 };
