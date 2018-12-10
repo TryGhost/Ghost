@@ -2,7 +2,6 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {A as emberA} from '@ember/array';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -22,20 +21,11 @@ export default ModalComponent.extend(ValidationEngine, {
 
     init() {
         this._super(...arguments);
+    },
 
-        // populate roles and set initial value for the dropdown
-        run.schedule('afterRender', this, function () {
-            this.get('store').query('role', {permissions: 'assign'}).then((roles) => {
-                let authorRole = roles.findBy('name', 'Author');
-
-                this.set('roles', roles);
-                this.set('authorRole', authorRole);
-
-                if (!this.get('role')) {
-                    this.set('role', authorRole);
-                }
-            });
-        });
+    didInsertElement() {
+        this._super(...arguments);
+        this.fetchRoles.perform();
     },
 
     willDestroyElement() {
@@ -49,6 +39,7 @@ export default ModalComponent.extend(ValidationEngine, {
     actions: {
         setRole(role) {
             this.set('role', role);
+            this.errors.remove('role');
         },
 
         confirm() {
@@ -90,6 +81,18 @@ export default ModalComponent.extend(ValidationEngine, {
             reject();
         }));
     },
+
+    fetchRoles: task(function * () {
+        let roles = yield this.get('store').query('role', {permissions: 'assign'});
+        let authorRole = roles.findBy('name', 'Author');
+
+        this.set('roles', roles);
+        this.set('authorRole', authorRole);
+
+        if (!this.get('role')) {
+            this.set('role', authorRole);
+        }
+    }),
 
     sendInvitation: task(function* () {
         let email = this.get('email');
