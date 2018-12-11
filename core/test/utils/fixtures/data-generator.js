@@ -761,25 +761,25 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[1].id,
             tag_id: DataGenerator.Content.tags[0].id,
-            sort_order: 2
+            sort_order: 0
         },
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[1].id,
             tag_id: DataGenerator.Content.tags[1].id,
-            sort_order: 3
+            sort_order: 1
         },
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[2].id,
             tag_id: DataGenerator.Content.tags[2].id,
-            sort_order: 4
+            sort_order: 0
         },
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[3].id,
             tag_id: DataGenerator.Content.tags[3].id,
-            sort_order: 5
+            sort_order: 0
         }
     ];
 
@@ -819,6 +819,12 @@ DataGenerator.forKnex = (function () {
             post_id: DataGenerator.Content.posts[4].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[4].id,
+            author_id: _.find(DataGenerator.Content.users, {slug: 'slimer-mcectoplasm'}).id,
+            sort_order: 1
         },
         {
             id: ObjectId.generate(),
