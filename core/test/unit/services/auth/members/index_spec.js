@@ -3,7 +3,7 @@ const should = require('should');
 const {UnauthorizedError} = require('../../../../../server/lib/common/errors');
 const members = require('../../../../../server/services/auth/members');
 
-describe('Auth Service - Members', function () {
+describe.skip('Auth Service - Members', function () {
     it('exports an authenticateMembersToken method', function () {
         const actual = typeof members.authenticateMembersToken;
         const expected = 'function';
