@@ -10,12 +10,16 @@ import {
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 const MAX_IMAGES = 9;
 const MAX_PER_ROW = 3;
 
 export default Component.extend({
+    koenigDragDropHandler: service(),
+
     layout,
+
     // attrs
     files: null,
     images: null,
@@ -28,6 +32,8 @@ export default Component.extend({
     // properties
     errorMessage: null,
     handlesDragDrop: true,
+
+    _dragDropContainer: null,
 
     // closure actions
     selectCard() { },
@@ -43,10 +49,6 @@ export default Component.extend({
     counts: computed('payload.{caption,payload.images.[]}', function () {
         let wordCount = 0;
         let imageCount = this.payload.images.length;
-
-        if (this.payload.src) {
-            imageCount += 1;
-        }
 
         if (this.payload.caption) {
             wordCount += countWords(stripTags(this.payload.caption));
@@ -75,18 +77,32 @@ export default Component.extend({
     imageRows: computed('images.@each.{src,previewSrc,width,height,row}', function () {
         let rows = [];
         let noOfImages = this.images.length;
+        // 3 images per row unless last row would have a single image in which
+        // case the last 2 rows will have 2 images
+        let maxImagesInRow = function (idx) {
+            return noOfImages > 1 && (noOfImages % 3 === 1) && (idx === (noOfImages - 2));
+        };
 
         this.images.forEach((image, idx) => {
             let row = image.row;
             let classes = ['relative', 'hide-child'];
 
-            if (noOfImages > 1 && (noOfImages % 3 === 1) && (idx === (noOfImages - 2))) {
+            // start a new display row if necessary
+            if (maxImagesInRow(idx)) {
                 row = row + 1;
             }
+
+            // apply classes to the image containers
             if (!rows[row]) {
+                // first image in row
                 rows[row] = [];
+                classes.push('mr2');
+            } else if (((idx + 1) % 3 === 0) || maxImagesInRow(idx + 1) || idx + 1 === noOfImages) {
+                // last image in row
+                classes.push('ml2');
             } else {
-                classes.push('ml4');
+                // middle of row
+                classes.push('ml2', 'mr2');
             }
 
             if (row > 0) {
@@ -116,6 +132,14 @@ export default Component.extend({
         this.registerComponent(this);
     },
 
+    willDestroyElement() {
+        this._super(...arguments);
+
+        if (this._dragDropContainer) {
+            this._dragDropContainer.destroy();
+        }
+    },
+
     actions: {
         addImage(file) {
             let count = this.images.length + 1;
@@ -141,10 +165,7 @@ export default Component.extend({
         deleteImage(image) {
             let localImage = this.images.findBy('fileName', image.fileName);
             this.images.removeObject(localImage);
-            this.images.forEach((image, idx) => {
-                image.set('row', Math.ceil((idx + 1) / MAX_PER_ROW) - 1);
-            });
-
+            this._recalculateImageRows();
             this._buildAndSaveImagesPayload();
         },
 
@@ -152,12 +173,6 @@ export default Component.extend({
             this._updatePayloadAttr('caption', caption);
         },
 
-        /**
-         * Opens a file selection dialog - Triggered by "Upload Image" buttons,
-         * searches for the hidden file input within the .gh-setting element
-         * containing the clicked button then simulates a click
-         * @param  {MouseEvent} event - MouseEvent fired by the button click
-         */
         triggerFileDialog(event) {
             this._triggerFileDialog(event);
         },
@@ -177,6 +192,25 @@ export default Component.extend({
 
         clearErrorMessage() {
             this.set('errorMessage', null);
+        },
+
+        didSelect() {
+            if (this._dragDropContainer) {
+                // add a delay when enabling reorder drag/drop so that the card
+                // must be selected before a reorder drag can be initiated
+                // - allows for cards to be drag and dropped themselves
+                run.later(this, function () {
+                    if (!this.isDestroyed && !this.isDestroying) {
+                        this._dragDropContainer.enableDrag();
+                    }
+                }, 100);
+            }
+        },
+
+        didDeselect() {
+            if (this._dragDropContainer) {
+                this._dragDropContainer.disableDrag();
+            }
         }
     },
 
@@ -215,6 +249,12 @@ export default Component.extend({
     },
 
     // Private methods ---------------------------------------------------------
+
+    _recalculateImageRows() {
+        this.images.forEach((image, idx) => {
+            image.set('row', Math.ceil((idx + 1) / MAX_PER_ROW) - 1);
+        });
+    },
 
     _startUpload(files = []) {
         let currentCount = this.images.length;
@@ -270,6 +310,7 @@ export default Component.extend({
 
     _buildImages() {
         this.images = this.payload.images.map(image => EmberObject.create(image));
+        this._registerOrRefreshDragDropHandler();
     },
 
     _updatePayloadAttr(attr, value) {
@@ -280,6 +321,8 @@ export default Component.extend({
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
+
+        this._registerOrRefreshDragDropHandler();
     },
 
     _triggerFileDialog(event) {
@@ -291,5 +334,168 @@ export default Component.extend({
             .closest('.__mobiledoc-card')
             .find('input[type="file"]')
             .click();
+    },
+
+    // TODO: revisit when the container is created and when drag is enabled/disabled
+    // - rename container so that it's more explicit when we have an initial file
+    //   drop container vs a drag reorder+file drop container?
+    _registerOrRefreshDragDropHandler() {
+        if (this._dragDropContainer) {
+            run.schedule('afterRender', this, function () {
+                this._dragDropContainer.refresh();
+                if (!isEmpty(this.images) && !this._dragDropContainer.isDragEnabled) {
+                    this._dragDropContainer.enableDrag();
+                }
+            });
+        } else {
+            run.schedule('afterRender', this, function () {
+                let galleryElem = this.element.querySelector('[data-gallery]');
+                if (galleryElem) {
+                    this._dragDropContainer = this.koenigDragDropHandler.registerContainer(
+                        galleryElem,
+                        {
+                            draggableSelector: '[data-image]',
+                            droppableSelector: '[data-image]',
+                            isDragEnabled: !isEmpty(this.images),
+                            onDragStart: run.bind(this, function () {
+                                // TODO: can this be handled in koenig-card?
+                                // not currently done so because kg-card-hover is added as a base class
+                                // by (kg-style "media-card")
+                                this.element.querySelector('figure').classList.remove('kg-card-hover');
+                                this.element.querySelector('figure').classList.remove('kg-card-selected');
+                            }),
+                            onDragEnd: run.bind(this, function () {
+                                this.element.querySelector('figure').classList.add('kg-card-hover');
+                                if (this.isSelected) {
+                                    this.element.querySelector('figure').classList.add('kg-card-selected');
+                                }
+                            }),
+                            getDraggableInfo: run.bind(this, this._getDraggableInfo),
+                            getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
+                            onDrop: run.bind(this, this._onDrop)
+                        }
+                    );
+                }
+            });
+        }
+    },
+
+    _getDraggableInfo(draggableElement) {
+        let src = draggableElement.querySelector('img').getAttribute('src');
+        let image = this.images.findBy('src', src) || this.images.findBy('previewSrc', src);
+        let payload = image && image.getProperties('fileName', 'src', 'row', 'width', 'height');
+
+        if (image) {
+            return {
+                type: 'image',
+                payload
+            };
+        }
+
+        return {};
+    },
+
+    _onDrop(draggableInfo/*, droppableElem, position*/) {
+        // do not allow dragging between galleries for now
+        if (!this.element.contains(draggableInfo.element)) {
+            return false;
+        }
+
+        let droppables = Array.from(this.element.querySelectorAll('[data-image]'));
+        let draggableIndex = droppables.indexOf(draggableInfo.element);
+
+        if (this._isDropAllowed(draggableIndex, draggableInfo.insertIndex)) {
+            let draggedImage = this.images.findBy('src', draggableInfo.payload.src);
+
+            this.images.removeObject(draggedImage);
+            this.images.insertAt(draggableInfo.insertIndex, draggedImage);
+            this._recalculateImageRows();
+
+            this._buildAndSaveImagesPayload();
+            this._dragDropContainer.refresh();
+        }
+    },
+
+    // returns {
+    //   direction: 'horizontal' TODO: use a constant?
+    //   position: 'left'/'right' TODO: use constants?
+    //   beforeElems: array of elems to left of indicator
+    //   afterElems: array of elems to right of indicator
+    //   droppableIndex:
+    // }
+    _getDropIndicatorPosition(draggableInfo, droppableElem, position) {
+        // do not allow dragging between galleries for now
+        if (!this.element.contains(draggableInfo.element)) {
+            return false;
+        }
+
+        let row = droppableElem.closest('[data-row]');
+        let droppables = Array.from(this.element.querySelectorAll('[data-image]'));
+        let draggableIndex = droppables.indexOf(draggableInfo.element);
+        let droppableIndex = droppables.indexOf(droppableElem);
+
+        if (row && this._isDropAllowed(draggableIndex, droppableIndex, position)) {
+            let rowImages = Array.from(row.querySelectorAll('[data-image]'));
+            let rowDroppableIndex = rowImages.indexOf(droppableElem);
+            let insertIndex = droppableIndex;
+            let beforeElems = [];
+            let afterElems = [];
+
+            rowImages.forEach((image, index) => {
+                if (index < rowDroppableIndex) {
+                    beforeElems.push(image);
+                }
+
+                if (index === rowDroppableIndex) {
+                    if (position.match(/left/)) {
+                        afterElems.push(image);
+                    } else {
+                        beforeElems.push(image);
+                    }
+                }
+
+                if (index > rowDroppableIndex) {
+                    afterElems.push(image);
+                }
+            });
+
+            if (position.match(/right/) && draggableIndex > insertIndex) {
+                insertIndex += 1;
+            }
+
+            if (insertIndex >= this.images.length - 1) {
+                insertIndex = this.images.length - 1;
+            }
+
+            return {
+                direction: 'horizontal',
+                position: position.match(/left/) ? 'left' : 'right',
+                beforeElems,
+                afterElems,
+                insertIndex
+            };
+        } else {
+            return false;
+        }
+    },
+
+    // we don't allow an image to be dropped where it would end up in the
+    // same position within the gallery
+    _isDropAllowed(draggableIndex, droppableIndex, position = '') {
+        // can't drop on itself
+        if (draggableIndex === droppableIndex) {
+            return false;
+        }
+
+        // account for dropping at beginning or end of a row
+        if (position.match(/left/)) {
+            droppableIndex -= 1;
+        }
+
+        if (position.match(/right/)) {
+            droppableIndex += 1;
+        }
+
+        return droppableIndex !== draggableIndex;
     }
 });
