@@ -83,20 +83,8 @@ function sendEmail(member, {token}) {
     };
 
     /* eslint-disable */
-    console.log(`
-    From: members@ghost.com
-    To: ${member.email}
-
-    Subject: ${member.password ? 'Password reset' : 'Confirm email address'}
-
-    Hi ${member.name},
-
-    To reset your password, click the following link and follow the instructions:
-
-    ${passwordResetUrl}#reset-password?token=${token}
-
-    If you didn't request a password change, just ignore this email.
-  `);
+    // @TODO remove this
+    console.log(message.html);
     /* eslint-enable */
     return mailer.send(message).catch((err) => {
         return Promise.reject(err);
