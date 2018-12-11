@@ -12,8 +12,14 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        // CASE: the content api endpoints for pages forces the model layer to return static pages only.
-        //       we have to enforce the filter.
+        /**
+         * CASE:
+         *
+         * - the content api endpoints for pages forces the model layer to return static pages only
+         * - we have to enforce the filter
+         *
+         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+         */
         if (frame.options.filter) {
             frame.options.filter = `${frame.options.filter}+page:true`;
         } else {
