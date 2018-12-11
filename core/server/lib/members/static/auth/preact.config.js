@@ -11,7 +11,7 @@ export default function (config, env, helpers) {
     });
 
     if (env.production) {
-        config.output.publicPath = '/members/static/';
+        config.output.publicPath = 'static/';
     } else {
         config.output.publicPath = 'http://localhost:8080/';
     }
