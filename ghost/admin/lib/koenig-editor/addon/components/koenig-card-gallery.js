@@ -487,8 +487,8 @@ export default Component.extend({
     // we don't allow an image to be dropped where it would end up in the
     // same position within the gallery
     _isDropAllowed(draggableIndex, droppableIndex, position = '') {
-        // can't drop on itself
-        if (draggableIndex === droppableIndex) {
+        // can't drop on itself or when droppableIndex doesn't exist
+        if (draggableIndex === droppableIndex || typeof droppableIndex === 'undefined') {
             return false;
         }
 
