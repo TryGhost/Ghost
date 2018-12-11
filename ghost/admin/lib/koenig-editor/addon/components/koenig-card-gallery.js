@@ -98,7 +98,7 @@ export default Component.extend({
                 // first image in row
                 rows[row] = [];
                 classes.push('pr2');
-                overlayClasses.push('ml2');
+                overlayClasses.push('mr2');
             } else if (((idx + 1) % 3 === 0) || maxImagesInRow(idx + 1) || idx + 1 === noOfImages) {
                 // last image in row
                 classes.push('pl2');
