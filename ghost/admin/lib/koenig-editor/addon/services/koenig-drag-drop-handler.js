@@ -341,8 +341,8 @@ export default Service.extend({
     _showDropIndicator({direction, position, beforeElems, afterElems}) {
         let dropIndicator = this._dropIndicator;
 
-        // reset everything before re-displaying indicator
-        this._hideDropIndicator();
+        // reset everything except insertIndex before re-displaying indicator
+        this._hideDropIndicator({clearInsertIndex: false});
 
         if (direction === 'horizontal') {
             beforeElems.forEach((elem) => {
@@ -405,12 +405,15 @@ export default Service.extend({
         // TODO: handle vertical drag/drop
     },
 
-    _hideDropIndicator() {
+    _hideDropIndicator({clearInsertIndex = true} = {}) {
         // make sure the indicator isn't shown due to a running timeout
         run.cancel(this._dropIndicatorTimeout);
 
-        // clear droppable insert index
-        delete this.draggableInfo.insertIndex;
+        // clear droppable insert index unless instructed not to (eg, when
+        // resetting the display before re-positioning the indicator)
+        if (clearInsertIndex) {
+            delete this.draggableInfo.insertIndex;
+        }
 
         // reset all transforms
         this._transformedDroppables.forEach((elem) => {
