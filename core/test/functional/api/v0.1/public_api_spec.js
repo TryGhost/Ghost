@@ -132,6 +132,35 @@ describe('Public API', function () {
             });
     });
 
+    it('browse posts with inverse filters', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:-[bacon,pollo,getting-started]&include=tags'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                jsonResponse.posts.should.have.length(2);
+
+                jsonResponse.posts[0].slug.should.eql('not-so-short-bit-complex');
+                jsonResponse.posts[0].tags.length.should.eql(0);
+                jsonResponse.posts[1].slug.should.eql('short-and-sweet');
+                jsonResponse.posts[1].tags.length.should.eql(1);
+                jsonResponse.posts[1].tags[0].slug.should.eql('chorizo');
+
+                done();
+            });
+    });
+
     it('browse posts with author filter', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=authors:[joe-bloggs,pat,ghost]&include=authors'))
             .expect('Content-Type', /json/)
@@ -836,7 +865,7 @@ describe('Public API', function () {
                 // Each user should have the correct count
                 _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
                 _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
                 _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
@@ -850,8 +879,8 @@ describe('Public API', function () {
                 ids.should.eql([
                     testUtils.DataGenerator.Content.users[1].id,
                     testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[7].id,
+                    testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[0].id
                 ]);
 

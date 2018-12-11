@@ -28,7 +28,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('status:published+tag:eins+page:true');
         });
 
-        it('remove existing page filter', function () {
+        it('combine filters', function () {
             const apiConfig = {};
             const frame = {
                 options: {
@@ -38,10 +38,10 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             };
 
             serializers.input.pages.browse(apiConfig, frame);
-            frame.options.filter.should.eql('tag:eins+page:true');
+            frame.options.filter.should.eql('page:false+tag:eins+page:true');
         });
 
-        it('remove existing page filter', function () {
+        it('combine filters', function () {
             const apiConfig = {};
             const frame = {
                 options: {
@@ -51,7 +51,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             };
 
             serializers.input.pages.browse(apiConfig, frame);
-            frame.options.filter.should.eql('page:true');
+            frame.options.filter.should.eql('page:false+page:true');
         });
 
         it('remove mobiledoc option from formats', function () {

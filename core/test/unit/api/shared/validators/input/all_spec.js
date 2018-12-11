@@ -328,6 +328,34 @@ describe('Unit: api/shared/validators/input/all', function () {
                 .then(Promise.reject)
                 .catch((err) => {
                     should.exist(err);
+                    err.message.should.eql('Validation (FieldIsRequired) failed for ["b"]');
+                });
+        });
+
+        it('fails', function () {
+            const frame = {
+                data: {
+                    docName: [{
+                        a: 'b',
+                        b: null
+                    }]
+                }
+            };
+
+            const apiConfig = {
+                docName: 'docName',
+                data: {
+                    b: {
+                        required: true
+                    }
+                }
+            };
+
+            return shared.validators.input.all.add(apiConfig, frame)
+                .then(Promise.reject)
+                .catch((err) => {
+                    should.exist(err);
+                    err.message.should.eql('Validation (FieldIsInvalid) failed for ["b"]');
                 });
         });
 
