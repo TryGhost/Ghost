@@ -72,7 +72,14 @@ module.exports = function MembersApi({
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
-        getMember({email}).then((member) => {
+        const memberPromise = getMember({email});
+
+        memberPromise.catch(() => {
+            res.writeHead(200);
+            res.end();
+        });
+
+        memberPromise.then((member) => {
             const token = jwt.sign({
                 sub: member.id,
                 kid: req.jwk.kid
@@ -80,14 +87,11 @@ module.exports = function MembersApi({
                 algorithm: 'RS512',
                 issuer
             });
-            return sendEmail(member, {token})
-                .catch(handleError(500, res));
-        }).catch(() => {
-            return;
+            return sendEmail(member, {token});
         }).then(() => {
             res.writeHead(200);
             res.end();
-        });
+        }).catch(handleError(500, res));
     });
 
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
