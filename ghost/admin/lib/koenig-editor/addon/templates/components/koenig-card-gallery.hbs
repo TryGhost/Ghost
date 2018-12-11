@@ -34,7 +34,7 @@
                             {{#each row as |image|}}
                                 <div
                                     style={{image.style}}
-                                    class={{image.classes}}
+                                    class="relative hide-child {{image.classes}}"
                                     data-image
                                 >
                                     <img
@@ -44,7 +44,7 @@
                                         class="w-100 h-100 db pe-none"
                                     >
                                     {{#unless koenigDragDropHandler.isDragging}}
-                                        <div class="bg-image-overlay-top child pe-none">
+                                        <div class="bg-image-overlay-top child pe-none {{image.overlayClasses}}">
                                             <div class="flex flex-row-reverse">
                                                 <button class="bg-white-90 pl3 pr3 br3 pe-auto" {{action "deleteImage" image}}>
                                                     {{svg-jar "koenig/kg-trash" class="fill-darkgrey w4 h4"}}

@@ -85,7 +85,8 @@ export default Component.extend({
 
         this.images.forEach((image, idx) => {
             let row = image.row;
-            let classes = ['relative', 'hide-child'];
+            let classes = [];
+            let overlayClasses = [];
 
             // start a new display row if necessary
             if (maxImagesInRow(idx)) {
@@ -96,13 +97,16 @@ export default Component.extend({
             if (!rows[row]) {
                 // first image in row
                 rows[row] = [];
-                classes.push('mr2');
+                classes.push('pr2');
+                overlayClasses.push('ml2');
             } else if (((idx + 1) % 3 === 0) || maxImagesInRow(idx + 1) || idx + 1 === noOfImages) {
                 // last image in row
-                classes.push('ml2');
+                classes.push('pl2');
+                overlayClasses.push('ml2');
             } else {
                 // middle of row
-                classes.push('ml2', 'mr2');
+                classes.push('pl2', 'pr2');
+                overlayClasses.push('ml2', 'mr2');
             }
 
             if (row > 0) {
@@ -112,7 +116,8 @@ export default Component.extend({
             let styledImage = Object.assign({}, image);
             let aspectRatio = (image.width || 1) / (image.height || 1);
             styledImage.style = htmlSafe(`flex: ${aspectRatio} 1 0%`);
-            styledImage.classes = classes.join(' ');
+            styledImage.classes = htmlSafe(classes.join(' '));
+            styledImage.overlayClasses = htmlSafe(overlayClasses.join(' '));
 
             rows[row].push(styledImage);
         });
