@@ -79,11 +79,28 @@
         transform: none;
         height: 100vh;
     }
+    
     .gm-modal {
         width: calc(100% - 48px);
         height: calc(100vh - 48px);
         padding: 24px;
         border-radius: 0;
+    }
+
+    .gm-page-overlay {
+        background: rgba(10, 17, 23, 0.0);
+    }
+
+    @keyframes openModal {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        50% {
+            opacity: 1.0;
+            transform: translateY(0);
+        }
     }
 }
 
