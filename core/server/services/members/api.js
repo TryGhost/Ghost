@@ -70,13 +70,15 @@ function sendEmail(member, {token}) {
     }
     const message = {
         to: member.email,
-        subject: member.password ? 'Password reset' : 'Confirm email address',
+        subject: 'Reset password',
         html: `
         Hi ${member.name},
 
-        The link to reset your password is:
+        To reset your password, click the following link and follow the instructions:
 
-            ${passwordResetUrl}#reset-password?token=${token}
+        ${passwordResetUrl}#reset-password?token=${token}
+
+        If you didn't request a password change, just ignore this email.
         `
     };
 
@@ -89,9 +91,11 @@ function sendEmail(member, {token}) {
 
     Hi ${member.name},
 
-    The link to reset your password is:
+    To reset your password, click the following link and follow the instructions:
 
-        ${passwordResetUrl}#reset-password?token=${token}
+    ${passwordResetUrl}#reset-password?token=${token}
+
+    If you didn't request a password change, just ignore this email.
   `);
     /* eslint-enable */
     return mailer.send(message).catch((err) => {
