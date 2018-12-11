@@ -2,8 +2,20 @@ const _ = require('lodash'),
     nql = require('@nexes/nql'),
     debug = require('ghost-ignition').debug('services:url:generator'),
     localUtils = require('./utils'),
-
-    aliases = {author: 'authors.slug', tags: 'tags.slug', tag: 'tags.slug', authors: 'authors.slug'};
+    // @TODO: merge with filter plugin
+    EXPANSIONS = [{
+        key: 'author',
+        replacement: 'authors.slug'
+    }, {
+        key: 'tags',
+        replacement: 'tags.slug'
+    }, {
+        key: 'tag',
+        replacement: 'tags.slug'
+    }, {
+        key: 'authors',
+        replacement: 'authors.slug'
+    }];
 
 class UrlGenerator {
     constructor(router, queue, resources, urls, position) {
@@ -18,7 +30,7 @@ class UrlGenerator {
         // CASE: routers can define custom filters, but not required.
         if (this.router.getFilter()) {
             this.filter = this.router.getFilter();
-            this.nql = nql(this.filter, {aliases});
+            this.nql = nql(this.filter, {expansions: EXPANSIONS});
             debug('filter', this.filter);
         }
 
