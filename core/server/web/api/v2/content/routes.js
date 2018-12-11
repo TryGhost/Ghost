@@ -1,9 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
     const router = express.Router();
+
+    router.options('*', cors());
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, apiv2.http(apiv2.posts.browse));
