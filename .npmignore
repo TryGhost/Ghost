@@ -17,6 +17,7 @@ content/logs/**
 content/themes/**
 !content/themes/casper/**
 node_modules/**
+core/server/lib/members/static/auth/node_modules/**
 **/*.db*
 *.db*
 .af*
