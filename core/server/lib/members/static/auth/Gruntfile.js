@@ -42,6 +42,6 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('init', 'Install the preact member dependencies',
-        ['shell:npm-install']
+        ['shell:npm-install', 'shell:preact:prod']
     );
 };
