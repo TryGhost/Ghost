@@ -1,28 +1,40 @@
-const jwt = require('jsonwebtoken');
-const common = require('../../../lib/common');
+const jwt = require('express-jwt');
+const membersService = require('../../members');
+const labs = require('../../labs');
+const config = require('../../../config');
 
-const authenticateMembersToken = (req, res, next) => {
-    if (!req.get('authorization')) {
-        return next();
-    }
-
-    const [scheme, credentials] = req.get('authorization').split(/\s+/);
-
-    if (scheme !== 'GhostMembers') {
-        return next();
-    }
-
-    return jwt.verify(credentials, null, {
-        algorithms: ['none']
-    }, function (err, claims) {
-        if (err) {
-            return next(new common.errors.UnauthorizedError({err}));
-        }
-        req.member = claims;
-        return next();
-    });
-};
+let UNO_MEMBERINO;
 
 module.exports = {
-    authenticateMembersToken
+    get authenticateMembersToken() {
+        if (!labs.isSet('members')) {
+            return function (req, res, next) {
+                return next();
+            };
+        }
+        if (!UNO_MEMBERINO) {
+            UNO_MEMBERINO = jwt({
+                credentialsRequired: false,
+                requestProperty: 'member',
+                audience: config.get('url'),
+                issuer: config.get('url'),
+                algorithm: 'RS512',
+                secret: membersService.api.publicKey,
+                getToken(req) {
+                    if (!req.get('authorization')) {
+                        return null;
+                    }
+
+                    const [scheme, credentials] = req.get('authorization').split(/\s+/);
+
+                    if (scheme !== 'GhostMembers') {
+                        return null;
+                    }
+
+                    return credentials;
+                }
+            });
+        }
+        return UNO_MEMBERINO;
+    }
 };
