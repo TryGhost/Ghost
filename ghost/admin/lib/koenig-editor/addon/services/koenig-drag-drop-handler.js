@@ -409,6 +409,9 @@ export default Service.extend({
         // make sure the indicator isn't shown due to a running timeout
         run.cancel(this._dropIndicatorTimeout);
 
+        // clear droppable insert index
+        delete this.draggableInfo.insertIndex;
+
         // reset all transforms
         this._transformedDroppables.forEach((elem) => {
             elem.style.transform = '';
