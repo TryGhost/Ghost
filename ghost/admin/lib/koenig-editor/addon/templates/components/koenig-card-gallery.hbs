@@ -12,6 +12,8 @@
     moveCursorToPrevSection=moveCursorToPrevSection
     moveCursorToNextSection=moveCursorToNextSection
     editor=editor
+    onSelect=(action "didSelect")
+    onDeselect=(action "didDeselect")
     as |card|
 }}
     {{#gh-uploader
@@ -26,17 +28,30 @@
     }}
         <div class="relative{{unless images " bg-whitegrey-l2"}}">
             {{#if imageRows}}
-                <div class="flex flex-column">
-                    {{#each imageRows as |row|}}
-                        <div class="flex flex-row justify-center">
+                <div class="flex flex-column" data-gallery>
+                    {{#each imageRows as |row index|}}
+                        <div class="flex flex-row justify-center" data-row="{{index}}">
                             {{#each row as |image|}}
-                                <div style={{image.style}} class={{image.classes}}>
-                                    <img src={{or image.previewSrc image.src}} width={{image.width}} height={{image.height}} class="w-100 h-100 db">
-                                    <div class="bg-image-overlay-top child">
-                                        <div class="flex flex-row-reverse">
-                                            <button class="bg-white-90 pl3 pr3 br3" {{action "deleteImage" image}}>{{svg-jar "koenig/kg-trash" class="fill-darkgrey w4 h4"}}</button>
+                                <div
+                                    style={{image.style}}
+                                    class={{image.classes}}
+                                    data-image
+                                >
+                                    <img
+                                        src={{or image.previewSrc image.src}}
+                                        width={{image.width}}
+                                        height={{image.height}}
+                                        class="w-100 h-100 db pe-none"
+                                    >
+                                    {{#unless koenigDragDropHandler.isDragging}}
+                                        <div class="bg-image-overlay-top child pe-none">
+                                            <div class="flex flex-row-reverse">
+                                                <button class="bg-white-90 pl3 pr3 br3 pe-auto" {{action "deleteImage" image}}>
+                                                    {{svg-jar "koenig/kg-trash" class="fill-darkgrey w4 h4"}}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    {{/unless}}
                                 </div>
                             {{/each}}
                         </div>
