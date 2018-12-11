@@ -186,6 +186,11 @@ select:-webkit-autofill:active {
     color: var(--white);
 }
 
+.gm-form-element {
+    margin: 32px 0 0;
+    position: relative;
+}
+
 .gm-floating-input {
     position: relative;
 }
@@ -212,31 +217,34 @@ select:-webkit-autofill:active {
     border-bottom: 1px solid var(--grey);
 }
 
+.gm-floating-input input.gm-error {
+    border-bottom: 1px solid var(--red);
+
+}
+
 .gm-floating-input input:focus {
     border-bottom: 2px solid var(--blue);
     padding: 0 0 0 26px;
-}
-
-.gm-floating-input input.gm-error {
-    border-bottom: 1px solid var(--red);
 }
 
 .gm-floating-input label {
     display: flex;
     align-items: center;
     position: absolute;
-    font-size: var(--text-xs);
+    font-size: var(--text-s);
     padding: 0 0 2px 0;
     width: 100%;
-    top: 15px;
+    top: 14px;
     left: 24px;
     color: var(--grey);
     transition: all var(--animation-speed-base) ease-in-out;
-    transition-delay: 0.15s;
     pointer-events: none;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    font-weight: 500;
+    letter-spacing: 0.4px;
+    font-weight: 400;
+}
+
+.gm-floating-input input:hover + label {
+    color: var(--grey-d1);
 }
 
 .gm-floating-input input.gm-input-filled + label,
@@ -256,39 +264,64 @@ select:-webkit-autofill:active {
     transition: stroke var(--animation-speed-base) ease-in-out;
 }
 
+.gm-floating-input input:hover + label + i svg path {
+    stroke: var(--grey-d1);
+}
+
 .gm-floating-input input.gm-input-filled + label + i svg path,
-.gm-floating-input input:focus + label + i svg path{
+.gm-floating-input input:focus + label + i svg path {
     stroke: var(--grey-d2);
 }
+
+/* .gm-floating-input input.gm-error + label + i svg path {
+    stroke: var(--red);
+} */
 
 .gm-floating-input i {
     position: absolute;
     top: 14px;
     left: 0;
     opacity: 1.0;
-    transition: all var(--animation-speed-f1) ease-in-out;
+    transition: all var(--animation-speed-base) ease-in-out;
     transition-delay: 0s;
 }
 
-.gm-floating-input input.gm-input-filled + label + i,
-.gm-floating-input input:focus + label + i {
-    opacity: 1.0;
-    transform: translateX(0px);
-    transition-delay: 0.15s;
-}
-
-.gm-floating-input label i {
-    font-style: normal;
-    display: inline-block;
-    margin: 0 8px 0 0;
-}
-
 .gm-input-errortext {
-    color: var(--red);
-    font-size: var(--text-s);
-    letter-spacing: 0.4px;
-    margin: 4px 0 0;
-    font-weight: 500;
+    position: absolute;
+    top: 46px;
+    color: color-mod(var(--red) l(+5%) s(-2%));
+    font-size: var(--text-xs);
+    letter-spacing: 0.8px;
+    border-radius: 5px;
+    z-index: 9999;
+    animation: slideErrorText 0.4s ease;
+}
+
+@keyframes slideErrorText {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0px);
+    }
+}
+
+/* Error tooltip triangle */
+.gm-input-errortext-xx:before {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    margin-left: -6px;
+    width: 0;
+    border-bottom: 6px solid var(--grey-d3);
+    border-bottom: 6px solid var(--grey-d3);
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
 }
 
 .gm-form-errortext {

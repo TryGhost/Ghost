@@ -262,7 +262,7 @@ export default class App extends Component {
         className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "") + (inputError ? " gm-error" : "");
 
         return (
-            <div className="mt8">
+            <div className="gm-form-element">
                 <div className="gm-floating-input">
                     <input
                         type={ type }
@@ -274,11 +274,11 @@ export default class App extends Component {
                         required = {required}
                         className={ className }
                     />
-                    <label for={ name }> { label }</label>
+                    <label for={ name }> { placeholder }</label>
                     <i>{ icon }</i>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
-                <div class="gm-input-errortext">{ inputError }</div>
+                { (inputError ? <div class="gm-input-errortext">{ inputError }</div> : "")}
             </div>
         )
     }
