@@ -60,8 +60,11 @@ const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
 const passwordResetUrl = config.get('url');
-const issuer = config.get('url');
-const ssoOrigin = new URL(config.get('url')).origin;
+
+const siteOrigin = new URL(config.get('url')).origin;
+
+const issuer = siteOrigin;
+const ssoOrigin = siteOrigin;
 let mailer;
 
 function sendEmail(member, {token}) {

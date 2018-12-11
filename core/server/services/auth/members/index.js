@@ -1,7 +1,10 @@
+const URL = require('url').URL;
 const jwt = require('express-jwt');
 const membersService = require('../../members');
 const labs = require('../../labs');
 const config = require('../../../config');
+
+const siteOrigin = new URL(config.get('url')).origin;
 
 let UNO_MEMBERINO;
 
@@ -16,8 +19,8 @@ module.exports = {
             UNO_MEMBERINO = jwt({
                 credentialsRequired: false,
                 requestProperty: 'member',
-                audience: config.get('url'),
-                issuer: config.get('url'),
+                audience: siteOrigin,
+                issuer: siteOrigin,
                 algorithm: 'RS512',
                 secret: membersService.api.publicKey,
                 getToken(req) {
