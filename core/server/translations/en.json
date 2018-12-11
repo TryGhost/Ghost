@@ -212,6 +212,9 @@
             "reason": " Reason: {reason}."
         },
         "models": {
+            "general": {
+                "sql": "Could not understand request."
+            },
             "subscriber": {
                 "notEnoughPermission": "You do not have permission to perform this action"
             },

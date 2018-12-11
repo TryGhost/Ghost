@@ -168,6 +168,28 @@ describe('Posts', function () {
                 should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                jsonResponse.posts.should.have.length(0);
+
+                done();
+            });
+    });
+
+    it('browse posts with basic page filter should not return pages', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=(page:true,page:false)`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                testUtils.API.checkResponse(jsonResponse, 'posts');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                jsonResponse.posts.should.have.length(11);
 
                 jsonResponse.posts.forEach((post) => {
                     post.page.should.be.false();
@@ -178,7 +200,7 @@ describe('Posts', function () {
     });
 
     it('browse posts with author filter', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors:[joe-bloggs,pat,ghost]&include=authors`))
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -198,12 +220,18 @@ describe('Posts', function () {
                 // We should have 2 matching items
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
 
+                // The API orders by number of matched authors.
+                jsonResponse.posts[0].slug.should.eql('not-so-short-bit-complex');
+
                 // Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author
-                const authors = _.map(jsonResponse.posts, function (post) {
+                const primaryAuthors = _.map(jsonResponse.posts, function (post) {
                     return post.primary_author.slug;
                 });
 
-                authors.should.matchAny(/joe-bloggs|ghost'/);
+                primaryAuthors.should.matchAny(/joe-bloggs|ghost'/);
+                _.filter(primaryAuthors, (value) => {return value === 'ghost';}).length.should.eql(7);
+                _.filter(primaryAuthors, (value) => {return value === 'joe-bloggs';}).length.should.eql(4);
+
                 done();
             });
     });

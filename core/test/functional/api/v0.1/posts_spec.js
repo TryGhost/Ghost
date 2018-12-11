@@ -298,6 +298,98 @@ describe('Post API', function () {
                     });
             });
 
+            it('can retrieve posts filtered by related tag', function (done) {
+                request.get(localUtils.API.getApiQuery(`posts/?filter=tags.slug:[kitchen-sink]`))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(2);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        jsonResponse.posts[0].slug.should.equal('ghostly-kitchen-sink');
+                        done();
+                    });
+            });
+
+            it('can retrieve posts filtered by related author', function (done) {
+                request.get(localUtils.API.getApiQuery(`posts/?filter=authors.slug:joe-bloggs`))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(4);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        jsonResponse.posts[0].slug.should.equal('not-so-short-bit-complex');
+                        done();
+                    });
+            });
+
+            it('can retrieve posts filtered by primary_tag', function (done) {
+                request.get(localUtils.API.getApiQuery(`posts/?filter=primary_tag:kitchen-sink`))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(2);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        jsonResponse.posts[0].slug.should.equal('ghostly-kitchen-sink');
+                        done();
+                    });
+            });
+
+            it('can retrieve posts filtered by primary_author', function (done) {
+                request.get(localUtils.API.getApiQuery(`posts/?filter=primary_author:joe-bloggs`))
+                    .set('Authorization', 'Bearer ' + ownerAccessToken)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        var jsonResponse = res.body;
+                        should.exist(jsonResponse.posts);
+                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        jsonResponse.posts.should.have.length(4);
+                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        jsonResponse.posts[0].slug.should.equal('not-so-short-bit-complex');
+                        done();
+                    });
+            });
+
             it('can retrieve just featured posts', function (done) {
                 request.get(localUtils.API.getApiQuery('posts/?filter=featured:true'))
                     .set('Authorization', 'Bearer ' + ownerAccessToken)

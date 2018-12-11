@@ -49,6 +49,26 @@ describe('Pages', function () {
             });
     });
 
+    it('browse pages with page:false', function () {
+        const key = localUtils.getValidKey();
+        return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=page:false`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                res.headers.vary.should.eql('Accept-Encoding');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.pages);
+                should.exist(jsonResponse.meta);
+
+                jsonResponse.pages.should.have.length(0);
+            });
+    });
+
     it('read page', function () {
         const key = localUtils.getValidKey();
         return request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/?key=${key}`))

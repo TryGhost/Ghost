@@ -9,7 +9,6 @@ const _ = require('lodash'),
     bookshelf = require('bookshelf'),
     moment = require('moment'),
     Promise = require('bluebird'),
-    gql = require('ghost-gql'),
     ObjectId = require('bson-objectid'),
     debug = require('ghost-ignition').debug('models:base'),
     config = require('../../config'),
@@ -1012,6 +1011,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         fetchAll: function (options) {
             options = options || {};
 
+            const nql = require('@nexes/nql');
             const modelName = options.modelName;
             const tableNames = {
                 Post: 'posts',
@@ -1072,8 +1072,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 query.select(toSelect);
             }
 
-            // filter data
-            gql.knexify(query, gql.parse(filter));
+            // @NOTE: We can't use the filter plugin, because we are not using bookshelf.
+            nql(filter).querySQL(query);
 
             return query.then((objects) => {
                 debug('fetched', modelName, filter);
