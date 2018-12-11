@@ -12,6 +12,7 @@ function getFreshState() {
         formData: {},
         query,
         formType,
+        parentContainerClass: 'gm-page-overlay',
         showError: false,
         submitFail: false
     };
@@ -383,13 +384,24 @@ export default class App extends Component {
 
     render() {
         return (
-            <div className="gm-page-overlay" onClick={(e) => this.close(e)}>
+            <div className={this.state.parentContainerClass} onClick={(e) => this.close(e)}>
                 {this.renderFormComponent()}
             </div>
         );
     }
 
     close(event) {
-        window.parent.postMessage('pls-close-auth-popup', '*');
+        this.setState({
+            parentContainerClass: 'gm-page-overlay close'
+        });
+
+        window.setTimeout(function(){
+            this.setState({
+                parentContainerClass: 'gm-page-overlay'
+            });
+            window.parent.postMessage('pls-close-auth-popup', '*');
+        }
+        .bind(this), 
+        700);
     }
 }

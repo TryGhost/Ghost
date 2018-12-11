@@ -13,7 +13,15 @@
     position: fixed;
     overflow-y: scroll;
     background: rgba(10, 17, 23, 0.9);
-    animation: fadeInOverlay 0.2s ease;
+    animation: fadeInOverlay 0.2s ease 1 forwards;
+}
+
+.gm-page-overlay.close {
+    animation: fadeOutOverlay 0.2s ease 0.5s 1 forwards;
+}
+
+.gm-page-overlay.close .gm-modal {
+    animation: closeModal 0.5s ease-in 1 forwards;
 }
 
 .gm-modal-container {
@@ -30,7 +38,7 @@
     border-radius: 4px;
     padding: 40px;
     box-shadow: var(--box-shadow-base);
-    animation: openModal 0.6s ease;
+    animation: openModal 0.6s ease 1 forwards;
 }
 
 .gm-modal-close {
@@ -55,6 +63,11 @@
     to {opacity: 1;}
 }
 
+@keyframes fadeOutOverlay {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
 @keyframes openModal { /* Safari and Chrome */
     0% {
         opacity: 0;
@@ -68,6 +81,22 @@
 
     100% {
         transform: translateY(0) scale(1.0);
+    }
+}
+
+@keyframes closeModal { /* Safari and Chrome */
+    0% {
+        transform: translateY(0);
+    }
+
+    40% {
+        opacity: 1.0;
+        transform: translateY(-8px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(85px);
     }
 }
 
@@ -100,6 +129,22 @@
         50% {
             opacity: 1.0;
             transform: translateY(0);
+        }
+    }
+
+    @keyframes closeModal {
+        0% {
+            opacity: 1.0;
+            transform: translateY(0);
+        }
+
+        60% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 0;
         }
     }
 }
