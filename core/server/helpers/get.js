@@ -130,7 +130,7 @@ get = function get(resource, options) {
 
     const self = this;
     const data = createFrame(options.data);
-    const apiVersion = data.root._locals.apiVersion;
+    const apiVersion = _.get(data, 'root._locals.apiVersion');
     let apiOptions = options.hash;
 
     if (!options.fn) {
@@ -182,16 +182,23 @@ get = function get(resource, options) {
 };
 
 module.exports = function getLabsWrapper() {
-    var self = this,
-        args = arguments;
+    const self = this;
+    const args = arguments;
+    const apiVersion = _.get(args, '[1].data.root._locals.apiVersion');
 
-    return labs.enabledHelper({
-        flagKey: 'publicAPI',
-        flagName: 'Public API',
-        helperName: 'get',
-        helpUrl: 'https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta',
-        async: true
-    }, function executeHelper() {
-        return get.apply(self, args);
-    });
+    // If the API version is v0.1 return the labs enabled version of the helper
+    if (apiVersion === 'v0.1') {
+        return labs.enabledHelper({
+            flagKey: 'publicAPI',
+            flagName: 'Public API',
+            helperName: 'get',
+            helpUrl: 'https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta',
+            async: true
+        }, function executeHelper() {
+            return get.apply(self, args);
+        });
+    }
+
+    // Else, we just apply the helper normally
+    return get.apply(self, args);
 };
