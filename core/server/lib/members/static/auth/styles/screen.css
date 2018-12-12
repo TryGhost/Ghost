@@ -58,18 +58,19 @@ a:hover {
     width: 52px;
     height: 52px;
     border-radius: 4px;
+    margin: 0 auto;
     background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
 }
 
 .gm-auth-header {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     margin: 16px 0 0;
-    padding: 12px 0 0;
 }
 
-.gm-auth-header -cta {
+.gm-auth-header-cta {
     padding: 0 0 3px;
 }
 
@@ -102,7 +103,7 @@ a:hover {
 .gm-forgot-link {
     position: absolute;
     top: 14px;
-    right: 0;
+    right: 14px;
     z-index: 9999;
     font-size: var(--text-s);
     letter-spacing: 0.4px;

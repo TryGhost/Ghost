@@ -153,14 +153,13 @@
 /* ------------------------------------------------------------ */
 button {
     width: 100%;
-    height: 44px;
     font-weight: 500;
     border: 1px solid var(--grey);
     color: var(--grey-d3);
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
-    padding: 0 15px;
+    padding: 15px 15px 16px;
     border-radius: 4px;
     outline: none;
     transition: all var(--animation-speed-f1) ease-in-out;
@@ -232,47 +231,47 @@ select:-webkit-autofill:active {
 }
 
 .gm-form-element {
-    margin: 32px 0 0;
+    margin: 20px 0 0;
     position: relative;
 }
 
-.gm-floating-input {
+.gm-input {
     position: relative;
 }
 
-.gm-floating-input input {
-    font-size: var(--text-base);
+.gm-input input {
+    font-size: var(--text-s);
     color: var(--grey-d3);
     border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid var(--grey-l1);
+    border-radius: 4px;
+    border: 1px solid var(--grey-l1);
     height: 38px;
     -webkit-appearance: none;
     box-sizing: border-box;
     background: var(--white);
-    height: 44px;
     width: 100%;
     outline: none;
     transition: border var(--animation-speed-f1) ease-in-out;
-    padding: 0 0 1px 26px; /* 1px bottom padding fixes jump that's caused by the border change */
+    padding: 20px 14px 22px 38px; /* 1px bottom padding fixes jump that's caused by the border change */
     letter-spacing: 0.2px;
+    line-height: 14px;
 }
 
-.gm-floating-input input:hover {
-    border-bottom: 1px solid var(--grey);
+.gm-input input:hover {
+    border: 1px solid var(--grey);
 }
 
-.gm-floating-input input.gm-error {
-    border-bottom: 1px solid var(--red);
-
+.gm-input input.gm-error {
+    border: 1px solid color-mod(var(--red) a(0.8));
+    background: color-mod(var(--red) a(0.02))
 }
 
-.gm-floating-input input:focus {
-    border-bottom: 2px solid var(--blue);
-    padding: 0 0 0 26px;
+.gm-input input:focus {
+    border: 1px solid color-mod(var(--blue) a(0.8));
+    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
 }
 
-.gm-floating-input label {
+.gm-input label {
     display: flex;
     align-items: center;
     position: absolute;
@@ -280,7 +279,7 @@ select:-webkit-autofill:active {
     padding: 0 0 2px 0;
     width: 100%;
     top: 14px;
-    left: 24px;
+    left: 38px;
     color: var(--grey);
     transition: all var(--animation-speed-base) ease-in-out;
     pointer-events: none;
@@ -288,44 +287,48 @@ select:-webkit-autofill:active {
     font-weight: 400;
 }
 
-.gm-floating-input input:hover + label {
+.gm-input input:hover + label {
     color: var(--grey-d1);
 }
 
-.gm-floating-input input.gm-input-filled + label,
-.gm-floating-input input:focus + label {
+.gm-input input.gm-input-filled + label,
+.gm-input input:focus + label {
     opacity: 0;
     transition-delay: 0s;
 }
 
-.gm-floating-input label i svg {
+.gm-input input.gm-error + label {
+    color: color-mod(var(--red) a(0.5));
+}
+
+.gm-input label i svg {
     width: 16px;
     height: 16px;
 }
 
-.gm-floating-input label i svg path,
-.gm-floating-input i svg path {
+.gm-input label i svg path,
+.gm-input i svg path {
     stroke: var(--grey);
     transition: stroke var(--animation-speed-base) ease-in-out;
 }
 
-.gm-floating-input input:hover + label + i svg path {
+.gm-input input:hover + label + i svg path {
     stroke: var(--grey-d1);
 }
 
-.gm-floating-input input.gm-input-filled + label + i svg path,
-.gm-floating-input input:focus + label + i svg path {
+.gm-input input.gm-error + label + i svg path {
+    stroke: color-mod(var(--red) a(0.5));
+}
+
+.gm-input input.gm-input-filled + label + i svg path,
+.gm-input input:focus + label + i svg path {
     stroke: var(--grey-d2);
 }
 
-/* .gm-floating-input input.gm-error + label + i svg path {
-    stroke: var(--red);
-} */
-
-.gm-floating-input i {
+.gm-input i {
     position: absolute;
     top: 14px;
-    left: 0;
+    left: 14px;
     opacity: 1.0;
     transition: all var(--animation-speed-base) ease-in-out;
     transition-delay: 0s;
@@ -373,15 +376,20 @@ select:-webkit-autofill:active {
     color: var(--red);
     font-size: var(--text-s);
     letter-spacing: 0.4px;
-    margin: 28px -40px 0;
+    margin: 32px -2px -24px;
     background: color-mod(var(--red) a(0.08));
-    padding: 12px 40px;
+    padding: 11px 14px;
     font-weight: 500;
     display: flex;
-    justify-content: start;
-    align-items: center;
+    justify-content: center;
+    align-items: start;
+    border-radius: 4px;
+}
+
+.gm-form-errortext span {
+    margin: 1px 0 0;
 }
 
 .gm-form-errortext i {
-    margin: 3px 8px 0 0;
+    margin: 1px 8px 0 0;
 }

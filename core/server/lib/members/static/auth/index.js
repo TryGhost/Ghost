@@ -205,13 +205,13 @@ export default class App extends Component {
         let hash = '';
         switch (formType) {
             case 'signup':
-                mainTitle = 'Sign Up';
+                mainTitle = 'Sign up';
                 ctaTitle = 'Already a member?';
                 ctaLabel = 'Log in';
                 hash = 'signin';
                 break;
             case 'signin':
-                mainTitle = 'Log In';
+                mainTitle = 'Log in';
                 ctaTitle = 'Not a member?';
                 ctaLabel = 'Sign up';
                 hash = 'signup';
@@ -237,11 +237,11 @@ export default class App extends Component {
         }
         let formError = this.renderError({ error: {errorType: "form-submit"}, formType });
         return (
-            <div className="flex flex-column">
+            <div>
                 <div className="gm-logo"></div>
                 <div className="gm-auth-header">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex items-baseline">
+                    <div className="flex items-baseline mt2">
                         <h4>{ ctaTitle }</h4>
                         <a href="javascript:;"
                             onClick={(e) => {window.location.hash = hash}}
@@ -264,7 +264,7 @@ export default class App extends Component {
 
         return (
             <div className="gm-form-element">
-                <div className="gm-floating-input">
+                <div className="gm-input">
                     <input
                         type={ type }
                         name={ name }
@@ -279,7 +279,7 @@ export default class App extends Component {
                     <i>{ icon }</i>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
-                { (inputError ? <div class="gm-input-errortext">{ inputError }</div> : "")}
+                {/* { (inputError ? <div class="gm-input-errortext">{ inputError }</div> : "")} */}
             </div>
         )
     }
@@ -301,7 +301,7 @@ export default class App extends Component {
 
     renderFormSubmit({buttonLabel, formType}) {
         return (
-            <div className="mt8">
+            <div className="mt10">
                 <button type="submit" name={ formType } className="gm-btn-blue" onClick={(e) => this.onSubmitClick(e)}>{ buttonLabel }</button>
             </div>
         )
@@ -362,7 +362,7 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column nt1">
+            <div className="flex flex-column mt6">
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)} noValidate>
                     { formElements }
                 </form>
