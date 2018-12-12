@@ -218,20 +218,20 @@ export default class App extends Component {
                 break;
             case 'request-password-reset':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
                 hash = 'signin';
                 break;
             case 'password-reset-sent':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
                 hash = 'signin';
                 break;
             case 'reset-password':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
                 hash = 'signin';
                 break;
         }
@@ -301,7 +301,7 @@ export default class App extends Component {
 
     renderFormSubmit({buttonLabel, formType}) {
         return (
-            <div className="mt10">
+            <div className="mt6">
                 <button type="submit" name={ formType } className="gm-btn-blue" onClick={(e) => this.onSubmitClick(e)}>{ buttonLabel }</button>
             </div>
         )
@@ -362,7 +362,7 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column mt6">
+            <div className="flex flex-column mt3">
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)} noValidate>
                     { formElements }
                 </form>

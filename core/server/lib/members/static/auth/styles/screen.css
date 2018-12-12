@@ -67,7 +67,7 @@ a:hover {
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    margin: 16px 0 0;
+    margin: 24px 0 0;
 }
 
 .gm-auth-header-cta {
