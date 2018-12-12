@@ -103,16 +103,15 @@ describe('Tag Model', function () {
                 .catch(done);
         });
 
-        it('can strip invisible unicode from slug', function (done) {
+        it('can strip invisible unicode from slug', function () {
             const tag = Object.assign(_.omit(testUtils.DataGenerator.forModel.tags[0], 'id'), {
                 slug: 'abc\u0008',
             });
-            models.Tag.add(tag, context)
+            return models.Tag.add(tag, context)
                 .then(function (newTag) {
                     should.exist(newTag);
                     newTag.get('slug').should.equal('abc');
-                    done();
-                }).catch(done);
+                });
         });
     });
 
