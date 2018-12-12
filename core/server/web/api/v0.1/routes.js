@@ -11,8 +11,7 @@ const cors = require('../../shared/middlewares/api/cors');
 const brute = require('../../shared/middlewares/brute');
 
 // Handling uploads & imports
-const tmpdir = require('os').tmpdir;
-const upload = require('multer')({dest: tmpdir()});
+const upload = require('../../shared/middlewares/upload');
 const validation = require('../../shared/middlewares/validation');
 const image = require('../../shared/middlewares/image');
 

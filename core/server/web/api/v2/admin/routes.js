@@ -1,6 +1,4 @@
 const express = require('express');
-const os = require('os');
-const multer = require('multer');
 const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
@@ -9,8 +7,7 @@ const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 
 // Handling uploads & imports
-const tmpdir = os.tmpdir;
-const upload = multer({dest: tmpdir()});
+const upload = shared.middlewares.upload;
 
 module.exports = function apiRoutes() {
     const router = express.Router();

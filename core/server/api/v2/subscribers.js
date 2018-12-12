@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const Promise = require('bluebird');
 const models = require('../../models');
 const fsLib = require('../../lib/fs');
@@ -208,9 +207,6 @@ const subscribers = {
                         }
                     }
                 };
-            }).finally(() => {
-                // Remove uploaded file from tmp location
-                return fs.unlink(filePath);
             });
         }
     }
