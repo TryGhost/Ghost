@@ -37,7 +37,7 @@ describe('{{#get}} helper', function () {
         helpers.get.call(
             {},
             'posts',
-            {hash: {}, fn: fn, inverse: inverse}
+            {hash: {}, data: locals, fn: fn, inverse: inverse}
         ).then(function (result) {
             labsStub.calledOnce.should.be.true();
             fn.called.should.be.false();
@@ -326,7 +326,8 @@ describe('{{#get}} helper', function () {
                 'users',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                labsStub.calledOnce.should.be.true();
+                // We don't use the labs helper for v2
+                labsStub.calledOnce.should.be.false();
 
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
@@ -358,7 +359,8 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                labsStub.calledOnce.should.be.true();
+                // We don't use the labs helper for v2
+                labsStub.calledOnce.should.be.false();
 
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
