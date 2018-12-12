@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const storage = require('../../adapters/storage');
 
 module.exports = {
@@ -10,22 +9,11 @@ module.exports = {
             const store = storage.getStorage();
 
             if (frame.files) {
-                return Promise.map(frame.files, (file) => {
-                    return store
-                        .save(file)
-                        .finally(() => {
-                            // Remove uploaded file from tmp location
-                            return fs.unlink(file.path);
-                        });
-                }).then((paths) => {
-                    return paths[0];
-                });
+                return Promise
+                    .map(frame.files, file => store.save(file))
+                    .then(paths => paths[0]);
             }
-
-            return store.save(frame.file).finally(() => {
-                // Remove uploaded file from tmp location
-                return fs.unlink(frame.file.path);
-            });
+            return store.save(frame.file);
         }
     }
 };
