@@ -218,21 +218,12 @@ export default class App extends Component {
                 break;
             case 'request-password-reset':
                 mainTitle = 'Reset password';
-                ctaTitle = 'Back to';
-                ctaLabel = 'log in';
-                hash = 'signin';
                 break;
             case 'password-reset-sent':
                 mainTitle = 'Reset password';
-                ctaTitle = 'Back to';
-                ctaLabel = 'log in';
-                hash = 'signin';
                 break;
             case 'reset-password':
                 mainTitle = 'Reset password';
-                ctaTitle = 'Back to';
-                ctaLabel = 'log in';
-                hash = 'signin';
                 break;
         }
         let formError = this.renderError({ error: {errorType: "form-submit"}, formType });
@@ -241,18 +232,58 @@ export default class App extends Component {
                 <div className="gm-logo"></div>
                 <div className="gm-auth-header">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex items-baseline mt2">
-                        <h4>{ ctaTitle }</h4>
-                        <a href="javascript:;"
-                            onClick={(e) => {window.location.hash = hash}}
-                        >
-                            {ctaLabel}
-                        </a>
-                    </div>
+                    {(ctaTitle ? 
+                        <div className="flex items-baseline mt2">
+                            <h4>{ ctaTitle }</h4>
+                            <a href="javascript:;"
+                                onClick={ (e) => { window.location.hash = hash } }
+                            >
+                                { ctaLabel }
+                            </a>
+                        </div>
+                        : "")}
                 </div>
                 {(formError ? <div class="gm-form-errortext"><i>{ IconError }</i> { formError }</div> : "")}
             </div>
         )
+    }
+
+    renderFormFooters(formType) {
+        let mainTitle = '';
+        let ctaTitle = '';
+        let ctaLabel = '';
+        let hash = '';
+        switch (formType) {
+            case 'request-password-reset':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+            case 'password-reset-sent':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+            case 'reset-password':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+        }
+        if (ctaTitle) {
+            return (
+                <div className="gm-auth-footer">
+                    <div className="flex items-baseline">
+                        <h4>{ ctaTitle }</h4>
+                        <a href="javascript:;"
+                            onClick={ (e) => { window.location.hash = hash } }
+                        >
+                            { ctaLabel }
+                        </a>
+                    </div>
+                </div>
+            )
+        }
     }
 
     renderFormInput({type, name, label, icon, placeholder, required, formType}) {
@@ -286,7 +317,7 @@ export default class App extends Component {
 
     renderFormText({formType}) {
         return (
-            <div className="mt8">
+            <div className="gm-reset-sent">
                 <p>We’ve sent a recovery email to your inbox. Follow the link in the email to reset your password.</p>
             </div>
         )
@@ -339,14 +370,17 @@ export default class App extends Component {
 
         let formElements = [];
         let buttonLabel = '';
+        let formContainerClass = 'flex flex-column'
         switch (formType) {
             case 'signin':
                 buttonLabel = 'Log in';
                 formElements = [emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
+                formContainerClass += ' mt3'
                 break;
             case 'signup':
                 buttonLabel = 'Sign up';
                 formElements = [nameInput, emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
+                formContainerClass += ' mt3'
                 break;
             case 'request-password-reset':
                 buttonLabel = 'Send reset password instructions';
@@ -362,7 +396,7 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column mt3">
+            <div className={formContainerClass}>
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)} noValidate>
                     { formElements }
                 </form>
@@ -377,6 +411,7 @@ export default class App extends Component {
                     <a className="gm-modal-close" onClick={ (e) => this.close(e)}>{ IconClose }</a>
                     {this.renderFormHeaders(formType)}
                     {this.renderFormSection(formType)}
+                    {this.renderFormFooters(formType)}
                 </div>
             </div>
         );

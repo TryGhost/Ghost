@@ -62,7 +62,8 @@ a:hover {
     background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
 }
 
-.gm-auth-header {
+.gm-auth-header,
+.gm-auth-footer {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -70,22 +71,20 @@ a:hover {
     margin: 24px 0 0;
 }
 
-.gm-auth-header-cta {
-    padding: 0 0 3px;
-}
-
 .gm-auth-header h1 {
     font-size: var(--text-xl);
 }
 
-.gm-auth-header h4 {
+.gm-auth-header h4,
+.gm-auth-footer h4 {
     font-weight: normal;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
-    color: var(--grey-d1);
+    /* color: var(--grey-d1); */
 }
 
-.gm-auth-header a {
+.gm-auth-header a,
+.gm-auth-footer a {
     display: block;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
@@ -96,7 +95,8 @@ a:hover {
     white-space: nowrap;
 }
 
-.gm-auth-header a:hover {
+.gm-auth-header a:hover,
+.gm-auth-footer a:hover {
     color: var(--blue-d3);
 }
 
@@ -107,6 +107,14 @@ a:hover {
     z-index: 9999;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
+}
+
+.gm-reset-sent {
+    margin: 24px 0 0;
+    background: color-mod(var(--green) a(0.2));
+    border-radius: 4px;
+    color: color-mod(var(--green) l(-30%) s(+8%));
+    padding: 12px 14px 14px;
 }
 
 /* Custom forms */

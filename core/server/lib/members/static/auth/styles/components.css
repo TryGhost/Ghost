@@ -376,7 +376,7 @@ select:-webkit-autofill:active {
     color: var(--red);
     font-size: var(--text-s);
     letter-spacing: 0.4px;
-    margin: 32px -2px -24px;
+    margin: 40px -2px -12px;
     background: color-mod(var(--red) a(0.08));
     padding: 11px 14px;
     font-weight: 500;
