@@ -71,7 +71,7 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         });
 };
 
-module.exports.process = (options) => {
+const makeSafe = fn => (...args) => {
     try {
         require('sharp');
     } catch (err) {
@@ -81,17 +81,8 @@ module.exports.process = (options) => {
             err: err
         }));
     }
-    return unsafeProcess(options)
+    return fn(...args);
 };
-module.exports.resizeImage = (buffer, options) => {
-    try {
-        require('sharp');
-    } catch (err) {
-        return Promise.reject(new common.errors.InternalServerError({
-            message: 'Sharp wasn\'t installed',
-            code: 'SHARP_INSTALLATION',
-            err: err
-        }));
-    }
-    return unsafeResizeImage(buffer, options);
-};
+
+module.exports.process = makeSafe(unsafeProcess);
+module.exports.resizeImage = makeSafe(unsafeResizeImage);
