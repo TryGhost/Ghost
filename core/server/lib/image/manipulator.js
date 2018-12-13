@@ -8,19 +8,8 @@ const fs = require('fs-extra');
  * We currently can't enable compression or having more config options, because of
  * https://github.com/lovell/sharp/issues/1360.
  */
-const process = (options = {}) => {
-    let sharp, img, originalData, originalSize;
-
-    try {
-        sharp = require('sharp');
-    } catch (err) {
-        return Promise.reject(new common.errors.InternalServerError({
-            message: 'Sharp wasn\'t installed',
-            code: 'SHARP_INSTALLATION',
-            err: err
-        }));
-    }
-
+const unsafeProcess = (options = {}) => {
+    const sharp = require('sharp');
     // @NOTE: workaround for Windows as libvips keeps a reference to the input file
     //        which makes it impossible to fs.unlink() it on cleanup stage
     sharp.cache(false);
@@ -82,7 +71,18 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         });
 };
 
-module.exports.process = process;
+module.exports.process = (options) => {
+    try {
+        require('sharp');
+    } catch (err) {
+        return Promise.reject(new common.errors.InternalServerError({
+            message: 'Sharp wasn\'t installed',
+            code: 'SHARP_INSTALLATION',
+            err: err
+        }));
+    }
+    return unsafeProcess(options)
+};
 module.exports.resizeImage = (buffer, options) => {
     try {
         require('sharp');
