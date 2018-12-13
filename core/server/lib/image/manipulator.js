@@ -73,6 +73,12 @@ const resizeImage = (originalBuffer, {width, height} = {}) => {
         .toBuffer()
         .then((resizedBuffer) => {
             return resizedBuffer.length < originalBuffer.length ? resizedBuffer : originalBuffer;
+        }).catch((err) => {
+            throw new common.errors.InternalServerError({
+                message: 'Unable to manipulate image.',
+                err: err,
+                code: 'IMAGE_PROCESSING'
+            });
         });
 };
 
@@ -80,8 +86,12 @@ module.exports.process = process;
 module.exports.safeResizeImage = (buffer, options) => {
     try {
         require('sharp');
-        return resizeImage(buffer, options);
-    } catch (e) {
-        return Promise.resolve(buffer);
+    } catch (err) {
+        return Promise.reject(new common.errors.InternalServerError({
+            message: 'Sharp wasn\'t installed',
+            code: 'SHARP_INSTALLATION',
+            err: err
+        }));
     }
+    return resizeImage(buffer, options);
 };
