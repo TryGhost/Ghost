@@ -7,7 +7,6 @@
 // Returns the URL for the current object scope i.e. If inside a post scope will return image permalink
 // `absolute` flag outputs absolute URL, else URL is relative.
 
-const path = require('path');
 const proxy = require('./proxy');
 const urlService = proxy.urlService;
 const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
@@ -67,7 +66,7 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
 
     const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
 
-    return path.join(imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}/`, imageName);
+    return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, imageName].join('');
 }
 
 function prefixIfPresent(prefix, string) {
