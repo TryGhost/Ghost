@@ -1,5 +1,5 @@
 const path = require('path');
-const sharp = require('sharp');
+const image = require('../../../../lib/image');
 const storage = require('../../../../adapters/storage');
 const activeTheme = require('../../../../services/themes/active');
 
@@ -51,11 +51,7 @@ module.exports = function (req, res, next) {
 
         return storageInstance.read({path: originalImagePath})
             .then((originalImageBuffer) => {
-                return sharp(originalImageBuffer)
-                    .resize(imageDimensionConfig.width, imageDimensionConfig.height, {
-                        withoutEnlargement: true
-                    })
-                    .toBuffer();
+                return image.manipulator.safeResizeImage(originalImageBuffer, imageDimensionConfig);
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
