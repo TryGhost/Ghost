@@ -101,6 +101,16 @@ describe('Models: base', function () {
                     slug.should.eql('hash-#lul');
                 });
         });
+
+        it('contains invisible unicode', function () {
+            Model.findOne.resolves(false);
+            security.string.safe.withArgs('abc').returns('abc');
+
+            return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
+                .then((slug) => {
+                    slug.should.eql('abc');
+                });
+        });
     });
 
     describe('sanitizeData', function () {
