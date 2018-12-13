@@ -8,38 +8,17 @@ const fs = require('fs-extra');
  * We currently can't enable compression or having more config options, because of
  * https://github.com/lovell/sharp/issues/1360.
  */
+
 const unsafeProcess = (options = {}) => {
-    const sharp = require('sharp');
-    // @NOTE: workaround for Windows as libvips keeps a reference to the input file
-    //        which makes it impossible to fs.unlink() it on cleanup stage
-    sharp.cache(false);
-
     return fs.readFile(options.in)
+        .catch()
         .then((data) => {
-            originalData = data;
-
-            // @NOTE: have to use constructor with Buffer for sharp to be able to expose size property
-            img = sharp(data);
+            return unsafeResizeImage(data, {
+                width: options.width
+            });
         })
-        .then(() => img.metadata())
-        .then((metadata) => {
-            originalSize = metadata.size;
-
-            if (metadata.width > options.width) {
-                img.resize(options.width);
-            }
-
-            // CASE: if you call `rotate` it will automatically remove the orientation (and all other meta data) and rotates
-            //       based on the orientation. It does not rotate if no orientation is set.
-            img.rotate();
-            return img.toBuffer({resolveWithObject: true});
-        })
-        .then(({data, info}) => {
-            if (info.size > originalSize) {
-                return fs.writeFile(options.out, originalData);
-            } else {
-                return fs.writeFile(options.out, data);
-            }
+        .then((data) => {
+            return fs.writeFile(options.out, data);
         });
 };
 
