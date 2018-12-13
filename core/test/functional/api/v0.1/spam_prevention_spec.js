@@ -87,13 +87,15 @@ describe('Spam Prevention API', function () {
     it('Ensure reset works: password grant type', function () {
             return executeRequests(userAllowedAttempts - 1, loginAttempt, owner.email, incorrectPassword)
             .then(() => loginAttempt(owner.email, correctPassword))
-            .then(() => {
-                return db.knex('brute').select()
-                    .then(function (rows) {
-                        // if reset works, the key is deleted and only one key remains in the database
-                        // the one key is the key for global block
-                        rows.length.should.eql(1);
-                    });
+            .then(() => loginAttempt(owner.email, incorrectPassword))
+            .then((res) => {
+                // CASE: the reset means that we should be able to attempt to log in again
+                // and not get a too many requests error
+                const error = res.body.errors[0];
+                should.exist(error.errorType);
+                res.statusCode.should.eql(422);
+                error.errorType.should.eql('ValidationError');
+                error.message.should.eql('Your password is incorrect.');
             });
     });
 });
