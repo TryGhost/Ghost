@@ -3,6 +3,7 @@
 // Outputs navigation menu of static urls
 
 var proxy = require('./proxy'),
+    string = require('../lib/security/string'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
     i18n = proxy.i18n,
@@ -41,7 +42,7 @@ module.exports = function navigation(options) {
     }
 
     function _slugify(label) {
-        return label.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
+        return string.safe(label);
     }
 
     // strips trailing slashes and compares urls
