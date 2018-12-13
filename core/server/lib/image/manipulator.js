@@ -61,4 +61,27 @@ const process = (options = {}) => {
         });
 };
 
+const resizeImage = (originalBuffer, {width, height} = {}) => {
+    const sharp = require('sharp');
+    return sharp(originalBuffer)
+        .resize(width, height, {
+            // CASE: dont make the image bigger than it was
+            withoutEnlargement: true
+        })
+        // CASE: Automatically remove metadata and rotate based on the orientation.
+        .rotate()
+        .toBuffer()
+        .then((resizedBuffer) => {
+            return resizedBuffer.length < originalBuffer.length ? resizedBuffer : originalBuffer;
+        });
+};
+
 module.exports.process = process;
+module.exports.safeResizeImage = (buffer, options) => {
+    try {
+        require('sharp');
+        return resizeImage(buffer, options);
+    } catch (e) {
+        return Promise.resolve(buffer);
+    }
+};
