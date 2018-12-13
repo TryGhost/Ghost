@@ -25,7 +25,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.User.findPage(frame.options);
+            return models.Author.findPage(frame.options);
         }
     },
 
@@ -51,7 +51,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.User.findOne(frame.data, frame.options)
+            return models.Author.findOne(frame.data, frame.options)
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({

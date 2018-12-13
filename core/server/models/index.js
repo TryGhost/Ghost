@@ -30,6 +30,7 @@ models = [
     'subscriber',
     'tag',
     'user',
+    'author',
     'invite',
     'webhook',
     'integration',
