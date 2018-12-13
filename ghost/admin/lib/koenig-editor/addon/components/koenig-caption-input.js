@@ -107,7 +107,7 @@ export default Component.extend({
     },
 
     _escape(editor) {
-        editor.blur();
+        editor.element.blur();
     },
 
     _upOrLeft(editor, key) {
