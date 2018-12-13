@@ -40,13 +40,6 @@ const unsafeProcess = (options = {}) => {
             } else {
                 return fs.writeFile(options.out, data);
             }
-        })
-        .catch((err) => {
-            throw new common.errors.InternalServerError({
-                message: 'Unable to manipulate image.',
-                err: err,
-                code: 'IMAGE_PROCESSING'
-            });
         });
 };
 
@@ -62,12 +55,6 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         .toBuffer()
         .then((resizedBuffer) => {
             return resizedBuffer.length < originalBuffer.length ? resizedBuffer : originalBuffer;
-        }).catch((err) => {
-            throw new common.errors.InternalServerError({
-                message: 'Unable to manipulate image.',
-                err: err,
-                code: 'IMAGE_PROCESSING'
-            });
         });
 };
 
@@ -81,7 +68,13 @@ const makeSafe = fn => (...args) => {
             err: err
         }));
     }
-    return fn(...args);
+    return fn(...args).catch((err) => {
+        throw new common.errors.InternalServerError({
+            message: 'Unable to manipulate image.',
+            err: err,
+            code: 'IMAGE_PROCESSING'
+        });
+    });
 };
 
 module.exports.process = makeSafe(unsafeProcess);
