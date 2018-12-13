@@ -11,7 +11,6 @@ const fs = require('fs-extra');
 
 const unsafeProcess = (options = {}) => {
     return fs.readFile(options.in)
-        .catch()
         .then((data) => {
             return unsafeResizeImage(data, {
                 width: options.width
