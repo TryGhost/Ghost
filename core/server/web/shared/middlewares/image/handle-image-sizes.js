@@ -58,5 +58,10 @@ module.exports = function (req, res, next) {
             });
     }).then(() => {
         next();
-    }).catch(next);
+    }).catch(function (err) {
+        if (err.code === 'SHARP_INSTALLATION') {
+            return redirectToOriginal();
+        }
+        next(err);
+    });
 };
