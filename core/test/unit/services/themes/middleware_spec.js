@@ -95,7 +95,7 @@ describe('Themes', function () {
 
         describe('updateTemplateData', function () {
             var updateTemplateData = middleware[1],
-                themeDataExpectedProps = ['posts_per_page'],
+                themeDataExpectedProps = ['posts_per_page', 'image_sizes'],
                 blogDataExpectedProps = [
                     'url', 'title', 'description', 'logo', 'cover_image', 'icon', 'twitter', 'facebook', 'navigation',
                     'timezone', 'amp'

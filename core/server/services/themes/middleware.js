@@ -71,6 +71,7 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
 
     if (activeTheme.get()) {
         themeData.posts_per_page = activeTheme.get().config('posts_per_page');
+        themeData.image_sizes = activeTheme.get().config('image_sizes');
     }
 
     // Request-specific information

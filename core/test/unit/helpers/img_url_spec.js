@@ -92,4 +92,49 @@ describe('{{image}} helper', function () {
             rendered.should.equal('http://example.com/picture.jpg');
         });
     });
+
+    describe('image_sizes', function () {
+        before(function () {
+            configUtils.set({url: 'http://localhost:82832'});
+        });
+        after(function () {
+            configUtils.restore();
+        });
+        it('should output correct url for absolute paths which are internal', function () {
+            var rendered = helpers.img_url('http://localhost:82832/content/images/my-coole-img.jpg', {
+                hash: {
+                    size: 'medium',
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('http://localhost:82832/content/images/size/w400/my-coole-img.jpg');
+    });
+        it('should output the correct url for relative paths', function () {
+            var rendered = helpers.img_url('/content/images/my-coole-img.jpg', {
+                hash: {
+                    size: 'medium',
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
+        });
+    });
 });
