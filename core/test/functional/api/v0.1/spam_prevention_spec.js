@@ -87,6 +87,9 @@ describe('Spam Prevention API', function () {
     it('Ensure reset works: password grant type', function () {
             return executeRequests(userAllowedAttempts - 1, loginAttempt, owner.email, incorrectPassword)
             .then(() => loginAttempt(owner.email, correctPassword))
+            // CASE: login in with bad credentials twice - which would
+            // take us over the limit if the block hasn't been reset
+            .then(() => loginAttempt(owner.email, incorrectPassword))
             .then(() => loginAttempt(owner.email, incorrectPassword))
             .then((res) => {
                 // CASE: the reset means that we should be able to attempt to log in again
