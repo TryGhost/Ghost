@@ -61,7 +61,7 @@ const process = (options = {}) => {
         });
 };
 
-const resizeImage = (originalBuffer, {width, height} = {}) => {
+const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
     const sharp = require('sharp');
     return sharp(originalBuffer)
         .resize(width, height, {
@@ -83,7 +83,7 @@ const resizeImage = (originalBuffer, {width, height} = {}) => {
 };
 
 module.exports.process = process;
-module.exports.safeResizeImage = (buffer, options) => {
+module.exports.resizeImage = (buffer, options) => {
     try {
         require('sharp');
     } catch (err) {
@@ -93,5 +93,5 @@ module.exports.safeResizeImage = (buffer, options) => {
             err: err
         }));
     }
-    return resizeImage(buffer, options);
+    return unsafeResizeImage(buffer, options);
 };
