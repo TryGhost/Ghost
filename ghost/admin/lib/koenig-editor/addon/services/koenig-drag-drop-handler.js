@@ -1,6 +1,7 @@
 import * as constants from '../lib/dnd/constants';
 import * as utils from '../lib/dnd/utils';
 import Container from '../lib/dnd/container';
+import ScrollHandler from '../lib/dnd/scroll-handler';
 import Service from '@ember/service';
 import {A} from '@ember/array';
 import {didCancel, task, waitForProperty} from 'ember-concurrency';
@@ -29,6 +30,7 @@ export default Service.extend({
         this._super(...arguments);
 
         this.containers = A([]);
+        this.scrollHandler = new ScrollHandler();
         this._eventHandlers = {};
         this._transformedDroppables = A([]);
 
@@ -38,8 +40,9 @@ export default Service.extend({
         // set up document event listeners
         this._addGrabListeners();
 
-        // append drop indicator element
+        // append body elements
         this._appendDropIndicator();
+        this._appendGhostContainerElement();
     },
 
     willDestroy() {
@@ -51,8 +54,9 @@ export default Service.extend({
         // clean up document event listeners
         this._removeGrabListeners();
 
-        // remove drop indicator element
+        // remove body elements
         this._removeDropIndicator();
+        this._removeGhostContainerElement();
     },
 
     // interface ---------------------------------------------------------------
@@ -98,10 +102,10 @@ export default Service.extend({
     // for handling touch events later if required
     _onMouseDown(event) {
         if (!this.isDragging && (event.button === undefined || event.button === 0)) {
-            this.grabbedElement = utils.getParent(event.target, constants.DRAGGABLE_DATA_ATTR);
+            this.grabbedElement = utils.getParent(event.target, constants.DRAGGABLE_SELECTOR);
 
             if (this.grabbedElement) {
-                let containerElement = utils.getParent(this.grabbedElement, constants.CONTAINER_DATA_ATTR);
+                let containerElement = utils.getParent(this.grabbedElement, constants.CONTAINER_SELECTOR);
                 let container = this.containers.findBy('element', containerElement);
                 this.sourceContainer = container;
 
@@ -112,6 +116,7 @@ export default Service.extend({
                         // set up the drag details
                         this._initiateDrag(event);
                         // add watches to follow the drag/drop
+                        // TODO: move to _initiateDrag
                         this._addMoveListeners();
                         this._addReleaseListeners();
                         this._addKeyDownListeners();
@@ -234,7 +239,7 @@ export default Service.extend({
         // create the ghost element and cache it's position so avoid costly
         // getBoundingClientRect calls in the mousemove handler
         let ghostElement = container.createGhostElement(this.grabbedElement);
-        document.body.appendChild(ghostElement);
+        this._ghostContainerElement.appendChild(ghostElement);
         let ghostElementRect = ghostElement.getBoundingClientRect();
         let ghostInfo = {
             element: ghostElement,
@@ -245,6 +250,9 @@ export default Service.extend({
 
         // start ghost element following the mouse
         requestAnimationFrame(this._rafUpdateGhostElementPosition);
+
+        // let the scroll handler select the scrollable element
+        this.scrollHandler.dragStart(this.draggableInfo);
 
         this._handleDrag();
     },
@@ -257,10 +265,13 @@ export default Service.extend({
             this.draggableInfo.mousePosition.x,
             this.draggableInfo.mousePosition.y
         );
+        this.draggableInfo.target = target;
         this.ghostInfo.element.hidden = false;
 
-        let overContainerElem = utils.getParent(target, constants.CONTAINER_DATA_ATTR);
-        let overDroppableElem = utils.getParent(target, constants.DROPPABLE_DATA_ATTR);
+        this.scrollHandler.dragMove(this.draggableInfo);
+
+        let overContainerElem = utils.getParent(target, constants.CONTAINER_SELECTOR);
+        let overDroppableElem = utils.getParent(target, constants.DROPPABLE_SELECTOR);
 
         let isLeavingContainer = this._currentOverContainerElem && overContainerElem !== this._currentOverContainerElem;
         let isLeavingDroppable = this._currentOverDroppableElem && overDroppableElem !== this._currentOverDroppableElem;
@@ -375,10 +386,11 @@ export default Service.extend({
             // account for indicator width
             leftAdjustment -= 2;
 
+            let dropIndicatorParentRect = dropIndicator.parentNode.getBoundingClientRect();
             let lastLeft = parseInt(dropIndicator.style.left);
             let lastTop = parseInt(dropIndicator.style.top);
-            let newLeft = offsetLeft + leftAdjustment;
-            let newTop = offsetTop;
+            let newLeft = offsetLeft + leftAdjustment - dropIndicatorParentRect.left;
+            let newTop = offsetTop - dropIndicatorParentRect.top;
             let newHeight = droppable.offsetHeight;
 
             // if indicator hasn't moved, keep it showing, otherwise wait for
@@ -433,6 +445,8 @@ export default Service.extend({
         this._removeMoveListeners();
         this._removeReleaseListeners();
 
+        this.scrollHandler.dragStop();
+
         this.grabbedElement.style.opacity = '';
 
         this.set('isDragging', false);
@@ -464,14 +478,36 @@ export default Service.extend({
             dropIndicator.style.zIndex = constants.DROP_INDICATOR_ZINDEX;
             dropIndicator.style.pointerEvents = 'none';
 
-            document.body.appendChild(dropIndicator);
+            // TODO: the scrollableElement should probably be configurable, it
+            // may need to be set on a per-container basis in case there are
+            // scrollable containers within a card
+            let scrollableElement = document.querySelector('.koenig-editor')
+                || utils.getDocumentScrollingElement();
+            scrollableElement.appendChild(dropIndicator);
         }
         this._dropIndicator = dropIndicator;
+    },
+
+    _appendGhostContainerElement() {
+        if (!this._ghostContainerElement) {
+            let ghostContainerElement = document.createElement('div');
+            ghostContainerElement.id = constants.GHOST_CONTAINER_ID;
+            ghostContainerElement.style.position = 'fixed';
+            ghostContainerElement.style.width = '100%';
+            document.body.appendChild(ghostContainerElement);
+            this._ghostContainerElement = ghostContainerElement;
+        }
     },
 
     _removeDropIndicator() {
         if (this._dropIndicator) {
             this._dropIndicator.remove();
+        }
+    },
+
+    _removeGhostContainerElement() {
+        if (this.ghostContainerElement) {
+            this.ghostContainerElement.remove();
         }
     },
 
