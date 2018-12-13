@@ -49,7 +49,7 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
         return imagePath;
     }
 
-    if (/https?:\/\//.test(imagePath)) {
+    if (/https?:\/\//.test(imagePath) && !imagePath.startsWith(urlService.utils.getBlogUrl())) {
         return imagePath;
     }
 
@@ -63,11 +63,11 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
         return imagePath;
     }
 
-    const imageName = path.relative(STATIC_IMAGE_URL_PREFIX, imagePath);
+    const [imgBlogUrl, imageName] = imagePath.split(STATIC_IMAGE_URL_PREFIX);
 
     const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
 
-    return path.join(STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}/`, imageName);
+    return path.join(imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}/`, imageName);
 }
 
 function prefixIfPresent(prefix, string) {
