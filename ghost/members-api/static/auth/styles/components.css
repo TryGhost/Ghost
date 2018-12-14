@@ -13,7 +13,15 @@
     position: fixed;
     overflow-y: scroll;
     background: rgba(10, 17, 23, 0.9);
-    animation: fadeInOverlay 0.2s ease;
+    animation: fadeInOverlay 0.2s ease 1 forwards;
+}
+
+.gm-page-overlay.close {
+    animation: fadeOutOverlay 0.2s ease 0.5s 1 forwards;
+}
+
+.gm-page-overlay.close .gm-modal {
+    animation: closeModal 0.5s ease-in 1 forwards;
 }
 
 .gm-modal-container {
@@ -30,7 +38,7 @@
     border-radius: 4px;
     padding: 40px;
     box-shadow: var(--box-shadow-base);
-    animation: openModal 0.6s ease;
+    animation: openModal 0.6s ease 1 forwards;
 }
 
 .gm-modal-close {
@@ -55,6 +63,11 @@
     to {opacity: 1;}
 }
 
+@keyframes fadeOutOverlay {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
 @keyframes openModal { /* Safari and Chrome */
     0% {
         opacity: 0;
@@ -71,6 +84,22 @@
     }
 }
 
+@keyframes closeModal { /* Safari and Chrome */
+    0% {
+        transform: translateY(0);
+    }
+
+    40% {
+        opacity: 1.0;
+        transform: translateY(-8px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(85px);
+    }
+}
+
 @media (max-width: 440px) {
     .gm-modal-container {
         margin: 0;
@@ -79,11 +108,44 @@
         transform: none;
         height: 100vh;
     }
+    
     .gm-modal {
         width: calc(100% - 48px);
         height: calc(100vh - 48px);
         padding: 24px;
         border-radius: 0;
+    }
+
+    .gm-page-overlay {
+        background: rgba(10, 17, 23, 0.0);
+    }
+
+    @keyframes openModal {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        50% {
+            opacity: 1.0;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes closeModal {
+        0% {
+            opacity: 1.0;
+            transform: translateY(0);
+        }
+
+        60% {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        100% {
+            opacity: 0;
+        }
     }
 }
 
@@ -91,14 +153,13 @@
 /* ------------------------------------------------------------ */
 button {
     width: 100%;
-    height: 44px;
     font-weight: 500;
     border: 1px solid var(--grey);
     color: var(--grey-d3);
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
-    padding: 0 15px;
+    padding: 15px 15px 16px;
     border-radius: 4px;
     outline: none;
     transition: all var(--animation-speed-f1) ease-in-out;
@@ -169,124 +230,166 @@ select:-webkit-autofill:active {
     color: var(--white);
 }
 
-.gm-floating-input {
+.gm-form-element {
+    margin: 24px 0 0;
     position: relative;
 }
 
-.gm-floating-input input {
-    font-size: var(--text-base);
+.gm-input {
+    position: relative;
+}
+
+.gm-input input {
+    font-size: var(--text-s);
     color: var(--grey-d3);
     border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid var(--grey-l1);
+    border-radius: 4px;
+    border: 1px solid var(--grey-l1);
     height: 38px;
     -webkit-appearance: none;
     box-sizing: border-box;
     background: var(--white);
-    height: 44px;
     width: 100%;
     outline: none;
     transition: border var(--animation-speed-f1) ease-in-out;
-    padding: 0 0 1px 26px; /* 1px bottom padding fixes jump that's caused by the border change */
+    padding: 20px 14px 22px 38px; /* 1px bottom padding fixes jump that's caused by the border change */
     letter-spacing: 0.2px;
+    line-height: 14px;
 }
 
-.gm-floating-input input:hover {
-    border-bottom: 1px solid var(--grey);
+.gm-input input:hover {
+    border: 1px solid var(--grey);
 }
 
-.gm-floating-input input:focus {
-    border-bottom: 2px solid var(--blue);
-    padding: 0 0 0 26px;
+.gm-input input.gm-error {
+    border: 1px solid color-mod(var(--red) a(0.8));
+    background: color-mod(var(--red) a(0.02))
 }
 
-.gm-floating-input input.gm-error {
-    border-bottom: 1px solid var(--red);
+.gm-input input:focus {
+    border: 1px solid color-mod(var(--blue) a(0.8));
+    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
 }
 
-.gm-floating-input label {
+.gm-input label {
     display: flex;
     align-items: center;
     position: absolute;
-    font-size: var(--text-xs);
+    font-size: var(--text-s);
     padding: 0 0 2px 0;
     width: 100%;
-    top: 15px;
-    left: 24px;
+    top: 14px;
+    left: 38px;
     color: var(--grey);
     transition: all var(--animation-speed-base) ease-in-out;
-    transition-delay: 0.15s;
     pointer-events: none;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    font-weight: 500;
+    letter-spacing: 0.4px;
+    font-weight: 400;
 }
 
-.gm-floating-input input.gm-input-filled + label,
-.gm-floating-input input:focus + label {
+.gm-input input:hover + label {
+    color: var(--grey-d1);
+}
+
+.gm-input input.gm-input-filled + label,
+.gm-input input:focus + label {
     opacity: 0;
     transition-delay: 0s;
 }
 
-.gm-floating-input label i svg {
+.gm-input input.gm-error + label {
+    color: color-mod(var(--red) a(0.5));
+}
+
+.gm-input label i svg {
     width: 16px;
     height: 16px;
 }
 
-.gm-floating-input label i svg path,
-.gm-floating-input i svg path {
+.gm-input label i svg path,
+.gm-input i svg path {
     stroke: var(--grey);
     transition: stroke var(--animation-speed-base) ease-in-out;
 }
 
-.gm-floating-input input.gm-input-filled + label + i svg path,
-.gm-floating-input input:focus + label + i svg path{
+.gm-input input:hover + label + i svg path {
+    stroke: var(--grey-d1);
+}
+
+.gm-input input.gm-error + label + i svg path {
+    stroke: color-mod(var(--red) a(0.5));
+}
+
+.gm-input input.gm-input-filled + label + i svg path,
+.gm-input input:focus + label + i svg path {
     stroke: var(--grey-d2);
 }
 
-.gm-floating-input i {
+.gm-input i {
     position: absolute;
     top: 14px;
-    left: 0;
+    left: 14px;
     opacity: 1.0;
-    transition: all var(--animation-speed-f1) ease-in-out;
+    transition: all var(--animation-speed-base) ease-in-out;
     transition-delay: 0s;
 }
 
-.gm-floating-input input.gm-input-filled + label + i,
-.gm-floating-input input:focus + label + i {
-    opacity: 1.0;
-    transform: translateX(0px);
-    transition-delay: 0.15s;
-}
-
-.gm-floating-input label i {
-    font-style: normal;
-    display: inline-block;
-    margin: 0 8px 0 0;
-}
-
 .gm-input-errortext {
-    color: var(--red);
-    font-size: var(--text-s);
-    letter-spacing: 0.4px;
-    margin: 4px 0 0;
-    font-weight: 500;
+    position: absolute;
+    top: 46px;
+    color: color-mod(var(--red) l(+5%) s(-2%));
+    font-size: var(--text-xs);
+    letter-spacing: 0.8px;
+    border-radius: 5px;
+    z-index: 9999;
+    animation: slideErrorText 0.4s ease;
+}
+
+@keyframes slideErrorText {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0px);
+    }
+}
+
+/* Error tooltip triangle */
+.gm-input-errortext-xx:before {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    margin-left: -6px;
+    width: 0;
+    border-bottom: 6px solid var(--grey-d3);
+    border-bottom: 6px solid var(--grey-d3);
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
 }
 
 .gm-form-errortext {
     color: var(--red);
     font-size: var(--text-s);
     letter-spacing: 0.4px;
-    margin: 28px -40px 0;
+    margin: 40px -2px -12px;
     background: color-mod(var(--red) a(0.08));
-    padding: 12px 40px;
+    padding: 11px 14px;
     font-weight: 500;
     display: flex;
-    justify-content: start;
-    align-items: center;
+    justify-content: center;
+    align-items: start;
+    border-radius: 4px;
+}
+
+.gm-form-errortext span {
+    margin: 1px 0 0;
 }
 
 .gm-form-errortext i {
-    margin: 3px 8px 0 0;
+    margin: 1px 8px 0 0;
 }
