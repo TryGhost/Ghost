@@ -47,9 +47,12 @@ module.exports = function (req, res, next) {
             return;
         }
 
-        const originalImagePath = path.relative(sizeImageDir, req.url);
+        const imagePath = path.relative(sizeImageDir, req.url);
 
-        return storageInstance.read({path: originalImagePath})
+        return Promise.resolve(imagePath)
+            .then((path) => {
+                return storageInstance.read({path});
+            })
             .then((originalImageBuffer) => {
                 return image.manipulator.resizeImage(originalImageBuffer, imageDimensionConfig);
             })
