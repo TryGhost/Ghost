@@ -12,6 +12,7 @@ function getFreshState() {
         formData: {},
         query,
         formType,
+        parentContainerClass: 'gm-page-overlay',
         showError: false,
         submitFail: false
     };
@@ -204,54 +205,85 @@ export default class App extends Component {
         let hash = '';
         switch (formType) {
             case 'signup':
-                mainTitle = 'Sign Up';
+                mainTitle = 'Sign up';
                 ctaTitle = 'Already a member?';
                 ctaLabel = 'Log in';
                 hash = 'signin';
                 break;
             case 'signin':
-                mainTitle = 'Log In';
+                mainTitle = 'Log in';
                 ctaTitle = 'Not a member?';
                 ctaLabel = 'Sign up';
                 hash = 'signup';
                 break;
             case 'request-password-reset':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
-                hash = 'signin';
                 break;
             case 'password-reset-sent':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
-                hash = 'signin';
                 break;
             case 'reset-password':
                 mainTitle = 'Reset password';
-                ctaTitle = '';
-                ctaLabel = 'Log in';
-                hash = 'signin';
                 break;
         }
         let formError = this.renderError({ error: {errorType: "form-submit"}, formType });
         return (
-            <div className="flex flex-column">
+            <div>
                 <div className="gm-logo"></div>
                 <div className="gm-auth-header">
                     <h1>{ mainTitle }</h1>
-                    <div className="flex items-baseline">
-                        <h4>{ ctaTitle }</h4>
-                        <a href="javascript:;"
-                            onClick={(e) => {window.location.hash = hash}}
-                        >
-                            {ctaLabel}
-                        </a>
-                    </div>
+                    {(ctaTitle ? 
+                        <div className="flex items-baseline mt2">
+                            <h4>{ ctaTitle }</h4>
+                            <a href="javascript:;"
+                                onClick={ (e) => { window.location.hash = hash } }
+                            >
+                                { ctaLabel }
+                            </a>
+                        </div>
+                        : "")}
                 </div>
                 {(formError ? <div class="gm-form-errortext"><i>{ IconError }</i> { formError }</div> : "")}
             </div>
         )
+    }
+
+    renderFormFooters(formType) {
+        let mainTitle = '';
+        let ctaTitle = '';
+        let ctaLabel = '';
+        let hash = '';
+        switch (formType) {
+            case 'request-password-reset':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+            case 'password-reset-sent':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+            case 'reset-password':
+                ctaTitle = 'Back to';
+                ctaLabel = 'log in';
+                hash = 'signin';
+                break;
+        }
+        if (ctaTitle) {
+            return (
+                <div className="gm-auth-footer">
+                    <div className="flex items-baseline">
+                        <h4>{ ctaTitle }</h4>
+                        <a href="javascript:;"
+                            onClick={ (e) => { window.location.hash = hash } }
+                        >
+                            { ctaLabel }
+                        </a>
+                    </div>
+                </div>
+            )
+        }
     }
 
     renderFormInput({type, name, label, icon, placeholder, required, formType}) {
@@ -262,8 +294,8 @@ export default class App extends Component {
         className += (value ? "gm-input-filled" : "") + (forgot ? " gm-forgot-input" : "") + (inputError ? " gm-error" : "");
 
         return (
-            <div className="mt8">
-                <div className="gm-floating-input">
+            <div className="gm-form-element">
+                <div className="gm-input">
                     <input
                         type={ type }
                         name={ name }
@@ -274,18 +306,18 @@ export default class App extends Component {
                         required = {required}
                         className={ className }
                     />
-                    <label for={ name }> { label }</label>
+                    <label for={ name }> { placeholder }</label>
                     <i>{ icon }</i>
                     { (forgot ? <a href="javascript:;" className="gm-forgot-link" onClick={(e) => {window.location.hash = 'request-password-reset'}}>Forgot</a> : "") }
                 </div>
-                <div class="gm-input-errortext">{ inputError }</div>
+                {/* { (inputError ? <div class="gm-input-errortext">{ inputError }</div> : "")} */}
             </div>
         )
     }
 
     renderFormText({formType}) {
         return (
-            <div className="mt8">
+            <div className="gm-reset-sent">
                 <p>We’ve sent a recovery email to your inbox. Follow the link in the email to reset your password.</p>
             </div>
         )
@@ -300,7 +332,7 @@ export default class App extends Component {
 
     renderFormSubmit({buttonLabel, formType}) {
         return (
-            <div className="mt8">
+            <div className="mt6">
                 <button type="submit" name={ formType } className="gm-btn-blue" onClick={(e) => this.onSubmitClick(e)}>{ buttonLabel }</button>
             </div>
         )
@@ -338,14 +370,17 @@ export default class App extends Component {
 
         let formElements = [];
         let buttonLabel = '';
+        let formContainerClass = 'flex flex-column'
         switch (formType) {
             case 'signin':
                 buttonLabel = 'Log in';
                 formElements = [emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
+                formContainerClass += ' mt3'
                 break;
             case 'signup':
                 buttonLabel = 'Sign up';
                 formElements = [nameInput, emailInput, passwordInput, this.renderFormSubmit({formType, buttonLabel})];
+                formContainerClass += ' mt3'
                 break;
             case 'request-password-reset':
                 buttonLabel = 'Send reset password instructions';
@@ -361,7 +396,7 @@ export default class App extends Component {
                 break;
         }
         return (
-            <div className="flex flex-column nt1">
+            <div className={formContainerClass}>
                 <form className={ `gm-` + formType + `-form` } onSubmit={(e) => this.submitForm(e)} noValidate>
                     { formElements }
                 </form>
@@ -376,6 +411,7 @@ export default class App extends Component {
                     <a className="gm-modal-close" onClick={ (e) => this.close(e)}>{ IconClose }</a>
                     {this.renderFormHeaders(formType)}
                     {this.renderFormSection(formType)}
+                    {this.renderFormFooters(formType)}
                 </div>
             </div>
         );
@@ -383,13 +419,22 @@ export default class App extends Component {
 
     render() {
         return (
-            <div className="gm-page-overlay" onClick={(e) => this.close(e)}>
+            <div className={this.state.parentContainerClass} onClick={(e) => this.close(e)}>
                 {this.renderFormComponent()}
             </div>
         );
     }
 
     close(event) {
-        window.parent.postMessage('pls-close-auth-popup', '*');
+        this.setState({
+            parentContainerClass: 'gm-page-overlay close'
+        });
+
+        window.setTimeout(() => {
+            this.setState({
+                parentContainerClass: 'gm-page-overlay'
+            });
+            window.parent.postMessage('pls-close-auth-popup', '*');
+        }, 700);
     }
 }
