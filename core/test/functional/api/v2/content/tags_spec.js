@@ -4,19 +4,16 @@ const _ = require('lodash');
 const url = require('url');
 const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../../core/server/config');
-const models = require('../../../../../../core/server/models');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Tags Content API V2', function () {
-    let ghostServer;
+    let request;
 
     before(function () {
         return ghost()
             .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -121,8 +118,6 @@ describe('Tags Content API V2', function () {
                 _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
                 _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
                 _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
-                // _.find(jsonResponse.tags, {name: 'pollo'}).count.posts.should.eql(0);
-                // _.find(jsonResponse.tags, {name: 'injection'}).count.posts.should.eql(0);
 
                 done();
             });

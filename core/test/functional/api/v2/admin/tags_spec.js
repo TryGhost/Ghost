@@ -4,15 +4,13 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../../core/server/config');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Tag API V2', function () {
-    let ghostServer;
+    let request;
 
     before(function () {
         return ghost()
             .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
