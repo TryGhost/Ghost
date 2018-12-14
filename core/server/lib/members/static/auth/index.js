@@ -430,13 +430,11 @@ export default class App extends Component {
             parentContainerClass: 'gm-page-overlay close'
         });
 
-        window.setTimeout(function(){
+        window.setTimeout(() => {
             this.setState({
                 parentContainerClass: 'gm-page-overlay'
             });
             window.parent.postMessage('pls-close-auth-popup', '*');
-        }
-        .bind(this), 
-        700);
+        }, 700);
     }
 }
