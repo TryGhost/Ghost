@@ -5,15 +5,16 @@ const debug = _debug('ghost-query');
 const addHasPostsWhere = function () {
     const tableName = _.result(this, 'tableName');
     const comparisonField = `${tableName}.id`;
+    const config = this.shouldHavePosts;
 
     this.query(function (qb) {
         return qb.whereIn(comparisonField, function () {
             const innerQb = this
-                .distinct('posts_authors.author_id')
+                .distinct(`${config.joinTable}.${config.joinTo}`)
                 .select()
-                .from('posts_authors')
-                .whereRaw(`posts_authors.author_id = ${comparisonField}`)
-                .join('posts', 'posts.id', 'posts_authors.post_id')
+                .from(config.joinTable)
+                .whereRaw(`${config.joinTable}.${config.joinTo} = ${comparisonField}`)
+                .join('posts', 'posts.id', `${config.joinTable}.post_id`)
                 .andWhere('posts.status', '=', 'published');
 
             debug(`QUERY has posts: ${innerQb.toSQL().sql}`);

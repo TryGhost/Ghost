@@ -29,6 +29,7 @@ models = [
     'session',
     'subscriber',
     'tag',
+    'tag-public',
     'user',
     'author',
     'invite',
