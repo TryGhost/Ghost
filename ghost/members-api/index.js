@@ -140,7 +140,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
-    apiRouter.post('/signout', getData(), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/signout', getData(), (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': removeCookie()
         });
