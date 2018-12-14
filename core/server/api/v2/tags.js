@@ -26,7 +26,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.findPage(frame.options);
+            return models.Tag.findPage(frame.options);
         }
     },
 
@@ -51,7 +51,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.findOne(frame.data, frame.options)
+            return models.Tag.findOne(frame.data, frame.options)
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
@@ -86,7 +86,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.add(frame.data.tags[0], frame.options);
+            return models.Tag.add(frame.data.tags[0], frame.options);
         }
     },
 
@@ -110,7 +110,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.edit(frame.data.tags[0], frame.options)
+            return models.Tag.edit(frame.data.tags[0], frame.options)
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new common.errors.NotFoundError({
@@ -143,7 +143,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.TagPublic.destroy(frame.options).return(null);
+            return models.Tag.destroy(frame.options).return(null);
         }
     }
 };
