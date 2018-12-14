@@ -98,7 +98,7 @@ Layout use a 4px grid.
 
 /* Shadows */
 :root {
-    --box-shadow-base: 0 0 1px rgba(0,0,0,.12), 0 16px 24px -12px rgba(0,0,0,.2); 
+    --box-shadow-base: 0 0 1px rgba(0, 0, 0, .12), 0 16px 24px -12px rgba(0, 0, 0, .2); 
 }
 
 /* Animations */
