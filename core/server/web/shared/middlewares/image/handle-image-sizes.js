@@ -51,12 +51,17 @@ module.exports = function (req, res, next) {
 
         return storageInstance.read({path: originalImagePath})
             .then((originalImageBuffer) => {
-                return image.manipulator.safeResizeImage(originalImageBuffer, imageDimensionConfig);
+                return image.manipulator.resizeImage(originalImageBuffer, imageDimensionConfig);
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
             });
     }).then(() => {
         next();
-    }).catch(next);
+    }).catch(function (err) {
+        if (err.code === 'SHARP_INSTALLATION') {
+            return redirectToOriginal();
+        }
+        next(err);
+    });
 };
