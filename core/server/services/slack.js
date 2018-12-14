@@ -42,6 +42,7 @@ function ping(post) {
 
     // Quit here if slack integration is not activated
     if (slackSettings && slackSettings.url && slackSettings.url !== '') {
+        slackSettings.username = slackSettings.username ? slackSettings.username : 'Ghost';
         // Only ping when not a page
         if (post.page) {
             return;
@@ -62,7 +63,7 @@ function ping(post) {
                 text: `Notification from *${blogTitle}* :ghost:`,
                 unfurl_links: true,
                 icon_url: imageLib.blogIcon.getIconUrl(true),
-                username: 'Ghost',
+                username: slackSettings.username,
                 // We don't want to send attachment if it is a test notification.
                 attachments: [
                     {
@@ -102,7 +103,7 @@ function ping(post) {
                 text: message,
                 unfurl_links: true,
                 icon_url: imageLib.blogIcon.getIconUrl(true),
-                username: 'Ghost'
+                username: slackSettings.username
             };
         }
 
