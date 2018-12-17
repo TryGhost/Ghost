@@ -45,7 +45,7 @@ describe('Settings API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse);
 
-                testUtils.API.checkResponse(jsonResponse, 'settings');
+                localUtils.API.checkResponse(jsonResponse, 'settings');
 
                 JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
                 JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
@@ -158,7 +158,7 @@ describe('Settings API', function () {
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
                         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
-                        testUtils.API.checkResponse(putBody, 'settings');
+                        localUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
             });

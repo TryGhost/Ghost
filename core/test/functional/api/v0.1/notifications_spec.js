@@ -47,7 +47,7 @@ describe('Notifications API', function () {
 
                     should.exist(jsonResponse.notifications);
 
-                    testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
+                    localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
 
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);
@@ -182,7 +182,7 @@ describe('Notifications API', function () {
                         jsonResponse = res.body;
 
                     should.exist(jsonResponse.notifications);
-                    testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
+                    localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
 
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);

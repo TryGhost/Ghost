@@ -44,10 +44,10 @@ describe('Tags Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(15);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 should.exist(res.body.tags[0].url);
                 should.exist(url.parse(res.body.tags[0].url).protocol);
@@ -70,10 +70,10 @@ describe('Tags Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(56);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
     });
@@ -92,10 +92,10 @@ describe('Tags Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(4);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
     });

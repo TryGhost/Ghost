@@ -39,7 +39,7 @@ describe('Slug API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
+                localUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('a-post-title');
 
                 done();
@@ -62,7 +62,7 @@ describe('Slug API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
+                localUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('atag');
 
                 done();
@@ -85,7 +85,7 @@ describe('Slug API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
+                localUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('user-name');
 
                 done();
@@ -108,7 +108,7 @@ describe('Slug API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
+                localUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('cool-app');
 
                 done();

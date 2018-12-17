@@ -62,13 +62,13 @@ describe('User API V2', function () {
 
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
+                        localUtils.API.checkResponse(jsonResponse, 'users');
 
                         // owner use + ghost-author user when Ghost starts
                         // and two extra users, see createUser in before
                         jsonResponse.users.should.have.length(4);
 
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
 
                         jsonResponse.users[0].email.should.eql(admin.email);
                         jsonResponse.users[0].status.should.eql(admin.status);
@@ -106,10 +106,10 @@ describe('User API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
+                        localUtils.API.checkResponse(jsonResponse, 'users');
 
                         jsonResponse.users.should.have.length(4);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'url']);
                         done();
                     });
             });
@@ -150,7 +150,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -172,7 +172,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -194,7 +194,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -216,7 +216,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -238,8 +238,8 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count', 'url']);
-                        testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count', 'url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
                         done();
                     });
             });
@@ -310,7 +310,7 @@ describe('User API V2', function () {
                         should.exist(putBody.users[0]);
                         putBody.users[0].website.should.eql('http://joe-bloggs.ghost.org');
                         putBody.users[0].email.should.eql('jbloggs@example.com');
-                        testUtils.API.checkResponse(putBody.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(putBody.users[0], 'user', ['url']);
 
                         should.not.exist(putBody.users[0].password);
 
