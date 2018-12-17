@@ -1,8 +1,8 @@
+const url = require('url');
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
 const MembersApi = require('../../lib/members');
 const models = require('../../models');
-const URL = require('url').URL;
 const mail = require('../mail');
 
 function createMember({name, email, password}) {
@@ -60,9 +60,8 @@ const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
 const passwordResetUrl = config.get('url');
-
-const siteOrigin = new URL(config.get('url')).origin;
-
+const {protocol, host} = url.parse(config.get('url'));
+const siteOrigin = `${protocol}//${host}`;
 const issuer = siteOrigin;
 const ssoOrigin = siteOrigin;
 let mailer;

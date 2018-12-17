@@ -1,10 +1,7 @@
-const URL = require('url').URL;
 const jwt = require('express-jwt');
 const membersService = require('../../members');
 const labs = require('../../labs');
 const config = require('../../../config');
-
-const siteOrigin = new URL(config.get('url')).origin;
 
 let UNO_MEMBERINO;
 
@@ -15,7 +12,12 @@ module.exports = {
                 return next();
             };
         }
+
         if (!UNO_MEMBERINO) {
+            const url = require('url');
+            const {protocol, host} = url.parse(config.get('url'));
+            const siteOrigin = `${protocol}//${host}`;
+
             UNO_MEMBERINO = jwt({
                 credentialsRequired: false,
                 requestProperty: 'member',
