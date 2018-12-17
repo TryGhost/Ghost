@@ -34,14 +34,11 @@ export default function mockAuthentication(server) {
     server.get('/authentication/invitation/', function (schema, request) {
         let {email} = request.queryParams;
         let invite = schema.invites.findBy({email});
-        let user = schema.users.find(invite.createdBy);
         let valid = !!invite;
-        let invitedBy = user && user.name;
 
         return {
             invitation: [{
-                valid,
-                invitedBy
+                valid
             }]
         };
     });
