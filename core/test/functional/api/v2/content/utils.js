@@ -10,13 +10,14 @@ const expectedProperties = {
     tags: ['tags', 'meta'],
     authors: ['authors', 'meta'],
     pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
+
     post: _(schema.posts)
         .keys()
         // by default we only return html
         .without('mobiledoc', 'plaintext')
         // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
         .without('author_id').concat('author', 'url', 'primary_tag', 'primary_author')
-        .value(),
+    ,
     author: _(schema.users)
         .keys()
         .without(
@@ -31,11 +32,29 @@ const expectedProperties = {
             'last_seen',
             'status'
         )
-        .value()
     ,
     // Tag API swaps parent_id to parent
-    tag: _(schema.tags).keys().without('parent_id').concat('parent').value()
+    tag: _(schema.tags)
+        .keys()
+        .without('parent_id').concat('parent')
 };
+
+_.each(expectedProperties, (value, key) => {
+    if (!value.__wrapped__) {
+        return;
+    }
+
+    /**
+     * @deprecated: x_by
+     */
+    expectedProperties[key] = value
+        .without(
+            'created_by',
+            'updated_by',
+            'published_by'
+        )
+        .value();
+});
 
 module.exports = {
     API: {

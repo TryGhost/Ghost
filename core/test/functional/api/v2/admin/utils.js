@@ -15,26 +15,47 @@ const expectedProperties = {
     pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
     slugs: ['slugs'],
     slug: ['slug'],
+    invites: ['invites', 'meta'],
+    themes: ['themes'],
+
     post: _(schema.posts)
         .keys()
         // by default we only return html
         .without('mobiledoc', 'plaintext')
         // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
         .without('author_id').concat('author', 'url', 'primary_tag', 'primary_author')
-        .value(),
-    user: _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
-    // Tag API swaps parent_id to parent
-    tag: _(schema.tags).keys().without('parent_id').concat('parent').value(),
-    setting: _.keys(schema.settings),
-    subscriber: _.keys(schema.subscribers),
-    accesstoken: _.keys(schema.accesstokens),
-    role: _.keys(schema.roles),
-    permission: _.keys(schema.permissions),
+    ,
+    user: _(schema.users)
+        .keys()
+        .without('password')
+        .without('ghost_auth_access_token')
+    ,
+    tag: _(schema.tags)
+        .keys()
+        // Tag API swaps parent_id to parent
+        .without('parent_id').concat('parent')
+    ,
+    setting: _(schema.settings)
+        .keys()
+    ,
+    subscriber: _(schema.subscribers)
+        .keys()
+    ,
+    accesstoken: _(schema.accesstokens)
+        .keys()
+    ,
+    role: _(schema.roles)
+        .keys()
+    ,
+    permission: _(schema.permissions)
+        .keys()
+    ,
     notification: ['type', 'message', 'status', 'id', 'dismissible', 'location', 'custom'],
     theme: ['name', 'package', 'active'],
-    themes: ['themes'],
-    invites: ['invites', 'meta'],
-    invite: _(schema.invites).keys().without('token').value(),
+    invite: _(schema.invites)
+        .keys()
+        .without('token')
+    ,
     webhook: _(schema.webhooks)
             .keys()
             .without(
@@ -45,8 +66,24 @@ const expectedProperties = {
                 'secret',
                 'integration_id'
             )
-            .value()
 };
+
+_.each(expectedProperties, (value, key) => {
+    if (!value.__wrapped__) {
+        return;
+    }
+
+    /**
+     * @deprecated: x_by
+     */
+    expectedProperties[key] = value
+        .without(
+            'created_by',
+            'updated_by',
+            'published_by'
+        )
+        .value();
+});
 
 module.exports = {
     API: {

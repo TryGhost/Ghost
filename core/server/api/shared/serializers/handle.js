@@ -76,6 +76,12 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, options) => {
 
     // ##### API VERSION RESOURCE SERIALIZATION
 
+    if (apiSerializers.all && apiSerializers.all.before) {
+        tasks.push(function allSerializeBefore() {
+            return apiSerializers.all.before(response, apiConfig, options);
+        });
+    }
+
     if (apiSerializers[apiConfig.docName]) {
         if (apiSerializers[apiConfig.docName].all) {
             tasks.push(function serializeOptionsShared() {
@@ -88,6 +94,12 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, options) => {
                 return apiSerializers[apiConfig.docName][apiConfig.method](response, apiConfig, options);
             });
         }
+    }
+
+    if (apiSerializers.all && apiSerializers.all.after) {
+        tasks.push(function allSerializeAfter() {
+            return apiSerializers.all.after(apiConfig, options);
+        });
     }
 
     debug(tasks);

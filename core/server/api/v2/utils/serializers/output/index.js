@@ -1,4 +1,8 @@
 module.exports = {
+    get all() {
+        return require('./all');
+    },
+
     get db() {
         return require('./db');
     },
