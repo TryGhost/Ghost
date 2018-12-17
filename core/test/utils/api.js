@@ -1,93 +1,13 @@
-var _ = require('lodash'),
-    url = require('url'),
-    moment = require('moment'),
-    DataGenerator = require('./fixtures/data-generator'),
-    config = require('../../server/config'),
-    common = require('../../server/lib/common'),
-    sequence = require('../../server/lib/promise/sequence'),
-    schema = require('../../server/data/schema').tables,
-    host = config.get('server').host,
-    port = config.get('server').port,
-    protocol = 'http://',
-    expectedProperties = {
-        // API top level
-        posts: ['posts', 'meta'],
-        tags: ['tags', 'meta'],
-        users: ['users', 'meta'],
-        authors: ['authors', 'meta'],
-        settings: ['settings', 'meta'],
-        subscribers: ['subscribers', 'meta'],
-        roles: ['roles'],
-        pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
-        slugs: ['slugs'],
-        slug: ['slug'],
-        post: _(schema.posts)
-            .keys()
-            // by default we only return html
-            .without('mobiledoc', 'plaintext')
-            // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
-            .without('author_id').concat('author', 'url', 'primary_tag', 'primary_author')
-            .value(),
-        user: {
-            default: _(schema.users).keys().without('password').without('ghost_auth_access_token').value(),
-            public: _(schema.users)
-                .keys()
-                .without(
-                    'password',
-                    'email',
-                    'ghost_auth_access_token',
-                    'ghost_auth_id',
-                    'created_at',
-                    'created_by',
-                    'updated_at',
-                    'updated_by',
-                    'last_seen',
-                    'status'
-                )
-                .value()
-        },
-        author: _(schema.users)
-            .keys()
-            .without(
-                'password',
-                'email',
-                'ghost_auth_access_token',
-                'ghost_auth_id',
-                'created_at',
-                'created_by',
-                'updated_at',
-                'updated_by',
-                'last_seen',
-                'status'
-            )
-            .value()
-        ,
-        // Tag API swaps parent_id to parent
-        tag: _(schema.tags).keys().without('parent_id').concat('parent').value(),
-        setting: _.keys(schema.settings),
-        subscriber: _.keys(schema.subscribers),
-        accesstoken: _.keys(schema.accesstokens),
-        role: _.keys(schema.roles),
-        permission: _.keys(schema.permissions),
-        notification: ['type', 'message', 'status', 'id', 'dismissible', 'location', 'custom'],
-        theme: ['name', 'package', 'active'],
-        themes: ['themes'],
-        invites: ['invites', 'meta'],
-        invite: _(schema.invites).keys().without('token').value(),
-        webhook: {
-            default: _(schema.webhooks)
-                .keys()
-                .without(
-                    'name',
-                    'last_triggered_at',
-                    'last_triggered_error',
-                    'last_triggered_status',
-                    'secret',
-                    'integration_id'
-                )
-                .value()
-        }
-    };
+const _ = require('lodash');
+const url = require('url');
+const moment = require('moment');
+const DataGenerator = require('./fixtures/data-generator');
+const config = require('../../server/config');
+const common = require('../../server/lib/common');
+const sequence = require('../../server/lib/promise/sequence');
+const host = config.get('server').host;
+const port = config.get('server').port;
+const protocol = 'http://';
 
 function getURL() {
     return protocol + host;
@@ -126,7 +46,7 @@ function checkResponseValue(jsonResponse, expectedProperties) {
 function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties, onlyProperties, options) {
     options = options || {};
 
-    var checkProperties = options.public ? (expectedProperties[objectType].public || expectedProperties[objectType]) : (expectedProperties[objectType].default || expectedProperties[objectType]);
+    let checkProperties = options.public ? (this.expectedProperties[objectType].public || this.expectedProperties[objectType]) : (this.expectedProperties[objectType].default || this.expectedProperties[objectType]);
 
     checkProperties = onlyProperties ? onlyProperties : checkProperties;
     checkProperties = additionalProperties ? checkProperties.concat(additionalProperties) : checkProperties;

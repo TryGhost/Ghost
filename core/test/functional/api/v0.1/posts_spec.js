@@ -72,10 +72,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -104,10 +104,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -129,10 +129,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(3);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -157,10 +157,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -182,10 +182,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -207,10 +207,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
 
-                        testUtils.API.checkResponse(
+                        localUtils.API.checkResponse(
                             jsonResponse.posts[0],
                             'post',
                             null,
@@ -218,7 +218,7 @@ describe('Post API', function () {
                             ['mobiledoc', 'id', 'title', 'html']
                         );
 
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         done();
                     });
@@ -238,9 +238,9 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(
+                        localUtils.API.checkResponse(
                             jsonResponse.posts[0],
                             'post',
                             null,
@@ -248,7 +248,7 @@ describe('Post API', function () {
                             ['mobiledoc', 'id', 'title', 'html', 'authors']
                         );
 
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         done();
                     });
@@ -268,10 +268,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(15);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
                     });
             });
@@ -290,10 +290,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
                     });
             });
@@ -312,10 +312,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(2);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         jsonResponse.posts[0].slug.should.equal('ghostly-kitchen-sink');
                         done();
                     });
@@ -335,10 +335,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(4);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         jsonResponse.posts[0].slug.should.equal('not-so-short-bit-complex');
                         done();
                     });
@@ -358,10 +358,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(2);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         jsonResponse.posts[0].slug.should.equal('ghostly-kitchen-sink');
                         done();
                     });
@@ -381,10 +381,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(4);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         jsonResponse.posts[0].slug.should.equal('not-so-short-bit-complex');
                         done();
                     });
@@ -404,10 +404,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.length.should.eql(2);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         const featured = _.map(jsonResponse.posts, 'featured');
                         featured.should.matchEach(true);
@@ -430,10 +430,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         _.each(jsonResponse.posts, (post) => {
                             post.status.should.eql('draft');
@@ -457,10 +457,10 @@ describe('Post API', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
                     });
             });
@@ -483,7 +483,7 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -515,7 +515,7 @@ describe('Post API', function () {
                         jsonResponse.posts.should.have.length(1);
                         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
 
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
 
                         done();
                     });
@@ -536,7 +536,7 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         jsonResponse.posts[0].slug.should.equal('welcome');
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -564,13 +564,13 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', 'tags');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', 'tags');
                         jsonResponse.posts[0].page.should.not.be.ok();
 
                         jsonResponse.posts[0].author.should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
+                        localUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
                         jsonResponse.posts[0].tags[0].should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
+                        localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
                         done();
                     });
             });
@@ -591,16 +591,16 @@ describe('Post API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
 
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
 
                         jsonResponse.posts[0].author.should.be.a.String();
                         jsonResponse.posts[0].page.should.not.be.ok();
 
                         jsonResponse.posts[0].authors[0].should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
+                        localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
 
                         jsonResponse.posts[0].tags[0].should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
+                        localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag');
                         done();
                     });
             });
@@ -620,7 +620,7 @@ describe('Post API', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         jsonResponse.posts[0].page.should.be.ok();
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                         done();
@@ -735,12 +735,12 @@ describe('Post API', function () {
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);
                         draftPost.posts[0].status = publishedState;
-                        testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
+                        localUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                         should.exist(draftPost.posts[0].tags);
                         draftPost.posts[0].tags.length.should.be.above(0);
                         draftPost.posts[0].tags[0].name.should.eql(newTagName);
-                        testUtils.API.checkResponse(draftPost.posts[0].tags[0], 'tag');
+                        localUtils.API.checkResponse(draftPost.posts[0].tags[0], 'tag');
 
                         request.put(localUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/?include=tags'))
                             .set('Authorization', 'Bearer ' + ownerAccessToken)
@@ -762,12 +762,12 @@ describe('Post API', function () {
                                 publishedPost.posts.length.should.be.above(0);
                                 publishedPost.posts[0].title.should.eql(newTitle);
                                 publishedPost.posts[0].status.should.eql(publishedState);
-                                testUtils.API.checkResponse(publishedPost.posts[0], 'post', 'tags');
+                                localUtils.API.checkResponse(publishedPost.posts[0], 'post', 'tags');
 
                                 should.exist(publishedPost.posts[0].tags);
                                 publishedPost.posts[0].tags.length.should.be.above(0);
                                 publishedPost.posts[0].tags[0].name.should.eql(newTagName);
-                                testUtils.API.checkResponse(publishedPost.posts[0].tags[0], 'tag');
+                                localUtils.API.checkResponse(publishedPost.posts[0].tags[0], 'tag');
 
                                 request.put(localUtils.API.getApiQuery('posts/' + publishedPost.posts[0].id + '/?include=tags'))
                                     .set('Authorization', 'Bearer ' + ownerAccessToken)
@@ -790,12 +790,12 @@ describe('Post API', function () {
                                         updatedPost.posts[0].title.should.eql(newTitle);
                                         testUtils.API.isISO8601(updatedPost.posts[0].created_at).should.be.true();
                                         testUtils.API.isISO8601(updatedPost.posts[0].updated_at).should.be.true();
-                                        testUtils.API.checkResponse(updatedPost.posts[0], 'post', 'tags');
+                                        localUtils.API.checkResponse(updatedPost.posts[0], 'post', 'tags');
 
                                         should.exist(updatedPost.posts[0].tags);
                                         updatedPost.posts[0].tags.length.should.be.above(0);
                                         updatedPost.posts[0].tags[0].name.should.eql(newTagName);
-                                        testUtils.API.checkResponse(updatedPost.posts[0].tags[0], 'tag');
+                                        localUtils.API.checkResponse(updatedPost.posts[0].tags[0], 'tag');
 
                                         done();
                                     });
@@ -839,7 +839,7 @@ describe('Post API', function () {
                         response.posts[0].updated_by.should.not.eql(newPost.updated_by);
                         response.posts[0].created_by.should.not.eql(newPost.created_by);
 
-                        testUtils.API.checkResponse(response.posts[0], 'post');
+                        localUtils.API.checkResponse(response.posts[0], 'post');
                         done();
                     });
             });
@@ -886,7 +886,7 @@ describe('Post API', function () {
                                 putBody.posts[0].status.should.eql('published');
                                 putBody.posts[0].custom_template.should.eql('custom-about');
 
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
@@ -921,7 +921,7 @@ describe('Post API', function () {
                         should.exist(draftPost.posts);
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);
-                        testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
+                        localUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                         draftPost.posts[0].title = 'Vote for Casper in red';
 
@@ -973,7 +973,7 @@ describe('Post API', function () {
                         should.exist(draftPost.posts);
                         draftPost.posts.length.should.be.above(0);
                         draftPost.posts[0].title.should.eql(newTitle);
-                        testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
+                        localUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                         draftPost.posts[0].title = 'Vote for Casper in red';
                         draftPost.posts[0].status = draftState;
@@ -1028,7 +1028,7 @@ describe('Post API', function () {
                                 should.exist(putBody);
                                 putBody.posts[0].page.should.be.ok();
 
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
@@ -1066,7 +1066,7 @@ describe('Post API', function () {
                                 res.headers['x-cache-invalidate'].should.eql('/*');
                                 should.exist(putBody);
                                 putBody.posts[0].page.should.not.be.ok();
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
@@ -1201,7 +1201,7 @@ describe('Post API', function () {
                                     should.fail('null', 'valid date', 'publish_at should not be empty');
                                     done();
                                 }
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
@@ -1326,7 +1326,7 @@ describe('Post API', function () {
                         res.headers['x-cache-invalidate'].should.eql('/p/' + postBody.posts[0].uuid + '/');
                         should.exist(postBody);
 
-                        testUtils.API.checkResponse(postBody.posts[0], 'post');
+                        localUtils.API.checkResponse(postBody.posts[0], 'post');
                         done();
                     });
             });
@@ -1383,7 +1383,7 @@ describe('Post API', function () {
                                 putBody.posts[0].title.should.eql(changedTitle);
                                 putBody.posts[0].slug.should.eql(changedSlug);
 
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
@@ -1443,7 +1443,7 @@ describe('Post API', function () {
                         res.headers['x-cache-invalidate'].should.eql('/p/' + postBody.posts[0].uuid + '/');
                         should.exist(postBody);
 
-                        testUtils.API.checkResponse(postBody.posts[0], 'post');
+                        localUtils.API.checkResponse(postBody.posts[0], 'post');
                         done();
                     });
             });
@@ -1502,7 +1502,7 @@ describe('Post API', function () {
                                 putBody.posts[0].title.should.eql(changedTitle);
                                 putBody.posts[0].slug.should.eql(changedSlug);
 
-                                testUtils.API.checkResponse(putBody.posts[0], 'post');
+                                localUtils.API.checkResponse(putBody.posts[0], 'post');
                                 done();
                             });
                     });
