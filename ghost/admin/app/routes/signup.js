@@ -64,8 +64,6 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
                     return resolve(this.transitionTo('signin'));
                 }
 
-                signupDetails.set('invitedBy', response.invitation[0].invitedBy);
-
                 // set blogTitle, so password validation has access to it
                 signupDetails.set('blogTitle', this.get('config.blogTitle'));
 
