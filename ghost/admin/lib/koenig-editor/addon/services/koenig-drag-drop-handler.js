@@ -588,9 +588,11 @@ export default Service.extend({
             container.onDragEnd();
         });
 
-        this._elementsWithHoverRemoved.forEach((el) => {
-            el.classList.add('kg-card-hover');
-        });
+        if (this._elementsWithHoverRemoved) {
+            this._elementsWithHoverRemoved.forEach((el) => {
+                el.classList.add('kg-card-hover');
+            });
+        }
         delete this._elementsWithHoverRemoved;
 
         utils.applyUserSelect(document.body, '');
