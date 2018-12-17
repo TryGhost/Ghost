@@ -341,7 +341,6 @@ export default Component.extend({
             .click();
     },
 
-    // TODO: revisit when the container is created and when drag is enabled/disabled
     // - rename container so that it's more explicit when we have an initial file
     //   drop container vs a drag reorder+file drop container?
     _registerOrRefreshDragDropHandler() {
@@ -363,14 +362,9 @@ export default Component.extend({
                             droppableSelector: '[data-image]',
                             isDragEnabled: !isEmpty(this.images),
                             onDragStart: run.bind(this, function () {
-                                // TODO: can this be handled in koenig-card?
-                                // not currently done so because kg-card-hover is added as a base class
-                                // by (kg-style "media-card")
-                                this.element.querySelector('figure').classList.remove('kg-card-hover');
                                 this.element.querySelector('figure').classList.remove('kg-card-selected');
                             }),
                             onDragEnd: run.bind(this, function () {
-                                this.element.querySelector('figure').classList.add('kg-card-hover');
                                 if (this.isSelected) {
                                     this.element.querySelector('figure').classList.add('kg-card-selected');
                                 }

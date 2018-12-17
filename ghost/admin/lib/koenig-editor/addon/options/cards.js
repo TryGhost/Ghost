@@ -12,6 +12,18 @@ export const CARD_COMPONENT_MAP = {
     gallery: 'koenig-card-gallery'
 };
 
+// map card names to generic icons (used for ghost elements when dragging)
+export const CARD_ICON_MAP = {
+    hr: 'koenig/kg-card-type-divider',
+    image: 'koenig/kg-card-type-image',
+    markdown: 'koenig/kg-card-type-markdown',
+    'card-markdown': 'koenig/kg-card-type-markdown',
+    html: 'koenig/kg-card-type-html',
+    code: 'koenig/kg-card-type-gen-embed',
+    embed: 'koenig/kg-card-type-gen-embed',
+    gallery: 'koenig/kg-card-type-gallery'
+};
+
 // TODO: move koenigOptions directly into cards now that card components register
 // themselves so that they are available on card.component
 export default [

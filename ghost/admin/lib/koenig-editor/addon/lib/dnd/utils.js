@@ -1,33 +1,18 @@
+// TODO: rename to closest? getParent can actually match passed in element
 export function getParent(element, value) {
-    if (!element) {
-        return null;
-    }
+    return getWithMatch(element, value, current => current.parentNode);
+}
 
-    let selector = value;
-    let callback = value;
+export function getNextSibling(element, value) {
+    // don't match the passed in element
+    element = element.nextElementSibling;
+    return getWithMatch(element, value, current => current.nextElementSibling);
+}
 
-    let isSelector = typeof value === 'string';
-    let isFunction = typeof value === 'function';
-
-    function matches(currentElement) {
-        if (!currentElement) {
-            return currentElement;
-        } else if (isSelector) {
-            return currentElement.matches(selector);
-        } else if (isFunction) {
-            return callback(currentElement);
-        }
-    }
-
-    let current = element;
-
-    do {
-        if (matches(current)) {
-            return current;
-        }
-
-        current = current.parentNode;
-    } while (current && current !== document.body && current !== document);
+export function getPreviousSibling(element, value) {
+    // don't match the passed in element
+    element = element.previousElementSibling;
+    return getWithMatch(element, value, current => current.previousElementSibling);
 }
 
 export function getParentScrollableElement(element) {
@@ -65,6 +50,38 @@ export function applyUserSelect(element, value) {
 }
 
 /* Not exported --------------------------------------------------------------*/
+
+function getWithMatch(element, value, next) {
+    if (!element) {
+        return null;
+    }
+
+    let selector = value;
+    let callback = value;
+
+    let isSelector = typeof value === 'string';
+    let isFunction = typeof value === 'function';
+
+    function matches(currentElement) {
+        if (!currentElement) {
+            return currentElement;
+        } else if (isSelector) {
+            return currentElement.matches(selector);
+        } else if (isFunction) {
+            return callback(currentElement);
+        }
+    }
+
+    let current = element;
+
+    do {
+        if (matches(current)) {
+            return current;
+        }
+
+        current = next(current);
+    } while (current && current !== document.body && current !== document);
+}
 
 function isStaticallyPositioned(element) {
     let position = getComputedStyle(element).getPropertyValue('position');
