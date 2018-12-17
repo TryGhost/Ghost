@@ -22,7 +22,7 @@ describe('Unit: api/shared/http', function () {
         res.set = sandbox.stub();
         res.send = sandbox.stub();
 
-        sandbox.stub(shared.headers, 'get');
+        sandbox.stub(shared.headers, 'get').resolves();
     });
 
     afterEach(function () {
