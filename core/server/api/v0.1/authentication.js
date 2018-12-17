@@ -466,10 +466,7 @@ authentication = {
                         return {invitation: [{valid: false}]};
                     }
 
-                    return models.User.findOne({id: invite.get('created_by')})
-                        .then((user) => {
-                            return {invitation: [{valid: true, invitedBy: user.get('name')}]};
-                        });
+                    return {invitation: [{valid: true}]};
                 });
         }
 
