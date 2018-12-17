@@ -1286,6 +1286,16 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('can strip invisible unicode from slug', function (done) {
+                models.Post.add({
+                    slug: 'abc\u0008',
+                }, context).then(function (newPost) {
+                    should.exist(newPost);
+                    newPost.get('slug').should.equal('abc');
+                    done();
+                }).catch(done);
+            });
+
             it('can generate a non conflicting slug', function (done) {
                 // Create 12 posts with the same title
                 sequence(_.times(12, function (i) {

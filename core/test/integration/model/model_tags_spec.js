@@ -102,6 +102,17 @@ describe('Tag Model', function () {
                 })
                 .catch(done);
         });
+
+        it('can strip invisible unicode from slug', function () {
+            const tag = Object.assign(_.omit(testUtils.DataGenerator.forModel.tags[0], 'id'), {
+                slug: 'abc\u0008',
+            });
+            return models.Tag.add(tag, context)
+                .then(function (newTag) {
+                    should.exist(newTag);
+                    newTag.get('slug').should.equal('abc');
+                });
+        });
     });
 
     describe('destroy', function () {

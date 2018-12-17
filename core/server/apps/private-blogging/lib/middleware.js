@@ -23,8 +23,9 @@ function verifySessionHash(salt, hash) {
 
 function getRedirectUrl(query) {
     const redirect = decodeURIComponent(query.r || '/');
+
     try {
-        return new url.URL(redirect, urlService.utils.urlFor('home', true)).pathname;
+        return url.parse(redirect).pathname;
     } catch (e) {
         return '/';
     }

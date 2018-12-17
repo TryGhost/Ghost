@@ -11,9 +11,6 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 
-    {{!-- Brand icon --}}
-    <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
-
     {{amp_ghost_head}}
 
     {{!-- Styles'n'Scripts --}}
@@ -42,9 +39,7 @@
             <header class="post-header">
                 <h1 class="post-title">{{title}}</h1>
                 <section class="post-meta">
-                    {{#author}}
-                    <p class="author">by <a href="{{url}}">{{name}}</a></p>
-                    {{/author}}
+                    <p class="author">by {{authors}}</p>
                     <time class="post-date" datetime="{{date format="YYYY-MM-DD"}}">{{date format="YYYY-MM-DD"}}</time>
                 </section>
             </header>
