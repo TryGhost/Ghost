@@ -6,7 +6,7 @@ const urlService = require('../../services/url');
 const settingsCache = require('../../services/settings/cache');
 const models = require('../../models');
 const api = require('./index');
-const ALLOWED_INCLUDES = ['created_by', 'updated_by'];
+const ALLOWED_INCLUDES = [];
 const UNSAFE_ATTRS = ['role_id'];
 
 module.exports = {

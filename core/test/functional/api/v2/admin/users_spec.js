@@ -328,55 +328,6 @@ describe('User API V2', function () {
                             });
                     });
             });
-
-            it('check which fields can be modified', function (done) {
-                var existingUserData, modifiedUserData;
-
-                request.get(localUtils.API.getApiQuery('users/me/'))
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users[0]);
-                        existingUserData = _.cloneDeep(jsonResponse.users[0]);
-                        modifiedUserData = _.cloneDeep(jsonResponse);
-
-                        existingUserData.created_by.should.eql('1');
-                        existingUserData.updated_by.should.eql('1');
-
-                        modifiedUserData.users[0].created_at = moment().add(2, 'days').format();
-                        modifiedUserData.users[0].updated_at = moment().add(2, 'days').format();
-                        modifiedUserData.users[0].created_by = ObjectId.generate();
-                        modifiedUserData.users[0].updated_by = ObjectId.generate();
-
-                        delete modifiedUserData.users[0].id;
-
-                        request.put(localUtils.API.getApiQuery('users/me/'))
-                            .set('Origin', config.get('url'))
-                            .send(modifiedUserData)
-                            .expect(200)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                var jsonResponse = res.body;
-                                should.exist(jsonResponse.users[0]);
-
-                                jsonResponse.users[0].created_by.should.eql(existingUserData.created_by);
-                                jsonResponse.users[0].updated_by.should.eql(existingUserData.updated_by);
-                                jsonResponse.users[0].updated_at.should.not.eql(modifiedUserData.updated_at);
-                                jsonResponse.users[0].created_at.should.eql(existingUserData.created_at);
-
-                                done();
-                            });
-                    });
-            });
         });
 
         describe('Destroy', function () {
