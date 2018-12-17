@@ -68,6 +68,8 @@ describe('DB API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(res.headers['content-disposition']);
+
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
@@ -178,7 +180,7 @@ describe('DB API', function () {
             });
     });
 
-    it('export can be triggered by backup client', function (done) {
+    it('export can not be triggered by client other than backup', function (done) {
         schedulerQuery = '?client_id=' + schedulerClient.slug + '&client_secret=' + schedulerClient.secret;
         fsStub = sandbox.stub(fs, 'writeFile').resolves();
         request.post(localUtils.API.getApiQuery('db/backup' + schedulerQuery))

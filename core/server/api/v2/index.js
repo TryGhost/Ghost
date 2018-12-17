@@ -6,6 +6,10 @@ module.exports = {
         return shared.http;
     },
 
+    get db() {
+        return shared.pipeline(require('./db'), localUtils);
+    },
+
     get integrations() {
         return shared.pipeline(require('./integrations'), localUtils);
     },

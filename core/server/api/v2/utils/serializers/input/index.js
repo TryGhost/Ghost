@@ -1,7 +1,12 @@
 module.exports = {
+    get db() {
+        return require('./db');
+    },
+
     get integrations() {
         return require('./integrations');
     },
+
     get pages() {
         return require('./pages');
     },
