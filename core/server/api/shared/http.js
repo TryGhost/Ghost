@@ -27,6 +27,10 @@ const http = (apiImpl) => {
 
         apiImpl(frame)
             .then((result) => {
+                return shared.headers.get(result, apiImpl.headers, frame)
+                    .then(headers => ({result, headers}));
+            })
+            .then(({result, headers}) => {
                 debug(result);
 
                 // CASE: api ctrl wants to handle the express response (e.g. streams)
@@ -45,7 +49,7 @@ const http = (apiImpl) => {
                 res.status(statusCode);
 
                 // CASE: generate headers based on the api ctrl configuration
-                res.set(shared.headers.get(result, apiImpl.headers));
+                res.set(headers);
 
                 if (apiImpl.response && apiImpl.response.format === 'plain') {
                     debug('plain text response');
