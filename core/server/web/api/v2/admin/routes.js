@@ -137,14 +137,18 @@ module.exports = function apiRoutes() {
     router.del('/notifications/:notification_id', mw.authAdminApi, apiv2.http(apiv2.notifications.destroy));
 
     // ## DB
-    router.get('/db', mw.authAdminApi, api.http(api.db.exportContent));
+    router.get('/db', mw.authAdminApi, apiv2.http(apiv2.db.exportContent));
     router.post('/db',
         mw.authAdminApi,
         upload.single('importfile'),
         shared.middlewares.validation.upload({type: 'db'}),
-        api.http(api.db.importContent)
+        apiv2.http(apiv2.db.importContent)
     );
-    router.del('/db', mw.authAdminApi, api.http(api.db.deleteAllContent));
+    router.del('/db', mw.authAdminApi, apiv2.http(apiv2.db.deleteAllContent));
+    router.post('/db/backup',
+        mw.authenticateClient('Ghost Backup'),
+        apiv2.http(apiv2.db.backupContent)
+    );
 
     // ## Mail
     router.post('/mail', mw.authAdminApi, apiv2.http(apiv2.mail.send));
@@ -194,8 +198,6 @@ module.exports = function apiRoutes() {
         shared.middlewares.image.normalize,
         apiv2.http(apiv2.upload.image)
     );
-
-    router.post('/db/backup', mw.authenticateClient('Ghost Backup'), api.http(api.db.backupContent));
 
     router.post('/uploads/icon',
         mw.authAdminApi,
