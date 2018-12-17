@@ -44,11 +44,11 @@ describe('Authors Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
-                testUtils.API.checkResponse(jsonResponse, 'authors');
+                localUtils.API.checkResponse(jsonResponse, 'authors');
                 jsonResponse.authors.should.have.length(7);
 
                 // We don't expose the email address, status and other attrs.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null);
 
                 should.exist(res.body.authors[0].url);
                 should.exist(url.parse(res.body.authors[0].url).protocol);
@@ -97,7 +97,7 @@ describe('Authors Content API V2', function () {
                 jsonResponse.authors.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });
@@ -120,7 +120,7 @@ describe('Authors Content API V2', function () {
                 jsonResponse.authors.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });
@@ -142,7 +142,7 @@ describe('Authors Content API V2', function () {
                 jsonResponse.authors.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
 
                 // Each user should have the correct count
                 _.find(jsonResponse.authors, {slug:'joe-bloggs'}).count.posts.should.eql(4);
@@ -184,11 +184,11 @@ describe('Authors Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
-                testUtils.API.checkResponse(jsonResponse, 'authors');
+                localUtils.API.checkResponse(jsonResponse, 'authors');
                 jsonResponse.authors.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });

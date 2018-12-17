@@ -43,7 +43,7 @@ describe('Subscribers API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.subscribers);
                 jsonResponse.subscribers.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
+                localUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
 
                 testUtils.API.isISO8601(jsonResponse.subscribers[0].created_at).should.be.true();
                 jsonResponse.subscribers[0].created_at.should.be.an.instanceof(String);
@@ -70,7 +70,7 @@ describe('Subscribers API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.subscribers);
                 jsonResponse.subscribers.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
+                localUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
             });
     });
 
@@ -93,7 +93,7 @@ describe('Subscribers API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.subscribers);
                 jsonResponse.subscribers.should.have.length(1);
-                // testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber'); // TODO: modify checked schema
+                // localUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber'); // TODO: modify checked schema
                 jsonResponse.subscribers[0].name.should.equal(subscriber.name);
                 jsonResponse.subscribers[0].email.should.equal(subscriber.email);
             });
@@ -142,7 +142,7 @@ describe('Subscribers API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.subscribers);
                         jsonResponse.subscribers.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
+                        localUtils.API.checkResponse(jsonResponse.subscribers[0], 'subscriber');
                         jsonResponse.subscribers[0].name.should.equal(subscriberChanged.name);
                         jsonResponse.subscribers[0].email.should.equal(subscriberChanged.email);
                     });

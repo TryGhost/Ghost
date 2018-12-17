@@ -36,7 +36,7 @@ describe('Tag API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(6);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', 'count');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', 'count');
 
                 testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
                 jsonResponse.tags[0].created_at.should.be.an.instanceof(String);
@@ -65,7 +65,7 @@ describe('Tag API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', 'count');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', 'count');
                 should.exist(jsonResponse.tags[0].count.posts);
             });
     });
@@ -89,7 +89,7 @@ describe('Tag API', function () {
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
                 // @TODO: model layer has no defaults for these properties
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', null, [
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', null, [
                     'feature_image',
                     'meta_description',
                     'meta_title',
@@ -140,7 +140,7 @@ describe('Tag API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
                 jsonResponse.tags[0].description.should.eql('hey ho ab ins klo');
             });
     });

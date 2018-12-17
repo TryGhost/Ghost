@@ -331,7 +331,7 @@ describe('Authentication API', function () {
                     should.not.exist(jsonResponse.meta);
 
                     jsonResponse.users.should.have.length(1);
-                    testUtils.API.checkResponse(jsonResponse.users[0], 'user');
+                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
 
                     const newUser = jsonResponse.users[0];
                     newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);

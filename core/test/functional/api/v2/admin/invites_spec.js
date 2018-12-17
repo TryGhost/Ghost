@@ -52,8 +52,8 @@ describe('Invites API V2', function () {
                     should.exist(jsonResponse.invites);
                     jsonResponse.invites.should.have.length(2);
 
-                    testUtils.API.checkResponse(jsonResponse, 'invites');
-                    testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                    localUtils.API.checkResponse(jsonResponse, 'invites');
+                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
                     jsonResponse.invites[0].status.should.eql('sent');
                     jsonResponse.invites[0].email.should.eql('test1@ghost.org');
@@ -88,7 +88,7 @@ describe('Invites API V2', function () {
                     should.exist(jsonResponse.invites);
                     jsonResponse.invites.should.have.length(1);
 
-                    testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
                     mailService.GhostMailer.prototype.send.called.should.be.false();
 
@@ -119,7 +119,7 @@ describe('Invites API V2', function () {
                     should.exist(jsonResponse.invites);
                     jsonResponse.invites.should.have.length(1);
 
-                    testUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
                     jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
 
                     mailService.GhostMailer.prototype.send.called.should.be.true();

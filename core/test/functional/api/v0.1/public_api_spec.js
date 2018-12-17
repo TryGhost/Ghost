@@ -47,10 +47,10 @@ describe('Public API', function () {
 
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -91,8 +91,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 // should content filtered data and order
                 jsonResponse.posts.should.have.length(4);
@@ -146,8 +146,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 jsonResponse.posts.should.have.length(2);
 
@@ -175,8 +175,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 // 2. The data part of the response should be correct
                 // We should have 2 matching items
@@ -205,8 +205,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(1);
 
@@ -313,7 +313,7 @@ describe('Public API', function () {
 
                 should.exist(jsonResponse.posts);
 
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
                 res.body.posts[0].url.should.eql('/welcome/');
                 done();
             });
@@ -333,7 +333,7 @@ describe('Public API', function () {
 
                 should.exist(jsonResponse.posts);
 
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
                 jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
                 jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
                 done();
@@ -429,10 +429,10 @@ describe('Public API', function () {
 
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
@@ -475,10 +475,10 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                 _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
@@ -499,10 +499,10 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(15);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
     });
@@ -520,10 +520,10 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(56);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
     });
@@ -542,10 +542,10 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
-                testUtils.API.checkResponse(jsonResponse, 'tags');
+                localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(4);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
     });
@@ -717,11 +717,11 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
+                localUtils.API.checkResponse(jsonResponse, 'users');
                 jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address, status and other attrs.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
 
                 // Public api returns all users, but no status! Locked/Inactive users can still have written articles.
                 models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
@@ -746,11 +746,11 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
+                localUtils.API.checkResponse(jsonResponse, 'users');
                 jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -792,7 +792,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -815,7 +815,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -838,7 +838,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -860,7 +860,7 @@ describe('Public API', function () {
                 jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
 
                 // Each user should have the correct count
                 _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
@@ -921,7 +921,7 @@ describe('Public API', function () {
                 should.exist(jsonResponse.users);
                 jsonResponse.users.should.have.length(1);
 
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
@@ -940,11 +940,11 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
+                localUtils.API.checkResponse(jsonResponse, 'users');
                 jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
                 done();
             });
     });
@@ -963,11 +963,11 @@ describe('Public API', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.users);
-                testUtils.API.checkResponse(jsonResponse, 'users');
+                localUtils.API.checkResponse(jsonResponse, 'users');
                 jsonResponse.users.should.have.length(7);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.users[0], 'user', null, null, null, {public: true});
                 done();
             });
     });
