@@ -4,10 +4,13 @@ import layout from '../templates/components/koenig-card';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 const TICK_HEIGHT = 8;
 
 export default Component.extend({
+    koenigDragDropHandler: service(),
+
     layout,
     attributeBindings: ['style'],
     classNameBindings: ['selectedClass'],
@@ -48,8 +51,12 @@ export default Component.extend({
         return htmlSafe(baseStyles);
     }),
 
-    toolbarStyle: computed('showToolbar', 'toolbarWidth', 'toolbarHeight', function () {
-        let showToolbar = this.showToolbar;
+    shouldShowToolbar: computed('showToolbar', 'koenigDragDropHandler.isDragging', function () {
+        return this.showToolbar && !this.koenigDragDropHandler.isDragging;
+    }),
+
+    toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
+        let showToolbar = this.shouldShowToolbar;
         let width = this.toolbarWidth;
         let height = this.toolbarHeight;
         let styles = [];
@@ -167,7 +174,7 @@ export default Component.extend({
     mouseUp(event) {
         let {isSelected, isEditing, hasEditMode, _skipMouseUp} = this;
 
-        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing) {
+        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigDragDropHandler.isDragging) {
             this.editCard();
             this.set('showToolbar', true);
             event.preventDefault();

@@ -41,7 +41,6 @@ export default Service.extend({
         this._addGrabListeners();
 
         // append body elements
-        this._appendDropIndicator();
         this._appendGhostContainerElement();
     },
 
@@ -115,11 +114,6 @@ export default Service.extend({
                         window.getSelection().removeAllRanges();
                         // set up the drag details
                         this._initiateDrag(event);
-                        // add watches to follow the drag/drop
-                        // TODO: move to _initiateDrag
-                        this._addMoveListeners();
-                        this._addReleaseListeners();
-                        this._addKeyDownListeners();
                     }).catch((error) => {
                         // ignore cancelled tasks and throw unrecognized errors
                         if (!didCancel(error)) {
@@ -220,7 +214,19 @@ export default Service.extend({
         utils.applyUserSelect(document.body, 'none');
 
         let container = this.sourceContainer;
-        let draggableInfo = Object.assign({}, container.getDraggableInfo(this.grabbedElement), {
+        let draggableInfo = container.getDraggableInfo(this.grabbedElement);
+
+        if (!draggableInfo) {
+            this._resetDrag();
+            return;
+        }
+
+        // append the drop indicator if it doesn't already exist - we append to
+        // the editor's element rather than body so it needs to be re-appended
+        // each time a drag is initiated in a new editor instance
+        this._appendDropIndicator();
+
+        draggableInfo = Object.assign({}, draggableInfo, {
             element: this.grabbedElement,
             mousePosition: {
                 x: startEvent.clientX,
@@ -238,15 +244,27 @@ export default Service.extend({
 
         // create the ghost element and cache it's position so avoid costly
         // getBoundingClientRect calls in the mousemove handler
-        let ghostElement = container.createGhostElement(this.grabbedElement);
-        this._ghostContainerElement.appendChild(ghostElement);
-        let ghostElementRect = ghostElement.getBoundingClientRect();
-        let ghostInfo = {
-            element: ghostElement,
-            positionX: ghostElementRect.x,
-            positionY: ghostElementRect.y
-        };
-        this.set('ghostInfo', ghostInfo);
+        let ghostElement = container.createGhostElement(this.draggableInfo);
+        if (ghostElement && ghostElement instanceof HTMLElement) {
+            this._ghostContainerElement.appendChild(ghostElement);
+            let ghostElementRect = ghostElement.getBoundingClientRect();
+            let ghostInfo = {
+                element: ghostElement,
+                positionX: ghostElementRect.x,
+                positionY: ghostElementRect.y
+            };
+            this.set('ghostInfo', ghostInfo);
+        } else {
+            // eslint-disable-next-line
+            console.warn('container.createGhostElement did not return an element', this.draggableInfo, {ghostElement});
+            this._resetDrag();
+            return;
+        }
+
+        // add watches to follow the drag/drop
+        this._addMoveListeners();
+        this._addReleaseListeners();
+        this._addKeyDownListeners();
 
         // start ghost element following the mouse
         requestAnimationFrame(this._rafUpdateGhostElementPosition);
@@ -254,24 +272,42 @@ export default Service.extend({
         // let the scroll handler select the scrollable element
         this.scrollHandler.dragStart(this.draggableInfo);
 
+        // prevent the pointer showing the text caret over text content whilst dragging
+        document.querySelectorAll('[data-kg="editor"]').forEach((el) => {
+            el.style.setProperty('cursor', 'default', 'important');
+        });
+
+        // prevent card hover showing whilst dragging
+        this._elementsWithHoverRemoved = document.querySelectorAll('.kg-card-hover');
+        this._elementsWithHoverRemoved.forEach((el) => {
+            el.classList.remove('kg-card-hover');
+        });
+
         this._handleDrag();
     },
 
     _handleDrag() {
         // hide the ghost element so that it's not picked up by elementFromPoint
         // when determining the target element under the mouse
-        this.ghostInfo.element.hidden = true;
+        this._ghostContainerElement.hidden = true;
         let target = document.elementFromPoint(
             this.draggableInfo.mousePosition.x,
             this.draggableInfo.mousePosition.y
         );
         this.draggableInfo.target = target;
-        this.ghostInfo.element.hidden = false;
+        this._ghostContainerElement.hidden = false;
 
         this.scrollHandler.dragMove(this.draggableInfo);
 
         let overContainerElem = utils.getParent(target, constants.CONTAINER_SELECTOR);
         let overDroppableElem = utils.getParent(target, constants.DROPPABLE_SELECTOR);
+
+        // it's possible for the mouse to be over a "dead" area when dragging over
+        // the position indicator, in this case we want to prevent a parent
+        // container's droppable from being picked up
+        if (!overContainerElem || !overContainerElem.contains(overDroppableElem)) {
+            overDroppableElem = null;
+        }
 
         let isLeavingContainer = this._currentOverContainerElem && overContainerElem !== this._currentOverContainerElem;
         let isLeavingDroppable = this._currentOverDroppableElem && overDroppableElem !== this._currentOverDroppableElem;
@@ -406,6 +442,7 @@ export default Service.extend({
                 dropIndicator.style.opacity = 0;
 
                 this._dropIndicatorTimeout = run.later(this, function () {
+                    dropIndicator.style.width = '4px';
                     dropIndicator.style.height = `${newHeight}px`;
                     dropIndicator.style.left = `${newLeft}px`;
                     dropIndicator.style.top = `${newTop}px`;
@@ -414,7 +451,94 @@ export default Service.extend({
             }
         }
 
-        // TODO: handle vertical drag/drop
+        if (direction === 'vertical') {
+            let transformSize = 60;
+            let droppable = this._currentOverDroppableElem;
+            let topElement, bottomElement;
+
+            if (position === 'top') {
+                topElement = utils.getPreviousSibling(droppable, constants.DROPPABLE_SELECTOR);
+                bottomElement = droppable;
+            } else if (position === 'bottom') {
+                topElement = droppable;
+                bottomElement = utils.getNextSibling(droppable, constants.DROPPABLE_SELECTOR);
+            }
+
+            // marginTop of the first element affects the offset of the
+            // children so it needs to be taken into account
+            let firstElement = (topElement || bottomElement).parentElement.children[0];
+            let firstElementStyles = getComputedStyle(firstElement);
+            let firstTopMargin = parseInt(firstElementStyles.marginTop);
+
+            let newWidth = droppable.offsetWidth;
+            let newLeft = droppable.offsetLeft;
+            let newTop;
+
+            if (topElement && bottomElement) {
+                let topElementStyles = getComputedStyle(topElement);
+                let bottomElementStyles = getComputedStyle(bottomElement);
+
+                let offsetTop = bottomElement.offsetTop;
+
+                let topMargin = parseInt(topElementStyles.marginBottom);
+                let bottomMargin = parseInt(bottomElementStyles.marginTop);
+                let marginHeight = topMargin + bottomMargin;
+
+                newTop = offsetTop - (marginHeight / 2) + firstTopMargin;
+            } else if (topElement) {
+                // at the bottom of the container
+                newTop = topElement.offsetTop + topElement.offsetHeight + firstTopMargin;
+            } else if (bottomElement) {
+                // at the top of the container, place the indicator 0px from the top
+                newTop = -26; // account for later adjustments and indicator height
+                transformSize = 30; // halve normal adjustment because there's no gap needed between top element
+            }
+
+            // account for indicator height
+            newTop -= 2;
+
+            // vertical always pushes elements down
+            newTop += 30;
+
+            // if indicator hasn't moved, keep it showing, otherwise wait for
+            // the transform transitions to almost finish before re-positioning
+            // and showing
+            // NOTE: +- 1px is due to sub-pixel positioning of droppables
+            let lastLeft = parseInt(dropIndicator.style.left);
+            let lastTop = parseInt(dropIndicator.style.top);
+
+            if (
+                newTop >= lastTop - 1 && newTop <= lastTop + 1 &&
+                newLeft >= lastLeft - 1 && newLeft <= lastLeft + 1
+            ) {
+                dropIndicator.style.opacity = 1;
+            } else {
+                dropIndicator.style.opacity = 0;
+
+                this._dropIndicatorTimeout = run.later(this, function () {
+                    dropIndicator.style.height = '4px';
+                    dropIndicator.style.width = `${newWidth}px`;
+                    dropIndicator.style.left = `${newLeft}px`;
+                    dropIndicator.style.top = `${newTop}px`;
+                    dropIndicator.style.opacity = 1;
+                }, 150);
+            }
+
+            // always update the droppable transforms so that re-positining in
+            // the same place still moves the elements. Effectively a no-op if
+            // the styles already exist
+            beforeElems.forEach((elem) => {
+                elem.style.transform = 'translate3d(0, 0, 0)';
+                elem.style.transitionDuration = '250ms';
+                this._transformedDroppables.push(elem);
+            });
+
+            afterElems.forEach((elem) => {
+                elem.style.transform = `translate3d(0, ${transformSize}px, 0)`;
+                elem.style.transitionDuration = '250ms';
+                this._transformedDroppables.push(elem);
+            });
+        }
     },
 
     _hideDropIndicator({clearInsertIndex = true} = {}) {
@@ -423,7 +547,7 @@ export default Service.extend({
 
         // clear droppable insert index unless instructed not to (eg, when
         // resetting the display before re-positioning the indicator)
-        if (clearInsertIndex) {
+        if (clearInsertIndex && this.draggableInfo) {
             delete this.draggableInfo.insertIndex;
         }
 
@@ -447,7 +571,9 @@ export default Service.extend({
 
         this.scrollHandler.dragStop();
 
-        this.grabbedElement.style.opacity = '';
+        if (this.grabbedElement) {
+            this.grabbedElement.style.opacity = '';
+        }
 
         this.set('isDragging', false);
         this.set('grabbedElement', null);
@@ -462,7 +588,15 @@ export default Service.extend({
             container.onDragEnd();
         });
 
+        this._elementsWithHoverRemoved.forEach((el) => {
+            el.classList.add('kg-card-hover');
+        });
+        delete this._elementsWithHoverRemoved;
+
         utils.applyUserSelect(document.body, '');
+        document.querySelectorAll('[data-kg="editor"]').forEach((el) => {
+            el.style.cursor = '';
+        });
     },
 
     _appendDropIndicator() {
@@ -470,7 +604,7 @@ export default Service.extend({
         if (!dropIndicator) {
             dropIndicator = document.createElement('div');
             dropIndicator.id = constants.DROP_INDICATOR_ID;
-            dropIndicator.classList.add('bg-blue');
+            dropIndicator.classList.add('bg-blue', 'br-pill');
             dropIndicator.style.position = 'absolute';
             dropIndicator.style.opacity = 0;
             dropIndicator.style.width = '4px';

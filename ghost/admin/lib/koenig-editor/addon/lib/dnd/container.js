@@ -17,17 +17,7 @@ class Container {
             element,
             draggables: A([]),
             droppables: A([]),
-            isDragEnabled: true,
-
-            // TODO: move these to class-level functions?
-            onDragStart() { },
-            onDragEnterContainer() { },
-            onDragEnterDroppable() { },
-            onDragOverDroppable() { },
-            onDragLeaveDroppable() { },
-            onDragLeaveContainer() { },
-            onDrop() { },
-            onDragEnd() { }
+            isDragEnabled: true
         }, options);
 
         element.dataset[constants.CONTAINER_DATA_ATTR] = 'true';
@@ -51,50 +41,70 @@ class Container {
         return false;
     }
 
+    // override these via constructor options
+    onDragStart() { }
+    onDragEnterContainer() { }
+    onDragEnterDroppable() { }
+    onDragOverDroppable() { }
+    onDragLeaveDroppable() { }
+    onDragLeaveContainer() { }
+    onDrop() { }
+    onDragEnd() { }
+
     // TODO: allow configuration for ghost element creation
     // builds an element that is attached to the mouse pointer when dragging.
     // currently grabs the first <img> and uses that but should be configurable:
     // - a selector for which element in the draggable to copy
     // - a function to hand off element creation to the consumer
-    createGhostElement(draggable) {
-        let image = draggable.querySelector('img');
-        if (image) {
-            let aspectRatio = image.width / image.height;
-            let width, height;
+    createGhostElement(draggableInfo) {
+        if (draggableInfo.type === 'image') {
+            let image = draggableInfo.element.querySelector('img');
+            if (image) {
+                let aspectRatio = image.width / image.height;
+                let width, height;
 
-            // max ghost image size is 200px in either dimension
-            if (image.width > image.height) {
-                width = 200;
-                height = 200 / aspectRatio;
+                // max ghost image size is 200px in either dimension
+                if (image.width > image.height) {
+                    width = 200;
+                    height = 200 / aspectRatio;
+                } else {
+                    width = 200 * aspectRatio;
+                    height = 200;
+                }
+
+                let ghostElement = document.createElement('img');
+                ghostElement.width = width;
+                ghostElement.height = height;
+                ghostElement.id = 'koenig-drag-drop-ghost';
+                ghostElement.src = image.src;
+                ghostElement.style.position = 'absolute';
+                ghostElement.style.top = '0';
+                ghostElement.style.left = `-${width}px`;
+                ghostElement.style.zIndex = constants.GHOST_ZINDEX;
+                ghostElement.style.willChange = 'transform';
+
+                return ghostElement;
             } else {
-                width = 200 * aspectRatio;
-                height = 200;
+                // eslint-disable-next-line
+                console.warn('No <img> element found in draggable');
+                return;
             }
-
-            let ghostElement = document.createElement('img');
-            ghostElement.width = width;
-            ghostElement.height = height;
-            ghostElement.id = 'koenig-drag-drop-ghost';
-            ghostElement.src = image.src;
-            ghostElement.style.position = 'absolute';
-            ghostElement.style.top = '0';
-            ghostElement.style.left = `-${width}px`;
-            ghostElement.style.zIndex = constants.GHOST_ZINDEX;
-            ghostElement.style.willChange = 'transform';
-
-            return ghostElement;
-        } else {
-            // eslint-disable-next-line
-            console.warn('No <img> element found in draggable');
         }
+
+        // eslint-disable-next-line
+        console.warn(`No default createGhostElement handler for type "${draggableInfo.type}"`);
     }
 
     enableDrag() {
         this.isDragEnabled = true;
+        this.element.dataset[constants.CONTAINER_DATA_ATTR] = 'true';
+        this.refresh();
     }
 
     disableDrag() {
         this.isDragEnabled = false;
+        delete this.element.dataset[constants.CONTAINER_DATA_ATTR];
+        this.refresh();
     }
 
     // used to add data attributes to any draggable/droppable elements. This is
@@ -110,16 +120,17 @@ class Container {
 
         // re-populate draggable/droppable arrays
         this.draggables = A([]);
-        this.element.querySelectorAll(this.draggableSelector).forEach((draggable) => {
-            draggable.dataset[constants.DRAGGABLE_DATA_ATTR] = 'true';
-            this.draggables.push(draggable);
-        });
-
         this.droppables = A([]);
-        this.element.querySelectorAll(this.droppableSelector).forEach((droppable) => {
-            droppable.dataset[constants.DROPPABLE_DATA_ATTR] = 'true';
-            this.droppables.push(droppable);
-        });
+        if (this.isDragEnabled) {
+            this.element.querySelectorAll(this.draggableSelector).forEach((draggable) => {
+                draggable.dataset[constants.DRAGGABLE_DATA_ATTR] = 'true';
+                this.draggables.push(draggable);
+            });
+            this.element.querySelectorAll(this.droppableSelector).forEach((droppable) => {
+                droppable.dataset[constants.DROPPABLE_DATA_ATTR] = 'true';
+                this.droppables.push(droppable);
+            });
+        }
     }
 }
 

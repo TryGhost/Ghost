@@ -11,7 +11,7 @@ import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import calculateReadingTime from '../utils/reading-time';
 import countWords from '../utils/count-words';
 import defaultAtoms from '../options/atoms';
-import defaultCards, {CARD_COMPONENT_MAP} from '../options/cards';
+import defaultCards, {CARD_COMPONENT_MAP, CARD_ICON_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-editor';
 import parserPlugins from '../options/parser-plugins';
@@ -26,9 +26,12 @@ import {copy} from '@ember/object/internals';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {getOwner} from '@ember/application';
+import {getParent} from '../lib/dnd/utils';
 import {guidFor} from '@ember/object/internals';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
+import {svgJar} from 'ghost-admin/helpers/svg-jar';
 
 const UNDO_DEPTH = 100;
 
@@ -164,6 +167,8 @@ function insertImageCards(files, postEditor) {
 }
 
 export default Component.extend({
+    koenigDragDropHandler: service(),
+
     layout,
     tagName: 'article',
     classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
@@ -417,6 +422,7 @@ export default Component.extend({
         this.set('editor', editor);
         this.didCreateEditor(this);
 
+        run.schedule('afterRender', this, this._registerCardReorderDragDropHandler);
         run.schedule('afterRender', this, this._calculateWordCount);
     },
 
@@ -459,7 +465,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
-        let {editor, _dropTarget} = this;
+        let {editor, _dropTarget, _cardDragDropContainer} = this;
 
         _dropTarget.removeEventListener('dragover', this._dragOverHandler);
         _dropTarget.removeEventListener('dragleave', this._dragLeaveHandler);
@@ -471,7 +477,10 @@ export default Component.extend({
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
 
+        _cardDragDropContainer.destroy();
+
         editor.destroy();
+
         this._super(...arguments);
     },
 
@@ -671,6 +680,11 @@ export default Component.extend({
 
         // re-calculate word count
         this._calculateWordCount();
+
+        // refresh drag/drop
+        // TODO: can be made more performant by only refreshing when droppable
+        // order changes or when sections are added/removed
+        this._cardDragDropContainer.refresh();
     },
 
     cursorDidChange(editor) {
@@ -1099,6 +1113,22 @@ export default Component.extend({
         return this.componentCards.findBy('destinationElementId', cardId);
     },
 
+    getCardFromElement(element) {
+        if (!element) {
+            return;
+        }
+
+        let cardElement = element.querySelector('.__mobiledoc-card') || getParent(element, '.__mobiledoc-card');
+
+        if (!cardElement) {
+            return;
+        }
+
+        let cardId = cardElement.firstChild.id;
+
+        return this.componentCards.findBy('destinationElementId', cardId);
+    },
+
     getSectionFromCard(card) {
         return card.env.postModel;
     },
@@ -1230,6 +1260,155 @@ export default Component.extend({
                 }
             }
         }
+    },
+
+    _registerCardReorderDragDropHandler() {
+        let cardDragDropContainer = this.koenigDragDropHandler.registerContainer(this.editor.element, {
+            draggableSelector: ':scope > div', // cards
+            droppableSelector: ':scope > *', // all block elements
+            onDragStart: run.bind(this, function () {
+                this._cardDragDropContainer.refresh();
+            }),
+            getDraggableInfo: run.bind(this, this._getDraggableInfo),
+            createGhostElement: run.bind(this, this._createCardDragElement),
+            getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
+            onDrop: run.bind(this, this._onCardDrop)
+        });
+
+        this._cardDragDropContainer = cardDragDropContainer;
+    },
+
+    _getDraggableInfo(draggableElement) {
+        let card = this.getCardFromElement(draggableElement);
+
+        if (!card) {
+            return false;
+        }
+
+        // TODO: payload should probably contain everything here as well as the
+        // card payload so that draggableInfo has a consistent shape
+        return {
+            type: 'card',
+            cardName: card.cardName,
+            payload: card.payload,
+            destinationElementId: card.destinationElementId
+        };
+    },
+
+    _createCardDragElement(draggableInfo) {
+        let {cardName} = draggableInfo;
+
+        if (!cardName) {
+            return;
+        }
+
+        let ghostElement = document.createElement('div');
+        ghostElement.classList.add('absolute', 'flex', 'flex-column', 'justify-center',
+            'items-center', 'w15', 'h15', 'br3', 'bg-white', 'shadow-2');
+        ghostElement.style.top = '0';
+        ghostElement.style.left = '-100%';
+        ghostElement.style.zIndex = 10001;
+        ghostElement.style.willChange = 'transform';
+
+        let iconElement = document.createElement('div');
+        iconElement.classList.add('flex', 'items-center');
+
+        let svgIconHtml = svgJar(CARD_ICON_MAP[cardName], {class: 'w8 h8'});
+        iconElement.insertAdjacentHTML('beforeend', svgIconHtml.string);
+
+        ghostElement.appendChild(iconElement);
+        return ghostElement;
+    },
+
+    _getDropIndicatorPosition(draggableInfo, droppableElem, position) {
+        let droppables = Array.from(this.editor.element.querySelectorAll(':scope > *'));
+        let droppableIndex = droppables.indexOf(droppableElem);
+        let draggableIndex = droppables.indexOf(draggableInfo.element);
+
+        // only allow card drag/drop for now so it's not possible to drag
+        // images out of a gallery and see drop indicators in the post content
+        if (draggableInfo.type !== 'card') {
+            return false;
+        }
+
+        if (this._isCardDropAllowed(draggableIndex, droppableIndex, position)) {
+            let insertIndex = droppableIndex;
+            if (position.match(/bottom/)) {
+                insertIndex += 1;
+            }
+
+            let beforeElems, afterElems;
+            if (position.match(/bottom/)) {
+                beforeElems = droppables.slice(0, droppableIndex + 1);
+                afterElems = droppables.slice(droppableIndex + 1);
+            } else {
+                beforeElems = droppables.slice(0, droppableIndex);
+                afterElems = droppables.slice(droppableIndex);
+            }
+
+            return {
+                direction: 'vertical',
+                position: position.match(/top/) ? 'top' : 'bottom',
+                beforeElems,
+                afterElems,
+                insertIndex: insertIndex
+            };
+        }
+
+        return false;
+    },
+
+    _onCardDrop(draggableInfo) {
+        if (draggableInfo.type !== 'card') {
+            return false;
+        }
+
+        let droppables = Array.from(this.editor.element.querySelectorAll(':scope > *'));
+        let draggableIndex = droppables.indexOf(draggableInfo.element);
+
+        if (this._isCardDropAllowed(draggableIndex, draggableInfo.insertIndex)) {
+            let card = this.getCardFromElement(draggableInfo.element);
+            let cardSection = this.getSectionFromCard(card);
+            let difference = draggableIndex - draggableInfo.insertIndex;
+
+            if (draggableIndex < draggableInfo.insertIndex) {
+                difference += 1;
+            }
+
+            if (difference !== 0) {
+                this.editor.run((postEditor) => {
+                    do {
+                        if (difference > 0) {
+                            cardSection = postEditor.moveSectionUp(cardSection);
+                            difference -= 1;
+                        } else if (difference < 0) {
+                            cardSection = postEditor.moveSectionDown(cardSection);
+                            difference += 1;
+                        }
+                    } while (difference !== 0);
+                });
+            }
+        }
+    },
+
+    // TODO: more or less duplicated in koenig-card-gallery other than direction
+    // - move to DnD container?
+    _isCardDropAllowed(draggableIndex, droppableIndex, position = '') {
+        // can't drop on itself or when droppableIndex doesn't exist
+        if (draggableIndex === droppableIndex || typeof droppableIndex === 'undefined') {
+            return false;
+        }
+
+        // account for dropping at beginning or end of a row
+        if (position.match(/top/)) {
+            droppableIndex -= 1;
+        }
+
+        if (position.match(/bottom/)) {
+            droppableIndex += 1;
+        }
+
+        return droppableIndex !== draggableIndex;
     },
 
     // calculate the number of words in rich-text sections and query cards for
