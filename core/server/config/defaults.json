@@ -83,5 +83,6 @@
         "resize": true
     },
     "compress": true,
-    "preloadHeaders": false
+    "preloadHeaders": false,
+    "sendWelcomeEmail": true
 }
