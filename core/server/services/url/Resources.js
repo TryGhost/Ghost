@@ -6,9 +6,6 @@ const config = require('../../config');
 const models = require('../../models');
 const common = require('../../lib/common');
 
-/**
- * NOTE: We are querying knex directly, because the Bookshelf ORM overhead is too slow.
- */
 class Resources {
     constructor(queue) {
         this.queue = queue;
@@ -53,6 +50,8 @@ class Resources {
 
         _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
+
+            // NOTE: We are querying knex directly, because the Bookshelf ORM overhead is too slow.
             ops.push(this._fetch(resourceConfig));
 
             this._listenOn(resourceConfig.events.add, (model) => {
