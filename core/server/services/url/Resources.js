@@ -6,6 +6,12 @@ const config = require('../../config');
 const models = require('../../models');
 const common = require('../../lib/common');
 
+/**
+ * At the moment Resource service is directly responsible for data population
+ * for URLs in UrlService. But because it's actually a storage of all possible
+ * resources in the system, could also be used as a cache for Content API in
+ * the future.
+ */
 class Resources {
     constructor(queue) {
         this.queue = queue;
