@@ -89,7 +89,11 @@ module.exports = [
         modelOptions: {
             modelName: 'Tag',
             exclude: ['description', 'meta_title', 'meta_description'],
-            filter: 'visibility:public'
+            filter: 'visibility:public',
+            shouldHavePosts: {
+                joinTo: 'tag_id',
+                joinTable: 'posts_tags'
+            }
         },
         events: {
             add: 'tag.added',
@@ -112,7 +116,11 @@ module.exports = [
                 'meta_description',
                 'tour'
             ],
-            filter: 'visibility:public'
+            filter: 'visibility:public',
+            shouldHavePosts: {
+                joinTo: 'author_id',
+                joinTable: 'posts_authors'
+            }
         },
         events: {
             add: 'user.activated',

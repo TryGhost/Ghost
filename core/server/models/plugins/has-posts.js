@@ -2,12 +2,10 @@ const _ = require('lodash');
 const _debug = require('ghost-ignition').debug._base;
 const debug = _debug('ghost-query');
 
-const addHasPostsWhere = function () {
-    const tableName = _.result(this, 'tableName');
+const addHasPostsWhere = (tableName, config) => {
     const comparisonField = `${tableName}.id`;
-    const config = this.shouldHavePosts;
 
-    this.query(function (qb) {
+    return function (qb) {
         return qb.whereIn(comparisonField, function () {
             const innerQb = this
                 .distinct(`${config.joinTable}.${config.joinTo}`)
@@ -21,7 +19,7 @@ const addHasPostsWhere = function () {
 
             return innerQb;
         });
-    });
+    };
 };
 
 const hasPosts = function hasPosts(Bookshelf) {
@@ -34,7 +32,7 @@ const hasPosts = function hasPosts(Bookshelf) {
 
         fetch: function () {
             if (this.shouldHavePosts) {
-                addHasPostsWhere.call(this);
+                this.query(addHasPostsWhere(_.result(this, 'tableName'), this.shouldHavePosts));
             }
 
             if (_debug.enabled('ghost-query')) {
@@ -46,7 +44,7 @@ const hasPosts = function hasPosts(Bookshelf) {
 
         fetchAll: function () {
             if (this.shouldHavePosts) {
-                addHasPostsWhere.call(this);
+                this.query(addHasPostsWhere(_.result(this, 'tableName'), this.shouldHavePosts));
             }
 
             if (_debug.enabled('ghost-query')) {
@@ -59,3 +57,4 @@ const hasPosts = function hasPosts(Bookshelf) {
 };
 
 module.exports = hasPosts;
+module.exports.addHasPostsWhere = addHasPostsWhere;
