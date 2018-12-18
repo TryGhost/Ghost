@@ -74,11 +74,6 @@ module.exports = function MembersApi({
 
         const memberPromise = getMember({email});
 
-        memberPromise.catch(() => {
-            res.writeHead(200);
-            res.end();
-        });
-
         memberPromise.then((member) => {
             const token = jwt.sign({
                 sub: member.id,
