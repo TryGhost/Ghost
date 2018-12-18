@@ -88,6 +88,11 @@ function sendEmail(member, {token}) {
     // @TODO remove this
     console.log(message.html);
     /* eslint-enable */
+
+    if (mailer.state.usingDirect) {
+        return Promise.reject(new Error('Unable to send email'));
+    }
+
     return mailer.send(message).catch((err) => {
         return Promise.reject(err);
     });
