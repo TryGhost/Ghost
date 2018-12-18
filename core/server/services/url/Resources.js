@@ -1,10 +1,10 @@
-const debug = require('ghost-ignition').debug('services:url:resources'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    Resource = require('./Resource'),
-    config = require('../../config'),
-    models = require('../../models'),
-    common = require('../../lib/common');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const debug = require('ghost-ignition').debug('services:url:resources');
+const Resource = require('./Resource');
+const config = require('../../config');
+const models = require('../../models');
+const common = require('../../lib/common');
 
 /**
  * NOTE: We are querying knex directly, because the Bookshelf ORM overhead is too slow.
