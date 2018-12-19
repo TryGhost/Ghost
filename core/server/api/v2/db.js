@@ -73,7 +73,7 @@ module.exports = {
             method: 'importContent'
         },
         query(frame) {
-            return importer.importFromFile(frame.data, {include: frame.options.withRelated});
+            return importer.importFromFile(frame.file, {include: frame.options.withRelated});
         }
     },
 
