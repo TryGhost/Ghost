@@ -32,7 +32,18 @@ module.exports = {
                 });
             }
 
-            return settings;
+            // CASE: append custom fields
+            return models.CustomField.findAll()
+                .then((models) => {
+                    const fields = models.map((field) => {
+                        return field.toJSON();
+                    });
+                    
+                    var index = _.findIndex(settings, {key: 'custom_fields'});
+                    settings[index].value = JSON.stringify(fields);
+
+                    return settings;
+                });
         }
     },
 
