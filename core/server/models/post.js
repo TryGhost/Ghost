@@ -752,9 +752,21 @@ Post = ghostBookshelf.Model.extend({
 
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+    
+        if (Array.isArray(options.withRelated)) {
+            options.withRelated.push('custom_field_values');
+        } else {
+            options.withRelated = ['custom_field_values'];
+        }
 
         const destroyPost = () => {
-            return ghostBookshelf.Model.destroy.call(this, options);
+            return this.forge({id: options.id})
+                .fetch(options)
+                .then((post) => {
+                    return post.related('custom_field_values')
+                        .invokeThen('destroy', options)
+                        .then(() => post.destroy(options));
+                });
         };
 
         if (!options.transacting) {
