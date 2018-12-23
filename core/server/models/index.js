@@ -36,7 +36,8 @@ models = [
     'api-key',
     'mobiledoc-revision',
     'member',
-    'custom-field'
+    'custom-field',
+    'custom-field-value'
 ];
 
 function init() {

@@ -113,6 +113,15 @@ module.exports = {
                 return setting.key === 'type';
             });
 
+            // Update custom fields
+            let customFieldSetting = frame.data.settings.find((setting) => {
+                return setting.key === 'custom_fields';
+            });
+            if (customFieldSetting !== undefined) {
+                let customFields = JSON.parse(customFieldSetting.value);
+                models.CustomField.edit(customFields, frame.options);
+            }
+
             return models.Settings.edit(frame.data.settings, frame.options);
         }
     },
