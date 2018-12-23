@@ -438,6 +438,10 @@ Post = ghostBookshelf.Model.extend({
         return this.hasMany('MobiledocRevision', 'post_id');
     },
 
+    custom_field_values() {
+        return this.hasMany('CustomFieldValue', 'post_id');
+    },
+
     /**
      * @NOTE:
      * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
@@ -684,6 +688,12 @@ Post = ghostBookshelf.Model.extend({
 
         const editPost = () => {
             options.forUpdate = true;
+
+            // Update custom field values
+            let customValues = data.custom_field_values;
+            if (customValues !== null) {
+                ghostBookshelf.model('CustomFieldValue').edit(customValues, options);
+            }
 
             return ghostBookshelf.Model.edit.call(this, data, options)
                 .then((post) => {
