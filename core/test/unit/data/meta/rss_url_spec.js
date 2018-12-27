@@ -6,8 +6,11 @@ const should = require('should'),
 
 describe('getRssUrl', function () {
     beforeEach(function () {
-        sandbox.restore();
         sandbox.stub(routing.registry, 'getRssUrl').returns('/rss/');
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     it('should return rss url', function () {
