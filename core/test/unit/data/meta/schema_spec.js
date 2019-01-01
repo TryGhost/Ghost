@@ -1,4 +1,6 @@
 var should = require('should'),
+    sinon = require('sinon'),
+    _ = require('lodash'),
     getSchema = require('../../../../server/data/meta/schema'),
     markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 
@@ -51,54 +53,60 @@ describe('getSchema', function () {
                     twitter: '@testuser'
                 }
             }
-        }, schema = getSchema(metadata, data);
+            }, schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
-                image: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/me.jpg',
-                    width: 500,
-                    height: 500
-                },
-                name: 'Post Author',
-                sameAs: [
-                    'http://myblogsite.com/',
-                    'https://www.facebook.com/testuser',
-                    'https://twitter.com/testuser'
-                ],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Custom excerpt for description',
-            headline: 'Post Title',
-            image: {
+        schema.should.have.properties(
+            ['@context', '@type', 'author', 'dateModified', 'datePublished', 'description', 'headline', 'image', 'keywords', 'url', 'mainEntityOfPage', 'publisher']
+        );
+        schema['@context'].should.eql('https://schema.org');
+        schema['@type'].should.eql('Article');
+        schema.url.should.eql('http://mysite.com/post/my-post-slug/');
+        schema.headline.should.eql('Post Title');
+        schema.description.should.eql('Custom excerpt for description');
+        schema.keywords.should.eql('one, two, tag');
+        schema.dateModified.should.eql('2016-01-21T22:13:05.412Z');
+        schema.datePublished.should.eql('2015-12-25T05:35:01.234Z');
+
+        schema.mainEntityOfPage.should.eql({
+            '@type': 'WebPage',
+            '@id': 'http://mysite.com'
+        });
+
+        schema.publisher.should.eql({
+            '@type': 'Organization',
+            name: 'Blog Title',
+            logo: {
                 '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
+                url: 'http://mysite.com/author/image/url/logo.jpg',
                 width: 500,
                 height: 500
-            },
-            keywords: 'one, two, tag',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': 'http://mysite.com'
-            },
-            publisher: {
-                '@type': 'Organization',
-                name: 'Blog Title',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
-                    width: 500,
-                    height: 500
-                }
-            },
-            url: 'http://mysite.com/post/my-post-slug/'
+            }
         });
+
+        schema.image.should.eql({
+            '@type': 'ImageObject',
+            url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            width: 500,
+            height: 500
+        });
+
+        schema.author.should.eql({
+            '@type': 'Person',
+            name: 'Post Author',
+            sameAs: [
+                'http://myblogsite.com/',
+                'https://www.facebook.com/testuser',
+                'https://twitter.com/testuser'
+            ],
+            url: 'http://mysite.com/author/me/',
+            image: {
+                '@type': 'ImageObject',
+                url: 'http://mysite.com/author/image/url/me.jpg',
+                width: 500,
+                height: 500
+            }
+        });
+
         done();
     });
 
@@ -238,6 +246,10 @@ describe('getSchema', function () {
         should.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Article',
+            publisher: {
+                '@type': "Organization",
+                name: "Blog Title"
+            },
             author: {
                 '@type': 'Person',
                 name: 'Post Author',
@@ -248,15 +260,6 @@ describe('getSchema', function () {
             datePublished: '2015-12-25T05:35:01.234Z',
             description: 'Post meta description',
             headline: 'Post Title',
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': null
-            },
-            publisher: {
-                '@type': 'Organization',
-                name: 'Blog Title',
-                logo: null
-            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
         done();
@@ -339,9 +342,17 @@ describe('getSchema', function () {
     it('should return home schema if context starts with home', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                url: 'http://mysite.com/',
+                logo: {
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    dimensions: {
+                        width: 500,
+                        height: 500
+                    }
+                }
             },
-            url: 'http://mysite.com/post/my-post-slug/',
+            url: 'http://mysite.com/',
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
                 dimensions: {
@@ -352,35 +363,42 @@ describe('getSchema', function () {
             metaDescription: 'This is the theme description'
         },  data = {
             context: ['home']
-        }, schema = getSchema(metadata, data);
+            }, schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            description: 'This is the theme description',
-            image: {
-                '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                width: 500,
-                height: 500
-            },
-            mainEntityOfPage: {
-                '@type': 'WebPage',
-                '@id': null
-            },
-            publisher: {
-                '@type': 'Organization',
-                name: 'Blog Title',
-                logo: null
-            },
-            url: 'http://mysite.com/post/my-post-slug/'
+        schema.should.have.properties(
+            ['@context', '@type', 'url', 'mainEntityOfPage', 'publisher', 'image']
+        );
+
+        schema['@context'].should.eql('https://schema.org');
+        schema['@type'].should.eql('WebSite');
+        schema.url.should.eql('http://mysite.com/');
+        schema.mainEntityOfPage.should.eql({
+            '@type': 'WebPage',
+            '@id': 'http://mysite.com/'
         });
+
+        schema.publisher.should.have.properties(['@type', 'name', 'logo']);
+        schema.publisher['@type'].should.eql('Organization');
+        schema.publisher.name.should.eql('Blog Title');
+
+        schema.publisher.logo.should.have.properties(['@type', 'url', 'width', 'height']);
+        schema.publisher.logo['@type'].should.eql('ImageObject');
+        schema.publisher.logo.url.should.eql('http://mysite.com/author/image/url/logo.jpg');
+        schema.publisher.logo.width.should.eql(500);
+        schema.publisher.logo.height.should.eql(500);
+
+        schema.image.should.properties(['@type', 'url', 'width', 'height']);
+        schema.image['@type'].should.eql('ImageObject');
+        schema.image.url.should.eql('http://mysite.com/content/image/mypostcoverimage.jpg');
+        schema.image.width.should.eql(500);
+        schema.image.height.should.eql(500);
     });
 
     it('should return tag schema if context starts with tag', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                url: 'http://mysite.com/'
             },
             url: 'http://mysite.com/post/my-post-slug/',
             coverImage: {
@@ -410,14 +428,9 @@ describe('getSchema', function () {
             },
             mainEntityOfPage: {
                 '@type': 'WebPage',
-                '@id': null
+                '@id': 'http://mysite.com/'
             },
             name: 'Great Tag',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Blog Title',
-                logo: null
-            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
     });
