@@ -43,4 +43,4 @@ The style rules used are available at `prettyCLI.styles`.
 
 # Copyright & License
 
-Copyright (c) 2018 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2018-2019 Ghost Foundation - Released under the [MIT license](LICENSE).
