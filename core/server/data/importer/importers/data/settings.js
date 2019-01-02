@@ -3,7 +3,7 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     _ = require('lodash'),
     BaseImporter = require('./base'),
     models = require('../../../../models'),
-    defaultSettings = require('../../../schema/default-settings.json'),
+    defaultSettings = require('../../../schema').defaultSettings,
     labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
 class SettingsImporter extends BaseImporter {
