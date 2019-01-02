@@ -76,7 +76,13 @@ var config = require('./core/server/config'),
                     }
                 },
                 express: {
-                    files: ['core/ghost-server.js', 'core/server/**/*.js', 'config.*.json', '!config.testing.json'],
+                    files: [
+                        'core/ghost-server.js',
+                        'core/server/**/*.js',
+                        '!core/server/lib/members/static/auth/**/*.js',
+                        'config.*.json',
+                        '!config.testing.json'
+                    ],
                     tasks: ['express:dev'],
                     options: {
                         spawn: false,
