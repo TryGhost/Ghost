@@ -11,7 +11,7 @@ module.exports = function normalize(req, res, next) {
     //       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
     //       As for .svg files, sharp only supports conversion to png, and this does not
     //       play well with animated svg files
-    if (!imageOptimizationOptions.resize || ['.gif', '.svg', '.svgz'].includes(req.file.ext)) {
+    if (!imageOptimizationOptions.resize || !image.manipulator.canTransformFileExtension(req.file.ext)) {
         return next();
     }
 
