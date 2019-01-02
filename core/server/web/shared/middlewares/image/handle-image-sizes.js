@@ -16,7 +16,7 @@ module.exports = function (req, res, next) {
         return res.redirect(url);
     };
 
-    // CASE: image manipulator is uncapable of transforming file (e.g. .gif))
+    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
     const requestUrlFileExtension = path.parse(req.url).ext;
     if (!image.manipulator.canTransformFileExtension(requestUrlFileExtension)) {
         return redirectToOriginal();

@@ -7,11 +7,8 @@ const image = require('../../../../lib/image');
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
 
-    // NOTE: .gif optimization is currently not supported by sharp but will be soon
-    //       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
-    //       As for .svg files, sharp only supports conversion to png, and this does not
-    //       play well with animated svg files
-    if (!imageOptimizationOptions.resize || !image.manipulator.canTransformFileExtension(req.file.ext)) {
+    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
+    if (!image.manipulator.canTransformFileExtension(req.file.ext) || !imageOptimizationOptions.resize) {
         return next();
     }
 
