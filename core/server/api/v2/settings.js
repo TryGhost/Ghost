@@ -28,7 +28,7 @@ module.exports = {
             // CASE: omit core settings unless internal request
             if (!frame.options.context.internal) {
                 settings = _.filter(settings, (setting) => {
-                    return setting.type !== 'core' && setting.key !== 'permalinks';
+                    return setting.type !== 'core';
                 });
             }
 

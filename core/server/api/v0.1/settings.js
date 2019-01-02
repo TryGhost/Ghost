@@ -30,14 +30,14 @@ let settings,
  * @returns {*}
  */
 settingsFilter = (settings, filter) => {
-    return _.fromPairs(_.toPairs(settings).filter((setting) => {
-        if (filter) {
-            return _.some(filter.split(','), (f) => {
-                return setting[1].type === f;
-            });
+    let filteredTypes = filter ? filter.split(',') : false;
+    return _.filter(settings, (setting) => {
+        if (filteredTypes) {
+            return _.includes(filteredTypes, setting.type);
         }
+
         return true;
-    }));
+    });
 };
 
 /**
