@@ -36,6 +36,8 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         });
 };
 
+const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz'].includes(ext);
+
 const makeSafe = fn => (...args) => {
     try {
         require('sharp');
@@ -55,5 +57,6 @@ const makeSafe = fn => (...args) => {
     });
 };
 
+module.exports.canTransformFileExtension = canTransformFileExtension;
 module.exports.process = makeSafe(unsafeProcess);
 module.exports.resizeImage = makeSafe(unsafeResizeImage);
