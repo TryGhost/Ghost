@@ -18,7 +18,7 @@ module.exports = {
     },
 
     importContent(response, apiConfig, frame) {
-        debug('exportContent');
+        debug('importContent');
 
         // NOTE: response can contain 2 objects if images are imported
         const problems = (response.length === 2)

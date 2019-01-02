@@ -84,6 +84,43 @@ describe('DB API', () => {
             });
     });
 
+    it('import should succeed with default content', () => {
+        return Promise.resolve()
+            .then(() => {
+                return request.delete(localUtils.API.getApiQuery('db/'))
+                    .set('Origin', config.get('url'))
+                    .set('Accept', 'application/json')
+                    .expect(204);
+            })
+            .then(() => {
+                return request.post(localUtils.API.getApiQuery('db/'))
+                    .set('Origin', config.get('url'))
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .attach('importfile', path.join(__dirname, '/../../../../utils/fixtures/export/default_export.json'))
+                    .expect(200)
+                    .then((res) => {
+                        const jsonResponse = res.body;
+                        should.exist(jsonResponse.db);
+                        should.exist(jsonResponse.problems);
+                        jsonResponse.problems.should.have.length(3);
+                    });
+            })
+            .then(() => {
+                return request.get(localUtils.API.getApiQuery('posts/'))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        let jsonResponse = res.body;
+                        let results = jsonResponse.posts;
+                        jsonResponse.posts.should.have.length(7);
+                        _.filter(results, {page: false, status: 'published'}).length.should.equal(7);
+                    });
+            });
+    });
+
     it('import should fail without file', () => {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
