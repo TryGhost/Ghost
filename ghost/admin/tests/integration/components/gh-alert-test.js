@@ -1,40 +1,38 @@
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {setupComponentTest} from 'ember-mocha';
+import {render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-alert', function () {
-    setupComponentTest('gh-alert', {
-        integration: true
-    });
+    setupRenderingTest();
 
-    it('renders', function () {
+    it('renders', async function () {
         this.set('message', {message: 'Test message', type: 'success'});
 
-        this.render(hbs`{{gh-alert message=message}}`);
+        await render(hbs`{{gh-alert message=message}}`);
 
-        expect(this.$('article.gh-alert')).to.have.length(1);
-        let $alert = this.$('.gh-alert');
-
-        expect($alert.text()).to.match(/Test message/);
+        let alert = this.element.querySelector('article.gh-alert');
+        expect(alert).to.exist;
+        expect(alert).to.contain.text('Test message');
     });
 
-    it('maps message types to CSS classes', function () {
+    it('maps message types to CSS classes', async function () {
         this.set('message', {message: 'Test message', type: 'success'});
 
-        this.render(hbs`{{gh-alert message=message}}`);
-        let $alert = this.$('.gh-alert');
+        await render(hbs`{{gh-alert message=message}}`);
+        let alert = this.element.querySelector('article.gh-alert');
 
         this.set('message.type', 'success');
-        expect($alert.hasClass('gh-alert-green'), 'success class isn\'t green').to.be.true;
+        expect(alert, 'success class is green').to.have.class('gh-alert-green');
 
         this.set('message.type', 'error');
-        expect($alert.hasClass('gh-alert-red'), 'success class isn\'t red').to.be.true;
+        expect(alert, 'error class is red').to.have.class('gh-alert-red');
 
         this.set('message.type', 'warn');
-        expect($alert.hasClass('gh-alert-blue'), 'success class isn\'t yellow').to.be.true;
+        expect(alert, 'warn class is yellow').to.have.class('gh-alert-blue');
 
         this.set('message.type', 'info');
-        expect($alert.hasClass('gh-alert-blue'), 'success class isn\'t blue').to.be.true;
+        expect(alert, 'info class is blue').to.have.class('gh-alert-blue');
     });
 });

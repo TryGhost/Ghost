@@ -5,7 +5,9 @@ export default ModalComponent.extend({
     actions: {
         confirm() {
             this.confirm().finally(() => {
-                this.send('closeModal');
+                if (!this.isDestroyed && !this.isDestroying) {
+                    this.send('closeModal');
+                }
             });
         }
     },

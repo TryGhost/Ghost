@@ -1,68 +1,62 @@
-import destroyApp from '../../helpers/destroy-app';
-import startApp from '../../helpers/start-app';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
-    afterEach,
     beforeEach,
     describe,
     it
 } from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {currentURL} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - Integrations - Zapier', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/settings/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('redirects to team page when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('it loads', async function () {

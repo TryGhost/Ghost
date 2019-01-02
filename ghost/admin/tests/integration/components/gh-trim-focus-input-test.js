@@ -1,66 +1,60 @@
 import hbs from 'htmlbars-inline-precompile';
+import {blur, find, render} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
-import {setupComponentTest} from 'ember-mocha';
+import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-trim-focus-input', function () {
-    setupComponentTest('gh-trim-focus-input', {
-        integration: true
-    });
+    setupRenderingTest();
 
-    it('trims value on focusOut', function () {
+    it('trims value on focusOut', async function () {
         this.set('text', 'some random stuff    ');
-        this.render(hbs`{{gh-trim-focus-input value=(readonly text) input=(action (mut text) value="target.value")}}`);
+        await render(hbs`{{gh-trim-focus-input value=(readonly text) input=(action (mut text) value="target.value")}}`);
 
-        run(() => {
-            this.$('.gh-input').trigger('focusout');
-        });
+        await blur('input');
 
         expect(this.get('text')).to.equal('some random stuff');
     });
 
-    it('trims value on focusOut before calling custom focus-out', function () {
+    it('trims value on focusOut before calling custom focus-out', async function () {
         this.set('text', 'some random stuff    ');
         this.set('customFocusOut', function (value) {
-            expect(this.$('.gh-input').val(), 'input value').to.equal('some random stuff');
+            expect(find('.gh-input').value, 'input value').to.equal('some random stuff');
             expect(value, 'value').to.equal('some random stuff');
         });
 
-        this.render(hbs`{{gh-trim-focus-input
+        await render(hbs`{{gh-trim-focus-input
             value=(readonly text)
             input=(action (mut text) value="target.value")
             focus-out=(action customFocusOut)
         }}`);
 
-        run(() => {
-            this.$('.gh-input').trigger('focusout');
-        });
+        await blur('input');
 
         expect(this.get('text')).to.equal('some random stuff');
     });
 
-    it('does not have the autofocus attribute if not set to focus', function () {
+    it('does not have the autofocus attribute if not set to focus', async function () {
         this.set('text', 'some text');
-        this.render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=false}}`);
-        expect(this.$('.gh-input').attr('autofocus')).to.not.be.ok;
+        await render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=false}}`);
+        expect(find('input').autofocus).to.not.be.ok;
     });
 
-    it('has the autofocus attribute if set to focus', function () {
+    it('has the autofocus attribute if set to focus', async function () {
         this.set('text', 'some text');
-        this.render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
-        expect(this.$('.gh-input').attr('autofocus')).to.be.ok;
+        await render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
+        expect(find('input').autofocus).to.be.ok;
     });
 
-    it('handles undefined values', function () {
+    it('handles undefined values', async function () {
         this.set('text', undefined);
-        this.render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
-        expect(this.$('.gh-input').attr('autofocus')).to.be.ok;
+        await render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
+        expect(find('input').autofocus).to.be.ok;
     });
 
-    it('handles non-string values', function () {
+    it('handles non-string values', async function () {
         this.set('text', 10);
-        this.render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
-        expect(this.$('.gh-input').val()).to.equal('10');
+        await render(hbs`{{gh-trim-focus-input value=(readonly text) shouldFocus=true}}`);
+        expect(find('input').value).to.equal('10');
     });
 });

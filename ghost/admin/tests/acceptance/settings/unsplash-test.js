@@ -1,64 +1,63 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import destroyApp from '../../helpers/destroy-app';
-import startApp from '../../helpers/start-app';
-import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {
+    beforeEach,
+    describe,
+    it
+} from 'mocha';
+import {click, currentURL, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - Integrations - Unsplash', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('redirects to team page when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('it can activate/deactivate', async function () {
@@ -69,13 +68,13 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
 
             // verify we don't have an unsplash setting fixture loaded
             expect(
-                server.db.settings.where({key: 'unsplash'}),
+                this.server.db.settings.where({key: 'unsplash'}),
                 'initial server settings'
             ).to.be.empty;
 
             // it's enabled by default when settings is empty
             expect(
-                find('[data-test-checkbox="unsplash"]').prop('checked'),
+                find('[data-test-checkbox="unsplash"]').checked,
                 'checked by default'
             ).to.be.true;
 
@@ -83,12 +82,12 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
             await click('[data-test-save-button]');
 
             // server should now have an unsplash setting
-            let [setting] = server.db.settings.where({key: 'unsplash'});
+            let [setting] = this.server.db.settings.where({key: 'unsplash'});
             expect(setting, 'unsplash setting after save').to.exist;
             expect(setting.value).to.equal('{"isActive":true}');
 
             // disable
-            await click(find('[data-test-checkbox="unsplash"]'));
+            await click('[data-test-checkbox="unsplash"]');
 
             // save via CMD-S shortcut
             await triggerEvent('.gh-app', 'keydown', {
@@ -98,7 +97,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
             });
 
             // server should have an updated setting
-            [setting] = server.db.settings.where({key: 'unsplash'});
+            [setting] = this.server.db.settings.where({key: 'unsplash'});
             expect(setting.value).to.equal('{"isActive":false}');
         });
 
@@ -109,20 +108,20 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             expect(
-                find('[data-test-checkbox="unsplash"]').prop('checked'),
+                find('[data-test-checkbox="unsplash"]').checked,
                 'checked by default'
             ).to.be.true;
 
             await click('[data-test-checkbox="unsplash"]');
 
-            expect(find('[data-test-checkbox="unsplash"]').prop('checked'), 'Unsplash checkbox').to.be.false;
+            expect(find('[data-test-checkbox="unsplash"]').checked, 'Unsplash checkbox').to.be.false;
 
             await visit('/settings/labs');
 
-            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+            expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await click('.fullscreen-modal [data-test-leave-button]');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/labs');
 
@@ -131,7 +130,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // settings were not saved
-            expect(find('[data-test-checkbox="unsplash"]').prop('checked'), 'Unsplash checkbox').to.be.true;
+            expect(find('[data-test-checkbox="unsplash"]').checked, 'Unsplash checkbox').to.be.true;
         });
     });
 });

@@ -1,4 +1,4 @@
-<header class="modal-header">
+<header class="modal-header" data-test-modal="new-subscriber">
     <h1>Add a Subscriber</h1>
 </header>
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
@@ -16,14 +16,21 @@
                 name="email"
                 autofocus="autofocus"
                 autocapitalize="off"
-                autocorrect="off">
-            {{gh-error-message errors=subscriber.errors property="email"}}
+                autocorrect="off"
+                data-test-input="new-subscriber-email">
+            {{gh-error-message errors=subscriber.errors property="email" data-test-error="new-subscriber-email"}}
         {{/gh-form-group}}
 
     </fieldset>
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button "Add" successText="Added" task=addSubscriber class="gh-btn gh-btn-green gh-btn-icon"}}
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-new-subscriber">
+        <span>Cancel</span>
+    </button>
+    {{gh-task-button "Add"
+        successText="Added"
+        task=addSubscriber
+        class="gh-btn gh-btn-green gh-btn-icon"
+        data-test-button="create-subscriber"}}
 </div>

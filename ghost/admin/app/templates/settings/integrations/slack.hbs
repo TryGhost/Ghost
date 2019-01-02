@@ -51,7 +51,7 @@
                             {{#unless slackSettings.errors.url}}
                                 <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                             {{else}}
-                                {{gh-error-message errors=slackSettings.errors property="url"}}
+                                {{gh-error-message errors=slackSettings.errors property="url" data-test-error="slack-url"}}
                             {{/unless}}
                         {{/gh-form-group}}
                     </div>

@@ -1,66 +1,61 @@
-import $ from 'jquery';
-import destroyApp from '../../helpers/destroy-app';
-import startApp from '../../helpers/start-app';
-// import wait from 'ember-test-helpers/wait';
-import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {beforeEach, describe, it} from 'mocha';
+import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {fileUpload} from '../../helpers/file-upload';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../../helpers/visit';
+// import wait from 'ember-test-helpers/wait';
 // import {timeout} from 'ember-concurrency';
 
 describe('Acceptance: Settings - Labs', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/settings/labs');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('redirects to team page when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/labs');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/labs');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/labs');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it.skip('it renders, loads modals correctly', async function () {
@@ -73,24 +68,24 @@ describe('Acceptance: Settings - Labs', function () {
             expect(document.title, 'page title').to.equal('Settings - Labs - Test Blog');
 
             // highlights nav menu
-            expect($('[data-test-nav="labs"]').hasClass('active'), 'highlights nav menu item')
-                .to.be.true;
+            expect(find('[data-test-nav="labs"]'), 'highlights nav menu item')
+                .to.have.class('active');
 
             await click('#settings-resetdb .js-delete');
-            expect(find('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
+            expect(findAll('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
 
             await click('.fullscreen-modal .modal-footer .gh-btn');
-            expect(find('.fullscreen-modal').length, 'modal element').to.equal(0);
+            expect(findAll('.fullscreen-modal').length, 'modal element').to.equal(0);
         });
 
         it('can upload/download redirects', async function () {
             await visit('/settings/labs');
 
             // successful upload
-            server.post('/redirects/json/', {}, 200);
+            this.server.post('/redirects/json/', {}, 200);
 
             await fileUpload(
-                '[data-test-file-input="redirects"]',
+                '[data-test-file-input="redirects"] input',
                 ['test'],
                 {name: 'redirects.json', type: 'application/json'}
             );
@@ -102,33 +97,33 @@ describe('Acceptance: Settings - Labs', function () {
             // await timeout(50);
             //
             // // shows success button
-            // let button = find('[data-test-button="upload-redirects"]');
-            // expect(button.length, 'no of success buttons').to.equal(1);
+            // let buttons = findAll('[data-test-button="upload-redirects"]');
+            // expect(buttons.length, 'no of success buttons').to.equal(1);
             // expect(
-            //     button.hasClass('gh-btn-green'),
+            //     buttons[0],
             //     'success button is green'
-            // ).to.be.true;
+            // ).to.have.class('gh-btn-green);
             // expect(
-            //     button.text().trim(),
+            //     button.textContent,
             //     'success button text'
             // ).to.have.string('Uploaded');
             //
             // await wait();
 
             // returned to normal button
-            let button = find('[data-test-button="upload-redirects"]');
-            expect(button.length, 'no of post-success buttons').to.equal(1);
+            let buttons = findAll('[data-test-button="upload-redirects"]');
+            expect(buttons.length, 'no of post-success buttons').to.equal(1);
             expect(
-                button.hasClass('gh-btn-green'),
+                buttons[0],
                 'post-success button doesn\'t have success class'
-            ).to.be.false;
+            ).to.not.have.class('gh-btn-green');
             expect(
-                button.text().trim(),
+                buttons[0].textContent,
                 'post-success button text'
             ).to.have.string('Upload redirects');
 
             // failed upload
-            server.post('/redirects/json/', {
+            this.server.post('/redirects/json/', {
                 errors: [{
                     errorType: 'BadRequestError',
                     message: 'Test failure message'
@@ -136,7 +131,7 @@ describe('Acceptance: Settings - Labs', function () {
             }, 400);
 
             await fileUpload(
-                '[data-test-file-input="redirects"]',
+                '[data-test-file-input="redirects"] input',
                 ['test'],
                 {name: 'redirects-bad.json', type: 'application/json'}
             );
@@ -148,14 +143,14 @@ describe('Acceptance: Settings - Labs', function () {
             // await timeout(50);
             //
             // shows failure button
-            // button = find('[data-test-button="upload-redirects"]');
-            // expect(button.length, 'no of failure buttons').to.equal(1);
+            // buttons = findAll('[data-test-button="upload-redirects"]');
+            // expect(buttons.length, 'no of failure buttons').to.equal(1);
             // expect(
-            //     button.hasClass('gh-btn-red'),
+            //     buttons[0],
             //     'failure button is red'
-            // ).to.be.true;
+            // ).to.have.class('gh-btn-red);
             // expect(
-            //     button.text().trim(),
+            //     buttons[0].textContent,
             //     'failure button text'
             // ).to.have.string('Upload Failed');
             //
@@ -163,26 +158,26 @@ describe('Acceptance: Settings - Labs', function () {
 
             // shows error message
             expect(
-                find('[data-test-error="redirects"]').text().trim(),
+                find('[data-test-error="redirects"]').textContent.trim(),
                 'upload error text'
             ).to.have.string('Test failure message');
 
             // returned to normal button
-            button = find('[data-test-button="upload-redirects"]');
-            expect(button.length, 'no of post-failure buttons').to.equal(1);
+            buttons = findAll('[data-test-button="upload-redirects"]');
+            expect(buttons.length, 'no of post-failure buttons').to.equal(1);
             expect(
-                button.hasClass('gh-btn-red'),
+                buttons[0],
                 'post-failure button doesn\'t have failure class'
-            ).to.be.false;
+            ).to.not.have.class('gh-btn-red');
             expect(
-                button.text().trim(),
+                buttons[0].textContent,
                 'post-failure button text'
             ).to.have.string('Upload redirects');
 
             // successful upload clears error
-            server.post('/redirects/json/', {}, 200);
+            this.server.post('/redirects/json/', {}, 200);
             await fileUpload(
-                '[data-test-file-input="redirects"]',
+                '[data-test-file-input="redirects"] input',
                 ['test'],
                 {name: 'redirects-bad.json', type: 'application/json'}
             );
@@ -192,18 +187,18 @@ describe('Acceptance: Settings - Labs', function () {
             // can download redirects.json
             await click('[data-test-link="download-redirects"]');
 
-            let iframe = $('#iframeDownload');
-            expect(iframe.attr('src')).to.have.string('/redirects/json/');
+            let iframe = document.querySelector('#iframeDownload');
+            expect(iframe.getAttribute('src')).to.have.string('/redirects/json/');
         });
 
         it('can upload/download routes.yaml', async function () {
             await visit('/settings/labs');
 
             // successful upload
-            server.post('/settings/routes/yaml/', {}, 200);
+            this.server.post('/settings/routes/yaml/', {}, 200);
 
             await fileUpload(
-                '[data-test-file-input="routes"]',
+                '[data-test-file-input="routes"] input',
                 ['test'],
                 {name: 'routes.yaml', type: 'application/x-yaml'}
             );
@@ -229,19 +224,19 @@ describe('Acceptance: Settings - Labs', function () {
             // await wait();
 
             // returned to normal button
-            let button = find('[data-test-button="upload-routes"]');
-            expect(button.length, 'no of post-success buttons').to.equal(1);
+            let buttons = findAll('[data-test-button="upload-routes"]');
+            expect(buttons.length, 'no of post-success buttons').to.equal(1);
             expect(
-                button.hasClass('gh-btn-green'),
+                buttons[0],
                 'routes post-success button doesn\'t have success class'
-            ).to.be.false;
+            ).to.not.have.class('gh-btn-green');
             expect(
-                button.text().trim(),
+                buttons[0].textContent,
                 'routes post-success button text'
             ).to.have.string('Upload routes YAML');
 
             // failed upload
-            server.post('/settings/routes/yaml/', {
+            this.server.post('/settings/routes/yaml/', {
                 errors: [{
                     errorType: 'BadRequestError',
                     message: 'Test failure message'
@@ -249,7 +244,7 @@ describe('Acceptance: Settings - Labs', function () {
             }, 400);
 
             await fileUpload(
-                '[data-test-file-input="routes"]',
+                '[data-test-file-input="routes"] input',
                 ['test'],
                 {name: 'routes-bad.yaml', type: 'application/x-yaml'}
             );
@@ -276,26 +271,26 @@ describe('Acceptance: Settings - Labs', function () {
 
             // shows error message
             expect(
-                find('[data-test-error="routes"]').text().trim(),
+                find('[data-test-error="routes"]').textContent,
                 'routes upload error text'
             ).to.have.string('Test failure message');
 
             // returned to normal button
-            button = find('[data-test-button="upload-routes"]');
-            expect(button.length, 'no of post-failure buttons').to.equal(1);
+            buttons = findAll('[data-test-button="upload-routes"]');
+            expect(buttons.length, 'no of post-failure buttons').to.equal(1);
             expect(
-                button.hasClass('gh-btn-red'),
+                buttons[0],
                 'routes post-failure button doesn\'t have failure class'
-            ).to.be.false;
+            ).to.not.have.class('gh-btn-red');
             expect(
-                button.text().trim(),
+                buttons[0].textContent,
                 'routes post-failure button text'
             ).to.have.string('Upload routes YAML');
 
             // successful upload clears error
-            server.post('/settings/routes/yaml/', {}, 200);
+            this.server.post('/settings/routes/yaml/', {}, 200);
             await fileUpload(
-                '[data-test-file-input="routes"]',
+                '[data-test-file-input="routes"] input',
                 ['test'],
                 {name: 'routes-good.yaml', type: 'application/x-yaml'}
             );
@@ -305,8 +300,8 @@ describe('Acceptance: Settings - Labs', function () {
             // can download redirects.json
             await click('[data-test-link="download-routes"]');
 
-            let iframe = $('#iframeDownload');
-            expect(iframe.attr('src')).to.have.string('/settings/routes/yaml/');
+            let iframe = document.querySelector('#iframeDownload');
+            expect(iframe.getAttribute('src')).to.have.string('/settings/routes/yaml/');
         });
     });
 });

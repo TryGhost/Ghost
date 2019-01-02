@@ -1,29 +1,24 @@
-import destroyApp from '../helpers/destroy-app';
-import startApp from '../helpers/start-app';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {click, currentRouteName, currentURL, fillIn, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
+import {setupApplicationTest} from 'ember-mocha';
 
 describe('Acceptance: Authentication', function () {
-    let application,
-        originalReplaceLocation;
+    let originalReplaceLocation;
 
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     describe('setup redirect', function () {
         beforeEach(function () {
             // ensure the /users/me route doesn't error
-            server.create('user');
-            server.get('authentication/setup', function () {
+            this.server.create('user');
+            this.server.get('authentication/setup', function () {
                 return {setup: [{status: false}]};
             });
         });
@@ -44,8 +39,8 @@ describe('Acceptance: Authentication', function () {
             };
             newLocation = undefined;
 
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role], slug: 'test-user'});
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
@@ -54,13 +49,13 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 401 API response', async function () {
             // return a 401 when attempting to retrieve users
-            server.get('/users/', () => new Response(401, {}, {
+            this.server.get('/users/', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', errorType: 'UnauthorizedError'}
                 ]
             }));
 
-            await authenticateSession(application);
+            await authenticateSession();
             await visit('/team');
 
             // running `visit(url)` inside windowProxy.replaceLocation breaks
@@ -74,27 +69,27 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
-            invalidateSession(application);
+            await invalidateSession();
 
             await visit('/');
 
             expect(currentURL(), 'current url').to.equal('/signin');
-            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
+            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
             await visit('/signin/invalidurl/');
 
             expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentPath(), 'path after invalid url').to.equal('error404');
-            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
+            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
+            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
         });
 
         it('shows nav menu on invalid url when authenticated', async function () {
-            await authenticateSession(application);
+            await authenticateSession();
             await visit('/signin/invalidurl/');
 
             expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentPath(), 'path after invalid url').to.equal('error404');
-            expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(1);
+            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
+            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(1);
         });
     });
 
@@ -110,11 +105,11 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('displays re-auth modal attempting to save with invalid session', async function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
             // simulate an invalid session when saving the edited post
-            server.put('/posts/:id/', function ({posts}, {params}) {
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
                 let post = posts.find(params.id);
                 let attrs = this.normalizedRequestAttrs();
 
@@ -129,7 +124,7 @@ describe('Acceptance: Authentication', function () {
                 }
             });
 
-            await authenticateSession(application);
+            await authenticateSession();
 
             await visit('/editor');
 
@@ -139,16 +134,16 @@ describe('Acceptance: Authentication', function () {
             await click('.js-publish-button');
 
             // we shouldn't have a modal at this point
-            expect(find('.modal-container #login').length, 'modal exists').to.equal(0);
+            expect(findAll('.modal-container #login').length, 'modal exists').to.equal(0);
             // we also shouldn't have any alerts
-            expect(find('.gh-alert').length, 'no of alerts').to.equal(0);
+            expect(findAll('.gh-alert').length, 'no of alerts').to.equal(0);
 
             // update the post
             await fillIn('.__mobiledoc-editor', 'Edited post body');
             await click('.js-publish-button');
 
             // we should see a re-auth modal
-            expect(find('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
+            expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
         });
 
         // don't clobber debounce/throttle for future tests

@@ -1,4 +1,4 @@
-<header class="modal-header">
+<header class="modal-header" data-test-modal="import-subscribers">
     <h1>
         {{#if response}}
             Import Successful
@@ -14,18 +14,18 @@
         <table class="subscribers-import-results">
             <tr>
                 <td>Imported:</td>
-                <td align="left">{{response.imported}}</td>
+                <td align="left" data-test-text="import-subscribers-imported">{{response.imported}}</td>
             </tr>
             {{#if response.duplicates}}
                 <tr>
                     <td>Duplicates:</td>
-                    <td align="left">{{response.duplicates}}</td>
+                    <td align="left" data-test-text="import-subscribers-duplicates">{{response.duplicates}}</td>
                 </tr>
             {{/if}}
             {{#if response.invalid}}
                 <tr>
                     <td>Invalid:</td>
-                    <td align="left">{{response.invalid}}</td>
+                    <td align="left" data-test-text="import-subscribers-invalid">{{response.invalid}}</td>
                 </tr>
             {{/if}}
         </table>
@@ -41,7 +41,7 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn">
+    <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn" data-test-button="close-import-subscribers">
         <span>{{#if response}}Close{{else}}Cancel{{/if}}</span>
     </button>
 </div>

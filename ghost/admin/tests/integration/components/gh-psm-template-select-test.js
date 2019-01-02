@@ -3,14 +3,12 @@ import mockThemes from '../../../mirage/config/themes';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {find} from 'ember-native-dom-helpers';
-import {setupComponentTest} from 'ember-mocha';
+import {find, render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 import {startMirage} from 'ghost-admin/initializers/ember-cli-mirage';
 
 describe('Integration: Component: gh-psm-template-select', function () {
-    setupComponentTest('gh-psm-template-select', {
-        integration: true
-    });
+    setupRenderingTest();
 
     let server;
 
@@ -65,11 +63,11 @@ describe('Integration: Component: gh-psm-template-select', function () {
             page: false
         });
 
-        this.render(hbs`{{gh-psm-template-select post=post}}`);
+        await render(hbs`{{gh-psm-template-select post=post}}`);
         await wait();
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
-        expect(find('p').textContent).to.have.string('post-one.hbs');
+        expect(find('p')).to.contain.text('post-one.hbs');
     });
 
     it('disables template selector if slug matches page template', async function () {
@@ -78,10 +76,10 @@ describe('Integration: Component: gh-psm-template-select', function () {
             page: true
         });
 
-        this.render(hbs`{{gh-psm-template-select post=post}}`);
+        await render(hbs`{{gh-psm-template-select post=post}}`);
         await wait();
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
-        expect(find('p').textContent).to.have.string('page-about.hbs');
+        expect(find('p')).to.contain.text('page-about.hbs');
     });
 });

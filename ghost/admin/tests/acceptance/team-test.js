@@ -1,63 +1,69 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import destroyApp from '../helpers/destroy-app';
 import moment from 'moment';
-import startApp from '../helpers/start-app';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from '../helpers/ember-simple-auth';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {
+    blur,
+    click,
+    currentRouteName,
+    currentURL,
+    fillIn,
+    find,
+    findAll,
+    focus,
+    triggerEvent,
+    triggerKeyEvent
+} from '@ember/test-helpers';
 import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {expect} from 'chai';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../helpers/visit';
 
 describe('Acceptance: Team', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/team');
 
         expect(currentURL()).to.equal('/signin');
     });
 
     it('redirects correctly when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        server.create('user', {slug: 'no-access'});
+        this.server.create('user', {slug: 'no-access'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/team/no-access');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects correctly when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        server.create('user', {slug: 'no-access'});
+        this.server.create('user', {slug: 'no-access'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/team/no-access');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects correctly when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        server.create('user', {slug: 'no-access'});
+        this.server.create('user', {slug: 'no-access'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/team/no-access');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
@@ -66,24 +72,24 @@ describe('Acceptance: Team', function () {
     describe('when logged in as admin', function () {
         let admin, adminRole, suspendedUser;
 
-        beforeEach(function () {
-            server.loadFixtures('roles');
-            adminRole = server.schema.roles.find(1);
+        beforeEach(async function () {
+            this.server.loadFixtures('roles');
+            adminRole = this.server.schema.roles.find(1);
 
-            admin = server.create('user', {email: 'admin@example.com', roles: [adminRole]});
+            admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
             // add an expired invite
-            server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
+            this.server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
 
             // add a suspended user
-            suspendedUser = server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
+            suspendedUser = this.server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('it renders and navigates correctly', async function () {
-            let user1 = server.create('user');
-            let user2 = server.create('user');
+            let user1 = this.server.create('user');
+            let user2 = this.server.create('user');
 
             await visit('/team');
 
@@ -95,7 +101,7 @@ describe('Acceptance: Team', function () {
 
             // it shows active users in active section
             expect(
-                find('[data-test-active-users] [data-test-user-id]').length,
+                findAll('[data-test-active-users] [data-test-user-id]').length,
                 'number of active users'
             ).to.equal(3);
             expect(
@@ -110,7 +116,7 @@ describe('Acceptance: Team', function () {
 
             // it shows suspended users in suspended section
             expect(
-                find('[data-test-suspended-users] [data-test-user-id]').length,
+                findAll('[data-test-suspended-users] [data-test-user-id]').length,
                 'number of suspended users'
             ).to.equal(1);
             expect(
@@ -127,7 +133,7 @@ describe('Acceptance: Team', function () {
 
             // view title should exist and be linkable and active
             expect(
-                find('[data-test-screen-title] a[href="/ghost/team"]').hasClass('active'),
+                find('[data-test-screen-title] a[href="/ghost/team"]').classList.contains('active'),
                 'has linkable url back to team main page'
             ).to.be.true;
 
@@ -142,29 +148,29 @@ describe('Acceptance: Team', function () {
 
             // invite user button exists
             expect(
-                find('.view-actions .gh-btn-green').text().trim(),
+                find('.view-actions .gh-btn-green').textContent.trim(),
                 'invite people button text'
             ).to.equal('Invite People');
 
             // existing users are listed
             expect(
-                find('[data-test-user-id]').length,
+                findAll('[data-test-user-id]').length,
                 'initial number of active users'
             ).to.equal(2);
 
             expect(
-                find('[data-test-user-id="1"] [data-test-role-name]').text().trim(),
+                find('[data-test-user-id="1"] [data-test-role-name]').textContent.trim(),
                 'active user\'s role label'
             ).to.equal('Administrator');
 
             // existing invites are shown
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'initial number of invited users'
             ).to.equal(1);
 
             expect(
-                find('[data-test-invite-id="1"] [data-test-invite-description]').text(),
+                find('[data-test-invite-id="1"] [data-test-invite-description]').textContent,
                 'expired invite description'
             ).to.match(/expired/);
 
@@ -172,14 +178,14 @@ describe('Acceptance: Team', function () {
             await click('[data-test-invite-id="1"] [data-test-revoke-button]');
 
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'initial number of invited users'
             ).to.equal(0);
 
             // click the invite people button
             await click('.view-actions .gh-btn-green');
 
-            let roleOptions = find('.fullscreen-modal select[name="role"] option');
+            let roleOptions = findAll('.fullscreen-modal select[name="role"] option');
 
             function checkOwnerExists() {
                 for (let i in roleOptions) {
@@ -201,13 +207,13 @@ describe('Acceptance: Team', function () {
 
             // modal is displayed
             expect(
-                find('.fullscreen-modal h1').text().trim(),
+                find('.fullscreen-modal h1').textContent.trim(),
                 'correct modal is displayed'
             ).to.equal('Invite a New User');
 
             // number of roles is correct
             expect(
-                find('.fullscreen-modal select[name="role"] option').length,
+                findAll('.fullscreen-modal select[name="role"] option').length,
                 'number of selectable roles'
             ).to.equal(3);
 
@@ -220,34 +226,34 @@ describe('Acceptance: Team', function () {
 
             // modal closes
             expect(
-                find('.fullscreen-modal').length,
+                findAll('[data-test-modal]').length,
                 'number of modals after sending invite'
             ).to.equal(0);
 
             // invite is displayed, has correct e-mail + role
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'number of invites after first invite'
             ).to.equal(1);
 
             expect(
-                find('[data-test-invite-id="2"] [data-test-email]').text().trim(),
+                find('[data-test-invite-id="2"] [data-test-email]').textContent.trim(),
                 'displayed email of first invite'
             ).to.equal('invite1@example.com');
 
             expect(
-                find('[data-test-invite-id="2"] [data-test-role-name]').text().trim(),
+                find('[data-test-invite-id="2"] [data-test-role-name]').textContent.trim(),
                 'displayed role of first invite'
             ).to.equal('Author');
 
             expect(
-                find('[data-test-invite-id="2"] [data-test-invite-description]').text(),
+                find('[data-test-invite-id="2"] [data-test-invite-description]').textContent,
                 'new invite description'
             ).to.match(/expires/);
 
             // number of users is unchanged
             expect(
-                find('[data-test-user-id]').length,
+                findAll('[data-test-user-id]').length,
                 'number of active users after first invite'
             ).to.equal(2);
 
@@ -259,18 +265,18 @@ describe('Acceptance: Team', function () {
 
             // number of invites increases
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'number of invites after second invite'
             ).to.equal(2);
 
             // invite has correct e-mail + role
             expect(
-                find('[data-test-invite-id="3"] [data-test-email]').text().trim(),
+                find('[data-test-invite-id="3"] [data-test-email]').textContent.trim(),
                 'displayed email of second invite'
             ).to.equal('invite2@example.com');
 
             expect(
-                find('[data-test-invite-id="3"] [data-test-role-name]').text().trim(),
+                find('[data-test-invite-id="3"] [data-test-role-name]').textContent.trim(),
                 'displayed role of second invite'
             ).to.equal('Editor');
 
@@ -281,7 +287,7 @@ describe('Acceptance: Team', function () {
 
             // validation message is displayed
             expect(
-                find('.fullscreen-modal .error .response').text().trim(),
+                find('.fullscreen-modal .error .response').textContent.trim(),
                 'inviting existing user error'
             ).to.equal('A user with that email address already exists.');
 
@@ -291,7 +297,7 @@ describe('Acceptance: Team', function () {
 
             // validation message is displayed
             expect(
-                find('.fullscreen-modal .error .response').text().trim(),
+                find('.fullscreen-modal .error .response').textContent.trim(),
                 'inviting invited user error'
             ).to.equal('A user with that email address was already invited.');
 
@@ -301,7 +307,7 @@ describe('Acceptance: Team', function () {
 
             // validation message is displayed
             expect(
-                find('.fullscreen-modal .error .response').text().trim(),
+                find('.fullscreen-modal .error .response').textContent.trim(),
                 'inviting invalid email error'
             ).to.equal('Invalid Email.');
 
@@ -311,19 +317,19 @@ describe('Acceptance: Team', function () {
 
             // number of invites decreases
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'number of invites after revoke'
             ).to.equal(1);
 
             // notification is displayed
             expect(
-                find('.gh-notification').text().trim(),
+                find('.gh-notification').textContent.trim(),
                 'notifications contain revoke'
             ).to.match(/Invitation revoked\. \(invite2@example\.com\)/);
 
             // correct invite is removed
             expect(
-                find('[data-test-invite-id] [data-test-email]').text().trim(),
+                find('[data-test-invite-id] [data-test-email]').textContent.trim(),
                 'displayed email of remaining invite'
             ).to.equal('invite1@example.com');
 
@@ -334,7 +340,7 @@ describe('Acceptance: Team', function () {
 
             // new invite should be last in the list
             expect(
-                find('[data-test-invite-id]:last [data-test-email]').text().trim(),
+                find('[data-test-invite-id]:last-of-type [data-test-email]').textContent.trim(),
                 'last invite email in list'
             ).to.equal('invite3@example.com');
 
@@ -343,13 +349,13 @@ describe('Acceptance: Team', function () {
 
             // notification is displayed
             expect(
-                find('.gh-notification').text().trim(),
+                find('.gh-notification').textContent.trim(),
                 'notifications contain resend'
             ).to.match(/Invitation resent! \(invite1@example\.com\)/);
 
             // first invite is still at the top
             expect(
-                find('[data-test-invite-id]:first-of-type [data-test-email]').text().trim(),
+                find('[data-test-invite-id]:first-of-type [data-test-email]').textContent.trim(),
                 'first invite email in list'
             ).to.equal('invite1@example.com');
 
@@ -359,13 +365,13 @@ describe('Acceptance: Team', function () {
 
             // number of invites decreases
             expect(
-                find('[data-test-invite-id]').length,
+                findAll('[data-test-invite-id]').length,
                 'number of invites after resend/revoke'
             ).to.equal(1);
 
             // notification is displayed
             expect(
-                find('.gh-notification').text().trim(),
+                find('.gh-notification').textContent.trim(),
                 'notifications contain revoke after resend/revoke'
             ).to.match(/Invitation revoked\. \(invite1@example\.com\)/);
         });
@@ -395,7 +401,7 @@ describe('Acceptance: Team', function () {
 
             // no suspended users
             expect(
-                find('[data-test-suspended-users] [data-test-user-id]').length
+                findAll('[data-test-suspended-users] [data-test-user-id]').length
             ).to.equal(0);
 
             await click(`[data-test-user-id="${suspendedUser.id}"]`);
@@ -407,9 +413,9 @@ describe('Acceptance: Team', function () {
         });
 
         it('can delete users', async function () {
-            let user1 = server.create('user');
-            let user2 = server.create('user');
-            let post = server.create('post', {authors: [user2]});
+            let user1 = this.server.create('user');
+            let user2 = this.server.create('user');
+            let post = this.server.create('post', {authors: [user2]});
 
             // we don't have a full many-to-many relationship in mirage so we
             // need to add the inverse manually
@@ -422,20 +428,20 @@ describe('Acceptance: Team', function () {
             // user deletion displays modal
             await click('button.delete');
             expect(
-                find('.fullscreen-modal .modal-content:contains("delete this user")').length,
+                findAll('[data-test-modal="delete-user"]').length,
                 'user deletion modal displayed after button click'
             ).to.equal(1);
 
             // user has no posts so no warning about post deletion
             expect(
-                find('.fullscreen-modal .modal-content:contains("is the author of")').length,
+                findAll('[data-test-text="user-post-count"]').length,
                 'deleting user with no posts has no post count'
             ).to.equal(0);
 
             // cancelling user deletion closes modal
-            await click('.fullscreen-modal button:contains("Cancel")');
+            await click('[data-test-button="cancel-delete-user"]');
             expect(
-                find('.fullscreen-modal').length === 0,
+                findAll('[data-test-modal]').length === 0,
                 'delete user modal is closed when cancelling'
             ).to.be.true;
 
@@ -446,17 +452,17 @@ describe('Acceptance: Team', function () {
             await click('button.delete');
             // user has  posts so should warn about post deletion
             expect(
-                find('.fullscreen-modal .modal-content:contains("1 post created by this user")').length,
+                find('[data-test-text="user-post-count"]').textContent,
                 'deleting user with posts has post count'
-            ).to.equal(1);
+            ).to.have.string('1 post');
 
-            await click('.fullscreen-modal button:contains("Delete")');
+            await click('[data-test-button="confirm-delete-user"]');
             // redirected to team page
             expect(currentURL()).to.equal('/team');
 
             // deleted user is not in list
             expect(
-                find(`[data-test-user-id="${user2.id}"]`).length,
+                findAll(`[data-test-user-id="${user2.id}"]`).length,
                 'deleted user is not in user list after deletion'
             ).to.equal(0);
         });
@@ -465,7 +471,7 @@ describe('Acceptance: Team', function () {
             let user, newLocation, originalReplaceState;
 
             beforeEach(function () {
-                user = server.create('user', {
+                user = this.server.create('user', {
                     slug: 'test-1',
                     name: 'Test User',
                     facebook: 'test',
@@ -488,36 +494,36 @@ describe('Acceptance: Team', function () {
                 await visit('/team/test-1');
 
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
-                expect(find('[data-test-name-input]').val(), 'current user name').to.equal('Test User');
+                expect(find('[data-test-name-input]').value, 'current user name').to.equal('Test User');
 
-                expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Save');
+                expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
 
                 // test empty user name
                 await fillIn('[data-test-name-input]', '');
-                await triggerEvent('[data-test-name-input]', 'blur');
+                await blur('[data-test-name-input]');
 
-                expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
+                expect(find('.user-details-bottom .first-form-group').classList.contains('error'), 'username input is in error state with blank input').to.be.true;
 
                 // test too long user name
                 await fillIn('[data-test-name-input]', new Array(195).join('a'));
-                await triggerEvent('[data-test-name-input]', 'blur');
+                await blur('[data-test-name-input]');
 
-                expect(find('.user-details-bottom .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
+                expect(find('.user-details-bottom .first-form-group').classList.contains('error'), 'username input is in error state with too long input').to.be.true;
 
                 // reset name field
                 await fillIn('[data-test-name-input]', 'Test User');
 
-                expect(find('[data-test-slug-input]').val(), 'slug value is default').to.equal('test-1');
+                expect(find('[data-test-slug-input]').value, 'slug value is default').to.equal('test-1');
 
                 await fillIn('[data-test-slug-input]', '');
-                await triggerEvent('[data-test-slug-input]', 'blur');
+                await blur('[data-test-slug-input]');
 
-                expect(find('[data-test-slug-input]').val(), 'slug value is reset to original upon empty string').to.equal('test-1');
+                expect(find('[data-test-slug-input]').value, 'slug value is reset to original upon empty string').to.equal('test-1');
 
                 // Save changes
                 await click('[data-test-save-button]');
 
-                expect(find('[data-test-save-button]').text().trim(), 'save button text').to.equal('Saved');
+                expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Saved');
 
                 // CMD-S shortcut works
                 await fillIn('[data-test-slug-input]', 'Test User');
@@ -529,7 +535,7 @@ describe('Acceptance: Team', function () {
 
                 // we've already saved in this test so there's no on-screen indication
                 // that we've had another save, check the request was fired instead
-                let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 let params = JSON.parse(lastRequest.requestBody);
 
                 expect(params.users[0].name).to.equal('Test User');
@@ -538,43 +544,49 @@ describe('Acceptance: Team', function () {
                 expect(newLocation).to.equal('Test User');
 
                 await fillIn('[data-test-slug-input]', 'white space');
-                await triggerEvent('[data-test-slug-input]', 'blur');
+                await blur('[data-test-slug-input]');
 
-                expect(find('[data-test-slug-input]').val(), 'slug value is correctly dasherized').to.equal('white-space');
+                expect(find('[data-test-slug-input]').value, 'slug value is correctly dasherized').to.equal('white-space');
 
                 await fillIn('[data-test-email-input]', 'thisisnotanemail');
-                await triggerEvent('[data-test-email-input]', 'blur');
+                await blur('[data-test-email-input]');
 
-                expect(find('.user-details-bottom .form-group:nth-of-type(3)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
+                expect(find('.user-details-bottom .form-group:nth-of-type(3)').classList.contains('error'), 'email input should be in error state with invalid email').to.be.true;
 
                 await fillIn('[data-test-email-input]', 'test@example.com');
                 await fillIn('[data-test-location-input]', new Array(160).join('a'));
-                await triggerEvent('[data-test-location-input]', 'blur');
+                await blur('[data-test-location-input]');
 
-                expect(find('[data-test-location-input]').closest('.form-group').hasClass('error'), 'location input should be in error state').to.be.true;
+                expect(
+                    find('[data-test-location-input]').closest('.form-group'),
+                    'location input should be in error state'
+                ).to.have.class('error');
 
                 await fillIn('[data-test-location-input]', '');
                 await fillIn('[data-test-website-input]', 'thisisntawebsite');
-                await triggerEvent('[data-test-website-input]', 'blur');
+                await blur('[data-test-website-input]');
 
-                expect(find('[data-test-website-input]').closest('.form-group').hasClass('error'), 'website input should be in error state').to.be.true;
+                expect(
+                    find('[data-test-website-input]').closest('.form-group'),
+                    'website input should be in error state'
+                ).to.have.class('error');
 
                 let testSocialInput = async function (type, input, expectedValue, expectedError = '') {
                     await fillIn(`[data-test-${type}-input]`, input);
-                    await triggerEvent(`[data-test-${type}-input]`, 'blur');
+                    await blur(`[data-test-${type}-input]`);
 
                     expect(
-                        find(`[data-test-${type}-input]`).val(),
+                        find(`[data-test-${type}-input]`).value,
                         `${type} value for ${input}`
                     ).to.equal(expectedValue);
 
                     expect(
-                        find(`[data-test-${type}-error]`).text().trim(),
+                        find(`[data-test-error="user-${type}"]`).textContent.trim(),
                         `${type} validation response for ${input}`
                     ).to.equal(expectedError);
 
                     expect(
-                        find(`[data-test-${type}-input]`).closest('.form-group').hasClass('error'),
+                        find(`[data-test-error="user-${type}"]`).closest('.form-group').classList.contains('error'),
                         `${type} input should be in error state with '${input}'`
                     ).to.equal(!!expectedError);
                 };
@@ -585,15 +597,15 @@ describe('Acceptance: Team', function () {
                 // Testing Facebook input
 
                 // displays initial value
-                expect(find('[data-test-facebook-input]').val(), 'initial facebook value')
+                expect(find('[data-test-facebook-input]').value, 'initial facebook value')
                     .to.equal('https://www.facebook.com/test');
 
-                await triggerEvent('[data-test-facebook-input]', 'focus');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await focus('[data-test-facebook-input]');
+                await blur('[data-test-facebook-input]');
 
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('[data-test-facebook-input]').val(), 'facebook value after blur with no change')
+                expect(find('[data-test-facebook-input]').value, 'facebook value after blur with no change')
                     .to.equal('https://www.facebook.com/test');
 
                 await testFacebookValidation(
@@ -637,15 +649,15 @@ describe('Acceptance: Team', function () {
                 // Testing Twitter input
 
                 // loads fixtures and performs transform
-                expect(find('[data-test-twitter-input]').val(), 'initial twitter value')
+                expect(find('[data-test-twitter-input]').value, 'initial twitter value')
                     .to.equal('https://twitter.com/test');
 
-                await triggerEvent('[data-test-twitter-input]', 'focus');
-                await triggerEvent('[data-test-twitter-input]', 'blur');
+                await focus('[data-test-twitter-input]');
+                await blur('[data-test-twitter-input]');
 
                 // regression test: we still have a value after the input is
                 // focused and then blurred without any changes
-                expect(find('[data-test-twitter-input]').val(), 'twitter value after blur with no change')
+                expect(find('[data-test-twitter-input]').value, 'twitter value after blur with no change')
                     .to.equal('https://twitter.com/test');
 
                 await testTwitterValidation(
@@ -674,9 +686,12 @@ describe('Acceptance: Team', function () {
 
                 await fillIn('[data-test-website-input]', '');
                 await fillIn('[data-test-bio-input]', new Array(210).join('a'));
-                await triggerEvent('[data-test-bio-input]', 'blur');
+                await blur('[data-test-bio-input]');
 
-                expect(find('[data-test-bio-input]').closest('.form-group').hasClass('error'), 'bio input should be in error state').to.be.true;
+                expect(
+                    find('[data-test-bio-input]').closest('.form-group'),
+                    'bio input should be in error state'
+                ).to.have.class('error');
 
                 // password reset ------
 
@@ -684,47 +699,47 @@ describe('Acceptance: Team', function () {
                 await click('[data-test-save-pw-button]');
 
                 expect(
-                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group'),
                     'new password has error class when blank'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('[data-test-new-pass-input]').siblings('.response').text(),
+                    find('[data-test-error="user-new-pass"]').textContent,
                     'new password error when blank'
-                ).to.match(/can't be blank/);
+                ).to.have.string('can\'t be blank');
 
                 // validates too short password (< 10 characters)
                 await fillIn('[data-test-new-pass-input]', 'notlong');
                 await fillIn('[data-test-ne2-pass-input]', 'notlong');
 
                 // enter key triggers action
-                await keyEvent('[data-test-new-pass-input]', 'keyup', 13);
+                await triggerKeyEvent('[data-test-new-pass-input]', 'keyup', 13);
 
                 expect(
-                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group'),
                     'new password has error class when password too short'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('[data-test-new-pass-input]').siblings('.response').text(),
-                    'confirm password error when it\'s too short'
-                ).to.match(/at least 10 characters long/);
+                    find('[data-test-error="user-new-pass"]').textContent,
+                    'new password error when it\'s too short'
+                ).to.have.string('at least 10 characters long');
 
                 // validates unsafe password
                 await fillIn('#user-password-new', 'ghostisawesome');
-                await fillIn('#user-new-password-verification', 'ghostisawesome');
+                await fillIn('[data-test-ne2-pass-input]', 'ghostisawesome');
 
                 // enter key triggers action
-                await keyEvent('#user-password-new', 'keyup', 13);
+                await triggerKeyEvent('#user-password-new', 'keyup', 13);
 
                 expect(
-                    find('#user-password-new').closest('.form-group').hasClass('error'),
+                    find('#user-password-new').closest('.form-group'),
                     'new password has error class when password is insecure'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('#user-password-new').siblings('.response').text(),
-                    'confirm password error when it\'s insecure'
+                    find('[data-test-error="user-new-pass"]').textContent,
+                    'new password error when it\'s insecure'
                 ).to.match(/you cannot use an insecure password/);
 
                 // typing in inputs clears validation
@@ -732,29 +747,29 @@ describe('Acceptance: Team', function () {
                 await triggerEvent('[data-test-new-pass-input]', 'input');
 
                 expect(
-                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group'),
                     'password validation is visible after typing'
-                ).to.be.false;
+                ).to.not.have.class('error');
 
                 // enter key triggers action
-                await keyEvent('[data-test-new-pass-input]', 'keyup', 13);
+                await triggerKeyEvent('[data-test-new-pass-input]', 'keyup', 13);
 
                 expect(
-                    find('[data-test-ne2-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-ne2-pass-input]').closest('.form-group'),
                     'confirm password has error class when it doesn\'t match'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('[data-test-ne2-pass-input]').siblings('.response').text(),
+                    find('[data-test-error="user-ne2-pass"]').textContent,
                     'confirm password error when it doesn\'t match'
-                ).to.match(/do not match/);
+                ).to.have.string('do not match');
 
                 // submits with correct details
                 await fillIn('[data-test-ne2-pass-input]', 'thisissupersafe');
                 await click('[data-test-save-pw-button]');
 
                 // hits the endpoint
-                let [newRequest] = server.pretender.handledRequests.slice(-1);
+                let [newRequest] = this.server.pretender.handledRequests.slice(-1);
                 params = JSON.parse(newRequest.requestBody);
 
                 expect(newRequest.url, 'password request URL')
@@ -767,18 +782,18 @@ describe('Acceptance: Team', function () {
 
                 // clears the fields
                 expect(
-                    find('[data-test-new-pass-input]').val(),
+                    find('[data-test-new-pass-input]').value,
                     'password field after submit'
                 ).to.be.empty;
 
                 expect(
-                    find('[data-test-ne2-pass-input]').val(),
+                    find('[data-test-ne2-pass-input]').value,
                     'password verification field after submit'
                 ).to.be.empty;
 
                 // displays a notification
                 expect(
-                    find('.gh-notifications .gh-notification').length,
+                    findAll('.gh-notifications .gh-notification').length,
                     'password saved notification is displayed'
                 ).to.equal(1);
             });
@@ -789,21 +804,21 @@ describe('Acceptance: Team', function () {
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
 
                 await fillIn('[data-test-slug-input]', 'another slug');
-                await triggerEvent('[data-test-slug-input]', 'blur');
+                await blur('[data-test-slug-input]');
 
-                expect(find('[data-test-slug-input]').val()).to.be.equal('another-slug');
+                expect(find('[data-test-slug-input]').value).to.be.equal('another-slug');
 
                 await fillIn('[data-test-facebook-input]', 'testuser');
-                await triggerEvent('[data-test-facebook-input]', 'blur');
+                await blur('[data-test-facebook-input]');
 
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/testuser');
+                expect(find('[data-test-facebook-input]').value).to.be.equal('https://www.facebook.com/testuser');
 
                 await visit('/settings/team');
 
-                expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+                expect(findAll('[data-test-modal]').length, 'modal exists').to.equal(1);
 
                 // Leave without saving
-                await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+                await click('.fullscreen-modal [data-test-leave-button]');
 
                 expect(currentURL(), 'currentURL').to.equal('/settings/team');
 
@@ -812,8 +827,8 @@ describe('Acceptance: Team', function () {
                 expect(currentURL(), 'currentURL').to.equal('/team/test-1');
 
                 // settings were not saved
-                expect(find('[data-test-slug-input]').val()).to.be.equal('test-1');
-                expect(find('[data-test-facebook-input]').val()).to.be.equal('https://www.facebook.com/test');
+                expect(find('[data-test-slug-input]').value).to.be.equal('test-1');
+                expect(find('[data-test-facebook-input]').value).to.be.equal('https://www.facebook.com/test');
             });
         });
 
@@ -826,39 +841,39 @@ describe('Acceptance: Team', function () {
 
                 // old password has error
                 expect(
-                    find('[data-test-old-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-old-pass-input]').closest('.form-group'),
                     'old password has error class when blank'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('[data-test-old-pass-input]').siblings('.response').text(),
+                    find('[data-test-error="user-old-pass"]').textContent,
                     'old password error when blank'
-                ).to.match(/is required/);
+                ).to.have.string('is required');
 
                 // new password has error
                 expect(
-                    find('[data-test-new-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-new-pass-input]').closest('.form-group'),
                     'new password has error class when blank'
-                ).to.be.true;
+                ).to.have.class('error');
 
                 expect(
-                    find('[data-test-new-pass-input]').siblings('.response').text(),
+                    find('[data-test-error="user-new-pass"]').textContent,
                     'new password error when blank'
-                ).to.match(/can't be blank/);
+                ).to.have.string('can\'t be blank');
 
                 // validation is cleared when typing
                 await fillIn('[data-test-old-pass-input]', 'password');
                 await triggerEvent('[data-test-old-pass-input]', 'input');
 
                 expect(
-                    find('[data-test-old-pass-input]').closest('.form-group').hasClass('error'),
+                    find('[data-test-old-pass-input]').closest('.form-group'),
                     'old password validation is in error state after typing'
-                ).to.be.false;
+                ).to.not.have.class('error');
             });
         });
 
         it('redirects to 404 when user does not exist', async function () {
-            server.get('/users/slug/unknown/', function () {
+            this.server.get('/users/slug/unknown/', function () {
                 return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
             });
 
@@ -867,7 +882,7 @@ describe('Acceptance: Team', function () {
             await visit('/team/unknown');
 
             errorReset();
-            expect(currentPath()).to.equal('error404');
+            expect(currentRouteName()).to.equal('error404');
             expect(currentURL()).to.equal('/team/unknown');
         });
     });
@@ -875,12 +890,12 @@ describe('Acceptance: Team', function () {
     describe('when logged in as author', function () {
         let adminRole, authorRole;
 
-        beforeEach(function () {
-            adminRole = server.create('role', {name: 'Administrator'});
-            authorRole = server.create('role', {name: 'Author'});
-            server.create('user', {roles: [authorRole]});
+        beforeEach(async function () {
+            adminRole = this.server.create('role', {name: 'Administrator'});
+            authorRole = this.server.create('role', {name: 'Author'});
+            this.server.create('user', {roles: [authorRole]});
 
-            server.get('/invites/', function () {
+            this.server.get('/invites/', function () {
                 return new Response(403, {}, {
                     errors: [{
                         errorType: 'NoPermissionError',
@@ -889,20 +904,20 @@ describe('Acceptance: Team', function () {
                 });
             });
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('can access the team page', async function () {
-            server.create('user', {roles: [adminRole]});
-            server.create('invite', {role: authorRole});
+            this.server.create('user', {roles: [adminRole]});
+            this.server.create('invite', {role: authorRole});
 
             errorOverride();
 
             await visit('/team');
 
             errorReset();
-            expect(currentPath()).to.equal('team.index');
-            expect(find('.gh-alert').length).to.equal(0);
+            expect(currentRouteName()).to.equal('team.index');
+            expect(findAll('.gh-alert').length).to.equal(0);
         });
     });
 });

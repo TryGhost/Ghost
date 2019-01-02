@@ -11,9 +11,11 @@
             }}
         {{/if}}
 
-        {{#gh-main onMouseEnter=(action "closeAutoNav" target=ui)}}
+        {{!-- {{#gh-main onMouseEnter=(action "closeAutoNav" target=ui)}} --}}
+        <main class="gh-main" role="main">
             {{outlet}}
-        {{/gh-main}}
+        </main>
+        {{!-- {{/gh-main}} --}}
 
 
         {{gh-notifications}}

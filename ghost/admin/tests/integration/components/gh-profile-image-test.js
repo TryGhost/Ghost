@@ -2,11 +2,10 @@ import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import md5 from 'npm:blueimp-md5';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
-import {setupComponentTest} from 'ember-mocha';
+import {find, render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 import {timeout} from 'ember-concurrency';
 
 let pathsStub = Service.extend({
@@ -51,17 +50,13 @@ let configStubuseGravatar = Service.extend({
 });
 
 describe('Integration: Component: gh-profile-image', function () {
-    setupComponentTest('gh-profile-image', {
-        integration: true
-    });
+    setupRenderingTest();
 
     let server;
 
     beforeEach(function () {
-        this.register('service:ghost-paths', pathsStub);
-        this.inject.service('ghost-paths', {as: 'ghost-paths'});
-        this.register('service:config', configStubuseGravatar);
-        this.inject.service('config', {as: 'config'});
+        this.owner.register('service:ghost-paths', pathsStub);
+        this.owner.register('service:config', configStubuseGravatar);
 
         server = new Pretender();
         stubKnownGravatar(server);
@@ -71,25 +66,29 @@ describe('Integration: Component: gh-profile-image', function () {
         server.shutdown();
     });
 
-    it('renders', function () {
+    it('renders', async function () {
         this.set('email', '');
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email=email}}
         `);
 
-        expect(this.$()).to.have.length(1);
+        expect(find('.account-image')).to.exist;
+        expect(find('.placeholder-img')).to.exist;
+        expect(find('input[type="file"]')).to.exist;
     });
 
-    it('renders default image if no email supplied', function () {
+    it('renders default image if no email supplied', async function () {
         this.set('email', null);
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email=email size=100 debounce=50}}
         `);
 
-        expect(this.$('.gravatar-img').attr('style'), 'gravatar image style')
-            .to.equal('display: none');
+        expect(
+            find('.gravatar-img'),
+            'gravatar image style'
+        ).to.have.attribute('style', 'display: none');
     });
 
     it('renders the gravatar if valid email supplied and privacy.useGravatar allows it', async function () {
@@ -98,44 +97,44 @@ describe('Integration: Component: gh-profile-image', function () {
 
         this.set('email', email);
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email=email size=100 debounce=50}}
         `);
 
-        // wait for the ajax request to complete
-        await wait();
-
-        expect(this.$('.gravatar-img').attr('style'), 'gravatar image style')
-            .to.equal(`background-image: url(${expectedUrl}); display: block`);
+        expect(
+            find('.gravatar-img'),
+            'gravatar image style'
+        ).to.have.attribute('style', `background-image: url(${expectedUrl}); display: block`);
     });
 
     it('doesn\'t render the gravatar if valid email supplied but privacy.useGravatar forbids it', async function () {
+        let config = this.owner.lookup('service:config');
         let email = 'test@example.com';
 
         this.set('email', email);
-        this.set('config.useGravatar', false);
+        config.set('useGravatar', false);
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email=email size=100 debounce=50}}
         `);
 
-        await wait();
-
-        expect(this.$('.gravatar-img').attr('style'), 'gravatar image style')
-            .to.equal('display: none');
+        expect(
+            find('.gravatar-img'),
+            'gravatar image style'
+        ).to.have.attribute('style', 'display: none');
     });
 
     it('doesn\'t add background url if gravatar image doesn\'t exist', async function () {
         stubUnknownGravatar(server);
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email="test@example.com" size=100 debounce=50}}
         `);
 
-        await wait();
-
-        expect(this.$('.gravatar-img').attr('style'), 'gravatar image style')
-            .to.equal('background-image: url(); display: none');
+        expect(
+            find('.gravatar-img'),
+            'gravatar image style'
+        ).to.have.attribute('style', 'background-image: url(); display: none');
     });
 
     it('throttles gravatar loading as email is changed', async function () {
@@ -144,25 +143,31 @@ describe('Integration: Component: gh-profile-image', function () {
 
         this.set('email', 'test');
 
-        this.render(hbs`
+        await render(hbs`
             {{gh-profile-image email=email size=100 debounce=300}}
         `);
 
-        run(() => {
-            this.set('email', email);
-        });
+        this.set('email', email);
 
-        expect(this.$('.gravatar-img').attr('style'), '.gravatar-img background not immediately changed on email change')
-            .to.equal('display: none');
+        await timeout(50);
+
+        expect(
+            find('.gravatar-img'),
+            '.gravatar-img background not immediately changed on email change'
+        ).to.have.attribute('style', 'display: none');
 
         await timeout(250);
 
-        expect(this.$('.gravatar-img').attr('style'), '.gravatar-img background still not changed before debounce timeout')
-            .to.equal('display: none');
+        expect(
+            find('.gravatar-img'),
+            '.gravatar-img background still not changed before debounce timeout'
+        ).to.have.attribute('style', 'display: none');
 
         await timeout(100);
 
-        expect(this.$('.gravatar-img').attr('style'), '.gravatar-img background changed after debounce timeout')
-            .to.equal(`background-image: url(${expectedUrl}); display: block`);
+        expect(
+            find('.gravatar-img'),
+            '.gravatar-img background changed after debounce timeout'
+        ).to.have.attribute('style', `background-image: url(${expectedUrl}); display: block`);
     });
 });

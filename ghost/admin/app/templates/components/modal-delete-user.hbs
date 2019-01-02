@@ -1,4 +1,4 @@
-<header class="modal-header">
+<header class="modal-header" data-test-modal="delete-user">
     <h1>Are you sure you want to delete this user?</h1>
 </header>
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
@@ -8,7 +8,7 @@
     {{#if user.count.posts}}
         <ul>
             <li>The user will not have access to this blog anymore</li>
-            <li><strong>{{pluralize user.count.posts 'post'}}</strong> created by this user will be deleted</li>
+            <li><strong data-test-text="user-post-count">{{pluralize user.count.posts 'post'}}</strong> created by this user will be deleted</li>
             <li>All other user data will be deleted</li>
         </ul>
     {{else}}
@@ -20,10 +20,12 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{#if user.count.posts}}
-        {{gh-task-button "Delete user and their posts" successText="Deleted" task=deleteUser class="gh-btn gh-btn-red gh-btn-icon"}}
-    {{else}}
-        {{gh-task-button "Delete user" successText="Deleted" task=deleteUser class="gh-btn gh-btn-red gh-btn-icon"}}
-    {{/if}}
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-delete-user">
+        <span>Cancel</span>
+    </button>
+    {{gh-task-button (if user.count.posts "Delete user and their posts" "Delete user")
+        successText="Deleted"
+        task=deleteUser
+        class="gh-btn gh-btn-red gh-btn-icon"
+        data-test-button="confirm-delete-user"}}
 </div>

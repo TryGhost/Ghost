@@ -1,68 +1,63 @@
-import $ from 'jquery';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import destroyApp from '../../helpers/destroy-app';
 import mockUploads from '../../../mirage/config/uploads';
-import startApp from '../../helpers/start-app';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import wait from 'ember-test-helpers/wait';
-import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {beforeEach, describe, it} from 'mocha';
+import {blur, click, currentURL, fillIn, find, findAll, focus, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {fileUpload} from '../../helpers/file-upload';
 import {run} from '@ember/runloop';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - General', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/settings/general');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('redirects to team page when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/general');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/general');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/general');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('it renders, handles image uploads', async function () {
@@ -75,11 +70,11 @@ describe('Acceptance: Settings - General', function () {
             expect(document.title, 'page title').to.equal('Settings - General - Test Blog');
 
             // highlights nav menu
-            expect($('[data-test-nav="settings"]').hasClass('active'), 'highlights nav menu item')
-                .to.be.true;
+            expect(find('[data-test-nav="settings"]'), 'highlights nav menu item')
+                .to.have.class('active');
 
             expect(
-                find('[data-test-save-button]').text().trim(),
+                find('[data-test-save-button]').textContent.trim(),
                 'save button text'
             ).to.equal('Save settings');
 
@@ -93,7 +88,7 @@ describe('Acceptance: Settings - General', function () {
 
             // has fixture icon
             expect(
-                find('[data-test-icon-img]').attr('src'),
+                find('[data-test-icon-img]').getAttribute('src'),
                 'initial icon src'
             ).to.equal('/content/images/2014/Feb/favicon.ico');
 
@@ -110,7 +105,7 @@ describe('Acceptance: Settings - General', function () {
 
             // select file
             fileUpload(
-                '[data-test-file-input="icon"]',
+                '[data-test-file-input="icon"] input',
                 ['test'],
                 {name: 'pub-icon.ico', type: 'image/x-icon'}
             );
@@ -126,7 +121,7 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find('[data-test-icon-img]').attr('src'),
+                find('[data-test-icon-img]').getAttribute('src'),
                 'icon img after upload'
             ).to.match(/pub-icon\.ico$/);
             expect(
@@ -135,7 +130,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            server.post('/uploads/icon/', function () {
+            this.server.post('/uploads/icon/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',
@@ -145,24 +140,24 @@ describe('Acceptance: Settings - General', function () {
             }, 422);
             await click('[data-test-delete-image="icon"]');
             await fileUpload(
-                '[data-test-file-input="icon"]',
+                '[data-test-file-input="icon"] input',
                 ['test'],
                 {name: 'pub-icon.ico', type: 'image/x-icon'}
             );
             expect(
-                find('[data-test-error="icon"]').text().trim(),
+                find('[data-test-error="icon"]').textContent.trim(),
                 'failed icon upload message'
             ).to.equal('Wrong icon size');
 
             // reset upload endpoints
-            mockUploads(server);
+            mockUploads(this.server);
 
             // blog logo upload
             // -------------------------------------------------------------- //
 
             // has fixture icon
             expect(
-                find('[data-test-logo-img]').attr('src'),
+                find('[data-test-logo-img]').getAttribute('src'),
                 'initial logo src'
             ).to.equal('/content/images/2013/Nov/logo.png');
 
@@ -179,7 +174,7 @@ describe('Acceptance: Settings - General', function () {
 
             // select file
             fileUpload(
-                '[data-test-file-input="logo"]',
+                '[data-test-file-input="logo"] input',
                 ['test'],
                 {name: 'pub-logo.png', type: 'image/png'}
             );
@@ -195,7 +190,7 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find('[data-test-logo-img]').attr('src'),
+                find('[data-test-logo-img]').getAttribute('src'),
                 'logo img after upload'
             ).to.match(/pub-logo\.png$/);
             expect(
@@ -204,7 +199,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            server.post('/uploads/', function () {
+            this.server.post('/uploads/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',
@@ -214,24 +209,24 @@ describe('Acceptance: Settings - General', function () {
             }, 422);
             await click('[data-test-delete-image="logo"]');
             await fileUpload(
-                '[data-test-file-input="logo"]',
+                '[data-test-file-input="logo"] input',
                 ['test'],
                 {name: 'pub-logo.png', type: 'image/png'}
             );
             expect(
-                find('[data-test-error="logo"]').text().trim(),
+                find('[data-test-error="logo"]').textContent.trim(),
                 'failed logo upload message'
             ).to.equal('Wrong logo size');
 
             // reset upload endpoints
-            mockUploads(server);
+            mockUploads(this.server);
 
             // blog cover upload
             // -------------------------------------------------------------- //
 
             // has fixture icon
             expect(
-                find('[data-test-cover-img]').attr('src'),
+                find('[data-test-cover-img]').getAttribute('src'),
                 'initial coverImage src'
             ).to.equal('/content/images/2014/Feb/cover.jpg');
 
@@ -248,7 +243,7 @@ describe('Acceptance: Settings - General', function () {
 
             // select file
             fileUpload(
-                '[data-test-file-input="coverImage"]',
+                '[data-test-file-input="coverImage"] input',
                 ['test'],
                 {name: 'pub-coverImage.png', type: 'image/png'}
             );
@@ -264,7 +259,7 @@ describe('Acceptance: Settings - General', function () {
             // wait for upload to finish and check image is shown
             await wait();
             expect(
-                find('[data-test-cover-img]').attr('src'),
+                find('[data-test-cover-img]').getAttribute('src'),
                 'coverImage img after upload'
             ).to.match(/pub-coverImage\.png$/);
             expect(
@@ -273,7 +268,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            server.post('/uploads/', function () {
+            this.server.post('/uploads/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',
@@ -283,17 +278,17 @@ describe('Acceptance: Settings - General', function () {
             }, 422);
             await click('[data-test-delete-image="coverImage"]');
             await fileUpload(
-                '[data-test-file-input="coverImage"]',
+                '[data-test-file-input="coverImage"] input',
                 ['test'],
                 {name: 'pub-coverImage.png', type: 'image/png'}
             );
             expect(
-                find('[data-test-error="coverImage"]').text().trim(),
+                find('[data-test-error="coverImage"]').textContent.trim(),
                 'failed coverImage upload message'
             ).to.equal('Wrong coverImage size');
 
             // reset upload endpoints
-            mockUploads(server);
+            mockUploads(this.server);
 
             // CMD-S shortcut works
             // -------------------------------------------------------------- //
@@ -305,7 +300,7 @@ describe('Acceptance: Settings - General', function () {
             });
             // we've already saved in this test so there's no on-screen indication
             // that we've had another save, check the request was fired instead
-            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
             expect(params.settings.findBy('key', 'title').value).to.equal('CMD-S Test');
         });
@@ -316,57 +311,57 @@ describe('Acceptance: Settings - General', function () {
 
             expect(currentURL(), 'currentURL').to.equal('/settings/general');
 
-            expect(find('#activeTimezone option').length, 'available timezones').to.equal(66);
-            expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT) UTC');
-            find('#activeTimezone option[value="Africa/Cairo"]').prop('selected', true);
+            expect(findAll('#activeTimezone option').length, 'available timezones').to.equal(66);
+            expect(find('#activeTimezone option:checked').textContent.trim()).to.equal('(GMT) UTC');
+            find('#activeTimezone option[value="Africa/Cairo"]').selected = true;
 
             await triggerEvent('#activeTimezone', 'change');
             await click('[data-test-save-button]');
-            expect(find('#activeTimezone option:selected').text().trim()).to.equal('(GMT +2:00) Cairo, Egypt');
+            expect(find('#activeTimezone option:checked').textContent.trim()).to.equal('(GMT +2:00) Cairo, Egypt');
         });
 
         it('handles private blog settings correctly', async function () {
             await visit('/settings/general');
 
             // handles private blog settings correctly
-            expect(find('[data-test-private-checkbox]').prop('checked'), 'isPrivate checkbox').to.be.false;
+            expect(find('[data-test-private-checkbox]').checked, 'isPrivate checkbox').to.be.false;
 
             await click('[data-test-private-checkbox]');
 
-            expect(find('[data-test-private-checkbox]').prop('checked'), 'isPrivate checkbox').to.be.true;
-            expect(find('[data-test-password-input]').length, 'password input').to.equal(1);
-            expect(find('[data-test-password-input]').val(), 'password default value').to.not.equal('');
+            expect(find('[data-test-private-checkbox]').checked, 'isPrivate checkbox').to.be.true;
+            expect(findAll('[data-test-password-input]').length, 'password input').to.equal(1);
+            expect(find('[data-test-password-input]').value, 'password default value').to.not.equal('');
 
             await fillIn('[data-test-password-input]', '');
-            await triggerEvent('[data-test-password-input]', 'blur');
+            await blur('[data-test-password-input]');
 
-            expect(find('[data-test-password-error]').text().trim(), 'empty password error')
+            expect(find('[data-test-password-error]').textContent.trim(), 'empty password error')
                 .to.equal('Password must be supplied');
 
             await fillIn('[data-test-password-input]', 'asdfg');
-            await triggerEvent('[data-test-password-input]', 'blur');
+            await blur('[data-test-password-input]');
 
-            expect(find('[data-test-password-error]').text().trim(), 'present password error')
+            expect(find('[data-test-password-error]').textContent.trim(), 'present password error')
                 .to.equal('');
         });
 
         it('handles social blog settings correctly', async function () {
             let testSocialInput = async function (type, input, expectedValue, expectedError = '') {
                 await fillIn(`[data-test-${type}-input]`, input);
-                await triggerEvent(`[data-test-${type}-input]`, 'blur');
+                await blur(`[data-test-${type}-input]`);
 
                 expect(
-                    find(`[data-test-${type}-input]`).val(),
+                    find(`[data-test-${type}-input]`).value,
                     `${type} value for ${input}`
                 ).to.equal(expectedValue);
 
                 expect(
-                    find(`[data-test-${type}-error]`).text().trim(),
+                    find(`[data-test-${type}-error]`).textContent.trim(),
                     `${type} validation response for ${input}`
                 ).to.equal(expectedError);
 
                 expect(
-                    find(`[data-test-${type}-input]`).closest('.form-group').hasClass('error'),
+                    find(`[data-test-${type}-input]`).closest('.form-group').classList.contains('error'),
                     `${type} input should be in error state with '${input}'`
                 ).to.equal(!!expectedError);
             };
@@ -379,15 +374,15 @@ describe('Acceptance: Settings - General', function () {
 
             // validates a facebook url correctly
             // loads fixtures and performs transform
-            expect(find('[data-test-facebook-input]').val(), 'initial facebook value')
+            expect(find('[data-test-facebook-input]').value, 'initial facebook value')
                 .to.equal('https://www.facebook.com/test');
 
-            await triggerEvent('[data-test-facebook-input]', 'focus');
-            await triggerEvent('[data-test-facebook-input]', 'blur');
+            await focus('[data-test-facebook-input]');
+            await blur('[data-test-facebook-input]');
 
             // regression test: we still have a value after the input is
             // focused and then blurred without any changes
-            expect(find('[data-test-facebook-input]').val(), 'facebook value after blur with no change')
+            expect(find('[data-test-facebook-input]').value, 'facebook value after blur with no change')
                 .to.equal('https://www.facebook.com/test');
 
             await testFacebookValidation(
@@ -431,15 +426,15 @@ describe('Acceptance: Settings - General', function () {
             // validates a twitter url correctly
 
             // loads fixtures and performs transform
-            expect(find('[data-test-twitter-input]').val(), 'initial twitter value')
+            expect(find('[data-test-twitter-input]').value, 'initial twitter value')
                 .to.equal('https://twitter.com/test');
 
-            await triggerEvent('[data-test-twitter-input]', 'focus');
-            await triggerEvent('[data-test-twitter-input]', 'blur');
+            await focus('[data-test-twitter-input]');
+            await blur('[data-test-twitter-input]');
 
             // regression test: we still have a value after the input is
             // focused and then blurred without any changes
-            expect(find('[data-test-twitter-input]').val(), 'twitter value after blur with no change')
+            expect(find('[data-test-twitter-input]').value, 'twitter value after blur with no change')
                 .to.equal('https://twitter.com/test');
 
             await testTwitterValidation(
@@ -469,7 +464,7 @@ describe('Acceptance: Settings - General', function () {
             await visit('/settings/general');
 
             expect(
-                find('[data-test-private-checkbox]').prop('checked'),
+                find('[data-test-private-checkbox]').checked,
                 'private blog checkbox'
             ).to.be.false;
 
@@ -479,16 +474,16 @@ describe('Acceptance: Settings - General', function () {
             await click('[data-test-private-checkbox]');
 
             expect(
-                find('[data-test-private-checkbox]').prop('checked'),
+                find('[data-test-private-checkbox]').checked,
                 'private blog checkbox'
             ).to.be.true;
 
             await visit('/settings/team');
 
-            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+            expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await click('.fullscreen-modal [data-test-leave-button]');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/team');
 
@@ -498,12 +493,12 @@ describe('Acceptance: Settings - General', function () {
 
             // settings were not saved
             expect(
-                find('[data-test-private-checkbox]').prop('checked'),
+                find('[data-test-private-checkbox]').checked,
                 'private blog checkbox'
             ).to.be.false;
 
             expect(
-                find('[data-test-title-input]').text().trim(),
+                find('[data-test-title-input]').textContent.trim(),
                 'Blog title'
             ).to.equal('');
         });

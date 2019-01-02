@@ -1,4 +1,4 @@
-<header class="modal-header">
+<header class="modal-header" data-test-modal="delete-subscriber">
     <h1>Are you sure?</h1>
 </header>
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
@@ -8,6 +8,12 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button "Delete" successText="Deleted" task=deleteSubscriber class="gh-btn gh-btn-red gh-btn-icon"}}
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-delete-subscriber">
+        <span>Cancel</span>
+    </button>
+    {{gh-task-button "Delete"
+        successText="Deleted"
+        task=deleteSubscriber
+        class="gh-btn gh-btn-red gh-btn-icon"
+        data-test-button="confirm-delete-subscriber"}}
 </div>

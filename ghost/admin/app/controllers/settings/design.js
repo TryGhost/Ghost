@@ -81,6 +81,8 @@ export default Controller.extend({
 
             navItem.set('url', url);
             this.set('dirtyAttributes', true);
+
+            return url;
         },
 
         toggleLeaveSettingsModal(transition) {

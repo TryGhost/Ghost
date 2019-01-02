@@ -45,7 +45,9 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
 
     deactivate() {
         this._super(...arguments);
-        this.send('resetShortcutsScope');
+        if (!this.isDestroyed && !this.isDestroying) {
+            this.send('resetShortcutsScope');
+        }
     },
 
     actions: {

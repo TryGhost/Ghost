@@ -1,69 +1,63 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import destroyApp from '../../helpers/destroy-app';
-import startApp from '../../helpers/start-app';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
-    afterEach,
     beforeEach,
     describe,
     it
 } from 'mocha';
-import {authenticateSession, invalidateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
+import {click, currentURL, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {setupApplicationTest} from 'ember-mocha';
+import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - Integrations - AMP', function () {
-    let application;
-
-    beforeEach(function () {
-        application = startApp();
-    });
-
-    afterEach(function () {
-        destroyApp(application);
-    });
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
     it('redirects to signin when not authenticated', async function () {
-        invalidateSession(application);
+        await invalidateSession();
         await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('redirects to team page when authenticated as contributor', async function () {
-        let role = server.create('role', {name: 'Contributor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Contributor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as author', async function () {
-        let role = server.create('role', {name: 'Author'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Author'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team/test-user');
     });
 
     it('redirects to team page when authenticated as editor', async function () {
-        let role = server.create('role', {name: 'Editor'});
-        server.create('user', {roles: [role], slug: 'test-user'});
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role], slug: 'test-user'});
 
-        authenticateSession(application);
+        await authenticateSession();
         await visit('/settings/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/team');
     });
 
     describe('when logged in', function () {
-        beforeEach(function () {
-            let role = server.create('role', {name: 'Administrator'});
-            server.create('user', {roles: [role]});
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
 
-            return authenticateSession(application);
+            return await authenticateSession();
         });
 
         it('it enables or disables AMP properly and saves it', async function () {
@@ -73,15 +67,15 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
             // AMP is enabled by default
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
 
             await click('[data-test-amp-checkbox]');
 
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.false;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.false;
 
             await click('[data-test-save-button]');
 
-            let [lastRequest] = server.pretender.handledRequests.slice(-1);
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
 
             expect(params.settings.findBy('key', 'amp').value).to.equal(false);
@@ -96,10 +90,10 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
             // we've already saved in this test so there's no on-screen indication
             // that we've had another save, check the request was fired instead
-            let [newRequest] = server.pretender.handledRequests.slice(-1);
+            let [newRequest] = this.server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
             expect(params.settings.findBy('key', 'amp').value).to.equal(true);
         });
 
@@ -110,27 +104,27 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
             // AMP is enabled by default
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox default').to.be.true;
 
             await click('[data-test-amp-checkbox]');
 
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.false;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox after click').to.be.false;
 
             await visit('/team');
 
-            expect(find('.fullscreen-modal').length, 'modal exists').to.equal(1);
+            expect(findAll('.fullscreen-modal').length, 'unsaved changes modal exists').to.equal(1);
 
             // Leave without saving
-            await (click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving');
+            await click('.fullscreen-modal [data-test-leave-button]');
 
-            expect(currentURL(), 'currentURL').to.equal('/team');
+            expect(currentURL(), 'currentURL after leave without saving').to.equal('/team');
 
             await visit('/settings/integrations/amp');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
+            expect(currentURL(), 'currentURL after return').to.equal('/settings/integrations/amp');
 
             // settings were not saved
-            expect(find('[data-test-amp-checkbox]').prop('checked'), 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
         });
     });
 });

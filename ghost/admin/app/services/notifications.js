@@ -19,8 +19,14 @@ import {
 // specificity to re-use keys for i18n lookups
 
 export default Service.extend({
-    delayedNotifications: emberA(),
-    content: emberA(),
+    delayedNotifications: null,
+    content: null,
+
+    init() {
+        this._super(...arguments);
+        this.delayedNotifications = emberA();
+        this.content = emberA();
+    },
 
     upgradeStatus: service(),
 

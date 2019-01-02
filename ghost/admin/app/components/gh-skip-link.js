@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Component from '@ember/component';
 import {htmlSafe} from '@ember/string';
 
@@ -15,21 +14,25 @@ export default Component.extend({
     href: htmlSafe('javascript:;'),
 
     click() {
-        let anchor = this.get('anchor');
-        let $el = $(anchor);
+        let el = document.querySelector(this.anchor);
 
-        if ($el) {
+        if (el) {
             // Scrolls to the top of main content or whatever
             // is passed to the anchor attribute
-            $('body').scrollTop($el.offset().top);
+            document.body.scrollTop = el.getBoundingClientRect().top;
+
+            let removeTabindex = function () {
+                el.removeAttribute('tabindex');
+            };
 
             // This sets focus on the content which was skipped to
             // upon losing focus, the tabindex should be removed
             // so that normal keyboard navigation picks up from focused
             // element
-            $($el).attr('tabindex', -1).on('blur focusout', function () {
-                $(this).removeAttr('tabindex');
-            }).focus();
+            el.setAttribute('tabindex', -1);
+            el.focus();
+            el.addEventListener('blur', removeTabindex);
+            el.addEventListener('focusout', removeTabindex);
         }
     }
 });

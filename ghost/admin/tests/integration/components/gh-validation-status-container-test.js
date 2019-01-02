@@ -1,17 +1,15 @@
 import DS from 'ember-data';
 import EmberObject from '@ember/object';
 import hbs from 'htmlbars-inline-precompile';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {setupComponentTest} from 'ember-mocha';
+import {find, render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
 const {Errors} = DS;
 
 describe('Integration: Component: gh-validation-status-container', function () {
-    setupComponentTest('gh-validation-status-container', {
-        integration: true
-    });
+    setupRenderingTest();
 
     beforeEach(function () {
         let testObject = EmberObject.create();
@@ -22,60 +20,52 @@ describe('Integration: Component: gh-validation-status-container', function () {
         this.set('testObject', testObject);
     });
 
-    it('has no success/error class by default', function () {
-        this.render(hbs`
+    it('has no success/error class by default', async function () {
+        await render(hbs`
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
 
-        return wait().then(() => {
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.false;
-            expect(this.$('.gh-test').hasClass('error')).to.be.false;
-        });
+        expect(find('.gh-test')).to.exist;
+        expect(find('.gh-test')).to.not.have.class('success');
+        expect(find('.gh-test')).to.not.have.class('error');
     });
 
-    it('has success class when valid', function () {
+    it('has success class when valid', async function () {
         this.get('testObject.hasValidated').push('name');
 
-        this.render(hbs`
+        await render(hbs`
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
 
-        return wait().then(() => {
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.true;
-            expect(this.$('.gh-test').hasClass('error')).to.be.false;
-        });
+        expect(find('.gh-test')).to.exist;
+        expect(find('.gh-test')).to.have.class('success');
+        expect(find('.gh-test')).to.not.have.class('error');
     });
 
-    it('has error class when invalid', function () {
+    it('has error class when invalid', async function () {
         this.get('testObject.hasValidated').push('name');
         this.get('testObject.errors').add('name', 'has error');
 
-        this.render(hbs`
+        await render(hbs`
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
 
-        return wait().then(() => {
-            expect(this.$('.gh-test')).to.have.length(1);
-            expect(this.$('.gh-test').hasClass('success')).to.be.false;
-            expect(this.$('.gh-test').hasClass('error')).to.be.true;
-        });
+        expect(find('.gh-test')).to.exist;
+        expect(find('.gh-test')).to.not.have.class('success');
+        expect(find('.gh-test')).to.have.class('error');
     });
 
-    it('still renders if hasValidated is undefined', function () {
+    it('still renders if hasValidated is undefined', async function () {
         this.set('testObject.hasValidated', undefined);
 
-        this.render(hbs`
+        await render(hbs`
             {{#gh-validation-status-container class="gh-test" property="name" errors=testObject.errors hasValidated=testObject.hasValidated}}
             {{/gh-validation-status-container}}
         `);
 
-        return wait().then(() => {
-            expect(this.$('.gh-test')).to.have.length(1);
-        });
+        expect(find('.gh-test')).to.exist;
     });
 });

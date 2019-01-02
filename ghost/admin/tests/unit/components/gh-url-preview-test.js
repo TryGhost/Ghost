@@ -1,4 +1,5 @@
 import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {setupComponentTest} from 'ember-mocha';
 
 describe('Unit: Component: gh-url-preview', function () {
