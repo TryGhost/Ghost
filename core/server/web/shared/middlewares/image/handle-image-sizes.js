@@ -4,6 +4,7 @@ const storage = require('../../../../adapters/storage');
 const activeTheme = require('../../../../services/themes/active');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
+const UNRESIZABLE_FILETYPE_REGEX = /\.(?:gif|svgz?)$/;
 
 module.exports = function (req, res, next) {
     if (!SIZE_PATH_REGEX.test(req.url)) {
@@ -15,6 +16,11 @@ module.exports = function (req, res, next) {
         const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
         return res.redirect(url);
     };
+
+    // CASE: url ends in .gif OR .svg (OR .svgz)
+    if (UNRESIZABLE_FILETYPE_REGEX.test(req.url)) {
+        return redirectToOriginal();
+    }
 
     const imageSizes = activeTheme.get().config('image_sizes');
     // CASE: no image_sizes config
