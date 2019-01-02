@@ -1,35 +1,30 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import destroyApp from 'ghost-admin/tests/helpers/destroy-app';
-import startApp from 'ghost-admin/tests/helpers/start-app';
-import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession} from 'ghost-admin/tests/helpers/ember-simple-auth';
-import {click, fillIn, find, keyEvent, visit} from 'ember-native-dom-helpers';
+import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
+import {authenticateSession} from 'ember-simple-auth/test-support';
+import {beforeEach, describe, it} from 'mocha';
+import {click, fillIn, find, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {setupApplicationTest} from 'ember-mocha';
 
 // keyCodes
 const KEY_S = 83;
 
 describe('Acceptance: Custom Post Templates', function () {
-    let application;
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
 
-    beforeEach(function () {
-        application = startApp();
+    beforeEach(async function () {
+        this.server.loadFixtures('settings');
 
-        server.loadFixtures('settings');
+        let role = this.server.create('role', {name: 'Administrator'});
+        this.server.create('user', {roles: [role]});
 
-        let role = server.create('role', {name: 'Administrator'});
-        server.create('user', {roles: [role]});
-
-        authenticateSession(application);
-    });
-
-    afterEach(function () {
-        destroyApp(application);
+        return await authenticateSession();
     });
 
     describe('with custom templates', function () {
         beforeEach(function () {
-            server.create('theme', {
+            this.server.create('theme', {
                 active: true,
                 name: 'example-theme',
                 package: {
@@ -66,7 +61,7 @@ describe('Acceptance: Custom Post Templates', function () {
         });
 
         it('can change selected template', async function () {
-            let post = server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
+            let post = this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
             await visit('/editor/1');
             await click('[data-test-psm-trigger]');
@@ -91,13 +86,13 @@ describe('Acceptance: Custom Post Templates', function () {
             await fillIn(select, '');
 
             // save then check server record
-            await keyEvent('.gh-app', 'keydown', KEY_S, {
+            await triggerKeyEvent('.gh-app', 'keydown', KEY_S, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
 
             expect(
-                server.db.posts.find(post.id).customTemplate,
+                this.server.db.posts.find(post.id).customTemplate,
                 'saved custom template'
             ).to.equal('');
         });
@@ -105,13 +100,14 @@ describe('Acceptance: Custom Post Templates', function () {
         it('disables template selector if slug matches slug-based template');
 
         it('doesn\'t query themes endpoint unncessarily', async function () {
-            function themeRequests() {
-                return server.pretender.handledRequests.filter(function (request) {
+            // eslint-disable-next-line
+            let themeRequests = () => {
+                return this.server.pretender.handledRequests.filter(function (request) {
                     return request.url.match(/\/themes\//);
                 });
-            }
+            };
 
-            server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
+            this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
             await visit('/editor/1');
             await click('[data-test-psm-trigger]');
@@ -127,7 +123,7 @@ describe('Acceptance: Custom Post Templates', function () {
 
     describe('without custom templates', function () {
         beforeEach(function () {
-            server.create('theme', {
+            this.server.create('theme', {
                 active: true,
                 name: 'example-theme',
                 package: {
@@ -139,7 +135,7 @@ describe('Acceptance: Custom Post Templates', function () {
         });
 
         it('doesn\'t show template selector', async function () {
-            server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
+            this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
             await visit('/editor/1');
             await click('[data-test-psm-trigger]');

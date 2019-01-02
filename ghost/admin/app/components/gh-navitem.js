@@ -10,6 +10,12 @@ export default Component.extend(ValidationState, {
 
     new: false,
 
+    // closure actions
+    addItem() {},
+    deleteItem() {},
+    updateUrl() {},
+    updateLabel() {},
+
     errors: readOnly('navItem.errors'),
 
     errorClass: computed('hasError', function () {
@@ -20,31 +26,19 @@ export default Component.extend(ValidationState, {
 
     actions: {
         addItem() {
-            let action = this.get('addItem');
-            if (action) {
-                action();
-            }
+            this.addItem();
         },
 
         deleteItem(item) {
-            let action = this.get('deleteItem');
-            if (action) {
-                action(item);
-            }
+            this.deleteItem(item);
         },
 
         updateUrl(value) {
-            let action = this.get('updateUrl');
-            if (action) {
-                action(value, this.get('navItem'));
-            }
+            return this.updateUrl(value, this.navItem);
         },
 
         updateLabel(value) {
-            let action = this.get('updateLabel');
-            if (action) {
-                action(value, this.get('navItem'));
-            }
+            return this.updateLabel(value, this.navItem);
         },
 
         clearLabelErrors() {

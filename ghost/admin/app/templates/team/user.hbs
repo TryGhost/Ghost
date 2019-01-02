@@ -136,7 +136,7 @@
                         data-test-name-input=true
                     }}
                     {{#if user.errors.name}}
-                        {{gh-error-message errors=user.errors property="name"}}
+                        {{gh-error-message errors=user.errors property="name" data-test-error="user-name"}}
                     {{else}}
                         <p>Use your real name so people can recognise you</p>
                     {{/if}}
@@ -157,7 +157,7 @@
                         data-test-slug-input=true
                     }}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
-                    {{gh-error-message errors=user.errors property="slug"}}
+                    {{gh-error-message errors=user.errors property="slug" data-test-error="user-slug"}}
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
@@ -176,7 +176,7 @@
                             input=(action (mut user.email) value="target.value")
                             focus-out=(action "validate" "email" target=user)
                             data-test-email-input=true}}
-                        {{gh-error-message errors=user.errors property="email"}}
+                        {{gh-error-message errors=user.errors property="email" data-test-error="user-email"}}
                     {{else}}
                         <span>{{user.email}}</span>
                     {{/if}}
@@ -208,7 +208,7 @@
                         input=(action (mut user.location) value="target.value")
                         focus-out=(action "validate" "location" target=user)
                         data-test-location-input=true}}
-                    {{gh-error-message errors=user.errors property="location" data-test-location-error=true}}
+                    {{gh-error-message errors=user.errors property="location" data-test-error="user-location"}}
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
@@ -224,7 +224,7 @@
                         input=(action (mut user.website) value="target.value")
                         focus-out=(action "validate" "website" target=user)
                         data-test-website-input=true}}
-                    {{gh-error-message errors=user.errors property="website" data-test-website-error=true}}
+                    {{gh-error-message errors=user.errors property="website" data-test-error="user-website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
 
@@ -241,7 +241,7 @@
                         focus-out=(action "validateFacebookUrl")
                         data-test-facebook-input=true
                     }}
-                    {{gh-error-message errors=user.errors property="facebook" data-test-facebook-error=true}}
+                    {{gh-error-message errors=user.errors property="facebook" data-test-error="user-facebook"}}
                     <p>URL of your personal Facebook Profile</p>
                 {{/gh-form-group}}
 
@@ -258,7 +258,7 @@
                         focus-out=(action "validateTwitterUrl")
                         data-test-twitter-input=true
                     }}
-                    {{gh-error-message errors=user.errors property="twitter" data-test-twitter-error=true}}
+                    {{gh-error-message errors=user.errors property="twitter" data-test-error="user-twitter"}}
                     <p>URL of your personal Twitter profile</p>
                 {{/gh-form-group}}
 
@@ -271,7 +271,7 @@
                         focus-out=(action "validate" "bio" target=user)
                         data-test-bio-input=true
                     }}
-                    {{gh-error-message errors=user.errors property="bio" data-test-bio-error=true}}
+                    {{gh-error-message errors=user.errors property="bio" data-test-error="user-bio"}}
                     <p>
                         Write about you, in 200 characters or less.
                         {{gh-count-characters user.bio}}
@@ -284,7 +284,7 @@
 
         </form> {{! user details form }}
 
-        {{!-- If an administrator is viewing Owner's profile or we're using Ghost.org OAuth then hide inputs for change password --}}
+        {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
         {{#if canChangePassword}}
             <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
                 <fieldset>
@@ -301,7 +301,7 @@
                                 )
                                 data-test-old-pass-input=true
                             }}
-                            {{gh-error-message errors=user.errors property="password"}}
+                            {{gh-error-message errors=user.errors property="password" data-test-error="user-old-pass"}}
                         {{/gh-form-group}}
                     {{/unless}}
 
@@ -317,7 +317,7 @@
                             )
                             data-test-new-pass-input=true
                         }}
-                        {{gh-error-message errors=user.errors property="newPassword"}}
+                        {{gh-error-message errors=user.errors property="newPassword" data-test-error="user-new-pass"}}
                     {{/gh-form-group}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
@@ -332,7 +332,7 @@
                             )
                             data-test-ne2-pass-input=true
                         }}
-                        {{gh-error-message errors=user.errors property="ne2Password"}}
+                        {{gh-error-message errors=user.errors property="ne2Password" data-test-error="user-ne2-pass"}}
                     {{/gh-form-group}}
 
                     <div class="form-group">

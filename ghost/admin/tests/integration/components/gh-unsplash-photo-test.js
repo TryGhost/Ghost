@@ -1,13 +1,11 @@
 import hbs from 'htmlbars-inline-precompile';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {find} from 'ember-native-dom-helpers';
-import {setupComponentTest} from 'ember-mocha';
+import {find, render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-unsplash-photo', function () {
-    setupComponentTest('gh-unsplash-photo', {
-        integration: true
-    });
+    setupRenderingTest();
 
     beforeEach(function () {
         // NOTE: images.unsplash.com replaced with example.com to ensure we aren't
@@ -70,16 +68,16 @@ describe('Integration: Component: gh-unsplash-photo', function () {
         });
     });
 
-    it('sets background-color style', function () {
-        this.render(hbs`{{gh-unsplash-photo photo=photo}}`);
+    it('sets background-color style', async function () {
+        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
 
         expect(
             find('[data-test-unsplash-photo-container]').attributes.style.value
         ).to.have.string('background-color: #A8A99B');
     });
 
-    it('sets padding-bottom style', function () {
-        this.render(hbs`{{gh-unsplash-photo photo=photo}}`);
+    it('sets padding-bottom style', async function () {
+        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
 
         // don't check full padding-bottom value as it will likely vary across
         // browsers
@@ -88,16 +86,16 @@ describe('Integration: Component: gh-unsplash-photo', function () {
         ).to.have.string('padding-bottom: 66.66');
     });
 
-    it('uses correct image size url', function () {
-        this.render(hbs`{{gh-unsplash-photo photo=photo}}`);
+    it('uses correct image size url', async function () {
+        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
 
         expect(
             find('[data-test-unsplash-photo-image]').attributes.src.value
         ).to.have.string('&w=1200');
     });
 
-    it('calculates image width/height', function () {
-        this.render(hbs`{{gh-unsplash-photo photo=photo}}`);
+    it('calculates image width/height', async function () {
+        await render(hbs`{{gh-unsplash-photo photo=photo}}`);
 
         expect(
             find('[data-test-unsplash-photo-image]').attributes.width.value

@@ -14,12 +14,20 @@
             input=(action (mut navItem.label) value="target.value")
             keyPress=(action "clearLabelErrors")
             focus-out=(action "updateLabel" navItem.label)
+            data-test-input="label"
         }}
-        {{gh-error-message errors=navItem.errors property="label"}}
+        {{gh-error-message errors=navItem.errors property="label" data-test-error="label"}}
     {{/gh-validation-status-container}}
     {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
-        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url isNew=navItem.isNew update=(action "updateUrl") clearErrors=(action "clearUrlErrors")}}
-        {{gh-error-message errors=navItem.errors property="url"}}
+        {{gh-navitem-url-input
+            baseUrl=baseUrl
+            isNew=navItem.isNew
+            url=(readonly navItem.url)
+            update=(action "updateUrl")
+            clearErrors=(action "clearUrlErrors")
+            data-test-input="url"
+        }}
+        {{gh-error-message errors=navItem.errors property="url" data-test-error="url"}}
     {{/gh-validation-status-container}}
 </div>
 

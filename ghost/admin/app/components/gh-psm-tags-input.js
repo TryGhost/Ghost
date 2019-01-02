@@ -15,7 +15,8 @@ export default Component.extend({
     _availableTags: null,
 
     availableTags: sort('_availableTags.[]', function (tagA, tagB) {
-        return tagA.name.localeCompare(tagB.name);
+        // ignorePunctuation means the # in internal tag names is ignored
+        return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
     }),
 
     availableTagNames: computed('availableTags.@each.name', function () {

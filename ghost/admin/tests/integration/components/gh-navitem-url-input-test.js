@@ -1,423 +1,350 @@
-import $ from 'jquery';
 import hbs from 'htmlbars-inline-precompile';
+import {blur, click, fillIn, find, findAll, render, triggerKeyEvent} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
-import {setupComponentTest} from 'ember-mocha';
+import {setupRenderingTest} from 'ember-mocha';
 
 // we want baseUrl to match the running domain so relative URLs are
 // handled as expected (browser auto-sets the domain when using a.href)
 let currentUrl = `${window.location.protocol}//${window.location.host}/`;
 
 describe('Integration: Component: gh-navitem-url-input', function () {
-    setupComponentTest('gh-navitem-url-input', {
-        integration: true
-    });
+    setupRenderingTest();
 
     beforeEach(function () {
         // set defaults
         this.set('baseUrl', currentUrl);
         this.set('url', '');
         this.set('isNew', false);
-        this.on('clearErrors', function () {
+        this.set('clearErrors', function () {
             return null;
         });
     });
 
-    it('renders correctly with blank url', function () {
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
+    it('renders correctly with blank url', async function () {
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        expect($input).to.have.length(1);
-        expect($input.hasClass('gh-input')).to.be.true;
-        expect($input.val()).to.equal(currentUrl);
+        expect(findAll('input')).to.have.length(1);
+        expect(find('input')).to.have.class('gh-input');
+        expect(find('input')).to.have.value(currentUrl);
     });
 
-    it('renders correctly with relative urls', function () {
+    it('renders correctly with relative urls', async function () {
         this.set('url', '/about');
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        expect($input.val()).to.equal(`${currentUrl}about`);
+        expect(find('input')).to.have.value(`${currentUrl}about`);
 
         this.set('url', '/about#contact');
-        expect($input.val()).to.equal(`${currentUrl}about#contact`);
+        expect(find('input')).to.have.value(`${currentUrl}about#contact`);
     });
 
-    it('renders correctly with absolute urls', function () {
+    it('renders correctly with absolute urls', async function () {
         this.set('url', 'https://example.com:2368/#test');
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        expect($input.val()).to.equal('https://example.com:2368/#test');
+        expect(find('input')).to.have.value('https://example.com:2368/#test');
 
         this.set('url', 'mailto:test@example.com');
-        expect($input.val()).to.equal('mailto:test@example.com');
+        expect(find('input')).to.have.value('mailto:test@example.com');
 
         this.set('url', 'tel:01234-5678-90');
-        expect($input.val()).to.equal('tel:01234-5678-90');
+        expect(find('input')).to.have.value('tel:01234-5678-90');
 
         this.set('url', '//protocol-less-url.com');
-        expect($input.val()).to.equal('//protocol-less-url.com');
+        expect(find('input')).to.have.value('//protocol-less-url.com');
 
         this.set('url', '#anchor');
-        expect($input.val()).to.equal('#anchor');
+        expect(find('input')).to.have.value('#anchor');
     });
 
-    it('deletes base URL on backspace', function () {
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
+    it('deletes base URL on backspace', async function () {
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        expect($input.val()).to.equal(currentUrl);
-        run(() => {
-            // TODO: why is ember's keyEvent helper not available here?
-            // eslint-disable-next-line new-cap
-            let e = $.Event('keydown');
-            e.keyCode = 8;
-            $input.trigger(e);
-        });
-        expect($input.val()).to.equal('');
+        expect(find('input')).to.have.value(currentUrl);
+        await triggerKeyEvent('input', 'keydown', 8);
+        expect(find('input')).to.have.value('');
     });
 
-    it('deletes base URL on delete', function () {
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action "clearErrors")}}
+    it('deletes base URL on delete', async function () {
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        expect($input.val()).to.equal(currentUrl);
-        run(() => {
-            // TODO: why is ember's keyEvent helper not available here?
-            // eslint-disable-next-line new-cap
-            let e = $.Event('keydown');
-            e.keyCode = 46;
-            $input.trigger(e);
-        });
-        expect($input.val()).to.equal('');
+        expect(find('input')).to.have.value(currentUrl);
+        await triggerKeyEvent('input', 'keydown', 46);
+        expect(find('input')).to.have.value('');
     });
 
-    it('adds base url to relative urls on blur', function () {
-        this.on('updateUrl', () => null);
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+    it('adds base url to relative urls on blur', async function () {
+        this.set('updateUrl', val => val);
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        run(() => {
-            $input.val('/about').trigger('input');
-        });
-        run(() => {
-            $input.trigger('blur');
-        });
+        await fillIn('input', '/about');
+        await blur('input');
 
-        expect($input.val()).to.equal(`${currentUrl}about`);
+        expect(find('input')).to.have.value(`${currentUrl}about/`);
     });
 
-    it('adds "mailto:" to email addresses on blur', function () {
-        this.on('updateUrl', () => null);
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+    it('adds "mailto:" to email addresses on blur', async function () {
+        this.set('updateUrl', val => val);
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        run(() => {
-            $input.val('test@example.com').trigger('input');
-        });
-        run(() => {
-            $input.trigger('blur');
-        });
+        await fillIn('input', 'test@example.com');
+        await blur('input');
 
-        expect($input.val()).to.equal('mailto:test@example.com');
+        expect(find('input')).to.have.value('mailto:test@example.com');
 
         // ensure we don't double-up on the mailto:
-        run(() => {
-            $input.trigger('blur');
-        });
-        expect($input.val()).to.equal('mailto:test@example.com');
+        await blur('input');
+        expect(find('input')).to.have.value('mailto:test@example.com');
     });
 
-    it('doesn\'t add base url to invalid urls on blur', function () {
-        this.on('updateUrl', () => null);
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+    it('doesn\'t add base url to invalid urls on blur', async function () {
+        this.set('updateUrl', val => val);
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let changeValue = function (value) {
-            run(() => {
-                $input.val(value).trigger('input').trigger('blur');
-            });
+        let changeValue = async (value) => {
+            await fillIn('input', value);
+            await blur('input');
         };
 
-        changeValue('with spaces');
-        expect($input.val()).to.equal('with spaces');
+        await changeValue('with spaces');
+        expect(find('input')).to.have.value('with spaces');
 
-        changeValue('/with spaces');
-        expect($input.val()).to.equal('/with spaces');
+        await changeValue('/with spaces');
+        expect(find('input')).to.have.value('/with spaces');
     });
 
-    it('doesn\'t mangle invalid urls on blur', function () {
-        this.on('updateUrl', () => null);
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+    it('doesn\'t mangle invalid urls on blur', async function () {
+        this.set('updateUrl', val => val);
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        run(() => {
-            $input.val(`${currentUrl} /test`).trigger('input').trigger('blur');
-        });
+        await fillIn('input', `${currentUrl} /test`);
+        await blur('input');
 
-        expect($input.val()).to.equal(`${currentUrl} /test`);
+        expect(find('input')).to.have.value(`${currentUrl} /test`);
     });
 
     // https://github.com/TryGhost/Ghost/issues/9373
-    it('doesn\'t mangle urls when baseUrl has unicode characters', function () {
-        this.on('updateUrl', () => null);
+    it('doesn\'t mangle urls when baseUrl has unicode characters', async function () {
+        this.set('updateUrl', val => val);
 
         this.set('baseUrl', 'http://exämple.com');
 
-        this.render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs`
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
+        await fillIn('input', `${currentUrl}/test`);
+        await blur('input');
 
-        run(() => {
-            $input.val(`${currentUrl}/test`).trigger('input').trigger('blur');
-        });
-
-        expect($input.val()).to.equal(`${currentUrl}/test`);
+        expect(find('input')).to.have.value(`${currentUrl}/test`);
     });
 
-    it('triggers "update" action on blur', function () {
+    it('triggers "update" action on blur', async function () {
         let changeActionCallCount = 0;
-        this.on('updateUrl', () => {
+        this.set('updateUrl', (val) => {
             changeActionCallCount += 1;
+            return val;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
-
-        $input.trigger('blur');
+        await click('input');
+        await blur('input');
 
         expect(changeActionCallCount).to.equal(1);
     });
 
-    it('triggers "update" action on enter', function () {
+    it('triggers "update" action on enter', async function () {
         let changeActionCallCount = 0;
-        this.on('updateUrl', () => {
+        this.set('updateUrl', (val) => {
             changeActionCallCount += 1;
+            return val;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
-
-        run(() => {
-            // TODO: why is ember's keyEvent helper not available here?
-            // eslint-disable-next-line new-cap
-            let e = $.Event('keypress');
-            e.keyCode = 13;
-            $input.trigger(e);
-        });
+        await triggerKeyEvent('input', 'keypress', 13);
 
         expect(changeActionCallCount).to.equal(1);
     });
 
-    it('triggers "update" action on CMD-S', function () {
+    it('triggers "update" action on CMD-S', async function () {
         let changeActionCallCount = 0;
-        this.on('updateUrl', () => {
+        this.set('updateUrl', (val) => {
             changeActionCallCount += 1;
+            return val;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
-
-        run(() => {
-            // TODO: why is ember's keyEvent helper not available here?
-            // eslint-disable-next-line new-cap
-            let e = $.Event('keydown');
-            e.keyCode = 83;
-            e.metaKey = true;
-            $input.trigger(e);
+        await triggerKeyEvent('input', 'keydown', 83, {
+            metaKey: true
         });
 
         expect(changeActionCallCount).to.equal(1);
     });
 
-    it('sends absolute urls straight through to change action', function () {
-        let expectedUrl = '';
+    it('sends absolute urls straight through to update action', async function () {
+        let lastSeenUrl = '';
 
-        this.on('updateUrl', (url) => {
-            expect(url).to.equal(expectedUrl);
+        this.set('updateUrl', (url) => {
+            lastSeenUrl = url;
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let testUrl = (url) => {
-            expectedUrl = url;
-            run(() => {
-                $input.val(url).trigger('input');
-            });
-            run(() => {
-                $input.trigger('blur');
-            });
+        let testUrl = async (url) => {
+            await fillIn('input', url);
+            await blur('input');
+            expect(lastSeenUrl).to.equal(url);
         };
 
-        testUrl('http://example.com');
-        testUrl('http://example.com/');
-        testUrl('https://example.com');
-        testUrl('//example.com');
-        testUrl('//localhost:1234');
-        testUrl('#anchor');
-        testUrl('mailto:test@example.com');
-        testUrl('tel:12345-567890');
-        testUrl('javascript:alert("testing");');
+        await testUrl('http://example.com');
+        await testUrl('http://example.com/');
+        await testUrl('https://example.com');
+        await testUrl('//example.com');
+        await testUrl('//localhost:1234');
+        await testUrl('#anchor');
+        await testUrl('mailto:test@example.com');
+        await testUrl('tel:12345-567890');
+        await testUrl('javascript:alert("testing");');
     });
 
-    it('strips base url from relative urls before sending to change action', function () {
-        let expectedUrl = '';
+    it('strips base url from relative urls before sending to update action', async function () {
+        let lastSeenUrl = '';
 
-        this.on('updateUrl', (url) => {
-            expect(url).to.equal(expectedUrl);
+        this.set('updateUrl', (url) => {
+            lastSeenUrl = url;
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let testUrl = (url) => {
-            expectedUrl = `/${url}`;
-            run(() => {
-                $input.val(`${currentUrl}${url}`).trigger('input');
-            });
-            run(() => {
-                $input.trigger('blur');
-            });
+        let testUrl = async (url) => {
+            await fillIn('input', `${currentUrl}${url}`);
+            await blur('input');
+            expect(lastSeenUrl).to.equal(`/${url}`);
         };
 
-        testUrl('about/');
-        testUrl('about#contact');
-        testUrl('test/nested/');
+        await testUrl('about/');
+        await testUrl('about#contact');
+        await testUrl('test/nested/');
     });
 
-    it('handles links to subdomains of blog domain', function () {
+    it('handles links to subdomains of blog domain', async function () {
         let expectedUrl = '';
 
         this.set('baseUrl', 'http://example.com/');
 
-        this.on('updateUrl', (url) => {
+        this.set('updateUrl', (url) => {
             expect(url).to.equal(expectedUrl);
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
         expectedUrl = 'http://test.example.com/';
-        run(() => {
-            $input.val(expectedUrl).trigger('input').trigger('blur');
-        });
-        expect($input.val()).to.equal(expectedUrl);
+        await fillIn('input', expectedUrl);
+        await blur('input');
+        expect(find('input')).to.have.value(expectedUrl);
     });
 
-    it('adds trailing slash to relative URL', function () {
-        let expectedUrl = '';
+    it('adds trailing slash to relative URL', async function () {
+        let lastSeenUrl = '';
 
-        this.on('updateUrl', (url) => {
-            expect(url).to.equal(expectedUrl);
+        this.set('updateUrl', (url) => {
+            lastSeenUrl = url;
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let testUrl = (url) => {
-            expectedUrl = `/${url}/`;
-            run(() => {
-                $input.val(`${currentUrl}${url}`).trigger('input');
-            });
-            run(() => {
-                $input.trigger('blur');
-            });
+        let testUrl = async (url) => {
+            await fillIn('input', `${currentUrl}${url}`);
+            await blur('input');
+            expect(lastSeenUrl).to.equal(`/${url}/`);
         };
 
-        testUrl('about');
-        testUrl('test/nested');
+        await testUrl('about');
+        await testUrl('test/nested');
     });
 
-    it('does not add trailing slash on relative URL with [.?#]', function () {
-        let expectedUrl = '';
+    it('does not add trailing slash on relative URL with [.?#]', async function () {
+        let lastSeenUrl = '';
 
-        this.on('updateUrl', (url) => {
-            expect(url).to.equal(expectedUrl);
+        this.set('updateUrl', (url) => {
+            lastSeenUrl = url;
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let testUrl = (url) => {
-            expectedUrl = `/${url}`;
-            run(() => {
-                $input.val(`${currentUrl}${url}`).trigger('input');
-            });
-            run(() => {
-                $input.trigger('blur');
-            });
+        let testUrl = async (url) => {
+            await fillIn('input', `${currentUrl}${url}`);
+            await blur('input');
+            expect(lastSeenUrl).to.equal(`/${url}`);
         };
 
-        testUrl('about#contact');
-        testUrl('test/nested.svg');
-        testUrl('test?gho=sties');
-        testUrl('test/nested?sli=mer');
+        await testUrl('about#contact');
+        await testUrl('test/nested.svg');
+        await testUrl('test?gho=sties');
+        await testUrl('test/nested?sli=mer');
     });
 
-    it('does not add trailing slash on non-relative URLs', function () {
-        let expectedUrl = '';
+    it('does not add trailing slash on non-relative URLs', async function () {
+        let lastSeenUrl = '';
 
-        this.on('updateUrl', (url) => {
-            expect(url).to.equal(expectedUrl);
+        this.set('updateUrl', (url) => {
+            lastSeenUrl = url;
+            return url;
         });
 
-        this.render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+        await render(hbs `
+            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
         `);
-        let $input = this.$('input');
 
-        let testUrl = (url) => {
-            expectedUrl = `/${url}`;
-            run(() => {
-                $input.val(`${currentUrl}${url}`).trigger('input');
-            });
-            run(() => {
-                $input.trigger('blur');
-            });
+        let testUrl = async (url) => {
+            await fillIn('input', url);
+            await blur('input');
+            expect(lastSeenUrl).to.equal(url);
         };
 
-        testUrl('http://woo.ff/test');
-        testUrl('http://me.ow:2342/nested/test');
-        testUrl('https://wro.om/car#race');
-        testUrl('https://kabo.om/explosion?really=now');
+        await testUrl('http://woo.ff/test');
+        await testUrl('http://me.ow:2342/nested/test');
+        await testUrl('https://wro.om/car#race');
+        await testUrl('https://kabo.om/explosion?really=now');
     });
 
     describe('with sub-folder baseUrl', function () {
@@ -425,65 +352,57 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             this.set('baseUrl', `${currentUrl}blog/`);
         });
 
-        it('handles URLs relative to base url', function () {
-            let expectedUrl = '';
+        it('handles URLs relative to base url', async function () {
+            let lastSeenUrl = '';
 
-            this.on('updateUrl', (url) => {
-                expect(url).to.equal(expectedUrl);
+            this.set('updateUrl', (url) => {
+                lastSeenUrl = url;
+                return url;
             });
 
-            this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+            await render(hbs `
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
             `);
-            let $input = this.$('input');
 
-            let testUrl = (url) => {
-                expectedUrl = url;
-                run(() => {
-                    $input.val(`${currentUrl}blog${url}`).trigger('input');
-                });
-                run(() => {
-                    $input.trigger('blur');
-                });
+            let testUrl = async (url) => {
+                await fillIn('input', `${currentUrl}blog${url}`);
+                await blur('input');
+                expect(lastSeenUrl).to.equal(url);
             };
 
-            testUrl('/about/');
-            testUrl('/about#contact');
-            testUrl('/test/nested/');
+            await testUrl('/about/');
+            await testUrl('/about#contact');
+            await testUrl('/test/nested/');
         });
 
-        it('handles URLs relative to base host', function () {
-            let expectedUrl = '';
+        it('handles URLs relative to base host', async function () {
+            let lastSeenUrl = '';
 
-            this.on('updateUrl', (url) => {
-                expect(url).to.equal(expectedUrl);
+            this.set('updateUrl', (url) => {
+                lastSeenUrl = url;
+                return url;
             });
 
-            this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action "updateUrl") clearErrors=(action "clearErrors")}}
+            await render(hbs `
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
             `);
-            let $input = this.$('input');
 
-            let testUrl = (url) => {
-                expectedUrl = url;
-                run(() => {
-                    $input.val(url).trigger('input');
-                });
-                run(() => {
-                    $input.trigger('blur');
-                });
+            let testUrl = async (url) => {
+                await fillIn('input', url);
+                await blur('input');
+                expect(lastSeenUrl).to.equal(url);
             };
 
-            testUrl(`http://${window.location.host}`);
-            testUrl(`https://${window.location.host}`);
-            testUrl(`http://${window.location.host}/`);
-            testUrl(`https://${window.location.host}/`);
-            testUrl(`http://${window.location.host}/test`);
-            testUrl(`https://${window.location.host}/test`);
-            testUrl(`http://${window.location.host}/#test`);
-            testUrl(`https://${window.location.host}/#test`);
-            testUrl(`http://${window.location.host}/another/folder`);
-            testUrl(`https://${window.location.host}/another/folder`);
+            await testUrl(`http://${window.location.host}`);
+            await testUrl(`https://${window.location.host}`);
+            await testUrl(`http://${window.location.host}/`);
+            await testUrl(`https://${window.location.host}/`);
+            await testUrl(`http://${window.location.host}/test`);
+            await testUrl(`https://${window.location.host}/test`);
+            await testUrl(`http://${window.location.host}/#test`);
+            await testUrl(`https://${window.location.host}/#test`);
+            await testUrl(`http://${window.location.host}/another/folder`);
+            await testUrl(`https://${window.location.host}/another/folder`);
         });
     });
 });

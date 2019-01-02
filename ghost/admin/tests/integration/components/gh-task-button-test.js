@@ -1,135 +1,133 @@
 import hbs from 'htmlbars-inline-precompile';
-import wait from 'ember-test-helpers/wait';
+import {click, find, render, settled} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
-import {setupComponentTest} from 'ember-mocha';
+import {setupRenderingTest} from 'ember-mocha';
 import {task, timeout} from 'ember-concurrency';
 
 describe('Integration: Component: gh-task-button', function () {
-    setupComponentTest('gh-task-button', {
-        integration: true
-    });
+    setupRenderingTest();
 
-    it('renders', function () {
+    it('renders', async function () {
         // sets button text using positional param
-        this.render(hbs`{{gh-task-button "Test"}}`);
-        expect(this.$('button')).to.exist;
-        expect(this.$('button')).to.contain('Test');
-        expect(this.$('button')).to.have.prop('disabled', false);
+        await render(hbs`{{gh-task-button "Test"}}`);
+        expect(find('button')).to.exist;
+        expect(find('button')).to.contain.text('Test');
+        expect(find('button').disabled).to.be.false;
 
-        this.render(hbs`{{gh-task-button class="testing"}}`);
-        expect(this.$('button')).to.have.class('testing');
+        await render(hbs`{{gh-task-button class="testing"}}`);
+        expect(find('button')).to.have.class('testing');
         // default button text is "Save"
-        expect(this.$('button')).to.contain('Save');
+        expect(find('button')).to.contain.text('Save');
 
         // passes disabled attr
-        this.render(hbs`{{gh-task-button disabled=true buttonText="Test"}}`);
-        expect(this.$('button')).to.have.prop('disabled', true);
+        await render(hbs`{{gh-task-button disabled=true buttonText="Test"}}`);
+        expect(find('button').disabled).to.be.true;
         // allows button text to be set via hash param
-        expect(this.$('button')).to.contain('Test');
+        expect(find('button')).to.contain.text('Test');
 
         // passes type attr
-        this.render(hbs`{{gh-task-button type="submit"}}`);
-        expect(this.$('button')).to.have.attr('type', 'submit');
+        await render(hbs`{{gh-task-button type="submit"}}`);
+        expect(find('button')).to.have.attr('type', 'submit');
 
         // passes tabindex attr
-        this.render(hbs`{{gh-task-button tabindex="-1"}}`);
-        expect(this.$('button')).to.have.attr('tabindex', '-1');
+        await render(hbs`{{gh-task-button tabindex="-1"}}`);
+        expect(find('button')).to.have.attr('tabindex', '-1');
     });
 
-    it('shows spinner whilst running', function () {
+    it('shows spinner whilst running', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`{{gh-task-button task=myTask}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.have.descendants('svg');
+            expect(find('button')).to.have.descendants('svg');
         }, 20);
 
-        return wait();
+        await settled();
     });
 
-    it('shows running text when passed whilst running', function () {
+    it('shows running text when passed whilst running', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask runningText="Running"}}`);
+        await render(hbs`{{gh-task-button task=myTask runningText="Running"}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.have.descendants('svg');
-            expect(this.$('button')).to.contain('Running');
+            expect(find('button')).to.have.descendants('svg');
+            expect(find('button')).to.contain.text('Running');
         }, 20);
 
-        return wait();
+        await settled();
     });
 
-    it('appears disabled whilst running', function () {
+    it('appears disabled whilst running', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
-        expect(this.$('button'), 'initial class').to.not.have.class('appear-disabled');
+        await render(hbs`{{gh-task-button task=myTask}}`);
+        expect(find('button'), 'initial class').to.not.have.class('appear-disabled');
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button'), 'running class').to.have.class('appear-disabled');
+            expect(find('button'), 'running class').to.have.class('appear-disabled');
         }, 20);
 
         run.later(this, function () {
-            expect(this.$('button'), 'ended class').to.not.have.class('appear-disabled');
+            expect(find('button'), 'ended class').to.not.have.class('appear-disabled');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('shows success on success', function () {
+    it('shows success on success', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return true;
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`{{gh-task-button task=myTask}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.have.class('gh-btn-green');
-            expect(this.$('button')).to.contain('Saved');
+            expect(find('button')).to.have.class('gh-btn-green');
+            expect(find('button')).to.contain.text('Saved');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('assigns specified success class on success', function () {
+    it('assigns specified success class on success', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return true;
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask successClass="im-a-success"}}`);
+        await render(hbs`{{gh-task-button task=myTask successClass="im-a-success"}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.not.have.class('gh-btn-green');
-            expect(this.$('button')).to.have.class('im-a-success');
-            expect(this.$('button')).to.contain('Saved');
+            expect(find('button')).to.not.have.class('gh-btn-green');
+            expect(find('button')).to.have.class('im-a-success');
+            expect(find('button')).to.contain.text('Saved');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('shows failure when task errors', function () {
+    it('shows failure when task errors', async function () {
         this.set('myTask', task(function* () {
             try {
                 yield timeout(50);
@@ -139,56 +137,56 @@ describe('Integration: Component: gh-task-button', function () {
             }
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`{{gh-task-button task=myTask}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.have.class('gh-btn-red');
-            expect(this.$('button')).to.contain('Retry');
+            expect(find('button')).to.have.class('gh-btn-red');
+            expect(find('button')).to.contain.text('Retry');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('shows failure on falsy response', function () {
+    it('shows failure on falsy response', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return false;
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`{{gh-task-button task=myTask}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.have.class('gh-btn-red');
-            expect(this.$('button')).to.contain('Retry');
+            expect(find('button')).to.have.class('gh-btn-red');
+            expect(find('button')).to.contain.text('Retry');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('assigns specified failure class on failure', function () {
+    it('assigns specified failure class on failure', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
             return false;
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask failureClass="im-a-failure"}}`);
+        await render(hbs`{{gh-task-button task=myTask failureClass="im-a-failure"}}`);
 
         this.get('myTask').perform();
 
         run.later(this, function () {
-            expect(this.$('button')).to.not.have.class('gh-btn-red');
-            expect(this.$('button')).to.have.class('im-a-failure');
-            expect(this.$('button')).to.contain('Retry');
+            expect(find('button')).to.not.have.class('gh-btn-red');
+            expect(find('button')).to.have.class('im-a-failure');
+            expect(find('button')).to.contain.text('Retry');
         }, 100);
 
-        return wait();
+        await settled();
     });
 
-    it('performs task on click', function () {
+    it('performs task on click', async function () {
         let taskCount = 0;
 
         this.set('myTask', task(function* () {
@@ -196,43 +194,41 @@ describe('Integration: Component: gh-task-button', function () {
             taskCount = taskCount + 1;
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
-        this.$('button').click();
+        await render(hbs`{{gh-task-button task=myTask}}`);
+        await click('button');
 
-        return wait().then(() => {
+        await settled().then(() => {
             expect(taskCount, 'taskCount').to.equal(1);
         });
     });
 
-    it.skip('keeps button size when showing spinner', function () {
+    it.skip('keeps button size when showing spinner', async function () {
         this.set('myTask', task(function* () {
             yield timeout(50);
         }));
 
-        this.render(hbs`{{gh-task-button task=myTask}}`);
-        let width = this.$('button').width();
-        let height = this.$('button').height();
-        expect(this.$('button')).to.not.have.attr('style');
+        await render(hbs`{{gh-task-button task=myTask}}`);
+        let width = find('button').clientWidth;
+        let height = find('button').clientHeight;
+        expect(find('button')).to.not.have.attr('style');
 
         this.get('myTask').perform();
 
         run.later(this, function () {
             // we can't test exact width/height because Chrome/Firefox use different rounding methods
-            // expect(this.$('button')).to.have.attr('style', `width: ${width}px; height: ${height}px;`);
+            // expect(find('button')).to.have.attr('style', `width: ${width}px; height: ${height}px;`);
 
             let [widthInt] = width.toString().split('.');
             let [heightInt] = height.toString().split('.');
 
-            expect(this.$('button').attr('style')).to.have.string(`width: ${widthInt}`);
-            expect(this.$('button').attr('style')).to.have.string(`height: ${heightInt}`);
+            expect(find('button')).to.have.attr('style', `width: ${widthInt}`);
+            expect(find('button')).to.have.attr('style', `height: ${heightInt}`);
         }, 20);
 
         run.later(this, function () {
-            // chai-jquery test doesn't work because Firefox outputs blank string
-            // expect(this.$('button')).to.not.have.attr('style');
-            expect(this.$('button').attr('style')).to.be.empty;
+            expect(find('button').getAttribute('style')).to.be.empty;
         }, 100);
 
-        return wait();
+        await settled();
     });
 });

@@ -1,5 +1,6 @@
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {ghUserCanAdmin} from 'ghost-admin/helpers/gh-user-can-admin';
-import {it} from 'mocha';
 
 describe('Unit: Helper: gh-user-can-admin', function () {
     // Mock up roles and test for truthy

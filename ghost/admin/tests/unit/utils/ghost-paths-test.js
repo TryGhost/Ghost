@@ -1,4 +1,6 @@
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
 
 describe('Unit: Util: ghost-paths', function () {
     describe('join', function () {

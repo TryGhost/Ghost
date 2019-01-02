@@ -32,8 +32,8 @@ const CmEditorComponent = Component.extend({
     _value: boundOneWay('value'), // make sure a value exists
 
     didReceiveAttrs() {
-        if (this.get('value') === null || undefined) {
-            this.set('value', '');
+        if (this.get('_value') === null || undefined) {
+            this.set('_value', '');
         }
     },
 
@@ -69,9 +69,7 @@ const CmEditorComponent = Component.extend({
             loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
         ]);
 
-        scheduleOnce('afterRender', this, function () {
-            this._initCodeMirror();
-        });
+        scheduleOnce('afterRender', this, this._initCodeMirror);
     }),
 
     _initCodeMirror() {

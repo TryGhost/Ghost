@@ -1,14 +1,12 @@
 import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {setupComponentTest} from 'ember-mocha';
+import {render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-download-count', function () {
-    setupComponentTest('gh-download-count', {
-        integration: true
-    });
+    setupRenderingTest();
 
     let server;
 
@@ -23,23 +21,19 @@ describe('Integration: Component: gh-download-count', function () {
         server.shutdown();
     });
 
-    it('hits count endpoint and renders', function () {
-        this.render(hbs`{{gh-download-count}}`);
+    it('hits count endpoint and renders', async function () {
+        await render(hbs`{{gh-download-count}}`);
 
-        return wait().then(() => {
-            expect(this.$().text().trim()).to.equal('42');
-        });
+        expect(this.element).to.have.trimmed.text('42');
     });
 
-    it('renders with a block', function () {
-        this.render(hbs`
+    it('renders with a block', async function () {
+        await render(hbs`
             {{#gh-download-count as |count|}}
                 {{count}} downloads
             {{/gh-download-count}}
         `);
 
-        return wait().then(() => {
-            expect(this.$().text().trim()).to.equal('42 downloads');
-        });
+        expect(this.element).to.have.trimmed.text('42 downloads');
     });
 });

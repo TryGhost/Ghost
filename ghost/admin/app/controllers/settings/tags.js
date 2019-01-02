@@ -19,7 +19,8 @@ export default Controller.extend({
 
     // tags are sorted by name
     sortedTags: sort('filteredTags', function (tagA, tagB) {
-        return tagA.name.localeCompare(tagB.name);
+        // ignorePunctuation means the # in internal tag names is ignored
+        return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
     }),
 
     actions: {

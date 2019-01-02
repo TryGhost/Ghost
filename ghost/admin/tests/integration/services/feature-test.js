@@ -3,6 +3,7 @@ import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
+import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 

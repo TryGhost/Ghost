@@ -1,15 +1,12 @@
 import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
-import {setupComponentTest} from 'ember-mocha';
+import {fillIn, findAll, render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-search-input', function () {
-    setupComponentTest('gh-search-input', {
-        integration: true
-    });
+    setupRenderingTest();
 
     let server;
 
@@ -21,24 +18,17 @@ describe('Integration: Component: gh-search-input', function () {
         server.shutdown();
     });
 
-    it('renders', function () {
+    it('renders', async function () {
         // renders the component on the page
-        this.render(hbs`{{gh-search-input}}`);
+        await render(hbs`{{gh-search-input}}`);
 
         expect(this.$('.ember-power-select-search input')).to.have.length(1);
     });
 
-    it('opens the dropdown on text entry', function (done) {
-        this.render(hbs`{{gh-search-input}}`);
+    it('opens the dropdown on text entry', async function () {
+        await render(hbs`{{gh-search-input}}`);
+        await fillIn('input[type="search"]', 'test');
 
-        // enter text to trigger search
-        run(() => {
-            this.$('input[type="search"]').val('test').trigger('input');
-        });
-
-        wait().then(() => {
-            expect(this.$('.ember-basic-dropdown-content').length).to.equal(1);
-            done();
-        });
+        expect(findAll('.ember-basic-dropdown-content').length).to.equal(1);
     });
 });

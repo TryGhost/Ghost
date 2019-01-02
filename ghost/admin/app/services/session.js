@@ -5,11 +5,11 @@ import {inject as service} from '@ember/service';
 
 export default SessionService.extend({
     feature: service(),
-    store: service(),
+    dataStore: service('store'), // SessionService.store already exists
     tour: service(),
 
     user: computed(function () {
-        return this.get('store').queryRecord('user', {id: 'me'});
+        return this.get('dataStore').queryRecord('user', {id: 'me'});
     }),
 
     authenticate() {
