@@ -69,7 +69,7 @@ class UrlService {
     }
 
     _onThemeChangedListener() {
-        this.reset(true);
+        this.reset({keepListeners: true});
         this.init();
     }
 
@@ -227,7 +227,7 @@ class UrlService {
         this.resources.fetchResources();
     }
 
-    reset(removeListeners = true) {
+    reset(options = {}) {
         debug('reset');
         this.urlGenerators = [];
 
@@ -235,7 +235,7 @@ class UrlService {
         this.queue.reset();
         this.resources.reset();
 
-        if (removeListeners) {
+        if (!options.keepListeners) {
             this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
             this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
             this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
