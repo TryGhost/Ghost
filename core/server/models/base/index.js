@@ -279,6 +279,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *   - importing data
      *   - internal context
      *   - if no context
+     *
+     * @deprecated: x_by fields (https://github.com/TryGhost/Ghost/issues/10286)
      */
     onUpdating: function onUpdating(newObj, attr, options) {
         if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {

@@ -9,7 +9,6 @@ const Promise = require('bluebird'),
     common = require('../../lib/common'),
     {urlsForUser} = require('./decorators/urls'),
     docName = 'users',
-    // TODO: implement created_by, updated_by
     allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 
 let users;
