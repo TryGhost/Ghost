@@ -12,6 +12,27 @@ describe('lib/image: manipulator', function () {
         testUtils.unmockNotExistingModule();
     });
 
+    describe('canTransformFileExtension', function () {
+        it('returns false for ".gif"', function () {
+            should.equal(
+                manipulator.canTransformFileExtension('.gif'),
+                false
+            );
+        });
+        it('returns false for ".svg"', function () {
+            should.equal(
+                manipulator.canTransformFileExtension('.svg'),
+                false
+            );
+        });
+        it('returns false for ".svgz"', function () {
+            should.equal(
+                manipulator.canTransformFileExtension('.svgz'),
+                false
+            );
+        });
+    });
+
     describe('cases', function () {
         let sharp, sharpInstance;
 

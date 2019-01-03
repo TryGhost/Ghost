@@ -36,6 +36,12 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         });
 };
 
+// NOTE: .gif optimization is currently not supported by sharp but will be soon
+//       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
+//       As for .svg files, sharp only supports conversion to png, and this does not
+//       play well with animated svg files
+const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz'].includes(ext);
+
 const makeSafe = fn => (...args) => {
     try {
         require('sharp');
@@ -55,5 +61,6 @@ const makeSafe = fn => (...args) => {
     });
 };
 
+module.exports.canTransformFileExtension = canTransformFileExtension;
 module.exports.process = makeSafe(unsafeProcess);
 module.exports.resizeImage = makeSafe(unsafeResizeImage);
