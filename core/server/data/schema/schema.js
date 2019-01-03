@@ -37,6 +37,11 @@ module.exports = {
          */
         author_id: {type: 'string', maxlength: 24, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
+        /**
+         * @deprecated: https://github.com/TryGhost/Ghost/issues/10286
+         *
+         * This is valid for all x_by fields.
+         */
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
