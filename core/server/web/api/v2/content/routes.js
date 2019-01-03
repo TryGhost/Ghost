@@ -28,5 +28,8 @@ module.exports = function apiRoutes() {
     router.get('/tags/:id', mw.authenticatePublic, apiv2.http(apiv2.tagsPublic.read));
     router.get('/tags/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.tagsPublic.read));
 
+    // ## Settings
+    router.get('/settings', mw.authenticatePublic, apiv2.http(apiv2.publicSettings.browse));
+
     return router;
 };
