@@ -16,6 +16,9 @@ const {Role} = require('./role');
  *
  * ref: https://medium.freecodecamp.org/how-long-should-i-make-my-api-key-833ebf2dc26f
  * ref: https://en.wikipedia.org/wiki/Birthday_problem#Approximations
+ *
+ * 26 char hex string = 13 bytes
+ * 512 bit JWT secret     = 64 bytes
  */
 const createSecret = (type) => {
     const bytes = type === 'content' ? 13 : 64;
@@ -26,7 +29,6 @@ const ApiKey = ghostBookshelf.Model.extend({
     tableName: 'api_keys',
 
     defaults() {
-        // 512bit key for HS256 JWT signing
         const secret = createSecret(this.get('type'));
 
         return {
