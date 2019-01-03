@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const utils = require('../../index');
 const _private = {};
 const deprecatedSettings = ['force_i18n', 'permalinks'];
 
@@ -23,7 +24,13 @@ _private.settingsFilter = (settings, filter) => {
 
 module.exports = {
     browse(models, apiConfig, frame) {
-        let filteredSettings = _.values(_private.settingsFilter(models, frame.options.type));
+        let filteredSettings;
+        // If this is public, we already have the right data, we just need to add an Array wrapper
+        if (utils.isContentAPI(frame)) {
+            filteredSettings = models;
+        } else {
+            filteredSettings = _.values(_private.settingsFilter(models, frame.options.type));
+        }
 
         frame.response = {
             settings: filteredSettings,
