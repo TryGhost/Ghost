@@ -2,14 +2,32 @@ const crypto = require('crypto');
 const ghostBookshelf = require('./base');
 const {Role} = require('./role');
 
-const createSecret = () => crypto.randomBytes(64).toString('hex');
+/*
+ * Uses birthday problem estimation to calculate chance of collision
+ * d = 16^26        // 26 char hex string
+ * n = 10,000,000   // 10 million
+ *
+ *       (-n x (n-1)) / 2d
+ * 1 - e^
+ *
+ *
+ *           17
+ * ~= 4 x 10^
+ *
+ * ref: https://medium.freecodecamp.org/how-long-should-i-make-my-api-key-833ebf2dc26f
+ * ref: https://en.wikipedia.org/wiki/Birthday_problem#Approximations
+ */
+const createSecret = (type) => {
+    const bytes = type === 'content' ? 13 : 64;
+    return crypto.randomBytes(bytes).toString('hex');
+};
 
 const ApiKey = ghostBookshelf.Model.extend({
     tableName: 'api_keys',
 
     defaults() {
         // 512bit key for HS256 JWT signing
-        const secret = createSecret();
+        const secret = createSecret(this.get('type'));
 
         return {
             secret
