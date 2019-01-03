@@ -6,6 +6,7 @@ const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
 const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
+const themes = require('../../../../server/services/themes');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 const sandbox = sinon.sandbox.create();
 
@@ -14,6 +15,10 @@ describe('Integration: services/url/UrlService', function () {
 
     before(function () {
         models.init();
+
+        sandbox.stub(themes, 'getActive').returns({
+            engine: () => 'v0.1'
+        });
     });
 
     before(testUtils.teardown);
