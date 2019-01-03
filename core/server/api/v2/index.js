@@ -93,5 +93,9 @@ module.exports = {
 
     get configuration() {
         return shared.pipeline(require('./configuration'), localUtils);
+    },
+
+    get publicSettings() {
+        return shared.pipeline(require('./settings-public'), localUtils);
     }
 };
