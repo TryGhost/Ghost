@@ -316,7 +316,7 @@ function urlFor(context, data, absolute) {
         urlPath = getBlogUrl(secure);
 
         // CASE: there are cases where urlFor('home') needs to be returned without trailing
-        // slash e. g. the `{{@blog.url}}` helper. See https://github.com/TryGhost/Ghost/issues/8569
+        // slash e. g. the `{{@site.url}}` helper. See https://github.com/TryGhost/Ghost/issues/8569
         if (data && data.trailingSlash === false) {
             urlPath = urlPath.replace(/\/$/, '');
         }

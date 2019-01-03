@@ -45,7 +45,7 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
 themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
-    var blogData = settingsCache.getPublic(),
+    var siteData = settingsCache.getPublic(),
         labsData = _.cloneDeep(settingsCache.get('labs')),
         themeData = {};
 
@@ -66,7 +66,7 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
     // Request-specific information
     // These things are super dependent on the request, so they need to be in middleware
     // Serve the blog url without trailing slash
-    blogData.url = urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
+    siteData.url = urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose to render https or http 'url', see url utility
@@ -75,7 +75,8 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
     // @TODO: only do this if something changed?
     hbs.updateTemplateOptions({
         data: {
-            blog: blogData,
+            blog: siteData,
+            site: siteData,
             labs: labsData,
             config: themeData
         }

@@ -24,7 +24,7 @@
             <div class="gh-flow">
                 <header class="gh-flow-head">
                     <nav class="gh-flow-nav">
-                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@blog.url}}{{/if}}" class="gh-flow-back">
+                        <a href="{{#if subscribed_url}}{{subscribed_url}}{{else}}{{@site.url}}{{/if}}" class="gh-flow-back">
                             <?xml version="1.0" encoding="UTF-8" standalone="no"?>
                             <svg width="17px" height="27px" viewBox="0 0 17 27" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
@@ -46,7 +46,7 @@
                     <section class="gh-flow-content">
                         {{^if success}}
                             <header>
-                                <h1>Subscribe to {{@blog.title}}</h1>
+                                <h1>Subscribe to {{@site.title}}</h1>
                             </header>
 
                             {{subscribe_form
@@ -62,7 +62,7 @@
                             </header>
 
                             <p>
-                                You've successfully subscribed to <em>{{@blog.title}}</em>
+                                You've successfully subscribed to <em>{{@site.title}}</em>
                                 with the email address <em>{{email}}</em>.
                             </p>
                         {{/if}}
