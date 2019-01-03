@@ -350,7 +350,7 @@ module.exports = {
             maxlength: 191,
             nullable: false,
             unique: true,
-            validations: {isLength: {min: 128, max: 128}}
+            validations: {isLength: {min: 26, max: 128}}
         },
         role_id: {type: 'string', maxlength: 24, nullable: true},
         // integration_id is nullable to allow "internal" API keys that don't show in the UI
