@@ -45,18 +45,7 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
 themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
-    var blogData = {
-            title: settingsCache.get('title'),
-            description: settingsCache.get('description'),
-            facebook: settingsCache.get('facebook'),
-            twitter: settingsCache.get('twitter'),
-            timezone: settingsCache.get('active_timezone'),
-            navigation: settingsCache.get('navigation'),
-            icon: settingsCache.get('icon'),
-            cover_image: settingsCache.get('cover_image'),
-            logo: settingsCache.get('logo'),
-            amp: settingsCache.get('amp')
-        },
+    var blogData = settingsCache.getPublic(),
         labsData = _.cloneDeep(settingsCache.get('labs')),
         themeData = {};
 
