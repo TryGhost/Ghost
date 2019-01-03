@@ -29,6 +29,9 @@ class UrlService {
         this._onRouterAddedListener = this._onRouterAddedType.bind(this);
         common.events.on('router.created', this._onRouterAddedListener);
 
+        this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
+        common.events.on('services.themes.api.changed', this._onThemeChangedListener);
+
         /**
          * The queue will notify us if url generation has started/finished.
          */
@@ -63,6 +66,11 @@ class UrlService {
 
         let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
         this.urlGenerators.push(urlGenerator);
+    }
+
+    _onThemeChangedListener() {
+        this.reset({keepListeners: true});
+        this.init();
     }
 
     /**
@@ -215,7 +223,11 @@ class UrlService {
             .getValue(options);
     }
 
-    reset() {
+    init() {
+        this.resources.fetchResources();
+    }
+
+    reset(options = {}) {
         debug('reset');
         this.urlGenerators = [];
 
@@ -223,9 +235,12 @@ class UrlService {
         this.queue.reset();
         this.resources.reset();
 
-        this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
-        this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
-        this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+        if (!options.keepListeners) {
+            this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
+            this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
+            this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+            this._onThemeChangedListener && common.events.removeListener('services.themes.api.changed', this._onThemeChangedListener);
+        }
     }
 
     resetGenerators(options = {}) {

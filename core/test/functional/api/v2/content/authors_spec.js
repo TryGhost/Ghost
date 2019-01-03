@@ -45,7 +45,7 @@ describe('Authors Content API V2', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
                 localUtils.API.checkResponse(jsonResponse, 'authors');
-                jsonResponse.authors.should.have.length(7);
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address, status and other attrs.
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null);
@@ -55,9 +55,9 @@ describe('Authors Content API V2', function () {
                 should.exist(url.parse(res.body.authors[0].url).host);
 
                 // Public api returns all authors, but no status! Locked/Inactive authors can still have written articles.
-                models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
+                models.Author.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
                     .then((response) => {
-                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
+                        _.map(response.data, (model) => model.toJSON()).length.should.eql(3);
                         done();
                     });
             });
@@ -139,29 +139,21 @@ describe('Authors Content API V2', function () {
                 var jsonResponse = res.body;
 
                 should.exist(jsonResponse.authors);
-                jsonResponse.authors.should.have.length(7);
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address.
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
 
-                // Each user should have the correct count
+                // Each user should have the correct count and be more than 0
                 _.find(jsonResponse.authors, {slug:'joe-bloggs'}).count.posts.should.eql(4);
-                _.find(jsonResponse.authors, {slug:'contributor'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
-                _.find(jsonResponse.authors, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
-                _.find(jsonResponse.authors, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug:'ghost'}).count.posts.should.eql(7);
-                _.find(jsonResponse.authors, {slug:'inactive'}).count.posts.should.eql(0);
 
                 const ids = jsonResponse.authors
                     .filter(author => (author.slug !== 'ghost'))
-                    .filter(author => (author.slug !== 'inactive'))
                     .map(user=> user.id);
 
                 ids.should.eql([
-                    testUtils.DataGenerator.Content.users[1].id,
-                    testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[7].id,
                     testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[0].id
                 ]);
@@ -185,7 +177,7 @@ describe('Authors Content API V2', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
                 localUtils.API.checkResponse(jsonResponse, 'authors');
-                jsonResponse.authors.should.have.length(7);
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address.
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);

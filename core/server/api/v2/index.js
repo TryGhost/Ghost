@@ -67,6 +67,10 @@ module.exports = {
         return shared.pipeline(require('./tags'), localUtils);
     },
 
+    get tagsPublic() {
+        return shared.pipeline(require('./tags-public'), localUtils);
+    },
+
     get users() {
         return shared.pipeline(require('./users'), localUtils);
     },

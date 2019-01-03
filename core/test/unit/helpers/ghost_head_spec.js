@@ -4,6 +4,7 @@ const should = require('should'),
     moment = require('moment'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
+    themes = require('../../../server/services/themes'),
     models = require('../../../server/models'),
     imageLib = require('../../../server/lib/image'),
     routing = require('../../../server/services/routing'),
@@ -277,6 +278,9 @@ describe('{{ghost_head}} helper', function () {
         // @TODO: this is a LOT of mocking :/
         sandbox.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
         sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sandbox.stub(themes, 'getActive').returns({
+            engine: () => 'v0.1'
+        });
 
         sandbox.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Ghost');

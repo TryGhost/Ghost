@@ -17,7 +17,7 @@ var proxy = require('./proxy'),
 
 /**
  * v0.1: users, posts, tags
- * v2: authors, pages, posts, tags
+ * v2: authors, pages, posts, tagsPublic
  *
  * @NOTE: if you use "users" in v2, we should fallback to authors
  */
@@ -27,7 +27,7 @@ const RESOURCES = {
         resource: 'posts'
     },
     tags: {
-        alias: 'tags',
+        alias: 'tagsPublic',
         resource: 'tags'
     },
     users: {
