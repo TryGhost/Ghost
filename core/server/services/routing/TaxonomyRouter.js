@@ -62,6 +62,8 @@ class TaxonomyRouter extends ParentRouter {
             identifier: this.identifier
         };
 
+        this.setRouteLanguage(this.language);
+
         next();
     }
 

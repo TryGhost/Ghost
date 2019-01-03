@@ -46,6 +46,8 @@ class StaticPagesRouter extends ParentRouter {
             context: ['page']
         };
 
+        this.setRouteLanguage(this.language);
+
         next();
     }
 

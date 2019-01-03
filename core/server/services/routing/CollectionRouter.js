@@ -33,6 +33,10 @@ class CollectionRouter extends ParentRouter {
         this.order = object.order;
         this.limit = object.limit;
 
+        if (object.language) {
+            this.language = object.language;
+        }
+
         this.permalinks.getValue = (options) => {
             options = options || {};
 
@@ -103,9 +107,11 @@ class CollectionRouter extends ParentRouter {
             templates: this.templates,
             identifier: this.identifier,
             name: this.routerName,
+            language: this.language,
             data: this.data.query
         };
 
+        this.setRouteLanguage(this.language);
         next();
     }
 

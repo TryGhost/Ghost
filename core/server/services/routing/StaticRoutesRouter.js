@@ -66,6 +66,8 @@ class StaticRoutesRouter extends ParentRouter {
             templates: this.templates
         };
 
+        this.setRouteLanguage(this.language);
+
         next();
     }
 
@@ -85,6 +87,8 @@ class StaticRoutesRouter extends ParentRouter {
             context: [this.routerName],
             contentType: this.contentType
         };
+
+        this.setRouteLanguage(this.language);
 
         next();
     }

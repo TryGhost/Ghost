@@ -26,6 +26,8 @@ class PreviewRouter extends ParentRouter {
             }
         };
 
+        this.setRouteLanguage(this.language);
+
         next();
     }
 }

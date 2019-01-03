@@ -14,7 +14,8 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     security = require('../../lib/security'),
     urlService = require('../url'),
     // This the route registry for the whole site
-    registry = require('./registry');
+    registry = require('./registry'),
+    settingsCache = require('../settings/cache');
 
 function GhostRouter(options) {
     const router = express.Router(options);
@@ -44,6 +45,7 @@ class ParentRouter extends EventEmitter {
         this.identifier = security.identifier.uid(10);
 
         this.name = name;
+        this.language = settingsCache.get('default_locale');
         this._router = GhostRouter({mergeParams: true, parent: this});
     }
 
@@ -159,6 +161,17 @@ class ParentRouter extends EventEmitter {
                 return _.find(entries, {redirect: true, slug: slug});
             }
         });
+    }
+
+    setRouteLanguage(lang) {
+        var val = settingsCache.get("default_locale", {resolve: false});
+        debug("setting language", val);
+
+        if (val.value) {
+            val.value = lang;
+        }
+        settingsCache.set("default_locale", val);
+
     }
 
     reset() {}
