@@ -24,9 +24,9 @@ module.exports = function apiRoutes() {
     router.get('/authors/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.authors.read));
 
     // ## Tags
-    router.get('/tags', mw.authenticatePublic, apiv2.http(apiv2.tags.browse));
-    router.get('/tags/:id', mw.authenticatePublic, apiv2.http(apiv2.tags.read));
-    router.get('/tags/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.tags.read));
+    router.get('/tags', mw.authenticatePublic, apiv2.http(apiv2.tagsPublic.browse));
+    router.get('/tags/:id', mw.authenticatePublic, apiv2.http(apiv2.tagsPublic.read));
+    router.get('/tags/slug/:slug', mw.authenticatePublic, apiv2.http(apiv2.tagsPublic.read));
 
     return router;
 };

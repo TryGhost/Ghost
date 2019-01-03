@@ -83,8 +83,22 @@ module.exports = {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
         try {
+            let previousGhostAPI;
+
+            if (this.getActive()) {
+                previousGhostAPI = this.getActive().engine('ghost-api');
+            }
+
             active.set(loadedTheme, checkedTheme, error);
+            const currentGhostAPI = this.getActive().engine('ghost-api');
+
             common.events.emit('services.themes.activated');
+
+            if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
+                common.events.emit('services.themes.api.changed');
+                const siteApp = require('../../web/site/app');
+                siteApp.reload();
+            }
         } catch (err) {
             common.logging.error(new common.errors.InternalServerError({
                 message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),

@@ -46,6 +46,9 @@ ghostBookshelf.plugin(plugins.pagination);
 // Update collision plugin
 ghostBookshelf.plugin(plugins.collision);
 
+// Load hasPosts plugin for authors models
+ghostBookshelf.plugin(plugins.hasPosts);
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
@@ -1030,6 +1033,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             };
             const exclude = options.exclude;
             const filter = options.filter;
+            const shouldHavePosts = options.shouldHavePosts;
             const withRelated = options.withRelated;
             const withRelatedFields = options.withRelatedFields;
             const relations = {
@@ -1084,6 +1088,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             // @NOTE: We can't use the filter plugin, because we are not using bookshelf.
             nql(filter).querySQL(query);
+
+            if (shouldHavePosts) {
+                require('../plugins/has-posts').addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
+            }
 
             return query.then((objects) => {
                 debug('fetched', modelName, filter);

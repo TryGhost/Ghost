@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const common = require('../../lib/common');
 const models = require('../../models');
+
 const ALLOWED_INCLUDES = ['count.posts'];
 
 module.exports = {
