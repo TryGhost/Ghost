@@ -290,9 +290,7 @@ class Resources {
 
         this.listeners = [];
         this.data = {};
-
-        // TODO: call directly from outside, as this is a big sideeffect
-        this.fetchResources();
+        this.resourcesConfig = null;
     }
 
     softReset() {

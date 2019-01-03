@@ -69,7 +69,8 @@ class UrlService {
     }
 
     _onThemeChangedListener() {
-        this.reset();
+        this.reset(true);
+        this.init();
     }
 
     /**
@@ -222,7 +223,11 @@ class UrlService {
             .getValue(options);
     }
 
-    reset() {
+    init() {
+        this.resources.fetchResources();
+    }
+
+    reset(removeListeners = true) {
         debug('reset');
         this.urlGenerators = [];
 
@@ -230,9 +235,11 @@ class UrlService {
         this.queue.reset();
         this.resources.reset();
 
-        this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
-        this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
-        this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+        if (removeListeners) {
+            this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
+            this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
+            this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+        }
     }
 
     resetGenerators(options = {}) {
