@@ -29,6 +29,9 @@ class UrlService {
         this._onRouterAddedListener = this._onRouterAddedType.bind(this);
         common.events.on('router.created', this._onRouterAddedListener);
 
+        this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
+        common.events.on('services.themes.api.changed', this._onThemeChangedListener);
+
         /**
          * The queue will notify us if url generation has started/finished.
          */
@@ -37,9 +40,6 @@ class UrlService {
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
         this.queue.addListener('ended', this._onQueueEnded.bind(this));
-
-        this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
-        common.events.on('services.themes.api.changed', this._onThemeChangedListener);
     }
 
     _onQueueStarted(event) {
@@ -239,6 +239,7 @@ class UrlService {
             this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
             this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
             this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
+            this._onThemeChangedListener && common.events.removeListener('services.themes.api.changed', this._onThemeChangedListener);
         }
     }
 
