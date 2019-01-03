@@ -15,8 +15,14 @@ const expectedProperties = {
         .keys()
         // by default we only return html
         .without('mobiledoc', 'plaintext')
-        // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
-        .without('author_id').concat('author', 'url', 'primary_tag', 'primary_author')
+        // v2 doesn't return author_id OR author
+        .without('author_id', 'author')
+        // and always returns computed properties: url, primary_tag, primary_author
+        .concat('url', 'primary_tag', 'primary_author')
+        // v2 API doesn't return unused fields
+        .without('locale')
+        // @TODO: make this possible
+        // .without('page', 'status')
     ,
     author: _(schema.users)
         .keys()
@@ -32,11 +38,15 @@ const expectedProperties = {
             'last_seen',
             'status'
         )
+        // v2 API doesn't return unused fields
+        .without('accessibility', 'locale', 'tour')
     ,
-    // Tag API swaps parent_id to parent
     tag: _(schema.tags)
         .keys()
-        .without('parent_id').concat('parent')
+        // v2 Tag API doesn't return parent_id or parent
+        .without('parent_id', 'parent')
+        // v2 Tag API doesn't return date fields
+        .without('created_at', 'updated_at')
 };
 
 _.each(expectedProperties, (value, key) => {
