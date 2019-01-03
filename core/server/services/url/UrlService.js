@@ -37,6 +37,9 @@ class UrlService {
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
         this.queue.addListener('ended', this._onQueueEnded.bind(this));
+
+        this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
+        common.events.on('services.themes.api.changed', this._onThemeChangedListener);
     }
 
     _onQueueStarted(event) {
@@ -63,6 +66,10 @@ class UrlService {
 
         let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
         this.urlGenerators.push(urlGenerator);
+    }
+
+    _onThemeChangedListener() {
+        this.reset();
     }
 
     /**

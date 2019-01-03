@@ -37,7 +37,7 @@ class Resources {
          * Currently the url service needs to use the settings cache,
          * because we need to `settings.permalink`.
          */
-        this._listenOn('db.ready', this._onDatabaseReady.bind(this));
+        this._listenOn('db.ready', this.fetchResources.bind(this));
     }
 
     _initResourceConfig() {
@@ -45,11 +45,11 @@ class Resources {
             return this.resourceConfig;
         }
 
-        const apiVersion = require('../themes').getActive().engine('ghost-api') || 'v01';
-        this.resourcesConfig = require(`./configs/${apiVersion}`);
+        this.resourcesAPIVersion = require('../themes').getActive().engine('ghost-api') || 'v0.1';
+        this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 
-    _onDatabaseReady() {
+    fetchResources() {
         const ops = [];
         debug('db ready. settings cache ready.');
         this._initResourceConfig();
@@ -290,6 +290,9 @@ class Resources {
 
         this.listeners = [];
         this.data = {};
+
+        // TODO: call directly from outside, as this is a big sideeffect
+        this.fetchResources();
     }
 
     softReset() {
