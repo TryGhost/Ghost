@@ -1,7 +1,7 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
     url = require('url'),
-    debug = require('ghost-ignition').debug('services:routing:helpers:post-lookup'),
+    debug = require('ghost-ignition').debug('services:routing:helpers:entry-lookup'),
     routeMatch = require('path-match')();
 
 function entryLookup(postUrl, routerOptions, locals) {
@@ -17,7 +17,9 @@ function entryLookup(postUrl, routerOptions, locals) {
     const matchFunc = routeMatch(permalinks);
     const params = matchFunc(targetPath);
 
+    debug(targetPath);
     debug(params);
+    debug(permalinks);
 
     // CASE 1: no matches, resolve
     // CASE 2: params can be empty e.g. permalink is /featured/:options(edit)?/ and path is /featured/
