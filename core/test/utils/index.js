@@ -1054,7 +1054,11 @@ module.exports = {
 
         initGhost: function () {
             models.init();
-            return themes.init();
+
+            return settingsService.init()
+                .then(() => {
+                    return themes.init();
+                });
         },
 
         routing: {
