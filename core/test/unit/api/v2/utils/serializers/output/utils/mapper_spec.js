@@ -4,6 +4,7 @@ const testUtils = require('../../../../../../../utils');
 const dateUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/date');
 const urlUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/url');
 const cleanUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/clean');
+const extraAttrsUtils = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
 const mapper = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 
 const sandbox = sinon.sandbox.create();
@@ -15,6 +16,8 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
         sandbox.stub(urlUtil, 'forPost').returns({});
         sandbox.stub(urlUtil, 'forTag').returns({});
         sandbox.stub(urlUtil, 'forUser').returns({});
+
+        sandbox.stub(extraAttrsUtils, 'forPost').returns({});
 
         sandbox.stub(cleanUtil, 'post').returns({});
         sandbox.stub(cleanUtil, 'tag').returns({});
@@ -30,7 +33,9 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
 
         beforeEach(() => {
             postModel = (data) => {
-                return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+                return Object.assign(data, {
+                    toJSON: sandbox.stub().returns(data)
+                });
             };
         });
 
@@ -61,6 +66,8 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             mapper.mapPost(post, frame);
 
             dateUtil.forPost.callCount.should.equal(1);
+
+            extraAttrsUtils.forPost.callCount.should.equal(1);
 
             cleanUtil.post.callCount.should.eql(1);
             cleanUtil.tag.callCount.should.eql(1);
