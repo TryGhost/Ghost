@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('services:routing:bootstrap');
 const _ = require('lodash');
 const common = require('../../lib/common');
 const settingsService = require('../settings');
+const themeService = require('../themes');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -37,7 +38,10 @@ module.exports.init = (options = {start: false}) => {
  *   - is the PreviewRouter an app?
  */
 module.exports.start = () => {
-    const previewRouter = new PreviewRouter();
+    const apiVersion = themeService.getActive().engine('ghost-api');
+    const RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
+
+    const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
 
     siteRouter.mountRouter(previewRouter.router());
     registry.setRouter('previewRouter', previewRouter);
@@ -45,26 +49,26 @@ module.exports.start = () => {
     const dynamicRoutes = settingsService.get('routes');
 
     _.each(dynamicRoutes.routes, (value, key) => {
-        const staticRoutesRouter = new StaticRoutesRouter(key, value);
+        const staticRoutesRouter = new StaticRoutesRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(staticRoutesRouter.router());
 
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
     });
 
     _.each(dynamicRoutes.taxonomies, (value, key) => {
-        const taxonomyRouter = new TaxonomyRouter(key, value);
+        const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(taxonomyRouter.router());
 
         registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
     });
 
     _.each(dynamicRoutes.collections, (value, key) => {
-        const collectionRouter = new CollectionRouter(key, value);
+        const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(collectionRouter.router());
         registry.setRouter(collectionRouter.identifier, collectionRouter);
     });
 
-    const staticPagesRouter = new StaticPagesRouter();
+    const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG);
     siteRouter.mountRouter(staticPagesRouter.router());
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);

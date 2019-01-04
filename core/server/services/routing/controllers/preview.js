@@ -14,10 +14,10 @@ module.exports = function previewController(req, res, next) {
         include: 'author,authors,tags'
     };
 
-    (api[res.routerOptions.query.alias] || api[res.routerOptions.query.resource])
+    api[res.routerOptions.query.controller]
         .read(params)
         .then(function then(result) {
-            const post = (result[res.routerOptions.query.alias] || result[res.routerOptions.query.resource])[0];
+            const post = result[res.routerOptions.query.resource][0];
 
             if (!post) {
                 return next();

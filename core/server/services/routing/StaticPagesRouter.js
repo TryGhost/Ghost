@@ -1,17 +1,28 @@
 const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
+const urlService = require('../url');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
 const common = require('../../lib/common');
 
 class StaticPagesRouter extends ParentRouter {
-    constructor() {
+    constructor(RESOURCE_CONFIG) {
         super('StaticPagesRouter');
+
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.page;
 
         this.permalinks = {
             value: '/:slug/'
         };
 
-        this.permalinks.getValue = () => {
+        this.permalinks.getValue = (options = {}) => {
+            options = options || {};
+
+            // @NOTE: url options are only required when registering urls in express.
+            //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
+            if (options.withUrlOptions) {
+                return urlService.utils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+            }
+
             return this.permalinks.value;
         };
 
@@ -26,7 +37,7 @@ class StaticPagesRouter extends ParentRouter {
         this.router().param('slug', this._respectDominantRouter.bind(this));
 
         // REGISTER: permalink for static pages
-        this.mountRoute(this.permalinks.getValue(), controllers.entry);
+        this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
         common.events.emit('router.created', this);
     }
@@ -35,12 +46,9 @@ class StaticPagesRouter extends ParentRouter {
         res.routerOptions = {
             type: 'entry',
             filter: this.filter,
-            permalinks: this.permalinks.getValue(),
+            permalinks: this.permalinks.getValue({withUrlOptions: true}),
             resourceType: this.getResourceType(),
-            query: {
-                alias: 'pages',
-                resource: 'posts'
-            },
+            query: this.RESOURCE_CONFIG,
             context: ['page']
         };
 
