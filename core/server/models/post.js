@@ -260,6 +260,18 @@ Post = ghostBookshelf.Model.extend({
             this.set('tags', tagsToSave);
         }
 
+        model.related('tags').on('detaching', function onDetached(collection, tag) {
+            model.related('tags').on('detached', function onDetached(detachedCollection, response, options) {
+                tag.emitChange('edited', options);
+            });
+        });
+
+        model.related('tags').on('attaching', function onDetached(collection, tags) {
+            model.related('tags').on('attached', function onDetached(detachedCollection, response, options) {
+                tags.forEach(tag => tag.emitChange('edited', options));
+            });
+        });
+
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
         // do not allow generated fields to be overridden via the API

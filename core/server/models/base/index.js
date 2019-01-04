@@ -1093,6 +1093,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 require('../plugins/has-posts').addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
             }
 
+            if (options.id) {
+                query.where({id: options.id});
+            }
+
             return query.then((objects) => {
                 debug('fetched', modelName, filter);
 
