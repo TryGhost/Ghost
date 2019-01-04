@@ -1,7 +1,7 @@
 /* eslint-disable */
 module.exports.QUERY = {
     tag: {
-        alias: 'tags',
+        controller: 'tags',
         type: 'read',
         resource: 'tags',
         options: {
@@ -10,7 +10,8 @@ module.exports.QUERY = {
         }
     },
     author: {
-        alias: 'authors',
+        resourceAlias: 'authors',
+        controller: 'users',
         type: 'read',
         resource: 'users',
         options: {
@@ -19,7 +20,8 @@ module.exports.QUERY = {
         }
     },
     user: {
-        alias: 'authors',
+        resourceAlias: 'authors',
+        controller: 'users',
         type: 'read',
         resource: 'users',
         options: {
@@ -28,7 +30,7 @@ module.exports.QUERY = {
         }
     },
     post: {
-        alias: 'posts',
+        controller: 'posts',
         type: 'read',
         resource: 'posts',
         options: {
@@ -38,7 +40,7 @@ module.exports.QUERY = {
         }
     },
     page: {
-        alias: 'pages',
+        controller: 'posts',
         type: 'read',
         resource: 'posts',
         options: {
@@ -46,17 +48,23 @@ module.exports.QUERY = {
             status: 'published',
             page: 1
         }
+    },
+    preview: {
+        controller: 'posts',
+        resource: 'posts'
     }
 };
 
 module.exports.TAXONOMIES = {
     tag: {
         filter: 'tags:\'%s\'+tags.visibility:public',
-        editRedirect: '#/settings/tags/:slug/'
+        editRedirect: '#/settings/tags/:slug/',
+        resource: 'tags'
     },
     author: {
         filter: 'authors:\'%s\'',
-        editRedirect: '#/team/:slug/'
+        editRedirect: '#/team/:slug/',
+        resource: 'authors'
     }
 };
 /* eslint-enable */
