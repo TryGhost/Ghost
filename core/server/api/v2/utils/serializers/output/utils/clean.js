@@ -30,10 +30,8 @@ const post = (attrs) => {
     // Extra properties removed from v2
     delete attrs.locale;
     delete attrs.author;
-
-    // This is highly desirable, but currently causes many issues with generating URLs
-    // delete attrs.page;
-    // delete attrs.status;
+    delete attrs.page;
+    delete attrs.status;
 
     return attrs;
 };

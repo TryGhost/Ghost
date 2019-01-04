@@ -21,8 +21,8 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author')
         // v2 API doesn't return unused fields
         .without('locale')
-        // @TODO: make this possible
-        // .without('page', 'status')
+        // These fields aren't useful as they always have known values
+        .without('page', 'status')
     ,
     author: _(schema.users)
         .keys()
