@@ -3,6 +3,7 @@ const url = require('./url');
 const date = require('./date');
 const members = require('./members');
 const clean = require('./clean');
+const extraAttrs = require('./extra-attrs');
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -36,6 +37,7 @@ const mapPost = (model, frame) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
+        extraAttrs.forPost(frame, model, jsonModel);
         clean.post(jsonModel);
     }
 

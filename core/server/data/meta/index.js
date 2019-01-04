@@ -83,7 +83,9 @@ function getMetaData(data, root) {
         // 1. CASE: custom_excerpt is populated via the UI
         // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
         // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
-        customExcerpt = data.post.custom_excerpt;
+        // @NOTE: v2 returns a calculated `post.excerpt`. v0.1 does not
+        // @TODO: simplify or remove if we drop v0.1
+        customExcerpt = data.post.excerpt || data.post.custom_excerpt;
         metaDescription = data.post.meta_description;
         fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
 
