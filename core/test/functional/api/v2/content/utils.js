@@ -22,7 +22,8 @@ const expectedProperties = {
         // v2 API doesn't return unused fields
         .without('locale')
         // These fields aren't useful as they always have known values
-        .without('page', 'status')
+        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
+        // .without('page', 'status')
         // v2 returns a calculated excerpt field
         .concat('excerpt')
     ,

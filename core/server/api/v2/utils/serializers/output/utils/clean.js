@@ -30,8 +30,10 @@ const post = (attrs) => {
     // Extra properties removed from v2
     delete attrs.locale;
     delete attrs.author;
-    delete attrs.page;
-    delete attrs.status;
+
+    // @TODO: https://github.com/TryGhost/Ghost/issues/10335
+    // delete attrs.page;
+    // delete attrs.status;
 
     return attrs;
 };
