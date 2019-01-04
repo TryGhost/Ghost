@@ -110,7 +110,7 @@ module.exports = [
         },
         events: {
             add: 'tag.added',
-            update: 'tag.edited',
+            update: ['tag.edited', 'tag.attached', 'tag.detached'],
             remove: 'tag.deleted'
         }
     },

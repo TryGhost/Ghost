@@ -64,9 +64,17 @@ class Resources {
                 return this._onResourceAdded.bind(this)(resourceConfig.type, model);
             });
 
-            this._listenOn(resourceConfig.events.update, (model) => {
-                return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
-            });
+            if (_.isArray(resourceConfig.events.update)) {
+                resourceConfig.events.update.forEach((event) => {
+                    this._listenOn(event, (model) => {
+                        return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                    });
+                });
+            } else {
+                this._listenOn(resourceConfig.events.update, (model) => {
+                    return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                });
+            }
 
             this._listenOn(resourceConfig.events.remove, (model) => {
                 return this._onResourceRemoved.bind(this)(resourceConfig.type, model);
