@@ -14,6 +14,8 @@ module.exports = [
                 'mobiledoc',
                 'html',
                 'plaintext',
+                'page',
+                'status',
                 'amp',
                 'codeinjection_head',
                 'codeinjection_foot',
@@ -55,6 +57,8 @@ module.exports = [
                 'mobiledoc',
                 'html',
                 'plaintext',
+                'page',
+                'status',
                 'amp',
                 'codeinjection_head',
                 'codeinjection_foot',
@@ -85,10 +89,17 @@ module.exports = [
     },
     {
         type: 'tags',
-        keep: ['id', 'slug', 'updated_at', 'created_at'],
+        keep: ['id', 'slug'],
         modelOptions: {
             modelName: 'Tag',
-            exclude: ['description', 'meta_title', 'meta_description'],
+            exclude: [
+                'description',
+                'meta_title',
+                'meta_description',
+                'parent_id',
+                'created_at',
+                'updated_at'
+            ],
             filter: 'visibility:public',
             shouldHavePosts: {
                 joinTo: 'tag_id',
@@ -111,6 +122,7 @@ module.exports = [
                 'location',
                 'facebook',
                 'twitter',
+                'locale',
                 'accessibility',
                 'meta_title',
                 'meta_description',
