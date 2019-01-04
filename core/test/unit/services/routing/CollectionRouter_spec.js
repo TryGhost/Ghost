@@ -36,7 +36,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             should.exist(collectionRouter.router);
 
-            collectionRouter.getFilter().should.eql('page:false');
+            should.not.exist(collectionRouter.getFilter());
             collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
@@ -85,7 +85,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
             should.exist(collectionRouter.router);
 
-            collectionRouter.getFilter().should.eql('page:false');
+            should.not.exist(collectionRouter.getFilter());
             collectionRouter.getResourceType().should.eql('posts');
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');
@@ -137,7 +137,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             next.calledOnce.should.be.true();
             res.routerOptions.should.eql({
                 type: 'collection',
-                filter: 'page:false',
+                filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
                 query: {alias: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
@@ -160,7 +160,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             next.calledOnce.should.be.true();
             res.routerOptions.should.eql({
                 type: 'collection',
-                filter: 'page:false',
+                filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
                 query: {alias: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
