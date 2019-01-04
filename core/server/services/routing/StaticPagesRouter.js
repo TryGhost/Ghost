@@ -11,8 +11,6 @@ class StaticPagesRouter extends ParentRouter {
             value: '/:slug/'
         };
 
-        this.filter = 'page:true';
-
         this.permalinks.getValue = () => {
             return this.permalinks.value;
         };

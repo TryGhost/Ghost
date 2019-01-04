@@ -70,10 +70,12 @@ class UrlGenerator {
     }
 
     _onInit() {
-        debug('_onInit', this.toString());
+        debug('_onInit', this.router.getResourceType());
 
         // @NOTE: get the resources of my type e.g. posts.
         const resources = this.resources.getAllByType(this.router.getResourceType());
+
+        debug(resources.length);
 
         _.each(resources, (resource) => {
             this._try(resource);

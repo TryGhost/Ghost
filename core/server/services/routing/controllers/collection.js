@@ -46,11 +46,15 @@ module.exports = function collectionController(req, res, next) {
                 }));
             }
 
+            debug(result.posts.length);
+
             // CASE: does this post belong to this collection?
             result.posts = _.filter(result.posts, (post) => {
                 if (urlService.owns(res.routerOptions.identifier, post.id)) {
                     return post;
                 }
+
+                debug(`'${post.slug}' is not owned by this collection`);
             });
 
             // Format data 1
