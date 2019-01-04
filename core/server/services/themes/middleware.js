@@ -73,6 +73,7 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
     res.locals.secure = req.secure;
 
     // @TODO: only do this if something changed?
+    // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
     hbs.updateTemplateOptions({
         data: {
             blog: siteData,
