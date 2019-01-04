@@ -3,8 +3,10 @@ const urlService = require('../url');
 const controllers = require('./controllers');
 
 class PreviewRouter extends ParentRouter {
-    constructor() {
+    constructor(RESOURCE_CONFIG) {
         super('PreviewRouter');
+
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.preview;
 
         this.route = {value: '/p/'};
 
@@ -20,10 +22,7 @@ class PreviewRouter extends ParentRouter {
     _prepareContext(req, res, next) {
         res.routerOptions = {
             type: 'entry',
-            query: {
-                alias: 'preview',
-                resource: 'posts'
-            }
+            query: this.RESOURCE_CONFIG
         };
 
         next();

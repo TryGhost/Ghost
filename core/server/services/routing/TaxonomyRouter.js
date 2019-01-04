@@ -5,13 +5,13 @@ const RSSRouter = require('./RSSRouter');
 const urlService = require('../url');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
-const RESOURCE_CONFIG = require('./assets/resource-config');
 
 class TaxonomyRouter extends ParentRouter {
-    constructor(key, permalinks) {
+    constructor(key, permalinks, RESOURCE_CONFIG) {
         super('Taxonomy');
 
         this.taxonomyKey = key;
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG;
 
         this.permalinks = {
             value: permalinks
@@ -53,8 +53,8 @@ class TaxonomyRouter extends ParentRouter {
             type: 'channel',
             name: this.taxonomyKey,
             permalinks: this.permalinks.getValue(),
-            data: {[this.taxonomyKey]: RESOURCE_CONFIG.QUERY[this.taxonomyKey]},
-            filter: RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
+            data: {[this.taxonomyKey]: this.RESOURCE_CONFIG.QUERY[this.taxonomyKey]},
+            filter: this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
             resourceType: this.getResourceType(),
             context: [this.taxonomyKey],
             slugTemplate: true,
@@ -65,11 +65,11 @@ class TaxonomyRouter extends ParentRouter {
     }
 
     _redirectEditOption(req, res) {
-        urlService.utils.redirectToAdmin(302, res, RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
+        urlService.utils.redirectToAdmin(302, res, this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
     }
 
     getResourceType() {
-        return RESOURCE_CONFIG.QUERY[this.taxonomyKey].alias;
+        return this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].resource;
     }
 
     getRoute() {

@@ -8,8 +8,10 @@ const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
 
 class CollectionRouter extends ParentRouter {
-    constructor(mainRoute, object) {
+    constructor(mainRoute, object, RESOURCE_CONFIG) {
         super('CollectionRouter');
+
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.post;
 
         this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
 
@@ -94,10 +96,7 @@ class CollectionRouter extends ParentRouter {
             order: this.order,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             resourceType: this.getResourceType(),
-            query: {
-                alias: 'posts',
-                resource: 'posts'
-            },
+            query: this.RESOURCE_CONFIG,
             context: this.context,
             frontPageTemplate: 'home',
             templates: this.templates,
@@ -142,7 +141,7 @@ class CollectionRouter extends ParentRouter {
     }
 
     getResourceType() {
-        return 'posts';
+        return this.RESOURCE_CONFIG.resourceAlias || this.RESOURCE_CONFIG.resource;
     }
 
     getRoute(options) {

@@ -46,7 +46,7 @@ describe('Unit - services/routing/controllers/preview', function () {
 
             res = {
                 routerOptions: {
-                    query: {alias: 'preview', resource: 'posts'}
+                    query: {controller: 'posts', resource: 'posts'}
                 },
                 locals: {
                     apiVersion: 'v0.1'
@@ -165,7 +165,7 @@ describe('Unit - services/routing/controllers/preview', function () {
 
             res = {
                 routerOptions: {
-                    query: {alias: 'preview', resource: 'posts'}
+                    query: {controller: 'preview', resource: 'preview'}
                 },
                 locals: {
                     apiVersion: 'v2'

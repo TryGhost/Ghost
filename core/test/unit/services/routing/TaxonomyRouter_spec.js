@@ -5,7 +5,7 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     TaxonomyRouter = require('../../../../server/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG = require('../../../../server/services/routing/assets/resource-config'),
+    RESOURCE_CONFIG = require('../../../../server/services/routing/config/v2'),
     sandbox = sinon.sandbox.create();
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
@@ -63,7 +63,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/');
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 

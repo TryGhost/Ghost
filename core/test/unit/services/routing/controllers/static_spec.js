@@ -90,6 +90,7 @@ describe('Unit - services/routing/controllers/static', function () {
     it('extra data to fetch', function (done) {
         res.routerOptions.data = {
             tag: {
+                controller: 'tags',
                 resource: 'tags',
                 type: 'read',
                 options: {

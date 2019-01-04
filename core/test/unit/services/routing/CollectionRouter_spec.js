@@ -5,7 +5,8 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     CollectionRouter = require('../../../../server/services/routing/CollectionRouter'),
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox.create(),
+    RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {
     let req, res, next;
@@ -32,7 +33,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
     describe('instantiate', function () {
         it('default', function () {
-            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'});
+            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
             should.exist(collectionRouter.router);
 
@@ -67,9 +68,9 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         it('router name', function () {
-            const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'});
-            const collectionRouter2 = new CollectionRouter('/podcast/', {permalink: '/:slug/'});
-            const collectionRouter3 = new CollectionRouter('/hello/world/', {permalink: '/:slug/'});
+            const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
+            const collectionRouter2 = new CollectionRouter('/podcast/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
+            const collectionRouter3 = new CollectionRouter('/hello/world/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
             collectionRouter1.routerName.should.eql('index');
             collectionRouter2.routerName.should.eql('podcast');
@@ -81,7 +82,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         it('collection lives under /blog/', function () {
-            const collectionRouter = new CollectionRouter('/blog/', {permalink: '/blog/:year/:slug/'});
+            const collectionRouter = new CollectionRouter('/blog/', {permalink: '/blog/:year/:slug/'}, RESOURCE_CONFIG);
 
             should.exist(collectionRouter.router);
 
@@ -115,13 +116,13 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         it('with custom filter', function () {
-            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/', filter: 'featured:true'});
+            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/', filter: 'featured:true'}, RESOURCE_CONFIG);
 
             collectionRouter.getFilter().should.eql('featured:true');
         });
 
         it('with templates', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']});
+            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', templates: ['home', 'index']}, RESOURCE_CONFIG);
 
             // they are getting reversed because we unshift the templates in the helper
             collectionRouter.templates.should.eql(['index', 'home']);
@@ -130,7 +131,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
     describe('fn: _prepareEntriesContext', function () {
         it('index collection', function () {
-            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'});
+            const collectionRouter = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
@@ -139,7 +140,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {alias: 'posts', resource: 'posts'},
+                query: {controller: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: [],
                 identifier: collectionRouter.identifier,
@@ -153,7 +154,12 @@ describe('UNIT - services/routing/CollectionRouter', function () {
         });
 
         it('with templates, with order + limit, no index collection', function () {
-            const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/', order: 'published asc', limit: 19, templates: ['home', 'index']});
+            const collectionRouter = new CollectionRouter('/magic/', {
+                permalink: '/:slug/',
+                order: 'published asc',
+                limit: 19,
+                templates: ['home', 'index']
+            }, RESOURCE_CONFIG);
 
             collectionRouter._prepareEntriesContext(req, res, next);
 
@@ -162,7 +168,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {alias: 'posts', resource: 'posts'},
+                query: {controller: 'posts', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: ['index', 'home'],
                 identifier: collectionRouter.identifier,
@@ -179,7 +185,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     describe('timezone changes', function () {
         describe('no dated permalink', function () {
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
                 sandbox.stub(collectionRouter, 'emit');
 
@@ -192,7 +198,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
                 sandbox.stub(collectionRouter, 'emit');
 
@@ -207,7 +213,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
         describe('with dated permalink', function () {
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
 
                 sandbox.stub(collectionRouter, 'emit');
 
@@ -220,7 +226,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'});
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
 
                 sandbox.stub(collectionRouter, 'emit');
 

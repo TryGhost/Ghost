@@ -29,10 +29,13 @@ describe('UNIT > Settings Service:', function () {
             },
             taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
         };
+
         let yamlParserStub;
+        let validateStub;
 
         beforeEach(function () {
             yamlParserStub = sinon.stub();
+            validateStub = sinon.stub();
         });
 
         it('can find yaml settings file and returns a settings object', function () {
@@ -40,7 +43,10 @@ describe('UNIT > Settings Service:', function () {
             const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
 
             yamlParserStub.returns(yamlStubFile);
+            validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
+
             loadSettings.__set__('yamlParser', yamlParserStub);
+            loadSettings.__set__('validate', validateStub);
 
             const setting = loadSettings('goodroutes');
             should.exist(setting);

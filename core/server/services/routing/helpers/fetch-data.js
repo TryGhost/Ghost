@@ -9,7 +9,7 @@ const Promise = require('bluebird');
 const queryDefaults = {
     type: 'browse',
     resource: 'posts',
-    alias: 'posts',
+    controller: 'posts',
     options: {}
 };
 
@@ -51,7 +51,7 @@ function processQuery(query, slugParam, locals) {
     });
 
     // Return a promise for the api query
-    return (api[query.alias] || api[query.resource])[query.type](query.options);
+    return api[query.controller][query.type](query.options);
 }
 
 /**
@@ -103,7 +103,7 @@ function fetchData(pathOptions, routerOptions, locals) {
                     if (config.type === 'browse') {
                         response.data[name] = results[name];
                     } else {
-                        response.data[name] = results[name][config.alias] || results[name][config.resource];
+                        response.data[name] = results[name][config.resource];
                     }
                 });
             }
