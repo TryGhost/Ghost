@@ -10,7 +10,6 @@ function entryLookup(postUrl, routerOptions, locals) {
     const api = require('../../../api')[locals.apiVersion];
     const targetPath = url.parse(postUrl).path;
     const permalinks = routerOptions.permalinks;
-
     let isEditURL = false;
 
     // CASE: e.g. /:slug/ -> { slug: 'value' }
@@ -36,10 +35,10 @@ function entryLookup(postUrl, routerOptions, locals) {
      * Query database to find entry.
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
-    return (api[routerOptions.query.alias] || api[routerOptions.query.resource])
+    return api[routerOptions.query.controller]
         .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
         .then(function then(result) {
-            const entry = (result[routerOptions.query.alias] || result[routerOptions.query.resource])[0];
+            const entry = result[routerOptions.query.resource][0];
 
             if (!entry) {
                 return Promise.resolve();

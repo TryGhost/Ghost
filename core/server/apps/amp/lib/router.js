@@ -64,7 +64,7 @@ function getPostData(req, res, next) {
     }
 
     // @NOTE: amp is not supported for static pages
-    helpers.entryLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks, query: {resource: 'posts'}}, res.locals)
+    helpers.entryLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks, query: {controller: 'posts', resource: 'posts'}}, res.locals)
         .then((result) => {
             if (result && result.entry) {
                 req.body.post = result.entry;
