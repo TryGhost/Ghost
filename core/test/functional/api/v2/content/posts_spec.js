@@ -51,13 +51,6 @@ describe('Posts', function () {
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-
-                // Public API does not return drafts and pages
-                _.map(jsonResponse.posts, (post) => {
-                    post.status.should.eql('published');
-                    post.page.should.eql(false);
-                });
 
                 // Default order check
                 jsonResponse.posts[0].slug.should.eql('welcome');
@@ -124,12 +117,6 @@ describe('Posts', function () {
                     testUtils.DataGenerator.Content.posts[0].id,
                 ]);
 
-                // API does not return drafts
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
-
                 // Each post must either be featured or have the tag 'kitchen-sink'
                 _.each(jsonResponse.posts, (post) => {
                     if (post.featured) {
@@ -191,10 +178,6 @@ describe('Posts', function () {
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 jsonResponse.posts.should.have.length(11);
 
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                });
-
                 done();
             });
     });
@@ -248,10 +231,6 @@ describe('Posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
 
                 done();
             });
@@ -386,7 +365,6 @@ describe('Posts', function () {
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
             });
     });
@@ -432,7 +410,6 @@ describe('Posts', function () {
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
             });
     });
@@ -524,7 +501,6 @@ describe('Posts', function () {
                 should.not.exist(jsonResponse.meta);
                 jsonResponse.posts.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                jsonResponse.posts[0].page.should.eql(false);
             });
     });
 
