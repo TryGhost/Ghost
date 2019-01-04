@@ -203,6 +203,7 @@ User = ghostBookshelf.Model.extend({
             delete attrs.email;
         }
 
+        // @TODO remove this when we remove v0.1 API as its handled in serialization for v2
         // We don't expose these fields when fetching data via the public API.
         if (options && options.context && options.context.public) {
             delete attrs.created_at;
