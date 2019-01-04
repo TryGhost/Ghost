@@ -167,7 +167,7 @@ class ParentRouter extends EventEmitter {
         var val = settingsCache.get("default_locale", {resolve: false});
         debug("setting language", val);
 
-        if (val.value) {
+        if (val && val.value) {
             val.value = lang;
         }
         settingsCache.set("default_locale", val);
