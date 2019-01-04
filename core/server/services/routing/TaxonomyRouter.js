@@ -1,5 +1,4 @@
 const debug = require('ghost-ignition').debug('services:routing:taxonomy-router');
-const _ = require('lodash');
 const common = require('../../lib/common');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
