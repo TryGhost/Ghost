@@ -138,7 +138,7 @@ module.exports = [
         },
         events: {
             add: 'user.activated',
-            update: 'user.activated.edited',
+            update: ['user.activated.edited', 'user.attached', 'user.detached'],
             remove: 'user.deactivated'
         }
     }

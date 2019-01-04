@@ -185,6 +185,36 @@ Post = ghostBookshelf.Model.extend({
         model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
     },
 
+    onDestroying: function onDestroyed(model) {
+        this.handleAttachedModels(model);
+    },
+
+    handleAttachedModels: function handleAttachedModels(model) {
+        model.related('tags').on('detaching', function onDetached(collection, tag) {
+            model.related('tags').on('detached', function onDetached(detachedCollection, response, options) {
+                tag.emitChange('detached', options);
+            });
+        });
+
+        model.related('tags').on('attaching', function onDetached(collection, tags) {
+            model.related('tags').on('attached', function onDetached(detachedCollection, response, options) {
+                tags.forEach(tag => tag.emitChange('attached', options));
+            });
+        });
+
+        model.related('authors').on('detaching', function onDetached(collection, author) {
+            model.related('authors').on('detached', function onDetached(detachedCollection, response, options) {
+                author.emitChange('detached', options);
+            });
+        });
+
+        model.related('authors').on('attaching', function onDetached(collection, author) {
+            model.related('authors').on('attached', function onDetached(detachedCollection, response, options) {
+                author.forEach(tag => tag.emitChange('attached', options));
+            });
+        });
+    },
+
     onSaving: function onSaving(model, attr, options) {
         options = options || {};
 
@@ -260,17 +290,7 @@ Post = ghostBookshelf.Model.extend({
             this.set('tags', tagsToSave);
         }
 
-        model.related('tags').on('detaching', function onDetached(collection, tag) {
-            model.related('tags').on('detached', function onDetached(detachedCollection, response, options) {
-                tag.emitChange('detached', options);
-            });
-        });
-
-        model.related('tags').on('attaching', function onDetached(collection, tags) {
-            model.related('tags').on('attached', function onDetached(detachedCollection, response, options) {
-                tags.forEach(tag => tag.emitChange('attached', options));
-            });
-        });
+        this.handleAttachedModels(model);
 
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
@@ -644,7 +664,7 @@ Post = ghostBookshelf.Model.extend({
      * and updating resources. We won't return the relations by default for now.
      */
     defaultRelations: function defaultRelations(methodName, options) {
-        if (['edit', 'add'].indexOf(methodName) !== -1) {
+        if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
 
