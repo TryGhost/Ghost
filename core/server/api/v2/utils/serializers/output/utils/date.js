@@ -17,16 +17,5 @@ const forPost = (attrs) => {
     return attrs;
 };
 
-const forTag = (attrs) => {
-    ['created_at', 'updated_at'].forEach((field) => {
-        if (attrs[field]) {
-            attrs[field] = format(attrs[field]);
-        }
-    });
-
-    return attrs;
-};
-
 module.exports.format = format;
 module.exports.forPost = forPost;
-module.exports.forTag = forTag;
