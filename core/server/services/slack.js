@@ -43,7 +43,9 @@ function ping(post) {
     // Quit here if slack integration is not activated
     if (slackSettings && slackSettings.url && slackSettings.url !== '') {
         slackSettings.username = slackSettings.username ? slackSettings.username : 'Ghost';
-        // Only ping when not a page
+
+        // CASE: only ping when not a page
+        // @NOTE: we have access to post.page, because we listen on the model event
         if (post.page) {
             return;
         }

@@ -27,6 +27,7 @@ function ping(post) {
         title = post.title,
         url = urlService.getUrlByResourceId(post.id, {absolute: true});
 
+    // @NOTE: we have access to post.page, because we listen on the model event
     if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
     }

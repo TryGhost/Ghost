@@ -2,16 +2,16 @@
 // Usage: `{{post_class}}`
 //
 // Output classes for the body element
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString;
+const _ = require('lodash');
+const proxy = require('./proxy');
+const SafeString = proxy.SafeString;
 
 // We use the name post_class to match the helper for consistency:
-module.exports = function post_class() { // eslint-disable-line camelcase
-    var classes = ['post'],
-        tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
-        featured = this.post && this.post.featured ? this.post.featured : this.featured || false,
-        page = this.post && this.post.page ? this.post.page : this.page || false;
+module.exports = function post_class(options) { // eslint-disable-line camelcase
+    let classes = ['post'];
+    const context = options.data.root.context;
+    const tags = this.post && this.post.tags ? this.post.tags : this.tags || [];
+    const featured = this.post && this.post.featured ? this.post.featured : this.featured || false;
 
     if (tags) {
         classes = classes.concat(tags.map(function (tag) {
@@ -23,7 +23,7 @@ module.exports = function post_class() { // eslint-disable-line camelcase
         classes.push('featured');
     }
 
-    if (page) {
+    if (context.includes('page')) {
         classes.push('page');
     }
 

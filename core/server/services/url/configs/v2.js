@@ -14,8 +14,7 @@ module.exports = [
                 'mobiledoc',
                 'html',
                 'plaintext',
-                // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-                // 'page',
+                'page',
                 'status',
                 'amp',
                 'codeinjection_head',

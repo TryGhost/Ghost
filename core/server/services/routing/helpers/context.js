@@ -58,7 +58,7 @@ function setResponseContext(req, res, data) {
         res.locals.context.push('private');
     } else if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
         res.locals.context.push('subscribe');
-    } else if (data && data.post && data.post.page) {
+    } else if (data && data.post && res.routerOptions.resourceType === 'pages') {
         res.locals.context.push('page');
     } else if (data && data.post) {
         res.locals.context.push('post');

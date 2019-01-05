@@ -31,8 +31,7 @@ const post = (attrs) => {
     delete attrs.locale;
     delete attrs.author;
 
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-    // delete attrs.page;
+    delete attrs.page;
     delete attrs.status;
 
     return attrs;

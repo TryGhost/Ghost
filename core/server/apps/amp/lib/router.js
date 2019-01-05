@@ -19,7 +19,12 @@ function _renderer(req, res, next) {
     // Format data
     let data = req.body || {};
 
+    // CASE: keep, otherwise res.locals.context is not set at all and it would throw an error in HBS helpers
+    helpers.context(req, res, data);
+
     // CASE: we only support amp pages for posts that are not static pages
+    // @NOTE: v2 has removed `post.page`, but this works for both api versionsbecause v2 does not return the post at all from the API
+    // @TODO: simply if we drop v0.1
     if (!data.post || data.post.page) {
         return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
     }
