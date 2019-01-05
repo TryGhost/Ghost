@@ -283,8 +283,12 @@ class Resources {
         return _.find(this.data[type], {data: {id: id}});
     }
 
-    reset() {
+    reset(options = {ignoreDBReady: false}) {
         _.each(this.listeners, (obj) => {
+            if (obj.eventName === 'db.ready' && options.ignoreDBReady) {
+                return;
+            }
+
             common.events.removeListener(obj.eventName, obj.listener);
         });
 
