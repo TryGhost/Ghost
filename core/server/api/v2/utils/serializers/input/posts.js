@@ -89,7 +89,7 @@ module.exports = {
          * @deprecated: `author`, might be removed in Ghost 3.0
          */
         if (frame.data.posts[0].hasOwnProperty('author')) {
-            // @TODO: remove
+            // @TODO: remove + deny
             frame.data.posts[0].author_id = frame.data.posts[0].author;
             delete frame.data.posts[0].author;
         }
