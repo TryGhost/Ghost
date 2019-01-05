@@ -46,6 +46,7 @@ const RESOURCES = {
 // Short forms of paths which we should understand
 pathAliases = {
     'post.tags': 'post.tags[*].slug',
+    // @TODO: does not work with v2 anymore, test
     'post.author': 'post.author.slug'
 };
 

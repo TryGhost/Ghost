@@ -20,6 +20,7 @@ const proxy = require('./proxy'),
  * @deprecated: will be removed in Ghost 3.0
  */
 module.exports = function author(options) {
+    // @TODO: solve differently
     if (options.fn) {
         return handlebars.helpers.with.call(this, this.author, options);
     }
@@ -27,6 +28,7 @@ module.exports = function author(options) {
     const autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true;
     let output = '';
 
+    // @TODO: solve differently
     if (this.author && this.author.name) {
         if (autolink) {
             output = templates.link({

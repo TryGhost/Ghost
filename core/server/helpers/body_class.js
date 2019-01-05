@@ -24,6 +24,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
     } else if (_.includes(context, 'tag') && this.tag) {
         classes.push('tag-template');
         classes.push('tag-' + this.tag.slug);
+        // @TODO: solve differently
     } else if (_.includes(context, 'author') && this.author) {
         classes.push('author-template');
         classes.push('author-' + this.author.slug);
@@ -33,7 +34,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
 
     if (tags) {
         classes = classes.concat(tags.map(function (tag) {
-            return 'tag-' + tag.slug; 
+            return 'tag-' + tag.slug;
         }));
     }
 
@@ -42,7 +43,7 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
     }
 
     classes = _.reduce(classes, function (memo, item) {
-        return memo + ' ' + item; 
+        return memo + ' ' + item;
     }, '');
     return new SafeString(classes.trim());
 };

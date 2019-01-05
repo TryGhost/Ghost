@@ -50,6 +50,7 @@ const mapPost = (model, frame) => {
                 jsonModel.tags = jsonModel.tags.map(tag => mapTag(tag, frame));
             }
 
+            // @TODO: remove
             if (relation === 'author' && jsonModel.author) {
                 jsonModel.author = mapUser(jsonModel.author, frame);
             }

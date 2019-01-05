@@ -29,6 +29,7 @@ const forPost = (attrs, options) => {
                 attrs.tags = attrs.tags.map(tag => forTag(tag));
             }
 
+            // @TODO: remove
             if (relation === 'author' && attrs.author) {
                 attrs.author = forUser(attrs.author, options);
             }

@@ -63,6 +63,7 @@ function evaluateAuthorList(expr, authors) {
 }
 
 function handleAuthor(data, attrs) {
+    // @TODO: solve differently -> we need to deny :author: for v2???
     if (!attrs.author) {
         return false;
     }

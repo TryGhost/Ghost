@@ -26,6 +26,7 @@ buildApiOptions = function buildApiOptions(options, post) {
         apiOptions = {
             /**
              * @deprecated: `author`, will be removed in Ghost 3.0
+             * @TODO: make dynamic per API version
              */
             include: 'author,authors,tags',
             order: 'published_at ' + order,
@@ -41,6 +42,7 @@ buildApiOptions = function buildApiOptions(options, post) {
         } else if (options.hash.in === 'primary_author' && _.get(post, 'primary_author.slug')) {
             apiOptions.filter += '+primary_author:' + post.primary_author.slug;
         } else if (options.hash.in === 'author' && _.get(post, 'author.slug')) {
+            // @TODO: solve differently for v2 -> deny?
             apiOptions.filter += '+author:' + post.author.slug;
         }
     }
