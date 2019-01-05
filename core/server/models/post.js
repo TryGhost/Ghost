@@ -175,6 +175,10 @@ Post = ghostBookshelf.Model.extend({
             // Fire edited if this wasn't a change between resourceType
             model.emitChange('edited', options);
         }
+
+        if (model.statusChanging && (model.isPublished || model.wasPublished)) {
+            this.handleStatusForAttachedModels(model, options);
+        }
     },
 
     onDestroyed: function onDestroyed(model, options) {
@@ -208,10 +212,26 @@ Post = ghostBookshelf.Model.extend({
             });
         });
 
-        model.related('authors').on('attaching', function onDetached(collection, author) {
+        model.related('authors').on('attaching', function onDetached(collection, authors) {
             model.related('authors').on('attached', function onDetached(detachedCollection, response, options) {
-                author.forEach(tag => tag.emitChange('attached', options));
+                authors.forEach(author => author.emitChange('attached', options));
             });
+        });
+    },
+
+    /**
+     * @NOTE:
+     * when status is changed from or to 'published' all related authors and tags
+     * have to trigger recalculation in URL service because status is applied in filters for
+     * these models
+     */
+    handleStatusForAttachedModels: function handleStatusForAttachedModels(model, options) {
+        model.related('tags').forEach((tag) => {
+            tag.emitChange('attached', options);
+        });
+
+        model.related('authors').forEach((author) => {
+            author.emitChange('attached', options);
         });
     },
 
