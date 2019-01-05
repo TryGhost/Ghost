@@ -200,26 +200,26 @@ Post = ghostBookshelf.Model.extend({
          * For the reason above, `detached` handler is using the scope of `detaching`
          * to access the models that are not present in `detached`.
          */
-        model.related('tags').on('detaching', function onDetached(collection, tag) {
-            model.related('tags').on('detached', function onDetached(detachedCollection, response, options) {
+        model.related('tags').once('detaching', function onDetached(collection, tag) {
+            model.related('tags').once('detached', function onDetached(detachedCollection, response, options) {
                 tag.emitChange('detached', options);
             });
         });
 
-        model.related('tags').on('attaching', function onDetached(collection, tags) {
-            model.related('tags').on('attached', function onDetached(detachedCollection, response, options) {
+        model.related('tags').once('attaching', function onDetached(collection, tags) {
+            model.related('tags').once('attached', function onDetached(detachedCollection, response, options) {
                 tags.forEach(tag => tag.emitChange('attached', options));
             });
         });
 
-        model.related('authors').on('detaching', function onDetached(collection, author) {
-            model.related('authors').on('detached', function onDetached(detachedCollection, response, options) {
+        model.related('authors').once('detaching', function onDetached(collection, author) {
+            model.related('authors').once('detached', function onDetached(detachedCollection, response, options) {
                 author.emitChange('detached', options);
             });
         });
 
-        model.related('authors').on('attaching', function onDetached(collection, authors) {
-            model.related('authors').on('attached', function onDetached(detachedCollection, response, options) {
+        model.related('authors').once('attaching', function onDetached(collection, authors) {
+            model.related('authors').once('attached', function onDetached(detachedCollection, response, options) {
                 authors.forEach(author => author.emitChange('attached', options));
             });
         });
