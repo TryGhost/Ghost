@@ -11,6 +11,7 @@ module.exports = function previewController(req, res, next) {
     const params = {
         uuid: req.params.uuid,
         status: 'all',
+        // @TODO: make dynamic per API version
         include: 'author,authors,tags'
     };
 

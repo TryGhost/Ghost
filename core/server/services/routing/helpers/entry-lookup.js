@@ -34,6 +34,7 @@ function entryLookup(postUrl, routerOptions, locals) {
     /**
      * Query database to find entry.
      * @deprecated: `author`, will be removed in Ghost 3.0
+     * @TODO: make dynamic per API version
      */
     return api[routerOptions.query.controller]
         .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))

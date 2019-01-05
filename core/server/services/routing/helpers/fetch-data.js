@@ -18,6 +18,7 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
+        // @TODO: make dynamic per API version
         include: 'author,authors,tags'
     }
 };
