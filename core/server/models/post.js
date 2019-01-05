@@ -194,6 +194,12 @@ Post = ghostBookshelf.Model.extend({
     },
 
     handleAttachedModels: function handleAttachedModels(model) {
+        /**
+         * @NOTE:
+         * Bookshelf only exposes the object that is being detached on `detaching`.
+         * For the reason above, `detached` handler is using the scope of `detaching`
+         * to access the models that are not present in `detached`.
+         */
         model.related('tags').on('detaching', function onDetached(collection, tag) {
             model.related('tags').on('detached', function onDetached(detachedCollection, response, options) {
                 tag.emitChange('detached', options);
