@@ -1055,6 +1055,8 @@ module.exports = {
         initGhost: function () {
             models.init();
 
+            settingsCache.shutdown();
+
             return settingsService.init()
                 .then(() => {
                     return themes.init();
@@ -1106,6 +1108,7 @@ module.exports = {
 
             resetGenerators: function () {
                 urlService.resetGenerators();
+                urlService.resources.reset({ignoreDBReady: true});
             }
         },
     },
