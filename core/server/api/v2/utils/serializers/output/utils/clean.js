@@ -33,7 +33,7 @@ const post = (attrs) => {
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10335
     // delete attrs.page;
-    // delete attrs.status;
+    delete attrs.status;
 
     return attrs;
 };
