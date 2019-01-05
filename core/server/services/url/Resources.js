@@ -128,57 +128,28 @@ class Resources {
 
     _onResourceAdded(type, model) {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
-        const exclude = resourceConfig.modelOptions.exclude;
-        const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-        const obj = _.omit(model.toJSON(), exclude);
 
-        if (withRelatedFields) {
-            _.each(withRelatedFields, (fields, key) => {
-                if (!obj[key]) {
-                    return;
-                }
+        return Promise.resolve()
+            .then(() => {
+                return this._fetchSingle(resourceConfig, model.id);
+            })
+            .then(([dbResource]) => {
+                if (dbResource) {
+                    const resource = new Resource(type, dbResource);
 
-                obj[key] = _.map(obj[key], (relation) => {
-                    const relationToReturn = {};
+                    debug('_onResourceAdded', type);
+                    this.data[type].push(resource);
 
-                    _.each(fields, (field) => {
-                        const fieldSanitized = field.replace(/^\w+./, '');
-                        relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                    this.queue.start({
+                        event: 'added',
+                        action: 'added:' + model.id,
+                        eventData: {
+                            id: model.id,
+                            type: type
+                        }
                     });
-
-                    return relationToReturn;
-                });
+                }
             });
-
-            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-            if (withRelatedPrimary) {
-                _.each(withRelatedPrimary, (relation, primaryKey) => {
-                    if (!obj[primaryKey] || !obj[relation]) {
-                        return;
-                    }
-
-                    const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                        return item.id === obj[primaryKey].id;
-                    }));
-                    obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
-                });
-            }
-        }
-
-        const resource = new Resource(type, obj);
-
-        debug('_onResourceAdded', type);
-        this.data[type].push(resource);
-
-        this.queue.start({
-            event: 'added',
-            action: 'added:' + model.id,
-            eventData: {
-                id: model.id,
-                type: type
-            }
-        });
     }
 
     /**
