@@ -60,7 +60,7 @@
         },
         "content_api_key": {
             "minWait": 3600000,
-            "maxWait": 3600000,
+            "maxWait": 86400000,
             "lifetime": 3600,
             "freeRetries": 99
         }
