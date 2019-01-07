@@ -49,11 +49,14 @@ describe('Settings', function () {
                     let defaultKey = _.findKey(publicSettings, (v) => v === key);
                     let defaultValue = _.find(defaultSettings, (setting) => setting.key === defaultKey).defaultValue;
 
+                    // Convert empty strings to null
+                    defaultValue = defaultValue || null;
+
                     if (defaultKey === 'navigation') {
                         defaultValue = JSON.parse(defaultValue);
                     }
 
-                    value.should.eql(defaultValue);
+                    should(value).eql(defaultValue);
                 });
             });
     });
