@@ -73,5 +73,26 @@ module.exports = {
                 next('privateblog');
             }
         })(req, res, next);
+    },
+
+    /*
+     * protect content api from brute force
+     */
+    contentApiKey(req, res, next) {
+        return spamPrevention.contentApiKey().getMiddleware({
+            ignoreIP: false
+        })(req, res, function (err, ...rest) {
+            if (!err) {
+                // Reset any blocks if the request is authorized
+                // This ensures that the count only goes up for
+                // unauthorized requests.
+                res.on('finish', function () {
+                    if (res.statusCode < 400) {
+                        req.brute.reset();
+                    }
+                });
+            }
+            return next(err, ...rest);
+        });
     }
 };
