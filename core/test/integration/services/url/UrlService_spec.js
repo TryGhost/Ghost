@@ -10,7 +10,7 @@ const themes = require('../../../../server/services/themes');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 const sandbox = sinon.sandbox.create();
 
-describe('Integration: services/url/UrlService', function () {
+describe.skip('Integration: services/url/UrlService', function () {
     let urlService;
 
     before(function () {
