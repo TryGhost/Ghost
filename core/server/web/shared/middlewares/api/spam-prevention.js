@@ -38,9 +38,9 @@ const handleStoreError = (err) => {
     err.next(customError);
 };
 
-// This is a global endpoint protection mechanism that will lock an endpoint if there are so many
-// requests from a single IP
-// We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single suer
+// This locks a single endpoint based on excessive requests from an IP.
+// Currently only used for auth type methods.
+// We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single user
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () => {
     const ExpressBrute = require('express-brute');
