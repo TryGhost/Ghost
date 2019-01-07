@@ -15,6 +15,10 @@ module.exports = {
         return require('./pages');
     },
 
+    get redirects() {
+        return require('./redirects');
+    },
+
     get roles() {
         return require('./roles');
     },
