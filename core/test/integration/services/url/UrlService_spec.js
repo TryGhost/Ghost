@@ -8,9 +8,10 @@ const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
 const themes = require('../../../../server/services/themes');
 const UrlService = rewire('../../../../server/services/url/UrlService');
+
 const sandbox = sinon.sandbox.create();
 
-describe.skip('Integration: services/url/UrlService', function () {
+describe('Integration: services/url/UrlService', function () {
     let urlService;
 
     before(function () {
@@ -203,102 +204,6 @@ describe.skip('Integration: services/url/UrlService', function () {
 
             resource = urlService.getResource('/does-not-exist/');
             should.not.exist(resource);
-        });
-
-        describe('update resource', function () {
-            afterEach(testUtils.teardown);
-            afterEach(testUtils.setup('users:roles', 'posts'));
-
-            it('featured: false => featured:true', function () {
-                return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        url.should.eql('/404/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getResourceType() === 'posts') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.router.getResourceType() === 'pages') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-                        });
-                    });
-            });
-
-            it('page: false => page:true', function () {
-                return models.Post.edit({page: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        let url = urlService.getUrlByResourceId(post.id);
-
-                        url.should.eql('/ghostly-kitchen-sink/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getResourceType() === 'posts') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.router.getResourceType() === 'pages') {
-                                generator.getUrls().length.should.eql(2);
-                            }
-                        });
-                    });
-            });
-
-            it('page: true => page:false', function () {
-                return models.Post.edit({page: false}, {id: testUtils.DataGenerator.forKnex.posts[5].id})
-                    .then(function (post) {
-                        let url = urlService.getUrlByResourceId(post.id);
-
-                        url.should.eql('/static-page-test/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getResourceType() === 'posts') {
-                                generator.getUrls().length.should.eql(3);
-                            }
-
-                            if (generator.router.getResourceType() === 'pages') {
-                                generator.getUrls().length.should.eql(0);
-                            }
-                        });
-                    });
-            });
-        });
-
-        describe('add new resource', function () {
-            it('already published', function () {
-                return models.Post.add({
-                    featured: false,
-                    page: false,
-                    status: 'published',
-                    title: 'Brand New Story!',
-                    author_id: testUtils.DataGenerator.forKnex.users[4].id
-                }).then(function (post) {
-                    let url = urlService.getUrlByResourceId(post.id);
-                    url.should.eql('/brand-new-story/');
-
-                    let resource = urlService.getResource(url);
-                    resource.data.primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[4].id);
-                });
-            });
-
-            it('draft', function () {
-                return models.Post.add({
-                    featured: false,
-                    page: false,
-                    status: 'draft',
-                    title: 'Brand New Story!',
-                    author_id: testUtils.DataGenerator.forKnex.users[4].id
-                }).then(function (post) {
-                    let url = urlService.getUrlByResourceId(post.id);
-                    url.should.eql('/404/');
-
-                    let resource = urlService.getResource(url);
-                    should.not.exist(resource);
-                });
-            });
         });
     });
 
@@ -500,49 +405,6 @@ describe.skip('Integration: services/url/UrlService', function () {
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
             url.should.eql('/persons/contributor/');
-        });
-
-        describe('update resource', function () {
-            afterEach(testUtils.teardown);
-            afterEach(testUtils.setup('users:roles', 'posts'));
-
-            it('featured: false => featured:true', function () {
-                return models.Post.edit({featured: true}, {id: testUtils.DataGenerator.forKnex.posts[1].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        url.should.eql('/podcast/ghostly-kitchen-sink/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
-                                generator.getUrls().length.should.eql(1);
-                            }
-
-                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
-                                generator.getUrls().length.should.eql(3);
-                            }
-                        });
-                    });
-            });
-
-            it('featured: true => featured:false', function () {
-                return models.Post.edit({featured: false}, {id: testUtils.DataGenerator.forKnex.posts[2].id})
-                    .then(function (post) {
-                        // There is no collection which owns featured posts.
-                        let url = urlService.getUrlByResourceId(post.id);
-                        url.should.eql('/collection/2015/short-and-sweet/');
-
-                        urlService.urlGenerators.forEach(function (generator) {
-                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
-                                generator.getUrls().length.should.eql(2);
-                            }
-
-                            if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
-                                generator.getUrls().length.should.eql(2);
-                            }
-                        });
-                    });
-            });
         });
     });
 
