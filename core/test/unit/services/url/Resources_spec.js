@@ -108,13 +108,13 @@ describe('Unit: services/url/Resources', function () {
 
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
                 obj.tags.length.should.eql(1);
-                Object.keys(obj.tags[0]).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.tags[0]).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
                 obj.authors.length.should.eql(1);
-                Object.keys(obj.authors[0]).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.authors[0]).sort().should.eql(['id', 'post_id', 'slug'].sort());
                 should.exist(obj.primary_author);
-                Object.keys(obj.primary_author).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.primary_author).sort().should.eql(['id', 'post_id', 'slug'].sort());
                 should.exist(obj.primary_tag);
-                Object.keys(obj.primary_tag).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.primary_tag).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
                 done();
             });
 
@@ -205,13 +205,13 @@ describe('Unit: services/url/Resources', function () {
                 ].sort());
 
                 should.exist(obj.tags);
-                Object.keys(obj.tags[0]).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.tags[0]).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
                 should.exist(obj.authors);
-                Object.keys(obj.authors[0]).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.authors[0]).sort().should.eql(['id', 'post_id', 'slug'].sort());
                 should.exist(obj.primary_author);
-                Object.keys(obj.primary_author).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.primary_author).sort().should.eql(['id', 'post_id', 'slug'].sort());
                 should.exist(obj.primary_tag);
-                Object.keys(obj.primary_tag).sort().should.eql(['id', 'slug'].sort());
+                Object.keys(obj.primary_tag).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
 
                 done();
             });
