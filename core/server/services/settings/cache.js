@@ -29,19 +29,19 @@ const doGet = (key, options) => {
 
     // Don't try to resolve to the value of the setting
     if (options && options.resolve === false) {
-        return settingsCache[key];
+        return settingsCache[key] || null;
     }
 
     // Default behaviour is to try to resolve the value and return that
     try {
         // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
         if (!isNaN(Number(settingsCache[key].value))) {
-            return settingsCache[key].value;
+            return settingsCache[key].value || null;
         }
 
-        return JSON.parse(settingsCache[key].value);
+        return JSON.parse(settingsCache[key].value) || null;
     } catch (err) {
-        return settingsCache[key].value;
+        return settingsCache[key].value || null;
     }
 };
 
@@ -100,7 +100,7 @@ module.exports = {
         let settings = {};
 
         _.each(publicSettings, (newKey, key) => {
-            settings[newKey] = doGet(key) || '';
+            settings[newKey] = doGet(key) || null;
         });
 
         return settings;
