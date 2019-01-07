@@ -52,6 +52,10 @@ describe('Unit: services/url/Resources', function () {
             should.exist(created.posts[0].data.primary_author);
             should.exist(created.posts[0].data.primary_tag);
 
+            // FIXME: these fields should correspond to configuration values in withRelatedFields
+            Object.keys(created.posts[0].data.primary_author).sort().should.eql(['id', 'post_id', 'slug'].sort());
+            Object.keys(created.posts[0].data.primary_tag).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
+
             should.exist(created.posts[1].data.primary_author);
             should.exist(created.posts[1].data.primary_tag);
 
@@ -108,6 +112,8 @@ describe('Unit: services/url/Resources', function () {
 
                 should.exist(resources.getByIdAndType(options.eventData.type, options.eventData.id));
                 obj.tags.length.should.eql(1);
+
+                // FIXME: these fields should correspond to configuration values in withRelatedFields
                 Object.keys(obj.tags[0]).sort().should.eql(['id', 'post_id', 'slug', 'visibility'].sort());
                 obj.authors.length.should.eql(1);
                 Object.keys(obj.authors[0]).sort().should.eql(['id', 'post_id', 'slug'].sort());
