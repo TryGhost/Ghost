@@ -147,7 +147,7 @@ describe('Dynamic Routing', function () {
 
         describe('Paged', function () {
             // Inserting 25 posts takes a bit longer on Travis for MySQL suite
-            this.timeout(5000);
+            this.timeout(10000);
 
             // Add enough posts to trigger pages for both the index (25 pp) and rss (15 pp)
             before(function (done) {
@@ -388,7 +388,7 @@ describe('Dynamic Routing', function () {
 
         describe('Paged', function () {
             // Inserting 25 posts takes a bit longer on Travis for MySQL suite
-            this.timeout(5000);
+            this.timeout(10000);
 
             before(testUtils.teardown);
 
