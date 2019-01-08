@@ -132,7 +132,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('does not fail', function () {
             const frame = {
                 options: {
                     context: {},
@@ -151,11 +151,11 @@ describe('Unit: api/shared/validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    should.not.exist(err);
                 });
         });
 
-        it('fails include array notation', function () {
+        it('does not fail include array notation', function () {
             const frame = {
                 options: {
                     context: {},
@@ -172,7 +172,7 @@ describe('Unit: api/shared/validators/input/all', function () {
             return shared.validators.input.all.all(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    should.exist(err);
+                    should.not.exist(err);
                 });
         });
 
