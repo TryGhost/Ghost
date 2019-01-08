@@ -63,6 +63,12 @@ const validate = (config, attrs) => {
                 });
 
                 if (unallowedValues.length) {
+                    // CASE: we do not error for invalid includes, just silently remove
+                    if (key === 'include') {
+                        attrs.include = valuesAsArray.filter(x => allowedValues.includes(x));
+                        return;
+                    }
+
                     errors.push(new common.errors.ValidationError({
                         message: common.i18n.t('notices.data.validation.index.validationFailed', {
                             validationName: 'AllowedValues',
