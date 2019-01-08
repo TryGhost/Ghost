@@ -9,7 +9,7 @@ export default {
     name: 'ember-simple-auth',
     initialize(registry) {
         let config = ENV['ember-simple-auth'] || {};
-        config.baseURL = ghostPaths().adminRoot;
+        config.rootURL = ghostPaths().adminRoot;
         Configuration.load(config);
 
         setupSession(registry);
