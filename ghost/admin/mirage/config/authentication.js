@@ -45,8 +45,8 @@ export default function mockAuthentication(server) {
 
     /* Setup ---------------------------------------------------------------- */
 
-    server.post('/authentication/setup', function ({roles, users}) {
-        let attrs = this.normalizedRequestAttrs();
+    server.post('/authentication/setup', function ({roles, users}, request) {
+        let attrs = JSON.parse(request.requestBody).setup;
         let role = roles.findBy({name: 'Owner'});
 
         // create owner role unless already exists
