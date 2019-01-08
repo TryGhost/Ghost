@@ -63,18 +63,18 @@ describe('Authors Content API V2', function () {
             });
     });
 
-    it('browse authors: throws error if trying to fetch roles', function (done) {
+    it('browse authors: does not give back roles if trying to fetch roles', function (done) {
         request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=roles`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422)
+            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                should.not.exist(res.headers['x-cache-invalidate']);
+                should.not.exist(res.body.authors[0].roles);
                 done();
             });
     });
