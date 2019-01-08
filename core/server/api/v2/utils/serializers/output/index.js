@@ -1,4 +1,8 @@
 module.exports = {
+    get all() {
+        return require('./all');
+    },
+
     get db() {
         return require('./db');
     },
@@ -9,6 +13,10 @@ module.exports = {
 
     get pages() {
         return require('./pages');
+    },
+
+    get redirects() {
+        return require('./redirects');
     },
 
     get roles() {

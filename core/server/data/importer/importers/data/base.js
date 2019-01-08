@@ -272,6 +272,9 @@ class Base {
             }
         };
 
+        /**
+         * @deprecated: x_by fields (https://github.com/TryGhost/Ghost/issues/10286)
+         */
         // Iterate over all possible user relations
         _.each(this.dataToImport, (obj) => {
             _.each([

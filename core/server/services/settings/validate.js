@@ -1,7 +1,9 @@
 const _ = require('lodash');
+const debug = require('ghost-ignition').debug('services:settings:validate');
 const common = require('../../lib/common');
-const RESOURCE_CONFIG = require('../../services/routing/assets/resource-config');
+const themeService = require('../../services/themes');
 const _private = {};
+let RESOURCE_CONFIG;
 
 _private.validateTemplate = function validateTemplate(object) {
     // CASE: /about/: about
@@ -57,11 +59,14 @@ _private.validateData = function validateData(object) {
         }
 
         longForm.query[options.resourceKey || resourceKey] = {};
-        longForm.query[options.resourceKey || resourceKey] = _.cloneDeep(RESOURCE_CONFIG.QUERY[resourceKey]);
+        longForm.query[options.resourceKey || resourceKey] = _.cloneDeep(_.omit(RESOURCE_CONFIG.QUERY[resourceKey], 'resourceAlias'));
 
         // redirect is enabled by default when using the short form
         longForm.router = {
-            [RESOURCE_CONFIG.QUERY[resourceKey].alias]: [{slug: slug, redirect: true}]
+            [RESOURCE_CONFIG.QUERY[resourceKey].resourceAlias || RESOURCE_CONFIG.QUERY[resourceKey].resource]: [{
+                slug: slug,
+                redirect: true
+            }]
         };
 
         longForm.query[options.resourceKey || resourceKey].options.slug = slug;
@@ -75,7 +80,7 @@ _private.validateData = function validateData(object) {
         const requiredQueryFields = ['type', 'resource'];
         const allowedQueryValues = {
             type: ['read', 'browse'],
-            resource: _.union(_.map(RESOURCE_CONFIG.QUERY, 'resource'), _.map(RESOURCE_CONFIG.QUERY, 'alias'))
+            resource: _.map(RESOURCE_CONFIG.QUERY, 'resource')
         };
         const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status', 'page'];
         const allowedRouterOptions = ['redirect', 'slug'];
@@ -146,30 +151,28 @@ _private.validateData = function validateData(object) {
                 data.query[key][option] = object.data[key][option];
             });
 
-            const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {alias: data.query[key].resource}) || _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
+            const DEFAULT_RESOURCE = _.find(RESOURCE_CONFIG.QUERY, {resource: data.query[key].resource});
 
-            // CASE: you define resource:pages and the alias is "pages". We need to load the internal alias/resource structure, otherwise we break api versions.
-            data.query[key].alias = DEFAULT_RESOURCE.alias;
             data.query[key].resource = DEFAULT_RESOURCE.resource;
 
-            data.query[key] = _.defaults(data.query[key], _.omit(DEFAULT_RESOURCE, 'options'));
+            data.query[key] = _.defaults(data.query[key], _.omit(DEFAULT_RESOURCE, ['options', 'resourceAlias']));
 
             data.query[key].options = _.pick(object.data[key], allowedQueryOptions);
             if (data.query[key].type === 'read') {
                 data.query[key].options = _.defaults(data.query[key].options, DEFAULT_RESOURCE.options);
             }
 
-            if (!data.router.hasOwnProperty(DEFAULT_RESOURCE.alias)) {
-                data.router[DEFAULT_RESOURCE.alias] = [];
+            if (!data.router.hasOwnProperty(DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource)) {
+                data.router[DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource] = [];
             }
 
             // CASE: we do not allowed redirects for type browse
             if (data.query[key].type === 'read') {
                 let entry = _.pick(object.data[key], allowedRouterOptions);
                 entry = _.defaults(entry, defaultRouterOptions);
-                data.router[DEFAULT_RESOURCE.alias].push(entry);
+                data.router[DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource].push(entry);
             } else {
-                data.router[DEFAULT_RESOURCE.alias].push(defaultRouterOptions);
+                data.router[DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource].push(defaultRouterOptions);
             }
         });
 
@@ -388,6 +391,12 @@ module.exports = function validate(object) {
     if (!object.taxonomies) {
         object.taxonomies = {};
     }
+
+    const apiVersion = themeService.getActive().engine('ghost-api');
+
+    debug('api version', apiVersion);
+
+    RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
 
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);

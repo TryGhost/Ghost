@@ -4,15 +4,13 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../../core/server/config');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Tag API V2', function () {
-    let ghostServer;
+    let request;
 
     before(function () {
         return ghost()
             .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -33,7 +31,7 @@ describe('Tag API V2', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(6);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
                 testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
                 jsonResponse.tags[0].created_at.should.be.an.instanceof(String);
@@ -76,7 +74,7 @@ describe('Tag API V2', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
                 should.exist(jsonResponse.tags[0].count.posts);
 
                 jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
@@ -102,7 +100,7 @@ describe('Tag API V2', function () {
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
                 // @TODO: model layer has no defaults for these properties
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url'], [
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url'], [
                     'feature_image',
                     'meta_description',
                     'meta_title',
@@ -153,7 +151,7 @@ describe('Tag API V2', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
                 jsonResponse.tags[0].description.should.eql('hey ho ab ins klo');
             });
     });

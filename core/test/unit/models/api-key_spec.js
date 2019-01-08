@@ -29,6 +29,16 @@ describe('Unit: models/api_key', function () {
             });
         });
 
+        it('sets default secret for content key', function () {
+            const attrs = {
+                type: 'content'
+            };
+
+            return models.ApiKey.add(attrs).then((api_key) => {
+                api_key.get('secret').length.should.eql(26);
+            });
+        });
+
         it('sets hardcoded role for key type', function () {
             // roles[5] = 'Admin Integration'
             const role_id = testUtils.DataGenerator.forKnex.roles[5].id;

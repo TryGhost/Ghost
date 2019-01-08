@@ -4,327 +4,294 @@ const should = require('should'),
     moment = require('moment'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
+    themes = require('../../../server/services/themes'),
     models = require('../../../server/models'),
+    imageLib = require('../../../server/lib/image'),
     routing = require('../../../server/services/routing'),
+    urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers'),
     proxy = require('../../../server/helpers/proxy'),
     settingsCache = proxy.settingsCache,
     sandbox = sinon.sandbox.create();
 
-/**
- * @TODO: this is not a full unit test. it's a half integration test, because we don't mock "getMetaData"!!
- *        either move to integration tests or rewrite!!!
- */
 describe('{{ghost_head}} helper', function () {
-    let posts = [], tags = [], users = [];
+    let posts = [], tags = [], authors = [], users = [];
+
+    const makeFixtures = () => {
+        const {createPost, createUser, createTag} = testUtils.DataGenerator.forKnex;
+
+        /** TAGS - used for tag pages */
+        tags.push(createTag({
+            meta_description: 'tag meta description',
+            name: 'tagtitle',
+            meta_title: 'tag meta title',
+            feature_image: '/content/images/tag-image.png'
+        }));
+
+        tags.push(createTag({
+            meta_description: '',
+            description: 'tag description',
+            name: 'tagtitle',
+            meta_title: '',
+            feature_image: '/content/images/tag-image.png'
+        }));
+        tags.push(createTag({
+            meta_description: '',
+            name: 'tagtitle',
+            meta_title: '',
+            feature_image: '/content/images/tag-image.png'
+        }));
+
+        tags.push(createTag({
+            meta_description: 'tag meta description',
+            title: 'tagtitle',
+            meta_title: 'tag meta title',
+            feature_image: '/content/images/tag-image.png'
+        }));
+
+        /** USERS - used for author PAGES */
+        users.push(createUser({
+            name: 'Author name',
+            slug: 'AuthorName',
+            bio: 'Author bio',
+            profile_image: '/content/images/test-author-image.png',
+            cover_image: '/content/images/author-cover-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser'
+        }));
+
+        users.push(createUser({
+            name: 'Author name',
+            slug: 'AuthorName1',
+            bio: 'Author bio',
+            profile_image: '/content/images/test-author-image.png',
+            cover_image: '/content/images/author-cover-image.png',
+            website: 'http://authorwebsite.com'
+        }));
+
+        /** AUTHORS - related to posts */
+        authors.push(createUser({ // Author 0
+            profile_image: '/content/images/test-author-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser',
+        }));
+
+        authors.push(createUser({ // Author 1
+            name: 'Author name',
+            slug: 'author2',
+            profile_image: '/content/images/test-author-image.png',
+            website: 'http://authorwebsite.com',
+            bio: 'Author bio',
+            facebook: 'testuser',
+            twitter: '@testuser'
+        }));
+
+        authors.push(createUser({ // Author 2
+            name: 'Author name',
+            slug: 'author3',
+            profile_image: '/content/images/test-author-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser',
+            bio: 'Author bio'
+        }));
+
+        authors.push(createUser({ // Author 3
+            name: 'Author name',
+            url: 'http://testauthorurl.com',
+            slug: 'author4',
+            profile_image: '/content/images/test-author-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser'
+        }));
+
+        authors.push(createUser({ // Author 4
+            name: 'Author name'
+        }));
+
+        authors.push(createUser({ // Author 5
+            name: 'Author name',
+            url: 'http://testauthorurl.com',
+            slug: 'author8',
+            profile_image: null,
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser'
+        }));
+
+        /** POSTS */
+
+        posts.push(createPost({ // Post 0
+            meta_description: 'all about our blog',
+            title: 'About',
+            feature_image: '/content/images/test-image-about.png',
+            page: true,
+            authors: [authors[0]],
+            primary_author: authors[0]
+        }));
+
+        posts.push(createPost({ // Post 1
+            meta_description: 'all about our blog',
+            title: 'About',
+            feature_image: '/content/images/test-image-about.png',
+            og_image: '/content/images/test-og-image.png',
+            og_title: 'Custom Facebook title',
+            og_description: 'Custom Facebook description',
+            twitter_image: '/content/images/test-twitter-image.png',
+            twitter_title: 'Custom Twitter title',
+            twitter_description: 'Custom Twitter description',
+            page: true,
+            authors: [authors[0]],
+            primary_author: authors[0]
+        }));
+
+        posts.push(createPost({ // Post 2
+            meta_description: 'blog description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            og_title: 'Custom Facebook title',
+            og_description: 'Custom Facebook description',
+            twitter_image: '/content/images/test-twitter-image.png',
+            published_at: moment('2008-05-31T19:18:15').toDate(),
+            updated_at: moment('2014-10-06T15:23:54').toDate(),
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [authors[1]],
+            primary_author: authors[1]
+        }));
+
+        posts.push(createPost({ // Post 3
+            meta_description: 'blog description',
+            custom_excerpt: 'post custom excerpt',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            og_image: '/content/images/test-facebook-image.png',
+            twitter_image: '/content/images/test-twitter-image.png',
+            twitter_title: 'Custom Twitter title',
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [
+                authors[2]
+            ],
+            primary_author: authors[2]
+        }));
+
+        posts.push(createPost({ // Post 4
+            title: 'Welcome to Ghost',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3]
+        }));
+
+        posts.push(createPost({ // Post 5
+            meta_description: 'blog description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            og_image: '/content/images/test-facebook-image.png',
+            og_title: 'Custom Facebook title',
+            twitter_image: '/content/images/test-twitter-image.png',
+            twitter_title: 'Custom Twitter title',
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3]
+        }));
+
+        posts.push(createPost({ // Post 6
+            meta_description: 'blog "test" description',
+            title: 'title',
+            meta_title: 'Welcome to Ghost "test"',
+            feature_image: '/content/images/test-image.png',
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3]
+        }));
+
+        posts.push(createPost({ // Post 7
+            meta_description: 'blog description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            tags: [],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3]
+        }));
+
+        posts.push(createPost({ // Post 8
+            meta_description: 'blog description',
+            title: 'Welcome to Ghost',
+            feature_image: null,
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [
+                authors[5]
+            ],
+            primary_author: authors[5]
+        }));
+
+        posts.push(createPost({ // Post 9
+            title: 'Welcome to Ghost',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            tags: [
+                createTag({name: 'tag1'}),
+                createTag({name: 'tag2'}),
+                createTag({name: 'tag3'})
+            ],
+            authors: [
+                authors[4]
+            ],
+            primary_author: authors[4]
+        }));
+    };
 
     before(function () {
-        testUtils.integrationTesting.defaultMocks(sandbox);
-    });
-
-    before(testUtils.teardown);
-    before(testUtils.setup('users:roles', 'posts'));
-
-    before(function () {
+        // @TODO: remove when visibility is refactored out of models
         models.init();
+        sandbox.stub(urlService, 'getUrlByResourceId').returns('https://mysite.com/fakeauthor/');
 
+        // @TODO: this is a LOT of mocking :/
         sandbox.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
+        sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sandbox.stub(themes, 'getActive').returns({
+            engine: () => 'v0.1'
+        });
 
+        sandbox.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('blog description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/blog-cover.png');
         settingsCache.get.withArgs('amp').returns(true);
 
-        return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-            meta_description: 'all about our blog',
-            title: 'About',
-            feature_image: '/content/images/test-image-about.png',
-            page: true,
-            authors: [testUtils.DataGenerator.forKnex.createUser({
-                profile_image: '/content/images/test-author-image.png',
-                website: 'http://authorwebsite.com',
-                facebook: 'testuser',
-                twitter: '@testuser',
-            })]
-        }), {withRelated: ['authors']}).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'all about our blog',
-                title: 'About',
-                feature_image: '/content/images/test-image-about.png',
-                og_image: '/content/images/test-og-image.png',
-                og_title: 'Custom Facebook title',
-                og_description: 'Custom Facebook description',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                twitter_description: 'Custom Twitter description',
-                page: true,
-                authors: [testUtils.DataGenerator.forKnex.createUser({
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                })]
-            }), {withRelated: ['authors']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_title: 'Custom Facebook title',
-                og_description: 'Custom Facebook description',
-                twitter_image: '/content/images/test-twitter-image.png',
-                published_at: moment('2008-05-31T19:18:15').toDate(),
-                updated_at: moment('2014-10-06T15:23:54').toDate(),
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [testUtils.DataGenerator.forKnex.createUser({
-                    name: 'Author name',
-                    slug: 'author2',
-                    profile_image: '/content/images/test-author-image.png',
-                    website: 'http://authorwebsite.com',
-                    bio: 'Author bio',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                })]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog description',
-                custom_excerpt: 'post custom excerpt',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_image: '/content/images/test-facebook-image.png',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author3',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser',
-                        bio: 'Author bio'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                title: 'Welcome to Ghost',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author4',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                og_image: '/content/images/test-facebook-image.png',
-                og_title: 'Custom Facebook title',
-                twitter_image: '/content/images/test-twitter-image.png',
-                twitter_title: 'Custom Twitter title',
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author5',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog "test" description',
-                title: 'title',
-                meta_title: 'Welcome to Ghost "test"',
-                feature_image: '/content/images/test-image.png',
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author6',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: '/content/images/test-image.png',
-                tags: [],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author7',
-                        profile_image: '/content/images/test-author-image.png',
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                meta_description: 'blog description',
-                title: 'Welcome to Ghost',
-                feature_image: null,
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name',
-                        url: 'http://testauthorurl.com',
-                        slug: 'author8',
-                        profile_image: null,
-                        website: 'http://authorwebsite.com',
-                        facebook: 'testuser',
-                        twitter: '@testuser'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Post.add(testUtils.DataGenerator.forKnex.createPost({
-                title: 'Welcome to Ghost',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
-                tags: [
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag1'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag2'}),
-                    testUtils.DataGenerator.forKnex.createTag({name: 'tag3'})
-                ],
-                authors: [
-                    testUtils.DataGenerator.forKnex.createUser({
-                        name: 'Author name'
-                    })
-                ]
-            }), {withRelated: ['authors', 'tags']});
-        }).then(function (post) {
-            posts.push(post.toJSON());
-
-            return models.Tag.add(testUtils.DataGenerator.forKnex.createTag({
-                meta_description: 'tag meta description',
-                name: 'tagtitle',
-                meta_title: 'tag meta title',
-                feature_image: '/content/images/tag-image.png'
-            }));
-        }).then(function (tag) {
-            tags.push(tag.toJSON());
-
-            return models.Tag.add(testUtils.DataGenerator.forKnex.createTag({
-                meta_description: '',
-                description: 'tag description',
-                name: 'tagtitle',
-                meta_title: '',
-                feature_image: '/content/images/tag-image.png'
-            }));
-        }).then(function (tag) {
-            tags.push(tag.toJSON());
-
-            return models.Tag.add(testUtils.DataGenerator.forKnex.createTag({
-                meta_description: '',
-                name: 'tagtitle',
-                meta_title: '',
-                feature_image: '/content/images/tag-image.png'
-            }));
-        }).then(function (tag) {
-            tags.push(tag.toJSON());
-
-            return models.Tag.add(testUtils.DataGenerator.forKnex.createTag({
-                meta_description: 'tag meta description',
-                title: 'tagtitle',
-                meta_title: 'tag meta title',
-                feature_image: '/content/images/tag-image.png'
-            }));
-        }).then(function (tag) {
-            tags.push(tag.toJSON());
-
-            return models.User.add(testUtils.DataGenerator.forKnex.createUser({
-                name: 'Author name',
-                slug: 'AuthorName',
-                bio: 'Author bio',
-                profile_image: '/content/images/test-author-image.png',
-                cover_image: '/content/images/author-cover-image.png',
-                website: 'http://authorwebsite.com',
-                facebook: 'testuser',
-                twitter: '@testuser'
-            }));
-        }).then(function (user) {
-            users.push(user.toJSON());
-
-            return models.User.add(testUtils.DataGenerator.forKnex.createUser({
-                name: 'Author name',
-                slug: 'AuthorName1',
-                bio: 'Author bio',
-                profile_image: '/content/images/test-author-image.png',
-                cover_image: '/content/images/author-cover-image.png',
-                website: 'http://authorwebsite.com'
-            }));
-        }).then(function (user) {
-            users.push(user.toJSON());
-        }).finally(function () {
-            return testUtils.integrationTesting.urlService.init();
-        });
+        makeFixtures();
     });
 
     after(function () {
-        testUtils.integrationTesting.urlService.resetGenerators();
         sandbox.restore();
         configUtils.restore();
     });
@@ -541,7 +508,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author2\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
@@ -603,7 +570,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author3\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
@@ -655,7 +622,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author4\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
@@ -712,7 +679,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author5\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
@@ -774,7 +741,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author6\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost &quot;test&quot;"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
@@ -831,7 +798,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author7\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
@@ -891,7 +858,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.not.match(/"image\"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/author8\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
@@ -1170,7 +1137,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"sameAs": \[\n        "http:\/\/authorwebsite.com",\n        "https:\/\/www.facebook.com\/testuser",\n        "https:\/\/twitter.com\/testuser"\n    \]/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/author\/authorname\/"/);
+                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/author-cover-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.not.match(/"description":/);

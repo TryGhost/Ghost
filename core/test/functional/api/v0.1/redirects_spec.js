@@ -10,30 +10,25 @@ var should = require('should'),
     ghost = testUtils.startGhost,
     request, accesstoken;
 
-should.equal(true, true);
-
 describe('Redirects API', function () {
-    var ghostServer;
+    let originalContentPath;
+
+    before(function () {
+        return ghost({redirectsFile: true})
+            .then(function (_ghostServer) {
+                request = supertest.agent(config.get('url'));
+            })
+            .then(function () {
+                return localUtils.doAuth(request, 'client:trusted-domain');
+            })
+            .then(function (token) {
+                accesstoken = token;
+
+                originalContentPath = configUtils.config.get('paths:contentPath');
+            });
+    });
 
     describe('Download', function () {
-        let originalContentPath;
-
-        before(function () {
-            return ghost({redirectsFile: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return localUtils.doAuth(request, 'client:trusted-domain');
-                })
-                .then(function (token) {
-                    accesstoken = token;
-
-                    originalContentPath = configUtils.config.get('paths:contentPath');
-                });
-        });
-
         afterEach(function () {
             configUtils.config.set('paths:contentPath', originalContentPath);
         });
@@ -80,6 +75,8 @@ describe('Redirects API', function () {
                     res.headers['content-type'].should.eql('application/json; charset=utf-8');
                     res.headers['content-length'].should.eql('648');
 
+                    res.body.should.not.be.empty();
+                    res.body.length.should.equal(11);
                     done();
                 });
         });
@@ -151,8 +148,7 @@ describe('Redirects API', function () {
         describe('Ensure re-registering redirects works', function () {
             var startGhost = function (options) {
                 return ghost(options)
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('url'));
                     })
                     .then(function () {

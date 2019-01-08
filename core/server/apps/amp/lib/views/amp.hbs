@@ -29,7 +29,7 @@
     {{#post}}
     <header class="main-header">
         <nav class="blog-title">
-            <a href="{{@blog.url}}">{{@blog.title}}</a>
+            <a href="{{@site.url}}">{{@site.title}}</a>
         </nav>
     </header>
 
@@ -58,7 +58,7 @@
     </main>
     {{/post}}
     <footer class="site-footer clearfix">
-        <section class="copyright"><a href="{{@blog.url}}">{{@blog.title}}</a> &copy; {{date format="YYYY"}}</section>
+        <section class="copyright"><a href="{{@site.url}}">{{@site.title}}</a> &copy; {{date format="YYYY"}}</section>
         <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
     </footer>
 </body>

@@ -46,18 +46,11 @@ describe('Posts', function () {
 
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-
-                // Public API does not return drafts and pages
-                _.map(jsonResponse.posts, (post) => {
-                    post.status.should.eql('published');
-                    post.page.should.eql(false);
-                });
 
                 // Default order check
                 jsonResponse.posts[0].slug.should.eql('welcome');
@@ -112,8 +105,8 @@ describe('Posts', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 // should content filtered data and order
                 jsonResponse.posts.should.have.length(4);
@@ -123,12 +116,6 @@ describe('Posts', function () {
                     testUtils.DataGenerator.Content.posts[1].id,
                     testUtils.DataGenerator.Content.posts[0].id,
                 ]);
-
-                // API does not return drafts
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
 
                 // Each post must either be featured or have the tag 'kitchen-sink'
                 _.each(jsonResponse.posts, (post) => {
@@ -166,8 +153,8 @@ describe('Posts', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 jsonResponse.posts.should.have.length(0);
 
                 done();
@@ -187,13 +174,9 @@ describe('Posts', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 jsonResponse.posts.should.have.length(11);
-
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                });
 
                 done();
             });
@@ -213,8 +196,8 @@ describe('Posts', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                 // 2. The data part of the response should be correct
                 // We should have 2 matching items
@@ -248,10 +231,6 @@ describe('Posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
-                jsonResponse.posts.forEach((post) => {
-                    post.page.should.be.false();
-                    post.status.should.eql('published');
-                });
 
                 done();
             });
@@ -297,7 +276,7 @@ describe('Posts', function () {
 
                 should.exist(jsonResponse.posts);
 
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
                 res.body.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
                 done();
             });
@@ -317,7 +296,7 @@ describe('Posts', function () {
 
                 should.exist(jsonResponse.posts);
 
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
                 jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
                 jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
                 done();
@@ -381,12 +360,11 @@ describe('Posts', function () {
 
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
             });
     });
@@ -427,12 +405,11 @@ describe('Posts', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
-                testUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(11);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                 done();
             });
     });
@@ -523,8 +500,7 @@ describe('Posts', function () {
                 should.exist(jsonResponse.posts);
                 should.not.exist(jsonResponse.meta);
                 jsonResponse.posts.should.have.length(1);
-                testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                jsonResponse.posts[0].page.should.eql(false);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
             });
     });
 

@@ -54,8 +54,9 @@ describe('Unit: services/url/UrlService', function () {
         urlService.queue.addListener.args[0][0].should.eql('started');
         urlService.queue.addListener.args[1][0].should.eql('ended');
 
-        common.events.on.calledOnce.should.be.true();
+        common.events.on.calledTwice.should.be.true();
         common.events.on.args[0][0].should.eql('router.created');
+        common.events.on.args[1][0].should.eql('services.themes.api.changed');
     });
 
     it('fn: _onQueueStarted', function () {

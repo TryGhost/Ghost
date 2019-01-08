@@ -23,6 +23,10 @@ module.exports = {
         return shared.pipeline(require('./pages'), localUtils);
     },
 
+    get redirects() {
+        return shared.pipeline(require('./redirects'), localUtils);
+    },
+
     get roles() {
         return shared.pipeline(require('./roles'), localUtils);
     },
@@ -67,6 +71,10 @@ module.exports = {
         return shared.pipeline(require('./tags'), localUtils);
     },
 
+    get tagsPublic() {
+        return shared.pipeline(require('./tags-public'), localUtils);
+    },
+
     get users() {
         return shared.pipeline(require('./users'), localUtils);
     },
@@ -89,5 +97,9 @@ module.exports = {
 
     get configuration() {
         return shared.pipeline(require('./configuration'), localUtils);
+    },
+
+    get publicSettings() {
+        return shared.pipeline(require('./settings-public'), localUtils);
     }
 };

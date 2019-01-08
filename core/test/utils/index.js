@@ -1054,7 +1054,13 @@ module.exports = {
 
         initGhost: function () {
             models.init();
-            return themes.init();
+
+            settingsCache.shutdown();
+
+            return settingsService.init()
+                .then(() => {
+                    return themes.init();
+                });
         },
 
         routing: {
@@ -1102,6 +1108,7 @@ module.exports = {
 
             resetGenerators: function () {
                 urlService.resetGenerators();
+                urlService.resources.reset({ignoreDBReady: true});
             }
         },
     },

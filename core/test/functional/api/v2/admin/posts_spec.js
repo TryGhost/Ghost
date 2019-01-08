@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../../core/server/config');
+const models = require('../../../../../../core/server/models');
 const ghost = testUtils.startGhost;
 let request;
 
@@ -44,10 +45,10 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -77,10 +78,10 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(3);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
@@ -105,10 +106,10 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
 
-                        testUtils.API.checkResponse(
+                        localUtils.API.checkResponse(
                             jsonResponse.posts[0],
                             'post',
                             null,
@@ -116,7 +117,7 @@ describe('Posts API V2', function () {
                             ['mobiledoc', 'id', 'title', 'html']
                         );
 
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         done();
                     });
@@ -136,15 +137,15 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(
+                        localUtils.API.checkResponse(
                             jsonResponse.posts[0],
                             'post',
                             ['tags', 'authors']
                         );
 
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         jsonResponse.posts[0].tags.length.should.eql(1);
                         jsonResponse.posts[0].authors.length.should.eql(1);
@@ -169,9 +170,9 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(11);
-                        testUtils.API.checkResponse(
+                        localUtils.API.checkResponse(
                             jsonResponse.posts[0],
                             'post',
                             null,
@@ -179,7 +180,7 @@ describe('Posts API V2', function () {
                             ['mobiledoc', 'id', 'title', 'html', 'authors']
                         );
 
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                         done();
                     });
@@ -199,10 +200,10 @@ describe('Posts API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse, 'posts');
+                        localUtils.API.checkResponse(jsonResponse, 'posts');
                         jsonResponse.posts.should.have.length(15);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                        testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                         done();
                     });
             });
@@ -241,14 +242,13 @@ describe('Posts API V2', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                         jsonResponse.posts[0].author.should.be.a.String();
                         testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
-                        jsonResponse.posts[0].created_by.should.be.a.String();
                         // Tags aren't included by default
                         should.not.exist(jsonResponse.posts[0].tags);
                         done();
@@ -273,7 +273,7 @@ describe('Posts API V2', function () {
                         jsonResponse.posts.should.have.length(1);
                         jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
 
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
 
                         done();
                     });
@@ -294,13 +294,12 @@ describe('Posts API V2', function () {
                         var jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                         jsonResponse.posts[0].slug.should.equal('welcome');
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                         jsonResponse.posts[0].author.should.be.a.String();
-                        jsonResponse.posts[0].created_by.should.be.a.String();
                         // Tags aren't included by default
                         should.not.exist(jsonResponse.posts[0].tags);
                         done();
@@ -309,7 +308,7 @@ describe('Posts API V2', function () {
 
             it('with includes', function (done) {
                 request
-                    .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,created_by'))
+                    .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags'))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -324,16 +323,16 @@ describe('Posts API V2', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.posts);
 
-                        testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
 
                         jsonResponse.posts[0].author.should.be.a.String();
                         jsonResponse.posts[0].page.should.not.be.ok();
 
                         jsonResponse.posts[0].authors[0].should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user', ['url']);
 
                         jsonResponse.posts[0].tags[0].should.be.an.Object();
-                        testUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
                         done();
                     });
             });
@@ -381,16 +380,22 @@ describe('Posts API V2', function () {
                     .expect(201)
                     .then((res) => {
                         res.body.posts.length.should.eql(1);
-                        testUtils.API.checkResponse(res.body.posts[0], 'post');
+                        localUtils.API.checkResponse(res.body.posts[0], 'post');
                         should.not.exist(res.headers['x-cache-invalidate']);
 
-                        res.body.posts[0].title.should.eql(post.title);
-                        res.body.posts[0].status.should.eql(post.status);
-                        res.body.posts[0].published_at.should.eql('2016-05-30T07:00:00.000Z');
-                        res.body.posts[0].created_at.should.not.eql(post.created_at.toISOString());
-                        res.body.posts[0].updated_at.should.not.eql(post.updated_at.toISOString());
-                        res.body.posts[0].updated_by.should.not.eql(post.updated_by);
-                        res.body.posts[0].created_by.should.not.eql(post.created_by);
+                        return models.Post.findOne({
+                            id: res.body.posts[0].id,
+                            status: 'draft'
+                        }, testUtils.context.internal);
+                    })
+                    .then((model) => {
+                        model.get('title').should.eql(post.title);
+                        model.get('status').should.eql(post.status);
+                        model.get('published_at').toISOString().should.eql('2016-05-30T07:00:00.000Z');
+                        model.get('created_at').toISOString().should.not.eql(post.created_at.toISOString());
+                        model.get('updated_at').toISOString().should.not.eql(post.updated_at.toISOString());
+                        model.get('updated_by').should.not.eql(post.updated_by);
+                        model.get('created_by').should.not.eql(post.created_by);
                     });
             });
 
@@ -412,7 +417,7 @@ describe('Posts API V2', function () {
                     .expect(201)
                     .then((res) => {
                         res.body.posts.length.should.eql(1);
-                        testUtils.API.checkResponse(res.body.posts[0], 'post');
+                        localUtils.API.checkResponse(res.body.posts[0], 'post');
                         res.body.posts[0].status.should.eql('published');
                         res.headers['x-cache-invalidate'].should.eql('/*');
 
@@ -440,7 +445,7 @@ describe('Posts API V2', function () {
                     .expect(200)
                     .then((res) => {
                         res.headers['x-cache-invalidate'].should.eql('/*');
-                        testUtils.API.checkResponse(res.body.posts[0], 'post');
+                        localUtils.API.checkResponse(res.body.posts[0], 'post');
 
                         res.body.posts[0].title.should.eql(post.title);
                         res.body.posts[0].author.should.eql(post.author);
@@ -466,15 +471,20 @@ describe('Posts API V2', function () {
                     .expect(200)
                     .then((res) => {
                         res.headers['x-cache-invalidate'].should.eql('/*');
-                        testUtils.API.checkResponse(res.body.posts[0], 'post');
+                        localUtils.API.checkResponse(res.body.posts[0], 'post');
 
+                        return models.Post.findOne({
+                            id: res.body.posts[0].id
+                        }, testUtils.context.internal);
+                    })
+                    .then((model) => {
                         // We expect that the changed properties aren't changed, they are still the same than before.
-                        res.body.posts[0].created_by.should.not.eql(post.created_by);
-                        res.body.posts[0].updated_by.should.not.eql(post.updated_by);
-                        res.body.posts[0].created_at.should.not.eql(post.created_at);
+                        model.get('created_at').toISOString().should.not.eql(post.created_at);
+                        model.get('updated_by').should.not.eql(post.updated_by);
+                        model.get('created_by').should.not.eql(post.created_by);
 
                         // `updated_at` is automatically set, but it's not the date we send to override.
-                        res.body.posts[0].updated_at.should.not.eql(post.updated_at);
+                        model.get('updated_at').toISOString().should.not.eql(post.updated_at);
                     });
             });
 
@@ -526,7 +536,7 @@ describe('Posts API V2', function () {
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(res.body.posts);
                         should.exist(res.body.posts[0].published_at);
-                        testUtils.API.checkResponse(res.body.posts[0], 'post');
+                        localUtils.API.checkResponse(res.body.posts[0], 'post');
                     });
             });
         });

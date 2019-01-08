@@ -46,6 +46,9 @@ ghostBookshelf.plugin(plugins.pagination);
 // Update collision plugin
 ghostBookshelf.plugin(plugins.collision);
 
+// Load hasPosts plugin for authors models
+ghostBookshelf.plugin(plugins.hasPosts);
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
@@ -279,6 +282,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *   - importing data
      *   - internal context
      *   - if no context
+     *
+     * @deprecated: x_by fields (https://github.com/TryGhost/Ghost/issues/10286)
      */
     onUpdating: function onUpdating(newObj, attr, options) {
         if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
@@ -1028,6 +1033,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             };
             const exclude = options.exclude;
             const filter = options.filter;
+            const shouldHavePosts = options.shouldHavePosts;
             const withRelated = options.withRelated;
             const withRelatedFields = options.withRelatedFields;
             const relations = {
@@ -1082,6 +1088,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             // @NOTE: We can't use the filter plugin, because we are not using bookshelf.
             nql(filter).querySQL(query);
+
+            if (shouldHavePosts) {
+                require('../plugins/has-posts').addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
+            }
+
+            if (options.id) {
+                query.where({id: options.id});
+            }
 
             return query.then((objects) => {
                 debug('fetched', modelName, filter);

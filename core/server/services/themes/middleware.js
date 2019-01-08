@@ -45,18 +45,7 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
 themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
-    var blogData = {
-            title: settingsCache.get('title'),
-            description: settingsCache.get('description'),
-            facebook: settingsCache.get('facebook'),
-            twitter: settingsCache.get('twitter'),
-            timezone: settingsCache.get('active_timezone'),
-            navigation: settingsCache.get('navigation'),
-            icon: settingsCache.get('icon'),
-            cover_image: settingsCache.get('cover_image'),
-            logo: settingsCache.get('logo'),
-            amp: settingsCache.get('amp')
-        },
+    var siteData = settingsCache.getPublic(),
         labsData = _.cloneDeep(settingsCache.get('labs')),
         themeData = {};
 
@@ -77,16 +66,18 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
     // Request-specific information
     // These things are super dependent on the request, so they need to be in middleware
     // Serve the blog url without trailing slash
-    blogData.url = urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
+    siteData.url = urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose to render https or http 'url', see url utility
     res.locals.secure = req.secure;
 
     // @TODO: only do this if something changed?
+    // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
     hbs.updateTemplateOptions({
         data: {
-            blog: blogData,
+            blog: siteData,
+            site: siteData,
             labs: labsData,
             config: themeData
         }

@@ -1,144 +1,21 @@
-const debug = require('ghost-ignition').debug('services:url:resources'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    Resource = require('./Resource'),
-    config = require('../../config'),
-    models = require('../../models'),
-    common = require('../../lib/common');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const debug = require('ghost-ignition').debug('services:url:resources');
+const Resource = require('./Resource');
+const config = require('../../config');
+const models = require('../../models');
+const common = require('../../lib/common');
 
 /**
- * These are the default resources and filters.
- * These are the minimum filters for public accessibility of resources.
- */
-const resourcesConfig = [
-    {
-        type: 'posts',
-        modelOptions: {
-            modelName: 'Post',
-            filter: 'visibility:public+status:published+page:false',
-            exclude: [
-                'title',
-                'mobiledoc',
-                'html',
-                'plaintext',
-                'amp',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'feature_image',
-                'locale'
-            ],
-            withRelated: ['tags', 'authors'],
-            withRelatedPrimary: {
-                primary_tag: 'tags',
-                primary_author: 'authors'
-            },
-            withRelatedFields: {
-                tags: ['tags.id', 'tags.slug'],
-                authors: ['users.id', 'users.slug']
-            }
-        },
-        events: {
-            add: 'post.published',
-            update: 'post.published.edited',
-            remove: 'post.unpublished'
-        }
-    },
-    {
-        type: 'pages',
-        modelOptions: {
-            modelName: 'Post',
-            exclude: [
-                'title',
-                'mobiledoc',
-                'html',
-                'plaintext',
-                'amp',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'feature_image',
-                'locale',
-                'tags',
-                'authors',
-                'primary_tag',
-                'primary_author'
-            ],
-            filter: 'visibility:public+status:published+page:true'
-        },
-        events: {
-            add: 'page.published',
-            update: 'page.published.edited',
-            remove: 'page.unpublished'
-        }
-    },
-    {
-        type: 'tags',
-        keep: ['id', 'slug', 'updated_at', 'created_at'],
-        modelOptions: {
-            modelName: 'Tag',
-            exclude: [
-                'description',
-                'meta_title',
-                'meta_description'
-            ],
-            filter: 'visibility:public'
-        },
-        events: {
-            add: 'tag.added',
-            update: 'tag.edited',
-            remove: 'tag.deleted'
-        }
-    },
-    {
-        type: 'authors',
-        modelOptions: {
-            modelName: 'User',
-            exclude: [
-                'bio',
-                'website',
-                'location',
-                'facebook',
-                'twitter',
-                'accessibility',
-                'meta_title',
-                'meta_description',
-                'tour'
-            ],
-            filter: 'visibility:public'
-        },
-        events: {
-            add: 'user.activated',
-            update: 'user.activated.edited',
-            remove: 'user.deactivated'
-        }
-    }
-];
-
-/**
- * NOTE: We are querying knex directly, because the Bookshelf ORM overhead is too slow.
+ * At the moment Resource service is directly responsible for data population
+ * for URLs in UrlService. But because it's actually a storage of all possible
+ * resources in the system, could also be used as a cache for Content API in
+ * the future.
  */
 class Resources {
     constructor(queue) {
         this.queue = queue;
+        this.resourcesConfig = [];
         this.data = {};
 
         this.listeners = [];
@@ -160,24 +37,44 @@ class Resources {
          * Currently the url service needs to use the settings cache,
          * because we need to `settings.permalink`.
          */
-        this._listenOn('db.ready', this._onDatabaseReady.bind(this));
+        this._listenOn('db.ready', this.fetchResources.bind(this));
     }
 
-    _onDatabaseReady() {
+    _initResourceConfig() {
+        if (!_.isEmpty(this.resourcesConfig)) {
+            return this.resourceConfig;
+        }
+
+        this.resourcesAPIVersion = require('../themes').getActive().engine('ghost-api') || 'v0.1';
+        this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
+    }
+
+    fetchResources() {
         const ops = [];
         debug('db ready. settings cache ready.');
+        this._initResourceConfig();
 
-        _.each(resourcesConfig, (resourceConfig) => {
+        _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
+
+            // NOTE: We are querying knex directly, because the Bookshelf ORM overhead is too slow.
             ops.push(this._fetch(resourceConfig));
 
             this._listenOn(resourceConfig.events.add, (model) => {
                 return this._onResourceAdded.bind(this)(resourceConfig.type, model);
             });
 
-            this._listenOn(resourceConfig.events.update, (model) => {
-                return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
-            });
+            if (_.isArray(resourceConfig.events.update)) {
+                resourceConfig.events.update.forEach((event) => {
+                    this._listenOn(event, (model) => {
+                        return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                    });
+                });
+            } else {
+                this._listenOn(resourceConfig.events.update, (model) => {
+                    return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                });
+            }
 
             this._listenOn(resourceConfig.events.remove, (model) => {
                 return this._onResourceRemoved.bind(this)(resourceConfig.type, model);
@@ -222,59 +119,37 @@ class Resources {
             });
     }
 
+    _fetchSingle(resourceConfig, id) {
+        let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
+        modelOptions.id = id;
+
+        return models.Base.Model.raw_knex.fetchAll(modelOptions);
+    }
+
     _onResourceAdded(type, model) {
-        const resourceConfig = _.find(resourcesConfig, {type: type});
-        const exclude = resourceConfig.modelOptions.exclude;
-        const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-        const obj = _.omit(model.toJSON(), exclude);
+        const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
-        if (withRelatedFields) {
-            _.each(withRelatedFields, (fields, key) => {
-                if (!obj[key]) {
-                    return;
-                }
+        return Promise.resolve()
+            .then(() => {
+                return this._fetchSingle(resourceConfig, model.id);
+            })
+            .then(([dbResource]) => {
+                if (dbResource) {
+                    const resource = new Resource(type, dbResource);
 
-                obj[key] = _.map(obj[key], (relation) => {
-                    const relationToReturn = {};
+                    debug('_onResourceAdded', type);
+                    this.data[type].push(resource);
 
-                    _.each(fields, (field) => {
-                        const fieldSanitized = field.replace(/^\w+./, '');
-                        relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                    this.queue.start({
+                        event: 'added',
+                        action: 'added:' + model.id,
+                        eventData: {
+                            id: model.id,
+                            type: type
+                        }
                     });
-
-                    return relationToReturn;
-                });
+                }
             });
-
-            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-            if (withRelatedPrimary) {
-                _.each(withRelatedPrimary, (relation, primaryKey) => {
-                    if (!obj[primaryKey] || !obj[relation]) {
-                        return;
-                    }
-
-                    const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                        return item.id === obj[primaryKey].id;
-                    }));
-                    obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
-                });
-            }
-        }
-
-        const resource = new Resource(type, obj);
-
-        debug('_onResourceAdded', type);
-        this.data[type].push(resource);
-
-        this.queue.start({
-            event: 'added',
-            action: 'added:' + model.id,
-            eventData: {
-                id: model.id,
-                type: type
-            }
-        });
     }
 
     /**
@@ -294,67 +169,35 @@ class Resources {
     _onResourceUpdated(type, model) {
         debug('_onResourceUpdated', type);
 
-        this.data[type].every((resource) => {
-            if (resource.data.id === model.id) {
-                const resourceConfig = _.find(resourcesConfig, {type: type});
-                const exclude = resourceConfig.modelOptions.exclude;
-                const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-                const obj = _.omit(model.toJSON(), exclude);
+        const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
-                if (withRelatedFields) {
-                    _.each(withRelatedFields, (fields, key) => {
-                        if (!obj[key]) {
-                            return;
-                        }
+        return Promise.resolve()
+            .then(() => {
+                return this._fetchSingle(resourceConfig, model.id);
+            })
+            .then(([dbResource]) => {
+                const resource = this.data[type].find(resource => (resource.data.id === model.id));
 
-                        obj[key] = _.map(obj[key], (relation) => {
-                            const relationToReturn = {};
+                if (resource && dbResource) {
+                    resource.update(dbResource);
 
-                            _.each(fields, (field) => {
-                                const fieldSanitized = field.replace(/^\w+./, '');
-                                relationToReturn[fieldSanitized] = relation[fieldSanitized];
-                            });
-
-                            return relationToReturn;
-                        });
-                    });
-
-                    const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-                    if (withRelatedPrimary) {
-                        _.each(withRelatedPrimary, (relation, primaryKey) => {
-                            if (!obj[primaryKey] || !obj[relation]) {
-                                return;
+                    // CASE: pretend it was added
+                    if (!resource.isReserved()) {
+                        this.queue.start({
+                            event: 'added',
+                            action: 'added:' + dbResource.id,
+                            eventData: {
+                                id: dbResource.id,
+                                type: type
                             }
-
-                            const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                                return item.id === obj[primaryKey].id;
-                            }));
-                            obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
                         });
                     }
+                } else if (!resource && dbResource) {
+                    this._onResourceAdded(type, model);
+                } else if (resource && !dbResource) {
+                    this._onResourceRemoved(type, model);
                 }
-
-                resource.update(obj);
-
-                // CASE: pretend it was added
-                if (!resource.isReserved()) {
-                    this.queue.start({
-                        event: 'added',
-                        action: 'added:' + model.id,
-                        eventData: {
-                            id: model.id,
-                            type: type
-                        }
-                    });
-                }
-
-                // break!
-                return false;
-            }
-
-            return true;
-        });
+            });
     }
 
     _onResourceRemoved(type, model) {
@@ -394,19 +237,24 @@ class Resources {
         return _.find(this.data[type], {data: {id: id}});
     }
 
-    reset() {
+    reset(options = {ignoreDBReady: false}) {
         _.each(this.listeners, (obj) => {
+            if (obj.eventName === 'db.ready' && options.ignoreDBReady) {
+                return;
+            }
+
             common.events.removeListener(obj.eventName, obj.listener);
         });
 
         this.listeners = [];
         this.data = {};
+        this.resourcesConfig = null;
     }
 
     softReset() {
         this.data = {};
 
-        _.each(resourcesConfig, (resourceConfig) => {
+        _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
         });
     }

@@ -62,13 +62,13 @@ describe('User API V2', function () {
 
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
+                        localUtils.API.checkResponse(jsonResponse, 'users');
 
                         // owner use + ghost-author user when Ghost starts
                         // and two extra users, see createUser in before
                         jsonResponse.users.should.have.length(4);
 
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
 
                         jsonResponse.users[0].email.should.eql(admin.email);
                         jsonResponse.users[0].status.should.eql(admin.status);
@@ -106,10 +106,10 @@ describe('User API V2', function () {
                         should.not.exist(res.headers['x-cache-invalidate']);
                         var jsonResponse = res.body;
                         should.exist(jsonResponse.users);
-                        testUtils.API.checkResponse(jsonResponse, 'users');
+                        localUtils.API.checkResponse(jsonResponse, 'users');
 
                         jsonResponse.users.should.have.length(4);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'url']);
                         done();
                     });
             });
@@ -150,7 +150,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -172,7 +172,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -194,7 +194,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -216,7 +216,7 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['url']);
                         done();
                     });
             });
@@ -238,8 +238,8 @@ describe('User API V2', function () {
                         should.not.exist(jsonResponse.meta);
 
                         jsonResponse.users.should.have.length(1);
-                        testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count', 'url']);
-                        testUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
+                        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count', 'url']);
+                        localUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
                         done();
                     });
             });
@@ -310,7 +310,7 @@ describe('User API V2', function () {
                         should.exist(putBody.users[0]);
                         putBody.users[0].website.should.eql('http://joe-bloggs.ghost.org');
                         putBody.users[0].email.should.eql('jbloggs@example.com');
-                        testUtils.API.checkResponse(putBody.users[0], 'user', ['url']);
+                        localUtils.API.checkResponse(putBody.users[0], 'user', ['url']);
 
                         should.not.exist(putBody.users[0].password);
 
@@ -324,55 +324,6 @@ describe('User API V2', function () {
                             .then(Promise.reject)
                             .catch((err) => {
                                 err.code.should.eql('PASSWORD_INCORRECT');
-                                done();
-                            });
-                    });
-            });
-
-            it('check which fields can be modified', function (done) {
-                var existingUserData, modifiedUserData;
-
-                request.get(localUtils.API.getApiQuery('users/me/'))
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        var jsonResponse = res.body;
-                        should.exist(jsonResponse.users[0]);
-                        existingUserData = _.cloneDeep(jsonResponse.users[0]);
-                        modifiedUserData = _.cloneDeep(jsonResponse);
-
-                        existingUserData.created_by.should.eql('1');
-                        existingUserData.updated_by.should.eql('1');
-
-                        modifiedUserData.users[0].created_at = moment().add(2, 'days').format();
-                        modifiedUserData.users[0].updated_at = moment().add(2, 'days').format();
-                        modifiedUserData.users[0].created_by = ObjectId.generate();
-                        modifiedUserData.users[0].updated_by = ObjectId.generate();
-
-                        delete modifiedUserData.users[0].id;
-
-                        request.put(localUtils.API.getApiQuery('users/me/'))
-                            .set('Origin', config.get('url'))
-                            .send(modifiedUserData)
-                            .expect(200)
-                            .end(function (err, res) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                var jsonResponse = res.body;
-                                should.exist(jsonResponse.users[0]);
-
-                                jsonResponse.users[0].created_by.should.eql(existingUserData.created_by);
-                                jsonResponse.users[0].updated_by.should.eql(existingUserData.updated_by);
-                                jsonResponse.users[0].updated_at.should.not.eql(modifiedUserData.updated_at);
-                                jsonResponse.users[0].created_at.should.eql(existingUserData.created_at);
-
                                 done();
                             });
                     });

@@ -23,7 +23,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('static pages', function () {
             const routerOptions = {
                 permalinks: '/:slug/',
-                query: {alias: 'pages', resource: 'posts'}
+                query: {controller: 'posts', resource: 'posts'}
             };
 
             let pages;
@@ -54,7 +54,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('Permalinks: /:slug/', function () {
             const routerOptions = {
                 permalinks: '/:slug/',
-                query: {alias: 'pages', resource: 'posts'}
+                query: {controller: 'posts', resource: 'posts'}
             };
 
             beforeEach(function () {
@@ -122,7 +122,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('Permalinks: /:year/:month/:day/:slug/', function () {
             const routerOptions = {
                 permalinks: '/:year/:month/:day/:slug/',
-                query: {alias: 'pages', resource: 'posts'}
+                query: {controller: 'posts', resource: 'posts'}
             };
 
             beforeEach(function () {
@@ -194,7 +194,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('with url options', function () {
             const routerOptions = {
                 permalinks: '/:slug/:options(edit)?',
-                query: {alias: 'pages', resource: 'posts'}
+                query: {controller: 'posts', resource: 'posts'}
             };
 
             beforeEach(function () {
@@ -274,7 +274,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('static pages', function () {
             const routerOptions = {
                 permalinks: '/:slug/',
-                query: {alias: 'pages', resource: 'posts'}
+                query: {controller: 'pages', resource: 'pages'}
             };
 
             let pages;
@@ -325,7 +325,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('posts', function () {
             const routerOptions = {
                 permalinks: '/:slug/',
-                query: {alias: 'posts', resource: 'posts'}
+                query: {controller: 'posts', resource: 'posts'}
             };
 
             let posts;

@@ -42,7 +42,7 @@ describe('Settings API V2', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse);
 
-                testUtils.API.checkResponse(jsonResponse, 'settings');
+                localUtils.API.checkResponse(jsonResponse, 'settings');
 
                 JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
                 JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
@@ -76,7 +76,7 @@ describe('Settings API V2', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.settings);
 
-                testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'updated_by']);
+                testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
                 jsonResponse.settings[0].key.should.eql('title');
                 testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
                 done();
@@ -164,7 +164,7 @@ describe('Settings API V2', function () {
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
                         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
-                        testUtils.API.checkResponse(putBody, 'settings');
+                        localUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
             });

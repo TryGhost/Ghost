@@ -44,37 +44,37 @@ describe('Authors Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
-                testUtils.API.checkResponse(jsonResponse, 'authors');
-                jsonResponse.authors.should.have.length(7);
+                localUtils.API.checkResponse(jsonResponse, 'authors');
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address, status and other attrs.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null);
 
                 should.exist(res.body.authors[0].url);
                 should.exist(url.parse(res.body.authors[0].url).protocol);
                 should.exist(url.parse(res.body.authors[0].url).host);
 
                 // Public api returns all authors, but no status! Locked/Inactive authors can still have written articles.
-                models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
+                models.Author.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
                     .then((response) => {
-                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
+                        _.map(response.data, (model) => model.toJSON()).length.should.eql(3);
                         done();
                     });
             });
     });
 
-    it('browse authors: throws error if trying to fetch roles', function (done) {
+    it('browse authors: does not give back roles if trying to fetch roles', function (done) {
         request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=roles`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422)
+            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                should.not.exist(res.headers['x-cache-invalidate']);
+                should.not.exist(res.body.authors[0].roles);
                 done();
             });
     });
@@ -97,7 +97,7 @@ describe('Authors Content API V2', function () {
                 jsonResponse.authors.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });
@@ -120,7 +120,7 @@ describe('Authors Content API V2', function () {
                 jsonResponse.authors.should.have.length(1);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });
@@ -139,29 +139,21 @@ describe('Authors Content API V2', function () {
                 var jsonResponse = res.body;
 
                 should.exist(jsonResponse.authors);
-                jsonResponse.authors.should.have.length(7);
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
 
-                // Each user should have the correct count
+                // Each user should have the correct count and be more than 0
                 _.find(jsonResponse.authors, {slug:'joe-bloggs'}).count.posts.should.eql(4);
-                _.find(jsonResponse.authors, {slug:'contributor'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
-                _.find(jsonResponse.authors, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
-                _.find(jsonResponse.authors, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
                 _.find(jsonResponse.authors, {slug:'ghost'}).count.posts.should.eql(7);
-                _.find(jsonResponse.authors, {slug:'inactive'}).count.posts.should.eql(0);
 
                 const ids = jsonResponse.authors
                     .filter(author => (author.slug !== 'ghost'))
-                    .filter(author => (author.slug !== 'inactive'))
                     .map(user=> user.id);
 
                 ids.should.eql([
-                    testUtils.DataGenerator.Content.users[1].id,
-                    testUtils.DataGenerator.Content.users[2].id,
-                    testUtils.DataGenerator.Content.users[7].id,
                     testUtils.DataGenerator.Content.users[3].id,
                     testUtils.DataGenerator.Content.users[0].id
                 ]);
@@ -184,11 +176,11 @@ describe('Authors Content API V2', function () {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.authors);
-                testUtils.API.checkResponse(jsonResponse, 'authors');
-                jsonResponse.authors.should.have.length(7);
+                localUtils.API.checkResponse(jsonResponse, 'authors');
+                jsonResponse.authors.should.have.length(3);
 
                 // We don't expose the email address.
-                testUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null, {public: true});
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
                 done();
             });
     });

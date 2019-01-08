@@ -158,6 +158,7 @@ class BaseSiteMapGenerator {
     reset() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
+        this.siteMapContent = null;
     }
 }
 
