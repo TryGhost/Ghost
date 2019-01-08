@@ -20,6 +20,22 @@ function includeTags(frame) {
     }
 }
 
+/**
+ * CASE:
+ *
+ * - the content api endpoints for posts should only return non page type resources
+ * - we have to enforce the filter
+ *
+ * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+ */
+function addPageFilter(frame) {
+    if (frame.options.filter) {
+        frame.options.filter = `${frame.options.filter}+page:false`;
+    } else {
+        frame.options.filter = 'page:false';
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -32,20 +48,7 @@ module.exports = {
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
-            /**
-             * CASE:
-             *
-             * - the content api endpoints for posts should only return non page type resources
-             * - we have to enforce the filter
-             *
-             * @TODO: https://github.com/TryGhost/Ghost/issues/10268
-             */
-            if (frame.options.filter) {
-                frame.options.filter = `${frame.options.filter}+page:false`;
-            } else {
-                frame.options.filter = 'page:false';
-            }
-
+            addPageFilter(frame);
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
 
@@ -69,7 +72,7 @@ module.exports = {
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
-            frame.data.page = false;
+            addPageFilter(frame);
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
             if (labs.isSet('members')) {
