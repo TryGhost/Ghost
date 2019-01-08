@@ -417,8 +417,6 @@ describe('Frontend Routing', function () {
             testUtils.clearData().then(function () {
                 return testUtils.initData();
             }).then(function () {
-                return testUtils.fixtures.insertPostsAndTags();
-            }).then(function () {
                 done();
             }).catch(done);
         });
@@ -446,7 +444,29 @@ describe('Frontend Routing', function () {
         });
 
         it('should serve sitemap-pages.xml', function (done) {
-            request.get('/sitemap-posts.xml')
+            request.get('/sitemap-pages.xml')
+                .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
+        });
+
+        it('should serve sitemap-tags.xml', function (done) {
+            request.get('/sitemap-tags.xml')
+                .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(function (err, res) {
+                    res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
+        });
+
+        it('should serve sitemap-users.xml', function (done) {
+            request.get('/sitemap-users.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')

@@ -448,7 +448,7 @@ describe('Post Model', function () {
                         });
                 }).then(function () {
                     // txn was successful
-                    Object.keys(eventsTriggered).length.should.eql(4);
+                    Object.keys(eventsTriggered).length.should.eql(6);
                 });
             });
 
@@ -560,9 +560,11 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.published']);
                     should.exist(eventsTriggered['post.edited']);
+                    should.exist(eventsTriggered['tag.attached']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -583,7 +585,7 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.unpublished']);
                     should.exist(eventsTriggered['post.edited']);
 
@@ -895,10 +897,12 @@ describe('Post Model', function () {
                     edited.attributes.status.should.equal('published');
                     edited.attributes.page.should.equal(true);
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
+                    Object.keys(eventsTriggered).length.should.eql(5);
                     should.exist(eventsTriggered['post.deleted']);
                     should.exist(eventsTriggered['page.added']);
                     should.exist(eventsTriggered['page.published']);
+                    should.exist(eventsTriggered['tag.attached']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     return models.Post.edit({page: 0, status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
@@ -906,7 +910,7 @@ describe('Post Model', function () {
                     edited.attributes.status.should.equal('draft');
                     edited.attributes.page.should.equal(false);
 
-                    Object.keys(eventsTriggered).length.should.eql(6);
+                    Object.keys(eventsTriggered).length.should.eql(8);
                     should.exist(eventsTriggered['page.unpublished']);
                     should.exist(eventsTriggered['page.deleted']);
                     should.exist(eventsTriggered['post.added']);
@@ -1070,8 +1074,9 @@ describe('Post Model', function () {
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
@@ -1082,7 +1087,7 @@ describe('Post Model', function () {
                     publishedPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
+                    Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.published']);
                     should.exist(eventsTriggered['post.edited']);
 
@@ -1113,9 +1118,10 @@ describe('Post Model', function () {
                     should.exist(newPost);
                     new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.added']);
                     should.exist(eventsTriggered['post.published']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1130,8 +1136,9 @@ describe('Post Model', function () {
                     should.exist(newPost);
                     should.not.exist(newPost.get('published_at'));
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1165,8 +1172,9 @@ describe('Post Model', function () {
                     should.exist(newPost);
                     should.exist(newPost.get('published_at'));
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1221,9 +1229,10 @@ describe('Post Model', function () {
                 }, context).then(function (post) {
                     should.exist(post);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.added']);
                     should.exist(eventsTriggered['post.scheduled']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1239,9 +1248,10 @@ describe('Post Model', function () {
                 }, context).then(function (post) {
                     should.exist(post);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['page.added']);
                     should.exist(eventsTriggered['page.scheduled']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1272,14 +1282,15 @@ describe('Post Model', function () {
                     should.exist(createdPost);
                     createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     return createdPost.save({title: untrimmedUpdateTitle}, context);
                 }).then(function (updatedPost) {
                     updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.edited']);
 
                     done();
@@ -1322,8 +1333,9 @@ describe('Post Model', function () {
                         post.get('slug').should.equal('test-title-' + num);
                         JSON.parse(post.get('mobiledoc')).cards[0][1].markdown.should.equal('Test Content ' + num);
 
-                        Object.keys(eventsTriggered).length.should.eql(1);
+                        Object.keys(eventsTriggered).length.should.eql(2);
                         should.exist(eventsTriggered['post.added']);
+                        should.exist(eventsTriggered['user.attached']);
                         eventsTriggered['post.added'].length.should.eql(12);
                     });
 
@@ -1340,8 +1352,9 @@ describe('Post Model', function () {
                 models.Post.add(newPost, context).then(function (createdPost) {
                     createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 }).catch(done);
@@ -1356,8 +1369,9 @@ describe('Post Model', function () {
                 models.Post.add(newPost, context).then(function (createdPost) {
                     createdPost.get('slug').should.not.equal('rss');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     done();
                 });
@@ -1391,8 +1405,9 @@ describe('Post Model', function () {
                         // Store the slug for later
                         firstPost.slug = createdFirstPost.get('slug');
 
-                        Object.keys(eventsTriggered).length.should.eql(1);
+                        Object.keys(eventsTriggered).length.should.eql(2);
                         should.exist(eventsTriggered['post.added']);
+                        should.exist(eventsTriggered['user.attached']);
 
                         // Create the second post
                         return models.Post.add(secondPost, context);
@@ -1400,8 +1415,9 @@ describe('Post Model', function () {
                     // Store the slug for comparison later
                     secondPost.slug = createdSecondPost.get('slug');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
 
                     // Update with a conflicting slug from the first post
                     return createdSecondPost.save({
@@ -1413,7 +1429,7 @@ describe('Post Model', function () {
                     // Should not have a conflicted slug from the first
                     updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.edited']);
 
                     return models.Post.findOne({
@@ -1476,9 +1492,11 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.unpublished']);
                     should.exist(eventsTriggered['post.deleted']);
+                    should.exist(eventsTriggered['user.detached']);
+                    should.exist(eventsTriggered['tag.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1514,8 +1532,10 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.deleted']);
+                    should.exist(eventsTriggered['tag.detached']);
+                    should.exist(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1551,9 +1571,10 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
+                    Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['page.unpublished']);
                     should.exist(eventsTriggered['page.deleted']);
+                    should.exist(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
@@ -1587,8 +1608,9 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
+                    Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['page.deleted']);
+                    should.exist(eventsTriggered['user.detached']);
 
                     // Double check we can't find the post again
                     return models.Post.findOne(firstItemData);
