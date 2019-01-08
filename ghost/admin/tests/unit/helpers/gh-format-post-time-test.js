@@ -16,7 +16,7 @@ describe('Unit: Helper: gh-format-post-time', function () {
         needs: ['service:settings']
     });
 
-    let sandbox = sinon.sandbox.create();
+    let sandbox = sinon.createSandbox();
 
     afterEach(function () {
         sandbox.restore();
