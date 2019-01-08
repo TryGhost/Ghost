@@ -64,9 +64,17 @@ class Resources {
                 return this._onResourceAdded.bind(this)(resourceConfig.type, model);
             });
 
-            this._listenOn(resourceConfig.events.update, (model) => {
-                return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
-            });
+            if (_.isArray(resourceConfig.events.update)) {
+                resourceConfig.events.update.forEach((event) => {
+                    this._listenOn(event, (model) => {
+                        return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                    });
+                });
+            } else {
+                this._listenOn(resourceConfig.events.update, (model) => {
+                    return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                });
+            }
 
             this._listenOn(resourceConfig.events.remove, (model) => {
                 return this._onResourceRemoved.bind(this)(resourceConfig.type, model);
@@ -111,59 +119,37 @@ class Resources {
             });
     }
 
+    _fetchSingle(resourceConfig, id) {
+        let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
+        modelOptions.id = id;
+
+        return models.Base.Model.raw_knex.fetchAll(modelOptions);
+    }
+
     _onResourceAdded(type, model) {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
-        const exclude = resourceConfig.modelOptions.exclude;
-        const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-        const obj = _.omit(model.toJSON(), exclude);
 
-        if (withRelatedFields) {
-            _.each(withRelatedFields, (fields, key) => {
-                if (!obj[key]) {
-                    return;
-                }
+        return Promise.resolve()
+            .then(() => {
+                return this._fetchSingle(resourceConfig, model.id);
+            })
+            .then(([dbResource]) => {
+                if (dbResource) {
+                    const resource = new Resource(type, dbResource);
 
-                obj[key] = _.map(obj[key], (relation) => {
-                    const relationToReturn = {};
+                    debug('_onResourceAdded', type);
+                    this.data[type].push(resource);
 
-                    _.each(fields, (field) => {
-                        const fieldSanitized = field.replace(/^\w+./, '');
-                        relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                    this.queue.start({
+                        event: 'added',
+                        action: 'added:' + model.id,
+                        eventData: {
+                            id: model.id,
+                            type: type
+                        }
                     });
-
-                    return relationToReturn;
-                });
+                }
             });
-
-            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-            if (withRelatedPrimary) {
-                _.each(withRelatedPrimary, (relation, primaryKey) => {
-                    if (!obj[primaryKey] || !obj[relation]) {
-                        return;
-                    }
-
-                    const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                        return item.id === obj[primaryKey].id;
-                    }));
-                    obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
-                });
-            }
-        }
-
-        const resource = new Resource(type, obj);
-
-        debug('_onResourceAdded', type);
-        this.data[type].push(resource);
-
-        this.queue.start({
-            event: 'added',
-            action: 'added:' + model.id,
-            eventData: {
-                id: model.id,
-                type: type
-            }
-        });
     }
 
     /**
@@ -183,67 +169,35 @@ class Resources {
     _onResourceUpdated(type, model) {
         debug('_onResourceUpdated', type);
 
-        this.data[type].every((resource) => {
-            if (resource.data.id === model.id) {
-                const resourceConfig = _.find(this.resourcesConfig, {type: type});
-                const exclude = resourceConfig.modelOptions.exclude;
-                const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-                const obj = _.omit(model.toJSON(), exclude);
+        const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
-                if (withRelatedFields) {
-                    _.each(withRelatedFields, (fields, key) => {
-                        if (!obj[key]) {
-                            return;
-                        }
+        return Promise.resolve()
+            .then(() => {
+                return this._fetchSingle(resourceConfig, model.id);
+            })
+            .then(([dbResource]) => {
+                const resource = this.data[type].find(resource => (resource.data.id === model.id));
 
-                        obj[key] = _.map(obj[key], (relation) => {
-                            const relationToReturn = {};
+                if (resource && dbResource) {
+                    resource.update(dbResource);
 
-                            _.each(fields, (field) => {
-                                const fieldSanitized = field.replace(/^\w+./, '');
-                                relationToReturn[fieldSanitized] = relation[fieldSanitized];
-                            });
-
-                            return relationToReturn;
-                        });
-                    });
-
-                    const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-                    if (withRelatedPrimary) {
-                        _.each(withRelatedPrimary, (relation, primaryKey) => {
-                            if (!obj[primaryKey] || !obj[relation]) {
-                                return;
+                    // CASE: pretend it was added
+                    if (!resource.isReserved()) {
+                        this.queue.start({
+                            event: 'added',
+                            action: 'added:' + dbResource.id,
+                            eventData: {
+                                id: dbResource.id,
+                                type: type
                             }
-
-                            const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                                return item.id === obj[primaryKey].id;
-                            }));
-                            obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
                         });
                     }
+                } else if (!resource && dbResource) {
+                    this._onResourceAdded(type, model);
+                } else if (resource && !dbResource) {
+                    this._onResourceRemoved(type, model);
                 }
-
-                resource.update(obj);
-
-                // CASE: pretend it was added
-                if (!resource.isReserved()) {
-                    this.queue.start({
-                        event: 'added',
-                        action: 'added:' + model.id,
-                        eventData: {
-                            id: model.id,
-                            type: type
-                        }
-                    });
-                }
-
-                // break!
-                return false;
-            }
-
-            return true;
-        });
+            });
     }
 
     _onResourceRemoved(type, model) {

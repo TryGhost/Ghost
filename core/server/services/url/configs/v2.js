@@ -110,7 +110,7 @@ module.exports = [
         },
         events: {
             add: 'tag.added',
-            update: 'tag.edited',
+            update: ['tag.edited', 'tag.attached', 'tag.detached'],
             remove: 'tag.deleted'
         }
     },
@@ -138,7 +138,7 @@ module.exports = [
         },
         events: {
             add: 'user.activated',
-            update: 'user.activated.edited',
+            update: ['user.activated.edited', 'user.attached', 'user.detached'],
             remove: 'user.deactivated'
         }
     }
