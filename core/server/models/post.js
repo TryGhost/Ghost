@@ -175,6 +175,10 @@ Post = ghostBookshelf.Model.extend({
             // Fire edited if this wasn't a change between resourceType
             model.emitChange('edited', options);
         }
+
+        if (model.statusChanging && (model.isPublished || model.wasPublished)) {
+            this.handleStatusForAttachedModels(model, options);
+        }
     },
 
     onDestroyed: function onDestroyed(model, options) {
@@ -183,6 +187,58 @@ Post = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
+    },
+
+    onDestroying: function onDestroyed(model) {
+        this.handleAttachedModels(model);
+    },
+
+    handleAttachedModels: function handleAttachedModels(model) {
+        /**
+         * @NOTE:
+         * Bookshelf only exposes the object that is being detached on `detaching`.
+         * For the reason above, `detached` handler is using the scope of `detaching`
+         * to access the models that are not present in `detached`.
+         */
+        model.related('tags').once('detaching', function onDetached(collection, tag) {
+            model.related('tags').once('detached', function onDetached(detachedCollection, response, options) {
+                tag.emitChange('detached', options);
+            });
+        });
+
+        model.related('tags').once('attaching', function onDetached(collection, tags) {
+            model.related('tags').once('attached', function onDetached(detachedCollection, response, options) {
+                tags.forEach(tag => tag.emitChange('attached', options));
+            });
+        });
+
+        model.related('authors').once('detaching', function onDetached(collection, author) {
+            model.related('authors').once('detached', function onDetached(detachedCollection, response, options) {
+                author.emitChange('detached', options);
+            });
+        });
+
+        model.related('authors').once('attaching', function onDetached(collection, authors) {
+            model.related('authors').once('attached', function onDetached(detachedCollection, response, options) {
+                authors.forEach(author => author.emitChange('attached', options));
+            });
+        });
+    },
+
+    /**
+     * @NOTE:
+     * when status is changed from or to 'published' all related authors and tags
+     * have to trigger recalculation in URL service because status is applied in filters for
+     * these models
+     */
+    handleStatusForAttachedModels: function handleStatusForAttachedModels(model, options) {
+        model.related('tags').forEach((tag) => {
+            tag.emitChange('attached', options);
+        });
+
+        model.related('authors').forEach((author) => {
+            author.emitChange('attached', options);
+        });
     },
 
     onSaving: function onSaving(model, attr, options) {
@@ -259,6 +315,8 @@ Post = ghostBookshelf.Model.extend({
 
             this.set('tags', tagsToSave);
         }
+
+        this.handleAttachedModels(model);
 
         ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
 
@@ -632,7 +690,7 @@ Post = ghostBookshelf.Model.extend({
      * and updating resources. We won't return the relations by default for now.
      */
     defaultRelations: function defaultRelations(methodName, options) {
-        if (['edit', 'add'].indexOf(methodName) !== -1) {
+        if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
 
