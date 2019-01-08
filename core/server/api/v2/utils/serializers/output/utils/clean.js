@@ -22,6 +22,7 @@ const author = (attrs) => {
     delete attrs.accessibility;
     delete attrs.locale;
     delete attrs.tour;
+    delete attrs.visibility;
 
     return attrs;
 };
@@ -34,6 +35,7 @@ const post = (attrs) => {
     // @TODO: https://github.com/TryGhost/Ghost/issues/10335
     // delete attrs.page;
     delete attrs.status;
+    delete attrs.visibility;
 
     return attrs;
 };

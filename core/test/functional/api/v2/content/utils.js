@@ -20,7 +20,7 @@ const expectedProperties = {
         // and always returns computed properties: url, primary_tag, primary_author
         .concat('url', 'primary_tag', 'primary_author')
         // v2 API doesn't return unused fields
-        .without('locale')
+        .without('locale', 'visibility')
         // These fields aren't useful as they always have known values
         .without('status')
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
@@ -43,7 +43,7 @@ const expectedProperties = {
             'status'
         )
         // v2 API doesn't return unused fields
-        .without('accessibility', 'locale', 'tour')
+        .without('accessibility', 'locale', 'tour', 'visibility')
     ,
     tag: _(schema.tags)
         .keys()
