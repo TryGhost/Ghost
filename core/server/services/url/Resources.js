@@ -169,6 +169,8 @@ class Resources {
     }
 
     _onResourceAdded(type, model) {
+        debug('_onResourceAdded', type);
+
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
@@ -292,6 +294,8 @@ class Resources {
     }
 
     _onResourceRemoved(type, model) {
+        debug('_onResourceRemoved', type);
+
         let index = null;
         let resource;
 
