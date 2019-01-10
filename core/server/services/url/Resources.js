@@ -129,27 +129,84 @@ class Resources {
     _onResourceAdded(type, model) {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
-        return Promise.resolve()
-            .then(() => {
-                return this._fetchSingle(resourceConfig, model.id);
-            })
-            .then(([dbResource]) => {
-                if (dbResource) {
-                    const resource = new Resource(type, dbResource);
+        // NOTE: synchronous handling for post and pages so that their URL is available without a delay
+        //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
+        if (['post', 'page'].contains(type)) {
+            // TODO: review and slim down this part
+            const exclude = resourceConfig.modelOptions.exclude;
+            const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
+            const obj = _.omit(model.toJSON(), exclude);
 
-                    debug('_onResourceAdded', type);
-                    this.data[type].push(resource);
+            if (withRelatedFields) {
+                _.each(withRelatedFields, (fields, key) => {
+                    if (!obj[key]) {
+                        return;
+                    }
 
-                    this.queue.start({
-                        event: 'added',
-                        action: 'added:' + model.id,
-                        eventData: {
-                            id: model.id,
-                            type: type
+                    obj[key] = _.map(obj[key], (relation) => {
+                        const relationToReturn = {};
+
+                        _.each(fields, (field) => {
+                            const fieldSanitized = field.replace(/^\w+./, '');
+                            relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                        });
+
+                        return relationToReturn;
+                    });
+                });
+
+                const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+                if (withRelatedPrimary) {
+                    _.each(withRelatedPrimary, (relation, primaryKey) => {
+                        if (!obj[primaryKey] || !obj[relation]) {
+                            return;
                         }
+
+                        const targetTagKeys = Object.keys(obj[relation].find((item) => {
+                            return item.id === obj[primaryKey].id;
+                        }));
+                        obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
                     });
                 }
+            }
+
+            const resource = new Resource(type, obj);
+
+            debug('_onResourceAdded', type);
+            this.data[type].push(resource);
+
+            this.queue.start({
+                event: 'added',
+                action: 'added:' + model.id,
+                eventData: {
+                    id: model.id,
+                    type: type
+                }
             });
+        } else {
+            return Promise.resolve()
+                .then(() => {
+                    return this._fetchSingle(resourceConfig, model.id);
+                })
+                .then(([dbResource]) => {
+                    if (dbResource) {
+                        const resource = new Resource(type, dbResource);
+
+                        debug('_onResourceAdded', type);
+                        this.data[type].push(resource);
+
+                        this.queue.start({
+                            event: 'added',
+                            action: 'added:' + model.id,
+                            eventData: {
+                                id: model.id,
+                                type: type
+                            }
+                        });
+                    }
+                });
+        }
     }
 
     /**
@@ -171,33 +228,100 @@ class Resources {
 
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
-        return Promise.resolve()
-            .then(() => {
-                return this._fetchSingle(resourceConfig, model.id);
-            })
-            .then(([dbResource]) => {
-                const resource = this.data[type].find(resource => (resource.data.id === model.id));
+        // NOTE: synchronous handling for post and pages so that their URL is available without a delay
+        //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
+        if (['post', 'page'].contains(type)) {
+            // TODO: review and slim down this part
+            this.data[type].every((resource) => {
+                if (resource.data.id === model.id) {
+                    const resourceConfig = _.find(this.resourcesConfig, {type: type});
+                    const exclude = resourceConfig.modelOptions.exclude;
+                    const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
+                    const obj = _.omit(model.toJSON(), exclude);
 
-                if (resource && dbResource) {
-                    resource.update(dbResource);
+                    if (withRelatedFields) {
+                        _.each(withRelatedFields, (fields, key) => {
+                            if (!obj[key]) {
+                                return;
+                            }
+
+                            obj[key] = _.map(obj[key], (relation) => {
+                                const relationToReturn = {};
+
+                                _.each(fields, (field) => {
+                                    const fieldSanitized = field.replace(/^\w+./, '');
+                                    relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                                });
+
+                                return relationToReturn;
+                            });
+                        });
+
+                        const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+                        if (withRelatedPrimary) {
+                            _.each(withRelatedPrimary, (relation, primaryKey) => {
+                                if (!obj[primaryKey] || !obj[relation]) {
+                                    return;
+                                }
+
+                                const targetTagKeys = Object.keys(obj[relation].find((item) => {
+                                    return item.id === obj[primaryKey].id;
+                                }));
+                                obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
+                            });
+                        }
+                    }
+
+                    resource.update(obj);
 
                     // CASE: pretend it was added
                     if (!resource.isReserved()) {
                         this.queue.start({
                             event: 'added',
-                            action: 'added:' + dbResource.id,
+                            action: 'added:' + model.id,
                             eventData: {
-                                id: dbResource.id,
+                                id: model.id,
                                 type: type
                             }
                         });
                     }
-                } else if (!resource && dbResource) {
-                    this._onResourceAdded(type, model);
-                } else if (resource && !dbResource) {
-                    this._onResourceRemoved(type, model);
+
+                    // break!
+                    return false;
                 }
+
+                return true;
             });
+        } else {
+            return Promise.resolve()
+                .then(() => {
+                    return this._fetchSingle(resourceConfig, model.id);
+                })
+                .then(([dbResource]) => {
+                    const resource = this.data[type].find(resource => (resource.data.id === model.id));
+
+                    if (resource && dbResource) {
+                        resource.update(dbResource);
+
+                        // CASE: pretend it was added
+                        if (!resource.isReserved()) {
+                            this.queue.start({
+                                event: 'added',
+                                action: 'added:' + dbResource.id,
+                                eventData: {
+                                    id: dbResource.id,
+                                    type: type
+                                }
+                            });
+                        }
+                    } else if (!resource && dbResource) {
+                        this._onResourceAdded(type, model);
+                    } else if (resource && !dbResource) {
+                        this._onResourceRemoved(type, model);
+                    }
+                });
+        }
     }
 
     _onResourceRemoved(type, model) {
