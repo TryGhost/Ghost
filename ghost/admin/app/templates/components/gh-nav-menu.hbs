@@ -1,4 +1,3 @@
-{{gh-menu-toggle desktopAction=(action "toggleAutoNav" target=ui) mobileAction=(action "closeMobileMenu" target=ui)}}
 {{#gh-basic-dropdown horizontalPosition="right" calculatePosition=userDropdownPosition as |dropdown|}}
     {{#dropdown.trigger tagName="header" class="gh-nav-menu"}}
         <div class="gh-nav-menu-icon" style={{iconStyle}}></div>
@@ -89,11 +88,9 @@
 <footer class="gh-nav-foot">
     <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">View site {{svg-jar "external"}}</a>
 </footer>
-<div class="gh-autonav-toggle" {{action "openAutoNav" on="mouseEnter" target=ui}}></div>
 
 {{gh-tour-item "getting-started"
-    target=".gh-menu-toggle"
-    throbberAttachment="bottom middle"
-    throbberOffset="0 4px"
+    target=".gh-nav header"
+    throbberAttachment="middle right"
     popoverTriangleClass="left-top"
 }}

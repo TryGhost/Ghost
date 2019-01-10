@@ -15,9 +15,6 @@ export default Component.extend({
         'isPreview:gh-editor-preview'
     ],
 
-    // Public attributes
-    navIsClosed: false,
-
     // Internal attributes
     droppedFiles: null,
     headerClass: '',
@@ -31,7 +28,6 @@ export default Component.extend({
 
     // Private
     _dragCounter: 0,
-    _navIsClosed: false,
     _onResizeHandler: null,
     _viewActionsWidth: 190,
 
@@ -40,16 +36,6 @@ export default Component.extend({
         this._onResizeHandler = (evt) => {
             debounce(this, this._setHeaderClass, evt, 100);
         };
-    },
-
-    didReceiveAttrs() {
-        let navIsClosed = this.get('navIsClosed');
-
-        if (navIsClosed !== this._navIsClosed) {
-            run.scheduleOnce('afterRender', this, this._setHeaderClass);
-        }
-
-        this._navIsClosed = navIsClosed;
     },
 
     didInsertElement() {

@@ -14,9 +14,7 @@ export default Component.extend({
 
     tagName: 'nav',
     classNames: ['gh-nav'],
-    classNameBindings: ['open'],
 
-    open: false,
     iconStyle: '',
 
     showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function () {

@@ -22,7 +22,7 @@ export default Component.extend(ShortcutsMixin, {
     close() {},
     select() {},
 
-    sideNavHidden: or('ui.{autoNav,isFullScreen,showMobileMenu}'),
+    sideNavHidden: or('ui.{isFullScreen,showMobileMenu}'),
 
     init() {
         this._super(...arguments);

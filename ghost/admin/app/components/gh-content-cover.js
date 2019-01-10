@@ -18,13 +18,7 @@ export default Component.extend({
 
     classNames: ['content-cover'],
 
-    onMouseEnter: null,
-
     click() {
         this.get('ui').closeMenus();
-    },
-
-    mouseEnter() {
-        this.get('ui').closeAutoNav();
     }
 });

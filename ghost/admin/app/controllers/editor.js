@@ -3,7 +3,7 @@ import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import {alias, mapBy, reads} from '@ember/object/computed';
+import {alias, mapBy} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {copy} from '@ember/object/internals';
@@ -111,9 +111,6 @@ export default Controller.extend({
     /* computed properties ---------------------------------------------------*/
 
     post: alias('model'),
-
-    // used within {{gh-editor}} as a trigger for responsive css changes
-    navIsClosed: reads('application.autoNav'),
 
     // store the desired post status locally without updating the model,
     // the model will only be updated when a save occurs

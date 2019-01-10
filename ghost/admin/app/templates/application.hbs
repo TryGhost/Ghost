@@ -3,20 +3,16 @@
 
     {{gh-alerts}}
 
-    <div class="gh-viewport {{if ui.autoNav 'gh-autonav'}} {{if ui.showSettingsMenu 'settings-menu-expanded'}} {{if ui.showMobileMenu 'mobile-menu-expanded'}}">
+    <div class="gh-viewport {{if ui.showSettingsMenu 'settings-menu-expanded'}} {{if ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if showNavMenu}}
             {{gh-nav-menu
-                open=ui.autoNavOpen
                 icon=settings.settledIcon
             }}
         {{/if}}
 
-        {{!-- {{#gh-main onMouseEnter=(action "closeAutoNav" target=ui)}} --}}
         <main class="gh-main" role="main">
             {{outlet}}
         </main>
-        {{!-- {{/gh-main}} --}}
-
 
         {{gh-notifications}}
 
