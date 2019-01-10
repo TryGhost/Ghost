@@ -96,10 +96,6 @@ input,
     }
 }
 
-.gh-menu-toggle {
-    border-color: #212A2E;
-}
-
 .gh-nav-search .ember-power-select-trigger {
     border-color: color-mod(var(--lightgrey));
     background: color-mod(var(--lightgrey));
