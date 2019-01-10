@@ -11,6 +11,8 @@ const endActions = 'click.ghToken mouseup.ghToken touchend.ghToken';
 
 export default PowerSelectMultiple.extend({
 
+    tagName: 'div',
+
     _canFocus: true,
 
     willDestroyElement() {
