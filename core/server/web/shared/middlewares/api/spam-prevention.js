@@ -215,7 +215,7 @@ const contentApiKey = () => {
         extend({
             attachResetToRequest: true,
             failCallback(req, res, next) {
-                const err = new common.errors.GhostError({
+                const err = new common.errors.TooManyRequestsError({
                     message: common.i18n.t('errors.middleware.spamprevention.tooManyAttempts')
                 });
 
