@@ -126,50 +126,55 @@ class Resources {
         return models.Base.Model.raw_knex.fetchAll(modelOptions);
     }
 
+    _prepareModelSync(model, resourceConfig) {
+        const exclude = resourceConfig.modelOptions.exclude;
+        const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
+        const obj = _.omit(model.toJSON(), exclude);
+
+        if (withRelatedFields) {
+            _.each(withRelatedFields, (fields, key) => {
+                if (!obj[key]) {
+                    return;
+                }
+
+                obj[key] = _.map(obj[key], (relation) => {
+                    const relationToReturn = {};
+
+                    _.each(fields, (field) => {
+                        const fieldSanitized = field.replace(/^\w+./, '');
+                        relationToReturn[fieldSanitized] = relation[fieldSanitized];
+                    });
+
+                    return relationToReturn;
+                });
+            });
+
+            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+            if (withRelatedPrimary) {
+                _.each(withRelatedPrimary, (relation, primaryKey) => {
+                    if (!obj[primaryKey] || !obj[relation]) {
+                        return;
+                    }
+
+                    const targetTagKeys = Object.keys(obj[relation].find((item) => {
+                        return item.id === obj[primaryKey].id;
+                    }));
+                    obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
+                });
+            }
+        }
+
+        return obj;
+    }
+
     _onResourceAdded(type, model) {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
         //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
-        if (['post', 'page'].contains(type)) {
-            // TODO: review and slim down this part
-            const exclude = resourceConfig.modelOptions.exclude;
-            const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-            const obj = _.omit(model.toJSON(), exclude);
-
-            if (withRelatedFields) {
-                _.each(withRelatedFields, (fields, key) => {
-                    if (!obj[key]) {
-                        return;
-                    }
-
-                    obj[key] = _.map(obj[key], (relation) => {
-                        const relationToReturn = {};
-
-                        _.each(fields, (field) => {
-                            const fieldSanitized = field.replace(/^\w+./, '');
-                            relationToReturn[fieldSanitized] = relation[fieldSanitized];
-                        });
-
-                        return relationToReturn;
-                    });
-                });
-
-                const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-                if (withRelatedPrimary) {
-                    _.each(withRelatedPrimary, (relation, primaryKey) => {
-                        if (!obj[primaryKey] || !obj[relation]) {
-                            return;
-                        }
-
-                        const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                            return item.id === obj[primaryKey].id;
-                        }));
-                        obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
-                    });
-                }
-            }
+        if (['posts', 'pages'].includes(type)) {
+            const obj = this._prepareModelSync(model, resourceConfig);
 
             const resource = new Resource(type, obj);
 
@@ -230,48 +235,10 @@ class Resources {
 
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
         //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
-        if (['post', 'page'].contains(type)) {
-            // TODO: review and slim down this part
+        if (['posts', 'pages'].includes(type)) {
             this.data[type].every((resource) => {
                 if (resource.data.id === model.id) {
-                    const resourceConfig = _.find(this.resourcesConfig, {type: type});
-                    const exclude = resourceConfig.modelOptions.exclude;
-                    const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-                    const obj = _.omit(model.toJSON(), exclude);
-
-                    if (withRelatedFields) {
-                        _.each(withRelatedFields, (fields, key) => {
-                            if (!obj[key]) {
-                                return;
-                            }
-
-                            obj[key] = _.map(obj[key], (relation) => {
-                                const relationToReturn = {};
-
-                                _.each(fields, (field) => {
-                                    const fieldSanitized = field.replace(/^\w+./, '');
-                                    relationToReturn[fieldSanitized] = relation[fieldSanitized];
-                                });
-
-                                return relationToReturn;
-                            });
-                        });
-
-                        const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
-
-                        if (withRelatedPrimary) {
-                            _.each(withRelatedPrimary, (relation, primaryKey) => {
-                                if (!obj[primaryKey] || !obj[relation]) {
-                                    return;
-                                }
-
-                                const targetTagKeys = Object.keys(obj[relation].find((item) => {
-                                    return item.id === obj[primaryKey].id;
-                                }));
-                                obj[primaryKey] = _.pick(obj[primaryKey], targetTagKeys);
-                            });
-                        }
-                    }
+                    const obj = this._prepareModelSync(model, resourceConfig);
 
                     resource.update(obj);
 
