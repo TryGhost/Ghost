@@ -13,6 +13,7 @@ const spamUserLogin = spam.user_login || {};
 const spamContentApiKey = spam.content_api_key || {};
 
 let store;
+let memoryStore;
 let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
@@ -207,16 +208,10 @@ const privateBlog = () => {
 
 const contentApiKey = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
-    const db = require('../../../../data/db');
 
-    store = store || new BruteKnex({
-        tablename: 'brute',
-        createTable: false,
-        knex: db.knex
-    });
+    memoryStore = memoryStore || new ExpressBrute.MemoryStore();
 
-    contentApiKeyInstance = contentApiKeyInstance || new ExpressBrute(store,
+    contentApiKeyInstance = contentApiKeyInstance || new ExpressBrute(memoryStore,
         extend({
             attachResetToRequest: true,
             failCallback(req, res, next) {
