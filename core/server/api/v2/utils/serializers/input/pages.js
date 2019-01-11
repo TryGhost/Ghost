@@ -37,7 +37,7 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        addPageFilter(frame);
+        frame.data.page = true;
         removeMobiledocFormat(frame);
 
         debug(frame.options);

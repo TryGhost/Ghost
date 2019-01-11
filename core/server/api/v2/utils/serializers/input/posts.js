@@ -72,7 +72,7 @@ module.exports = {
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
-            addPageFilter(frame);
+            frame.data.page = false;
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
             if (labs.isSet('members')) {
