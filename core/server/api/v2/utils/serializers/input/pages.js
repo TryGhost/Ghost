@@ -8,27 +8,24 @@ function removeMobiledocFormat(frame) {
     }
 }
 
-/**
- * CASE:
- *
- * - the content api endpoints for pages forces the model layer to return static pages only
- * - we have to enforce the filter
- *
- * @TODO: https://github.com/TryGhost/Ghost/issues/10268
- */
-function addPageFilter(frame) {
-    if (frame.options.filter) {
-        frame.options.filter = `${frame.options.filter}+page:true`;
-    } else {
-        frame.options.filter = 'page:true';
-    }
-}
-
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        addPageFilter(frame);
+        /**
+         * CASE:
+         *
+         * - the content api endpoints for pages forces the model layer to return static pages only
+         * - we have to enforce the filter
+         *
+         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+         */
+        if (frame.options.filter) {
+            frame.options.filter = `${frame.options.filter}+page:true`;
+        } else {
+            frame.options.filter = 'page:true';
+        }
+
         removeMobiledocFormat(frame);
 
         debug(frame.options);
