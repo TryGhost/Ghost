@@ -60,6 +60,13 @@ const mapPost = (model, frame) => {
         });
     }
 
+    /**
+     * Remove extra data attributes passed for filtering when used with columns/fields as bookshelf doesn't filter it out
+     */
+    if (frame.options.columns && frame.options.columns.indexOf('page') < 0) {
+        delete jsonModel.page;
+    }
+
     return jsonModel;
 };
 
