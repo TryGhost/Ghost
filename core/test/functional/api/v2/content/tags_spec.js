@@ -46,6 +46,10 @@ describe('Tags Content API V2', function () {
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
+                // Default order 'name asc' check
+                jsonResponse.tags[0].name.should.eql('bacon');
+                jsonResponse.tags[3].name.should.eql('kitchen sink');
+
                 should.exist(res.body.tags[0].url);
                 should.exist(url.parse(res.body.tags[0].url).protocol);
                 should.exist(url.parse(res.body.tags[0].url).host);
