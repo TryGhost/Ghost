@@ -23,7 +23,21 @@ describe('Public API', function () {
             })
             .then(function () {
                 return localUtils.doAuth(request, 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'client:trusted-domain');
-            });
+            })
+            .then(function (token) {
+                return request.put(localUtils.API.getApiQuery('settings/'))
+                    .set('Authorization', 'Bearer ' + token)
+                    .send({
+                        settings: [{
+                            key: 'labs',
+                            value: {publicAPI: true}
+                        }]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then(() => {});
+        });
     });
 
     afterEach(function () {
