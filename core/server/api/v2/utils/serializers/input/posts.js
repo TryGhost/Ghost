@@ -21,7 +21,13 @@ function includeTags(frame) {
 }
 
 function setDefaultOrder(frame) {
-    if (!frame.options.order) {
+    let includesOrderedRelations = false;
+
+    if (frame.options.withRelated) {
+        includesOrderedRelations = _.intersection(['authors', 'tags'], frame.options.withRelated).length > 0;
+    }
+
+    if (!frame.options.order && !includesOrderedRelations) {
         frame.options.order = 'published_at desc';
     }
 }

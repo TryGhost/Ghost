@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
 
 function removeMobiledocFormat(frame) {
@@ -9,7 +10,13 @@ function removeMobiledocFormat(frame) {
 }
 
 function setDefaultOrder(frame) {
-    if (!frame.options.order) {
+    let includesOrderedRelations = false;
+
+    if (frame.options.withRelated) {
+        includesOrderedRelations = _.intersection(['authors', 'tags'], frame.options.withRelated).length > 0;
+    }
+
+    if (!frame.options.order && !includesOrderedRelations) {
         frame.options.order = 'title asc';
     }
 }
