@@ -18,14 +18,14 @@ const disposition = {
         }
 
         return {
-            'Content-Disposition': value,
+            'Content-Disposition': `Attachment; filename="${value}"`,
             'Content-Type': 'text/csv'
         };
     },
 
     json(result, options = {}) {
         return {
-            'Content-Disposition': options.value,
+            'Content-Disposition': `Attachment; filename="${options.value}"`,
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(JSON.stringify(result))
         };
@@ -33,7 +33,7 @@ const disposition = {
 
     yaml(result, options = {}) {
         return {
-            'Content-Disposition': options.value,
+            'Content-Disposition': `Attachment; filename="${options.value}"`,
             'Content-Type': 'application/yaml',
             'Content-Length': Buffer.byteLength(JSON.stringify(result))
         };

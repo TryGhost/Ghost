@@ -177,7 +177,7 @@ module.exports = {
         headers: {
             disposition: {
                 type: 'yaml',
-                value: 'Attachment; filename="routes.yaml"'
+                value: 'routes.yaml'
             }
         },
         response: {
