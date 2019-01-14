@@ -63,6 +63,23 @@ const forTag = (id, attrs) => {
     return attrs;
 };
 
+const forSettings = (attrs) => {
+    if (attrs.cover_image) {
+        attrs.cover_image = urlService.utils.urlFor('image', {image: attrs.cover_image}, true);
+    }
+
+    if (attrs.logo) {
+        attrs.logo = urlService.utils.urlFor('image', {image: attrs.logo}, true);
+    }
+
+    if (attrs.icon) {
+        attrs.icon = urlService.utils.urlFor('image', {image: attrs.icon}, true);
+    }
+
+    return attrs;
+};
+
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
+module.exports.forSettings = forSettings;
