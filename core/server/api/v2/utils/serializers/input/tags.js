@@ -17,12 +17,10 @@ module.exports = {
         }
     },
 
-    read(apiConfig, frame) {
+    read() {
         debug('read');
 
-        if (utils.isContentAPI(frame)) {
-            setDefaultOrder(frame);
-        }
+        this.browse(...arguments);
     },
 
     add(apiConfig, frame) {
