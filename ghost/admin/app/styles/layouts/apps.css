@@ -155,7 +155,7 @@
     }
 }
 
-.apps-grid-cell:first-child .apps-card-app {
+.apps-grid-cell:first-of-type .apps-card-app {
     border-top: none;
 }
 
