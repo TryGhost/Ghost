@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const urlService = require('../../../../../../services/url');
 
 const forPost = (id, attrs, options) => {
@@ -64,16 +65,26 @@ const forTag = (id, attrs) => {
 };
 
 const forSettings = (attrs) => {
-    if (attrs.cover_image) {
-        attrs.cover_image = urlService.utils.urlFor('image', {image: attrs.cover_image}, true);
-    }
+    // @TODO: https://github.com/TryGhost/Ghost/issues/10106
+    // @NOTE: Admin & Content API return a different format, need to mappers
+    if (_.isArray(attrs)) {
+        attrs.forEach((obj) => {
+            if (['cover_image', 'logo', 'icon'].includes(obj.key) && obj.value) {
+                obj.value = urlService.utils.urlFor('image', {image: obj.value}, true);
+            }
+        });
+    } else {
+        if (attrs.cover_image) {
+            attrs.cover_image = urlService.utils.urlFor('image', {image: attrs.cover_image}, true);
+        }
 
-    if (attrs.logo) {
-        attrs.logo = urlService.utils.urlFor('image', {image: attrs.logo}, true);
-    }
+        if (attrs.logo) {
+            attrs.logo = urlService.utils.urlFor('image', {image: attrs.logo}, true);
+        }
 
-    if (attrs.icon) {
-        attrs.icon = urlService.utils.urlFor('image', {image: attrs.icon}, true);
+        if (attrs.icon) {
+            attrs.icon = urlService.utils.urlFor('image', {image: attrs.icon}, true);
+        }
     }
 
     return attrs;
