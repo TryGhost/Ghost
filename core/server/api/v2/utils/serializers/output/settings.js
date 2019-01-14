@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const utils = require('../../index');
+const mapper = require('./utils/mapper');
 const _private = {};
 const deprecatedSettings = ['force_i18n', 'permalinks'];
 
@@ -33,7 +34,7 @@ module.exports = {
         }
 
         frame.response = {
-            settings: filteredSettings,
+            settings: mapper.forSettings(filteredSettings),
             meta: {}
         };
 
