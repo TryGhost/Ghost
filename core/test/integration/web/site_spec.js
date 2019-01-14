@@ -12,6 +12,7 @@ const should = require('should'),
 describe('Integration - Web - Site', function () {
     let app;
 
+    before(testUtils.integrationTesting.urlService.resetGenerators);
     before(testUtils.teardown);
     before(testUtils.setup('users:roles', 'posts'));
 
@@ -20,7 +21,6 @@ describe('Integration - Web - Site', function () {
 
         describe('default routes.yaml', function () {
             before(function () {
-                testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sandbox);
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
@@ -1242,6 +1242,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
+                before(testUtils.integrationTesting.urlService.resetGenerators);
                 before(testUtils.teardown);
                 before(testUtils.setup('users:roles', 'posts'));
 
@@ -1389,8 +1390,6 @@ describe('Integration - Web - Site', function () {
                             author: '/author/:slug/'
                         }
                     });
-
-                    testUtils.integrationTesting.urlService.resetGenerators();
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -3016,6 +3015,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
+                before(testUtils.integrationTesting.urlService.resetGenerators);
                 before(testUtils.teardown);
                 before(testUtils.setup('users:roles', 'posts'));
 
@@ -3143,8 +3143,6 @@ describe('Integration - Web - Site', function () {
                             author: '/author/:slug/'
                         }
                     });
-
-                    testUtils.integrationTesting.urlService.resetGenerators();
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
