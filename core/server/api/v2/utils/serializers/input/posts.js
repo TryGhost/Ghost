@@ -24,7 +24,8 @@ function setDefaultOrder(frame) {
     let includesOrderedRelations = false;
 
     if (frame.options.withRelated) {
-        includesOrderedRelations = _.intersection(['authors', 'tags'], frame.options.withRelated).length > 0;
+        const orderedRelations = ['author', 'authors', 'tag', 'tags'];
+        includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
     }
 
     if (!frame.options.order && !includesOrderedRelations) {
