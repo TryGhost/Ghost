@@ -60,10 +60,9 @@ export default Controller.extend({
     backgroundUpdate: task(function* () {
         let users = this.fetchUsers.perform();
         let invites = this.fetchInvites.perform();
-        let roles = this.fetchRoles.perform();
 
         try {
-            yield RSVP.all([users, invites, roles]);
+            yield RSVP.all([users, invites]);
         } catch (error) {
             this.send('error', error);
         }
@@ -78,10 +77,15 @@ export default Controller.extend({
             return;
         }
 
-        return yield this.store.query('invite', {limit: 'all'});
-    }),
+        // ensure roles are loaded before invites. Invites do not have embedded
+        // role records which means Ember Data will try to fetch the roles
+        // automatically when invite.role is queried, loading roles first makes
+        // them available in memory and cuts down on network noise
+        let knownRoles = this.store.peekAll('role');
+        if (knownRoles.length <= 1) {
+            yield this.store.query('role', {limit: 'all'});
+        }
 
-    fetchRoles: task(function* () {
-        return yield this.store.findAll('role');
+        return yield this.store.query('invite', {limit: 'all'});
     })
 });
