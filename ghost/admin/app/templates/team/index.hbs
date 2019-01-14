@@ -2,7 +2,7 @@
     <header class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Team members</h2>
         {{!-- Do not show Invite user button to authors --}}
-        {{#unless session.user.isAuthorOrContributor}}
+        {{#unless currentUser.isAuthorOrContributor}}
             <section class="view-actions">
                 <button class="gh-btn gh-btn-green" {{action "toggleInviteUserModal"}} ><span>Invite People</span></button>
             </section>
@@ -16,9 +16,8 @@
     {{/if}}
 
     <section class="gh-team">
-
     {{!-- Show invited users to everyone except authors --}}
-    {{#unless session.user.isAuthorOrContributor}}
+    {{#unless currentUser.isAuthorOrContributor}}
         {{#if invites}}
         <section class="apps-grid-container gh-invited-users" data-test-invited-users>
             <span class="apps-grid-title">Invited users</span>
@@ -75,32 +74,29 @@
     <section class="apps-grid-container gh-active-users" data-test-active-users>
         <span class="apps-grid-title">Active users</span>
         <div class="apps-grid">
-            {{!-- For authors/contributors only show their own user --}}
-            {{#if session.user.isAuthorOrContributor}}
-                {{#with session.user as |user|}}
-                    {{#gh-user-active user=user as |component|}}
-                        {{gh-user-list-item user=user component=component}}
-                    {{/gh-user-active}}
-                {{/with}}
+            {{!-- For authors/contributors, only show their own user --}}
+            {{#if currentUser.isAuthorOrContributor}}
+                {{#gh-user-active user=currentUser as |component|}}
+                    {{gh-user-list-item user=currentUser component=component}}
+                {{/gh-user-active}}
             {{else}}
-                {{#each sortedActiveUsers key="id" as |user|}}
+                {{#vertical-collection sortedActiveUsers
+                    key="id"
+                    containerSelector=".gh-main"
+                    estimateHeight=75
+                    as |user|
+                }}
                     {{#gh-user-active user=user as |component|}}
                         {{gh-user-list-item user=user component=component}}
                     {{/gh-user-active}}
-                {{/each}}
+                {{/vertical-collection}}
             {{/if}}
         </div>
     </section>
-
-    {{gh-infinity-loader
-        infinityModel=activeUsers
-        scrollable=".gh-main"
-        triggerOffset=500}}
-
     </section>
 
     {{!-- Don't show if we have no suspended users or logged in as an author --}}
-    {{#if (and suspendedUsers (not session.user.isAuthorOrContributor))}}
+    {{#if (and suspendedUsers (not currentUser.isAuthorOrContributor))}}
     <section class="apps-grid-container gh-active-users" data-test-suspended-users>
         <span class="apps-grid-title">Suspended users</span>
         <div class="apps-grid">
