@@ -28,7 +28,7 @@ function getApiPath(options) {
  */
 function getVersionPath(options) {
     const apiVersions = config.get('api:versions');
-    let requestedVersion = options.version || 'deprecated';
+    let requestedVersion = options.version || 'v0.1';
     let requestedVersionType = options.type || 'content';
     let versionData = apiVersions[requestedVersion];
     if (typeof versionData === 'string') {
@@ -330,7 +330,7 @@ function urlFor(context, data, absolute) {
         }
     } else if (context === 'api') {
         urlPath = getAdminUrl() || getBlogUrl();
-        let apiPath = getApiPath({version: 'deprecated', type: 'content'});
+        let apiPath = getApiPath({version: 'v0.1', type: 'content'});
         // CASE: with or without protocol? If your blog url (or admin url) is configured to http, it's still possible that e.g. nginx allows both https+http.
         // So it depends how you serve your blog. The main focus here is to avoid cors problems.
         // @TODO: rename cors
