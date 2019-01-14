@@ -34,7 +34,7 @@ module.exports = {
         }
 
         frame.response = {
-            settings: mapper.forSettings(filteredSettings),
+            settings: mapper.mapSettings(filteredSettings),
             meta: {}
         };
 

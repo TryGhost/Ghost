@@ -70,7 +70,7 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
-const forSettings = (attrs) => {
+const mapSettings = (attrs) => {
     url.forSetting(attrs);
     return attrs;
 };
@@ -78,4 +78,4 @@ const forSettings = (attrs) => {
 module.exports.mapPost = mapPost;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
-module.exports.forSettings = forSettings;
+module.exports.mapSettings = mapSettings;
