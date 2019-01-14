@@ -8,6 +8,12 @@ function removeMobiledocFormat(frame) {
     }
 }
 
+function setDefaultOrder(frame) {
+    if (!frame.options.order) {
+        frame.options.order = 'title asc';
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -28,6 +34,8 @@ module.exports = {
 
         removeMobiledocFormat(frame);
 
+        setDefaultOrder(frame);
+
         debug(frame.options);
     },
 
@@ -36,6 +44,8 @@ module.exports = {
 
         frame.data.page = true;
         removeMobiledocFormat(frame);
+
+        setDefaultOrder(frame);
 
         debug(frame.options);
     }

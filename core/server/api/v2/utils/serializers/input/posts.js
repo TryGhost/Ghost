@@ -20,6 +20,12 @@ function includeTags(frame) {
     }
 }
 
+function setDefaultOrder(frame) {
+    if (!frame.options.order) {
+        frame.options.order = 'published_at desc';
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -53,6 +59,8 @@ module.exports = {
             if (labs.isSet('members')) {
                 includeTags(frame);
             }
+
+            setDefaultOrder(frame);
         }
 
         debug(frame.options);
@@ -76,6 +84,8 @@ module.exports = {
                 // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
             }
+
+            setDefaultOrder(frame);
         }
 
         debug(frame.options);

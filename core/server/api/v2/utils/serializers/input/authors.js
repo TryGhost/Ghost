@@ -1,5 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:tags');
-const url = require('./utils/url');
+const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:authors');
 const utils = require('../../index');
 
 function setDefaultOrder(frame) {
@@ -23,15 +22,5 @@ module.exports = {
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);
         }
-    },
-
-    add(apiConfig, frame) {
-        debug('add');
-        frame.data.tags[0] = url.forTag(Object.assign({}, frame.data.tags[0]));
-    },
-
-    edit(apiConfig, frame) {
-        debug('edit');
-        this.add(apiConfig, frame);
     }
 };
