@@ -26,6 +26,7 @@ _private.settingsFilter = (settings, filter) => {
 module.exports = {
     browse(models, apiConfig, frame) {
         let filteredSettings;
+
         // If this is public, we already have the right data, we just need to add an Array wrapper
         if (utils.isContentAPI(frame)) {
             filteredSettings = models;
