@@ -1,17 +1,16 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
+import RSVP from 'rsvp';
+import {alias, sort} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {sort} from '@ember/object/computed';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     session: service(),
+    store: service(),
 
     showInviteUserModal: false,
-
-    activeUsers: null,
-    suspendedUsers: null,
-    invites: null,
 
     inviteOrder: null,
     userOrder: null,
@@ -22,17 +21,67 @@ export default Controller.extend({
         this.userOrder = ['name', 'email'];
     },
 
+    currentUser: alias('model'),
+
     sortedInvites: sort('filteredInvites', 'inviteOrder'),
     sortedActiveUsers: sort('activeUsers', 'userOrder'),
     sortedSuspendedUsers: sort('suspendedUsers', 'userOrder'),
 
+    invites: computed(function () {
+        return this.store.peekAll('invite');
+    }),
+
     filteredInvites: computed('invites.@each.isNew', function () {
-        return this.get('invites').filterBy('isNew', false);
+        return this.invites.filterBy('isNew', false);
+    }),
+
+    allUsers: computed(function () {
+        return this.store.peekAll('user');
+    }),
+
+    activeUsers: computed('allUsers.@each.status', function () {
+        return this.allUsers.filter((user) => {
+            return user.status !== 'inactive';
+        });
+    }),
+
+    suspendedUsers: computed('allUsers.@each.status', function () {
+        return this.allUsers.filter((user) => {
+            return user.status === 'inactive';
+        });
     }),
 
     actions: {
         toggleInviteUserModal() {
             this.toggleProperty('showInviteUserModal');
         }
-    }
+    },
+
+    backgroundUpdate: task(function* () {
+        let users = this.fetchUsers.perform();
+        let invites = this.fetchInvites.perform();
+        let roles = this.fetchRoles.perform();
+
+        try {
+            yield RSVP.all([users, invites, roles]);
+        } catch (error) {
+            this.send('error', error);
+        }
+    }),
+
+    fetchUsers: task(function* () {
+        yield this.store.query('user', {limit: 'all'});
+    }),
+
+    fetchInvites: task(function* () {
+        if (this.currentUser.isAuthorOrContributor) {
+            return;
+        }
+
+        return yield this.store.query('invite', {limit: 'all'});
+    }),
+
+    fetchRoles: task(function* () {
+        return yield this.store.findAll('role');
+    })
 });
