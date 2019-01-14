@@ -82,4 +82,4 @@ const forSettings = (attrs) => {
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
-module.exports.forSetting = forSettings;
+module.exports.forSettings = forSettings;
