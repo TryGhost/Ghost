@@ -37,7 +37,6 @@ describe('Configuration API', function () {
                     props.blogUrl.should.eql('http://127.0.0.1:2369/');
 
                     props.useGravatar.should.eql(false);
-                    props.publicAPI.should.eql(true);
                     props.clientId.should.eql('ghost-admin');
                     props.clientSecret.should.eql('not_available');
 
