@@ -52,7 +52,7 @@ describe('Posts', function () {
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
-                // Default order check
+                // Default order 'published_at desc' check
                 jsonResponse.posts[0].slug.should.eql('welcome');
                 jsonResponse.posts[6].slug.should.eql('themes');
 
