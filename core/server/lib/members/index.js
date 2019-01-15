@@ -1,9 +1,8 @@
-const jose = require('node-jose');
 const {Router, static} = require('express');
 const body = require('body-parser');
-const jwt = require('jsonwebtoken');
 
 const cookies = require('./cookies');
+const tokens = require('./tokens');
 
 module.exports = function MembersApi({
     config: {
@@ -20,22 +19,13 @@ module.exports = function MembersApi({
     getMember,
     sendEmail
 }) {
-    /* token */
-    const keyStore = jose.JWK.createKeyStore();
-    const keyStoreReady = keyStore.add(privateKey, 'pem');
+    const {encodeToken, decodeToken, getPublicKeys} = tokens({privateKey, publicKey});
 
     const router = Router();
 
     const apiRouter = Router();
 
     apiRouter.use(body.json());
-    /* token */
-    apiRouter.use(function waitForKeyStore(req, res, next) {
-        keyStoreReady.then((jwk) => {
-            req.jwk = jwk;
-            next();
-        });
-    });
 
     /* session */
     const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
@@ -52,17 +42,14 @@ module.exports = function MembersApi({
 
         const {audience, origin} = req.data;
 
-        validateAudience({audience, origin, id: signedin}).then(() => {
-            const token = jwt.sign({
+        validateAudience({audience, origin, id: signedin})
+            .then(() => encodeToken({
                 sub: signedin,
-                kid: req.jwk.kid
-            }, privateKey, {
-                algorithm: 'RS512',
-                audience,
-                issuer
-            });
-            return res.end(token);
-        }).catch(handleError(403, res));
+                aud: audience,
+                iss: issuer
+            }))
+            .then(token => res.end(token))
+            .catch(handleError(403, res));
     });
 
     /* security */
@@ -86,14 +73,12 @@ module.exports = function MembersApi({
         });
 
         memberPromise.then((member) => {
-            const token = jwt.sign({
+            return encodeToken({
                 sub: member.id,
-                kid: req.jwk.kid
-            }, privateKey, {
-                algorithm: 'RS512',
-                issuer
+                iss: issuer
+            }).then((token) => {
+                return sendEmail(member, {token});
             });
-            return sendEmail(member, {token});
         }).then(() => {
             res.writeHead(200);
             res.end();
@@ -104,23 +89,17 @@ module.exports = function MembersApi({
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
-        try {
-            jwt.verify(token, publicKey, {
-                algorithm: 'RS512',
-                issuer
-            });
-        } catch (err) {
-            res.writeHead(401);
-            return res.end();
-        }
+        decodeToken(token, {
+            iss: issuer
+        }).then((claims) => {
+            const id = claims.sub;
 
-        const id = jwt.decode(token).sub;
-
-        updateMember({id}, {password}).then((member) => {
-            res.writeHead(200, {
-                'Set-Cookie': setCookie(member)
+            return updateMember({id}, {password}).then((member) => {
+                res.writeHead(200, {
+                    'Set-Cookie': setCookie(member)
+                });
+                res.end();
             });
-            res.end();
         }).catch(handleError(401, res));
     });
 
@@ -170,8 +149,8 @@ module.exports = function MembersApi({
     router.use('/static', staticRouter);
     /* token */
     router.get('/.well-known/jwks.json', (req, res) => {
-        keyStoreReady.then(() => {
-            res.json(keyStore.toJSON());
+        getPublicKeys().then((jwks) => {
+            res.json(jwks);
         });
     });
 
@@ -181,7 +160,6 @@ module.exports = function MembersApi({
 
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
-    httpHandler.keyStore = keyStore;
 
     return httpHandler;
 };
