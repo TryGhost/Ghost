@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
 
 function removeMobiledocFormat(frame) {
@@ -5,6 +6,19 @@ function removeMobiledocFormat(frame) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return (format !== 'mobiledoc');
         });
+    }
+}
+
+function setDefaultOrder(frame) {
+    let includesOrderedRelations = false;
+
+    if (frame.options.withRelated) {
+        const orderedRelations = ['author', 'authors', 'tag', 'tags'];
+        includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
+    }
+
+    if (!frame.options.order && !includesOrderedRelations) {
+        frame.options.order = 'title asc';
     }
 }
 
@@ -28,6 +42,8 @@ module.exports = {
 
         removeMobiledocFormat(frame);
 
+        setDefaultOrder(frame);
+
         debug(frame.options);
     },
 
@@ -36,6 +52,8 @@ module.exports = {
 
         frame.data.page = true;
         removeMobiledocFormat(frame);
+
+        setDefaultOrder(frame);
 
         debug(frame.options);
     }
