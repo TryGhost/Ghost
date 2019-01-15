@@ -60,9 +60,23 @@ const mapPost = (model, frame) => {
         });
     }
 
+    /**
+     * Remove extra data attributes passed for filtering when used with columns/fields as bookshelf doesn't filter it out
+     */
+    if (frame.options.columns && frame.options.columns.indexOf('page') < 0) {
+        delete jsonModel.page;
+    }
+
     return jsonModel;
+};
+
+const mapSettings = (attrs) => {
+    url.forSettings(attrs);
+    extraAttrs.forSettings(attrs);
+    return attrs;
 };
 
 module.exports.mapPost = mapPost;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
+module.exports.mapSettings = mapSettings;

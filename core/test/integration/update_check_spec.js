@@ -8,7 +8,7 @@ const uuid = require('uuid');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const packageInfo = require('../../../package');
-const api = require('../../server/api').active;
+const api = require('../../server/api').v2;
 
 const sandbox = sinon.sandbox.create();
 

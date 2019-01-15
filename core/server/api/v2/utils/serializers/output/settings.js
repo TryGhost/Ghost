@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const utils = require('../../index');
+const mapper = require('./utils/mapper');
 const _private = {};
 const deprecatedSettings = ['force_i18n', 'permalinks'];
 
@@ -25,6 +26,7 @@ _private.settingsFilter = (settings, filter) => {
 module.exports = {
     browse(models, apiConfig, frame) {
         let filteredSettings;
+
         // If this is public, we already have the right data, we just need to add an Array wrapper
         if (utils.isContentAPI(frame)) {
             filteredSettings = models;
@@ -33,7 +35,7 @@ module.exports = {
         }
 
         frame.response = {
-            settings: filteredSettings,
+            settings: mapper.mapSettings(filteredSettings),
             meta: {}
         };
 
