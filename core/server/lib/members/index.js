@@ -5,6 +5,7 @@ const {getData, handleError} = require('./util');
 
 const cookies = require('./cookies');
 const tokens = require('./tokens');
+const users = require('./users');
 
 module.exports = function MembersApi({
     config: {
@@ -22,6 +23,10 @@ module.exports = function MembersApi({
     sendEmail
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = tokens({privateKey, publicKey});
+
+    const {requestPasswordReset, resetPassword} = users({
+        updateMember, getMember, sendEmail, encodeToken, decodeToken
+    });
 
     const router = Router();
 
@@ -67,21 +72,7 @@ module.exports = function MembersApi({
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
-        const memberPromise = getMember({email});
-
-        memberPromise.catch(() => {
-            res.writeHead(200);
-            res.end();
-        });
-
-        memberPromise.then((member) => {
-            return encodeToken({
-                sub: member.id,
-                iss: issuer
-            }).then((token) => {
-                return sendEmail(member, {token});
-            });
-        }).then(() => {
+        requestPasswordReset({email}).then(() => {
             res.writeHead(200);
             res.end();
         }).catch(handleError(500, res));
@@ -91,17 +82,11 @@ module.exports = function MembersApi({
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
-        decodeToken(token, {
-            iss: issuer
-        }).then((claims) => {
-            const id = claims.sub;
-
-            return updateMember({id}, {password}).then((member) => {
-                res.writeHead(200, {
-                    'Set-Cookie': setCookie(member)
-                });
-                res.end();
+        resetPassword({token, password}).then((member) => {
+            res.writeHead(200, {
+                'Set-Cookie': setCookie(member)
             });
+            res.end();
         }).catch(handleError(401, res));
     });
 
