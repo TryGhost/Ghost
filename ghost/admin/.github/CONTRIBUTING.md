@@ -1,28 +1,69 @@
-# Welcome to the contributing overview for Ghost!
+# Contributing to Ghost
 
-For **help**, **support** and **questions** please use **[our forum](https://forum.ghost.org)**  🚑.
-
----
-
-If you're [raising a bug](https://docs.ghost.org/docs/contributing#bugs) 🐛 please be sure to [include as much info as possible](https://docs.ghost.org/docs/contributing#bug-template) so that we can fix it!
+For **help**, **support**, **questions** and **ideas** please use **[our forum](https://forum.ghost.org)**  🚑.
 
 ---
 
-If you've **got some code** ✨ you want to [pull request](https://docs.ghost.org/docs/contributing#pull-requests) please use this [commit message format](https://docs.ghost.org/docs/git-workflow#section-notes-on-writing-good-commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+## Where to Start
 
----
+If you're a developer looking to contribute, but you're not sure where to begin: Check out the [good first issue](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) label on Github, which contains small piece of work that have been specifically flagged as being friendly to new contributors.
 
-**Our [Full Contributor Guide](https://docs.ghost.org/docs/contributing)** covers everything you'll need to get started as a contributor 😁
+After that, if you're looking for something a little more challenging to sink your teeth into, there's a broader [help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) label encompassing issues which need some love.
 
 
-*Quick Links:*
-- [forum](https://forum.ghost.org)
-- [user documentation](https://help.ghost.org)
-- [themes documentation](https://themes.ghost.org)
-- [api documentation](https://api.ghost.org)
-- [self-hoster guide](http://docs.ghost.org/)
-- [community guidelines](https://ghost.org/conduct/)
-- [dev blog](http://dev.ghost.org)
+## Working on Ghost Core
+
+If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
+
+First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.com/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://docs.ghost.org/install/source/) setup guide.
+
+
+### Branching Guide
+
+`master` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
+
+On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `master`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches. If you are working on something which you feel needs to go into a feature branch, let Hannah know and she will create this for you.
+
+
+### Commit Messages
+
+We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
+
+- **1st line:** Max 80 character summary written in past tense
+- **2nd line:** [Always blank]
+- **3rd line:** `refs/closes #000` or `no issue`
+- **4th line:** Whatever you want. Any extra details can be included from here
+
+If your change is **user-facing** please prepend the first line of your commit with **an emoji key**.
+We are following [gitmoji](https://gitmoji.carloscuesta.me/).
+
+**Main emojis we are using:**
+
+- ✨ Feature
+- 🎨 Improvement / change
+- 🐛 Bug Fix
+- 💡 Anything else flagged to users or whoever is writing release notes
+
+Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
+
+
+### Submitting Pull Requests
+
+Before submitting a PR, first ensure that your code passes all tests by running `yarn test` from the root directory.
+
+When submitting a Pull Request please make sure you give as much information as possible about your change and why you made any particular design or structural decisions. Context is always helpful.
+
+Ensuring that your feature branch is up to date and has a clean working tree without merge conflicts will help us test, review and merge it faster. The easier it is for us to merge a PR, the more likely we are to do it.
+
+If you need help, you can always open a PR and let us know what you're struggling with, or reach out via [the forum](https://forum.ghost.org).
+
+
+## What Happens Next
+
+Small changes usually get merged as soon as we've had chance to read through them. For more involved changes one of us will checkout your PR, rebase with master if required and then run basic sanity / regression tests on the code, run the Casper tests and re-run grunt validate. If your PR has fallen behind master and can no longer be merged, we will in most cases rebase / merge master. In some cases with lots of small changes we will ask you to do this as you are more familiar with your changes than we will be.
+
+If any changes or discussion are needed, we'll let you know!
+
 
 ---
 
