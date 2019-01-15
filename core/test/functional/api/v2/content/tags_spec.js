@@ -46,6 +46,17 @@ describe('Tags Content API V2', function () {
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
+                // Default order 'name asc' check
+                // the ordering difference is described in https://github.com/TryGhost/Ghost/issues/6104
+                // this condition should be removed once issue mentioned above ^ is resolved
+                if (process.env.NODE_ENV === 'testing-mysql') {
+                    jsonResponse.tags[0].name.should.eql('bacon');
+                    jsonResponse.tags[3].name.should.eql('kitchen sink');
+                } else {
+                    jsonResponse.tags[0].name.should.eql('Getting Started');
+                    jsonResponse.tags[3].name.should.eql('kitchen sink');
+                }
+
                 should.exist(res.body.tags[0].url);
                 should.exist(url.parse(res.body.tags[0].url).protocol);
                 should.exist(url.parse(res.body.tags[0].url).host);

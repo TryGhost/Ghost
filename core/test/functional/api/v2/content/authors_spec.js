@@ -50,6 +50,10 @@ describe('Authors Content API V2', function () {
                 // We don't expose the email address, status and other attrs.
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null);
 
+                // Default order 'name asc' check
+                jsonResponse.authors[0].name.should.eql('Ghost');
+                jsonResponse.authors[2].name.should.eql('Slimer McEctoplasm');
+
                 should.exist(res.body.authors[0].url);
                 should.exist(url.parse(res.body.authors[0].url).protocol);
                 should.exist(url.parse(res.body.authors[0].url).host);
