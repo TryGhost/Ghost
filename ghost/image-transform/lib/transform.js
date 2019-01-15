@@ -40,7 +40,7 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
 //       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
 //       As for .svg files, sharp only supports conversion to png, and this does not
 //       play well with animated svg files
-const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz'].includes(ext);
+const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz', '.ico'].includes(ext);
 
 const makeSafe = fn => (...args) => {
     try {
