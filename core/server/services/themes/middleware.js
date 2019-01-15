@@ -45,6 +45,7 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
 themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
+    // @TODO: decouple theme layer from settings cache using the Content API
     var siteData = settingsCache.getPublic(),
         labsData = _.cloneDeep(settingsCache.get('labs')),
         themeData = {};
