@@ -72,6 +72,7 @@ const mapPost = (model, frame) => {
 
 const mapSettings = (attrs) => {
     url.forSettings(attrs);
+    extraAttrs.forSettings(attrs);
     return attrs;
 };
 
