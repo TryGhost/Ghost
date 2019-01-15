@@ -137,7 +137,7 @@ class UrlService {
         const object = this.urls.getByResourceId(resourceId);
 
         if (!object) {
-            throw new common.errors.InternalServerError({
+            throw new common.errors.NotFoundError({
                 message: 'Resource not found.',
                 code: 'URLSERVICE_RESOURCE_NOT_FOUND'
             });
