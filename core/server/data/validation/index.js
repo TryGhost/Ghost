@@ -364,7 +364,7 @@ validateRedirects = function validateRedirects(redirects) {
     if (!_.isArray(redirects)) {
         throw new common.errors.ValidationError({
             message: common.i18n.t('errors.utils.redirectsWrongFormat'),
-            help: 'https://docs.ghost.org/docs/redirects'
+            help: 'https://docs.ghost.org/concepts/redirects/'
         });
     }
 
@@ -373,7 +373,7 @@ validateRedirects = function validateRedirects(redirects) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.utils.redirectsWrongFormat'),
                 context: JSON.stringify(redirect),
-                help: 'https://docs.ghost.org/docs/redirects'
+                help: 'https://docs.ghost.org/concepts/redirects/'
             });
         }
     });

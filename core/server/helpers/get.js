@@ -192,7 +192,7 @@ module.exports = function getLabsWrapper() {
             flagKey: 'publicAPI',
             flagName: 'Public API',
             helperName: 'get',
-            helpUrl: 'https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta',
+            helpUrl: 'https://docs.ghost.org/faq/api-versioning/',
             async: true
         }, function executeHelper() {
             return get.apply(self, args);
