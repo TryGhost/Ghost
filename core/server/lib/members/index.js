@@ -20,6 +20,7 @@ module.exports = function MembersApi({
     getMember,
     sendEmail
 }) {
+    /* token */
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
@@ -28,6 +29,7 @@ module.exports = function MembersApi({
     const apiRouter = Router();
 
     apiRouter.use(body.json());
+    /* token */
     apiRouter.use(function waitForKeyStore(req, res, next) {
         keyStoreReady.then((jwk) => {
             req.jwk = jwk;
@@ -35,8 +37,10 @@ module.exports = function MembersApi({
         });
     });
 
+    /* session */
     const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
 
+    /* token */
     apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
@@ -61,6 +65,7 @@ module.exports = function MembersApi({
         }).catch(handleError(403, res));
     });
 
+    /* security */
     function ssoOriginCheck(req, res, next) {
         if (!req.data.origin || req.data.origin !== ssoOrigin) {
             res.writeHead(403);
@@ -69,6 +74,7 @@ module.exports = function MembersApi({
         next();
     }
 
+    /* users, token, emails */
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
@@ -94,6 +100,7 @@ module.exports = function MembersApi({
         }).catch(handleError(500, res));
     });
 
+    /* users, token */
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
@@ -117,6 +124,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
+    /* users, email */
     apiRouter.post('/signup', getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
@@ -129,6 +137,7 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
+    /* users, session */
     apiRouter.post('/signin', getData('email', 'password'), ssoOriginCheck, (req, res) => {
         const {email, password} = req.data;
 
@@ -140,6 +149,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
+    /* session */
     apiRouter.post('/signout', getData(), (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': removeCookie()
@@ -147,6 +157,7 @@ module.exports = function MembersApi({
         res.end();
     });
 
+    /* http */
     const staticRouter = Router();
     staticRouter.use('/static', static(require('path').join(__dirname, './static/auth/dist')));
     staticRouter.use('/gateway', static(require('path').join(__dirname, './static/gateway')));
@@ -154,8 +165,10 @@ module.exports = function MembersApi({
         res.sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
     });
 
+    /* http */
     router.use('/api', apiRouter);
     router.use('/static', staticRouter);
+    /* token */
     router.get('/.well-known/jwks.json', (req, res) => {
         keyStoreReady.then(() => {
             res.json(keyStore.toJSON());
@@ -173,6 +186,7 @@ module.exports = function MembersApi({
     return httpHandler;
 };
 
+/* http */
 function getData(...props) {
     return function (req, res, next) {
         if (!req.body) {
@@ -198,6 +212,7 @@ function getData(...props) {
     };
 }
 
+/* http */
 function handleError(status, res) {
     return function () {
         res.writeHead(status);
