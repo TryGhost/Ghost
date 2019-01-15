@@ -31,6 +31,12 @@ describe('lib/image: manipulator', function () {
                 false
             );
         });
+        it('returns false for ".ico"', function () {
+            should.equal(
+                manipulator.canTransformFileExtension('.ico'),
+                false
+            );
+        });
     });
 
     describe('cases', function () {
