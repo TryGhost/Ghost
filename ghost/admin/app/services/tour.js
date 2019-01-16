@@ -64,7 +64,7 @@ export default Service.extend(Evented, {
         }, {
             id: 'upload-a-theme',
             title: 'Customising your publication',
-            message: 'Using custom themes, you can completely control the look and feel of your site to suit your branch. Here\'s a full guide to help: <strong><a href="https://themes.ghost.org" target="_blank">https://themes.ghost.org</a></strong>'
+            message: 'Using custom themes, you can completely control the look and feel of your site to suit your branch. Here\'s a full guide to help: <strong><a href="https://docs.ghost.org/api/handlebars-themes/" target="_blank">https://docs.ghost.org/api/handlebars-themes/</a></strong>'
         }];
     },
 
