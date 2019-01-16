@@ -384,7 +384,7 @@ describe('Acceptance: Settings - Design', function () {
                 theme.warnings = [{
                     level: 'warning',
                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
-                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
+                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="https://docs.ghost.org/api/handlebars-themes/helpers/asset/">asset helper documentation</a>.</p>',
                     failures: [
                         {
                             ref: '/assets/dist/img/apple-touch-icon.png'
@@ -563,7 +563,7 @@ describe('Acceptance: Settings - Design', function () {
                 theme.update({warnings: [{
                     level: 'warning',
                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
-                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="http://themes.ghost.org/docs/asset">asset helper documentation</a>.</p>',
+                    details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.  For more information, please see the <a href="https://docs.ghost.org/api/handlebars-themes/helpers/asset/">asset helper documentation</a>.</p>',
                     failures: [
                         {
                             ref: '/assets/dist/img/apple-touch-icon.png'
