@@ -17,8 +17,7 @@
         "internal": [
             "private-blogging",
             "subscribers",
-            "amp",
-            "members"
+            "amp"
         ]
     },
     "slugs": {
