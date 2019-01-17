@@ -49,7 +49,7 @@ describe('{{#get}} helper', function () {
                 'string',
                 '<script>console.error("The {{get}} helper is not available. ' +
                 'The Public API flag must be enabled in labs if you wish to use the {{get}} helper. ' +
-                'See https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta");</script>'
+                'See https://docs.ghost.org/faq/api-versioning/");</script>'
             );
 
             done();

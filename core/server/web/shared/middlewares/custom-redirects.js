@@ -76,7 +76,7 @@ _private.registerRoutes = () => {
             common.logging.error(new common.errors.IncorrectUsageError({
                 message: common.i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
-                help: 'https://docs.ghost.org/docs/redirects'
+                help: 'https://docs.ghost.org/concepts/redirects/'
             }));
         }
     }
@@ -86,7 +86,7 @@ _private.registerRoutes = () => {
 
 /**
  * - you can extend Ghost with a custom redirects file
- * - see https://github.com/TryGhost/Ghost/issues/7707 and https://docs.ghost.org/docs/redirects
+ * - see https://github.com/TryGhost/Ghost/issues/7707 and https://docs.ghost.org/concepts/redirects/
  * - file loads synchronously, because we need to register the routes before anything else
  */
 exports.use = function use(siteApp) {
